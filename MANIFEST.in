@@ -1,0 +1,9 @@
+include CONTRIBUTING.md
+include LICENSE
+include MANIFEST.in
+include NOTICE
+include README.rst
+include requirements.txt
+include setup.py
+
+recursive-include src *.py *.hdf5 *.npy
