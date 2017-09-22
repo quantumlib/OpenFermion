@@ -51,6 +51,23 @@ the pep8 linter to check for it. Code should always come with documentation,
 which is generated automatically and can be found
 `here <http://openfermion.org>`_.
 
+Authors
+-------
+
+`Ryan Babbush <http://ryanbabbush.com>`__ (Google),
+`Jarrod McClean <http://jarrodmcclean.com>`__ (Google),
+Ian Kivlichan (Harvard),
+Damian Steiger (ETH Zurich),
+Wei Sun (Google),
+Craig Gidney (Google),
+Thomas Haner (ETH Zurich),
+Hannah Sim (Harvard),
+Vojtech Havlicek (Oxford),
+Kanav Setia (Dartmouth),
+Nicholas Rubin (Rigetti),
+Matthew Neeley (Google) and
+Dave Bacon (Google).
+
 Questions?
 ----------
 
