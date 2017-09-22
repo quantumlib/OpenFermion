@@ -2,6 +2,10 @@
 *lastfailed
 *coverage
 
+# Data files.
+*.out
+*.hdf5
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -70,5 +74,4 @@ ENV/
 
 # mkdocs documentation
 /site
-
 *.lprof
