@@ -17,6 +17,7 @@ from openfermion.utils._jellium_hf_state import hartree_fock_state_jellium
 
 
 class JelliumHartreeFockStateTest(unittest.TestCase):
+
     def test_hf_state_energy_close_to_ground_energy_at_high_density(self):
         grid_length = 8
         dimension = 1
