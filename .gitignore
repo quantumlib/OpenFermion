@@ -5,6 +5,7 @@
 # Data files.
 *.out
 *.hdf5
+src/openfermion/data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
