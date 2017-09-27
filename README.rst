@@ -31,7 +31,7 @@ Alternatively, one can install using pip with the command
 
   python -m pip install openfermion
 
-For further information about how to get started please see `intro <http://openfermion.org>`__ and  `code examples <http://openfermion.org>`__. Also take a look at the the ipython notebook demo in the examples folder of this repository as well as our detailed `code documentation <http://openfermion.org>`__.
+For further information about how to get started please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html#intro>`__ and  `code examples <http://openfermion.readthedocs.io/en/latest/intro.html#getting-started-with-openfermion>`__. Also take a look at the the ipython notebook demo in the examples folder of this repository as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
 Plugins
 -------
@@ -62,7 +62,7 @@ decrease overall test coverage by too much. Make sure you adhere to our style
 guide. Just have a look at our code for clues. We mostly follow pep8 and use
 the pep8 linter to check for it. Code should always come with documentation,
 which is generated automatically and can be found
-`here <http://openfermion.org>`_.
+`here <http://openfermion.readthedocs.io/en/latest/openfermion.html>`_.
 
 Authors
 -------
