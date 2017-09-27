@@ -1,6 +1,6 @@
 OpenFermion
 ===========
-
+DO NOT ACCEPT
 .. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=develop
     :target: https://travis-ci.org/quantumlib/OpenFermion
 
