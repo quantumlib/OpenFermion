@@ -7,6 +7,9 @@ OpenFermion
 .. image:: https://coveralls.io/repos/github/quantumlib/OpenFermion/badge.svg
     :target: https://coveralls.io/github/quantumlib/OpenFermion
 
+.. image:: https://readthedocs.org/projects/openfermion/badge/?version=latest
+    :target: http://openfermion.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians.
 
