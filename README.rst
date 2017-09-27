@@ -31,7 +31,7 @@ Alternatively, one can install using pip with the command
 
   python -m pip install openfermion
 
-For further information about how to get started please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html#intro>`__ and  `code examples <http://openfermion.readthedocs.io/en/latest/intro.html#getting-started-with-openfermion>`__. Also take a look at the the ipython notebook demo in the examples folder of this repository as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
+For further information about how to get started please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the the ipython notebook demo in the examples folder of this repository as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
 Plugins
 -------
