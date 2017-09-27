@@ -11,6 +11,9 @@ OpenFermion
     :target: http://openfermion.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. image:: https://badge.fury.io/py/openfermion.svg
+    :target: https://badge.fury.io/py/openfermion
+
 OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians.
 
 Getting started
