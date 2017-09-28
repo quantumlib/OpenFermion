@@ -481,9 +481,9 @@ def expectation_two_body_db_operator_computational_basis_state(
     for i in range(2):
         rr[i] = {}
         k_map[i] = {}
-    for j in range(2, 4):
-        rr[i][j] = r[i] - r[j]
-        k_map[i][j] = {}
+        for j in range(2, 4):
+            rr[i][j] = r[i] - r[j]
+            k_map[i][j] = {}
 
     for o in plane_wave_occ_orbitals:
         k = momentum_vector(grid_indices(o, grid, spinless), grid)
@@ -556,9 +556,9 @@ def expectation_three_body_db_operator_computational_basis_state(
     for i in range(3):
         rr[i] = {}
         k_map[i] = {}
-    for j in range(3, 6):
-        rr[i][j] = r[i] - r[j]
-        k_map[i][j] = {}
+        for j in range(3, 6):
+            rr[i][j] = r[i] - r[j]
+            k_map[i][j] = {}
 
     for o in plane_wave_occ_orbitals:
         k = momentum_vector(grid_indices(o, grid, spinless), grid)
