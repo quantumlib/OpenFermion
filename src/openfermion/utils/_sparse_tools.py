@@ -471,23 +471,35 @@ def expectation_two_body_db_operator_computational_basis_state(
     """
     expectation_value = 0.0
 
-    r_a = position_vector(grid_indices(dual_basis_action[0][0],
-                                       grid, spinless), grid)
-    r_b = position_vector(grid_indices(dual_basis_action[1][0],
-                                       grid, spinless), grid)
-    r_c = position_vector(grid_indices(dual_basis_action[2][0],
-                                       grid, spinless), grid)
-    r_d = position_vector(grid_indices(dual_basis_action[3][0],
-                                       grid, spinless), grid)
+    r = {}
+    for i in range(4):
+        r[i] = position_vector(grid_indices(dual_basis_action[i][0], grid,
+                                            spinless), grid)
+
+    rr = {}
+    k_map = {}
+    for i in range(2):
+        rr[i] = {}
+        k_map[i] = {}
+        for j in range(2, 4):
+            rr[i][j] = r[i] - r[j]
+            k_map[i][j] = {}
+
+    # Pre-computations.
+    for o in plane_wave_occ_orbitals:
+        k = momentum_vector(grid_indices(o, grid, spinless), grid)
+        for i in range(2):
+            for j in range(2, 4):
+                k_map[i][j][o] = k.dot(rr[i][j])
 
     for orbital1 in plane_wave_occ_orbitals:
-        k_1 = momentum_vector(grid_indices(orbital1,
-                                           grid, spinless), grid)
+        k1ac = k_map[0][2][orbital1]
+        k1ad = k_map[0][3][orbital1]
 
         for orbital2 in plane_wave_occ_orbitals:
             if orbital1 != orbital2:
-                k_2 = momentum_vector(grid_indices(orbital2,
-                                                   grid, spinless), grid)
+                k2bc = k_map[1][2][orbital2]
+                k2bd = k_map[1][3][orbital2]
 
                 # The Fourier transform is spin-conserving. This means that
                 # the parity of the orbitals involved in the transition must
@@ -497,8 +509,8 @@ def expectation_two_body_db_operator_computational_basis_state(
                          dual_basis_action[3][0] % 2 == orbital1 % 2) and
                         (dual_basis_action[1][0] % 2 ==
                          dual_basis_action[2][0] % 2 == orbital2 % 2)):
-                    value = numpy.exp(-1j * (
-                        k_1.dot(r_a - r_d) + k_2.dot(r_b - r_c)))
+                    value = numpy.exp(-1j * (k1ad + k2bc))
+
                     # Add because it came from two anti-commutations.
                     expectation_value += value
 
@@ -510,8 +522,8 @@ def expectation_two_body_db_operator_computational_basis_state(
                          dual_basis_action[2][0] % 2 == orbital1 % 2) and
                         (dual_basis_action[1][0] % 2 ==
                          dual_basis_action[3][0] % 2 == orbital2 % 2)):
-                    value = numpy.exp(-1j * (
-                        k_1.dot(r_a - r_c) + k_2.dot(r_b - r_d)))
+                    value = numpy.exp(-1j * (k1ac + k2bd))
+
                     # Subtract because it came from a single anti-commutation.
                     expectation_value -= value
 
@@ -535,32 +547,43 @@ def expectation_three_body_db_operator_computational_basis_state(
     """
     expectation_value = 0.0
 
-    r_a = position_vector(grid_indices(dual_basis_action[0][0],
-                                       grid, spinless), grid)
-    r_b = position_vector(grid_indices(dual_basis_action[1][0],
-                                       grid, spinless), grid)
-    r_c = position_vector(grid_indices(dual_basis_action[2][0],
-                                       grid, spinless), grid)
-    r_d = position_vector(grid_indices(dual_basis_action[3][0],
-                                       grid, spinless), grid)
-    r_e = position_vector(grid_indices(dual_basis_action[4][0],
-                                       grid, spinless), grid)
-    r_f = position_vector(grid_indices(dual_basis_action[5][0],
-                                       grid, spinless), grid)
+    r = {}
+    for i in range(6):
+        r[i] = position_vector(grid_indices(dual_basis_action[i][0], grid,
+                                            spinless), grid)
+
+    rr = {}
+    k_map = {}
+    for i in range(3):
+        rr[i] = {}
+        k_map[i] = {}
+        for j in range(3, 6):
+            rr[i][j] = r[i] - r[j]
+            k_map[i][j] = {}
+
+    # Pre-computations.
+    for o in plane_wave_occ_orbitals:
+        k = momentum_vector(grid_indices(o, grid, spinless), grid)
+        for i in range(3):
+            for j in range(3, 6):
+                k_map[i][j][o] = k.dot(rr[i][j])
 
     for orbital1 in plane_wave_occ_orbitals:
-        k_1 = momentum_vector(grid_indices(orbital1,
-                                           grid, spinless), grid)
+        k1ad = k_map[0][3][orbital1]
+        k1ae = k_map[0][4][orbital1]
+        k1af = k_map[0][5][orbital1]
 
         for orbital2 in plane_wave_occ_orbitals:
             if orbital1 != orbital2:
-                k_2 = momentum_vector(grid_indices(orbital2,
-                                                   grid, spinless), grid)
+                k2bd = k_map[1][3][orbital2]
+                k2be = k_map[1][4][orbital2]
+                k2bf = k_map[1][5][orbital2]
 
                 for orbital3 in plane_wave_occ_orbitals:
                     if orbital1 != orbital3 and orbital2 != orbital3:
-                        k_3 = momentum_vector(
-                            grid_indices(orbital3, grid, spinless), grid)
+                        k3cd = k_map[2][3][orbital3]
+                        k3ce = k_map[2][4][orbital3]
+                        k3cf = k_map[2][5][orbital3]
 
                         # Handle \delta_{ad} \delta_{bf} \delta_{ce} after FT.
                         # The Fourier transform is spin-conserving.
@@ -575,8 +598,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[4][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value += numpy.exp(-1j * (
-                                k_1.dot(r_a - r_d) + k_2.dot(r_b - r_f) +
-                                k_3.dot(r_c - r_e)))
+                                k1ad + k2bf + k3ce)) 
 
                         # Handle -\delta_{ad} \delta_{be} \delta_{cf} after FT.
                         # The Fourier transform is spin-conserving.
@@ -591,8 +613,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[5][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value -= numpy.exp(-1j * (
-                                k_1.dot(r_a - r_d) + k_2.dot(r_b - r_e) +
-                                k_3.dot(r_c - r_f)))
+                                k1ad + k2be + k3cf))
 
                         # Handle -\delta_{ae} \delta_{bf} \delta_{cd} after FT.
                         # The Fourier transform is spin-conserving.
@@ -607,8 +628,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[3][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value -= numpy.exp(-1j * (
-                                k_1.dot(r_a - r_e) + k_2.dot(r_b - r_f) +
-                                k_3.dot(r_c - r_d)))
+                                k1ae + k2bf + k3cd))
 
                         # Handle \delta_{ae} \delta_{bd} \delta_{cf} after FT.
                         # The Fourier transform is spin-conserving.
@@ -623,8 +643,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[5][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value += numpy.exp(-1j * (
-                                k_1.dot(r_a - r_e) + k_2.dot(r_b - r_d) +
-                                k_3.dot(r_c - r_f)))
+                                k1ae + k2bd + k3cf))
 
                         # Handle \delta_{af} \delta_{be} \delta_{cd} after FT.
                         # The Fourier transform is spin-conserving.
@@ -639,8 +658,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[3][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value += numpy.exp(-1j * (
-                                k_1.dot(r_a - r_f) + k_2.dot(r_b - r_e) +
-                                k_3.dot(r_c - r_d)))
+                                k1af + k2be + k3cd))
 
                         # Handle -\delta_{af} \delta_{bd} \delta_{ce} after FT.
                         # The Fourier transform is spin-conserving.
@@ -655,8 +673,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[4][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value -= numpy.exp(-1j * (
-                                k_1.dot(r_a - r_f) + k_2.dot(r_b - r_d) +
-                                k_3.dot(r_c - r_e)))
+                                k1af + k2bd + k3ce))
 
     return expectation_value
 
