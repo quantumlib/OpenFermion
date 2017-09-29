@@ -74,7 +74,7 @@ def two_body_fermion_constraints(n_orbitals, n_fermions):
 
     # Two-body Hermiticity condition.
     for ij in range(n_orbitals ** 2):
-        i, j = (ij / n_orbitals), (ij % n_orbitals)
+        i, j = (ij // n_orbitals), (ij % n_orbitals)
         for kl in range(ij + 1, n_orbitals ** 2):
             k, l = (kl // n_orbitals), (kl % n_orbitals)
             constraint_operator = FermionOperator(
