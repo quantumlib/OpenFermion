@@ -598,7 +598,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[4][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value += numpy.exp(-1j * (
-                                k1ad + k2bf + k3ce)) 
+                                k1ad + k2bf + k3ce))
 
                         # Handle -\delta_{ad} \delta_{be} \delta_{cf} after FT.
                         # The Fourier transform is spin-conserving.
