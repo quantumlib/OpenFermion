@@ -76,7 +76,7 @@ def two_body_fermion_constraints(n_orbitals, n_fermions):
     for ij in range(n_orbitals ** 2):
         i, j = (ij / n_orbitals), (ij % n_orbitals)
         for kl in range(ij + 1, n_orbitals ** 2):
-            k, l = (kl / n_orbitals), (kl % n_orbitals)
+            k, l = (kl // n_orbitals), (kl % n_orbitals)
             constraint_operator = FermionOperator(
                 ((i, 1), (j, 1), (l, 0), (k, 0)))
             constraint_operator -= FermionOperator(
@@ -98,9 +98,9 @@ def two_body_fermion_constraints(n_orbitals, n_fermions):
 
     # Linear relations between two-particle matrices.
     for ij in range(n_orbitals ** 2):
-        i, j = (ij / n_orbitals), (ij % n_orbitals)
+        i, j = (ij // n_orbitals), (ij % n_orbitals)
         for kl in range(ij, n_orbitals ** 2):
-            k, l = (kl / n_orbitals), (kl % n_orbitals)
+            k, l = (kl // n_orbitals), (kl % n_orbitals)
 
             # G-matrix condition.
             constraint_operator = FermionOperator(
