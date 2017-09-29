@@ -43,6 +43,9 @@ from ._plane_wave_hamiltonian import (dual_basis_external_potential,
                                       jordan_wigner_dual_basis_hamiltonian,
                                       wigner_seitz_length_scale)
 
+from ._rdm_equality_constraints import (one_body_fermion_constraints,
+                                        two_body_fermion_constraints)
+
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,
                             get_density_matrix,
@@ -51,6 +54,7 @@ from ._sparse_tools import (expectation,
                             is_hermitian,
                             jordan_wigner_sparse,
                             jw_hartree_fock_state,
+                            jw_number_restrict_operator,
                             qubit_operator_sparse,
                             sparse_eigenspectrum)
 

@@ -14,13 +14,11 @@
 import unittest
 import os
 
-from _rdm_equality_constraints import (one_body_fermion_constraints,
-                                       two_body_fermion_constraints)
-
 from openfermion.config import THIS_DIRECTORY
-from openfermion.ops import FermionOperator, hermitian_conjugated
 from openfermion.transforms import get_interaction_operator
-from openfermion.utils import MolecularData
+from openfermion.utils import (MolecularData,
+                               one_body_fermion_constraints,
+                               two_body_fermion_constraints)
 
 
 class FermionConstraintsTest(unittest.TestCase):
