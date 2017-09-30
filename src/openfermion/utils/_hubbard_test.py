@@ -101,3 +101,12 @@ class FermiHubbardTest(unittest.TestCase):
             self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
             self.chemical_potential, self.magnetic_field,
             periodic=True, spinless=True)
+
+
+    def test_two_by_three_spinless_periodic_rudimentary(self):
+        hubbard_model = fermi_hubbard(
+            2, 3, self.tunneling, self.coulomb,
+            self.chemical_potential, self.magnetic_field,
+            periodic=True, spinless=True)
+        # Check up top/bottom hopping terms.
+        self.assertAlmostEqual(hubbard_model.terms[((4, 1), (0, 0))], -self.tunneling)
