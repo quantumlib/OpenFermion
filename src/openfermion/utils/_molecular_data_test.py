@@ -20,6 +20,8 @@ import unittest
 from openfermion.config import *
 from openfermion.utils import *
 from openfermion.utils._molecular_data import *
+from openfermion.transforms import (get_interaction_operator,
+                                 get_molecular_data)
 
 
 class MolecularDataTest(unittest.TestCase):
@@ -260,6 +262,22 @@ class MolecularDataTest(unittest.TestCase):
             self.assertAlmostEqual(molecule.get_n_beta_electrons(),
                                    expected_beta)
 
+    def test_abstract_molecule(self):
+        """Test an abstract molecule like jellium for saving and loading"""
+        jellium_interaction = get_interaction_operator(
+            jellium_model(Grid(2, 2, 1.0)))
+        jellium_molecule = get_molecular_data(jellium_interaction,
+                                              geometry="Jellium",
+                                              basis="PlaneWave22",
+                                              multiplicity=1,
+                                              n_electrons=4)
+
+        jellium_filename = jellium_molecule.filename
+        jellium_molecule.save()
+        jellium_molecule.load()
+        correct_name = "Jellium_PlaneWave22_singlet"
+        self.assertEqual(jellium_molecule.name, correct_name)
+        os.remove("{}.hdf5".format(jellium_filename))
 
 if __name__ == '__main__':
     unittest.main()

@@ -15,6 +15,7 @@ from ._bravyi_kitaev import bravyi_kitaev
 from ._conversion import (get_fermion_operator,
                           get_interaction_rdm,
                           get_interaction_operator,
+                          get_molecular_data,
                           get_sparse_operator,
                           get_sparse_interaction_operator)
 from ._jordan_wigner import jordan_wigner

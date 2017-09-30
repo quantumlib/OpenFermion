@@ -118,16 +118,19 @@ def name_molecule(geometry,
     Raises:
         MoleculeNameError: If spin multiplicity is not valid.
     """
-    # Get sorted atom vector.
-    atoms = [item[0] for item in geometry]
-    atom_charge_info = [(atom, atoms.count(atom)) for atom in set(atoms)]
-    sorted_info = sorted(atom_charge_info,
-                         key=lambda atom: periodic_hash_table[atom[0]])
+    if not isinstance(geometry, basestring):
+        # Get sorted atom vector.
+        atoms = [item[0] for item in geometry]
+        atom_charge_info = [(atom, atoms.count(atom)) for atom in set(atoms)]
+        sorted_info = sorted(atom_charge_info,
+                             key=lambda atom: periodic_hash_table[atom[0]])
 
-    # Name molecule.
-    name = '{}{}'.format(sorted_info[0][0], sorted_info[0][1])
-    for info in sorted_info[1::]:
-        name += '-{}{}'.format(info[0], info[1])
+        # Name molecule.
+        name = '{}{}'.format(sorted_info[0][0], sorted_info[0][1])
+        for info in sorted_info[1::]:
+            name += '-{}{}'.format(info[0], info[1])
+    else:
+        name = geometry
 
     # Add basis.
     name += '_{}'.format(basis)
@@ -280,7 +283,7 @@ class MolecularData(object):
             raise TypeError("description must be a string.")
         self.description = description
 
-        # Name molecule and get associated filename.
+        # Name molecule and get associated filename
         self.name = name_molecule(geometry, basis, multiplicity,
                                   charge, description)
         if filename:
@@ -294,11 +297,17 @@ class MolecularData(object):
                 self.filename = data_directory + '/' + self.name
 
         # Attributes generated automatically by class.
-        self.n_atoms = len(geometry)
-        self.atoms = sorted([row[0] for row in geometry],
-                            key=lambda atom: periodic_hash_table[atom])
-        self.protons = [periodic_hash_table[atom] for atom in self.atoms]
-        self.n_electrons = sum(self.protons) - charge
+        if not isinstance(geometry, basestring):
+            self.n_atoms = len(geometry)
+            self.atoms = sorted([row[0] for row in geometry],
+                                key=lambda atom: periodic_hash_table[atom])
+            self.protons = [periodic_hash_table[atom] for atom in self.atoms]
+            self.n_electrons = sum(self.protons) - charge
+        else:
+            self.n_atoms = 0
+            self.atoms = []
+            self.protons = 0
+            self.n_electrons = 0
 
         # Generic attributes from calculations.
         self.n_orbitals = None
@@ -330,6 +339,9 @@ class MolecularData(object):
         # Molecular orbitals
         self._canonical_orbitals = None
 
+        # Overlap matrix corresponding to bare orbitals defining MOs
+        self._overlap_integrals = None
+
         # Electronic Integrals
         self._one_body_integrals = None
         self._two_body_integrals = None
@@ -357,6 +369,18 @@ class MolecularData(object):
     @canonical_orbitals.setter
     def canonical_orbitals(self, value):
         self._canonical_orbitals = value
+
+    @property
+    def overlap_integrals(self):
+        if self._overlap_integrals is None:
+            data = self.get_from_file("overlap_integrals")
+            self._overlap_integrals = (data if data is not None and
+                                       data.dtype.num != 0 else None)
+        return self._overlap_integrals
+
+    @overlap_integrals.setter
+    def overlap_integrals(self, value):
+        self._overlap_integrals = value
 
     @property
     def one_body_integrals(self):
@@ -462,10 +486,17 @@ class MolecularData(object):
         with h5py.File("{}.hdf5".format(tmp_name), "w") as f:
             # Save geometry (atoms and positions need to be separate):
             d_geom = f.create_group("geometry")
-            atoms = [numpy.string_(item[0]) for item in self.geometry]
-            positions = numpy.array([list(item[1]) for item in self.geometry])
-            d_geom.create_dataset("atoms", data=atoms)
-            d_geom.create_dataset("positions", data=positions)
+            if not isinstance(self.geometry, basestring):
+                atoms = [numpy.string_(item[0]) for item in self.geometry]
+                positions = numpy.array([list(item[1])
+                                         for item in self.geometry])
+            else:
+                atoms = numpy.string_(self.geometry)
+                positions = None
+            d_geom.create_dataset("atoms", data=(atoms if atoms is not None
+                                                 else False))
+            d_geom.create_dataset("positions", data=(positions if positions
+                                                    is not None else False))
             # Save basis:
             f.create_dataset("basis", data=numpy.string_(self.basis))
             # Save multiplicity:
@@ -505,6 +536,12 @@ class MolecularData(object):
                                    self.canonical_orbitals is
                                    not None else False),
                              compression=("gzip" if self.canonical_orbitals
+                                          is not None else None))
+            f.create_dataset("overlap_integrals",
+                             data=(self.overlap_integrals if
+                                   self.overlap_integrals is
+                                   not None else False),
+                             compression=("gzip" if self.overlap_integrals
                                           is not None else None))
             f.create_dataset("orbital_energies",
                              data=(self.orbital_energies if
@@ -587,10 +624,14 @@ class MolecularData(object):
 
         with h5py.File("{}.hdf5".format(self.filename), "r") as f:
             # Load geometry:
-            for atom, pos in zip(f["geometry/atoms"][...],
-                                 f["geometry/positions"][...]):
-                geometry.append((atom.tobytes().decode('utf-8'), list(pos)))
-            self.geometry = geometry
+            data = f["geometry/atoms"]
+            if data.shape != (()):
+                for atom, pos in zip(f["geometry/atoms"][...],
+                                     f["geometry/positions"][...]):
+                    geometry.append((atom.tobytes().decode('utf-8'), list(pos)))
+                self.geometry = geometry
+            else:
+                self.geometry = data[...].tobytes().decode('utf-8')
             # Load basis:
             self.basis = f["basis"][...].tobytes().decode('utf-8')
             # Load multiplicity:
@@ -649,9 +690,10 @@ class MolecularData(object):
         try:
             with h5py.File("{}.hdf5".format(self.filename), "r") as f:
                 data = f[property_name][...]
-        except (KeyError, IOError):
+        except KeyError:
             data = None
-
+        except IOError:
+            data = None
         return data
 
     def get_n_alpha_electrons(self):
@@ -672,13 +714,13 @@ class MolecularData(object):
                 shape of (n_orbitals, n_orbitals, n_orbitals, n_orbitals).
 
         Raises:
-          MisissingCalculationError: If SCF calculation has not been performed.
+          MisissingCalculationError: If integrals are not calculated.
         """
         # Make sure integrals have been computed.
-        if self.hf_energy is None:
+        if self.one_body_integrals is None:
             raise MissingCalculationError(
-                'Missing SCF in {}, run before loading integrals.'.format(
-                    self.filename))
+                'Missing integral calculation in {}, run before loading '
+                'integrals.'.format(self.filename))
         return self.one_body_integrals, self.two_body_integrals
 
     def get_active_space_integrals(self,
