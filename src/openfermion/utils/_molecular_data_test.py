@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for molecular_data."""
-from __future__ import absolute_import
 
 import numpy.random
 import scipy.linalg
@@ -21,7 +20,7 @@ from openfermion.config import *
 from openfermion.utils import *
 from openfermion.utils._molecular_data import *
 from openfermion.transforms import (get_interaction_operator,
-                                 get_molecular_data)
+                                    get_molecular_data)
 
 
 class MolecularDataTest(unittest.TestCase):
@@ -141,7 +140,7 @@ class MolecularDataTest(unittest.TestCase):
         molecule.ccsd_double_amps = [1, 2, 3]
 
         # Test missing calculation and information exceptions
-        molecule.hf_energy = None
+        molecule.one_body_integrals = None
         with self.assertRaises(MissingCalculationError):
             one_body_ints, two_body_ints = molecule.get_integrals()
         molecule.hf_energy = 99.

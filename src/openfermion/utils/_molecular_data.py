@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Class and functions to store quantum chemistry data."""
-from __future__ import absolute_import, unicode_literals
 
 import h5py
 import numpy
@@ -717,7 +716,7 @@ class MolecularData(object):
           MisissingCalculationError: If integrals are not calculated.
         """
         # Make sure integrals have been computed.
-        if self.one_body_integrals is None:
+        if self.one_body_integrals is None or self.two_body_integrals is None:
             raise MissingCalculationError(
                 'Missing integral calculation in {}, run before loading '
                 'integrals.'.format(self.filename))

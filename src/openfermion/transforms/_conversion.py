@@ -26,6 +26,7 @@ from openfermion.ops import (FermionOperator,
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.utils import (count_qubits,
                                jordan_wigner_sparse,
+                               MolecularData,
                                qubit_operator_sparse)
 
 
