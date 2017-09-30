@@ -15,7 +15,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from openfermion.utils._meanfield import meanfield_dwave
+from openfermion.utils import meanfield_dwave
 
 
 class MeanfieldDwaveTest(unittest.TestCase):
