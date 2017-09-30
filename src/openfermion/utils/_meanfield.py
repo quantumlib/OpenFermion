@@ -10,7 +10,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""This module constructions Hamiltonians for the BCS mean-field d-wave model.
+"""This module contains constructions for mean-field Hamiltonian models.
+
+The mean-field d-wave model has the form
 
 H = - tunneling sum_{<i,j>} sum_sigma (a^dagger_{i, sigma} a_{j, sigma}
   + a^dagger_{j, sigma} a_{i, sigma})
@@ -27,7 +29,7 @@ operators to qubit operator using the Jordan-Wigner transmation:
 a^dagger_j = 0.5 (X - i Y) prod_{k = 1}^{j - 1} Z_k
 a_j = 0.5 (X + i Y) prod_{k = 1}^{j - 1} Z_k
 
-These Hamiltonians live a square lattice which has dimensions of
+These Hamiltonians live on a square lattice which has dimensions of
 x_dimension by y_dimension. They can have periodic boundary conditions or not.
 """
 from __future__ import absolute_import
