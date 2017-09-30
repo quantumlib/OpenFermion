@@ -33,8 +33,7 @@ x_dimension by y_dimension. They can have periodic boundary conditions or not.
 from __future__ import absolute_import
 
 from openfermion.ops import (FermionOperator,
-                             hermitian_conjugated,
-                             number_operator)
+                             hermitian_conjugated)
 
 
 # Function to return up-orbital index given orbital index.
