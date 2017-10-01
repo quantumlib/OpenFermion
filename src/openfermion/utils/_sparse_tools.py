@@ -25,7 +25,7 @@ import scipy.sparse.linalg
 
 from openfermion.config import *
 from openfermion.ops import (FermionOperator, hermitian_conjugated,
-                             normal_ordered, QubitOperator)
+                             normal_ordered, QubitOperator, number_operator)
 from openfermion.utils import fourier_transform, Grid
 from openfermion.utils._jellium import (momentum_vector, position_vector,
                                         grid_indices)
@@ -260,10 +260,19 @@ def jw_get_ground_states_by_particle_number(sparse_operator):
         eigenstates: A list of lists of ground eigenstates with fixed particle number.
         nums: The list of particle numbers.
     """
+    # Check if operator is Hermitian
     if not is_hermitian(sparse_operator):
         raise ValueError('sparse_operator must be Hermitian.')
     
     n_qubits = int(numpy.log2(sparse_operator.shape[0]))
+
+    # Check if operator conserves particle number
+    sparse_num_op = jordan_wigner_sparse(number_operator(n_qubits))
+    commutator = sparse_num_op.dot(sparse_operator) - sparse_operator.dot(sparse_num_op)
+    if commutator.nnz:
+        maxval = max(map(abs, commutator.data))
+        if maxval > EQ_TOLERANCE:
+            raise ValueError('sparse_operator must conserve particle number.')
     
     eigenvalues = list()
     eigenstates = list()

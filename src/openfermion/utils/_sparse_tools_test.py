@@ -221,6 +221,16 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
                     self.assertAlmostEqual(0, discrepancy)
         return
 
+    def test_jw_get_ground_states_by_particle_number_hermitian_non_particle_conserving(self):
+        H = FermionOperator('0^ 1') + FermionOperator('1^ 0') + \
+            FermionOperator('1^ 2^') + FermionOperator('2 1')
+        jw_hamiltonian = jordan_wigner(H)
+        sparse_operator = get_sparse_operator(jw_hamiltonian)
+
+        with self.assertRaises(ValueError):
+            jw_get_ground_states_by_particle_number(sparse_operator)
+        return
+
     def test_get_ground_states_by_particle_number_nonhermitian(self):
         H = FermionOperator('0^ 1') + FermionOperator('2^ 1')
         jw_hamiltonian = jordan_wigner(H)
