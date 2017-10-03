@@ -15,12 +15,12 @@ import numpy
 import os
 import unittest
 
-from _equality_constraint_projection import (apply_constraints,
-                                             constraint_matrix,
-                                             linearize_term,
-                                             operator_to_vector,
-                                             unlinearize_term,
-                                             vector_to_operator)
+from ._equality_constraint_projection import (apply_constraints,
+                                              constraint_matrix,
+                                              linearize_term,
+                                              operator_to_vector,
+                                              unlinearize_term,
+                                              vector_to_operator)
 
 from openfermion.config import THIS_DIRECTORY
 from openfermion.transforms import get_fermion_operator, get_sparse_operator
