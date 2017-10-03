@@ -43,9 +43,6 @@ from ._plane_wave_hamiltonian import (dual_basis_external_potential,
                                       jordan_wigner_dual_basis_hamiltonian,
                                       wigner_seitz_length_scale)
 
-from ._rdm_equality_constraints import (one_body_fermion_constraints,
-                                        two_body_fermion_constraints)
-
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,
                             get_density_matrix,

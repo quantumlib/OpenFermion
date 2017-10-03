@@ -16,9 +16,9 @@ import os
 
 from openfermion.config import THIS_DIRECTORY
 from openfermion.transforms import get_interaction_operator
-from openfermion.utils import (MolecularData,
-                               one_body_fermion_constraints,
-                               two_body_fermion_constraints)
+from openfermion.measurements import (one_body_fermion_constraints,
+                                      two_body_fermion_constraints)
+from openfermion.utils import MolecularData
 
 
 class FermionConstraintsTest(unittest.TestCase):
