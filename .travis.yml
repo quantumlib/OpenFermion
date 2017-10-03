@@ -40,7 +40,6 @@ install:
   - pip$PY install -r requirements.txt
   - pip$PY install pytest-cov
   - pip$PY install coveralls
-  - pip$PY install glpk
 
 # command to run tests
 script: export OMP_NUM_THREADS=1 && pytest src/openfermion --cov src/openfermion
