@@ -27,7 +27,7 @@ change directory to the top level folder and run:
 
   python -m pip install -e .
 
-Alternatively, if using OpenFermion as a library, one can install the last official PyPI release with
+Alternatively, if using OpenFermion as a library, one can install the last official PyPI release with:
 
 .. code-block:: bash
 
