@@ -205,11 +205,11 @@ class GroundStateTest(unittest.TestCase):
     def test_get_ground_state_hermitian(self):
         ground = get_ground_state(get_sparse_operator(
             QubitOperator('Y0 X1') + QubitOperator('Z0 Z1')))
-        expected_state = csc_matrix(([1j, 1], ([1, 2], [0, 0])),
+        expected_state = csc_matrix(([1.j, 1.], ([1, 2], [0, 0])),
                                     shape=(4, 1)).A
         expected_state /= numpy.sqrt(2.0)
 
-        self.assertAlmostEqual(ground[0], -2)
+        self.assertAlmostEqual(ground[0], -2.)
         self.assertAlmostEqual(
             numpy.absolute(expected_state.T.dot(ground[1].A))[0, 0], 1.0)
 
