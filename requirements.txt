@@ -4,4 +4,3 @@ pytest>=3.0
 h5py
 future
 networkx
-cvxopt
