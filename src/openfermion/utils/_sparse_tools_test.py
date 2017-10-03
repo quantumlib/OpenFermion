@@ -207,7 +207,7 @@ class GroundStateTest(unittest.TestCase):
             QubitOperator('Y0 X1') + QubitOperator('Z0 Z1')))
         expected_state = csc_matrix(([1.j, 1.], ([1, 2], [0, 0])),
                                     shape=(4, 1)).A
-        expected_state /= numpy.sqrt(2.0)
+        expected_state = expected_state / numpy.sqrt(2.0)
 
         self.assertAlmostEqual(ground[0], -2.)
         self.assertAlmostEqual(
