@@ -4,7 +4,7 @@ OpenFermion
 .. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=master
     :target: https://travis-ci.org/quantumlib/OpenFermion
 
-.. image:: https://coveralls.io/repos/github/quantumlib/OpenFermion/badge.svg
+.. image:: https://coveralls.io/repos/github/quantumlib/OpenFermion/badge.svg?branch=master
     :target: https://coveralls.io/github/quantumlib/OpenFermion
 
 .. image:: https://readthedocs.org/projects/openfermion/badge/?version=latest
