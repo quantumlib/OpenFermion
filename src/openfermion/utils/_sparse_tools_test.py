@@ -215,7 +215,7 @@ class GroundStateTest(unittest.TestCase):
 
     def test_get_ground_state_nonhermitian(self):
         with self.assertRaises(ValueError):
-            get_ground_state(get_sparse_operator(1.j * QubitOperator('X1')))
+            get_ground_state(get_sparse_operator(1j * QubitOperator('X1')))
 
 
 class ExpectationTest(unittest.TestCase):
