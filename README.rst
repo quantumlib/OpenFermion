@@ -1,7 +1,7 @@
 OpenFermion
 ===========
 
-.. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=develop
+.. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=master
     :target: https://travis-ci.org/quantumlib/OpenFermion
 
 .. image:: https://coveralls.io/repos/github/quantumlib/OpenFermion/badge.svg
