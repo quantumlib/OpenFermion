@@ -59,4 +59,3 @@ from ._trotter_error import error_bound, error_operator
 
 # Imports out of alphabetical order to avoid circular dependancy.
 from ._jellium_hf_state import hartree_fock_state_jellium
-
