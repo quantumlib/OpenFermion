@@ -25,7 +25,7 @@ To start using OpenFermion, clone this git repo, change directory to the top lev
 
   python -m pip install -e .
 
-Alternatively, one can install using pip with the command
+Alternatively, one can install the last major release using pip with the command
 
 .. code-block:: bash
 

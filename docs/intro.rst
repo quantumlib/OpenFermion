@@ -61,4 +61,4 @@ Further examples can be found in the docs (`Examples` in the panel on the left) 
 Plugins
 -------
 
-In order to generate molecular hamiltonians in Gaussian basis sets and perform other complicated electronic structure calculations, one can install plugins. We currently support Psi4 (plugin `here <www.openfermion.org>`__, recommended) and PySCF (plugin `here <www.openfermion.org>`__).
+In order to simulate and compile quantum circuits or perform other complicated electronic structure calculations, one can install OpenFermion plugins. We currently support a circuit simulation plugin for `ProjectQ <https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ (recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__.
