@@ -41,6 +41,9 @@ install:
   - pip$PY install pytest-cov
   - pip$PY install coveralls
 
+# command to install openfermion.
+script: python -m pip install -e .
+
 # command to run tests
 script: export OMP_NUM_THREADS=1 && pytest src/openfermion --cov src/openfermion
 
