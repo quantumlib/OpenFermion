@@ -14,6 +14,7 @@
 import nbformat
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -30,6 +31,11 @@ class ExampleTest(unittest.TestCase):
 
     def test_demo(self):
         """Execute a notebook via nbconvert and collect output."""
+
+        # Determine if python 2 or 3 is being used.
+        version = sys.version_info[0]
+
+        # Run ipython notebook.
         with tempfile.NamedTemporaryFile(suffix='.ipynb') as output_file:
             args = ['jupyter',
                     'nbconvert',
@@ -37,12 +43,15 @@ class ExampleTest(unittest.TestCase):
                     'notebook',
                     '--execute',
                     '--ExecutePreprocessor.timeout=60',
+                    '--ExecutePreprocessor.kernel_name=python%i' % version,
                     '--output',
                     output_file.name,
                     self.path]
             subprocess.check_call(args)
             output_file.seek(0)
             nb = nbformat.read(output_file, nbformat.current_nbformat)
+
+        # Parse output and make sure there are no errors.
         errors = [output for cell in nb.cells if "outputs" in cell for
                   output in cell["outputs"] if
                   output.output_type == "error"]
