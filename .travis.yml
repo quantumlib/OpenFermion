@@ -39,6 +39,7 @@ install:
   - pip$PY install --only-binary=numpy
   - pip$PY install --only-binary=scipy
   - pip$PY install --only-binary=matplotlib
+  - pip$PY install --only-binary=jupyter
   - pip$PY install -r requirements.txt
   - pip$PY install pytest
   - pip$PY install pytest-cov
