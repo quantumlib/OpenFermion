@@ -3,4 +3,6 @@ scipy>=0.18.0
 cvxopt
 future
 h5py
+jupyter
 networkx
+matplotlib
