@@ -30,7 +30,6 @@ class ExampleTest(unittest.TestCase):
 
     def test_demo(self):
         """Execute a notebook via nbconvert and collect output."""
-        os.chdir(self.directory)
         with tempfile.NamedTemporaryFile(suffix='.ipynb') as output_file:
             args = ['jupyter',
                     'nbconvert',
