@@ -33,7 +33,11 @@ class ExampleTest(unittest.TestCase):
         """Execute a notebook via nbconvert and collect output."""
 
         # Determine if python 2 or 3 is being used.
-        version = sys.version_info[0]
+        major_version, minor_version = sys.version_info[:2]
+        if major_version == 2:
+            version = str(2)
+        else:
+            version = '{}.{}'.format(major_version, minor_version)
 
         # Run ipython notebook.
         with tempfile.NamedTemporaryFile(suffix='.ipynb') as output_file:
@@ -43,7 +47,8 @@ class ExampleTest(unittest.TestCase):
                     'notebook',
                     '--execute',
                     '--ExecutePreprocessor.timeout=60',
-                    '--ExecutePreprocessor.kernel_name=python%i' % version,
+                    '--ExecutePreprocessor.kernel_name=python{}'.format(
+                        version),
                     '--output',
                     output_file.name,
                     self.path]
