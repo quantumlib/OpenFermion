@@ -24,13 +24,12 @@ class ExampleTest(unittest.TestCase):
 
     def setUp(self):
         string_length = len(THIS_DIRECTORY)
-        self.directory = THIS_DIRECTORY[:(string_length - 15)] + 'examples/'
-        self.demo_name = 'openfermion_demo.ipynb'
-        self.path = self.directory + self.demo_name
+        directory = THIS_DIRECTORY[:(string_length - 15)] + 'examples/'
+        demo_name = 'openfermion_demo.ipynb'
+        self.path = directory + demo_name
 
     def test_demo(self):
         """Execute a notebook via nbconvert and collect output."""
-        os.chdir('../..')
         with tempfile.NamedTemporaryFile(suffix='.ipynb') as output_file:
             args = ['jupyter',
                     'nbconvert',
