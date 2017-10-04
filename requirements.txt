@@ -4,5 +4,6 @@ pytest>=3.0
 cvxopt
 future
 h5py
+nbconvert
 nbformat
 networkx
