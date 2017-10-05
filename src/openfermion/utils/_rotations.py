@@ -17,6 +17,41 @@ import numpy
 
 from openfermion.config import *
 
+def trivial_givens_decomposition(columns):
+    m, n = columns.shape
+
+    givens_rotations = []
+
+    if m > n:
+        num_columns_to_zero_out = n
+    else:
+        num_columns_to_zero_out = n - 1
+
+    for k in range(num_columns_to_zero_out):
+        # Zero out entries in column k
+        for l in reversed(range(k + 1, m)):
+            # Zero out entries in row l
+            f, g = columns[(l - 1, l), k]
+            # We want to rotate f and g to zero out g
+            f2 = abs(f) ** 2
+            g2 = abs(g) ** 2
+            denom = numpy.sqrt(f2 + g2)
+
+            c = abs(f) / denom
+            s = (f / abs(f)) * g.conjugate() / denom
+
+            givens_rotations.append((l, k, numpy.arccos(c), numpy.angle(s)))
+
+            # Apply givens rotation to matrix
+            old_upper_row = numpy.copy(columns[l - 1])
+            old_lower_row = numpy.copy(columns[l])
+            columns[l - 1] = c * old_upper_row + s * old_lower_row
+            columns[l] = -s.conjugate() * old_upper_row + c * old_lower_row
+
+    diagonal = columns.diagonal()
+
+    return givens_rotations, diagonal, columns
+
 def givens_decomposition(unitary_columns):
     """Decompose a matrix into a sequence of Givens rotations.
 
@@ -27,15 +62,20 @@ def givens_decomposition(unitary_columns):
 
     where G_1, ..., G_k are complex Givens rotations (invertible m x m matrices)
     and D is an m x n matrix with the first n rows forming a diagonal matrix and
-    the rest of the rows being zero. This is related to the QR decomposition.
+    the rest of the rows being zero. This gives a QR decomposition of U.
+    We describe a complex Givens rotation by the coordinates (i, j) that it
+    acts on, plus two angles (theta, phi) that characterize the corresponding
+    2x2 unitary matrix
+        [ cos(theta)                e^{i phi} sin(theta) ]
+        [ -e^{-i phi} sin(theta)    cos(theta)           ]
 
     Args:
         unitary_columns: A numpy array or matrix with orthonormal columns.
     
     Returns:
-        givens_rotations: A list of tuples of the form (i, j, z), which
+        givens_rotations: A list of tuples of the form (i, j, theta, phi), which
             represents a Givens rotation of the coordinates i and j
-            by complex angle z. The first element of the list represents G_1.
+            by angles theta and phi. The first element of the list represents G_1.
         diagonal: A list of the nonzero entries of D.
     """
     return
