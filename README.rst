@@ -40,24 +40,6 @@ Plugins
 
 In order to simulate and compile quantum circuits or perform other complicated electronic structure calculations, one can install OpenFermion plugins. We currently support a circuit simulation plugin for `ProjectQ <https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ (recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__.
 
-Authors
--------
-
-`Ryan Babbush <http://ryanbabbush.com>`__ (Google),
-`Jarrod McClean <http://jarrodmcclean.com>`__ (Google),
-`Ian Kivlichan <http://aspuru.chem.harvard.edu/ian-kivlichan/>`__ (Harvard),
-Damian Steiger (ETH Zurich),
-Wei Sun (Google),
-Craig Gidney (Google),
-Thomas Haner (ETH Zurich),
-Hannah Sim (Harvard),
-Vojtech Havlicek (Oxford),
-Kanav Setia (Dartmouth),
-Nicholas Rubin (Rigetti),
-Matthew Neeley (Google) and
-Dave Bacon (Google).
-
-
 How to contribute
 -----------------
 
@@ -80,6 +62,23 @@ guide. Just have a look at our code for clues. We mostly follow pep8 and use
 the pep8 linter to check for it. Code should always come with documentation,
 which is generated automatically and can be found
 `here <http://openfermion.readthedocs.io/en/latest/openfermion.html>`_.
+
+Authors
+-------
+
+`Ryan Babbush <http://ryanbabbush.com>`__ (Google),
+`Jarrod McClean <http://jarrodmcclean.com>`__ (Google),
+`Ian Kivlichan <http://aspuru.chem.harvard.edu/ian-kivlichan/>`__ (Harvard),
+Damian Steiger (ETH Zurich),
+Wei Sun (Google),
+Craig Gidney (Google),
+Thomas Haner (ETH Zurich),
+Hannah Sim (Harvard),
+Vojtech Havlicek (Oxford),
+Kanav Setia (Dartmouth),
+Nicholas Rubin (Rigetti),
+Matthew Neeley (Google) and
+Dave Bacon (Google).
 
 Questions?
 ----------
