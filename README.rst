@@ -58,9 +58,10 @@ more information on using pull requests.
 Furthermore, please make sure your new code comes with extensive tests!
 We use automatic testing to make sure all pull requests pass tests and do not
 decrease overall test coverage by too much. Make sure you adhere to our style
-guide. Just have a look at our code for clues. We mostly follow pep8 and use
-the pep8 linter to check for it. Code should always come with documentation,
-which is generated automatically and can be found
+guide. Just have a look at our code for clues. We mostly follow
+`PEP 8 <https://www.python.org/dev/peps/pep-0008/>`_ and use
+the corresponding `linter <https://pypi.python.org/pypi/pep8>`_ to check for it.
+Code should always come with documentation, which is generated automatically and can be found
 `here <http://openfermion.readthedocs.io/en/latest/openfermion.html>`_.
 
 Authors
