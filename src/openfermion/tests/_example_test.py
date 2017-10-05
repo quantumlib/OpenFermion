@@ -12,6 +12,7 @@
 
 """Tests the code in the examples directory of the git repo."""
 import nbformat
+import numpy
 import os
 import subprocess
 import sys
@@ -25,19 +26,16 @@ class ExampleTest(unittest.TestCase):
 
     def setUp(self):
         string_length = len(THIS_DIRECTORY)
-        directory = THIS_DIRECTORY[:(string_length - 15)] + 'examples/'
-        demo_name = 'openfermion_demo.ipynb'
-        self.path = directory + demo_name
+        self.directory = THIS_DIRECTORY[:(string_length - 15)] + 'examples/'
+        self.demo_name = 'openfermion_demo.ipynb'
 
     def test_demo(self):
-        """Execute a notebook via nbconvert and collect output."""
-
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:
             version = str(major_version)
 
-            # Run ipython notebook.
+            # Run ipython notebook via nbconvert and collect output.
             with tempfile.NamedTemporaryFile(suffix='.ipynb') as output_file:
                 args = ['jupyter',
                         'nbconvert',
@@ -49,7 +47,7 @@ class ExampleTest(unittest.TestCase):
                             version),
                         '--output',
                         output_file.name,
-                        self.path]
+                        self.directory + self.demo_name]
                 subprocess.check_call(args)
                 output_file.seek(0)
                 nb = nbformat.read(output_file, nbformat.current_nbformat)
@@ -61,3 +59,32 @@ class ExampleTest(unittest.TestCase):
         else:
             errors = []
         self.assertEqual(errors, [])
+
+    def test_performance_benchmarks(self):
+
+        # Import performance benchmarks and seed random number generator.
+        sys.path.append(self.directory)
+        from performance_benchmarks import (
+            benchmark_fermion_math_and_normal_order,
+            benchmark_jordan_wigner_sparse,
+            benchmark_molecular_operator_jordan_wigner)
+        numpy.random.seed(1)
+
+        # Run InteractionOperator.jordan_wigner_transform() benchmark.
+        n_qubits = 10
+        runtime = benchmark_molecular_operator_jordan_wigner(n_qubits)
+        self.assertLess(runtime, 30.)
+
+        # Run benchmark on FermionOperator math and normal-ordering.
+        n_qubits = 10
+        term_length = 5
+        power = 5
+        runtime_math, runtime_normal = benchmark_fermion_math_and_normal_order(
+            n_qubits, term_length, power)
+        self.assertLess(runtime_math, 5.)
+        self.assertLess(runtime_normal, 5.)
+
+        # Run FermionOperator.jordan_wigner_sparse() benchmark.
+        n_qubits = 10
+        runtime = benchmark_jordan_wigner_sparse(n_qubits)
+        self.assertLess(runtime, 30.)
