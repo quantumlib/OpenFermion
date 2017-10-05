@@ -18,6 +18,31 @@ import numpy
 from openfermion.config import *
 
 def trivial_givens_decomposition(columns):
+    """Decompose a matrix into a sequence of Givens rotations.
+
+    The input is an m x n matrix U with m >= n.
+    U can be decomposed as follows:
+
+        G_k * ... * G_1 * U = R
+
+    where G_1, ..., G_k are complex Givens rotations (invertible m x m matrices)
+    and R is upper triangular.
+    We describe a complex Givens rotation by the coordinates (i, j) that it
+    acts on, plus two angles (theta, phi) that characterize the corresponding
+    2x2 unitary matrix
+        [ cos(theta)                e^{i phi} sin(theta) ]
+        [ -e^{-i phi} sin(theta)    cos(theta)           ]
+
+    Args:
+        columns: A numpy array or matrix with orthonormal columns.
+    
+    Returns:
+        givens_rotations: A list of tuples of the form (i, j, theta, phi), which
+            represents a Givens rotation of the coordinates i and j
+            by angles theta and phi. The first element of the list represents G_1.
+        columns: the matrix R
+    """
+    columns = numpy.copy(columns)
     m, n = columns.shape
 
     givens_rotations = []
@@ -48,9 +73,7 @@ def trivial_givens_decomposition(columns):
             columns[l - 1] = c * old_upper_row + s * old_lower_row
             columns[l] = -s.conjugate() * old_upper_row + c * old_lower_row
 
-    diagonal = columns.diagonal()
-
-    return givens_rotations, diagonal, columns
+    return givens_rotations, columns
 
 def givens_decomposition(unitary_columns):
     """Decompose a matrix into a sequence of Givens rotations.
