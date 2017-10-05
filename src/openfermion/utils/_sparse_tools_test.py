@@ -208,17 +208,17 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
         jw_hamiltonian = jordan_wigner(H)
         sparse_operator = get_sparse_operator(jw_hamiltonian)
 
-        values, states, nums = jw_get_ground_states_by_particle_number(sparse_operator)
-        for i in range(len(nums)):
-            ground_energy = values[i]
-            ground_states = states[i]
-            for j in range(len(ground_states)):
-                v = ground_states[j]
-                Hv = sparse_operator.dot(v)
-                difference = Hv - ground_energy * v
-                if difference.nnz:
-                    discrepancy = max(map(abs, difference.data))
-                    self.assertAlmostEqual(0, discrepancy)
+        particle_number = 2
+
+        energy, states = jw_get_ground_states_by_particle_number(sparse_operator,
+                                                                       particle_number)
+        for i in range(len(states)):
+            v = states[i]
+            Hv = sparse_operator.dot(v)
+            difference = Hv - energy * v
+            if difference.nnz:
+                discrepancy = max(map(abs, difference.data))
+                self.assertAlmostEqual(0, discrepancy)
         return
 
     def test_jw_get_ground_states_by_particle_number_hermitian_non_particle_conserving(self):

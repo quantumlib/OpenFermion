@@ -250,15 +250,16 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
     return operator[numpy.ix_(select_indices, select_indices)]
 
 
-def jw_get_ground_states_by_particle_number(sparse_operator):
-    """For a Jordan-Wigner encoded operator, compute the lowest eigenvalue and eigenstate
-    for each possible particle number. The operator must be particle-number-conserving.
+def jw_get_ground_states_by_particle_number(sparse_operator, particle_number):
+    """For a Jordan-Wigner encoded operator, compute the lowest eigenvalue and eigenstates
+    at a particular particle number. The operator must be particle-number-conserving.
     
     Returns:
-        eigenvalues: A list containing the lowest eigenvalue of sparse_operator
-            within each eigenspace of the particle number operator.
-        eigenstates: A list of lists of ground eigenstates with fixed particle number.
-        nums: The list of particle numbers.
+        ground_energy: The lowest eigenvalue of sparse_operator within the eigenspace
+        of the number operator corresponding to particle_number.
+        ground_states: A list of the corresponding eigenstates.
+
+    Warning: The running time of this method is exponential in the number of qubits.
     """
     # Check if operator is Hermitian
     if not is_hermitian(sparse_operator):
@@ -274,36 +275,26 @@ def jw_get_ground_states_by_particle_number(sparse_operator):
         if maxval > EQ_TOLERANCE:
             raise ValueError('sparse_operator must conserve particle number.')
     
-    eigenvalues = list()
-    eigenstates = list()
-    particle_nums = list()
+    restricted_operator = jw_number_restrict_operator(sparse_operator, particle_number, n_qubits)
+    dense_operator = restricted_operator.toarray()
+    values, vectors = numpy.linalg.eigh(dense_operator)
+
+    ground_energy = sorted(values)[0]
+    ground_states = list()
+    # Get the indices of eigenvectors corresponding to the ground energy
+    ground_state_indices = numpy.where(abs(values - ground_energy) < EQ_TOLERANCE)
     
-    # Particle number ranges from 0 to n_qubits
-    for n_electrons in range(n_qubits + 1):
-        restricted_operator = jw_number_restrict_operator(sparse_operator, n_electrons, n_qubits)
-        dense_operator = restricted_operator.toarray()
-        values, vectors = numpy.linalg.eigh(dense_operator)
-        ground_energy = sorted(values)[0]
-        # Get the indices of eigenvectors corresponding to the ground energy
-        ground_state_indices = numpy.where(abs(values - ground_energy) < EQ_TOLERANCE)
+    for i in ground_state_indices[0]:
+        restricted_ground_state = vectors[:, i]
+        # Expand this ground state to the whole vector space
+        number_indices = jw_number_indices(particle_number, n_qubits)
+        expanded_ground_state = scipy.sparse.csc_matrix(
+            (restricted_ground_state.flatten(),
+             (number_indices, numpy.zeros(len(number_indices), dtype=int))),
+            shape=(2 ** n_qubits, 1))
+        ground_states.append(expanded_ground_state)
         
-        expanded_ground_states = list()
-        for i in ground_state_indices[0]:
-            restricted_ground_state = vectors[:, i]
-            # Expand this ground state to the whole vector space
-            number_indices = jw_number_indices(n_electrons, n_qubits)
-            expanded_ground_state = scipy.sparse.csc_matrix(
-                (restricted_ground_state.flatten(),
-                 (number_indices, numpy.zeros(len(number_indices), dtype=int))),
-                shape=(2 ** n_qubits, 1))
-            
-            expanded_ground_states.append(expanded_ground_state)
-            
-        eigenvalues.append(ground_energy)
-        eigenstates.append(expanded_ground_states)
-        particle_nums.append(n_electrons)
-    
-    return eigenvalues, eigenstates, particle_nums
+    return ground_energy, ground_states
 
 
 def get_density_matrix(states, probabilities):
