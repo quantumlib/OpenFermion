@@ -62,8 +62,7 @@ How to contribute
 -----------------
 
 We'd love to accept your contributions and patches to OpenFermion.
-There are a few small guidelines you need to follow. 
-
+There are a few small guidelines you need to follow.
 Contributions to OpenFermion must be accompanied by a Contributor License Agreement.
 You (or your employer) retain the copyright to your contribution,
 this simply gives us permission to use and redistribute your contributions as part of the project.
