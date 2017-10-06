@@ -88,4 +88,5 @@ If you have any other questions, please contact help@openfermion.org.
 
 Disclaimer
 ----------
-Copyright 2017 The OpenFermion Developers. This is not an official Google product.
+Copyright 2017 The OpenFermion Developers.
+This is not an official Google product.
