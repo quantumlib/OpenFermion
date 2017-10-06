@@ -42,7 +42,7 @@ class ExampleTest(unittest.TestCase):
                         '--to',
                         'notebook',
                         '--execute',
-                        '--ExecutePreprocessor.timeout=60',
+                        '--ExecutePreprocessor.timeout=600',
                         '--ExecutePreprocessor.kernel_name=python{}'.format(
                             version),
                         '--output',
@@ -73,7 +73,7 @@ class ExampleTest(unittest.TestCase):
         # Run InteractionOperator.jordan_wigner_transform() benchmark.
         n_qubits = 10
         runtime = benchmark_molecular_operator_jordan_wigner(n_qubits)
-        self.assertLess(runtime, 30.)
+        self.assertLess(runtime, 60.)
 
         # Run benchmark on FermionOperator math and normal-ordering.
         n_qubits = 10
@@ -81,10 +81,10 @@ class ExampleTest(unittest.TestCase):
         power = 5
         runtime_math, runtime_normal = benchmark_fermion_math_and_normal_order(
             n_qubits, term_length, power)
-        self.assertLess(runtime_math, 5.)
-        self.assertLess(runtime_normal, 5.)
+        self.assertLess(runtime_math, 15.)
+        self.assertLess(runtime_normal, 15.)
 
         # Run FermionOperator.jordan_wigner_sparse() benchmark.
         n_qubits = 10
         runtime = benchmark_jordan_wigner_sparse(n_qubits)
-        self.assertLess(runtime, 30.)
+        self.assertLess(runtime, 60.)
