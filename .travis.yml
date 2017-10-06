@@ -37,7 +37,6 @@ before_install:
 install:
   - if [ "${PYTHON:0:1}" = "3" ]; then export PY=3; fi
   - pip$PY install --only-binary=numpy,scipy numpy scipy
-  - pip$PY install pybind11
   - pip$PY install -r requirements.txt
   - pip$PY install pytest-cov
   - pip$PY install coveralls

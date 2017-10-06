@@ -1,10 +1,10 @@
 OpenFermion
 ===========
 
-.. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=develop
+.. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=master
     :target: https://travis-ci.org/quantumlib/OpenFermion
 
-.. image:: https://coveralls.io/repos/github/quantumlib/OpenFermion/badge.svg
+.. image:: https://coveralls.io/repos/github/quantumlib/OpenFermion/badge.svg?branch=master
     :target: https://coveralls.io/github/quantumlib/OpenFermion
 
 .. image:: https://readthedocs.org/projects/openfermion/badge/?version=latest
@@ -19,17 +19,19 @@ OpenFermion is an open source effort for compiling and analyzing quantum algorit
 Getting started
 ---------------
 
-To start using OpenFermion, clone this git repo, change directory to the top level folder and then run:
+Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
+To install the latest development version of OpenFermion, clone `this <http://github.com/quantumlib/OpenFermion>`__ git repo,
+change directory to the top level folder and run:
 
 .. code-block:: bash
 
   python -m pip install -e .
 
-Alternatively, one can install using pip with the command
+Alternatively, if using OpenFermion as a library, one can install the last official PyPI release with:
 
 .. code-block:: bash
 
-  python -m pip install openfermion
+  python -m pip install --pre --user openfermion
 
 For further information about how to get started please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the the ipython notebook demo in the examples folder of this repository as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
