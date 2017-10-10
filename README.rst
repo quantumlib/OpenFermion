@@ -33,6 +33,12 @@ Alternatively, if using OpenFermion as a library, one can install the last offic
 
   python -m pip install --pre --user openfermion
 
+One should then install the OpenFermion plugins (see below).
+For a particularly robust method of installing OpenFermion together with select
+plugins, we have provided a Docker image (basically a virtual environment
+configured with the OpenFermion software installed correctly).
+See the docker folder of this repository for instructions.
+
 For further information about how to get started please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the the ipython notebook demo in the examples folder of this repository as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
 Plugins
@@ -75,6 +81,7 @@ Wei Sun (Google),
 Craig Gidney (Google),
 Thomas Haner (ETH Zurich),
 Hannah Sim (Harvard),
+Yudong Cao (Harvard)
 Vojtech Havlicek (Oxford),
 Kanav Setia (Dartmouth),
 Nicholas Rubin (Rigetti),
