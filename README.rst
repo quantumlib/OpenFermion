@@ -45,6 +45,8 @@ Plugins
 -------
 
 In order to simulate and compile quantum circuits or perform other complicated electronic structure calculations, one can install OpenFermion plugins. We currently support a circuit simulation plugin for `ProjectQ <https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ (recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__.
+We also provide a Docker image with all three of these plugins pre-installed in
+the docker folder of this repository.
 
 How to contribute
 -----------------
