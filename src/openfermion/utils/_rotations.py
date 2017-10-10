@@ -34,7 +34,7 @@ def trivial_givens_decomposition(columns):
         [ -e^{-i phi} sin(theta)    cos(theta)           ]
 
     Args:
-        columns: A numpy array or matrix with orthonormal columns.
+        columns: A numpy array or matrix.
     
     Returns:
         givens_rotations: A list of tuples of the form (i, j, theta, phi), which
@@ -75,30 +75,85 @@ def trivial_givens_decomposition(columns):
 
     return givens_rotations, columns
 
-def givens_decomposition(unitary_columns):
+def givens_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations.
 
-    The input is an m x n matrix U with m >= n. The columns of U are orthonormal.
+    The input is an m x n matrix U with m <= n. The rows of U are orthonormal.
     U can be decomposed as follows:
 
-        G_k * ... * G_1 * U = D
+        U * G_1 * ... * G_k = D
 
-    where G_1, ..., G_k are complex Givens rotations (invertible m x m matrices)
-    and D is an m x n matrix with the first n rows forming a diagonal matrix and
-    the rest of the rows being zero. This gives a QR decomposition of U.
-    We describe a complex Givens rotation by the coordinates (i, j) that it
+    where G_1, ..., G_k are complex Givens rotations, which are invertible n x n matrices,
+    and D is an m x n matrix with the first m columns forming a diagonal matrix and
+    the rest of the columns being zero. This gives an RQ decomposition of U.
+    We describe a complex Givens rotation by the column indices (i, j) that it
     acts on, plus two angles (theta, phi) that characterize the corresponding
     2x2 unitary matrix
-        [ cos(theta)                e^{i phi} sin(theta) ]
-        [ -e^{-i phi} sin(theta)    cos(theta)           ]
+        [ cos(theta)    -e^{i phi} sin(theta) ]
+        [ sin(theta)     e^{i phi} cos(theta) ]
 
     Args:
-        unitary_columns: A numpy array or matrix with orthonormal columns.
-    
+        rows: A numpy array or matrix with orthonormal rows.
     Returns:
-        givens_rotations: A list of tuples of the form (i, j, theta, phi), which
-            represents a Givens rotation of the coordinates i and j
-            by angles theta and phi. The first element of the list represents G_1.
+        givens_rotations: A list of tuples of objects describing Givens rotations.
+            The list looks something like [(G1, ), (G2, G3), ... ].
+            The Givens rotations within a tuple can be implemented in parallel.
+            The description of a Givens rotation is itself a tuple of the form
+            (i, j, theta, phi), which represents a Givens rotation of columns
+            i and j by angles theta and phi.
         diagonal: A list of the nonzero entries of D.
     """
+    rows = numpy.copy(unitary_rows)
+    m, n = rows.shape
+
+    givens_rotations = []
+
+    if m < n:
+        num_rows_to_zero_out = m
+    else:
+        num_rows_to_zero_out = m - 1
+
     return
+
+def givens_matrix_elements(a, b):
+    """Compute the matrix elements of the Givens rotation that zeroes out one of two
+    column entries.
+
+    Returns a matrix G such that
+
+        [a  b] * G = [r  0]
+
+    where r is a complex number.
+
+    Args:
+        a: A complex number representing the left-hand column entry
+        b: A complex number representing the right-hand column entry
+    Returns:
+        G: A 2 x 2 numpy array representing the matrix G. The numbers in the
+            first row of G are real.
+    """
+    # Handle case that b is zero
+    if abs(b) < EQ_TOLERANCE:
+        c = 1.
+        s = 0.
+        phase = 1.
+    # Handle case that a is zero and b is nonzero
+    elif abs(a) < EQ_TOLERANCE:
+        c = 0.
+        s = 1.
+        sign_b = b / abs(b)
+        phase = -sign_b.conjugate()
+    # Handle case that a and b are both nonzero
+    else:
+        denominator = numpy.sqrt(abs(a) ** 2 + abs(b) ** 2)
+
+        c = abs(a) / denominator
+        s = abs(b) / denominator
+        sign_a = a / abs(a)
+        sign_b = b / abs(b)
+        phase = -sign_a * sign_b.conjugate()
+
+    # Construct matrix and return
+    G = numpy.array([[c, s],
+                     [-phase * s, phase * c]], dtype=complex)
+    return G
