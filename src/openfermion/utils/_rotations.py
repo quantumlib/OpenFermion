@@ -152,7 +152,6 @@ def givens_decomposition(unitary_rows):
 
             parallel_rotations = list()
             for i, j in indices_to_zero_out:
-                print(i, j)
                 # Compute the Givens rotation to zero out the (i, j) element
                 a = rows[i, j - 1].conj()
                 b = rows[i, j].conj()
@@ -162,19 +161,16 @@ def givens_decomposition(unitary_rows):
                 # Add the parameters to the list
                 theta = numpy.arccos(numpy.real(G[0, 0]))
                 phi = numpy.angle(G[1, 1])
-                parallel_rotations.append((i, j, theta, phi))
+                parallel_rotations.append((j - 1 , j, theta, phi))
 
                 # Update the matrix
                 expanded_G = numpy.eye(n, dtype=complex)
                 expanded_G[([j - 1], [j]), (j - 1, j)] = G
                 rows = rows.dot(expanded_G.T.conj())
-            print(rows)
-            print()
 
             # Append the current list of parallel rotations to the list
-            givens_rotations.append(parallel_rotations)
+            givens_rotations.append(tuple(parallel_rotations))
 
-    print(rows)
     diagonal = rows.diagonal()
 
     return V, givens_rotations, diagonal
