@@ -33,12 +33,20 @@ Alternatively, if using OpenFermion as a library, one can install the last offic
 
   python -m pip install --pre --user openfermion
 
+One should then install the OpenFermion plugins (see below).
+For a particularly robust method of installing OpenFermion together with select
+plugins, we have provided a Docker image (basically a virtual environment
+configured with the OpenFermion software installed correctly).
+See the docker folder of this repository for instructions.
+
 For further information about how to get started please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the the ipython notebook demo in the examples folder of this repository as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
 Plugins
 -------
 
 In order to simulate and compile quantum circuits or perform other complicated electronic structure calculations, one can install OpenFermion plugins. We currently support a circuit simulation plugin for `ProjectQ <https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ (recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__.
+We also provide a Docker image with all three of these plugins pre-installed in
+the docker folder of this repository.
 
 How to contribute
 -----------------
@@ -75,6 +83,7 @@ Wei Sun (Google),
 Craig Gidney (Google),
 Thomas Haner (ETH Zurich),
 Hannah Sim (Harvard),
+Yudong Cao (Harvard)
 Vojtech Havlicek (Oxford),
 Kanav Setia (Dartmouth),
 Nicholas Rubin (Rigetti),
