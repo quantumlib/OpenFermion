@@ -21,8 +21,288 @@ from openfermion.utils import givens_decomposition
 from openfermion.utils._givens_rotations import expand_two_by_two
 
 class GivensDecompositionTest(unittest.TestCase):
+
+    def test_bad_dimensions(self):
+        m, n = (3, 2)
+
+        # Obtain a random matrix of orthonormal rows
+        x = numpy.random.randn(m, m)
+        y = numpy.random.randn(m, m)
+        A = x + 1j*y
+        Q, R = qr(A)
+        Q = Q[:m, :n]
+
+        with self.assertRaises(ValueError):
+            V, givens_rotations, diagonal = givens_decomposition(Q)
+
+    def test_3_by_3(self):
+        m, n = (3, 3)
+        # Obtain a random matrix of orthonormal rows
+        x = numpy.random.randn(n, n)
+        y = numpy.random.randn(n, n)
+        A = x + 1j*y
+        Q, R = qr(A)
+        Q = Q[:m, :]
+
+        # Get Givens decomposition of U
+        V, givens_rotations, diagonal = givens_decomposition(Q)
+
+        # Compute U
+        U = numpy.eye(n, dtype=complex)
+        for parallel_set in givens_rotations:
+            combined_givens = numpy.eye(n)
+            for i, j, theta, phi in parallel_set:
+                c = numpy.cos(theta)
+                s = numpy.sin(theta)
+                phase = numpy.exp(1.j * phi)
+                G = numpy.array([[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                expanded_G = expand_two_by_two(G, i, j, n)
+                combined_givens = combined_givens.dot(expanded_G)
+            U = combined_givens.dot(U)
+
+        # Compute V * Q * U^\dagger
+        W = V.dot(Q.dot(U.T.conj()))
+
+        # Construct the diagonal matrix
+        D = numpy.zeros((m, n), dtype=complex)
+        D[numpy.diag_indices(m)] = diagonal
+
+        # Assert that W and D are the same
+        for i in range(m):
+            for j in range(n):
+                self.assertAlmostEqual(D[i, j], W[i, j])
+
+    def test_3_by_4(self):
+        m, n = (3, 4)
+        # Obtain a random matrix of orthonormal rows
+        x = numpy.random.randn(n, n)
+        y = numpy.random.randn(n, n)
+        A = x + 1j*y
+        Q, R = qr(A)
+        Q = Q[:m, :]
+
+        # Get Givens decomposition of U
+        V, givens_rotations, diagonal = givens_decomposition(Q)
+
+        # Compute U
+        U = numpy.eye(n, dtype=complex)
+        for parallel_set in givens_rotations:
+            combined_givens = numpy.eye(n)
+            for i, j, theta, phi in parallel_set:
+                c = numpy.cos(theta)
+                s = numpy.sin(theta)
+                phase = numpy.exp(1.j * phi)
+                G = numpy.array([[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                expanded_G = expand_two_by_two(G, i, j, n)
+                combined_givens = combined_givens.dot(expanded_G)
+            U = combined_givens.dot(U)
+
+        # Compute V * Q * U^\dagger
+        W = V.dot(Q.dot(U.T.conj()))
+
+        # Construct the diagonal matrix
+        D = numpy.zeros((m, n), dtype=complex)
+        D[numpy.diag_indices(m)] = diagonal
+
+        # Assert that W and D are the same
+        for i in range(m):
+            for j in range(n):
+                self.assertAlmostEqual(D[i, j], W[i, j])
+
+    def test_3_by_5(self):
+        m, n = (3, 5)
+        # Obtain a random matrix of orthonormal rows
+        x = numpy.random.randn(n, n)
+        y = numpy.random.randn(n, n)
+        A = x + 1j*y
+        Q, R = qr(A)
+        Q = Q[:m, :]
+
+        # Get Givens decomposition of U
+        V, givens_rotations, diagonal = givens_decomposition(Q)
+
+        # Compute U
+        U = numpy.eye(n, dtype=complex)
+        for parallel_set in givens_rotations:
+            combined_givens = numpy.eye(n)
+            for i, j, theta, phi in parallel_set:
+                c = numpy.cos(theta)
+                s = numpy.sin(theta)
+                phase = numpy.exp(1.j * phi)
+                G = numpy.array([[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                expanded_G = expand_two_by_two(G, i, j, n)
+                combined_givens = combined_givens.dot(expanded_G)
+            U = combined_givens.dot(U)
+
+        # Compute V * Q * U^\dagger
+        W = V.dot(Q.dot(U.T.conj()))
+
+        # Construct the diagonal matrix
+        D = numpy.zeros((m, n), dtype=complex)
+        D[numpy.diag_indices(m)] = diagonal
+
+        # Assert that W and D are the same
+        for i in range(m):
+            for j in range(n):
+                self.assertAlmostEqual(D[i, j], W[i, j])
+
     def test_3_by_6(self):
         m, n = (3, 6)
+        # Obtain a random matrix of orthonormal rows
+        x = numpy.random.randn(n, n)
+        y = numpy.random.randn(n, n)
+        A = x + 1j*y
+        Q, R = qr(A)
+        Q = Q[:m, :]
+
+        # Get Givens decomposition of U
+        V, givens_rotations, diagonal = givens_decomposition(Q)
+
+        # Compute U
+        U = numpy.eye(n, dtype=complex)
+        for parallel_set in givens_rotations:
+            combined_givens = numpy.eye(n)
+            for i, j, theta, phi in parallel_set:
+                c = numpy.cos(theta)
+                s = numpy.sin(theta)
+                phase = numpy.exp(1.j * phi)
+                G = numpy.array([[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                expanded_G = expand_two_by_two(G, i, j, n)
+                combined_givens = combined_givens.dot(expanded_G)
+            U = combined_givens.dot(U)
+
+        # Compute V * Q * U^\dagger
+        W = V.dot(Q.dot(U.T.conj()))
+
+        # Construct the diagonal matrix
+        D = numpy.zeros((m, n), dtype=complex)
+        D[numpy.diag_indices(m)] = diagonal
+
+        # Assert that W and D are the same
+        for i in range(m):
+            for j in range(n):
+                self.assertAlmostEqual(D[i, j], W[i, j])
+
+    def test_3_by_7(self):
+        m, n = (3, 7)
+        # Obtain a random matrix of orthonormal rows
+        x = numpy.random.randn(n, n)
+        y = numpy.random.randn(n, n)
+        A = x + 1j*y
+        Q, R = qr(A)
+        Q = Q[:m, :]
+
+        # Get Givens decomposition of U
+        V, givens_rotations, diagonal = givens_decomposition(Q)
+
+        # Compute U
+        U = numpy.eye(n, dtype=complex)
+        for parallel_set in givens_rotations:
+            combined_givens = numpy.eye(n)
+            for i, j, theta, phi in parallel_set:
+                c = numpy.cos(theta)
+                s = numpy.sin(theta)
+                phase = numpy.exp(1.j * phi)
+                G = numpy.array([[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                expanded_G = expand_two_by_two(G, i, j, n)
+                combined_givens = combined_givens.dot(expanded_G)
+            U = combined_givens.dot(U)
+
+        # Compute V * Q * U^\dagger
+        W = V.dot(Q.dot(U.T.conj()))
+
+        # Construct the diagonal matrix
+        D = numpy.zeros((m, n), dtype=complex)
+        D[numpy.diag_indices(m)] = diagonal
+
+        # Assert that W and D are the same
+        for i in range(m):
+            for j in range(n):
+                self.assertAlmostEqual(D[i, j], W[i, j])
+
+    def test_3_by_8(self):
+        m, n = (3, 8)
+        # Obtain a random matrix of orthonormal rows
+        x = numpy.random.randn(n, n)
+        y = numpy.random.randn(n, n)
+        A = x + 1j*y
+        Q, R = qr(A)
+        Q = Q[:m, :]
+
+        # Get Givens decomposition of U
+        V, givens_rotations, diagonal = givens_decomposition(Q)
+
+        # Compute U
+        U = numpy.eye(n, dtype=complex)
+        for parallel_set in givens_rotations:
+            combined_givens = numpy.eye(n)
+            for i, j, theta, phi in parallel_set:
+                c = numpy.cos(theta)
+                s = numpy.sin(theta)
+                phase = numpy.exp(1.j * phi)
+                G = numpy.array([[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                expanded_G = expand_two_by_two(G, i, j, n)
+                combined_givens = combined_givens.dot(expanded_G)
+            U = combined_givens.dot(U)
+
+        # Compute V * Q * U^\dagger
+        W = V.dot(Q.dot(U.T.conj()))
+
+        # Construct the diagonal matrix
+        D = numpy.zeros((m, n), dtype=complex)
+        D[numpy.diag_indices(m)] = diagonal
+
+        # Assert that W and D are the same
+        for i in range(m):
+            for j in range(n):
+                self.assertAlmostEqual(D[i, j], W[i, j])
+
+    def test_3_by_9(self):
+        m, n = (3, 9)
+        # Obtain a random matrix of orthonormal rows
+        x = numpy.random.randn(n, n)
+        y = numpy.random.randn(n, n)
+        A = x + 1j*y
+        Q, R = qr(A)
+        Q = Q[:m, :]
+
+        # Get Givens decomposition of U
+        V, givens_rotations, diagonal = givens_decomposition(Q)
+
+        # Compute U
+        U = numpy.eye(n, dtype=complex)
+        for parallel_set in givens_rotations:
+            combined_givens = numpy.eye(n)
+            for i, j, theta, phi in parallel_set:
+                c = numpy.cos(theta)
+                s = numpy.sin(theta)
+                phase = numpy.exp(1.j * phi)
+                G = numpy.array([[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                expanded_G = expand_two_by_two(G, i, j, n)
+                combined_givens = combined_givens.dot(expanded_G)
+            U = combined_givens.dot(U)
+
+        # Compute V * Q * U^\dagger
+        W = V.dot(Q.dot(U.T.conj()))
+
+        # Construct the diagonal matrix
+        D = numpy.zeros((m, n), dtype=complex)
+        D[numpy.diag_indices(m)] = diagonal
+
+        # Assert that W and D are the same
+        for i in range(m):
+            for j in range(n):
+                self.assertAlmostEqual(D[i, j], W[i, j])
+
+    def test_4_by_9(self):
+        m, n = (4, 9)
         # Obtain a random matrix of orthonormal rows
         x = numpy.random.randn(n, n)
         y = numpy.random.randn(n, n)

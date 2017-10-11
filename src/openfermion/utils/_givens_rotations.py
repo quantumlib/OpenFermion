@@ -17,6 +17,7 @@ import numpy
 
 from openfermion.config import *
 
+
 def givens_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations.
 
@@ -53,6 +54,10 @@ def givens_decomposition(unitary_rows):
     """
     rows = numpy.copy(unitary_rows)
     m, n = rows.shape
+
+    # Check that m <= n
+    if m > n:
+        raise ValueError('The input m x n matrix must have m <= n')
 
     # Compute V using Givens rotations
     V = numpy.eye(m, dtype=complex)
@@ -128,6 +133,7 @@ def givens_decomposition(unitary_rows):
 
     return V, givens_rotations, diagonal
 
+
 def givens_matrix_elements(a, b):
     """Compute the matrix elements of the Givens rotation that zeroes out one of two
     row entries.
@@ -170,6 +176,7 @@ def givens_matrix_elements(a, b):
     G = numpy.array([[c, -phase * s],
                      [s, phase * c]], dtype=complex)
     return G
+
 
 def expand_two_by_two(M, i, j, n):
     """Expand the 2 x 2 matrix M to an n x n matrix acting on indices i and j."""
