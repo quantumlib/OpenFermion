@@ -16,10 +16,9 @@ This Docker image will help users to easily install [OpenFermion](https://github
 ## Usage
 
 To use this image, you first need to install [Docker](https://www.docker.com/).
-
-After installation, to build the Docker image, move the
-[dockerfile](https://github.com/quantumlib/OpenFermion/blob/master/docker/dockerfile) to your working directory.
-Then execute:
+Then, to build the Docker image, move the
+[dockerfile](https://github.com/quantumlib/OpenFermion/blob/master/docker/dockerfile)
+to your working directory and execute:
 
 ```
 docker build -t "openfermion_docker" .
