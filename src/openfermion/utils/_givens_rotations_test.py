@@ -301,6 +301,44 @@ class GivensDecompositionTest(unittest.TestCase):
             for j in range(n):
                 self.assertAlmostEqual(D[i, j], W[i, j])
 
+    def test_4_by_5(self):
+        m, n = (4, 5)
+        # Obtain a random matrix of orthonormal rows
+        x = numpy.random.randn(n, n)
+        y = numpy.random.randn(n, n)
+        A = x + 1j*y
+        Q, R = qr(A)
+        Q = Q[:m, :]
+
+        # Get Givens decomposition of U
+        V, givens_rotations, diagonal = givens_decomposition(Q)
+
+        # Compute U
+        U = numpy.eye(n, dtype=complex)
+        for parallel_set in givens_rotations:
+            combined_givens = numpy.eye(n)
+            for i, j, theta, phi in parallel_set:
+                c = numpy.cos(theta)
+                s = numpy.sin(theta)
+                phase = numpy.exp(1.j * phi)
+                G = numpy.array([[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                expanded_G = expand_two_by_two(G, i, j, n)
+                combined_givens = combined_givens.dot(expanded_G)
+            U = combined_givens.dot(U)
+
+        # Compute V * Q * U^\dagger
+        W = V.dot(Q.dot(U.T.conj()))
+
+        # Construct the diagonal matrix
+        D = numpy.zeros((m, n), dtype=complex)
+        D[numpy.diag_indices(m)] = diagonal
+
+        # Assert that W and D are the same
+        for i in range(m):
+            for j in range(n):
+                self.assertAlmostEqual(D[i, j], W[i, j])
+
     def test_4_by_9(self):
         m, n = (4, 9)
         # Obtain a random matrix of orthonormal rows
