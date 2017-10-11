@@ -17,64 +17,6 @@ import numpy
 
 from openfermion.config import *
 
-def trivial_givens_decomposition(columns):
-    """Decompose a matrix into a sequence of Givens rotations.
-
-    The input is an m x n matrix U with m >= n.
-    U can be decomposed as follows:
-
-        G_k * ... * G_1 * U = R
-
-    where G_1, ..., G_k are complex Givens rotations (invertible m x m matrices)
-    and R is upper triangular.
-    We describe a complex Givens rotation by the coordinates (i, j) that it
-    acts on, plus two angles (theta, phi) that characterize the corresponding
-    2x2 unitary matrix
-        [ cos(theta)                e^{i phi} sin(theta) ]
-        [ -e^{-i phi} sin(theta)    cos(theta)           ]
-
-    Args:
-        columns: A numpy array or matrix.
-    
-    Returns:
-        givens_rotations: A list of tuples of the form (i, j, theta, phi), which
-            represents a Givens rotation of the coordinates i and j
-            by angles theta and phi. The first element of the list represents G_1.
-        columns: the matrix R
-    """
-    columns = numpy.copy(columns)
-    m, n = columns.shape
-
-    givens_rotations = []
-
-    if m > n:
-        num_columns_to_zero_out = n
-    else:
-        num_columns_to_zero_out = n - 1
-
-    for k in range(num_columns_to_zero_out):
-        # Zero out entries in column k
-        for l in reversed(range(k + 1, m)):
-            # Zero out entries in row l
-            f, g = columns[(l - 1, l), k]
-            # We want to rotate f and g to zero out g
-            f2 = abs(f) ** 2
-            g2 = abs(g) ** 2
-            denom = numpy.sqrt(f2 + g2)
-
-            c = abs(f) / denom
-            s = (f / abs(f)) * g.conjugate() / denom
-
-            givens_rotations.append((l, k, numpy.arccos(c), numpy.angle(s)))
-
-            # Apply givens rotation to matrix
-            old_upper_row = numpy.copy(columns[l - 1])
-            old_lower_row = numpy.copy(columns[l])
-            columns[l - 1] = c * old_upper_row + s * old_lower_row
-            columns[l] = -s.conjugate() * old_upper_row + c * old_lower_row
-
-    return givens_rotations, columns
-
 def givens_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations.
 
@@ -105,7 +47,7 @@ def givens_decomposition(unitary_rows):
             The list looks something like [(G1, ), (G2, G3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the form
-            (i, j, theta, phi), which represents a Givens rotation of columns
+            (i, j, theta, phi), which represents a Givens rotation of rows
             i and j by angles theta and phi.
         diagonal: A list of the nonzero entries of D.
     """
@@ -128,27 +70,39 @@ def givens_decomposition(unitary_rows):
     # Compute the decomposition of U into Givens rotations
     givens_rotations = list()
     if m != n:
-        # The circuit depth is n - 1
+        # There are n - 1 iterations (the circuit depth is n - 1)
         for k in range(n - 1):
-            # Get the (row, column) indices of elements to zero out in parallel
-            # Get the maximum number of simultaneous rotations
+            # Get the (row, column) indices of elements to zero out in parallel.
+            # Get the maximum number of simultaneous rotations that will be performed
             msr = min(m, n - m)
             if k < msr - 1:
                 # There are k + 1 elements to zero out
-                indices_to_zero_out = zip(range(k + 1),
-                                          range(n - m - k, n - m + k + 1, 2))
-            elif k > n - msr - 1:
+                start_row = 0
+                end_row = k + 1
+                start_column = n - m - k
+                end_column = start_column + 2 * (k + 1)
+            elif k > n - 1 - msr:
                 # There are n - 1 - k elements to zero out
-                indices_to_zero_out = zip(range(m - n + k + 1, m),
-                                          range(m - n + k + 2, m + n - k - 1 , 2))
+                start_row = m - (n - 1 - k)
+                end_row = m
+                start_column = m - (n - 1 - k) + 1
+                end_column = start_column + 2 * (n - 1 - k)
             else:
                 # There are msr elements to zero out
                 if msr == m:
-                    indices_to_zero_out = zip(range(m),
-                                              range(n - m - k, n + m - k - 1, 2))
+                    start_row = 0
+                    end_row = m
+                    start_column = n - m - k
+                    end_column = start_column + 2 * m
                 else:
-                    indices_to_zero_out = zip(range(k + 1 - msr, k + 1),
-                                              range(k + 2 - msr, k + 1 + msr, 2))
+                    start_row = k + 1 - msr
+                    end_row = k + 1
+                    start_column = k + 1 - msr + 1
+                    end_column = start_column + 2 * msr
+
+            row_indices = range(start_row, end_row)
+            column_indices = range(start_column, end_column, 2)
+            indices_to_zero_out = zip(row_indices, column_indices)
 
             parallel_rotations = list()
             for i, j in indices_to_zero_out:
