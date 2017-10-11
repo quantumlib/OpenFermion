@@ -125,6 +125,7 @@ def givens_decomposition(unitary_rows):
             # Append the current list of parallel rotations to the list
             givens_rotations.append(tuple(parallel_rotations))
 
+    # Get the diagonal entries
     diagonal = rows.diagonal()
 
     return V, givens_rotations, diagonal
@@ -171,3 +172,9 @@ def givens_matrix_elements(a, b):
     G = numpy.array([[c, -phase * s],
                      [s, phase * c]], dtype=complex)
     return G
+
+def expand_two_by_two(M, i, j, n):
+    """Expand the 2 x 2 matrix M to an n x n matrix acting on indices i and j."""
+    expanded_M = numpy.eye(n, dtype=complex)
+    expanded_M[([i], [j]), (i, j)] = M
+    return expanded_M

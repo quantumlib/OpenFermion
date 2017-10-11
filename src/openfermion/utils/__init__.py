@@ -29,6 +29,8 @@ from ._jellium import (dual_basis_kinetic,
 from ._dual_basis_trotter_error import (dual_basis_error_bound,
                                         dual_basis_error_operator)
 
+from ._givens_rotations import givens_decomposition
+
 from ._molecular_data import MolecularData, periodic_table
 
 from ._operator_utils import (commutator, count_qubits,
