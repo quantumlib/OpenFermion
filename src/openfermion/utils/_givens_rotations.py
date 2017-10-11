@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Rotations."""
+"""Givens rotation decomposition of matrices."""
 from __future__ import absolute_import
 
 import numpy
@@ -61,8 +61,7 @@ def givens_decomposition(unitary_rows):
         for l in range(m - n + k):
             # Zero out entry in row l
             G = givens_matrix_elements(rows[l, k], rows[l + 1, k])
-            expanded_G = numpy.eye(m, dtype=complex)
-            expanded_G[([l], [l + 1]), (l, l + 1)] = G
+            expanded_G = expand_two_by_two(G, l, l + 1, m)
 
             rows = expanded_G.dot(rows)
             V = expanded_G.dot(V)
@@ -118,8 +117,7 @@ def givens_decomposition(unitary_rows):
                 parallel_rotations.append((j - 1 , j, theta, phi))
 
                 # Update the matrix
-                expanded_G = numpy.eye(n, dtype=complex)
-                expanded_G[([j - 1], [j]), (j - 1, j)] = G
+                expanded_G = expand_two_by_two(G, j - 1, j, n)
                 rows = rows.dot(expanded_G.T.conj())
 
             # Append the current list of parallel rotations to the list
