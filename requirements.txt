@@ -1,6 +1,8 @@
-scipy>=0.18.0
 numpy>=1.11.0
-pytest>=3.0
-h5py
+scipy>=0.18.0
+cvxopt
 future
+h5py
+jupyter
 networkx
+matplotlib
