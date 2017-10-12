@@ -109,4 +109,5 @@ class FermiHubbardTest(unittest.TestCase):
             self.chemical_potential, self.magnetic_field,
             periodic=True, spinless=True)
         # Check up top/bottom hopping terms.
-        self.assertAlmostEqual(hubbard_model.terms[((4, 1), (0, 0))], -self.tunneling)
+        self.assertAlmostEqual(hubbard_model.terms[((4, 1), (0, 0))],
+                               -self.tunneling)
