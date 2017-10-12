@@ -75,3 +75,17 @@ class MeanfieldDwaveTest(unittest.TestCase):
         self.assertAlmostEqual(meanfield_dwave_model.terms[((3, 1), (6, 1))], -self.sc_gap / 2)
         self.assertAlmostEqual(meanfield_dwave_model.terms[((7, 0), (2, 0))], self.sc_gap / 2)
         self.assertAlmostEqual(meanfield_dwave_model.terms[((6, 0), (3, 0))], -self.sc_gap / 2)
+
+    def test_two_by_three_spinless_periodic_rudimentary(self):
+        meanfield_dwave_model = meanfield_dwave(
+            2, 3, self.tunneling, self.sc_gap)
+        # Check top/bottom hopping terms.
+        self.assertAlmostEqual(meanfield_dwave_model.terms[((8, 1), (1, 1))],
+                               self.sc_gap / 2)
+
+    def test_three_by_two_spinless_periodic_rudimentary(self):
+        meanfield_dwave_model = meanfield_dwave(
+            3, 2, self.tunneling, self.sc_gap)
+        # Check right/left hopping terms.
+        self.assertAlmostEqual(meanfield_dwave_model.terms[((4, 1), (1, 1))],
+                               -self.sc_gap / 2)
