@@ -27,15 +27,15 @@ def givens_decomposition(unitary_rows):
         V * Q * U^\dagger = D
 
     where V and U are unitary matrices, and D is an m x n matrix with the
-    first m columns forming a diagonal matrix and the rest of the columns being zero.
-    Furthermore, we can decompose U as
+    first m columns forming a diagonal matrix and the rest of the columns
+    being zero. Furthermore, we can decompose U as
 
         U = G_k * ... * G_1
 
-    where G_1, ..., G_k are complex Givens rotations, which are invertible n x n matrices.
-    We describe a complex Givens rotation by the column indices (i, j) that it
-    acts on, plus two angles (theta, phi) that characterize the corresponding
-    2x2 unitary matrix
+    where G_1, ..., G_k are complex Givens rotations, which are invertible
+    n x n matrices. We describe a complex Givens rotation by the column
+    indices (i, j) that it acts on, plus two angles (theta, phi) that
+    characterize the corresponding 2x2 unitary matrix
 
         [ cos(theta)    -e^{i phi} sin(theta) ]
         [ sin(theta)     e^{i phi} cos(theta) ]
@@ -44,12 +44,13 @@ def givens_decomposition(unitary_rows):
         unitary_rows: A numpy array or matrix with orthonormal rows.
     Returns:
         V: An m x m numpy array.
-        givens_rotations: A list of tuples of objects describing Givens rotations.
-            The list looks something like [(G1, ), (G2, G3), ... ].
-            The Givens rotations within a tuple can be implemented in parallel.
-            The description of a Givens rotation is itself a tuple of the form
-            (i, j, theta, phi), which represents a Givens rotation of rows
-            i and j by angles theta and phi.
+        givens_rotations: A list of tuples of objects describing Givens
+            rotations. The list looks something like
+            [(G1, ), (G2, G3), ... ]. The Givens rotations within a tuple
+            can be implemented in parallel. The description of a Givens
+            rotation is itself a tuple of the form (i, j, theta, phi), which
+            represents a Givens rotation of rows i and j by angles theta
+            and phi.
         diagonal: A list of the nonzero entries of D.
     """
     rows = numpy.copy(unitary_rows)
@@ -76,8 +77,10 @@ def givens_decomposition(unitary_rows):
     if m != n:
         # There are n - 1 iterations (the circuit depth is n - 1)
         for k in range(n - 1):
-            # Get the (row, column) indices of elements to zero out in parallel.
-            # Get the maximum number of simultaneous rotations that will be performed
+            # Get the (row, column) indices of elements to zero out in
+            # parallel.
+            # Get the maximum number of simultaneous rotations that
+            # will be performed
             max_simul_rotations = min(m, n - m)
             if k < max_simul_rotations - 1:
                 # There are k + 1 elements to zero out
@@ -135,8 +138,8 @@ def givens_decomposition(unitary_rows):
 
 
 def givens_matrix_elements(a, b):
-    """Compute the matrix elements of the Givens rotation that zeroes out one of two
-    row entries.
+    """Compute the matrix elements of the Givens rotation that zeroes out one
+    of two row entries.
 
     Returns a matrix G such that
 
@@ -179,7 +182,9 @@ def givens_matrix_elements(a, b):
 
 
 def expand_two_by_two(M, i, j, n):
-    """Expand the 2 x 2 matrix M to an n x n matrix acting on indices i and j."""
+    """Expand the 2 x 2 matrix M to an n x n matrix acting on coordinates
+    i and j.
+    """
     expanded_M = numpy.eye(n, dtype=complex)
     expanded_M[([i], [j]), (i, j)] = M
     return expanded_M
