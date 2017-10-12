@@ -78,31 +78,31 @@ def givens_decomposition(unitary_rows):
         for k in range(n - 1):
             # Get the (row, column) indices of elements to zero out in parallel.
             # Get the maximum number of simultaneous rotations that will be performed
-            msr = min(m, n - m)
-            if k < msr - 1:
+            max_simul_rotations = min(m, n - m)
+            if k < max_simul_rotations - 1:
                 # There are k + 1 elements to zero out
                 start_row = 0
                 end_row = k + 1
                 start_column = n - m - k
                 end_column = start_column + 2 * (k + 1)
-            elif k > n - 1 - msr:
+            elif k > n - 1 - max_simul_rotations:
                 # There are n - 1 - k elements to zero out
                 start_row = m - (n - 1 - k)
                 end_row = m
                 start_column = m - (n - 1 - k) + 1
                 end_column = start_column + 2 * (n - 1 - k)
             else:
-                # There are msr elements to zero out
-                if msr == m:
+                # There are max_simul_rotations elements to zero out
+                if max_simul_rotations == m:
                     start_row = 0
                     end_row = m
                     start_column = n - m - k
                     end_column = start_column + 2 * m
                 else:
-                    start_row = k + 1 - msr
+                    start_row = k + 1 - max_simul_rotations
                     end_row = k + 1
-                    start_column = k + 1 - msr + 1
-                    end_column = start_column + 2 * msr
+                    start_column = k + 1 - max_simul_rotations + 1
+                    end_column = start_column + 2 * max_simul_rotations
 
             row_indices = range(start_row, end_row)
             column_indices = range(start_column, end_column, 2)
