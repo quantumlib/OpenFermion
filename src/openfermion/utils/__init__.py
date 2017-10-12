@@ -26,6 +26,8 @@ from ._jellium import (dual_basis_kinetic,
                        plane_wave_kinetic,
                        plane_wave_potential)
 
+from ._meanfield import meanfield_dwave
+
 from ._dual_basis_trotter_error import (dual_basis_error_bound,
                                         dual_basis_error_operator)
 
