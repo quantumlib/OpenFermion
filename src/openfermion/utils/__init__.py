@@ -45,9 +45,6 @@ from ._plane_wave_hamiltonian import (dual_basis_external_potential,
                                       jordan_wigner_dual_basis_hamiltonian,
                                       wigner_seitz_length_scale)
 
-from ._rdm_equality_constraints import (one_body_fermion_constraints,
-                                        two_body_fermion_constraints)
-
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,
                             get_density_matrix,
@@ -61,3 +58,6 @@ from ._sparse_tools import (expectation,
                             sparse_eigenspectrum)
 
 from ._trotter_error import error_bound, error_operator
+
+# Imports out of alphabetical order to avoid circular dependancy.
+from ._jellium_hf_state import hartree_fock_state_jellium
