@@ -102,7 +102,6 @@ class FermiHubbardTest(unittest.TestCase):
             self.chemical_potential, self.magnetic_field,
             periodic=True, spinless=True)
 
-
     def test_two_by_three_spinless_periodic_rudimentary(self):
         hubbard_model = fermi_hubbard(
             2, 3, self.tunneling, self.coulomb,
