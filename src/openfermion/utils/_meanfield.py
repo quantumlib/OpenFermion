@@ -20,7 +20,8 @@ H = - tunneling sum_{<i,j>} sum_sigma (a^dagger_{i, sigma} a_{j, sigma}
   (a^dagger_{i, up} a^dagger_{j, down} - a^dagger_{i, down} a^dagger_{j, up}
   + a_{j, down} a_{i, up} - a_{j, up} a_{i, down})
 
-where Delta_{ij} = +sc_gap/2 for horizontal edges and -sc_gap/2 for vertical edges.
+where Delta_{ij} = +sc_gap/2 for horizontal edges and -sc_gap/2 for vertical
+edges.
 
 There are N sites and 2*N spin-orbitals. The operators a^dagger_i and a_i are
 fermionic creation and annihilation operators. One can transform these
