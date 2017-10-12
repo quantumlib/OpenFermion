@@ -18,8 +18,6 @@ from ._grid import Grid
 
 from ._hubbard import fermi_hubbard
 
-from ._meanfield import meanfield_dwave
-
 from ._jellium import (dual_basis_kinetic,
                        dual_basis_potential,
                        dual_basis_jellium_model,
@@ -27,6 +25,8 @@ from ._jellium import (dual_basis_kinetic,
                        jordan_wigner_dual_basis_jellium,
                        plane_wave_kinetic,
                        plane_wave_potential)
+
+from ._meanfield import meanfield_dwave
 
 from ._dual_basis_trotter_error import (dual_basis_error_bound,
                                         dual_basis_error_operator)
