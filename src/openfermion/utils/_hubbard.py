@@ -126,12 +126,12 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
         right_neighbor = site + 1
         bottom_neighbor = site + x_dimension
 
-        # Account  periodic boundaries.
+        # Account for periodic boundaries.
         if periodic:
             if (x_dimension > 2) and ((site + 1) % x_dimension == 0):
-                right_neighbor -= (x_dimension - 1)
+                right_neighbor -= x_dimension
             if (y_dimension > 2) and (site + x_dimension + 1 > n_sites):
-                bottom_neighbor -= (x_dimension - 1) * y_dimension
+                bottom_neighbor -= x_dimension * y_dimension
 
         # Add transition to neighbor on right.
         if (site + 1) % x_dimension or (periodic and x_dimension > 2):

@@ -10,5 +10,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Define version number here and read it from setup.py automatically"""
-__version__ = "0.1a1"
+from ._equality_constraint_projection import (apply_constraints,
+                                              constraint_matrix,
+                                              linearize_term,
+                                              unlinearize_term)
+
+from ._rdm_equality_constraints import (one_body_fermion_constraints,
+                                        two_body_fermion_constraints)
+

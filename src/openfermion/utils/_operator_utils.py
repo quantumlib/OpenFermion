@@ -104,17 +104,18 @@ def is_identity(operator):
 
 
 def commutator(operator_a, operator_b):
-    """Compute the commutator of two QubitOperators or FermionOperators.
+    """Compute the commutator of two operators.
 
     Args:
-        operator_a, operator_b (FermionOperator): Operators in commutator.
+        operator_a, operator_b: Operators in commutator. Any operators
+            are accepted so long as implicit subtraction and multiplication are
+            supported; e.g. QubitOperators, FermionOperators or numpy arrays.
+
+    Raises:
+        TypeError: operator_a and operator_b are not of the same type.
     """
-    if not ((isinstance(operator_a, FermionOperator) and
-            isinstance(operator_b, FermionOperator)) or
-            (isinstance(operator_a, QubitOperator) and
-             isinstance(operator_b, QubitOperator))):
-        raise TypeError('operator_a and operator_b must both be Fermion or'
-                        ' QubitOperators.')
+    if type(operator_a) != type(operator_b):
+        raise TypeError('operator_a and operator_b are not of the same type.')
     result = operator_a * operator_b
     result -= operator_b * operator_a
     return result
