@@ -14,6 +14,8 @@ from ._chemical_series import (make_atomic_ring,
                                make_atomic_lattice,
                                make_atom)
 
+from ._givens_rotations import givens_decomposition
+
 from ._grid import Grid
 
 from ._hubbard import fermi_hubbard
@@ -30,8 +32,6 @@ from ._meanfield import meanfield_dwave
 
 from ._dual_basis_trotter_error import (dual_basis_error_bound,
                                         dual_basis_error_operator)
-
-from ._givens_rotations import givens_decomposition
 
 from ._molecular_data import MolecularData, periodic_table
 
