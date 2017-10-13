@@ -92,7 +92,7 @@ Nicholas Rubin (Rigetti),
 Kanav Setia (Dartmouth),
 Hannah Sim (Harvard),
 Wei Sun (Google) and
-Kevin Sung (University of Michigan)
+Kevin Sung (University of Michigan).
 
 Questions?
 ----------
