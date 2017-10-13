@@ -122,7 +122,7 @@ def givens_decomposition(unitary_rows):
                 # Add the parameters to the list
                 theta = numpy.arccos(numpy.real(G[0, 0]))
                 phi = numpy.angle(G[1, 1])
-                parallel_rotations.append((j - 1 , j, theta, phi))
+                parallel_rotations.append((j - 1, j, theta, phi))
 
                 # Update the matrix
                 expanded_G = expand_two_by_two(G, j - 1, j, n)
