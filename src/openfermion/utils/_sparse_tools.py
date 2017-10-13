@@ -331,8 +331,11 @@ def get_ground_state(sparse_operator):
     values, vectors = scipy.sparse.linalg.eigsh(
         sparse_operator, 2, which='SA', maxiter=1e7)
 
-    eigenstate = scipy.sparse.csc_matrix(vectors[:, 0])
+    order = numpy.argsort(values)
+    values = values[order]
+    vectors = vectors[:, order]
     eigenvalue = values[0]
+    eigenstate = scipy.sparse.csc_matrix(vectors[:, 0])
     return eigenvalue, eigenstate.getH()
 
 
