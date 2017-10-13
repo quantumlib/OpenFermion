@@ -15,7 +15,7 @@ from __future__ import absolute_import
 
 import numpy
 
-from openfermion.config import *
+from openfermion.config import EQ_TOLERANCE
 
 
 def givens_decomposition(unitary_rows):
@@ -41,36 +41,38 @@ def givens_decomposition(unitary_rows):
         [ sin(theta)     e^{i phi} cos(theta) ]
 
     Args:
-        unitary_rows: A numpy array or matrix with orthonormal rows.
+        unitary_rows: A numpy array or matrix with orthonormal rows,
+            representing the matrix Q.
     Returns:
-        V: An m x m numpy array.
+        left_unitary: An m x m numpy array representing the matrix V.
         givens_rotations: A list of tuples of objects describing Givens
             rotations. The list looks something like
-            [(G1, ), (G2, G3), ... ]. The Givens rotations within a tuple
+            [(G_1, ), (G_2, G_3), ... ]. The Givens rotations within a tuple
             can be implemented in parallel. The description of a Givens
             rotation is itself a tuple of the form (i, j, theta, phi), which
             represents a Givens rotation of rows i and j by angles theta
             and phi.
         diagonal: A list of the nonzero entries of D.
     """
-    rows = numpy.copy(unitary_rows)
-    m, n = rows.shape
+    current_matrix = numpy.copy(unitary_rows)
+    m, n = current_matrix.shape
 
     # Check that m <= n
     if m > n:
         raise ValueError('The input m x n matrix must have m <= n')
 
     # Compute V using Givens rotations
-    V = numpy.eye(m, dtype=complex)
+    left_unitary = numpy.eye(m, dtype=complex)
     for k in reversed(range(n - m + 1, n)):
         # Zero out entries in column k
         for l in range(m - n + k):
             # Zero out entry in row l
-            G = givens_matrix_elements(rows[l, k], rows[l + 1, k])
-            expanded_G = expand_two_by_two(G, l, l + 1, m)
-
-            rows = expanded_G.dot(rows)
-            V = expanded_G.dot(V)
+            givens_rotation = givens_matrix_elements(current_matrix[l, k],
+                                                     current_matrix[l + 1, k])
+            expanded_givens_rotation = expand_two_by_two(givens_rotation,
+                                                         l, l + 1, m)
+            current_matrix = expanded_givens_rotation.dot(current_matrix)
+            left_unitary = expanded_givens_rotation.dot(left_unitary)
 
     # Compute the decomposition of U into Givens rotations
     givens_rotations = list()
@@ -114,27 +116,32 @@ def givens_decomposition(unitary_rows):
             parallel_rotations = list()
             for i, j in indices_to_zero_out:
                 # Compute the Givens rotation to zero out the (i, j) element
-                a = rows[i, j - 1].conj()
-                b = rows[i, j].conj()
-                G = givens_matrix_elements(a, b)
-                G = G[(1, 0), :]
+                left_element = current_matrix[i, j - 1].conj()
+                right_element = current_matrix[i, j].conj()
+                givens_rotation = givens_matrix_elements(left_element,
+                                                         right_element)
+                # Need to switch the rows to zero out right_element
+                # rather than left_element
+                givens_rotation = givens_rotation[(1, 0), :]
 
                 # Add the parameters to the list
-                theta = numpy.arccos(numpy.real(G[0, 0]))
-                phi = numpy.angle(G[1, 1])
+                theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+                phi = numpy.angle(givens_rotation[1, 1])
                 parallel_rotations.append((j - 1, j, theta, phi))
 
                 # Update the matrix
-                expanded_G = expand_two_by_two(G, j - 1, j, n)
-                rows = rows.dot(expanded_G.T.conj())
+                expanded_givens_rotation = expand_two_by_two(givens_rotation,
+                                                             j - 1, j, n)
+                current_matrix = current_matrix.dot(
+                        expanded_givens_rotation.T.conj())
 
             # Append the current list of parallel rotations to the list
             givens_rotations.append(tuple(parallel_rotations))
 
     # Get the diagonal entries
-    diagonal = rows.diagonal()
+    diagonal = current_matrix.diagonal()
 
-    return V, givens_rotations, diagonal
+    return left_unitary, givens_rotations, diagonal
 
 
 def givens_matrix_elements(a, b):
@@ -176,9 +183,9 @@ def givens_matrix_elements(a, b):
         phase = sign_a * sign_b.conjugate()
 
     # Construct matrix and return
-    G = numpy.array([[c, -phase * s],
-                     [s, phase * c]], dtype=complex)
-    return G
+    givens_rotation = numpy.array([[c, -phase * s],
+                                  [s, phase * c]], dtype=complex)
+    return givens_rotation
 
 
 def expand_two_by_two(M, i, j, n):

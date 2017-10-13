@@ -28,6 +28,7 @@ class ExampleTest(unittest.TestCase):
         string_length = len(THIS_DIRECTORY)
         self.directory = THIS_DIRECTORY[:(string_length - 15)] + 'examples/'
         self.demo_name = 'openfermion_demo.ipynb'
+        self.givens_rotations_demo_name = 'givens_rotations.ipynb'
 
     def test_demo(self):
         # Determine if python 2 or 3 is being used.
@@ -48,6 +49,37 @@ class ExampleTest(unittest.TestCase):
                         '--output',
                         output_file.name,
                         self.directory + self.demo_name]
+                subprocess.check_call(args)
+                output_file.seek(0)
+                nb = nbformat.read(output_file, nbformat.current_nbformat)
+
+            # Parse output and make sure there are no errors.
+            errors = [output for cell in nb.cells if "outputs" in cell for
+                      output in cell["outputs"] if
+                      output.output_type == "error"]
+        else:
+            errors = []
+        self.assertEqual(errors, [])
+
+    def test_givens_rotations_demo(self):
+        # Determine if python 2 or 3 is being used.
+        major_version, minor_version = sys.version_info[:2]
+        if major_version == 2 or minor_version == 6:
+            version = str(major_version)
+
+            # Run ipython notebook via nbconvert and collect output.
+            with tempfile.NamedTemporaryFile(suffix='.ipynb') as output_file:
+                args = ['jupyter',
+                        'nbconvert',
+                        '--to',
+                        'notebook',
+                        '--execute',
+                        '--ExecutePreprocessor.timeout=600',
+                        '--ExecutePreprocessor.kernel_name=python{}'.format(
+                            version),
+                        '--output',
+                        output_file.name,
+                        self.directory + self.givens_rotations_demo_name]
                 subprocess.check_call(args)
                 output_file.seek(0)
                 nb = nbformat.read(output_file, nbformat.current_nbformat)
