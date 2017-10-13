@@ -61,7 +61,7 @@ def givens_decomposition(unitary_rows):
     if m > n:
         raise ValueError('The input m x n matrix must have m <= n')
 
-    # Compute V using Givens rotations
+    # Compute left_unitary using Givens rotations
     left_unitary = numpy.eye(m, dtype=complex)
     for k in reversed(range(n - m + 1, n)):
         # Zero out entries in column k
@@ -74,7 +74,7 @@ def givens_decomposition(unitary_rows):
             current_matrix = expanded_givens_rotation.dot(current_matrix)
             left_unitary = expanded_givens_rotation.dot(left_unitary)
 
-    # Compute the decomposition of U into Givens rotations
+    # Compute the decomposition of unitary_rows into Givens rotations
     givens_rotations = list()
     if m != n:
         # There are n - 1 iterations (the circuit depth is n - 1)
