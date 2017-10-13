@@ -251,15 +251,17 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
 
 
 def jw_get_ground_states_by_particle_number(sparse_operator, particle_number):
-    """For a Jordan-Wigner encoded operator, compute the lowest eigenvalue and eigenstates
-    at a particular particle number. The operator must be particle-number-conserving.
+    """For a Jordan-Wigner encoded operator, compute the lowest eigenvalue and
+    eigenstates at a particular particle number. The operator must conserve
+    particle number.
     
     Returns:
-        ground_energy: The lowest eigenvalue of sparse_operator within the eigenspace
-        of the number operator corresponding to particle_number.
+        ground_energy: The lowest eigenvalue of sparse_operator within the
+            eigenspace of the number operator corresponding to particle_number.
         ground_states: A list of the corresponding eigenstates.
 
-    Warning: The running time of this method is exponential in the number of qubits.
+    Warning: The running time of this method is exponential in the number
+        of qubits.
     """
     # Check if operator is Hermitian
     if not is_hermitian(sparse_operator):
