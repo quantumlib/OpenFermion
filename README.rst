@@ -1,3 +1,4 @@
+===========
 OpenFermion
 ===========
 
@@ -17,24 +18,38 @@ OpenFermion
 OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians.
 
 Getting started
----------------
+===============
 
-Installing OpenFermion requires pip. Make sure that you are using an up-to-date
-version of it. To install the latest development version of OpenFermion,
-clone `this <http://github.com/quantumlib/OpenFermion>`__ git repo,
-change directory to the top level folder and run:
+Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
+
+Developer install
+-----------------
+
+To install the latest version of OpenFermion in development mode:
 
 .. code-block:: bash
 
+  git clone https://github.com/quantumlib/OpenFermion
+  cd OpenFermion
   python -m pip install -e .
 
-Alternatively, if using OpenFermion as a library, one can install the last official PyPI release with:
+Library install
+------------
+
+To install the latest PyPI release as a library (in user mode):
 
 .. code-block:: bash
 
   python -m pip install --pre --user openfermion
 
-One should then install the OpenFermion plugins (see below).
+Plugins
+=======
+
+In order to simulate and compile quantum circuits or perform other complicated electronic structure calculations, one can install OpenFermion plugins. We currently support a circuit simulation plugin for `ProjectQ <https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ (recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__.
+
+Installing recommended plugins with Docker
+---------------
+
 For a particularly robust method of installing OpenFermion together with select
 plugins, we have provided a Docker image and usage instructions in the
 `docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__
@@ -44,15 +59,8 @@ For other information about how to get started please see `intro <http://openfer
 `ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
 as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
-Plugins
--------
-
-In order to simulate and compile quantum circuits or perform other complicated electronic structure calculations, one can install OpenFermion plugins. We currently support a circuit simulation plugin for `ProjectQ <https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ (recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__.
-We also provide a Docker image with all three of these plugins pre-installed in
-the docker folder of this repository.
-
 How to contribute
------------------
+=================
 
 We'd love to accept your contributions and patches to OpenFermion.
 There are a few small guidelines you need to follow.
@@ -76,7 +84,7 @@ Code should always come with documentation, which is generated automatically and
 `here <http://openfermion.readthedocs.io/en/latest/openfermion.html>`_.
 
 Authors
--------
+=======
 
 `Ryan Babbush <http://ryanbabbush.com>`__ (Google),
 `Jarrod McClean <http://jarrodmcclean.com>`__ (Google),
@@ -90,17 +98,19 @@ Vojtech Havlicek (Oxford),
 Zhang Jiang (NASA),
 Matthew Neeley (Google),
 Nicholas Rubin (Rigetti),
+`Daniel Sank <https://github.com/DanielSank>`__ (Google),
 Kanav Setia (Dartmouth),
 Hannah Sim (Harvard),
 Wei Sun (Google) and
 Kevin Sung (University of Michigan).
 
 Questions?
-----------
+==========
 
 If you have any other questions, please contact help@openfermion.org.
 
 Disclaimer
-----------
+==========
+
 Copyright 2017 The OpenFermion Developers.
 This is not an official Google product.
