@@ -19,6 +19,7 @@ from openfermion.utils import count_qubits
 
 from ._rdm_equality_constraints import two_body_fermion_constraints
 
+
 def linearize_term(term, n_orbitals):
     """Function to return integer index of term indices.
 
