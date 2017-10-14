@@ -280,14 +280,19 @@ def jw_get_ground_states_by_particle_number(sparse_operator, particle_number):
         if maxval > EQ_TOLERANCE:
             raise ValueError('sparse_operator must conserve particle number.')
 
+    # Get the operator restricted to the sector of the desired particle number,
+    # and compute its eigenvalues and eigenvectors
     restricted_operator = jw_number_restrict_operator(sparse_operator,
                                                       particle_number,
                                                       n_qubits)
     dense_restricted_operator = restricted_operator.toarray()
     eigvals, eigvecs = numpy.linalg.eigh(dense_restricted_operator)
 
+    # Get the ground energy and initialize list to store the corresponding
+    # ground states
     ground_energy = sorted(eigvals)[0]
     ground_states = list()
+
     # Get the indices of eigenvectors corresponding to the ground energy
     ground_state_indices = numpy.where(abs(eigvals - ground_energy) <
                                        EQ_TOLERANCE)
