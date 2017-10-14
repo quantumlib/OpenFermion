@@ -258,6 +258,7 @@ def jw_get_ground_states_by_particle_number(sparse_operator, particle_number):
     Args:
         sparse_operator: A Jordan-Wigner encoded sparse operator.
         particle_number: The particle number at which to compute ground states.
+
     Returns:
         ground_energy: The lowest eigenvalue of sparse_operator within the
             eigenspace of the number operator corresponding to particle_number.
