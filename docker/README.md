@@ -1,47 +1,173 @@
-# Docker setup for OpenFermion and select plugins
+Docker Setup for FermiLib + ProjectQ
+====================================
 
-This Docker image will help users to easily install [OpenFermion](https://github.com/quantumlib/OpenFermion) and its available plugins for [ProjectQ](https://github.com/ProjectQ-Framework/ProjectQ), [Psi4](https://github.com/quantumlib/OpenFermion-Psi4), and [PySCF](https://github.com/quantumlib/OpenFermion-PySCF). Check out Docker's [website](https://www.docker.com/what-container) that describes what a container image is and why it can be so useful.
+This Docker image will help users to easily install `FermiLib <https://github.com/ProjectQ-Framework/FermiLib.git>`__ and `ProjectQ <https://github.com/ProjectQ-Framework/ProjectQ>`__. Check out Docker's `website <https://www.docker.com/what-container>`__ that describes what a container image is and why it can be so useful.
+
+What is included?
+-----------------
+
+- Python 2.7 (you can also use Python 3 with one minor change in the Dockerfile. See the Dockerfile for instructions.)
+- `ProjectQ <https://github.com/ProjectQ-Framework/ProjectQ.git>`__ 
+- `FermiLib <https://github.com/ProjectQ-Framework/FermiLib.git>`__
+
+How to use it?
+--------------
+
+Installing and running Docker
+-----------------------------
+
+1. Install Docker from the `Docker website <https://docs.docker.com/engine/installation/#supported-platforms>`
+
+2. When Docker is installed, open a command line terminal and check the list of
+running virtual machines by
+
+.. code-block:: bash
+	docker-machine ls
+
+The returned list should be empty if this is the first time Docker is run on
+the computer. Create a virtual machine by running
+
+.. code-block:: bash
+	docker-machine create --driver virtualbox default
+
+(Note: To be able to run this, one needs to install `virtualbox <https://www.virtualbox.org/wiki/Downloads>`)
+
+Here "default" is just the name of the virtual machine. You can replace it by
+any name that you prefer. To check that the virtual machine is running indeed,
+use `docker-machine ls` again.
+
+3. When the Docker virtual machine is created, configure the shell by running
+
+.. code-block:: bash
+	docker-machine env default
+
+where if you named the virtual machine differently from default you should also
+replace "default" with the customized name. The command above will return a
+message containing the command to run for configuring the shell. This command
+depends on the OS.
+
+4. Run the command in the message returned above.
 
 
-## What's included?
+Running OpenFermion with Docker
+-------------------------------
 
-- Python 2.7 (see dockerfile for instructions on how to change the Python version/distribution)
-- Git
-- [OpenFermion](https://github.com/quantumlib/OpenFermion)
-- [OpenFermion-ProjectQ](https://github.com/quantumlib/OpenFermion-ProjectQ)
-- [OpenFermion-Psi4](https://github.com/quantumlib/OpenFermion-Psi4)
-- [OpenFermion-PySCF](https://github.com/quantumlib/OpenFermion-PySCF)
+5. Now that Docker is set up, one could navigate to the folder containing the
+Dockerfile for building the OpenFermion image (docker/dockerfile) and run
 
+.. code-block:: bash
+	docker build -t kickass_openfermion .
 
-## Usage
+where "kickass_openfermion" is just an arbitrary name and one could replace it
+with any name she deems sensible. Here we will use kickass_openfermion as an
+example.
 
-To use this image, you first need to install [Docker](https://www.docker.com/).
-Then, to build the Docker image, move the
-[dockerfile](https://github.com/quantumlib/OpenFermion/blob/master/docker/dockerfile)
-to your working directory and execute:
+6. It takes a few minutes to build the image. What the Dockerfile does is to
+start from a base image of ubuntu and install OpenFermion, its plugins and the
+necessary applications needed for running these programs. To run the image, use
 
-```
-docker build -t "openfermion_docker" .
-```
+.. code-block:: bash
+	docker run -it kickass_openfermion
 
-Finally, to run the image (assuming you're still inside your working directory), execute with `YOUR_WORK_DIR` as the path to your working directory:
+and the terminal enters a new environment which emulates a Ubuntu OS with
+OpenFermion and accessories installed, regardless of what the host OS is. This
+new environment is a running process called a Docker container. To check info
+on the container, one can open another terminal, configure it using step 3, and
+run
 
-```
-docker run -it -v $(pwd):YOUR_WORK_DIR -w YOUR_WORK_DIR openfermion_docker
-```
+.. code-block:: bash
+	docker ps
 
-When you are done with the Docker image, you can use `docker stop
-YOUR_CONTAINER_ID` or `docker kill YOUR_CONTAINER_ID` to stop your container
-(you can get your container ID by entering the command `docker ps`). Finally,
-feel free to change your copy of the dockerfile to build a more customized
-image. For example, you may want to minimze the number of layers by combining the `RUN` statements to further reduce the image size.
+which returns a list of running containers. For example it might look like:
 
+CONTAINER ID        IMAGE               COMMAND             CREATED             
+STATUS              PORTS               NAMES
+3cc87ed4205b        5a67a4d66d05        "/bin/bash"         29 hours ago        
+Up 29 hours                             blissful_brown
 
-## Example
+in which case we have a running container called blissful_brown that was
+started quite a while ago.
 
-Suppose your working directory were called `openfermion_test`. Go to that
-directory (which would contain your scripts) and copy over the dockefile. Build the image. Your run command would then be:
+7. The freshly built image is ready to run any Python program that uses
+OpenFermion. To transfer files from somewhere on the disk to the Docker
+container, run in a separate terminal from the one running the container
 
-```
-docker run -it -v $(pwd):/openfermion_test -w /openfermion_test openfermion_docker
-```
+.. code-block:: bash
+	docker cp [path to file on disk] [container name]:[path in container]
+
+where container name can be gleaned according to step 6 above.
+
+8. An alternative way of loading files onto the Docker container is through
+remote repos such as Github or BitBucket. git is installed in the Docker image
+built in step 5. After step 6, one could run "git clone ..." etc to pull files
+remotely into the Docker container.
+
+9. There are occasions where one might want to open up multiple terminals to
+run the same Docker container. In that case, one could run in any terminal
+
+.. code-block:: bash
+	docker exec -it [container name] bash
+
+and "get into" the container.
+
+Running Jupyter notebook with Docker backend
+--------------------------------------------
+
+10. To run Jupyter notebook in a browser with a Docker container running as a 
+backend, first check the ip address of the virtual machine by running
+
+.. code-block:: bash
+	docker-machine ip default
+
+where "default" can be replaced by the name of whichever virtual machine whose
+ip address you want to check.
+
+11. Assuming the Docker image for OpenFermion is already built and as an 
+example we assume it is called kickass_openfermion, run the container with an
+additional -p flag:
+
+.. code-block:: bash
+	docker run -it -p 8888:8888 kickass_openfermion
+
+Here the numbers 8888 simply specifies the port number through which the Docker
+container communicates with the browser. If for some reason this port is not
+available, any other number in 8000-9000 will do.
+
+12. When the terminal enters the Docker container, run Jupyter notebook by
+
+.. code-block:: bash
+	jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
+
+where 8888 is the port number used in step 11 for setting up the container.
+The message returned to the terminal may look something like
+
+[I 21:03:12.979 NotebookApp] Writing notebook server cookie secret to /root/.loc
+al/share/jupyter/runtime/notebook_cookie_secret
+[I 21:03:13.001 NotebookApp] Serving notebooks from local directory: /
+[I 21:03:13.001 NotebookApp] 0 active kernels
+[I 21:03:13.002 NotebookApp] The Jupyter Notebook is running at:
+[I 21:03:13.002 NotebookApp] http://0.0.0.0:8888/?token=8f70c035fb9b0dbbf160d996
+f7f341fecf94c9aedc7cfaf7
+[I 21:03:13.002 NotebookApp] Use Control-C to stop this server and shut down all
+ kernels (twice to skip confirmation).
+[C 21:03:13.002 NotebookApp] 
+    
+    Copy/paste this URL into your browser when you connect for the first time,
+    to login with a token:
+        http://0.0.0.0:8888/?token=8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cf
+af7
+
+Note the token string 8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7.
+
+13. Open a browser window and type in the address line
+
+.. code-block:: bash
+	[virtual machine ip]:8888
+
+where [virtual machine ip] is extracted from step 10 and 8888 is the port 
+number (or any other port number that one specifies in step 11). A webpage
+asking for token string should appear. Use the token string in step 12 to
+enter Jupyter Notebook.
+
+14. If logged in successfully, you should be able to freely navigate through
+the entire Docker image and launch any Jupyter notebook in the image.
