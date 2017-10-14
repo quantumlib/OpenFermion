@@ -9,8 +9,15 @@ Tutorial
 Getting started with OpenFermion
 -----------------------------
 
-Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
-To install the latest development version of OpenFermion, clone `this <http://github.com/quantumlib/OpenFermion>`__ git repo,
+Installing OpenFermion requires pip. Make sure that you are using an up-to-date
+version of it by running:
+
+.. code-block:: bash
+
+  python -m pip --upgrade pip
+
+To install the latest development version of OpenFermion,
+clone `this <http://github.com/quantumlib/OpenFermion>`__ git repo,
 change directory to the top level folder and run:
 
 .. code-block:: bash
