@@ -204,10 +204,11 @@ class JordanWignerSparseTest(unittest.TestCase):
 class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
     def test_jw_get_ground_states_by_particle_number_herm_conserving(self):
         H = FermionOperator('0^ 1') + FermionOperator('1^ 0') + \
-            FermionOperator('1^ 2') + FermionOperator('2^ 1')
+            FermionOperator('1^ 2') + FermionOperator('2^ 1') + \
+            FermionOperator('1^ 3', -.4) + FermionOperator('3^ 1', -.4)
         jw_hamiltonian = jordan_wigner(H)
         sparse_operator = get_sparse_operator(jw_hamiltonian)
-        n_qubits = 3
+        n_qubits = 4
 
         for particle_number in range(n_qubits):
             energy, states = jw_get_ground_states_by_particle_number(
@@ -236,7 +237,7 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
         H = FermionOperator('0^ 1') + FermionOperator('2^ 1')
         jw_hamiltonian = jordan_wigner(H)
         sparse_operator = get_sparse_operator(jw_hamiltonian)
-        
+
         with self.assertRaises(ValueError):
             jw_get_ground_states_by_particle_number(sparse_operator, 0)
         return
