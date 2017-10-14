@@ -298,6 +298,7 @@ def jw_get_ground_states_by_particle_number(sparse_operator, particle_number,
                                                       n_qubits)
 
     if sparse and num_eigs >= restricted_operator.shape[0] - 1:
+        # Restricted operator too small for sparse eigensolver
         sparse = False
 
     # Compute eigenvalues and eigenvectors
