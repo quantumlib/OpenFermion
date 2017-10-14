@@ -22,6 +22,7 @@ import numpy.linalg
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
+import warnings
 
 from openfermion.config import *
 from openfermion.ops import (FermionOperator, hermitian_conjugated,
@@ -250,19 +251,28 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
     return operator[numpy.ix_(select_indices, select_indices)]
 
 
-def jw_get_ground_states_by_particle_number(sparse_operator, particle_number):
-    """For a Jordan-Wigner encoded operator, compute the lowest eigenvalue and
-    eigenstates at a particular particle number. The operator must conserve
-    particle number.
+def jw_get_ground_states_by_particle_number(sparse_operator, particle_number,
+                                            sparse=True, num_eigs=3):
+    """For a Jordan-Wigner encoded Hermitian operator, compute the lowest
+    eigenvalue and eigenstates at a particular particle number. The operator
+    must conserve particle number.
 
     Args:
-        sparse_operator: A Jordan-Wigner encoded sparse operator.
-        particle_number: The particle number at which to compute ground states.
+        sparse_operator(sparse): A Jordan-Wigner encoded sparse operator.
+        particle_number(int): The particle number at which to compute
+            ground states.
+        sparse(boolean, optional): Whether to use sparse eigensolver.
+            Default is True.
+        num_eigs(int, optional): The number of eigenvalues to request from the
+            sparse eigensolver. Needs to be at least as large as the degeneracy
+            of the ground energy in order to obtain all ground states.
+            Only used if `sparse=True`. Default is 3.
 
     Returns:
-        ground_energy: The lowest eigenvalue of sparse_operator within the
-            eigenspace of the number operator corresponding to particle_number.
-        ground_states: A list of the corresponding eigenstates.
+        ground_energy(float): The lowest eigenvalue of sparse_operator within
+            the eigenspace of the number operator corresponding to
+            particle_number.
+        ground_states(list[ndarray]): A list of the corresponding eigenstates.
 
     Warning: The running time of this method is exponential in the number
         of qubits.
@@ -281,22 +291,42 @@ def jw_get_ground_states_by_particle_number(sparse_operator, particle_number):
         if maxval > EQ_TOLERANCE:
             raise ValueError('sparse_operator must conserve particle number.')
 
-    # Get the operator restricted to the sector of the desired particle number,
-    # and compute its eigenvalues and eigenvectors
+    # Get the operator restricted to the subspace of the desired
+    # particle number
     restricted_operator = jw_number_restrict_operator(sparse_operator,
                                                       particle_number,
                                                       n_qubits)
-    dense_restricted_operator = restricted_operator.toarray()
-    eigvals, eigvecs = numpy.linalg.eigh(dense_restricted_operator)
 
-    # Get the ground energy and initialize list to store the corresponding
-    # ground states
-    ground_energy = sorted(eigvals)[0]
-    ground_states = list()
+    if sparse and num_eigs >= restricted_operator.shape[0] - 1:
+        sparse = False
+
+    # Compute eigenvalues and eigenvectors
+    if sparse:
+        eigvals, eigvecs = scipy.sparse.linalg.eigsh(restricted_operator,
+                                                     k=num_eigs,
+                                                     which='SA')
+        if abs(max(eigvals) - min(eigvals)) < EQ_TOLERANCE:
+            warnings.warn('The lowest {} eigenvalues are degenerate. '
+                          'There may be more ground states; increase '
+                          'num_eigs or set sparse=False to get '
+                          'them.'.format(num_eigs),
+                          RuntimeWarning)
+    else:
+        dense_restricted_operator = restricted_operator.toarray()
+        eigvals, eigvecs = numpy.linalg.eigh(dense_restricted_operator)
+
+    # Get the ground energy
+    if sparse:
+        ground_energy = sorted(eigvals)[0]
+    else:
+        # No need to sort in the case of dense eigenvalue computation
+        ground_energy = eigvals[0]
 
     # Get the indices of eigenvectors corresponding to the ground energy
     ground_state_indices = numpy.where(abs(eigvals - ground_energy) <
                                        EQ_TOLERANCE)
+
+    ground_states = list()
 
     for i in ground_state_indices[0]:
         restricted_ground_state = eigvecs[:, i]
