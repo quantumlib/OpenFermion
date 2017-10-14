@@ -19,9 +19,12 @@ OpenFermion is an open source effort for compiling and analyzing quantum algorit
 Getting started
 ---------------
 
-Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
-To install the latest development version of OpenFermion, clone `this <http://github.com/quantumlib/OpenFermion>`__ git repo,
-change directory to the top level folder and run:
+Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it by running:
+.. code-block:: bash
+
+  python -m pip install --upgrade pip
+
+To install the latest development version of OpenFermion, clone `this <http://github.com/quantumlib/OpenFermion>`__ git repo, change directory to the top level folder and run:
 
 .. code-block:: bash
 
