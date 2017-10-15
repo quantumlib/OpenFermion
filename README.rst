@@ -14,7 +14,7 @@ OpenFermion
 
 .. image:: https://badge.fury.io/py/openfermion.svg
     :target: https://badge.fury.io/py/openfermion
-    
+
 .. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
 OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians.
@@ -91,20 +91,20 @@ Authors
 `Ryan Babbush <http://ryanbabbush.com>`__ (Google),
 `Jarrod McClean <http://jarrodmcclean.com>`__ (Google),
 `Ian Kivlichan <http://aspuru.chem.harvard.edu/ian-kivlichan/>`__ (Harvard),
-Damian Steiger (ETH Zurich),
-Dave Bacon (Google),
-Yudong Cao (Harvard),
-Craig Gidney (Google),
-Thomas Haener (ETH Zurich),
-Vojtech Havlicek (Oxford),
-Zhang Jiang (NASA),
-Matthew Neeley (Google),
-Nicholas Rubin (Rigetti),
+`Damian Steiger <https://github.com/damiansteiger>`__ (ETH Zurich),
+`Dave Bacon <https://github.com/dabacon>`__ (Google),
+`Yudong Cao <https://github.com/yudongcao>`__ (Harvard),
+`Craig Gidney <https://github.com/Strilanc>`__ (Google),
+`Thomas Haener <https://github.com/thomashaener>`__ (ETH Zurich),
+`Vojtech Havlicek <https://github.com/VojtaHavlicek>`__ (Oxford),
+`Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
+`Matthew Neeley <https://github.com/maffoo>`__ (Google),
+`Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
-Kanav Setia (Dartmouth),
-Hannah Sim (Harvard),
-Wei Sun (Google) and
-Kevin Sung (University of Michigan).
+`Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
+`Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
+`Wei Sun <https://github.com/Spaceenter>`__ (Google) and
+`Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan).
 
 Questions?
 ==========

@@ -57,14 +57,14 @@ When Docker is installed, open a command line terminal and check the list of
 running virtual machines by
 
 ```
-	docker-machine ls
+        docker-machine ls
 ```
 
 Assuming this is the firt time Docker has been run, the list should be empty.
 Create a virtual machine by running
 
 ```
-	docker-machine create --driver virtualbox default
+        docker-machine create --driver virtualbox default
 ```
 
 To be able to run this, one needs to install
@@ -76,7 +76,7 @@ use `docker-machine ls` again.
 When the Docker virtual machine is created, configure the shell by running
 
 ```
-	docker-machine env default
+        docker-machine env default
 ```
 
 where if you named the virtual machine differently from default you should also
@@ -93,19 +93,16 @@ Now that Docker is set up, one could navigate to the folder containing the
 Dockerfile for building the OpenFermion image (docker/dockerfile) and run
 
 ```
-	docker build -t openfermion_docker .
+        docker build -t openfermion_docker .
 ```
 
-where "openfermion_docker" is just an arbitrary name and one could replace it
-with any name she deems sensible. Here we will use kickass_openfermion as an
-example.
-
+where "openfermion_docker" is just an arbitrary name.
 It takes a few minutes to build the image. What the Dockerfile does is to
 start from a base image of Ubuntu and install OpenFermion, its plugins and the
 necessary applications needed for running these programs. To run the image, use
 
 ```
-	docker run -it openfermion_docker
+        docker run -it openfermion_docker
 ```
 
 and the terminal enters a new environment which emulates a Ubuntu OS with
@@ -115,15 +112,15 @@ on the container, one can open another terminal, configure it using step 3, and
 run
 
 ```
-	docker ps
+        docker ps
 ```
 
 which returns a list of running containers. For example it might look like:
 
 ```
-CONTAINER ID        IMAGE               COMMAND             CREATED             
+CONTAINER ID        IMAGE               COMMAND             CREATED
 STATUS              PORTS               NAMES
-3cc87ed4205b        5a67a4d66d05        "/bin/bash"         29 hours ago        
+3cc87ed4205b        5a67a4d66d05        "/bin/bash"         29 hours ago
 Up 29 hours                             blissful_brown
 ```
 
@@ -135,7 +132,7 @@ OpenFermion. To transfer files from somewhere on the disk to the Docker
 container, run in a separate terminal from the one running the container
 
 ```
-	docker cp [path to file on disk] [container name]:[path in container]
+        docker cp [path to file on disk] [container name]:[path in container]
 ```
 
 where container name can be gleaned according to step 6 above.
@@ -149,29 +146,29 @@ There are occasions where one might want to open up multiple terminals to
 run the same Docker container. In that case, one could run in any terminal
 
 ```
-	docker exec -it [container name] bash
+        docker exec -it [container name] bash
 ```
 
 and "get into" the container.
 
 ## Running Jupyter notebook with Docker backend
 
-To run Jupyter notebook in a browser with a Docker container running as a 
+To run Jupyter notebook in a browser with a Docker container running as a
 backend, first check the ip address of the virtual machine by running
 
 ```
-	docker-machine ip default
+        docker-machine ip default
 ```
 
 where "default" can be replaced by the name of whichever virtual machine whose
 ip address you want to check.
 
-Assuming the Docker image for OpenFermion is already built and as an 
-example we assume it is called my_openfermion, run the container with an
+Assuming the Docker image for OpenFermion is already built and as an
+example we assume it is called openfermion_docker, run the container with an
 additional -p flag:
 
 ```
-	docker run -it -p 8888:8888 my_openfermion
+        docker run -it -p 8888:8888 openfermion_docker
 ```
 
 Here the numbers 8888 simply specifies the port number through which the Docker
@@ -181,7 +178,7 @@ available, any other number in 8000-9000 will do.
 When the terminal enters the Docker container, run Jupyter notebook by
 
 ```
-	jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
+        jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
 ```
 
 where 8888 is the port number used in step 11 for setting up the container.
@@ -197,8 +194,8 @@ al/share/jupyter/runtime/notebook_cookie_secret
 f7f341fecf94c9aedc7cfaf7
 [I 21:03:13.002 NotebookApp] Use Control-C to stop this server and shut down all
  kernels (twice to skip confirmation).
-[C 21:03:13.002 NotebookApp] 
-    
+[C 21:03:13.002 NotebookApp]
+
 Copy/paste this URL into your browser when you connect for the first time,
 to login with a token:
    http://0.0.0.0:8888/?token=8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7
@@ -209,10 +206,10 @@ Note the token string 8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7.
 Open a browser window and type in the address line
 
 ```
-	[virtual machine ip]:8888
+        [virtual machine ip]:8888
 ```
 
-where [virtual machine ip] is extracted from step 10 and 8888 is the port 
+where [virtual machine ip] is extracted from step 10 and 8888 is the port
 number (or any other port number that one specifies in step 11). A webpage
 asking for token string should appear. Use the token string in step 12 to
 enter Jupyter Notebook.
