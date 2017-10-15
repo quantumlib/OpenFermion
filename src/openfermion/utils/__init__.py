@@ -45,7 +45,8 @@ from ._plane_wave_hamiltonian import (dual_basis_external_potential,
                                       jordan_wigner_dual_basis_hamiltonian,
                                       wigner_seitz_length_scale)
 
-from ._slater_determinants import givens_decomposition
+from ._slater_determinants import (givens_decomposition,
+                                   fermionic_gaussian_decomposition)
 
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,

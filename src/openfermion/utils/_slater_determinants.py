@@ -24,7 +24,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and
     particle-hole transformations on the first fermionic mode.
 
-    The input is an n x (2 * n) matrix W  with orthonormal rows.
+    The input is an n x (2 * n) matrix W with orthonormal rows.
     Furthermore, W has the block form::
 
         W = [ W_1  |  W_2 ]

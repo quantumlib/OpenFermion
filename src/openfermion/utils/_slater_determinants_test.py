@@ -17,8 +17,11 @@ import numpy
 import unittest
 from scipy.linalg import qr
 
-from openfermion.utils import givens_decomposition
-from openfermion.utils._slater_determinants import givens_rotate
+from openfermion.utils import (fermionic_gaussian_decomposition,
+                               givens_decomposition)
+from openfermion.utils._slater_determinants import (
+        diagonalizing_fermionic_unitary, double_givens_rotate, givens_rotate,
+        swap_rows)
 
 
 class GivensDecompositionTest(unittest.TestCase):
@@ -395,3 +398,396 @@ class GivensDecompositionTest(unittest.TestCase):
         for i in range(m):
             for j in range(n):
                 self.assertAlmostEqual(D[i, j], W[i, j])
+
+
+
+class FermionicGaussianDecompositionTest(unittest.TestCase):
+
+    def test_n_equals_3(self):
+        n = 3
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
+        lower_unitary = ferm_unitary[n:]
+        lower_left = lower_unitary[:, :n]
+        lower_right = lower_unitary[:, n:]
+
+        # Check that lower_left and lower_right satisfy the constraints
+        # necessary for the transformed fermionic operators to satisfy
+        # the fermionic anticommutation relations
+        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj())
+                               + lower_right.dot(lower_right.T.conj()))
+        constraint_matrix_2 = (lower_left.dot(lower_right.T)
+                               + lower_right.dot(lower_left.T))
+
+        identity = numpy.eye(n, dtype=complex)
+        for i in numpy.ndindex((n, n)):
+            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
+            self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+        # Get fermionic Gaussian decomposition of lower_unitary
+        left_unitary, decomposition, antidiagonal = (
+                fermionic_gaussian_decomposition(lower_unitary))
+
+        # Compute right_unitary
+        right_unitary = numpy.eye(2 * n, dtype=complex)
+        for parallel_set in decomposition:
+            combined_op = numpy.eye(2 * n, dtype=complex)
+            for op in parallel_set:
+                if op == 'p-h':
+                    swap_rows(combined_op, 0, n)
+                else:
+                    i, j, theta, phi = op
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    givens_rotation = numpy.array([[c, -phase * s],
+                                 [s, phase * c]], dtype=complex)
+                    double_givens_rotate(combined_op, givens_rotation, i, j)
+            right_unitary = combined_op.dot(right_unitary)
+
+        # Compute left_unitary * lower_unitary * right_unitary^\dagger
+        product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
+
+        # Construct the antidiagonal matrix
+        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
+        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+
+        # Assert that W and D are the same
+        for i in numpy.ndindex((n, 2 * n)):
+            self.assertAlmostEqual(anti_diag[i], product[i])
+
+    def test_n_equals_4(self):
+        n = 4
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
+        lower_unitary = ferm_unitary[n:]
+        lower_left = lower_unitary[:, :n]
+        lower_right = lower_unitary[:, n:]
+
+        # Check that lower_left and lower_right satisfy the constraints
+        # necessary for the transformed fermionic operators to satisfy
+        # the fermionic anticommutation relations
+        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj())
+                               + lower_right.dot(lower_right.T.conj()))
+        constraint_matrix_2 = (lower_left.dot(lower_right.T)
+                               + lower_right.dot(lower_left.T))
+
+        identity = numpy.eye(n, dtype=complex)
+        for i in numpy.ndindex((n, n)):
+            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
+            self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+        # Get fermionic Gaussian decomposition of lower_unitary
+        left_unitary, decomposition, antidiagonal = (
+                fermionic_gaussian_decomposition(lower_unitary))
+
+        # Compute right_unitary
+        right_unitary = numpy.eye(2 * n, dtype=complex)
+        for parallel_set in decomposition:
+            combined_op = numpy.eye(2 * n, dtype=complex)
+            for op in parallel_set:
+                if op == 'p-h':
+                    swap_rows(combined_op, 0, n)
+                else:
+                    i, j, theta, phi = op
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    givens_rotation = numpy.array([[c, -phase * s],
+                                 [s, phase * c]], dtype=complex)
+                    double_givens_rotate(combined_op, givens_rotation, i, j)
+            right_unitary = combined_op.dot(right_unitary)
+
+        # Compute left_unitary * lower_unitary * right_unitary^\dagger
+        product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
+
+        # Construct the antidiagonal matrix
+        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
+        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+
+        # Assert that W and D are the same
+        for i in numpy.ndindex((n, 2 * n)):
+            self.assertAlmostEqual(anti_diag[i], product[i])
+
+    def test_n_equals_5(self):
+        n = 5
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
+        lower_unitary = ferm_unitary[n:]
+        lower_left = lower_unitary[:, :n]
+        lower_right = lower_unitary[:, n:]
+
+        # Check that lower_left and lower_right satisfy the constraints
+        # necessary for the transformed fermionic operators to satisfy
+        # the fermionic anticommutation relations
+        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj())
+                               + lower_right.dot(lower_right.T.conj()))
+        constraint_matrix_2 = (lower_left.dot(lower_right.T)
+                               + lower_right.dot(lower_left.T))
+
+        identity = numpy.eye(n, dtype=complex)
+        for i in numpy.ndindex((n, n)):
+            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
+            self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+        # Get fermionic Gaussian decomposition of lower_unitary
+        left_unitary, decomposition, antidiagonal = (
+                fermionic_gaussian_decomposition(lower_unitary))
+
+        # Compute right_unitary
+        right_unitary = numpy.eye(2 * n, dtype=complex)
+        for parallel_set in decomposition:
+            combined_op = numpy.eye(2 * n, dtype=complex)
+            for op in parallel_set:
+                if op == 'p-h':
+                    swap_rows(combined_op, 0, n)
+                else:
+                    i, j, theta, phi = op
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    givens_rotation = numpy.array([[c, -phase * s],
+                                 [s, phase * c]], dtype=complex)
+                    double_givens_rotate(combined_op, givens_rotation, i, j)
+            right_unitary = combined_op.dot(right_unitary)
+
+        # Compute left_unitary * lower_unitary * right_unitary^\dagger
+        product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
+
+        # Construct the antidiagonal matrix
+        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
+        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+
+        # Assert that W and D are the same
+        for i in numpy.ndindex((n, 2 * n)):
+            self.assertAlmostEqual(anti_diag[i], product[i])
+
+
+    def test_n_equals_6(self):
+        n = 6
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
+        lower_unitary = ferm_unitary[n:]
+        lower_left = lower_unitary[:, :n]
+        lower_right = lower_unitary[:, n:]
+
+        # Check that lower_left and lower_right satisfy the constraints
+        # necessary for the transformed fermionic operators to satisfy
+        # the fermionic anticommutation relations
+        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj())
+                               + lower_right.dot(lower_right.T.conj()))
+        constraint_matrix_2 = (lower_left.dot(lower_right.T)
+                               + lower_right.dot(lower_left.T))
+
+        identity = numpy.eye(n, dtype=complex)
+        for i in numpy.ndindex((n, n)):
+            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
+            self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+        # Get fermionic Gaussian decomposition of lower_unitary
+        left_unitary, decomposition, antidiagonal = (
+                fermionic_gaussian_decomposition(lower_unitary))
+
+        # Compute right_unitary
+        right_unitary = numpy.eye(2 * n, dtype=complex)
+        for parallel_set in decomposition:
+            combined_op = numpy.eye(2 * n, dtype=complex)
+            for op in parallel_set:
+                if op == 'p-h':
+                    swap_rows(combined_op, 0, n)
+                else:
+                    i, j, theta, phi = op
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    givens_rotation = numpy.array([[c, -phase * s],
+                                 [s, phase * c]], dtype=complex)
+                    double_givens_rotate(combined_op, givens_rotation, i, j)
+            right_unitary = combined_op.dot(right_unitary)
+
+        # Compute left_unitary * lower_unitary * right_unitary^\dagger
+        product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
+
+        # Construct the antidiagonal matrix
+        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
+        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+
+        # Assert that W and D are the same
+        for i in numpy.ndindex((n, 2 * n)):
+            self.assertAlmostEqual(anti_diag[i], product[i])
+
+
+    def test_n_equals_7(self):
+        n = 7
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
+        lower_unitary = ferm_unitary[n:]
+        lower_left = lower_unitary[:, :n]
+        lower_right = lower_unitary[:, n:]
+
+        # Check that lower_left and lower_right satisfy the constraints
+        # necessary for the transformed fermionic operators to satisfy
+        # the fermionic anticommutation relations
+        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj())
+                               + lower_right.dot(lower_right.T.conj()))
+        constraint_matrix_2 = (lower_left.dot(lower_right.T)
+                               + lower_right.dot(lower_left.T))
+
+        identity = numpy.eye(n, dtype=complex)
+        for i in numpy.ndindex((n, n)):
+            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
+            self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+        # Get fermionic Gaussian decomposition of lower_unitary
+        left_unitary, decomposition, antidiagonal = (
+                fermionic_gaussian_decomposition(lower_unitary))
+
+        # Compute right_unitary
+        right_unitary = numpy.eye(2 * n, dtype=complex)
+        for parallel_set in decomposition:
+            combined_op = numpy.eye(2 * n, dtype=complex)
+            for op in parallel_set:
+                if op == 'p-h':
+                    swap_rows(combined_op, 0, n)
+                else:
+                    i, j, theta, phi = op
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    givens_rotation = numpy.array([[c, -phase * s],
+                                 [s, phase * c]], dtype=complex)
+                    double_givens_rotate(combined_op, givens_rotation, i, j)
+            right_unitary = combined_op.dot(right_unitary)
+
+        # Compute left_unitary * lower_unitary * right_unitary^\dagger
+        product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
+
+        # Construct the antidiagonal matrix
+        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
+        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+
+        # Assert that W and D are the same
+        for i in numpy.ndindex((n, 2 * n)):
+            self.assertAlmostEqual(anti_diag[i], product[i])
+
+
+    def test_n_equals_8(self):
+        n = 8
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
+        lower_unitary = ferm_unitary[n:]
+        lower_left = lower_unitary[:, :n]
+        lower_right = lower_unitary[:, n:]
+
+        # Check that lower_left and lower_right satisfy the constraints
+        # necessary for the transformed fermionic operators to satisfy
+        # the fermionic anticommutation relations
+        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj())
+                               + lower_right.dot(lower_right.T.conj()))
+        constraint_matrix_2 = (lower_left.dot(lower_right.T)
+                               + lower_right.dot(lower_left.T))
+
+        identity = numpy.eye(n, dtype=complex)
+        for i in numpy.ndindex((n, n)):
+            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
+            self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+        # Get fermionic Gaussian decomposition of lower_unitary
+        left_unitary, decomposition, antidiagonal = (
+                fermionic_gaussian_decomposition(lower_unitary))
+
+        # Compute right_unitary
+        right_unitary = numpy.eye(2 * n, dtype=complex)
+        for parallel_set in decomposition:
+            combined_op = numpy.eye(2 * n, dtype=complex)
+            for op in parallel_set:
+                if op == 'p-h':
+                    swap_rows(combined_op, 0, n)
+                else:
+                    i, j, theta, phi = op
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    givens_rotation = numpy.array([[c, -phase * s],
+                                 [s, phase * c]], dtype=complex)
+                    double_givens_rotate(combined_op, givens_rotation, i, j)
+            right_unitary = combined_op.dot(right_unitary)
+
+        # Compute left_unitary * lower_unitary * right_unitary^\dagger
+        product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
+
+        # Construct the antidiagonal matrix
+        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
+        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+
+        # Assert that W and D are the same
+        for i in numpy.ndindex((n, 2 * n)):
+            self.assertAlmostEqual(anti_diag[i], product[i])
+
+
+    def test_n_equals_9(self):
+        n = 9
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
+        lower_unitary = ferm_unitary[n:]
+        lower_left = lower_unitary[:, :n]
+        lower_right = lower_unitary[:, n:]
+
+        # Check that lower_left and lower_right satisfy the constraints
+        # necessary for the transformed fermionic operators to satisfy
+        # the fermionic anticommutation relations
+        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj())
+                               + lower_right.dot(lower_right.T.conj()))
+        constraint_matrix_2 = (lower_left.dot(lower_right.T)
+                               + lower_right.dot(lower_left.T))
+
+        identity = numpy.eye(n, dtype=complex)
+        for i in numpy.ndindex((n, n)):
+            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
+            self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+        # Get fermionic Gaussian decomposition of lower_unitary
+        left_unitary, decomposition, antidiagonal = (
+                fermionic_gaussian_decomposition(lower_unitary))
+
+        # Compute right_unitary
+        right_unitary = numpy.eye(2 * n, dtype=complex)
+        for parallel_set in decomposition:
+            combined_op = numpy.eye(2 * n, dtype=complex)
+            for op in parallel_set:
+                if op == 'p-h':
+                    swap_rows(combined_op, 0, n)
+                else:
+                    i, j, theta, phi = op
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    givens_rotation = numpy.array([[c, -phase * s],
+                                 [s, phase * c]], dtype=complex)
+                    double_givens_rotate(combined_op, givens_rotation, i, j)
+            right_unitary = combined_op.dot(right_unitary)
+
+        # Compute left_unitary * lower_unitary * right_unitary^\dagger
+        product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
+
+        # Construct the antidiagonal matrix
+        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
+        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+
+        # Assert that W and D are the same
+        for i in numpy.ndindex((n, 2 * n)):
+            self.assertAlmostEqual(anti_diag[i], product[i])
