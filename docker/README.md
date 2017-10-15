@@ -47,7 +47,7 @@ docker run -it -v $(pwd):/openfermion_test -w /openfermion_test openfermion_dock
 ```
 
 
-Installing and running Docker
+## Installing and running Docker
 -----------------------------
 
 1. Install Docker from the `Docker website <https://docs.docker.com/engine/installation/#supported-platforms>`
@@ -55,14 +55,16 @@ Installing and running Docker
 2. When Docker is installed, open a command line terminal and check the list of
 running virtual machines by
 
-.. code-block:: bash
+```
 	docker-machine ls
+```
 
 The returned list should be empty if this is the first time Docker is run on
 the computer. Create a virtual machine by running
 
-.. code-block:: bash
+```
 	docker-machine create --driver virtualbox default
+```
 
 (Note: To be able to run this, one needs to install `virtualbox <https://www.virtualbox.org/wiki/Downloads>`)
 
@@ -72,8 +74,9 @@ use `docker-machine ls` again.
 
 3. When the Docker virtual machine is created, configure the shell by running
 
-.. code-block:: bash
+```
 	docker-machine env default
+```
 
 where if you named the virtual machine differently from default you should also
 replace "default" with the customized name. The command above will return a
@@ -83,14 +86,15 @@ depends on the OS.
 4. Run the command in the message returned above.
 
 
-Running OpenFermion with Docker
+## Running OpenFermion with Docker
 -------------------------------
 
 5. Now that Docker is set up, one could navigate to the folder containing the
 Dockerfile for building the OpenFermion image (docker/dockerfile) and run
 
-.. code-block:: bash
+```
 	docker build -t kickass_openfermion .
+```
 
 where "kickass_openfermion" is just an arbitrary name and one could replace it
 with any name she deems sensible. Here we will use kickass_openfermion as an
@@ -100,8 +104,9 @@ example.
 start from a base image of ubuntu and install OpenFermion, its plugins and the
 necessary applications needed for running these programs. To run the image, use
 
-.. code-block:: bash
+```
 	docker run -it kickass_openfermion
+```
 
 and the terminal enters a new environment which emulates a Ubuntu OS with
 OpenFermion and accessories installed, regardless of what the host OS is. This
@@ -109,8 +114,9 @@ new environment is a running process called a Docker container. To check info
 on the container, one can open another terminal, configure it using step 3, and
 run
 
-.. code-block:: bash
+```
 	docker ps
+```
 
 which returns a list of running containers. For example it might look like:
 
@@ -126,8 +132,9 @@ started quite a while ago.
 OpenFermion. To transfer files from somewhere on the disk to the Docker
 container, run in a separate terminal from the one running the container
 
-.. code-block:: bash
+```
 	docker cp [path to file on disk] [container name]:[path in container]
+```
 
 where container name can be gleaned according to step 6 above.
 
@@ -139,8 +146,9 @@ remotely into the Docker container.
 9. There are occasions where one might want to open up multiple terminals to
 run the same Docker container. In that case, one could run in any terminal
 
-.. code-block:: bash
+```
 	docker exec -it [container name] bash
+```
 
 and "get into" the container.
 
@@ -150,8 +158,9 @@ Running Jupyter notebook with Docker backend
 10. To run Jupyter notebook in a browser with a Docker container running as a 
 backend, first check the ip address of the virtual machine by running
 
-.. code-block:: bash
+```
 	docker-machine ip default
+```
 
 where "default" can be replaced by the name of whichever virtual machine whose
 ip address you want to check.
@@ -160,8 +169,9 @@ ip address you want to check.
 example we assume it is called kickass_openfermion, run the container with an
 additional -p flag:
 
-.. code-block:: bash
+```
 	docker run -it -p 8888:8888 kickass_openfermion
+```
 
 Here the numbers 8888 simply specifies the port number through which the Docker
 container communicates with the browser. If for some reason this port is not
@@ -169,8 +179,9 @@ available, any other number in 8000-9000 will do.
 
 12. When the terminal enters the Docker container, run Jupyter notebook by
 
-.. code-block:: bash
+```
 	jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
+```
 
 where 8888 is the port number used in step 11 for setting up the container.
 The message returned to the terminal may look something like
@@ -195,8 +206,9 @@ Note the token string 8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7.
 
 13. Open a browser window and type in the address line
 
-.. code-block:: bash
+```
 	[virtual machine ip]:8888
+```
 
 where [virtual machine ip] is extracted from step 10 and 8888 is the port 
 number (or any other port number that one specifies in step 11). A webpage
