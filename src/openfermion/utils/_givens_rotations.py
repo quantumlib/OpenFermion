@@ -74,16 +74,16 @@ def givens_decomposition(unitary_rows):
             current_matrix = expanded_givens_rotation.dot(current_matrix)
             left_unitary = expanded_givens_rotation.dot(left_unitary)
 
-    # Compute the decomposition of unitary_rows into Givens rotations
+    # Compute the decomposition of current_matrix into Givens rotations
     givens_rotations = list()
     if m != n:
+        # Get the maximum number of simultaneous rotations that
+        # will be performed
+        max_simul_rotations = min(m, n - m)
         # There are n - 1 iterations (the circuit depth is n - 1)
         for k in range(n - 1):
             # Get the (row, column) indices of elements to zero out in
             # parallel.
-            # Get the maximum number of simultaneous rotations that
-            # will be performed
-            max_simul_rotations = min(m, n - m)
             if k < max_simul_rotations - 1:
                 # There are k + 1 elements to zero out
                 start_row = 0

@@ -17,6 +17,175 @@ import numpy
 from scipy.linalg import schur
 
 from openfermion.config import EQ_TOLERANCE
+from openfermion.utils._givens_rotations import (givens_matrix_elements,
+                                                 expand_two_by_two)
+
+
+def fermionic_gaussian_decomposition(unitary_rows):
+    """Decompose a matrix into a sequence of Givens rotations and
+    particle-hole transformations on the first fermionic mode.
+
+    The input is an n x (2 * n) matrix W  with orthonormal rows.
+    Furthermore, W has the block form::
+
+        W = [ W_1  |  W_2 ]
+
+    where W_1 and W_2 satisfy::
+
+        W_1 * W_1^\dagger + W_2 * W_2^\dagger = I
+        W_1 * W_2^T + W_2 * W_1^T = 0
+
+    W can be decomposed as::
+        
+        V * W * U^\dagger = [ 0  |  L ]
+
+    where V and U are unitary matrices and L is an antidiagonal unitary matrix.
+    Furthermore, we can decompose U as a sequence of Givens rotations
+    and particle-hole transformations on the first fermionic mode.
+
+    The decomposition of U is returned as a list of tuples of objects
+    describing rotations and particle-hole transformations. The list looks
+    something like [('p-h', ), (G_1, ), ('p-h', G_2), ... ].
+    The objects within a tuple are either the string 'p-h', which indicates
+    a particle-hole transformation on the first fermionic mode, or a tuple
+    of the form (i, j, theta, phi), which indicates a Givens roation
+    of rows i and j by angles theta and phi.
+
+    Args:
+        unitary_rows(ndarray): A matrix with orthonormal rows and
+            additional structure described above.
+
+    Returns:
+        left_unitary(ndarray): An n x n matrix representing V.
+        decomposition(list[tuple]): The decomposition of U.
+        antidiagonal(ndarray): A list of the nonzero entries of L.
+    """
+    current_matrix = numpy.copy(unitary_rows)
+    n, p = current_matrix.shape
+
+    # Check that p = 2 * n
+    if p != 2 * n:
+        raise ValueError('The input matrix must have twice as many columns '
+                         'as rows.')
+
+    # Compute left_unitary using Givens rotations
+    left_unitary = numpy.eye(n, dtype=complex)
+    for k in reversed(range(1, n)):
+        # Zero out entries in column k
+        for l in range(k):
+            # Zero out entry in row l
+            givens_rotation = givens_matrix_elements(current_matrix[l, k],
+                                                     current_matrix[l + 1, k])
+            expanded_givens_rotation = expand_two_by_two(givens_rotation,
+                                                         l, l + 1, n)
+            current_matrix = expanded_givens_rotation.dot(current_matrix)
+            left_unitary = expanded_givens_rotation.dot(left_unitary)
+
+    # Initialize list to store decomposition of current_matrix
+    decomposition = list()
+    # There are 2 * n - 1 iterations (that is the circuit depth)
+    for k in range(2 * n - 1):
+        # Initialize the list of parallel operations to perform
+        # in this iteration
+        parallel_ops = list()
+
+        # Perform a particle-hole transformation if necessary
+        if k % 2 == 0 and abs(current_matrix[k // 2, 0]) > EQ_TOLERANCE:
+            parallel_ops.append('p-h')
+            swap_columns(current_matrix, 0, n)
+
+        # Get the (row, column) indices of elements to zero out in parallel.
+        if k < n:
+            end_row = k
+            end_column = k
+        else:
+            end_row = n - 1
+            end_column = 2 * (n - 1) - k
+        column_indices = range(end_column, 0, -2)
+        row_indices = range(end_row, end_row - len(column_indices), -1)
+        indices_to_zero_out = zip(row_indices, column_indices)
+
+        for i, j in indices_to_zero_out:
+            # Compute the Givens rotation to zero out the (i, j) element
+            left_element = current_matrix[i, j - 1].conj()
+            right_element = current_matrix[i, j].conj()
+            givens_rotation = givens_matrix_elements(left_element,
+                                                     right_element)
+            # Need to switch the rows to zero out right_element
+            # rather than left_element
+            givens_rotation = givens_rotation[(1, 0), :]
+
+            # Add the parameters to the list
+            theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+            phi = numpy.angle(givens_rotation[1, 1])
+            parallel_ops.append((j - 1, j, theta, phi))
+
+            # Update the matrix
+            expanded_givens_rotation = expanded_double_givens(givens_rotation,
+                                                              j - 1, j, n)
+            current_matrix = current_matrix.dot(
+                    expanded_givens_rotation.T.conj())
+
+        # Append the current list of parallel rotations to the list
+        decomposition.append(tuple(parallel_ops))
+
+    # Get the antidiagonal entries
+    antidiagonal = current_matrix[range(n), range(2 * n - 1, n - 1, -1)]
+    return left_unitary, decomposition, antidiagonal
+
+
+def diagonalizing_fermionic_unitary(antisymmetric_matrix):
+    """Compute the unitary that diagonalizes a quadratic Hamiltonian.
+
+    The input matrix represents a quadratic Hamiltonian in the Majorana basis.
+    The output matrix is a unitary that represents a transformation (mixing)
+    of the fermionic ladder operators. We use the convention that the
+    creation operators are listed before the annihilation operators.
+    The returned unitary has additional structure which ensures
+    that the transformed ladder operators also satisfy the fermionic
+    anticommutation relations.
+
+    Args:
+        antisymmetric_matrix(ndarray): A (2 * n_qubits) x (2 * n_qubits)
+            antisymmetric matrix representing a quadratic Hamiltonian in the
+            Majorana basis.
+    Returns:
+        diagonalizing_unitary(ndarray): A (2 * n_qubits) x (2 * n_qubits)
+            unitary matrix representing a transformation of the fermionic
+            ladder operators.
+    """
+    m, n = antisymmetric_matrix.shape
+
+    if m != n:
+        raise ValueError('The input matrix must be square.')
+    if n % 2 != 0:
+        raise ValueError('The input matrix must have even dimension')
+
+    # Check that input matrix is antisymmetric
+    matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
+    maxval = numpy.max(numpy.abs(matrix_plus_transpose))
+    if maxval > EQ_TOLERANCE:
+        raise ValueError('The input matrix must be antisymmetric.')
+
+    n_qubits = n // 2
+
+    # Get the orthogonal transformation that puts antisymmetric_matrix
+    # into canonical form
+    canonical, orthogonal = antisymmetric_canonical_form(antisymmetric_matrix)
+
+    # Create the matrix that converts between fermionic ladder and
+    # Majorana bases
+    identity = numpy.eye(n_qubits)
+    majorana_basis_change = numpy.block([
+            [identity, identity],
+            [1.j * identity, -1.j * identity]
+            ]) / numpy.sqrt(2)
+
+    # Compute the unitary and return
+    diagonalizing_unitary = majorana_basis_change.T.conj().dot(
+            orthogonal.dot(majorana_basis_change))
+
+    return diagonalizing_unitary
 
 
 def antisymmetric_canonical_form(antisymmetric_matrix):
@@ -49,6 +218,13 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     if n % 2 != 0:
         raise ValueError('The input matrix must have even dimension')
 
+    # Check that input matrix is antisymmetric
+    matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
+    maxval = numpy.max(numpy.abs(matrix_plus_transpose))
+    if maxval > EQ_TOLERANCE:
+        raise ValueError('The input matrix must be antisymmetric.')
+
+    # Compute Schur decomposition
     canonical, orthogonal = schur(antisymmetric_matrix, output='real')
 
     # The returned form is block diagonal; we need to permute rows and columns
@@ -65,12 +241,21 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
 
     return canonical, orthogonal.T
 
+
+def expanded_double_givens(G, i, j, n):
+    expanded_G = numpy.eye(2 * n, dtype=complex)
+    expanded_G[([i], [j]), (i, j)] = G
+    expanded_G[([n + i], [n + j]), (n + i, n + j)] = G.conj()
+    return expanded_G
+
+
 def swap_rows(M, i, j):
     """Swap rows i and j of matrix M."""
     row_i = M[i, :].copy()
     row_j = M[j, :].copy()
     M[i, :], M[j, :] = row_j, row_i
     
+
 def swap_columns(M, i, j):
     """Swap columns i and j of matrix M."""
     column_i = M[:, i].copy()
