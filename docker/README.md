@@ -50,7 +50,7 @@ docker run -it -v $(pwd):/openfermion_test -w /openfermion_test openfermion_dock
 ## Setting up Docker for the first time
 
 
-1. When Docker is installed, open a command line terminal and check the list of
+When Docker is installed, open a command line terminal and check the list of
 running virtual machines by
 
 ```
@@ -70,7 +70,7 @@ Here "default" is just the name of the virtual machine. You can replace it by
 any name that you prefer. To check that the virtual machine is running indeed,
 use `docker-machine ls` again.
 
-2. When the Docker virtual machine is created, configure the shell by running
+When the Docker virtual machine is created, configure the shell by running
 
 ```
 	docker-machine env default
@@ -87,23 +87,23 @@ depends on the OS.
 ## Running OpenFermion with Docker
 -------------------------------
 
-4. Now that Docker is set up, one could navigate to the folder containing the
+Now that Docker is set up, one could navigate to the folder containing the
 Dockerfile for building the OpenFermion image (docker/dockerfile) and run
 
 ```
-	docker build -t kickass_openfermion .
+	docker build -t openfermion_docker .
 ```
 
-where "kickass_openfermion" is just an arbitrary name and one could replace it
+where "openfermion_docker" is just an arbitrary name and one could replace it
 with any name she deems sensible. Here we will use kickass_openfermion as an
 example.
 
-5. It takes a few minutes to build the image. What the Dockerfile does is to
+It takes a few minutes to build the image. What the Dockerfile does is to
 start from a base image of ubuntu and install OpenFermion, its plugins and the
 necessary applications needed for running these programs. To run the image, use
 
 ```
-	docker run -it kickass_openfermion
+	docker run -it openfermion_docker
 ```
 
 and the terminal enters a new environment which emulates a Ubuntu OS with
@@ -118,15 +118,17 @@ run
 
 which returns a list of running containers. For example it might look like:
 
+```
 CONTAINER ID        IMAGE               COMMAND             CREATED             
 STATUS              PORTS               NAMES
 3cc87ed4205b        5a67a4d66d05        "/bin/bash"         29 hours ago        
 Up 29 hours                             blissful_brown
+```
 
 in which case we have a running container called blissful_brown that was
 started quite a while ago.
 
-6. The freshly built image is ready to run any Python program that uses
+The freshly built image is ready to run any Python program that uses
 OpenFermion. To transfer files from somewhere on the disk to the Docker
 container, run in a separate terminal from the one running the container
 
@@ -136,12 +138,12 @@ container, run in a separate terminal from the one running the container
 
 where container name can be gleaned according to step 6 above.
 
-7. An alternative way of loading files onto the Docker container is through
+An alternative way of loading files onto the Docker container is through
 remote repos such as Github or BitBucket. git is installed in the Docker image
 built in step 5. After step 6, one could run "git clone ..." etc to pull files
 remotely into the Docker container.
 
-8. There are occasions where one might want to open up multiple terminals to
+There are occasions where one might want to open up multiple terminals to
 run the same Docker container. In that case, one could run in any terminal
 
 ```
@@ -151,9 +153,8 @@ run the same Docker container. In that case, one could run in any terminal
 and "get into" the container.
 
 ## Running Jupyter notebook with Docker backend
---------------------------------------------
 
-9. To run Jupyter notebook in a browser with a Docker container running as a 
+To run Jupyter notebook in a browser with a Docker container running as a 
 backend, first check the ip address of the virtual machine by running
 
 ```
@@ -184,6 +185,7 @@ available, any other number in 8000-9000 will do.
 where 8888 is the port number used in step 11 for setting up the container.
 The message returned to the terminal may look something like
 
+```
 [I 21:03:12.979 NotebookApp] Writing notebook server cookie secret to /root/.loc
 al/share/jupyter/runtime/notebook_cookie_secret
 [I 21:03:13.001 NotebookApp] Serving notebooks from local directory: /
@@ -195,10 +197,10 @@ f7f341fecf94c9aedc7cfaf7
  kernels (twice to skip confirmation).
 [C 21:03:13.002 NotebookApp] 
     
-    Copy/paste this URL into your browser when you connect for the first time,
-    to login with a token:
-        http://0.0.0.0:8888/?token=8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cf
-af7
+Copy/paste this URL into your browser when you connect for the first time,
+to login with a token:
+   http://0.0.0.0:8888/?token=8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7
+```
 
 Note the token string 8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7.
 
