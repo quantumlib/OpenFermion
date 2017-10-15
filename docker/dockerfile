@@ -11,7 +11,7 @@ RUN yes | apt-get install wget
 RUN cd /root; wget https://bootstrap.pypa.io/get-pip.py
 ## Change the following lines for different Python versions/distributions
 RUN yes | apt-get install python
-RUN python /root/get-pip.py
+RUN python /root/get-pip.py; rm /root/get-pip.py
 
 # Install projectq (login to Github may be requested)
 RUN yes | apt-get install git
@@ -22,11 +22,23 @@ RUN yes | apt-get install g++
 RUN yes | apt-get install python-dev
 RUN cd /root/ProjectQ/; python -m pip install -e .
 
-# Install OpenFermion, OpenFermion-ProjectQ plugin
-RUN pip install git+https://github.com/quantumlib/OpenFermion-ProjectQ.git@v0.1a1
-RUN pip install git+https://github.com/ProjectQ-Framework/FermiLib-Plugin-Psi4.git@v0.1a1
-RUN pip install git+https://github.com/ProjectQ-Framework/FermiLib-Plugin-PySCF.git@v0.1a0
-
 # Install jupyter notebook
 RUN yes | apt-get install ipython-notebook
 RUN pip install jupyter
+
+# Install Psi4
+RUN cd /root; wget http://vergil.chemistry.gatech.edu/psicode-download/psi4conda-1.1-py27-Linux-x86_64.sh
+RUN apt-get install bzip2
+RUN echo '/root/psi4conda' | bash /root/psi4conda-1.1-py27-Linux-x86_64.sh 
+RUN rm /root/psi4conda-1.1-py27-Linux-x86_64.sh
+
+# Install PySCF
+RUN cd /root; git clone https://github.com/sunqm/pyscf
+RUN export PATH=/root/psi4conda/bin:$PATH; yes | apt-get install cmake; cd /root/pyscf/pyscf/lib; mkdir build; cd build; cmake ..; make
+
+# Install OpenFermion, OpenFermion-ProjectQ plugin
+RUN pip install git+https://github.com/quantumlib/OpenFermion-ProjectQ.git@v0.1a1
+RUN pip install git+https://github.com/quantumlib/OpenFermion-Psi4.git@v0.1a1
+RUN pip install git+https://github.com/quantumlib/OpenFermion-PySCF.git@v0.1a0
+
+ENTRYPOINT export PATH=/root/psi4conda/bin:$PATH; export PYTHONPATH=/root/pyscf:/usr/local/lib/python2.7/dist-packages:$PYTHONPATH; bash
