@@ -14,8 +14,6 @@ from ._chemical_series import (make_atomic_ring,
                                make_atomic_lattice,
                                make_atom)
 
-from ._givens_rotations import givens_decomposition
-
 from ._grid import Grid
 
 from ._hubbard import fermi_hubbard
@@ -46,6 +44,8 @@ from ._plane_wave_hamiltonian import (dual_basis_external_potential,
                                       plane_wave_hamiltonian,
                                       jordan_wigner_dual_basis_hamiltonian,
                                       wigner_seitz_length_scale)
+
+from ._slater_determinants import givens_decomposition
 
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,

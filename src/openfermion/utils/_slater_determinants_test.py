@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests for givens_rotations.py."""
+"""Tests for slater_determinants.py."""
 from __future__ import absolute_import
 
 import numpy
@@ -18,7 +18,7 @@ import unittest
 from scipy.linalg import qr
 
 from openfermion.utils import givens_decomposition
-from openfermion.utils._givens_rotations import expand_two_by_two
+from openfermion.utils._slater_determinants import expand_two_by_two
 
 
 class GivensDecompositionTest(unittest.TestCase):
