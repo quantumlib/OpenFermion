@@ -80,11 +80,8 @@ When the Docker virtual machine is created, configure the shell by running
 ```
 
 where if you named the virtual machine differently from default you should also
-replace "default" with the customized name. The command above will return a
-message containing the command to run for configuring the shell. This command
-depends on the OS.
-
-3. Run the command in the message returned above.
+replace "default" with the customized name. The command above will return an OS
+dependent message containing the command to run for configuring the shell.
 
 
 ## Running OpenFermion with Docker
@@ -140,9 +137,7 @@ where container name can be gleaned according to step 6 above.
 An alternative way of loading files onto the Docker container is through
 remote repos such as Github or BitBucket. git is installed in the Docker image
 built in step 5. After step 6, one could run "git clone ..." etc to pull files
-remotely into the Docker container.
-
-There are occasions where one might want to open up multiple terminals to
+remotely into the Docker container. There are occasions where one might want to open up multiple terminals to
 run the same Docker container. In that case, one could run in any terminal
 
 ```
@@ -163,9 +158,8 @@ backend, first check the ip address of the virtual machine by running
 where "default" can be replaced by the name of whichever virtual machine whose
 ip address you want to check.
 
-Assuming the Docker image for OpenFermion is already built and as an
-example we assume it is called openfermion_docker, run the container with an
-additional -p flag:
+Assuming the Docker image for OpenFermion is already built is called openfermion_docker,
+run the container with an additional -p flag:
 
 ```
         docker run -it -p 8888:8888 openfermion_docker
@@ -182,27 +176,15 @@ When the terminal enters the Docker container, run Jupyter notebook by
 ```
 
 where 8888 is the port number used in step 11 for setting up the container.
-The message returned to the terminal may look something like
+The message returned to the terminal should end with a statement that says something like
 
 ```
-[I 21:03:12.979 NotebookApp] Writing notebook server cookie secret to /root/.loc
-al/share/jupyter/runtime/notebook_cookie_secret
-[I 21:03:13.001 NotebookApp] Serving notebooks from local directory: /
-[I 21:03:13.001 NotebookApp] 0 active kernels
-[I 21:03:13.002 NotebookApp] The Jupyter Notebook is running at:
-[I 21:03:13.002 NotebookApp] http://0.0.0.0:8888/?token=8f70c035fb9b0dbbf160d996
-f7f341fecf94c9aedc7cfaf7
-[I 21:03:13.002 NotebookApp] Use Control-C to stop this server and shut down all
- kernels (twice to skip confirmation).
-[C 21:03:13.002 NotebookApp]
-
 Copy/paste this URL into your browser when you connect for the first time,
 to login with a token:
    http://0.0.0.0:8888/?token=8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7
 ```
 
 Note the token string 8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7.
-
 Open a browser window and type in the address line
 
 ```
@@ -212,7 +194,5 @@ Open a browser window and type in the address line
 where [virtual machine ip] is extracted from step 10 and 8888 is the port
 number (or any other port number that one specifies in step 11). A webpage
 asking for token string should appear. Use the token string in step 12 to
-enter Jupyter Notebook.
-
-If logged in successfully, you should be able to freely navigate through
+enter Jupyter Notebook. If logged in successfully, you should be able to freely navigate through
 the entire Docker image and launch any Jupyter notebook in the image.
