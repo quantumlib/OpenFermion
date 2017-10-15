@@ -60,17 +60,17 @@ running virtual machines by
 	docker-machine ls
 ```
 
-The returned list should be empty if this is the first time Docker is run on
-the computer. Create a virtual machine by running
+Assuming this is the firt time Docker has been run, the list should be empty.
+Create a virtual machine by running
 
 ```
 	docker-machine create --driver virtualbox default
 ```
 
-(Note: To be able to run this, one needs to install [virtualbox](https://www.virtualbox.org/wiki/Downloads))
-
-Here "default" is just the name of the virtual machine. You can replace it by
-any name that you prefer. To check that the virtual machine is running indeed,
+To be able to run this, one needs to install
+[virtualbox](https://www.virtualbox.org/wiki/Downloads).
+Here, "default" is just the name of the virtual machine. You can replace it by
+any name that you prefer. To check that the virtual machine is indeed running,
 use `docker-machine ls` again.
 
 When the Docker virtual machine is created, configure the shell by running
@@ -88,7 +88,6 @@ depends on the OS.
 
 
 ## Running OpenFermion with Docker
--------------------------------
 
 Now that Docker is set up, one could navigate to the folder containing the
 Dockerfile for building the OpenFermion image (docker/dockerfile) and run
@@ -102,7 +101,7 @@ with any name she deems sensible. Here we will use kickass_openfermion as an
 example.
 
 It takes a few minutes to build the image. What the Dockerfile does is to
-start from a base image of ubuntu and install OpenFermion, its plugins and the
+start from a base image of Ubuntu and install OpenFermion, its plugins and the
 necessary applications needed for running these programs. To run the image, use
 
 ```
@@ -168,11 +167,11 @@ where "default" can be replaced by the name of whichever virtual machine whose
 ip address you want to check.
 
 Assuming the Docker image for OpenFermion is already built and as an 
-example we assume it is called kickass_openfermion, run the container with an
+example we assume it is called my_openfermion, run the container with an
 additional -p flag:
 
 ```
-	docker run -it -p 8888:8888 kickass_openfermion
+	docker run -it -p 8888:8888 my_openfermion
 ```
 
 Here the numbers 8888 simply specifies the port number through which the Docker
