@@ -35,7 +35,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
         W_1 * W_2^T + W_2 * W_1^T = 0
 
     W can be decomposed as::
-        
+
         V * W * U^\dagger = [ 0  |  L ]
 
     where V and U are unitary matrices and L is an antidiagonal unitary matrix.
@@ -66,6 +66,22 @@ def fermionic_gaussian_decomposition(unitary_rows):
     if p != 2 * n:
         raise ValueError('The input matrix must have twice as many columns '
                          'as rows.')
+
+    # Check that left and right parts of unitary_rows satisfy the constraints
+    # necessary for the transformed fermionic operators to satisfy
+    # the fermionic anticommutation relations
+    left_part = unitary_rows[:, :n]
+    right_part = unitary_rows[:, n:]
+    constraint_matrix_1 = (left_part.dot(left_part.T.conj()) +
+                           right_part.dot(right_part.T.conj()))
+    constraint_matrix_2 = (left_part.dot(right_part.T) +
+                           right_part.dot(left_part.T))
+    discrepancy_1 = numpy.amax(abs(constraint_matrix_1 - numpy.eye(n)))
+    discrepancy_2 = numpy.amax(abs(constraint_matrix_2))
+    if discrepancy_1 > EQ_TOLERANCE or discrepancy_2 > EQ_TOLERANCE:
+        raise ValueError('The input matrix does not satisfy the constraints '
+                         'necessary for a proper transformation of the '
+                         'fermionic ladder operators.')
 
     # Compute left_unitary using Givens rotations
     left_unitary = numpy.eye(n, dtype=complex)
@@ -151,18 +167,6 @@ def diagonalizing_fermionic_unitary(antisymmetric_matrix):
             ladder operators.
     """
     m, n = antisymmetric_matrix.shape
-
-    if m != n:
-        raise ValueError('The input matrix must be square.')
-    if n % 2 != 0:
-        raise ValueError('The input matrix must have even dimension')
-
-    # Check that input matrix is antisymmetric
-    matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
-    maxval = numpy.max(numpy.abs(matrix_plus_transpose))
-    if maxval > EQ_TOLERANCE:
-        raise ValueError('The input matrix must be antisymmetric.')
-
     n_qubits = n // 2
 
     # Get the orthogonal transformation that puts antisymmetric_matrix
@@ -209,10 +213,9 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     """
     m, n = antisymmetric_matrix.shape
 
-    if m != n:
-        raise ValueError('The input matrix must be square.')
-    if n % 2 != 0:
-        raise ValueError('The input matrix must have even dimension')
+    if m != n or n % 2 != 0:
+        raise ValueError('The input matrix must be square with even '
+                         'dimension.')
 
     # Check that input matrix is antisymmetric
     matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
@@ -411,18 +414,18 @@ def givens_rotate(operator, givens_rotation, i, j, which='row'):
         # Rotate rows i and j
         row_i = operator[i].copy()
         row_j = operator[j].copy()
-        operator[i] = (givens_rotation[0, 0] * row_i
-                       + givens_rotation[0, 1] * row_j)
-        operator[j] = (givens_rotation[1, 0] * row_i
-                       + givens_rotation[1, 1] * row_j)
+        operator[i] = (givens_rotation[0, 0] * row_i +
+                       givens_rotation[0, 1] * row_j)
+        operator[j] = (givens_rotation[1, 0] * row_i +
+                       givens_rotation[1, 1] * row_j)
     else:
         # Rotate columns i and j
         col_i = operator[:, i].copy()
         col_j = operator[:, j].copy()
-        operator[:, i] = (givens_rotation[0, 0] * col_i
-                          + givens_rotation[0, 1].conj() * col_j)
-        operator[:, j] = (givens_rotation[1, 0] * col_i
-                          + givens_rotation[1, 1].conj() * col_j)
+        operator[:, i] = (givens_rotation[0, 0] * col_i +
+                          givens_rotation[0, 1].conj() * col_j)
+        operator[:, j] = (givens_rotation[1, 0] * col_i +
+                          givens_rotation[1, 1].conj() * col_j)
 
 
 def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
@@ -433,7 +436,7 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
     n = dim(operator) / 2. dim(operator) must be even.
     """
     m, p = operator.shape
-        
+
     if which == 'row':
         if m % 2 != 0:
             raise ValueError('To apply a double Givens rotation on rows, '
@@ -460,7 +463,7 @@ def swap_rows(M, i, j):
     row_i = M[i, :].copy()
     row_j = M[j, :].copy()
     M[i, :], M[j, :] = row_j, row_i
-    
+
 
 def swap_columns(M, i, j):
     """Swap columns i and j of matrix M."""
