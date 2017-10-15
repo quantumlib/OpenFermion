@@ -164,7 +164,7 @@ backend, first check the ip address of the virtual machine by running
 where "default" can be replaced by the name of whichever virtual machine whose
 ip address you want to check.
 
-10. Assuming the Docker image for OpenFermion is already built and as an 
+Assuming the Docker image for OpenFermion is already built and as an 
 example we assume it is called kickass_openfermion, run the container with an
 additional -p flag:
 
@@ -176,7 +176,7 @@ Here the numbers 8888 simply specifies the port number through which the Docker
 container communicates with the browser. If for some reason this port is not
 available, any other number in 8000-9000 will do.
 
-11. When the terminal enters the Docker container, run Jupyter notebook by
+When the terminal enters the Docker container, run Jupyter notebook by
 
 ```
 	jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
@@ -204,7 +204,7 @@ to login with a token:
 
 Note the token string 8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7.
 
-12. Open a browser window and type in the address line
+Open a browser window and type in the address line
 
 ```
 	[virtual machine ip]:8888
@@ -215,5 +215,5 @@ number (or any other port number that one specifies in step 11). A webpage
 asking for token string should appear. Use the token string in step 12 to
 enter Jupyter Notebook.
 
-13. If logged in successfully, you should be able to freely navigate through
+If logged in successfully, you should be able to freely navigate through
 the entire Docker image and launch any Jupyter notebook in the image.
