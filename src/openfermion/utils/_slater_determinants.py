@@ -121,10 +121,8 @@ def fermionic_gaussian_decomposition(unitary_rows):
             parallel_ops.append((j - 1, j, theta, phi))
 
             # Update the matrix
-            expanded_givens_rotation = expanded_double_givens(givens_rotation,
-                                                              j - 1, j, n)
-            current_matrix = current_matrix.dot(
-                    expanded_givens_rotation.T.conj())
+            double_givens_rotate(current_matrix, givens_rotation,
+                                 j - 1, j, which='col')
 
         # Append the current list of parallel rotations to the list
         decomposition.append(tuple(parallel_ops))
@@ -242,11 +240,57 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     return canonical, orthogonal.T
 
 
-def expanded_double_givens(G, i, j, n):
-    expanded_G = numpy.eye(2 * n, dtype=complex)
-    expanded_G[([i], [j]), (i, j)] = G
-    expanded_G[([n + i], [n + j]), (n + i, n + j)] = G.conj()
-    return expanded_G
+def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
+    """Apply a double Givens rotation.
+
+    Applies a Givens rotation to coordinates i and j and the the conjugate
+    Givens rotation to coordinates n + i and n + j, where
+    n = dim(operator) / 2. dim(operator) must be even.
+    """
+    m, p = operator.shape
+    if which == 'row':
+        if m % 2 != 0:
+            raise ValueError('To apply a double Givens rotation on rows, '
+                             'the number of rows must be even.')
+        n = m // 2
+    else:
+        if p % 2 != 0:
+            raise ValueError('To apply a double Givens rotation on columns, '
+                             'the number of columns must be even.')
+        n = p // 2
+        
+    if which == 'row':
+        # Rotate rows i and j
+        row_i = operator[i].copy()
+        row_j = operator[j].copy()
+        operator[i] = (givens_rotation[0, 0] * row_i
+                       + givens_rotation[0, 1] * row_j)
+        operator[j] = (givens_rotation[1, 0] * row_i
+                       + givens_rotation[1, 1] * row_j)
+        
+        # Rotate rows n + i and n + j
+        row_i = operator[n + i].copy()
+        row_j = operator[n + j].copy()
+        operator[n + i] = (givens_rotation[0, 0] * row_i
+                           + givens_rotation[0, 1].conj() * row_j)
+        operator[n + j] = (givens_rotation[1, 0] * row_i
+                           + givens_rotation[1, 1].conj() * row_j)
+    else:
+        # Rotate columns i and j
+        col_i = operator[:, i].copy()
+        col_j = operator[:, j].copy()
+        operator[:, i] = (givens_rotation[0, 0] * col_i
+                          + givens_rotation[0, 1].conj() * col_j)
+        operator[:, j] = (givens_rotation[1, 0] * col_i
+                          + givens_rotation[1, 1].conj() * col_j)
+        
+        # Rotate cols n + i and n + j
+        col_i = operator[:, n + i].copy()
+        col_j = operator[:, n + j].copy()
+        operator[:, n + i] = (givens_rotation[0, 0] * col_i
+                              + givens_rotation[0, 1] * col_j)
+        operator[:, n + j] = (givens_rotation[1, 0] * col_i
+                              + givens_rotation[1, 1] * col_j)
 
 
 def swap_rows(M, i, j):
