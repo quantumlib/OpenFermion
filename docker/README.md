@@ -158,8 +158,9 @@ backend, first check the ip address of the virtual machine by running
 where "default" can be replaced by the name of whichever virtual machine whose
 ip address you want to check.
 
-Assuming the Docker image for OpenFermion is already built is called openfermion_docker,
+Assuming the Docker image for OpenFermion is already built and is called openfermion_docker,
 run the container with an additional -p flag:
+
 
 ```
         docker run -it -p 8888:8888 openfermion_docker
@@ -176,8 +177,7 @@ When the terminal enters the Docker container, run Jupyter notebook by
 ```
 
 where 8888 is the port number used in step 11 for setting up the container.
-The message returned to the terminal should end with a statement that says something like
-
+The message returned to the terminal should end with a statement that says something like:
 ```
 Copy/paste this URL into your browser when you connect for the first time,
 to login with a token:
