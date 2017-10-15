@@ -47,12 +47,10 @@ docker run -it -v $(pwd):/openfermion_test -w /openfermion_test openfermion_dock
 ```
 
 
-## Installing and running Docker
------------------------------
+## Setting up Docker for the first time
 
-1. Install Docker from the `Docker website <https://docs.docker.com/engine/installation/#supported-platforms>`
 
-2. When Docker is installed, open a command line terminal and check the list of
+1. When Docker is installed, open a command line terminal and check the list of
 running virtual machines by
 
 ```
@@ -66,13 +64,13 @@ the computer. Create a virtual machine by running
 	docker-machine create --driver virtualbox default
 ```
 
-(Note: To be able to run this, one needs to install `virtualbox <https://www.virtualbox.org/wiki/Downloads>`)
+(Note: To be able to run this, one needs to install [virtualbox](https://www.virtualbox.org/wiki/Downloads))
 
 Here "default" is just the name of the virtual machine. You can replace it by
 any name that you prefer. To check that the virtual machine is running indeed,
 use `docker-machine ls` again.
 
-3. When the Docker virtual machine is created, configure the shell by running
+2. When the Docker virtual machine is created, configure the shell by running
 
 ```
 	docker-machine env default
@@ -83,13 +81,13 @@ replace "default" with the customized name. The command above will return a
 message containing the command to run for configuring the shell. This command
 depends on the OS.
 
-4. Run the command in the message returned above.
+3. Run the command in the message returned above.
 
 
 ## Running OpenFermion with Docker
 -------------------------------
 
-5. Now that Docker is set up, one could navigate to the folder containing the
+4. Now that Docker is set up, one could navigate to the folder containing the
 Dockerfile for building the OpenFermion image (docker/dockerfile) and run
 
 ```
@@ -100,7 +98,7 @@ where "kickass_openfermion" is just an arbitrary name and one could replace it
 with any name she deems sensible. Here we will use kickass_openfermion as an
 example.
 
-6. It takes a few minutes to build the image. What the Dockerfile does is to
+5. It takes a few minutes to build the image. What the Dockerfile does is to
 start from a base image of ubuntu and install OpenFermion, its plugins and the
 necessary applications needed for running these programs. To run the image, use
 
@@ -128,7 +126,7 @@ Up 29 hours                             blissful_brown
 in which case we have a running container called blissful_brown that was
 started quite a while ago.
 
-7. The freshly built image is ready to run any Python program that uses
+6. The freshly built image is ready to run any Python program that uses
 OpenFermion. To transfer files from somewhere on the disk to the Docker
 container, run in a separate terminal from the one running the container
 
@@ -138,12 +136,12 @@ container, run in a separate terminal from the one running the container
 
 where container name can be gleaned according to step 6 above.
 
-8. An alternative way of loading files onto the Docker container is through
+7. An alternative way of loading files onto the Docker container is through
 remote repos such as Github or BitBucket. git is installed in the Docker image
 built in step 5. After step 6, one could run "git clone ..." etc to pull files
 remotely into the Docker container.
 
-9. There are occasions where one might want to open up multiple terminals to
+8. There are occasions where one might want to open up multiple terminals to
 run the same Docker container. In that case, one could run in any terminal
 
 ```
@@ -155,7 +153,7 @@ and "get into" the container.
 Running Jupyter notebook with Docker backend
 --------------------------------------------
 
-10. To run Jupyter notebook in a browser with a Docker container running as a 
+9. To run Jupyter notebook in a browser with a Docker container running as a 
 backend, first check the ip address of the virtual machine by running
 
 ```
@@ -165,7 +163,7 @@ backend, first check the ip address of the virtual machine by running
 where "default" can be replaced by the name of whichever virtual machine whose
 ip address you want to check.
 
-11. Assuming the Docker image for OpenFermion is already built and as an 
+10. Assuming the Docker image for OpenFermion is already built and as an 
 example we assume it is called kickass_openfermion, run the container with an
 additional -p flag:
 
@@ -177,7 +175,7 @@ Here the numbers 8888 simply specifies the port number through which the Docker
 container communicates with the browser. If for some reason this port is not
 available, any other number in 8000-9000 will do.
 
-12. When the terminal enters the Docker container, run Jupyter notebook by
+11. When the terminal enters the Docker container, run Jupyter notebook by
 
 ```
 	jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
@@ -204,7 +202,7 @@ af7
 
 Note the token string 8f70c035fb9b0dbbf160d996f7f341fecf94c9aedc7cfaf7.
 
-13. Open a browser window and type in the address line
+12. Open a browser window and type in the address line
 
 ```
 	[virtual machine ip]:8888
@@ -215,5 +213,5 @@ number (or any other port number that one specifies in step 11). A webpage
 asking for token string should appear. Use the token string in step 12 to
 enter Jupyter Notebook.
 
-14. If logged in successfully, you should be able to freely navigate through
+13. If logged in successfully, you should be able to freely navigate through
 the entire Docker image and launch any Jupyter notebook in the image.
