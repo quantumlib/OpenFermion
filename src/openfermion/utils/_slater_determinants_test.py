@@ -18,7 +18,7 @@ import unittest
 from scipy.linalg import qr
 
 from openfermion.utils import givens_decomposition
-from openfermion.utils._slater_determinants import expand_two_by_two
+from openfermion.utils._slater_determinants import givens_rotate
 
 
 class GivensDecompositionTest(unittest.TestCase):
@@ -115,15 +115,14 @@ class GivensDecompositionTest(unittest.TestCase):
         # Compute U
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
-            combined_givens = numpy.eye(n)
+            combined_givens = numpy.eye(n, dtype=complex)
             for i, j, theta, phi in parallel_set:
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
                 G = numpy.array([[c, -phase * s],
                                 [s, phase * c]], dtype=complex)
-                expanded_G = expand_two_by_two(G, i, j, n)
-                combined_givens = combined_givens.dot(expanded_G)
+                givens_rotate(combined_givens, G, i, j)
             U = combined_givens.dot(U)
 
         # Compute V * Q * U^\dagger
@@ -153,15 +152,14 @@ class GivensDecompositionTest(unittest.TestCase):
         # Compute U
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
-            combined_givens = numpy.eye(n)
+            combined_givens = numpy.eye(n, dtype=complex)
             for i, j, theta, phi in parallel_set:
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
                 G = numpy.array([[c, -phase * s],
                                 [s, phase * c]], dtype=complex)
-                expanded_G = expand_two_by_two(G, i, j, n)
-                combined_givens = combined_givens.dot(expanded_G)
+                givens_rotate(combined_givens, G, i, j)
             U = combined_givens.dot(U)
 
         # Compute V * Q * U^\dagger
@@ -191,15 +189,14 @@ class GivensDecompositionTest(unittest.TestCase):
         # Compute U
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
-            combined_givens = numpy.eye(n)
+            combined_givens = numpy.eye(n, dtype=complex)
             for i, j, theta, phi in parallel_set:
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
                 G = numpy.array([[c, -phase * s],
                                 [s, phase * c]], dtype=complex)
-                expanded_G = expand_two_by_two(G, i, j, n)
-                combined_givens = combined_givens.dot(expanded_G)
+                givens_rotate(combined_givens, G, i, j)
             U = combined_givens.dot(U)
 
         # Compute V * Q * U^\dagger
@@ -229,15 +226,14 @@ class GivensDecompositionTest(unittest.TestCase):
         # Compute U
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
-            combined_givens = numpy.eye(n)
+            combined_givens = numpy.eye(n, dtype=complex)
             for i, j, theta, phi in parallel_set:
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
                 G = numpy.array([[c, -phase * s],
                                 [s, phase * c]], dtype=complex)
-                expanded_G = expand_two_by_two(G, i, j, n)
-                combined_givens = combined_givens.dot(expanded_G)
+                givens_rotate(combined_givens, G, i, j)
             U = combined_givens.dot(U)
 
         # Compute V * Q * U^\dagger
@@ -267,15 +263,14 @@ class GivensDecompositionTest(unittest.TestCase):
         # Compute U
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
-            combined_givens = numpy.eye(n)
+            combined_givens = numpy.eye(n, dtype=complex)
             for i, j, theta, phi in parallel_set:
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
                 G = numpy.array([[c, -phase * s],
                                 [s, phase * c]], dtype=complex)
-                expanded_G = expand_two_by_two(G, i, j, n)
-                combined_givens = combined_givens.dot(expanded_G)
+                givens_rotate(combined_givens, G, i, j)
             U = combined_givens.dot(U)
 
         # Compute V * Q * U^\dagger
@@ -305,15 +300,14 @@ class GivensDecompositionTest(unittest.TestCase):
         # Compute U
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
-            combined_givens = numpy.eye(n)
+            combined_givens = numpy.eye(n, dtype=complex)
             for i, j, theta, phi in parallel_set:
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
                 G = numpy.array([[c, -phase * s],
                                 [s, phase * c]], dtype=complex)
-                expanded_G = expand_two_by_two(G, i, j, n)
-                combined_givens = combined_givens.dot(expanded_G)
+                givens_rotate(combined_givens, G, i, j)
             U = combined_givens.dot(U)
 
         # Compute V * Q * U^\dagger
@@ -343,15 +337,14 @@ class GivensDecompositionTest(unittest.TestCase):
         # Compute U
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
-            combined_givens = numpy.eye(n)
+            combined_givens = numpy.eye(n, dtype=complex)
             for i, j, theta, phi in parallel_set:
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
                 G = numpy.array([[c, -phase * s],
                                 [s, phase * c]], dtype=complex)
-                expanded_G = expand_two_by_two(G, i, j, n)
-                combined_givens = combined_givens.dot(expanded_G)
+                givens_rotate(combined_givens, G, i, j)
             U = combined_givens.dot(U)
 
         # Compute V * Q * U^\dagger
@@ -381,15 +374,14 @@ class GivensDecompositionTest(unittest.TestCase):
         # Compute U
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
-            combined_givens = numpy.eye(n)
+            combined_givens = numpy.eye(n, dtype=complex)
             for i, j, theta, phi in parallel_set:
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
                 G = numpy.array([[c, -phase * s],
                                 [s, phase * c]], dtype=complex)
-                expanded_G = expand_two_by_two(G, i, j, n)
-                combined_givens = combined_givens.dot(expanded_G)
+                givens_rotate(combined_givens, G, i, j)
             U = combined_givens.dot(U)
 
         # Compute V * Q * U^\dagger
