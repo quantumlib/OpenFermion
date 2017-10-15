@@ -175,11 +175,12 @@ def diagonalizing_fermionic_unitary(antisymmetric_matrix):
 
     # Create the matrix that converts between fermionic ladder and
     # Majorana bases
-    identity = numpy.eye(n_qubits)
-    majorana_basis_change = numpy.block([
-            [identity, identity],
-            [1.j * identity, -1.j * identity]
-            ]) / numpy.sqrt(2)
+    normalized_identity = numpy.eye(n_qubits, dtype=complex) / numpy.sqrt(2.)
+    majorana_basis_change = numpy.eye(
+            2 * n_qubits, dtype=complex) / numpy.sqrt(2.)
+    majorana_basis_change[n_qubits:, n_qubits:] *= -1.j
+    majorana_basis_change[:n_qubits, n_qubits:] = normalized_identity
+    majorana_basis_change[n_qubits:, :n_qubits] = 1.j * normalized_identity
 
     # Compute the unitary and return
     diagonalizing_unitary = majorana_basis_change.T.conj().dot(
