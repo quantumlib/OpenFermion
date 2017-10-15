@@ -11,6 +11,8 @@ This Docker image will help users to easily install [OpenFermion](https://github
 - [OpenFermion-ProjectQ](https://github.com/quantumlib/OpenFermion-ProjectQ)
 - [OpenFermion-Psi4](https://github.com/quantumlib/OpenFermion-Psi4)
 - [OpenFermion-PySCF](https://github.com/quantumlib/OpenFermion-PySCF)
+- [Psi4](http://www.psicode.org)
+- [PySCF](https://github.com/sunqm/pyscf)
 
 
 ## Usage
