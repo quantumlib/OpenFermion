@@ -21,7 +21,7 @@ Then, to build the Docker image, move the
 to your working directory and execute:
 
 ```
-docker build -t "openfermion_docker" .
+docker build -f dockerfile -t openfermion_docker .
 ```
 
 Finally, to run the image (assuming you're still inside your working directory), execute with `YOUR_WORK_DIR` as the path to your working directory:
@@ -150,7 +150,7 @@ run the same Docker container. In that case, one could run in any terminal
 
 and "get into" the container.
 
-Running Jupyter notebook with Docker backend
+## Running Jupyter notebook with Docker backend
 --------------------------------------------
 
 9. To run Jupyter notebook in a browser with a Docker container running as a 
