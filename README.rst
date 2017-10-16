@@ -43,7 +43,7 @@ To install the latest version of OpenFermion (in development mode):
   python -m pip install -e .
 
 Library install
-------------
+---------------
 
 To install the latest PyPI release as a library (in user mode):
 
