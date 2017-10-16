@@ -135,12 +135,13 @@ We see that despite the different representation, these operators are iso-spectr
 Sparse matrices and the Hubbard model
 -------------------------------------
 
-Often, one would like to obtain a sparse matrix representation of an operator which can be analyzed numerically. There is code in both openfermion.transforms and openfermion.utils which facilitates this. The function get_sparse_operator converts either a FermionOperator, a QubitOperator or other more advanced classes such as InteractionOperator to a scipy.sparse.csc matrix. There are numerous functions in openfermion.utils which one can call on the sparse operators such as "get_gap", "get_hartree_fock_state", "get_ground_state", ect. We show this off by computing the ground state energy of the Hubbard model. To do that, we use code from the openfermion.utils module which constructs lattice models of fermions such as Hubbard models.
+Often, one would like to obtain a sparse matrix representation of an operator which can be analyzed numerically. There is code in both openfermion.transforms and openfermion.utils which facilitates this. The function get_sparse_operator converts either a FermionOperator, a QubitOperator or other more advanced classes such as InteractionOperator to a scipy.sparse.csc matrix. There are numerous functions in openfermion.utils which one can call on the sparse operators such as "get_gap", "get_hartree_fock_state", "get_ground_state", ect. We show this off by computing the ground state energy of the Hubbard model. To do that, we use code from the openfermion.hamiltonians module which constructs lattice models of fermions such as Hubbard models.
 
 .. code-block:: python
 
+        from openfermion.hamiltonians import fermi_hubbard
         from openfermion.transforms import get_sparse_operator, jordan_wigner
-        from openfermion.utils import fermi_hubbard, get_ground_state
+        from openfermion.utils import get_ground_state
 
         # Set model.
         x_dimension = 2
@@ -183,7 +184,7 @@ Basis functions are provided to initialization using a string such as "6-31g". G
 
 .. code-block:: python
 
-        from openfermion.utils import MolecularData
+        from openfermion.hamiltonians import MolecularData
 
         # Set parameters to make a simple molecule.
         diatomic_bond_length = .7414
@@ -260,8 +261,9 @@ Below, we load MolecularData from a saved calculation of LiH. We then obtain an 
 
 .. code-block:: python
 
+        from openfermion.hamiltonians import MolecularData
         from openfermion.transforms import get_fermion_operator, get_sparse_operator, jordan_wigner
-        from openfermion.utils import get_ground_state, MolecularData
+        from openfermion.utils import get_ground_state
         import numpy
         import scipy
         import scipy.linalg
