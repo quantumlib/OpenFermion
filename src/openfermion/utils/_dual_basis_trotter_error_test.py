@@ -20,6 +20,7 @@ from openfermion.utils import Grid
 
 
 class DoubleCommutatorTest(unittest.TestCase):
+
     def test_double_commutator_no_intersection_with_union_of_second_two(self):
         com = double_commutator(FermionOperator('4^ 3^ 6 5'),
                                 FermionOperator('2^ 1 0'),
@@ -48,6 +49,7 @@ class DoubleCommutatorTest(unittest.TestCase):
 
 
 class TriviallyDoubleCommutesDualBasisUsingTermInfoTest(unittest.TestCase):
+
     def test_number_operators_trivially_commute(self):
         self.assertTrue(trivially_double_commutes_dual_basis_using_term_info(
             indices_alpha=set([1, 2]), indices_beta=set([3, 4]),
@@ -106,6 +108,7 @@ class TriviallyDoubleCommutesDualBasisUsingTermInfoTest(unittest.TestCase):
 
 
 class TriviallyCommutesDualBasisTest(unittest.TestCase):
+
     def test_trivially_commutes_no_intersection(self):
         self.assertTrue(trivially_commutes_dual_basis(
             FermionOperator('3^ 2^ 3 2'), FermionOperator('4^ 1')))
@@ -152,6 +155,7 @@ class TriviallyCommutesDualBasisTest(unittest.TestCase):
 
 
 class TriviallyDoubleCommutesDualBasisTest(unittest.TestCase):
+
     def test_trivially_double_commutes_no_intersection(self):
         self.assertTrue(trivially_double_commutes_dual_basis(
             FermionOperator('3^ 4'),
@@ -239,6 +243,7 @@ class TriviallyDoubleCommutesDualBasisTest(unittest.TestCase):
 
 
 class ErrorOperatorTest(unittest.TestCase):
+
     def test_error_operator(self):
         FO = FermionOperator
 
@@ -263,6 +268,7 @@ class ErrorOperatorTest(unittest.TestCase):
 
 
 class ErrorBoundTest(unittest.TestCase):
+
     def setUp(self):
         FO = FermionOperator
 
@@ -312,6 +318,7 @@ class ErrorBoundTest(unittest.TestCase):
 
 
 class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
+
     def test_sum_of_ordered_terms_equals_full_hamiltonian(self):
         grid_length = 4
         dimension = 2
@@ -414,6 +421,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
 
 
 class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
+
     def test_all_terms_in_dual_basis_jellium_hamiltonian(self):
         grid_length = 4
         dimension = 1

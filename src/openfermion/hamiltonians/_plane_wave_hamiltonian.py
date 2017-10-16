@@ -16,16 +16,9 @@ from __future__ import absolute_import
 import numpy
 
 from openfermion.config import *
+from openfermion.hamiltonians._jellium import *
+from openfermion.hamiltonians._molecular_data import periodic_hash_table
 from openfermion.ops import FermionOperator, QubitOperator
-from openfermion.utils._grid import Grid
-from openfermion.utils._jellium import (
-    grid_indices,
-    jellium_model,
-    jordan_wigner_dual_basis_jellium,
-    momentum_vector,
-    orbital_id,
-    position_vector)
-from openfermion.utils._molecular_data import periodic_hash_table
 
 
 def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):

@@ -21,6 +21,7 @@ from openfermion.config import *
 from openfermion.hamiltonians import plane_wave_hamiltonian
 from openfermion.ops import *
 from openfermion.transforms import jordan_wigner, get_interaction_operator
+from openfermion.utils import Grid
 from openfermion.utils._operator_utils import *
 
 

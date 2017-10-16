@@ -19,6 +19,10 @@ import os
 import time
 
 from openfermion.config import *
+from openfermion.hamiltonians._jellium import (grid_indices,
+                                               momentum_vector,
+                                               orbital_id,
+                                               position_vector)
 from openfermion.ops import *
 from future.builtins.iterators import map, zip
 
@@ -229,7 +233,6 @@ def inverse_fourier_transform(hamiltonian, grid, spinless):
     Returns:
         FermionOperator: The inverse-fourier-transformed hamiltonian.
     """
-
     return _fourier_transform_helper(hamiltonian=hamiltonian,
                                      grid=grid,
                                      spinless=spinless,

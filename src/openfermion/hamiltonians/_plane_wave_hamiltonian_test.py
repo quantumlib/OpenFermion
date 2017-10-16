@@ -17,10 +17,11 @@ import unittest
 
 import numpy
 
+from openfermion.hamiltonians import jellium_model
 from openfermion.hamiltonians._plane_wave_hamiltonian import *
 from openfermion.ops import normal_ordered
 from openfermion.transforms import jordan_wigner
-from openfermion.utils import eigenspectrum, Grid, jellium_model
+from openfermion.utils import eigenspectrum, Grid
 
 
 class PlaneWaveHamiltonianTest(unittest.TestCase):

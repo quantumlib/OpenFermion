@@ -14,7 +14,9 @@
 import numpy
 import time
 
-from openfermion.ops import FermionOperator, InteractionOperator, normal_ordered
+from openfermion.ops import (FermionOperator,
+                             InteractionOperator,
+                             normal_ordered)
 from openfermion.transforms import get_fermion_operator, jordan_wigner
 from openfermion.utils import jordan_wigner_sparse
 
@@ -188,7 +190,7 @@ if __name__ == '__main__':
     print('Starting test on InteractionOperator.jordan_wigner_transform()')
     runtime = benchmark_molecular_operator_jordan_wigner(n_qubits)
     print('InteractionOperator.jordan_wigner_transform() ' +
-          'takes {} seconds on {} qubits.'.format(runtime, n_qubits))
+          'takes {} seconds on {} qubits.\n'.format(runtime, n_qubits))
 
     # Run benchmark on FermionOperator math and normal-ordering.
     n_qubits = 20
@@ -197,7 +199,7 @@ if __name__ == '__main__':
     print('Starting test on FermionOperator math and normal ordering.')
     runtime_math, runtime_normal = benchmark_fermion_math_and_normal_order(
         n_qubits, term_length, power)
-    print('Math took {} seconds. Normal ordering took {} seconds.'.format(
+    print('Math took {} seconds. Normal ordering took {} seconds.\n'.format(
         runtime_math, runtime_normal))
 
     # Run FermionOperator.jordan_wigner_sparse() benchmark.

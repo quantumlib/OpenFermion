@@ -12,9 +12,6 @@
 
 from ._grid import Grid
 
-from ._dual_basis_trotter_error import (dual_basis_error_bound,
-                                        dual_basis_error_operator)
-
 from ._operator_utils import (commutator, count_qubits,
                               eigenspectrum, fourier_transform,
                               get_file_path, inverse_fourier_transform,
@@ -38,4 +35,7 @@ from ._sparse_tools import (expectation,
 from ._trotter_error import error_bound, error_operator
 
 # Imports out of alphabetical order to avoid circular dependancy.
+from ._dual_basis_trotter_error import (dual_basis_error_bound,
+                                        dual_basis_error_operator)
+
 from ._jellium_hf_state import hartree_fock_state_jellium
