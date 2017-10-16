@@ -105,8 +105,8 @@ necessary applications needed for running these programs. To run the image, use
 and the terminal enters a new environment which emulates a Ubuntu OS with
 OpenFermion and accessories installed, regardless of what the host OS is. This
 new environment is a running process called a Docker container. To check info
-on the container, one can open another terminal, configure it using step 3, and
-run
+on the container, one can open another terminal, configure it using 
+`docker-machine env` as mentioned before, and run
 
 ```
         docker ps
@@ -135,9 +135,11 @@ container, run in a separate terminal from the one running the container
 where container name can be gleaned according to step 6 above.
 
 An alternative way of loading files onto the Docker container is through
-remote repos such as Github or BitBucket. git is installed in the Docker image
-built in step 5. After step 6, one could run "git clone ..." etc to pull files
-remotely into the Docker container. There are occasions where one might want to open up multiple terminals to
+remote repos such as Github or BitBucket. git is installed in the Docker image. 
+After `docker run`, one could run "git clone ..." etc to pull files
+remotely into the Docker container. 
+
+There are occasions where one might want to open up multiple terminals to
 run the same Docker container. In that case, one could run in any terminal
 
 ```
@@ -158,8 +160,8 @@ backend, first check the ip address of the virtual machine by running
 where "default" can be replaced by the name of whichever virtual machine whose
 ip address you want to check.
 
-Assuming the Docker image for OpenFermion is already built and is called openfermion_docker,
-run the container with an additional -p flag:
+Assuming the Docker image for OpenFermion is already built and is called 
+openfermion_docker, run the container with an additional -p flag:
 
 
 ```
@@ -176,8 +178,9 @@ When the terminal enters the Docker container, run Jupyter notebook by
         jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
 ```
 
-where 8888 is the port number used in step 11 for setting up the container.
-The message returned to the terminal should end with a statement that says something like:
+where 8888 is the port number used previously for setting up the container.
+The message returned to the terminal should end with a statement that says 
+something like:
 ```
 Copy/paste this URL into your browser when you connect for the first time,
 to login with a token:
@@ -194,5 +197,5 @@ Open a browser window and type in the address line
 where [virtual machine ip] is extracted from step 10 and 8888 is the port
 number (or any other port number that one specifies in step 11). A webpage
 asking for token string should appear. Use the token string in step 12 to
-enter Jupyter Notebook. If logged in successfully, you should be able to freely navigate through
-the entire Docker image and launch any Jupyter notebook in the image.
+enter Jupyter Notebook. If logged in successfully, you should be able to freely 
+navigate through the entire Docker image and launch any Jupyter notebook in the image.
