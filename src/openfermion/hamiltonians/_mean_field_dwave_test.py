@@ -25,6 +25,7 @@ class MeanfieldDwaveTest(unittest.TestCase):
         self.sc_gap = 2.
 
     def test_two_by_two(self):
+        # Test the 2 by 2 model.
 
         # Initialize the Hamiltonian.
         mean_field_dwave_model = mean_field_dwave(
