@@ -15,10 +15,10 @@ import unittest
 import os
 
 from openfermion.config import THIS_DIRECTORY
+from openfermion.hamiltonians import MolecularData
 from openfermion.transforms import get_interaction_operator
 from openfermion.measurements import (one_body_fermion_constraints,
                                       two_body_fermion_constraints)
-from openfermion.utils import MolecularData
 
 
 class FermionConstraintsTest(unittest.TestCase):

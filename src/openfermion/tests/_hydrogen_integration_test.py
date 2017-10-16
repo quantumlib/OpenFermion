@@ -19,6 +19,7 @@ import scipy.sparse
 import unittest
 
 from openfermion.config import *
+from openfermion.hamiltonians import *
 from openfermion.ops import *
 from openfermion.transforms import *
 from openfermion.utils import *
