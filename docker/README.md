@@ -132,7 +132,7 @@ container, run in a separate terminal from the one running the container
         docker cp [path to file on disk] [container name]:[path in container]
 ```
 
-where container name can be gleaned according to step 6 above.
+where container name can be gleaned according to the step above.
 
 An alternative way of loading files onto the Docker container is through
 remote repos such as Github or BitBucket. git is installed in the Docker image. 
@@ -194,8 +194,8 @@ Open a browser window and type in the address line
         [virtual machine ip]:8888
 ```
 
-where [virtual machine ip] is extracted from step 10 and 8888 is the port
-number (or any other port number that one specifies in step 11). A webpage
-asking for token string should appear. Use the token string in step 12 to
+where [virtual machine ip] is extracted from `docker-machine ip` and 8888 is the port
+number (or any other port number that one specifies previously). A webpage
+asking for token string should appear. Use the token string obtained from before to
 enter Jupyter Notebook. If logged in successfully, you should be able to freely 
 navigate through the entire Docker image and launch any Jupyter notebook in the image.
