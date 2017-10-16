@@ -3,6 +3,13 @@
 Code Documentation
 ==================
 
+openfermion.hamiltonians
+--------------
+.. automodule:: openfermion.hamiltonians
+    :members:
+    :special-members: __init__
+    :imported-members:
+
 openfermion.measurements
 --------------
 
