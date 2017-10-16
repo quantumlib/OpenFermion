@@ -7,11 +7,11 @@ from scipy.sparse import csr_matrix
 import numpy
 import unittest
 
+from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.transforms import get_sparse_operator
 from openfermion.utils import (expectation, get_ground_state,
                                Grid, hartree_fock_state_jellium,
-                               jellium_model, jw_number_restrict_operator,
-                               wigner_seitz_length_scale)
+                               jw_number_restrict_operator)
 
 
 class JelliumHartreeFockStateTest(unittest.TestCase):

@@ -34,7 +34,7 @@ as well as our detailed `code documentation <http://openfermion.readthedocs.io/e
 Developer install
 -----------------
 
-To install the latest version of OpenFermion in development mode:
+To install the latest version of OpenFermion (in development mode):
 
 .. code-block:: bash
 

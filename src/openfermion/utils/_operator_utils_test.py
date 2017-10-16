@@ -18,15 +18,11 @@ import os
 import unittest
 
 from openfermion.config import *
+from openfermion.hamiltonians import plane_wave_hamiltonian
 from openfermion.ops import *
 from openfermion.transforms import jordan_wigner, get_interaction_operator
-from openfermion.utils import (eigenspectrum, commutator,
-                               count_qubits, is_identity)
-from openfermion.utils._operator_utils import (commutator, count_qubits,
-                                               eigenspectrum, get_file_path,
-                                               is_identity, load_operator,
-                                               OperatorUtilsError,
-                                               save_operator)
+from openfermion.utils import Grid
+from openfermion.utils._operator_utils import *
 
 
 class OperatorUtilsTest(unittest.TestCase):
@@ -223,3 +219,44 @@ class CommutatorTest(unittest.TestCase):
     def test_commutator_not_same_type(self):
         with self.assertRaises(TypeError):
             commutator(self.fermion_operator, self.qubit_operator)
+
+
+class FourierTransformTest(unittest.TestCase):
+
+    def test_fourier_transform(self):
+        grid = Grid(dimensions=1, scale=1.5, length=3)
+        spinless_set = [True, False]
+        geometry = [('H', (0,)), ('H', (0.5,))]
+        for spinless in spinless_set:
+            h_plane_wave = plane_wave_hamiltonian(
+                grid, geometry, spinless, True)
+            h_dual_basis = plane_wave_hamiltonian(
+                grid, geometry, spinless, False)
+            h_plane_wave_t = fourier_transform(h_plane_wave, grid, spinless)
+            self.assertTrue(normal_ordered(h_plane_wave_t).isclose(
+                normal_ordered(h_dual_basis)))
+
+    def test_inverse_fourier_transform_1d(self):
+        grid = Grid(dimensions=1, scale=1.5, length=4)
+        spinless_set = [True, False]
+        geometry = [('H', (0,)), ('H', (0.5,))]
+        for spinless in spinless_set:
+            h_plane_wave = plane_wave_hamiltonian(
+                grid, geometry, spinless, True)
+            h_dual_basis = plane_wave_hamiltonian(
+                grid, geometry, spinless, False)
+            h_dual_basis_t = inverse_fourier_transform(
+                h_dual_basis, grid, spinless)
+            self.assertTrue(normal_ordered(h_dual_basis_t).isclose(
+                normal_ordered(h_plane_wave)))
+
+    def test_inverse_fourier_transform_2d(self):
+        grid = Grid(dimensions=2, scale=1.5, length=3)
+        spinless = True
+        geometry = [('H', (0, 0)), ('H', (0.5, 0.8))]
+        h_plane_wave = plane_wave_hamiltonian(grid, geometry, spinless, True)
+        h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless, False)
+        h_dual_basis_t = inverse_fourier_transform(
+            h_dual_basis, grid, spinless)
+        self.assertTrue(normal_ordered(h_dual_basis_t).isclose(
+            normal_ordered(h_plane_wave)))

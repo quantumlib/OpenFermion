@@ -15,7 +15,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from openfermion.utils import fermi_hubbard
+from openfermion.hamiltonians import fermi_hubbard
 
 
 class FermiHubbardTest(unittest.TestCase):

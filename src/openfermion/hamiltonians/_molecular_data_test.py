@@ -18,8 +18,9 @@ import scipy.linalg
 import unittest
 
 from openfermion.config import *
+from openfermion.hamiltonians import make_atom
+from openfermion.hamiltonians._molecular_data import *
 from openfermion.utils import *
-from openfermion.utils._molecular_data import *
 
 
 class MolecularDataTest(unittest.TestCase):

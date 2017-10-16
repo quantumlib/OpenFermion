@@ -28,8 +28,9 @@ from openfermion.config import *
 from openfermion.ops import (FermionOperator, hermitian_conjugated,
                              normal_ordered, number_operator, QubitOperator)
 from openfermion.utils import commutator, fourier_transform, Grid
-from openfermion.utils._jellium import (momentum_vector, position_vector,
-                                        grid_indices)
+from openfermion.hamiltonians._jellium import (momentum_vector,
+                                               position_vector,
+                                               grid_indices)
 
 
 # Make global definitions.

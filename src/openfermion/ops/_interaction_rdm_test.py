@@ -16,10 +16,10 @@ from __future__ import absolute_import
 import unittest
 
 from openfermion.config import *
-from openfermion.ops._interaction_rdm import (InteractionRDMError,
-                                              QubitOperator)
+from openfermion.hamiltonians import MolecularData
+from openfermion.ops import QubitOperator
+from openfermion.ops._interaction_rdm import InteractionRDMError
 from openfermion.transforms import jordan_wigner
-from openfermion.utils import MolecularData
 
 
 class InteractionRDMTest(unittest.TestCase):

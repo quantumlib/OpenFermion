@@ -16,13 +16,14 @@ import os
 import unittest
 
 from openfermion.config import (THIS_DIRECTORY)
+from openfermion.hamiltonians import MolecularData
 from openfermion.ops import (FermionOperator, InteractionOperator,
                              normal_ordered, QubitOperator)
 from openfermion.transforms._conversion import (get_fermion_operator,
                                                 get_sparse_operator)
 from openfermion.transforms._jordan_wigner import (jordan_wigner,
                                                    jordan_wigner_one_body)
-from openfermion.utils import (count_qubits, MolecularData, eigenspectrum)
+from openfermion.utils import (count_qubits, eigenspectrum)
 
 import numpy
 

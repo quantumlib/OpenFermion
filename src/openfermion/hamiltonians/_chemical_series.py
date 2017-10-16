@@ -15,9 +15,9 @@ from __future__ import absolute_import
 
 import numpy
 
-from openfermion.utils._molecular_data import (MolecularData,
-                                               periodic_hash_table,
-                                               periodic_polarization)
+from openfermion.hamiltonians._molecular_data import (MolecularData,
+                                                      periodic_hash_table,
+                                                      periodic_polarization)
 
 
 # Define error objects which inherit from Exception.

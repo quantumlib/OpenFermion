@@ -19,9 +19,9 @@ from scipy.linalg import expm
 import unittest
 
 from openfermion.config import *
+from openfermion.hamiltonians import MolecularData
 from openfermion.ops import normal_ordered, QubitOperator
 from openfermion.transforms import get_sparse_operator
-from openfermion.utils import MolecularData
 from openfermion.utils._trotter_error import *
 
 
