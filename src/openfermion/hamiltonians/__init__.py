@@ -29,8 +29,6 @@ from ._mean_field_dwave import mean_field_dwave
 from ._molecular_data import MolecularData, periodic_table
 
 from ._plane_wave_hamiltonian import (dual_basis_external_potential,
-                                      fourier_transform,
-                                      inverse_fourier_transform,
                                       plane_wave_external_potential,
                                       plane_wave_hamiltonian,
                                       jordan_wigner_dual_basis_hamiltonian,

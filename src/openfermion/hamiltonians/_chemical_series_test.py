@@ -17,12 +17,12 @@ import numpy
 import os
 import unittest
 
-from openfermion.utils import (make_atom,
-                               make_atomic_lattice,
-                               make_atomic_ring,
-                               periodic_table)
-from openfermion.utils._chemical_series import MolecularLatticeError
-from openfermion.utils._molecular_data import periodic_polarization
+from openfermion.hamiltonians import (make_atom,
+                                      make_atomic_lattice,
+                                      make_atomic_ring,
+                                      periodic_table)
+from openfermion.hamiltonians._chemical_series import MolecularLatticeError
+from openfermion.hamiltonians._molecular_data import periodic_polarization
 
 
 class ChemicalSeries(unittest.TestCase):

@@ -17,18 +17,10 @@ import unittest
 
 import numpy
 
+from openfermion.hamiltonians._plane_wave_hamiltonian import *
 from openfermion.ops import normal_ordered
 from openfermion.transforms import jordan_wigner
 from openfermion.utils import eigenspectrum, Grid, jellium_model
-from openfermion.utils._plane_wave_hamiltonian import (
-    dual_basis_external_potential,
-    fourier_transform,
-    inverse_fourier_transform,
-    jordan_wigner_dual_basis_hamiltonian,
-    plane_wave_external_potential,
-    plane_wave_hamiltonian,
-    wigner_seitz_length_scale,
-)
 
 
 class PlaneWaveHamiltonianTest(unittest.TestCase):
@@ -74,44 +66,6 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
     def test_wigner_seitz_radius_bad_dimension_not_positive(self):
         with self.assertRaises(ValueError):
             wigner_seitz_length_scale(3, 2, dimension=0)
-
-    def test_fourier_transform(self):
-        grid = Grid(dimensions=1, scale=1.5, length=3)
-        spinless_set = [True, False]
-        geometry = [('H', (0,)), ('H', (0.5,))]
-        for spinless in spinless_set:
-            h_plane_wave = plane_wave_hamiltonian(
-                grid, geometry, spinless, True)
-            h_dual_basis = plane_wave_hamiltonian(
-                grid, geometry, spinless, False)
-            h_plane_wave_t = fourier_transform(h_plane_wave, grid, spinless)
-            self.assertTrue(normal_ordered(h_plane_wave_t).isclose(
-                normal_ordered(h_dual_basis)))
-
-    def test_inverse_fourier_transform_1d(self):
-        grid = Grid(dimensions=1, scale=1.5, length=4)
-        spinless_set = [True, False]
-        geometry = [('H', (0,)), ('H', (0.5,))]
-        for spinless in spinless_set:
-            h_plane_wave = plane_wave_hamiltonian(
-                grid, geometry, spinless, True)
-            h_dual_basis = plane_wave_hamiltonian(
-                grid, geometry, spinless, False)
-            h_dual_basis_t = inverse_fourier_transform(
-                h_dual_basis, grid, spinless)
-            self.assertTrue(normal_ordered(h_dual_basis_t).isclose(
-                normal_ordered(h_plane_wave)))
-
-    def test_inverse_fourier_transform_2d(self):
-        grid = Grid(dimensions=2, scale=1.5, length=3)
-        spinless = True
-        geometry = [('H', (0, 0)), ('H', (0.5, 0.8))]
-        h_plane_wave = plane_wave_hamiltonian(grid, geometry, spinless, True)
-        h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless, False)
-        h_dual_basis_t = inverse_fourier_transform(
-            h_dual_basis, grid, spinless)
-        self.assertTrue(normal_ordered(h_dual_basis_t).isclose(
-            normal_ordered(h_plane_wave)))
 
     def test_plane_wave_hamiltonian_integration(self):
         length_set = [3, 4]

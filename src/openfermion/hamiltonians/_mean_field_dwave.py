@@ -35,9 +35,9 @@ x_dimension by y_dimension. They can have periodic boundary conditions or not.
 """
 from __future__ import absolute_import
 
+from openfermion.hamiltonians._hubbard import up, down
 from openfermion.ops import (FermionOperator,
                              hermitian_conjugated)
-from openfermion.utils._hubbard import up, down
 
 
 def meanfield_dwave(x_dimension, y_dimension, tunneling, sc_gap,
