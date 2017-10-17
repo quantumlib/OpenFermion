@@ -20,6 +20,7 @@ import scipy
 import unittest
 
 from numpy.random import randn
+
 from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
 from openfermion.ops import *

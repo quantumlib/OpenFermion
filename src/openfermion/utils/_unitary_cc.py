@@ -164,23 +164,23 @@ def uccsd_singlet_operator(packed_amplitudes,
 
     uccsd_generator = FermionOperator()
 
+    # Define a compound space that is partitioned into occupied, virtual, spins
+    # the spin component assumes alpha spins are even, beta spins are odd
     spaces = range(n_virtual), range(n_occupied), range(2)
 
+    # Generate all spin-conserving single excitations between occupied-virtual
     for i, j, s in itertools.product(*spaces):
-        uccsd_generator += FermionOperator(
-            (
-                (2 * (i + n_occupied) + s, 1),
-                (2 * j + s, 0),
-            ),
-            coefficient=t1[t1_ind(i, j)])
+        uccsd_generator += FermionOperator((
+            (2 * (i + n_occupied) + s, 1),
+            (2 * j + s, 0)),
+            t1[t1_ind(i, j)])
 
-        uccsd_generator += FermionOperator(
-            (
-                (2 * j + s, 1),
-                (2 * (i + n_occupied) + s, 0),
-            ),
-            coefficient=-t1[t1_ind(i, j)])
+        uccsd_generator += FermionOperator((
+            (2 * j + s, 1),
+            (2 * (i + n_occupied) + s, 0)),
+            -t1[t1_ind(i, j)])
 
+    # Generate all spin-conserving double excitations between occupied-virtual
     for i, j, s, i2, j2, s2 in itertools.product(*spaces, repeat=2):
         uccsd_generator += FermionOperator((
             (2 * (i + n_occupied) + s, 1),
