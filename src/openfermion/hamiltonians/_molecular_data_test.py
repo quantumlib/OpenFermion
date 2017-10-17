@@ -37,6 +37,7 @@ class MolecularDataTest(unittest.TestCase):
             filename=self.filename)
         self.molecule.load()
 
+
     def testUnitConversion(self):
         """Test the unit conversion routines"""
         unit_angstrom = 1.0
@@ -150,7 +151,7 @@ class MolecularDataTest(unittest.TestCase):
         molecule.ccsd_energy = 88.
         molecule.ccsd_single_amps = [1, 2, 3]
         molecule.ccsd_double_amps = [1, 2, 3]
-        molecule.general_calculations['Fake CI Calculation'] = 1.2345
+        molecule.general_calculations['Fake CI'] = 1.2345
 
         # Test missing calculation and information exceptions
         molecule.one_body_integrals = None
@@ -181,7 +182,8 @@ class MolecularDataTest(unittest.TestCase):
             # Load molecule.
             new_molecule = MolecularData(filename=filename)
             molecule.load()
-
+            self.assertEqual(molecule.general_calculations['Fake CI'],
+                             1.2345)
             # Tests re-load functionality
             molecule.save()
 
