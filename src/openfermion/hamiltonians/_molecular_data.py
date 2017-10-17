@@ -232,6 +232,8 @@ class MolecularData(object):
         ccsd_energy: Energy from coupled cluster singles + doubles.
         ccsd_single_amps: Numpy array holding single amplitudes
         ccsd_double_amps: Numpy array holding double amplitudes
+        general_calculations: A dictionary storing general calculation results
+            for this system annotated by the key.
     """
     def __init__(self, geometry=None, basis=None, multiplicity=None,
                  charge=0, description="", filename="", data_directory=None):
@@ -329,6 +331,9 @@ class MolecularData(object):
 
         # Attributes generated from CCSD calculation.
         self.ccsd_energy = None
+
+        # General calculation results
+        self.general_calculations = {}
 
         # Initialize attributes that will be loaded only upon demand
         self.init_lazy_properties()
@@ -608,6 +613,18 @@ class MolecularData(object):
                                    not None else False),
                              compression=("gzip" if self.ccsd_double_amps
                                           is not None else None))
+
+            # Save general calculation data
+            f.create_dataset("general_calculations_keys",
+                             data=(numpy.string_(
+                                 list(self.general_calculations.keys())) if
+                             self.general_calculations is not None
+                                   else False))
+            f.create_dataset("general_calculations_values",
+                             data=(list(self.general_calculations.values()) if
+                                   self.general_calculations is not None
+                                   else False))
+
         # Remove old file first for compatibility with systems that don't allow
         # rename replacement.  Catching OSError for when file does not exist
         # yet
@@ -676,6 +693,13 @@ class MolecularData(object):
             # Load attributes generated from CCSD calculation.
             data = f["ccsd_energy"][...]
             self.ccsd_energy = data if data.dtype.num != 0 else None
+            # Load general calculations
+            keys = f["general_calculations_keys"][...]
+            values = f["general_calculations_values"][...]
+            if keys.shape != (()):
+                self.general_calculations = {
+                    key.tobytes().decode('utf-8'): value for key, value
+                    in zip(keys, values)}
 
     def get_from_file(self, property_name):
         """Helper routine to re-open HDF5 file and pull out single property

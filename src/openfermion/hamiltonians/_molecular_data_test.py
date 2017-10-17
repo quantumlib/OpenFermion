@@ -150,6 +150,7 @@ class MolecularDataTest(unittest.TestCase):
         molecule.ccsd_energy = 88.
         molecule.ccsd_single_amps = [1, 2, 3]
         molecule.ccsd_double_amps = [1, 2, 3]
+        molecule.general_calculations['Fake CI Calculation'] = 1.2345
 
         # Test missing calculation and information exceptions
         molecule.one_body_integrals = None
