@@ -35,7 +35,7 @@ from openfermion.ops import InteractionOperator, InteractionRDM
 # Define a compatible basestring for checking between Python 2 and 3
 try:
     basestring
-except:
+except NameError: #pragma: no cover
     basestring = str
 
 
@@ -219,6 +219,7 @@ class MolecularData(object):
         n_qubits: Integer giving total number of qubits that would be needed.
         orbital_energies: Numpy array giving the canonical orbital energies.
         fock_matrix: Numpy array giving the Fock matrix.
+        overlap_integrals: Numpy array of AO overlap integrals
         one_body_integrals: Numpy array of one-electron integrals
         two_body_integrals: Numpy array of two-electron integrals
         mp2_energy: Energy from MP2 perturbation theory.
@@ -495,7 +496,7 @@ class MolecularData(object):
             d_geom.create_dataset("atoms", data=(atoms if atoms is not None
                                                  else False))
             d_geom.create_dataset("positions", data=(positions if positions
-                                                    is not None else False))
+                                                     is not None else False))
             # Save basis:
             f.create_dataset("basis", data=numpy.string_(self.basis))
             # Save multiplicity:
@@ -627,7 +628,8 @@ class MolecularData(object):
             if data.shape != (()):
                 for atom, pos in zip(f["geometry/atoms"][...],
                                      f["geometry/positions"][...]):
-                    geometry.append((atom.tobytes().decode('utf-8'), list(pos)))
+                    geometry.append((atom.tobytes().
+                                     decode('utf-8'), list(pos)))
                 self.geometry = geometry
             else:
                 self.geometry = data[...].tobytes().decode('utf-8')

@@ -17,7 +17,7 @@ import scipy.linalg
 import unittest
 
 from openfermion.config import *
-from openfermion.hamiltonians import make_atom
+from openfermion.hamiltonians import jellium_model, make_atom
 from openfermion.hamiltonians._molecular_data import *
 from openfermion.transforms import (get_interaction_operator,
                                     get_molecular_data)
@@ -64,6 +64,17 @@ class MolecularDataTest(unittest.TestCase):
                                       self.multiplicity,
                                       charge,
                                       description="0.7414")
+        self.assertEqual(correct_name, computed_name)
+
+        # Check > 1 atom type
+        charge = 0
+        correct_name = "H1-F1_sto-3g_singlet_1.0"
+        test_geometry = [('H', (0, 0, 0)), ('F', (0, 0, 1.0))]
+        computed_name = name_molecule(test_geometry,
+                                      self.basis,
+                                      self.multiplicity,
+                                      charge,
+                                      description="1.0")
         self.assertEqual(correct_name, computed_name)
 
         # Check errors in naming

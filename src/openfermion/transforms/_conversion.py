@@ -18,6 +18,7 @@ import itertools
 import numpy
 from future.utils import iteritems
 
+from openfermion.hamiltonians import MolecularData
 from openfermion.ops import (FermionOperator,
                              normal_ordered,
                              InteractionOperator,
@@ -26,7 +27,6 @@ from openfermion.ops import (FermionOperator,
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.utils import (count_qubits,
                                jordan_wigner_sparse,
-                               MolecularData,
                                qubit_operator_sparse)
 
 
