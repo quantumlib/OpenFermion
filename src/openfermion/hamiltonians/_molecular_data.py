@@ -35,7 +35,7 @@ from openfermion.ops import InteractionOperator, InteractionRDM
 # Define a compatible basestring for checking between Python 2 and 3
 try:
     basestring
-except NameError: #pragma: no cover
+except NameError:  # pragma: no cover
     basestring = str
 
 
@@ -615,15 +615,14 @@ class MolecularData(object):
                                           is not None else None))
 
             # Save general calculation data
+            key_list = list(self.general_calculations.keys())
             f.create_dataset("general_calculations_keys",
-                             data=(numpy.string_(
-                                 list(self.general_calculations.keys())) if
-                             self.general_calculations is not None
-                                   else False))
+                             data=([numpy.string_(key) for key in key_list] if
+                                   len(key_list) > 0 else False))
             f.create_dataset("general_calculations_values",
-                             data=(list(self.general_calculations.values()) if
-                                   self.general_calculations is not None
-                                   else False))
+                             data=([self.general_calculations[key] for
+                                   key in key_list] if
+                                   len(key_list) > 0 else False))
 
         # Remove old file first for compatibility with systems that don't allow
         # rename replacement.  Catching OSError for when file does not exist
@@ -694,12 +693,12 @@ class MolecularData(object):
             data = f["ccsd_energy"][...]
             self.ccsd_energy = data if data.dtype.num != 0 else None
             # Load general calculations
-            keys = f["general_calculations_keys"][...]
-            values = f["general_calculations_values"][...]
+            keys = f["general_calculations_keys"]
+            values = f["general_calculations_values"]
             if keys.shape != (()):
                 self.general_calculations = {
                     key.tobytes().decode('utf-8'): value for key, value
-                    in zip(keys, values)}
+                    in zip(keys[...], values[...])}
 
     def get_from_file(self, property_name):
         """Helper routine to re-open HDF5 file and pull out single property
