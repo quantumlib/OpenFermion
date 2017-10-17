@@ -34,6 +34,11 @@ from ._sparse_tools import (expectation,
 
 from ._trotter_error import error_bound, error_operator
 
+from ._unitary_cc import (uccsd_convert_amplitude_format,
+                          uccsd_operator,
+                          uccsd_singlet_operator,
+                          uccsd_singlet_paramsize)
+
 # Imports out of alphabetical order to avoid circular dependancy.
 from ._dual_basis_trotter_error import (dual_basis_error_bound,
                                         dual_basis_error_operator)
