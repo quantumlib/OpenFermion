@@ -23,11 +23,13 @@ from ._equality_constraint_projection import (apply_constraints,
                                               vector_to_operator)
 
 from openfermion.config import THIS_DIRECTORY
+from openfermion.hamiltonians import MolecularData
 from openfermion.transforms import get_fermion_operator, get_sparse_operator
-from openfermion.utils import (count_qubits, expectation,
-                               MolecularData, get_ground_state)
-from openfermion.utils._sparse_tools import (jw_number_restrict_operator,
-                                             sparse_eigenspectrum)
+from openfermion.utils import (count_qubits,
+                               expectation,
+                               get_ground_state,
+                               jw_number_restrict_operator,
+                               sparse_eigenspectrum)
 
 
 class EqualityConstraintProjectionTest(unittest.TestCase):

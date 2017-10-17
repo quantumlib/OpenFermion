@@ -17,10 +17,11 @@ import scipy.linalg
 import unittest
 
 from openfermion.config import *
-from openfermion.utils import *
-from openfermion.utils._molecular_data import *
+from openfermion.hamiltonians import make_atom
+from openfermion.hamiltonians._molecular_data import *
 from openfermion.transforms import (get_interaction_operator,
                                     get_molecular_data)
+from openfermion.utils import *
 
 
 class MolecularDataTest(unittest.TestCase):

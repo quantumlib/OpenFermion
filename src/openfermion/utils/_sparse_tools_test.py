@@ -19,10 +19,10 @@ import unittest
 from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix
 
+from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.ops import FermionOperator, normal_ordered, number_operator
 from openfermion.transforms import get_sparse_operator, jordan_wigner
-from openfermion.utils import (fourier_transform, Grid, jellium_model,
-                               wigner_seitz_length_scale)
+from openfermion.utils import fourier_transform, Grid
 from openfermion.utils._jellium_hf_state import (
     lowest_single_particle_energy_states)
 from openfermion.utils._sparse_tools import *
@@ -199,6 +199,54 @@ class JordanWignerSparseTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(
             qubit_operator_sparse(QubitOperator('X1')).A,
             expected.A))
+
+
+class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
+    def test_jw_get_ground_states_by_particle_number_herm_conserving(self):
+        # Initialize a particle-number-conserving Hermitian operator
+        ferm_op = FermionOperator('0^ 1') + FermionOperator('1^ 0') + \
+            FermionOperator('1^ 2') + FermionOperator('2^ 1') + \
+            FermionOperator('1^ 3', -.4) + FermionOperator('3^ 1', -.4)
+        jw_hamiltonian = jordan_wigner(ferm_op)
+        sparse_operator = get_sparse_operator(jw_hamiltonian)
+        n_qubits = 4
+
+        # Test each possible particle number
+        for particle_number in range(n_qubits):
+            # Get the ground energy and ground states at this particle number
+            energy, states = jw_get_ground_states_by_particle_number(
+                    sparse_operator,
+                    particle_number)
+            # For each vector returned, make sure that it is indeed an
+            # eigenvector of the original operator with the returned eigenvalue
+            for vec in states:
+                op_vec_product = sparse_operator.dot(vec)
+                difference = op_vec_product - energy * vec
+                if difference.nnz:
+                    discrepancy = max(map(abs, difference.data))
+                    self.assertAlmostEqual(0, discrepancy)
+        return
+
+    def test_jw_get_ground_states_by_particle_number_herm_nonconserving(self):
+        # Initialize a non-particle-number-conserving Hermitian operator
+        ferm_op = FermionOperator('0^ 1') + FermionOperator('1^ 0') + \
+            FermionOperator('1^ 2^') + FermionOperator('2 1')
+        jw_hamiltonian = jordan_wigner(ferm_op)
+        sparse_operator = get_sparse_operator(jw_hamiltonian)
+
+        with self.assertRaises(ValueError):
+            jw_get_ground_states_by_particle_number(sparse_operator, 0)
+        return
+
+    def test_get_ground_states_by_particle_number_nonhermitian(self):
+        # Initialize a non-Hermitian operator
+        ferm_op = FermionOperator('0^ 1') + FermionOperator('2^ 1')
+        jw_hamiltonian = jordan_wigner(ferm_op)
+        sparse_operator = get_sparse_operator(jw_hamiltonian)
+
+        with self.assertRaises(ValueError):
+            jw_get_ground_states_by_particle_number(sparse_operator, 0)
+        return
 
 
 class GroundStateTest(unittest.TestCase):

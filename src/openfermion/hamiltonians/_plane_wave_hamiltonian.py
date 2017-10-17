@@ -16,16 +16,9 @@ from __future__ import absolute_import
 import numpy
 
 from openfermion.config import *
+from openfermion.hamiltonians._jellium import *
+from openfermion.hamiltonians._molecular_data import periodic_hash_table
 from openfermion.ops import FermionOperator, QubitOperator
-from openfermion.utils._grid import Grid
-from openfermion.utils._jellium import (
-    grid_indices,
-    jellium_model,
-    jordan_wigner_dual_basis_jellium,
-    momentum_vector,
-    orbital_id,
-    position_vector)
-from openfermion.utils._molecular_data import periodic_hash_table
 
 
 def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
@@ -192,95 +185,6 @@ def plane_wave_hamiltonian(grid, geometry=None,
             grid, geometry, spinless)
 
     return jellium_op + external_potential
-
-
-def fourier_transform(hamiltonian, grid, spinless):
-    """Apply Fourier transform to change hamiltonian in plane wave basis.
-
-    .. math::
-
-        c^\dagger_v = \sqrt{1/N} \sum_m {a^\dagger_m \exp(-i k_v r_m)}
-        c_v = \sqrt{1/N} \sum_m {a_m \exp(i k_v r_m)}
-
-    Args:
-        hamiltonian (FermionOperator): The hamiltonian in plane wave basis.
-        grid (Grid): The discretization to use.
-        spinless (bool): Whether to use the spinless model or not.
-
-    Returns:
-        FermionOperator: The fourier-transformed hamiltonian.
-    """
-    return _fourier_transform_helper(hamiltonian=hamiltonian,
-                                     grid=grid,
-                                     spinless=spinless,
-                                     phase_factor=+1,
-                                     vec_func_1=momentum_vector,
-                                     vec_func_2=position_vector)
-
-
-def inverse_fourier_transform(hamiltonian, grid, spinless):
-    """Apply inverse Fourier transform to change hamiltonian in plane wave dual
-    basis.
-
-    .. math::
-
-        a^\dagger_v = \sqrt{1/N} \sum_m {c^\dagger_m \exp(i k_v r_m)}
-        a_v = \sqrt{1/N} \sum_m {c_m \exp(-i k_v r_m)}
-
-    Args:
-        hamiltonian (FermionOperator):
-            The hamiltonian in plane wave dual basis.
-        grid (Grid): The discretization to use.
-        spinless (bool): Whether to use the spinless model or not.
-
-    Returns:
-        FermionOperator: The inverse-fourier-transformed hamiltonian.
-    """
-
-    return _fourier_transform_helper(hamiltonian=hamiltonian,
-                                     grid=grid,
-                                     spinless=spinless,
-                                     phase_factor=-1,
-                                     vec_func_1=position_vector,
-                                     vec_func_2=momentum_vector)
-
-
-def _fourier_transform_helper(hamiltonian,
-                              grid,
-                              spinless,
-                              phase_factor,
-                              vec_func_1,
-                              vec_func_2):
-    hamiltonian_t = FermionOperator.zero()
-    normalize_factor = numpy.sqrt(1.0 / float(grid.num_points()))
-
-    for term in hamiltonian.terms:
-        transformed_term = FermionOperator.identity()
-        for ladder_op_mode, ladder_op_type in term:
-            indices_1 = grid_indices(ladder_op_mode, grid, spinless)
-            vec1 = vec_func_1(indices_1, grid)
-            new_basis = FermionOperator.zero()
-            for indices_2 in grid.all_points_indices():
-                vec2 = vec_func_2(indices_2, grid)
-                spin = None if spinless else ladder_op_mode % 2
-                orbital = orbital_id(grid, indices_2, spin)
-                exp_index = phase_factor * 1.0j * numpy.dot(vec1, vec2)
-                if ladder_op_type == 1:
-                    exp_index *= -1.0
-
-                element = FermionOperator(((orbital, ladder_op_type),),
-                                          numpy.exp(exp_index))
-                new_basis += element
-
-            new_basis *= normalize_factor
-            transformed_term *= new_basis
-
-        # Coefficient.
-        transformed_term *= hamiltonian.terms[term]
-
-        hamiltonian_t += transformed_term
-
-    return hamiltonian_t
 
 
 def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,

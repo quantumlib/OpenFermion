@@ -1,3 +1,4 @@
+===========
 OpenFermion
 ===========
 
@@ -14,34 +15,55 @@ OpenFermion
 .. image:: https://badge.fury.io/py/openfermion.svg
     :target: https://badge.fury.io/py/openfermion
 
-OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians.
+.. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
+
+OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians. For other information about how to get started please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the
+`ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
+as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
 Getting started
----------------
+===============
 
 Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
-To install the latest development version of OpenFermion, clone `this <http://github.com/quantumlib/OpenFermion>`__ git repo,
-change directory to the top level folder and run:
+For information about getting started beyond what is provided below please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__
+and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the
+`ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
+as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
+
+
+Developer install
+-----------------
+
+To install the latest version of OpenFermion (in development mode):
 
 .. code-block:: bash
 
+  git clone https://github.com/quantumlib/OpenFermion
+  cd OpenFermion
   python -m pip install -e .
 
-Alternatively, if using OpenFermion as a library, one can install the last official PyPI release with:
+Library install
+---------------
+
+To install the latest PyPI release as a library (in user mode):
 
 .. code-block:: bash
 
   python -m pip install --pre --user openfermion
 
-For further information about how to get started please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the the ipython notebook demo in the examples folder of this repository as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
-
 Plugins
--------
+=======
 
 In order to simulate and compile quantum circuits or perform other complicated electronic structure calculations, one can install OpenFermion plugins. We currently support a circuit simulation plugin for `ProjectQ <https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ (recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__.
+For a particularly robust method of installing OpenFermion together with select
+plugins, we have provided a Docker image and usage instructions in the
+`docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__
+(the Docker image provides a virtual environment configured with the OpenFermion
+libraries pre-installed).
+
 
 How to contribute
------------------
+=================
 
 We'd love to accept your contributions and patches to OpenFermion.
 There are a few small guidelines you need to follow.
@@ -65,28 +87,33 @@ Code should always come with documentation, which is generated automatically and
 `here <http://openfermion.readthedocs.io/en/latest/openfermion.html>`_.
 
 Authors
--------
+=======
 
 `Ryan Babbush <http://ryanbabbush.com>`__ (Google),
 `Jarrod McClean <http://jarrodmcclean.com>`__ (Google),
 `Ian Kivlichan <http://aspuru.chem.harvard.edu/ian-kivlichan/>`__ (Harvard),
-Damian Steiger (ETH Zurich),
-Wei Sun (Google),
-Craig Gidney (Google),
-Thomas Haner (ETH Zurich),
-Hannah Sim (Harvard),
-Vojtech Havlicek (Oxford),
-Kanav Setia (Dartmouth),
-Nicholas Rubin (Rigetti),
-Matthew Neeley (Google) and
-Dave Bacon (Google).
+`Damian Steiger <https://github.com/damiansteiger>`__ (ETH Zurich),
+`Dave Bacon <https://github.com/dabacon>`__ (Google),
+`Yudong Cao <https://github.com/yudongcao>`__ (Harvard),
+`Craig Gidney <https://github.com/Strilanc>`__ (Google),
+`Thomas Haener <https://github.com/thomashaener>`__ (ETH Zurich),
+`Vojtech Havlicek <https://github.com/VojtaHavlicek>`__ (Oxford),
+`Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
+`Matthew Neeley <https://github.com/maffoo>`__ (Google),
+`Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
+`Daniel Sank <https://github.com/DanielSank>`__ (Google),
+`Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
+`Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
+`Wei Sun <https://github.com/Spaceenter>`__ (Google) and
+`Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan).
 
 Questions?
-----------
+==========
 
 If you have any other questions, please contact help@openfermion.org.
 
 Disclaimer
-----------
+==========
+
 Copyright 2017 The OpenFermion Developers.
 This is not an official Google product.

@@ -16,22 +16,10 @@ import unittest
 
 import numpy
 
+from openfermion.hamiltonians._jellium import *
 from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import jordan_wigner
 from openfermion.utils import count_qubits, eigenspectrum, Grid
-from openfermion.utils._jellium import (
-    dual_basis_jellium_model,
-    dual_basis_kinetic,
-    dual_basis_potential,
-    jellium_model,
-    jordan_wigner_dual_basis_jellium,
-    momentum_vector,
-    orbital_id,
-    OrbitalSpecificationError,
-    plane_wave_kinetic,
-    plane_wave_potential,
-    position_vector,
-)
 
 
 class JelliumTest(unittest.TestCase):

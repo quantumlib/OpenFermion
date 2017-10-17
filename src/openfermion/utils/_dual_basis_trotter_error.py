@@ -17,10 +17,9 @@ from future.utils import iteritems, itervalues
 import numpy
 
 from openfermion.config import *
+from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.ops import FermionOperator, normal_ordered
-from openfermion.utils import Grid, jellium_model
-from openfermion.utils._operator_utils import commutator, count_qubits
-from openfermion.utils._plane_wave_hamiltonian import wigner_seitz_length_scale
+from openfermion.utils import commutator, count_qubits, Grid
 
 
 def double_commutator(op1, op2, op3, indices2=None, indices3=None,

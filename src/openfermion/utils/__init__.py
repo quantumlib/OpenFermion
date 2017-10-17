@@ -10,38 +10,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from ._chemical_series import (make_atomic_ring,
-                               make_atomic_lattice,
-                               make_atom)
-
 from ._grid import Grid
 
-from ._hubbard import fermi_hubbard
-
-from ._jellium import (dual_basis_kinetic,
-                       dual_basis_potential,
-                       dual_basis_jellium_model,
-                       jellium_model,
-                       jordan_wigner_dual_basis_jellium,
-                       plane_wave_kinetic,
-                       plane_wave_potential)
-
-from ._dual_basis_trotter_error import (dual_basis_error_bound,
-                                        dual_basis_error_operator)
-
-from ._molecular_data import MolecularData, periodic_table
-
 from ._operator_utils import (commutator, count_qubits,
-                              eigenspectrum, get_file_path, is_identity,
-                              load_operator, save_operator)
+                              eigenspectrum, fourier_transform,
+                              get_file_path, inverse_fourier_transform,
+                              is_identity, load_operator, save_operator)
 
-from ._plane_wave_hamiltonian import (dual_basis_external_potential,
-                                      fourier_transform,
-                                      inverse_fourier_transform,
-                                      plane_wave_external_potential,
-                                      plane_wave_hamiltonian,
-                                      jordan_wigner_dual_basis_hamiltonian,
-                                      wigner_seitz_length_scale)
+from ._slater_determinants import (givens_decomposition,
+                                   fermionic_gaussian_decomposition)
 
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,
@@ -57,5 +34,13 @@ from ._sparse_tools import (expectation,
 
 from ._trotter_error import error_bound, error_operator
 
+from ._unitary_cc import (uccsd_convert_amplitude_format,
+                          uccsd_operator,
+                          uccsd_singlet_operator,
+                          uccsd_singlet_paramsize)
+
 # Imports out of alphabetical order to avoid circular dependancy.
+from ._dual_basis_trotter_error import (dual_basis_error_bound,
+                                        dual_basis_error_operator)
+
 from ._jellium_hf_state import hartree_fock_state_jellium

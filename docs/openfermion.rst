@@ -3,10 +3,17 @@
 Code Documentation
 ==================
 
-openfermion.transforms
--------------------
+openfermion.hamiltonians
+--------------
+.. automodule:: openfermion.hamiltonians
+    :members:
+    :special-members: __init__
+    :imported-members:
 
-.. automodule:: openfermion.transforms
+openfermion.measurements
+--------------
+
+.. automodule:: openfermion.measurements
     :members:
     :special-members: __init__
     :imported-members:
@@ -15,6 +22,14 @@ openfermion.ops
 ------------
 
 .. automodule:: openfermion.ops
+    :members:
+    :special-members: __init__
+    :imported-members:
+
+openfermion.transforms
+-------------------
+
+.. automodule:: openfermion.transforms
     :members:
     :special-members: __init__
     :imported-members:
