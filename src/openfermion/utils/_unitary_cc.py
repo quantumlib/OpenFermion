@@ -17,6 +17,7 @@ import numpy
 
 from openfermion.ops import FermionOperator, QubitOperator
 
+
 def uccsd_operator(single_amplitudes, double_amplitudes, anti_hermitian=True):
     """Create a fermionic operator that is the generator of uccsd.
 
