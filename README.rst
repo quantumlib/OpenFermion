@@ -17,9 +17,7 @@ OpenFermion
 
 .. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
-OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians. For other information about how to get started please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the
-`ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
-as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
+OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians.
 
 Getting started
 ===============
@@ -54,12 +52,22 @@ To install the latest PyPI release as a library (in user mode):
 Plugins
 =======
 
-In order to simulate and compile quantum circuits or perform other complicated electronic structure calculations, one can install OpenFermion plugins. We currently support a circuit simulation plugin for `ProjectQ <https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ (recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__.
+In order to simulate and compile quantum circuits or perform other complicated
+electronic structure calculations, one can install OpenFermion plugins. We
+currently support a circuit simulation plugin for `ProjectQ
+<https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ
+<http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support
+electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can
+find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__
+(recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can
+find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__
+(less supported).
 For a particularly robust method of installing OpenFermion together with select
 plugins, we have provided a Docker image and usage instructions in the
 `docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__
 (the Docker image provides a virtual environment configured with the OpenFermion
-libraries pre-installed).
+libraries pre-installed). The Docker installation can be run on any operating
+system (yes, even Windows).
 
 
 How to contribute

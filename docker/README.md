@@ -1,148 +1,96 @@
 # Docker setup for OpenFermion and select plugins
 
-This Docker image will help users to easily install [OpenFermion](https://github.com/quantumlib/OpenFermion) and its available plugins for [ProjectQ](https://github.com/ProjectQ-Framework/ProjectQ), [Psi4](https://github.com/quantumlib/OpenFermion-Psi4), and [PySCF](https://github.com/quantumlib/OpenFermion-PySCF). Check out Docker's [website](https://www.docker.com/what-container) that describes what a container image is and why it can be so useful.
+This Docker image will help users to install [OpenFermion](https://github.com/quantumlib/OpenFermion) and its available plugins for [ProjectQ](https://github.com/ProjectQ-Framework/ProjectQ), [Psi4](https://github.com/quantumlib/OpenFermion-Psi4), and [PySCF](https://github.com/quantumlib/OpenFermion-PySCF).
+Check out Docker's [website](https://www.docker.com/what-container) that describes what a container image is and why it can be so useful.
+The Docker based installation is extremely robust and runs on any operating
+system and so is an ideal solution for anyone having difficulty installing
+OpenFermion (or any of its plugins) using the standard installation.
 
 
 ## What's included?
 
-- Python 2.7 (see dockerfile for instructions on how to change the Python version/distribution)
 - Git
-- [OpenFermion](https://github.com/quantumlib/OpenFermion)
-- [OpenFermion-ProjectQ](https://github.com/quantumlib/OpenFermion-ProjectQ)
-- [OpenFermion-Psi4](https://github.com/quantumlib/OpenFermion-Psi4)
-- [OpenFermion-PySCF](https://github.com/quantumlib/OpenFermion-PySCF)
-- [ProjectQ](https://projectq.ch)
+- Python2.7 (see dockerfile for instructions to install different versions)
 - [Psi4](http://www.psicode.org)
 - [PySCF](https://github.com/sunqm/pyscf)
-
-
-## Usage
-
-To use this image, you first need to install [Docker](https://www.docker.com/).
-Then, to build the Docker image, move the
-[dockerfile](https://github.com/quantumlib/OpenFermion/blob/master/docker/dockerfile)
-to your working directory and execute:
-
-```
-docker build -f dockerfile -t openfermion_docker .
-```
-
-Finally, to run the image (assuming you're still inside your working directory), execute with `YOUR_WORK_DIR` as the path to your working directory:
-
-```
-docker run -it -v $(pwd):YOUR_WORK_DIR -w YOUR_WORK_DIR openfermion_docker
-```
-
-When you are done with the Docker image, you can use `docker stop
-YOUR_CONTAINER_ID` or `docker kill YOUR_CONTAINER_ID` to stop your container
-(you can get your container ID by entering the command `docker ps`). Finally,
-feel free to change your copy of the dockerfile to build a more customized
-image. For example, you may want to minimze the number of layers by combining the `RUN` statements to further reduce the image size.
-
-
-## Example
-
-Suppose your working directory were called `openfermion_test`. Go to that
-directory (which would contain your scripts) and copy over the dockefile. Build the image. Your run command would then be:
-
-```
-docker run -it -v $(pwd):/openfermion_test -w /openfermion_test openfermion_docker
-```
+- [ProjectQ](https://projectq.ch)
+- [OpenFermion](https://github.com/quantumlib/OpenFermion)
+- [OpenFermion-Psi4](https://github.com/quantumlib/OpenFermion-Psi4)
+- [OpenFermion-PySCF](https://github.com/quantumlib/OpenFermion-PySCF)
+- [OpenFermion-ProjectQ](https://github.com/quantumlib/OpenFermion-ProjectQ)
 
 
 ## Setting up Docker for the first time
 
-
-When Docker is installed, open a command line terminal and check the list of
-running virtual machines by
-
-```
-        docker-machine ls
-```
-
-Assuming this is the firt time Docker has been run, the list should be empty.
-Create a virtual machine by running
+You first need to install [Docker](https://www.docker.com/).
+Once Docker is installed, open a command line terminal and check the list of running virtual machines with
 
 ```
-        docker-machine create --driver virtualbox default
+docker-machine ls
+```
+
+Assuming this is the firt time Docker has been run, the list should be empty. Create a virtual machine by running
+
+```
+docker-machine create --driver virtualbox default
 ```
 
 To be able to run this, one needs to install
-[virtualbox](https://www.virtualbox.org/wiki/Downloads).
+[VirtualBox](https://www.virtualbox.org/wiki/Downloads).
 Here, "default" is just the name of the virtual machine. You can replace it by
 any name that you prefer. To check that the virtual machine is indeed running,
 use `docker-machine ls` again.
-
-When the Docker virtual machine is created, configure the shell by running
+After the Docker virtual machine is created, configure the shell by running
 
 ```
-        docker-machine env default
+docker-machine env default
 ```
 
 where if you named the virtual machine differently from default you should also
 replace "default" with the customized name. The command above will return an OS
-dependent message containing the command to run for configuring the shell.
+dependent message containing the command to run for configuring the shell;
+follow those instructions.
 
 
 ## Running OpenFermion with Docker
 
-Now that Docker is set up, one could navigate to the folder containing the
+Now that Docker is set up, one can navigate to the folder containing the
 Dockerfile for building the OpenFermion image (docker/dockerfile) and run
 
 ```
-        docker build -t openfermion_docker .
+docker build -t openfermion_docker .
 ```
 
-where "openfermion_docker" is just an arbitrary name.
-It takes a few minutes to build the image. What the Dockerfile does is to
-start from a base image of Ubuntu and install OpenFermion, its plugins and the
-necessary applications needed for running these programs. To run the image, use
+where "openfermion_docker" is just an arbitrary name for our docker container.
+What the Dockerfile does is to start from a base image of Ubuntu and install
+OpenFermion, its plugins and the necessary applications needed for running these
+programs. This is a fairly involved installation and will take some time 
+(perhaps up to thiry minutes depending on the computer). Once installation has
+completed, run the image with
 
 ```
-        docker run -it openfermion_docker
+docker run -it openfermion_docker
 ```
 
-and the terminal enters a new environment which emulates a Ubuntu OS with
-OpenFermion and accessories installed, regardless of what the host OS is. This
-new environment is a running process called a Docker container. To check info
-on the container, one can open another terminal, configure it using
-`docker-machine env` as mentioned before, and run
-
-```
-        docker ps
-```
-
-which returns a list of running containers. For example it might look like:
-
-```
-CONTAINER ID        IMAGE               COMMAND             CREATED
-STATUS              PORTS               NAMES
-3cc87ed4205b        5a67a4d66d05        "/bin/bash"         29 hours ago
-Up 29 hours                             blissful_brown
-```
-
-in which case we have a running container called blissful_brown that was
-started quite a while ago.
-
-The freshly built image is ready to run any Python program that uses
+With this command the terminal enters a new environment which emulates Ubuntu with
+OpenFermion and accessories installed. The freshly built image is ready to run any program that uses
 OpenFermion. To transfer files from somewhere on the disk to the Docker
 container, run in a separate terminal from the one running the container
 
 ```
-        docker cp [path to file on disk] [container name]:[path in container]
+docker cp [path to file on disk] [container name]:[path in container]
 ```
 
-where container name can be gleaned according to the step above.
+where container name is "openfermion_docker" in this case.
 
 An alternative way of loading files onto the Docker container is through
-remote repos such as Github or BitBucket. git is installed in the Docker image.
+remote repos such as GitHub. Git is installed in the Docker image.
 After `docker run`, one could run "git clone ..." etc to pull files
-remotely into the Docker container. There are occasions where one might want
-to open up multiple terminals to run the same Docker container.
+remotely into the Docker container. There are occasions where one might want to open up multiple terminals to run the same Docker container.
 In that case, one could run in any terminal
 
 ```
-        docker exec -it [container name] bash
+docker exec -it [container name] bash
 ```
 
 and "get into" the container.
@@ -153,7 +101,7 @@ To run Jupyter notebook in a browser with a Docker container running as a
 backend, first check the ip address of the virtual machine by running
 
 ```
-        docker-machine ip default
+docker-machine ip default
 ```
 
 where "default" can be replaced by the name of whichever virtual machine whose
@@ -164,7 +112,7 @@ openfermion_docker, run the container with an additional -p flag:
 
 
 ```
-        docker run -it -p 8888:8888 openfermion_docker
+docker run -it -p 8888:8888 openfermion_docker
 ```
 
 Here the numbers 8888 simply specifies the port number through which the Docker
@@ -174,7 +122,7 @@ available, any other number in 8000-9000 will do.
 When the terminal enters the Docker container, run Jupyter notebook by
 
 ```
-        jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
+jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
 ```
 
 where 8888 is the port number used previously for setting up the container.

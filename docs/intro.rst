@@ -7,7 +7,7 @@ Tutorial
    :maxdepth: 2
 
 Getting started with OpenFermion
------------------------------
+--------------------------------
 
 Installing OpenFermion requires pip. Make sure that you are using an up-to-date
 version of it by running:
@@ -34,7 +34,7 @@ For further information about how to get started please see `intro <http://openf
 
 
 Basic OpenFermion example
-----------------------
+-------------------------
 
 To see a basic example with both fermion and qubit operators as well as whether the installation worked, try to run the following code.
 
