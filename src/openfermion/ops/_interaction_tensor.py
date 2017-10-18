@@ -95,37 +95,35 @@ class InteractionTensor(object):
     numerical computations in many cases, such as basis rotations.
 
     Attributes:
-        n_qubits: The number of qubits on which the tensor
+        n_qubits(int): The number of qubits on which the tensor
             acts.
-        constant: A constant term in the operator given as a float.
+        constant(float): A constant term in the operator given as a float.
             For instance, the nuclear repulsion energy.
-        one_body_tensor: The coefficients of the 2D matrix terms. This is an
-            n_qubits x n_qubits numpy array of floats. For instance, the one
-            body term of MolecularOperator.
-        two_body_tensor: The coefficients of the 4D matrix terms. This is an
-            n_qubits x n_qubits x n_qubits x n_qubits numpy array offloats.
-            For instance, the two body term of MolecularOperator.
+        n_body_tensors(dict): A dictionary storing the tensors describing
+            n-body interactions. For instance, n_body_tensors[2] is a
+            n_qubits x n_qubits x n_qubits x n_qubits numpy array of floats.
     """
 
-    def __init__(self, constant, one_body_tensor, two_body_tensor):
+    def __init__(self, constant, n_body_tensors, n_qubits=None):
         """Initialize the InteractionTensor class.
 
         Args:
-            constant: A constant term in the operator given as a
+            constant(float): A constant term in the operator given as a
                 float. For instance, the nuclear repulsion energy.
-            one_body_tensor: The coefficients of the 2D matrix terms. This
-                is an n_qubits x n_qubits numpy array of floats. For
-                instance, the one body term of MolecularOperator.
-            two_body_tensor: The coefficients of the 4D matrix terms. This is
-                an n_qubits x n_qubits x n_qubits x n_qubits numpy array of
-                floats. For instance, the two body term of MolecularOperator.
+            n_body_tensors(dict): A dictionary storing the tensors describing
+                n-body interactions. For instance, n_body_tensors[2] is a
+                n_qubits x n_qubits x n_qubits x n_qubits numpy array of floats.
         """
         if constant is None:
             constant = 0.0
         self.constant = constant
-        self.one_body_tensor = one_body_tensor
-        self.two_body_tensor = two_body_tensor
-        self.n_qubits = self.one_body_tensor.shape[0]
+        self.n_body_tensors = n_body_tensors
+        if n_qubits:
+            self.n_qubits = n_qubits
+        elif 1 in self.n_body_tensors
+            self.n_qubits = self.n_body_tensors[1].shape[0]
+        else:
+            raise ValueError("Could not determine n_qubits.")
 
     def __getitem__(self, args):
         """Look up matrix element.
