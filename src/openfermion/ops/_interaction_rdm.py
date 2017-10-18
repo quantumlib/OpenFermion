@@ -46,6 +46,8 @@ class InteractionRDM(InteractionTensor):
         """
         super(InteractionRDM, self).__init__(None, one_body_tensor,
                                              two_body_tensor)
+        self.one_body_tensor = one_body_tensor
+        self.two_body_tensor = two_body_tensor
 
     @classmethod
     def from_spatial_rdm(cls, one_rdm_a, one_rdm_b,
