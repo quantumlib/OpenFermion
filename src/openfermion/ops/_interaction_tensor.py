@@ -85,35 +85,38 @@ def two_body_basis_change(two_body_tensor, rotation_matrix):
 
 
 class InteractionTensor(object):
-    """Class for storing data about the interactions between orbitals. Because
-    electrons interact pairwise, in second-quantization, all Hamiltonian terms
-    have either the form of a^\dagger_p a_q or a^\dagger_p a^\dagger_q a_r a_s.
-    The first of these terms is associated with the one-body Hamiltonian and
-    1-RDM and its information is stored in one_body_tensor. The second of these
-    terms is associated with the two-body Hamiltonian and 2-RDM and its
-    information is stored in two_body_tensor. Much of the functionality of this
-    class is redudant with FermionOperator but enables much more efficient
-    numerical computations in many cases, such as basis rotations.
+    """Class for storing tensor representations of operators that correspond
+    with multilinear polynomials in the fermionic ladder operators.
+    For instance, in a quadratic Hamiltonian (degree 2 polynomial),
+    there are only terms of the form a^\dagger_p a_q, and the coefficients
+    can be stored in an n_qubits x n_qubits matrix. Higher order terms would
+    be described with tensors of higher dimension. Note that each tensor must
+    have an even number of dimensions, since parity is conserved.
+    Much of the functionality of this class is redudant with FermionOperator
+    but enables much more efficient numerical computations in many cases,
+    such as basis rotations.
 
     Attributes:
         n_qubits(int): The number of qubits on which the tensor
             acts.
-        constant(float): A constant term in the operator given as a float.
-            For instance, the nuclear repulsion energy.
+        constant(complex): A constant term in the operator given as a complex
+            number. For instance, the nuclear repulsion energy.
         n_body_tensors(dict): A dictionary storing the tensors describing
             n-body interactions. For instance, n_body_tensors[2] is a
-            n_qubits x n_qubits x n_qubits x n_qubits numpy array of floats.
+            n_qubits x n_qubits x n_qubits x n_qubits numpy array of complex
+            numbers.
     """
 
     def __init__(self, constant, *args, n_body_tensors=None, n_qubits=None):
         """Initialize the InteractionTensor class.
 
         Args:
-            constant(float): A constant term in the operator given as a
-                float. For instance, the nuclear repulsion energy.
+            constant(complex): A constant term in the operator given as a
+                complex number. For instance, the nuclear repulsion energy.
             n_body_tensors(dict): A dictionary storing the tensors describing
                 n-body interactions. For instance, n_body_tensors[2] is a
-                n_qubits x n_qubits x n_qubits x n_qubits numpy array of floats.
+                n_qubits x n_qubits x n_qubits x n_qubits numpy array of
+                complex numbers.
         """
         # initialize constant
         if constant is not None:

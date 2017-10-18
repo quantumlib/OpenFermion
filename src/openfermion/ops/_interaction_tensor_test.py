@@ -112,10 +112,10 @@ class InteractionTensorTest(unittest.TestCase):
     def test_setitem_2body(self):
         self.interaction_tensor_a[0, 1, 1, 0] = 3
         self.interaction_tensor_a[1, 0, 0, 1] = 2
-        self.assertEqual(self.interaction_tensor_a.n_body_tensors[2][0, 1, 1, 0],
-                         3)
-        self.assertEqual(self.interaction_tensor_a.n_body_tensors[2][1, 0, 0, 1],
-                         2)
+        self.assertEqual(
+                self.interaction_tensor_a.n_body_tensors[2][0, 1, 1, 0], 3)
+        self.assertEqual(
+                self.interaction_tensor_a.n_body_tensors[2][1, 0, 0, 1], 2)
 
     def test_getitem_2body(self):
         self.assertEqual(self.interaction_tensor_c[0, 1, 0, 1], 3)
@@ -220,7 +220,6 @@ class InteractionTensorTest(unittest.TestCase):
         self.interaction_tensor_a[()] = 0.
         self.assertAlmostEqual(self.interaction_tensor_a, interaction_tensor)
         self.interaction_tensor_a[()] = self.constant
-
 
     def test_rotate_basis_identical(self):
         rotation_matrix_identical = numpy.zeros((self.n_qubits, self.n_qubits))
