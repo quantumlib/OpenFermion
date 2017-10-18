@@ -14,6 +14,7 @@
 from __future__ import absolute_import
 
 import copy
+import itertools
 import numpy
 
 from openfermion.config import *
@@ -104,7 +105,7 @@ class InteractionTensor(object):
             n_qubits x n_qubits x n_qubits x n_qubits numpy array of floats.
     """
 
-    def __init__(self, constant, n_body_tensors, n_qubits=None):
+    def __init__(self, constant, *args, n_body_tensors=None, n_qubits=None):
         """Initialize the InteractionTensor class.
 
         Args:
@@ -114,13 +115,29 @@ class InteractionTensor(object):
                 n-body interactions. For instance, n_body_tensors[2] is a
                 n_qubits x n_qubits x n_qubits x n_qubits numpy array of floats.
         """
-        if constant is None:
-            constant = 0.0
-        self.constant = constant
-        self.n_body_tensors = n_body_tensors
+        # initialize constant
+        if constant is not None:
+            self.constant = constant
+        else:
+            self.constant = 0.
+
+        # initialize n_body_tensors
+        if args:
+            # tensors were passed in as arguments
+            self.n_body_tensors = dict()
+            for i in range(len(args)):
+                self.n_body_tensors[i + 1] = args[i]
+        elif n_body_tensors:
+            # tensors were passed in directly as dictionary
+            self.n_body_tensors = n_body_tensors
+        else:
+            # no tensors were given
+            self.n_body_tensors = dict()
+
+        # initialize n_qubits
         if n_qubits:
             self.n_qubits = n_qubits
-        elif 1 in self.n_body_tensors
+        elif 1 in self.n_body_tensors:
             self.n_qubits = self.n_body_tensors[1].shape[0]
         else:
             raise ValueError("Could not determine n_qubits.")
@@ -132,53 +149,47 @@ class InteractionTensor(object):
             Ints giving indices of tensor. Either p,q or p,q,r,s.
 
         Raises:
-            ValueError: args must be of length 2 or 4.
-            ValueError: args must be of length 0, 2 or 4.
+            ValueError: args must be of even length.
         """
-        if len(args) == 4:
-            p, q, r, s = args
-            return self.two_body_tensor[p, q, r, s]
-        elif len(args) == 2:
-            p, q = args
-            return self.one_body_tensor[p, q]
-        elif not len(args):
+        args = tuple(args)
+        if not len(args):
             return self.constant
+        elif len(args) % 2 == 0:
+            return self.n_body_tensors[len(args) // 2][args]
         else:
-            raise ValueError('args must be of length 0, 2, or 4.')
+            raise ValueError('args must be of even length.')
 
     def __setitem__(self, args, value):
         """Set matrix element.
 
         Args:
-            Ints giving indices of tensor. Either p,q or p,q,r,s.
+            Ints giving indices of tensor.
 
         Raises:
-            ValueError: args must be of length 2 or 4.
+            ValueError: args must be of even length.
         """
-        if len(args) == 4:
-            p, q, r, s = args
-            self.two_body_tensor[p, q, r, s] = value
-        elif len(args) == 2:
-            p, q = args
-            self.one_body_tensor[p, q] = value
-        elif not len(args):
+        args = tuple(args)
+        if not len(args):
             self.constant = value
+        elif len(args) % 2 == 0:
+            self.n_body_tensors[len(args) // 2][args] = value
         else:
-            raise ValueError('args must be of length 0, 2, or 4.')
+            raise ValueError('args must be of even length.')
 
-    def __eq__(self, molecular_tensor):
-        constant_diff = abs(molecular_tensor.constant - self.constant)
-        diff = max(constant_diff,
-                   numpy.amax(
-                       numpy.absolute(self.one_body_tensor -
-                                      molecular_tensor.one_body_tensor)),
-                   numpy.amax(
-                       numpy.absolute(self.two_body_tensor -
-                                      molecular_tensor.two_body_tensor)))
+    def __eq__(self, other_operator):
+        if self.n_body_tensors.keys() != other_operator.n_body_tensors.keys():
+            return False
+        diff = abs(other_operator.constant - self.constant)
+        for n in self.n_body_tensors.keys():
+            self_tensor = self.n_body_tensors[n]
+            other_tensor = other_operator.n_body_tensors[n]
+            discrepancy = numpy.amax(
+                              numpy.absolute(self_tensor - other_tensor))
+            diff = max(diff, discrepancy)
         return diff < EQ_TOLERANCE
 
-    def __neq__(self, molecular_tensor):
-        return not (self == molecular_tensor)
+    def __neq__(self, other_operator):
+        return not (self == other_operator)
 
     def __iadd__(self, addend):
         if not issubclass(type(addend), InteractionTensor):
@@ -187,11 +198,13 @@ class InteractionTensor(object):
         if self.n_qubits != addend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
+        if self.n_body_tensors.keys() != addend.n_body_tensors.keys():
+            raise TypeError('Invalid tensor type.')
+
         self.constant += addend.constant
-        self.one_body_tensor = numpy.add(self.one_body_tensor,
-                                         addend.one_body_tensor)
-        self.two_body_tensor = numpy.add(self.two_body_tensor,
-                                         addend.two_body_tensor)
+        for n in self.n_body_tensors.keys():
+            self.n_body_tensors[n] = numpy.add(self.n_body_tensors[n],
+                                               addend.n_body_tensors[n])
         return self
 
     def __add__(self, addend):
@@ -200,9 +213,11 @@ class InteractionTensor(object):
         return summand
 
     def __neg__(self):
+        neg_n_body_tensors = dict()
+        for n in self.n_body_tensors.keys():
+            neg_n_body_tensors[n] = numpy.negative(self.n_body_tensors[n])
         return InteractionTensor(-self.constant,
-                                 numpy.negative(self.one_body_tensor),
-                                 numpy.negative(self.two_body_tensor))
+                                 n_body_tensors=neg_n_body_tensors)
 
     def __isub__(self, subtrahend):
         if not issubclass(type(subtrahend), InteractionTensor):
@@ -211,11 +226,13 @@ class InteractionTensor(object):
         if self.n_qubits != subtrahend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
+        if self.n_body_tensors.keys() != subtrahend.n_body_tensors.keys():
+            raise TypeError('Invalid tensor type.')
+
         self.constant -= subtrahend.constant
-        self.one_body_tensor = numpy.subtract(self.one_body_tensor,
-                                              subtrahend.one_body_tensor)
-        self.two_body_tensor = numpy.subtract(self.two_body_tensor,
-                                              subtrahend.two_body_tensor)
+        for n in self.n_body_tensors.keys():
+            self.n_body_tensors[n] = numpy.subtract(
+                    self.n_body_tensors[n], subtrahend.n_body_tensors[n])
         return self
 
     def __sub__(self, subtrahend):
@@ -230,11 +247,13 @@ class InteractionTensor(object):
         if self.n_qubits != multiplier.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
+        if self.n_body_tensors.keys() != multiplier.n_body_tensors.keys():
+            raise TypeError('Invalid tensor type.')
+
         self.constant *= multiplier.constant
-        self.one_body_tensor = numpy.multiply(self.one_body_tensor,
-                                              multiplier.one_body_tensor)
-        self.two_body_tensor = numpy.multiply(self.two_body_tensor,
-                                              multiplier.two_body_tensor)
+        for n in self.n_body_tensors.keys():
+            self.n_body_tensors[n] = numpy.multiply(
+                    self.n_body_tensors[n], multiplier.n_body_tensors[n])
         return self
 
     def __mul__(self, multiplier):
@@ -248,19 +267,11 @@ class InteractionTensor(object):
         if self.constant:
             yield []
 
-        # 1-body elements.
-        for p in range(self.n_qubits):
-            for q in range(self.n_qubits):
-                if self.one_body_tensor[p, q]:
-                    yield [p, q]
-
-        # 2-body elements.
-        for p in range(self.n_qubits):
-            for q in range(self.n_qubits):
-                for r in range(self.n_qubits):
-                    for s in range(self.n_qubits):
-                        if self.two_body_tensor[p, q, r, s]:
-                            yield [p, q, r, s]
+        # n-body elements
+        for n, n_body_tensor in self.n_body_tensors.items():
+            for index in itertools.product(range(self.n_qubits), repeat=2 * n):
+                if n_body_tensor[index]:
+                    yield list(index)
 
     def __str__(self):
         """Print out the non-zero elements of InteractionTensor."""
@@ -268,11 +279,9 @@ class InteractionTensor(object):
         for key in self:
             if len(key) == 0:
                 string += '[] {}\n'.format(self[key])
-            elif len(key) == 2:
-                string += '[{} {}] {}\n'.format(key[0], key[1], self[key])
-            elif len(key) == 4:
-                string += '[{} {} {} {}] {}\n'.format(key[0], key[1], key[2],
-                                                      key[3], self[key])
+            else:
+                string += '[{}] {}\n'.format(' '.join([str(i) for i in key]),
+                                             self[key])
         return string if string else '0'
 
     def rotate_basis(self, rotation_matrix):
@@ -284,10 +293,10 @@ class InteractionTensor(object):
                 dimensions of n_qubits by n_qubits. Assumed to be real and
                 invertible.
         """
-        self.one_body_tensor = one_body_basis_change(
-            self.one_body_tensor, rotation_matrix)
-        self.two_body_tensor = two_body_basis_change(
-            self.two_body_tensor, rotation_matrix)
+        self.n_body_tensors[1] = one_body_basis_change(
+            self.n_body_tensors[1], rotation_matrix)
+        self.n_body_tensors[2] = two_body_basis_change(
+            self.n_body_tensors[2], rotation_matrix)
 
     def __repr__(self):
         return str(self)

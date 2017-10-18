@@ -102,7 +102,7 @@ class InteractionTensorTest(unittest.TestCase):
         self.interaction_tensor_a[0, 1] = 3
         self.interaction_tensor_a[1, 0] = 2
         self.assertTrue(numpy.allclose(
-            self.interaction_tensor_a.one_body_tensor,
+            self.interaction_tensor_a.n_body_tensors[1],
             expected_one_body_tensor))
 
     def test_getitem_1body(self):
@@ -112,9 +112,9 @@ class InteractionTensorTest(unittest.TestCase):
     def test_setitem_2body(self):
         self.interaction_tensor_a[0, 1, 1, 0] = 3
         self.interaction_tensor_a[1, 0, 0, 1] = 2
-        self.assertEqual(self.interaction_tensor_a.two_body_tensor[0, 1, 1, 0],
+        self.assertEqual(self.interaction_tensor_a.n_body_tensors[2][0, 1, 1, 0],
                          3)
-        self.assertEqual(self.interaction_tensor_a.two_body_tensor[1, 0, 0, 1],
+        self.assertEqual(self.interaction_tensor_a.n_body_tensors[2][1, 0, 0, 1],
                          2)
 
     def test_getitem_2body(self):
