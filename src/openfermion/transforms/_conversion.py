@@ -184,17 +184,19 @@ def get_molecular_data(interaction_operator,
         interaction_operator(InteractionOperator): two-body interaction
             operator defining the "molecular interaction" to be simulated.
         geometry(string or list of atoms):
-        basis(string):
-        multiplicity(int):
-        n_electrons(int):
+        basis(string):  String denoting the basis set used to discretize the
+            system.
+        multiplicity(int): Spin multiplicity desired in the system.
+        n_electrons(int): Number of electrons in the system
         reduce_spin(bool): True if one wishes to perform spin reduction on
             integrals that are given in interaction operator.  Assumes
             spatial (x) spin structure generically.
 
     Returns:
-        molecule(MolecularData): Instance that captures the interaction_operator
-            converted into the format that would come from an electronic
-            structure pacakge adorned with some meta-data that may be useful.
+        molecule(MolecularData): Instance that captures the
+            interaction_operator converted into the format that would come
+            from an electronic structure package adorned with some meta-data
+            that may be useful.
     """
 
     n_spin_orbitals = interaction_operator.n_qubits

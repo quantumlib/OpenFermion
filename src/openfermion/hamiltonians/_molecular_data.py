@@ -363,6 +363,12 @@ class MolecularData(object):
         self._ccsd_single_amps = None
         self._ccsd_double_amps = None
 
+    # The following block of property getters and setters allow class
+    # attributes to be used as if they were stored in the class, but are
+    # actually loaded only upon request from file.  This greatly speeds up
+    # calculations and saves considerable memory in cases where some of the
+    # 4-index quantities are not used.
+
     @property
     def canonical_orbitals(self):
         if self._canonical_orbitals is None:
