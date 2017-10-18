@@ -59,6 +59,9 @@ class GetInteractionOperatorTest(unittest.TestCase):
         with self.assertRaises(InteractionOperatorError):
             get_interaction_operator(FermionOperator('3^ 2 1'))
 
+    def test_get_molecular_data(self):
+        """Test conversion to MolecularData from InteractionOperator"""
+
 
 class GetSparseOperatorQubitTest(unittest.TestCase):
 

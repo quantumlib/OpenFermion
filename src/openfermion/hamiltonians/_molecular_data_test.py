@@ -11,15 +11,16 @@
 #   limitations under the License.
 
 """Tests for molecular_data."""
-from __future__ import absolute_import
 
 import numpy.random
 import scipy.linalg
 import unittest
 
 from openfermion.config import *
-from openfermion.hamiltonians import make_atom
+from openfermion.hamiltonians import jellium_model, make_atom
 from openfermion.hamiltonians._molecular_data import *
+from openfermion.transforms import (get_interaction_operator,
+                                    get_molecular_data)
 from openfermion.utils import *
 
 
@@ -63,6 +64,17 @@ class MolecularDataTest(unittest.TestCase):
                                       self.multiplicity,
                                       charge,
                                       description="0.7414")
+        self.assertEqual(correct_name, computed_name)
+
+        # Check > 1 atom type
+        charge = 0
+        correct_name = "H1-F1_sto-3g_singlet_1.0"
+        test_geometry = [('H', (0, 0, 0)), ('F', (0, 0, 1.0))]
+        computed_name = name_molecule(test_geometry,
+                                      self.basis,
+                                      self.multiplicity,
+                                      charge,
+                                      description="1.0")
         self.assertEqual(correct_name, computed_name)
 
         # Check errors in naming
@@ -138,9 +150,11 @@ class MolecularDataTest(unittest.TestCase):
         molecule.ccsd_energy = 88.
         molecule.ccsd_single_amps = [1, 2, 3]
         molecule.ccsd_double_amps = [1, 2, 3]
+        molecule.general_calculations['Fake CI'] = 1.2345
+        molecule.general_calculations['Fake CI 2'] = 5.2345
 
         # Test missing calculation and information exceptions
-        molecule.hf_energy = None
+        molecule.one_body_integrals = None
         with self.assertRaises(MissingCalculationError):
             one_body_ints, two_body_ints = molecule.get_integrals()
         molecule.hf_energy = 99.
@@ -167,8 +181,10 @@ class MolecularDataTest(unittest.TestCase):
 
             # Load molecule.
             new_molecule = MolecularData(filename=filename)
+            molecule.general_calculations = {}
             molecule.load()
-
+            self.assertEqual(molecule.general_calculations['Fake CI'],
+                             1.2345)
             # Tests re-load functionality
             molecule.save()
 
@@ -261,6 +277,22 @@ class MolecularDataTest(unittest.TestCase):
             self.assertAlmostEqual(molecule.get_n_beta_electrons(),
                                    expected_beta)
 
+    def test_abstract_molecule(self):
+        """Test an abstract molecule like jellium for saving and loading"""
+        jellium_interaction = get_interaction_operator(
+            jellium_model(Grid(2, 2, 1.0)))
+        jellium_molecule = get_molecular_data(jellium_interaction,
+                                              geometry="Jellium",
+                                              basis="PlaneWave22",
+                                              multiplicity=1,
+                                              n_electrons=4)
+
+        jellium_filename = jellium_molecule.filename
+        jellium_molecule.save()
+        jellium_molecule.load()
+        correct_name = "Jellium_PlaneWave22_singlet"
+        self.assertEqual(jellium_molecule.name, correct_name)
+        os.remove("{}.hdf5".format(jellium_filename))
 
 if __name__ == '__main__':
     unittest.main()
