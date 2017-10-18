@@ -52,12 +52,22 @@ To install the latest PyPI release as a library (in user mode):
 Plugins
 =======
 
-In order to simulate and compile quantum circuits or perform other complicated electronic structure calculations, one can install OpenFermion plugins. We currently support a circuit simulation plugin for `ProjectQ <https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ (recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__.
+In order to simulate and compile quantum circuits or perform other complicated
+electronic structure calculations, one can install OpenFermion plugins. We
+currently support a circuit simulation plugin for `ProjectQ
+<https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ
+<http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support
+electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can
+find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__
+(recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can
+find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__
+(less supported).
 For a particularly robust method of installing OpenFermion together with select
 plugins, we have provided a Docker image and usage instructions in the
 `docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__
 (the Docker image provides a virtual environment configured with the OpenFermion
-libraries pre-installed).
+libraries pre-installed). The Docker installation can be run on any operating
+system (yes, even Windows).
 
 
 How to contribute
