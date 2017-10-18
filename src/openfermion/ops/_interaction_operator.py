@@ -62,8 +62,8 @@ class InteractionOperator(InteractionTensor):
         # Make sure nonzero elements are only for normal ordered terms.
         super(InteractionOperator, self).__init__(constant, one_body_tensor,
                                                   two_body_tensor)
-        self.one_body_tensor = one_body_tensor
-        self.two_body_tensor = two_body_tensor
+        self.one_body_tensor = self.n_body_tensors[1]
+        self.two_body_tensor = self.n_body_tensors[2]
 
     def unique_iter(self, complex_valued=False):
         """
