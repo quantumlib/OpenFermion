@@ -10,7 +10,7 @@ OpenFermion (or any of its plugins) using the standard installation.
 ## What's included?
 
 - Git
-- Python 2.7
+- Python2.7 (see dockerfile for instructions to install different versions)
 - [Psi4](http://www.psicode.org)
 - [PySCF](https://github.com/sunqm/pyscf)
 - [ProjectQ](https://projectq.ch)
