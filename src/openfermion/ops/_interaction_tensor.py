@@ -146,7 +146,7 @@ class InteractionTensor(object):
         """Look up matrix element.
 
         Args:
-            Ints giving indices of tensor. Either p,q or p,q,r,s.
+            Ints giving indices of tensor. Should have even length.
 
         Raises:
             ValueError: args must be of even length.
