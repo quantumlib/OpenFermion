@@ -28,6 +28,7 @@ from ._sparse_tools import (expectation,
                             is_hermitian,
                             jordan_wigner_sparse,
                             jw_hartree_fock_state,
+                            jw_get_ground_states_by_particle_number,
                             jw_number_restrict_operator,
                             qubit_operator_sparse,
                             sparse_eigenspectrum)

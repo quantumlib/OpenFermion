@@ -18,6 +18,7 @@ import itertools
 import numpy
 from future.utils import iteritems
 
+from openfermion.hamiltonians import MolecularData
 from openfermion.ops import (FermionOperator,
                              normal_ordered,
                              InteractionOperator,
@@ -171,3 +172,61 @@ def get_fermion_operator(interaction_operator):
                                             coefficient)
 
     return fermion_operator
+
+
+def get_molecular_data(interaction_operator,
+                       geometry=None, basis=None, multiplicity=None,
+                       n_electrons=None, reduce_spin=True,
+                       data_directory=None):
+    """Output a MolecularData object generated from an InteractionOperator
+
+    Args:
+        interaction_operator(InteractionOperator): two-body interaction
+            operator defining the "molecular interaction" to be simulated.
+        geometry(string or list of atoms):
+        basis(string):  String denoting the basis set used to discretize the
+            system.
+        multiplicity(int): Spin multiplicity desired in the system.
+        n_electrons(int): Number of electrons in the system
+        reduce_spin(bool): True if one wishes to perform spin reduction on
+            integrals that are given in interaction operator.  Assumes
+            spatial (x) spin structure generically.
+
+    Returns:
+        molecule(MolecularData): Instance that captures the
+            interaction_operator converted into the format that would come
+            from an electronic structure package adorned with some meta-data
+            that may be useful.
+    """
+
+    n_spin_orbitals = interaction_operator.n_qubits
+
+    # Introduce bare molecular operator to fill
+    molecule = MolecularData(geometry=geometry,
+                             basis=basis,
+                             multiplicity=multiplicity,
+                             data_directory=data_directory)
+
+    molecule.nuclear_repulsion = interaction_operator.constant
+
+    # Remove spin from integrals and put into molecular operator
+    if reduce_spin:
+        reduction_indices = list(range(0, n_spin_orbitals, 2))
+    else:
+        reduction_indices = list(range(n_spin_orbitals))
+
+    molecule.n_orbitals = len(reduction_indices)
+
+    molecule.one_body_integrals = interaction_operator.one_body_tensor[
+        numpy.ix_(reduction_indices, reduction_indices)]
+    molecule.two_body_integrals = interaction_operator.two_body_tensor[
+        numpy.ix_(reduction_indices, reduction_indices,
+                  reduction_indices, reduction_indices)]
+
+    # Fill in other metadata
+    molecule.overlap_integrals = numpy.eye(molecule.n_orbitals)
+    molecule.n_qubits = n_spin_orbitals
+    molecule.n_electrons = n_electrons
+    molecule.multiplicity = multiplicity
+
+    return molecule
