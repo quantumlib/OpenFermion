@@ -19,6 +19,7 @@ OpenFermion
 
 OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians.
 
+
 Getting started
 ===============
 
@@ -28,6 +29,13 @@ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`
 `ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
 as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
+Note that in the event that one is having trouble installing OpenFermion or its
+plugins, we have provided a Docker image and usage instructions in the
+`docker folder
+<https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
+The Docker image provides a virtual environment configured with the OpenFermion
+library and select plugins pre-installed. The Docker installation can be run on any operating
+system (yes, even Windows).
 
 Developer install
 -----------------
@@ -49,25 +57,32 @@ To install the latest PyPI release as a library (in user mode):
 
   python -m pip install --pre --user openfermion
 
+
 Plugins
 =======
 
-In order to simulate and compile quantum circuits or perform other complicated
-electronic structure calculations, one can install OpenFermion plugins. We
-currently support a circuit simulation plugin for `ProjectQ
-<https://projectq.ch>`__, which you can find at `OpenFermion-ProjectQ
-<http://github.com/quantumlib/OpenFermion-ProjectQ>`__. We also support
-electronic structure plugins for `Psi4 <http://psicode.org>`__, which you can
-find at `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__
-(recommended), and for `PySCF <https://github.com/sunqm/pyscf>`__, which you can
-find at `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__
-(less supported).
-For a particularly robust method of installing OpenFermion together with select
-plugins, we have provided a Docker image and usage instructions in the
-`docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__
-(the Docker image provides a virtual environment configured with the OpenFermion
-libraries pre-installed). The Docker installation can be run on any operating
-system (yes, even Windows).
+Plugin packages are a very important part of OpenFermion.
+Plugns are used to simulate and compile quantum circuits and to perform
+classical electronic structure calculations.
+Follow the links below to install these plugins.
+If you have built a new OpenFermion plugin we would be happy
+to link to it here.
+
+Circuit compilation and simulation plugins
+------------------------------------------
+* `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__
+to support integration with `ProjectQ <https://projectq.ch>`__.
+
+* `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion`__
+to support integration with `Forest <https://www.rigetti.com/forest>`__.
+
+Electronic structure package plugins
+------------------------------------
+* `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__
+to support integration with `Psi4 <http://psicode.org>`__ (recommended).
+
+* `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__ to
+support integration with `PySCF <https://github.com/sunqm/pyscf>`__.
 
 
 How to contribute
@@ -103,6 +118,7 @@ Authors
 `Damian Steiger <https://github.com/damiansteiger>`__ (ETH Zurich),
 `Dave Bacon <https://github.com/dabacon>`__ (Google),
 `Yudong Cao <https://github.com/yudongcao>`__ (Harvard),
+`E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
 `Craig Gidney <https://github.com/Strilanc>`__ (Google),
 `Thomas Haener <https://github.com/thomashaener>`__ (ETH Zurich),
 `Vojtech Havlicek <https://github.com/VojtaHavlicek>`__ (Oxford),
@@ -110,6 +126,7 @@ Authors
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
+`Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
 `Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
 `Wei Sun <https://github.com/Spaceenter>`__ (Google) and
