@@ -65,8 +65,6 @@ Plugin packages are a very important part of OpenFermion.
 Plugns are used to simulate and compile quantum circuits and to perform
 classical electronic structure calculations.
 Follow the links below to install these plugins.
-If you have built a new OpenFermion plugin we would be happy
-to link to it here.
 
 Circuit compilation and simulation plugins
 ------------------------------------------
