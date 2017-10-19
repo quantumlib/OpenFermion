@@ -29,12 +29,12 @@ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`
 `ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
 as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
-Note that in the event that one is having trouble installing OpenFermion or its
+In the event that one is having trouble installing OpenFermion or its
 plugins, we have provided a Docker image and usage instructions in the
 `docker folder
 <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
-The Docker image provides a virtual environment configured with the OpenFermion
-library and select plugins pre-installed. The Docker installation can be run on any operating
+The Docker image provides a virtual environment configured with OpenFermion and select plugins pre-installed.
+The Docker installation can be run on any operating
 system (yes, even Windows).
 
 Developer install
@@ -70,19 +70,15 @@ to link to it here.
 
 Circuit compilation and simulation plugins
 ------------------------------------------
-* `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__
-to support integration with `ProjectQ <https://projectq.ch>`__.
+* `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__ to support integration with `ProjectQ <https://projectq.ch>`__.
 
-* `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion`__
-to support integration with `Forest <https://www.rigetti.com/forest>`__.
+* `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
 
 Electronic structure package plugins
 ------------------------------------
-* `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__
-to support integration with `Psi4 <http://psicode.org>`__ (recommended).
+* `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ to support integration with `Psi4 <http://psicode.org>`__ (recommended).
 
-* `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__ to
-support integration with `PySCF <https://github.com/sunqm/pyscf>`__.
+* `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__ to support integration with `PySCF <https://github.com/sunqm/pyscf>`__.
 
 
 How to contribute
