@@ -113,6 +113,9 @@ class InteractionTensor(object):
         Args:
             constant(complex): A constant term in the operator given as a
                 complex number. For instance, the nuclear repulsion energy.
+            *args(ndarray): A list of the n-body tensors. This gives a way
+                of initializing without explicitly giving the n_body_tensors
+                dictionary
             n_body_tensors(dict): A dictionary storing the tensors describing
                 n-body interactions. For instance, n_body_tensors[2] is a
                 n_qubits x n_qubits x n_qubits x n_qubits numpy array of
