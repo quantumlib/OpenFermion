@@ -22,7 +22,7 @@ RUN apt-get update
 RUN yes | apt-get install wget
 RUN cd /root; wget https://bootstrap.pypa.io/get-pip.py
 
-# Change the following lines for different Python versions/distributions.
+# Install Python 2.7.
 RUN yes | apt-get install python
 RUN python /root/get-pip.py; rm /root/get-pip.py
 
@@ -35,7 +35,7 @@ RUN yes | apt-get install g++
 RUN yes | apt-get install python-dev
 RUN cd /root/ProjectQ/; python -m pip install -e .
 
-# Install jupyter notebook.
+# Install Jupyter notebook.
 RUN yes | apt-get install ipython-notebook
 RUN pip install jupyter
 
