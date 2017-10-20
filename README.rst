@@ -17,7 +17,7 @@ OpenFermion
 
 .. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
-OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians.
+OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. Among other functionalities, the current version features data structures and tools for obtaining and manipulating representations of fermionic and qubit Hamiltonians.
 
 
 Getting started
@@ -33,9 +33,8 @@ In the event that one is having trouble installing OpenFermion or its
 plugins, we have provided a Docker image and usage instructions in the
 `docker folder
 <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
-The Docker image provides a virtual environment configured with OpenFermion and select plugins pre-installed.
-The Docker installation can be run on any operating
-system (yes, even Windows).
+The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
+The Docker installation should run on any operating system (even Windows).
 
 Developer install
 -----------------
@@ -55,16 +54,16 @@ To install the latest PyPI release as a library (in user mode):
 
 .. code-block:: bash
 
-  python -m pip install --pre --user openfermion
+  python -m pip install --user openfermion
 
 
 Plugins
 =======
 
-Plugin packages are a very important part of OpenFermion.
-Plugns are used to simulate and compile quantum circuits and to perform
+OpenFermion relies on modular plugin libraries for significant functionality.
+Specifically, plugins are used to simulate and compile quantum circuits and to perform
 classical electronic structure calculations.
-Follow the links below to install these plugins.
+Follow the links below to learn more about these useful plugins.
 
 Circuit compilation and simulation plugins
 ------------------------------------------
@@ -103,6 +102,7 @@ the corresponding `linter <https://pypi.python.org/pypi/pep8>`_ to check for it.
 Code should always come with documentation, which is generated automatically and can be found
 `here <http://openfermion.readthedocs.io/en/latest/openfermion.html>`_.
 
+
 Authors
 =======
 
@@ -118,6 +118,7 @@ Authors
 `Vojtech Havlicek <https://github.com/VojtaHavlicek>`__ (Oxford),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
+`Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
 `Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
@@ -126,10 +127,20 @@ Authors
 `Wei Sun <https://github.com/Spaceenter>`__ (Google) and
 `Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan).
 
-Questions?
-==========
 
-If you have any other questions, please contact help@openfermion.org.
+How to cite
+===========
+When using OpenFermion for research projects, please cite:
+
+    Jarrod R. McClean, Ian D. Kivlichan, Damian S. Steiger, Yudong Cao, E.
+    Schuyler Fried, Craig Gidney, Thomas Häner, Vojtĕch Havlíček,
+    Zhang Jiang, Matthew Neeley, Jhonathan Romero, Nicholas Rubin, Nicolas P. D.
+    Sawaya, Kanav Setia, Sukin Sim, Wei Sun, Kevin Sung and Ryan Babbush.
+    *OpenFermion: The Electronic Structure Package for Quantum Computers*.
+    arXiv preprint. 2017.
+
+We are happy to include future contributors as authors on later releases.
+
 
 Disclaimer
 ==========
