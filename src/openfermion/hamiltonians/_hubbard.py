@@ -20,7 +20,7 @@ model depends on where the fermions are. In the standard Fermi-Hubbard model
 H = - tunneling sum_{<i,j>} sum_sigma (a^dagger_{i, sigma} a_{j, sigma}
   + a^dagger_{j, sigma} a_{i, sigma})
   + coulomb sum_{i} a^dagger_{i, up} a_{i, up} a^dagger_{j, down} a_{j, down}
-  + chemical_potential sum_i (a^dagger_{i, up} a_{i, up}
+  - chemical_potential sum_i (a^dagger_{i, up} a_{i, up}
   + a^dagger_{i, down} a_{i, down})
   + magnetic_field sum_i (a^dagger_{i, up} a_{i, up}
   - a^dagger_{i, down} a_{i, down}).
