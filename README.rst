@@ -34,8 +34,7 @@ plugins, we have provided a Docker image and usage instructions in the
 `docker folder
 <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
 The Docker image provides a virtual environment configured with OpenFermion and select plugins pre-installed.
-The Docker installation can be run on any operating
-system (yes, even Windows).
+The Docker installation should run on any operating system (even Windows).
 
 Developer install
 -----------------
@@ -103,6 +102,7 @@ the corresponding `linter <https://pypi.python.org/pypi/pep8>`_ to check for it.
 Code should always come with documentation, which is generated automatically and can be found
 `here <http://openfermion.readthedocs.io/en/latest/openfermion.html>`_.
 
+
 Authors
 =======
 
@@ -118,6 +118,7 @@ Authors
 `Vojtech Havlicek <https://github.com/VojtaHavlicek>`__ (Oxford),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
+`Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
 `Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
@@ -126,10 +127,20 @@ Authors
 `Wei Sun <https://github.com/Spaceenter>`__ (Google) and
 `Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan).
 
-Questions?
-==========
 
-If you have any other questions, please contact help@openfermion.org.
+How to cite
+===========
+When using OpenFermion for research projects, please cite:
+
+J. McClean, I. Kivlichan, D. Steiger, Y. Cao, E. Fried, C. Gidney, T. Haener,
+V. Havlicek, Z. Jiang, M. Neeley, J. Romero, N. Rubin, N. Sawaya, K. Setia, S.
+Sim, W. Sun, K. Sung and R. Babbush. 
+*OpenFermion: The Electronic Structure Package for Quantum Computers*.
+arXiv preprint. 2017.
+
+We are happy to include any future developers as authors on later release paper
+versions.
+
 
 Disclaimer
 ==========
