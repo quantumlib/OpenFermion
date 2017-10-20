@@ -104,8 +104,8 @@ docker-machine ip default
 ```
 
 where "default" can be replaced by the name of whichever virtual machine whose
-ip address you want to check. Assuming the Docker image for OpenFermion is
-already built and is called openfermion_docker, run the container with an additional -p flag:
+ip address you want to check. Assuming the Docker image for OpenFermion is built
+and called openfermion_docker, run the container with an additional -p flag:
 
 
 ```
