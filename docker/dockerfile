@@ -42,7 +42,7 @@ RUN pip install jupyter
 # Install Psi4.
 RUN cd /root; wget http://vergil.chemistry.gatech.edu/psicode-download/psi4conda-1.1-py27-Linux-x86_64.sh
 RUN apt-get install bzip2
-RUN echo '/root/psi4conda' | bash /root/psi4conda-1.1-py27-Linux-x86_64.sh 
+RUN echo '/root/psi4conda' | bash /root/psi4conda-1.1-py27-Linux-x86_64.sh
 RUN rm /root/psi4conda-1.1-py27-Linux-x86_64.sh
 
 # Install PySCF.

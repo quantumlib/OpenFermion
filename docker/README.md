@@ -64,7 +64,7 @@ docker build -t openfermion_docker .
 where "openfermion_docker" is just an arbitrary name for our docker container.
 What the Dockerfile does is to start from a base image of Ubuntu and install
 OpenFermion, its plugins and the necessary applications needed for running these
-programs. This is a fairly involved installation and will take some time 
+programs. This is a fairly involved installation and will take some time
 (perhaps up to thiry minutes depending on the computer). Once installation has
 completed, run the image with
 
@@ -75,25 +75,29 @@ docker run -it openfermion_docker
 With this command the terminal enters a new environment which emulates Ubuntu with
 OpenFermion and accessories installed. The freshly built image is ready to run any program that uses
 OpenFermion. To transfer files from somewhere on the disk to the Docker
-container, run in a separate terminal from the one running the container
-
+container, first run the following in a separate terminal from the one running the docker:
+```
+docker ps
+```
+This returns a list of running containers. For instance, the output might look
+like:
++CONTAINER ID        IMAGE               COMMAND             CREATED
++STATUS              PORTS               NAMES
++3cc87ed4205b        5a67a4d66d05        "/bin/bash"         5 seconds ago
++Up 5 seconds                            competent_feynman
+```
+In this example, the container name is "competent_feynman" (the name is
+random and generated automatically). Using this name, one can then copy
+files into the active Docker session from other terminal using:
 ```
 docker cp [path to file on disk] [container name]:[path in container]
 ```
 
-where container name is "openfermion_docker" in this case.
-
 An alternative way of loading files onto the Docker container is through
 remote repos such as GitHub. Git is installed in the Docker image.
 After `docker run`, one could run "git clone ..." etc to pull files
-remotely into the Docker container. There are occasions where one might want to open up multiple terminals to run the same Docker container.
-In that case, one could run in any terminal
+remotely into the Docker container.
 
-```
-docker exec -it [container name] bash
-```
-
-and "get into" the container.
 
 ## Running Jupyter notebook with Docker backend
 

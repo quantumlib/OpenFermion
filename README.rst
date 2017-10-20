@@ -17,7 +17,7 @@ OpenFermion
 
 .. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
-OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. The current version is an alpha release which features data structures and tools for obtaining and manipulating representations of fermionic Hamiltonians.
+OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. Among other functionalities, the current version features data structures and tools for obtaining and manipulating representations of fermionic and qubit Hamiltonians.
 
 
 Getting started
@@ -54,7 +54,7 @@ To install the latest PyPI release as a library (in user mode):
 
 .. code-block:: bash
 
-  python -m pip install --pre --user openfermion
+  python -m pip install --user openfermion
 
 
 Plugins
@@ -138,7 +138,7 @@ When using OpenFermion for research projects, please cite:
     *OpenFermion: The Electronic Structure Package for Quantum Computers*.
     arXiv preprint. 2017.
 
-We are happy to include future contributors as authors on later release papers.
+We are happy to include future contributors as authors on later releases.
 
 
 Disclaimer
