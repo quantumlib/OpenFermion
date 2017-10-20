@@ -33,7 +33,7 @@ In the event that one is having trouble installing OpenFermion or its
 plugins, we have provided a Docker image and usage instructions in the
 `docker folder
 <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
-The Docker image provides a virtual environment configured with OpenFermion and select plugins pre-installed.
+The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
 The Docker installation should run on any operating system (even Windows).
 
 Developer install
@@ -132,18 +132,18 @@ How to cite
 ===========
 When using OpenFermion for research projects, please cite:
 
-J. McClean, I. Kivlichan, D. Steiger, Y. Cao, E. Fried, C. Gidney, T. Haener,
-V. Havlicek, Z. Jiang, M. Neeley, J. Romero, N. Rubin, N. Sawaya, K. Setia, S.
-Sim, W. Sun, K. Sung and R. Babbush. 
-*OpenFermion: The Electronic Structure Package for Quantum Computers*.
-arXiv preprint. 2017.
+    J. McClean, I. Kivlichan, D. Steiger, Y. Cao, E. Fried, C. Gidney,
+    T. Haener, V. Havlicek, Z. Jiang, M. Neeley, J. Romero, N. Rubin,
+    N. Sawaya, K. Setia, S. Sim, W. Sun, K. Sung and R. Babbush.
+    *OpenFermion: The Electronic Structure Package for Quantum Computers*.
+    arXiv preprint. 2017.
 
-We are happy to include any future developers as authors on later release paper
-versions.
+We are happy to include future contributors as authors on later release papers.
 
 
 Disclaimer
 ==========
 
 Copyright 2017 The OpenFermion Developers.
+Questions? Contact help@openfermion.org.
 This is not an official Google product.
