@@ -24,8 +24,8 @@ OpenFermion (or any of its plugins) using the standard installation.
 
 You first need to install [Docker](https://www.docker.com/).
 Once Docker is installed, open a command line terminal and check the list
-of running virtual machines with `docker-machine ls`
-Assuming this is the firt time Docker has been run, the list should be empty.
+of running virtual machines with `docker-machine ls`.
+Assuming this is the first time Docker has been run, the list should be empty.
 Create a virtual machine by running:
 ```
 docker-machine create --driver virtualbox default
@@ -57,9 +57,9 @@ Dockerfile for building the OpenFermion image (docker/dockerfile) and run
 docker build -t openfermion_docker .
 ```
 
-where "openfermion_docker" is just an arbitrary name for our docker container.
+where "openfermion_docker" is just an arbitrary name for our docker image.
 What the Dockerfile does is to start from a base image of Ubuntu and install
-OpenFermion, its plugins and the necessary applications needed for running these
+OpenFermion, its plugins, and the necessary applications needed for running these
 programs. This is a fairly involved installation and will take some time
 (perhaps up to thiry minutes depending on the computer). Once installation has
 completed, run the image with
@@ -69,15 +69,16 @@ docker run -it openfermion_docker
 ```
 
 With this command the terminal enters a new environment which emulates Ubuntu with
-OpenFermion and accessories installed. The freshly built image is ready to run any program that uses
-OpenFermion. To transfer files from somewhere on the disk to the Docker
+OpenFermion and accessories installed. To transfer files from somewhere on the disk to the Docker
 container, first run `docker ps` in a seperate terminal from the one running
-docker. This returns a list of running containers, e.g.:
+Docker. This returns a list of running containers, e.g.:
 
+```
 +CONTAINER ID        IMAGE               COMMAND             CREATED
 +STATUS              PORTS               NAMES
-+3cc87ed4205b        5a67a4d66d05        "/bin/bash"         5 seconds ago
-+Up 5 seconds                            competent_feynman
++3cc87ed4205b        5a67a4d66d05        "/bin/bash"         2 hours ago
++Up 2 hours                              competent_feynman
+```
 
 In this example, the container name is "competent_feynman" (the name is
 random and generated automatically). Using this name, one can then copy
@@ -95,18 +96,16 @@ remotely into the Docker container.
 
 ## Running Jupyter notebook with Docker backend
 
-To run Jupyter notebook in a browser with a Docker container running as a
-backend, first check the ip address of the virtual machine by running
+To run Jupyter notebooks (such as our demos) in a browser with a Docker container
+running as a backend, first check the ip address of the virtual machine by running
 
 ```
 docker-machine ip default
 ```
 
 where "default" can be replaced by the name of whichever virtual machine whose
-ip address you want to check.
-
-Assuming the Docker image for OpenFermion is already built and is called
-openfermion_docker, run the container with an additional -p flag:
+ip address you want to check. Assuming the Docker image for OpenFermion is
+already built and is called openfermion_docker, run the container with an additional -p flag:
 
 
 ```
@@ -115,9 +114,8 @@ docker run -it -p 8888:8888 openfermion_docker
 
 Here the numbers 8888 simply specifies the port number through which the Docker
 container communicates with the browser. If for some reason this port is not
-available, any other number in 8000-9000 will do.
-
-When the terminal enters the Docker container, run Jupyter notebook by
+available, any other number in 8000-9000 will do. When the terminal enters the Docker container,
+run a Jupyter notebook with:
 
 ```
 jupyter-notebook --allow-root --no-browser --port 8888 --ip=0.0.0.0
@@ -142,5 +140,5 @@ Open a browser and type in the address line
 where [virtual machine ip] is extracted from `docker-machine ip` and 8888 is the port
 number (or any other port number that one specifies previously). A webpage
 asking for token string should appear. Use the token string obtained from before to
-enter Jupyter Notebook. If logged in successfully, you should be able to freely
+enter Jupyter notebook. If logged in successfully, you should be able to freely
 navigate through the entire Docker image and launch any Jupyter notebook in the image.
