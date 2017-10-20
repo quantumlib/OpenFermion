@@ -135,7 +135,7 @@ When using OpenFermion for research projects, please cite:
     Jarrod R. McClean, Ian D. Kivlichan, Damian S. Steiger, Yudong Cao, E.
     Schuyler Fried, Craig Gidney, Thomas Häner, Vojtĕch Havlíček,
     Zhang Jiang, Matthew Neeley, Jhonathan Romero, Nicholas Rubin, Nicolas P. D.
-    Sawaya, Kanav Setia, Sukin Sim, Wei Sun, Kevin Sung, Ryan Babbush.
+    Sawaya, Kanav Setia, Sukin Sim, Wei Sun, Kevin Sung and Ryan Babbush.
     *OpenFermion: The Electronic Structure Package for Quantum Computers*.
     arXiv preprint. 2017.
 
