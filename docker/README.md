@@ -23,14 +23,10 @@ OpenFermion (or any of its plugins) using the standard installation.
 ## Setting up Docker for the first time
 
 You first need to install [Docker](https://www.docker.com/).
-Once Docker is installed, open a command line terminal and check the list of running virtual machines with
-
-```
-docker-machine ls
-```
-
-Assuming this is the firt time Docker has been run, the list should be empty. Create a virtual machine by running
-
+Once Docker is installed, open a command line terminal and check the list
+of running virtual machines with `docker-machine ls`
+Assuming this is the firt time Docker has been run, the list should be empty.
+Create a virtual machine by running:
 ```
 docker-machine create --driver virtualbox default
 ```
@@ -75,20 +71,18 @@ docker run -it openfermion_docker
 With this command the terminal enters a new environment which emulates Ubuntu with
 OpenFermion and accessories installed. The freshly built image is ready to run any program that uses
 OpenFermion. To transfer files from somewhere on the disk to the Docker
-container, first run the following in a separate terminal from the one running the docker:
-```
-docker ps
-```
-This returns a list of running containers. For instance, the output might look
-like:
+container, first run `docker ps` in a seperate terminal from the one running
+docker. This returns a list of running containers, e.g.:
+
 +CONTAINER ID        IMAGE               COMMAND             CREATED
 +STATUS              PORTS               NAMES
 +3cc87ed4205b        5a67a4d66d05        "/bin/bash"         5 seconds ago
 +Up 5 seconds                            competent_feynman
-```
+
 In this example, the container name is "competent_feynman" (the name is
 random and generated automatically). Using this name, one can then copy
 files into the active Docker session from other terminal using:
+
 ```
 docker cp [path to file on disk] [container name]:[path in container]
 ```
