@@ -60,10 +60,10 @@ To install the latest PyPI release as a library (in user mode):
 Plugins
 =======
 
-Plugin packages are a very important part of OpenFermion.
-Plugns are used to simulate and compile quantum circuits and to perform
+OpenFermion relies on modular plugin libraries for significant functionality.
+Specifically, plugins are used to simulate and compile quantum circuits and to perform
 classical electronic structure calculations.
-Follow the links below to install these plugins.
+Follow the links below to learn more about these useful plugins.
 
 Circuit compilation and simulation plugins
 ------------------------------------------
@@ -145,5 +145,4 @@ Disclaimer
 ==========
 
 Copyright 2017 The OpenFermion Developers.
-Questions? Contact help@openfermion.org.
 This is not an official Google product.
