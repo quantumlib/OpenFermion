@@ -14,6 +14,7 @@ import os
 
 from setuptools import setup, find_packages
 
+
 # This reads the __version__ variable from openfermion/_version.py
 exec(open('src/openfermion/_version.py').read())
 
@@ -24,15 +25,13 @@ long_description = open('README.rst').read()
 requirements = open('requirements.txt').readlines()
 requirements = [r.strip() for r in requirements]
 
-
 setup(
     name='openfermion',
     version=__version__,
     author='The OpenFermion Developers',
     author_email='help@openfermion.org',
     url='http://www.openfermion.org',
-    description=('Open source package for analyzing, compiling and '
-                 'emulating quantum algorithms for simulation of fermions.'),
+    description=('The electronic structure package for quantum computers.'),
     long_description=long_description,
     install_requires=requirements,
     license='Apache 2',
@@ -42,5 +41,4 @@ setup(
     package_data={
         '': [os.path.join('src', 'openfermion', 'data', '*.hdf5'),
              os.path.join('src', 'openfermion', 'data', '*.npy')]
-    }
-)
+    })
