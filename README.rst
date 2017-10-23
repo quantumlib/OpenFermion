@@ -29,12 +29,14 @@ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`
 `ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
 as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
-In the event that one is having trouble installing OpenFermion or its
-plugins, we have provided a Docker image and usage instructions in the
-`docker folder
-<https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
+Currently, OpenFermion is only tested on Mac and Linux for the reason that both
+electronic structure plugins are only compatible with Mac and Linux. However,
+for those who would like to use Windows, or for anyone having other difficulties
+with installing OpenFermion or its plugins, we have provided a Docker image
+and usage instructions in the
+`docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
 The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
-The Docker installation should run on any operating system (even Windows).
+The Docker installation should run on any operating system.
 
 Developer install
 -----------------
