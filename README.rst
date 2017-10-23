@@ -114,8 +114,8 @@ Authors
 `Yudong Cao <https://github.com/yudongcao>`__ (Harvard),
 `E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
 `Craig Gidney <https://github.com/Strilanc>`__ (Google),
-`Thomas Haener <https://github.com/thomashaener>`__ (ETH Zurich),
-`Vojtech Havlicek <https://github.com/VojtaHavlicek>`__ (Oxford),
+`Thomas Häner <https://github.com/thomashaener>`__ (ETH Zurich),
+`Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
@@ -137,7 +137,7 @@ When using OpenFermion for research projects, please cite:
     Zhang Jiang, Matthew Neeley, Jhonathan Romero, Nicholas Rubin, Nicolas P. D.
     Sawaya, Kanav Setia, Sukin Sim, Wei Sun, Kevin Sung and Ryan Babbush.
     *OpenFermion: The Electronic Structure Package for Quantum Computers*.
-    arXiv preprint. 2017.
+    `arXiv:1710.07629 <https://arxiv.org/abs/1710.07629>`__. 2017.
 
 We are happy to include future contributors as authors on later releases.
 
