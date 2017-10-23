@@ -10,7 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Base class for representation for InteractionOperator and InteractionRDM."""
+"""Base class for representating operators that are polynomials in the
+fermionic ladder operators."""
 from __future__ import absolute_import
 
 import copy
@@ -20,7 +21,7 @@ import numpy
 from openfermion.config import *
 
 
-class InteractionTensorError(Exception):
+class PolynomialTensorError(Exception):
     pass
 
 
@@ -34,7 +35,7 @@ def one_body_basis_change(one_body_tensor, rotation_matrix):
         one_body_tensor: A square numpy array or matrix containing information
             about a 1-body interaction tensor such as the 1-RDM.
         rotation_matrix: A square numpy array or matrix having dimensions of
-            n_qubits by n_qubits. Assumed to be real and invertible.
+            n_sites by n_sites. Assumed to be real and invertible.
 
     Returns:
         transformed_one_body_tensor: one_body_tensor in the rotated basis.
@@ -62,7 +63,7 @@ def two_body_basis_change(two_body_tensor, rotation_matrix):
     Args:
         two_body_tensor: a square rank 4 interaction tensor.
         rotation_matrix: A square numpy array or matrix having dimensions of
-            n_qubits by n_qubits. Assumed to be real and invertible.
+            n_sites by n_sites. Assumed to be real and invertible.
 
     Returns:
         transformed_two_body_tensor: two_body_tensor matrix in rotated basis.
@@ -84,69 +85,45 @@ def two_body_basis_change(two_body_tensor, rotation_matrix):
     return transformed_two_body_tensor
 
 
-class InteractionTensor(object):
+class PolynomialTensor(object):
     """Class for storing tensor representations of operators that correspond
     with multilinear polynomials in the fermionic ladder operators.
-    For instance, in a quadratic Hamiltonian (degree 2 polynomial),
-    there are only terms of the form a^\dagger_p a_q, and the coefficients
-    can be stored in an n_qubits x n_qubits matrix. Higher order terms would
-    be described with tensors of higher dimension. Note that each tensor must
-    have an even number of dimensions, since parity is conserved.
+    For instance, in a quadratic Hamiltonian (degree 2 polynomial) which
+    conserves particle number, there are only terms of the form
+    a^\dagger_p a_q, and the coefficients can be stored in an
+    n_sites x n_sites matrix. Higher order terms would be described with
+    tensors of higher dimension. Note that each tensor must have an even
+    number of dimensions, since parity is conserved.
     Much of the functionality of this class is redudant with FermionOperator
     but enables much more efficient numerical computations in many cases,
     such as basis rotations.
 
     Attributes:
-        n_qubits(int): The number of qubits on which the tensor
-            acts.
-        constant(complex): A constant term in the operator given as a complex
-            number. For instance, the nuclear repulsion energy.
+        n_sites(int): The number of sites on which the tensor acts.
+        constant(complex or float): A constant term in the operator given
+        as a complex number. For instance, the nuclear repulsion energy.
         n_body_tensors(dict): A dictionary storing the tensors describing
-            n-body interactions. For instance, n_body_tensors[2] is a
-            n_qubits x n_qubits x n_qubits x n_qubits numpy array of complex
-            numbers.
+            n-body interactions. The keys are tuples that indicate the
+            type of tensor. For instance, n_body_tensors[(1, 0)] would
+            be an (n_sites x n_sites x n_sites x n_sites) numpy array,
+            and it could represent the coefficients of terms of the form
+            a^\dagger_i a_j, whereas n_body_tensors[(0, 1)] would be
+            an array of the same shape, but instead representing terms
+            of the form a_i a^\dagger_j.
     """
 
-    def __init__(self, constant, *args, n_body_tensors=None, n_qubits=None):
-        """Initialize the InteractionTensor class.
+    def __init__(self, constant, n_body_tensors):
+        """Initialize the PolynomialTensor class.
 
         Args:
-            constant(complex): A constant term in the operator given as a
-                complex number. For instance, the nuclear repulsion energy.
-            *args(ndarray): A list of the n-body tensors. This gives a way
-                of initializing without explicitly giving the n_body_tensors
-                dictionary
             n_body_tensors(dict): A dictionary storing the tensors describing
-                n-body interactions. For instance, n_body_tensors[2] is a
-                n_qubits x n_qubits x n_qubits x n_qubits numpy array of
-                complex numbers.
+                n-body interactions.
         """
-        # initialize constant
-        if constant is not None:
-            self.constant = constant
-        else:
-            self.constant = 0.
-
-        # initialize n_body_tensors
-        if args:
-            # tensors were passed in as arguments
-            self.n_body_tensors = dict()
-            for i in range(len(args)):
-                self.n_body_tensors[i + 1] = args[i]
-        elif n_body_tensors:
-            # tensors were passed in directly as dictionary
-            self.n_body_tensors = n_body_tensors
-        else:
-            # no tensors were given
-            self.n_body_tensors = dict()
-
-        # initialize n_qubits
-        if n_qubits:
-            self.n_qubits = n_qubits
-        elif 1 in self.n_body_tensors:
-            self.n_qubits = self.n_body_tensors[1].shape[0]
-        else:
-            raise ValueError("Could not determine n_qubits.")
+        if constant is None:
+            constant = 0.
+        self.constant = constant
+        self.n_body_tensors = n_body_tensors
+        self.n_sites = list(n_body_tensors.values())[0].shape[0]
 
     def __getitem__(self, args):
         """Look up matrix element.
@@ -158,10 +135,11 @@ class InteractionTensor(object):
             ValueError: args must be of even length.
         """
         args = tuple(args)
-        if not len(args):
+        if len(args) == 0:
             return self.constant
         elif len(args) % 2 == 0:
-            return self.n_body_tensors[len(args) // 2][args]
+            n = len(args) // 2
+            return self.n_body_tensors[tuple([1] * n + [0] * n)][args]
         else:
             raise ValueError('args must be of even length.')
 
@@ -175,10 +153,11 @@ class InteractionTensor(object):
             ValueError: args must be of even length.
         """
         args = tuple(args)
-        if not len(args):
+        if len(args) == 0:
             self.constant = value
         elif len(args) % 2 == 0:
-            self.n_body_tensors[len(args) // 2][args] = value
+            n = len(args) // 2
+            self.n_body_tensors[tuple([1] * n + [0] * n)][args] = value
         else:
             raise ValueError('args must be of even length.')
 
@@ -186,9 +165,9 @@ class InteractionTensor(object):
         if self.n_body_tensors.keys() != other_operator.n_body_tensors.keys():
             return False
         diff = abs(other_operator.constant - self.constant)
-        for n in self.n_body_tensors.keys():
-            self_tensor = self.n_body_tensors[n]
-            other_tensor = other_operator.n_body_tensors[n]
+        for key in self.n_body_tensors.keys():
+            self_tensor = self.n_body_tensors[key]
+            other_tensor = other_operator.n_body_tensors[key]
             discrepancy = numpy.amax(
                               numpy.absolute(self_tensor - other_tensor))
             diff = max(diff, discrepancy)
@@ -198,19 +177,19 @@ class InteractionTensor(object):
         return not (self == other_operator)
 
     def __iadd__(self, addend):
-        if not issubclass(type(addend), InteractionTensor):
+        if not issubclass(type(addend), PolynomialTensor):
             raise TypeError('Invalid type.')
 
-        if self.n_qubits != addend.n_qubits:
+        if self.n_sites != addend.n_sites:
             raise TypeError('Invalid tensor shape.')
 
         if self.n_body_tensors.keys() != addend.n_body_tensors.keys():
             raise TypeError('Invalid tensor type.')
 
         self.constant += addend.constant
-        for n in self.n_body_tensors.keys():
-            self.n_body_tensors[n] = numpy.add(self.n_body_tensors[n],
-                                               addend.n_body_tensors[n])
+        for key in self.n_body_tensors.keys():
+            self.n_body_tensors[key] = numpy.add(self.n_body_tensors[key],
+                                                 addend.n_body_tensors[key])
         return self
 
     def __add__(self, addend):
@@ -220,25 +199,25 @@ class InteractionTensor(object):
 
     def __neg__(self):
         neg_n_body_tensors = dict()
-        for n in self.n_body_tensors.keys():
-            neg_n_body_tensors[n] = numpy.negative(self.n_body_tensors[n])
-        return InteractionTensor(-self.constant,
-                                 n_body_tensors=neg_n_body_tensors)
+        for key in self.n_body_tensors.keys():
+            neg_n_body_tensors[key] = numpy.negative(self.n_body_tensors[key])
+        return PolynomialTensor(-self.constant,
+                                n_body_tensors=neg_n_body_tensors)
 
     def __isub__(self, subtrahend):
-        if not issubclass(type(subtrahend), InteractionTensor):
+        if not issubclass(type(subtrahend), PolynomialTensor):
             raise TypeError('Invalid type.')
 
-        if self.n_qubits != subtrahend.n_qubits:
+        if self.n_sites != subtrahend.n_sites:
             raise TypeError('Invalid tensor shape.')
 
         if self.n_body_tensors.keys() != subtrahend.n_body_tensors.keys():
             raise TypeError('Invalid tensor type.')
 
         self.constant -= subtrahend.constant
-        for n in self.n_body_tensors.keys():
-            self.n_body_tensors[n] = numpy.subtract(
-                    self.n_body_tensors[n], subtrahend.n_body_tensors[n])
+        for key in self.n_body_tensors.keys():
+            self.n_body_tensors[key] = numpy.subtract(
+                    self.n_body_tensors[key], subtrahend.n_body_tensors[key])
         return self
 
     def __sub__(self, subtrahend):
@@ -247,19 +226,19 @@ class InteractionTensor(object):
         return r
 
     def __imul__(self, multiplier):
-        if not issubclass(type(multiplier), InteractionTensor):
+        if not issubclass(type(multiplier), PolynomialTensor):
             raise TypeError('Invalid type.')
 
-        if self.n_qubits != multiplier.n_qubits:
+        if self.n_sites != multiplier.n_sites:
             raise TypeError('Invalid tensor shape.')
 
         if self.n_body_tensors.keys() != multiplier.n_body_tensors.keys():
             raise TypeError('Invalid tensor type.')
 
         self.constant *= multiplier.constant
-        for n in self.n_body_tensors.keys():
-            self.n_body_tensors[n] = numpy.multiply(
-                    self.n_body_tensors[n], multiplier.n_body_tensors[n])
+        for key in self.n_body_tensors.keys():
+            self.n_body_tensors[key] = numpy.multiply(
+                    self.n_body_tensors[n], multiplier.n_body_tensors[key])
         return self
 
     def __mul__(self, multiplier):
@@ -268,19 +247,20 @@ class InteractionTensor(object):
         return product
 
     def __iter__(self):
-        """Iterate over non-zero elements of InteractionTensor."""
+        """Iterate over non-zero elements of PolynomialTensor."""
         # Constant.
         if self.constant:
             yield []
 
         # n-body elements
-        for n, n_body_tensor in self.n_body_tensors.items():
-            for index in itertools.product(range(self.n_qubits), repeat=2 * n):
+        for key, n_body_tensor in self.n_body_tensors.items():
+            for index in itertools.product(
+                    range(self.n_sites), repeat=len(key)):
                 if n_body_tensor[index]:
                     yield list(index)
 
     def __str__(self):
-        """Print out the non-zero elements of InteractionTensor."""
+        """Print out the non-zero elements of PolynomialTensor."""
         string = ''
         for key in self:
             if len(key) == 0:
@@ -292,11 +272,11 @@ class InteractionTensor(object):
 
     def rotate_basis(self, rotation_matrix):
         """
-        Rotate the orbital basis of the InteractionTensor.
+        Rotate the orbital basis of the PolynomialTensor.
 
         Args:
             rotation_matrix: A square numpy array or matrix having
-                dimensions of n_qubits by n_qubits. Assumed to be real and
+                dimensions of n_sites by n_sites. Assumed to be real and
                 invertible.
         """
         self.n_body_tensors[1] = one_body_basis_change(
