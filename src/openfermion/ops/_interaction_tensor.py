@@ -129,19 +129,17 @@ class PolynomialTensor(object):
         """Look up matrix element.
 
         Args:
-            Ints giving indices of tensor. Should have even length.
-
-        Raises:
-            ValueError: args must be of even length.
+            args: Tuples indicating which coefficient to get. For instance,
+                    my_tensor[(6, 1), (8, 1), (2, 0)]
+                returns
+                    my_tensor.n_body_tensors[1, 1, 0][6, 8, 2]
         """
-        args = tuple(args)
         if len(args) == 0:
             return self.constant
-        elif len(args) % 2 == 0:
-            n = len(args) // 2
-            return self.n_body_tensors[tuple([1] * n + [0] * n)][args]
         else:
-            raise ValueError('args must be of even length.')
+            index = tuple([operator[0] for operator in args])
+            key = tuple([operator[1] for operator in args])
+            return self.n_body_tensors[key][index]
 
     def __setitem__(self, args, value):
         """Set matrix element.
@@ -152,20 +150,18 @@ class PolynomialTensor(object):
         Raises:
             ValueError: args must be of even length.
         """
-        args = tuple(args)
         if len(args) == 0:
             self.constant = value
-        elif len(args) % 2 == 0:
-            n = len(args) // 2
-            self.n_body_tensors[tuple([1] * n + [0] * n)][args] = value
         else:
-            raise ValueError('args must be of even length.')
+            key = tuple([operator[1] for operator in args])
+            index = tuple([operator[0] for operator in args])
+            self.n_body_tensors[key][index] = value
 
     def __eq__(self, other_operator):
         if self.n_body_tensors.keys() != other_operator.n_body_tensors.keys():
             return False
         diff = abs(other_operator.constant - self.constant)
-        for key in self.n_body_tensors.keys():
+        for key in self.n_body_tensors:
             self_tensor = self.n_body_tensors[key]
             other_tensor = other_operator.n_body_tensors[key]
             discrepancy = numpy.amax(
@@ -187,7 +183,7 @@ class PolynomialTensor(object):
             raise TypeError('Invalid tensor type.')
 
         self.constant += addend.constant
-        for key in self.n_body_tensors.keys():
+        for key in self.n_body_tensors:
             self.n_body_tensors[key] = numpy.add(self.n_body_tensors[key],
                                                  addend.n_body_tensors[key])
         return self
@@ -199,7 +195,7 @@ class PolynomialTensor(object):
 
     def __neg__(self):
         neg_n_body_tensors = dict()
-        for key in self.n_body_tensors.keys():
+        for key in self.n_body_tensors:
             neg_n_body_tensors[key] = numpy.negative(self.n_body_tensors[key])
         return PolynomialTensor(-self.constant,
                                 n_body_tensors=neg_n_body_tensors)
@@ -215,7 +211,7 @@ class PolynomialTensor(object):
             raise TypeError('Invalid tensor type.')
 
         self.constant -= subtrahend.constant
-        for key in self.n_body_tensors.keys():
+        for key in self.n_body_tensors:
             self.n_body_tensors[key] = numpy.subtract(
                     self.n_body_tensors[key], subtrahend.n_body_tensors[key])
         return self
@@ -236,9 +232,9 @@ class PolynomialTensor(object):
             raise TypeError('Invalid tensor type.')
 
         self.constant *= multiplier.constant
-        for key in self.n_body_tensors.keys():
+        for key in self.n_body_tensors:
             self.n_body_tensors[key] = numpy.multiply(
-                    self.n_body_tensors[n], multiplier.n_body_tensors[key])
+                    self.n_body_tensors[key], multiplier.n_body_tensors[key])
         return self
 
     def __mul__(self, multiplier):
@@ -250,24 +246,23 @@ class PolynomialTensor(object):
         """Iterate over non-zero elements of PolynomialTensor."""
         # Constant.
         if self.constant:
-            yield []
+            yield ()
 
         # n-body elements
         for key, n_body_tensor in self.n_body_tensors.items():
             for index in itertools.product(
                     range(self.n_sites), repeat=len(key)):
                 if n_body_tensor[index]:
-                    yield list(index)
+                    yield tuple(zip(index, key))
 
     def __str__(self):
         """Print out the non-zero elements of PolynomialTensor."""
         string = ''
         for key in self:
             if len(key) == 0:
-                string += '[] {}\n'.format(self[key])
+                string += '() {}\n'.format(self[key])
             else:
-                string += '[{}] {}\n'.format(' '.join([str(i) for i in key]),
-                                             self[key])
+                string += '{} {}\n'.format(key, self[key])
         return string if string else '0'
 
     def rotate_basis(self, rotation_matrix):
@@ -279,10 +274,10 @@ class PolynomialTensor(object):
                 dimensions of n_sites by n_sites. Assumed to be real and
                 invertible.
         """
-        self.n_body_tensors[1] = one_body_basis_change(
-            self.n_body_tensors[1], rotation_matrix)
-        self.n_body_tensors[2] = two_body_basis_change(
-            self.n_body_tensors[2], rotation_matrix)
+        self.n_body_tensors[1, 0] = one_body_basis_change(
+            self.n_body_tensors[1, 0], rotation_matrix)
+        self.n_body_tensors[1, 1, 0, 0] = two_body_basis_change(
+            self.n_body_tensors[1, 1, 0, 0], rotation_matrix)
 
     def __repr__(self):
         return str(self)
