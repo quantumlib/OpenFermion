@@ -158,6 +158,8 @@ class PolynomialTensor(object):
             self.n_body_tensors[key][index] = value
 
     def __eq__(self, other_operator):
+        if self.n_qubits != other_operator.n_qubits:
+            return False
         if self.n_body_tensors.keys() != other_operator.n_body_tensors.keys():
             return False
         diff = abs(other_operator.constant - self.constant)
@@ -254,7 +256,7 @@ class PolynomialTensor(object):
             should be sorted."""
             # Interpret key as an integer written in binary
             key_int = int(''.join(map(str, key)))
-            return (len(key), key_int)
+            return len(key), key_int
         for key in sorted(self.n_body_tensors.keys(), key=sort_key):
             n_body_tensor = self.n_body_tensors[key]
             for index in itertools.product(

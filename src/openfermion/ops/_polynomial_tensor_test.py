@@ -99,6 +99,34 @@ class PolynomialTensorTest(unittest.TestCase):
                 self.constant,
                 {(1, 0): one_body_c, (1, 1, 0, 0): two_body_c})
 
+        one_body_hole = numpy.zeros((self.n_qubits, self.n_qubits))
+        two_body_hole = numpy.zeros((self.n_qubits, self.n_qubits,
+                                     self.n_qubits, self.n_qubits))
+        one_body_hole[0, 1] = 2
+        one_body_hole[1, 0] = 3
+        two_body_hole[0, 1, 0, 1] = 4
+        two_body_hole[1, 1, 0, 0] = 5
+
+        self.polynomial_tensor_hole = PolynomialTensor(
+                self.constant,
+                {(0, 1): one_body_hole, (0, 0, 1, 1): two_body_hole})
+
+        one_body_spinful = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
+        two_body_spinful = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits,
+                                        2 * self.n_qubits, 2 * self.n_qubits))
+        one_body_spinful[0, 1] = 2
+        one_body_spinful[1, 0] = 3
+        one_body_spinful[2, 3] = 6
+        one_body_spinful[3, 2] = 7
+        two_body_spinful[0, 1, 0, 1] = 4
+        two_body_spinful[1, 1, 0, 0] = 5
+        two_body_spinful[2, 1, 2, 3] = 8
+        two_body_spinful[3, 3, 2, 2] = 9
+
+        self.polynomial_tensor_spinful = PolynomialTensor(
+                self.constant,
+                {(1, 0): one_body_spinful, (1, 1, 0, 0): two_body_spinful})
+
     def test_setitem_1body(self):
         expected_one_body_tensor = numpy.array([[0, 3], [2, 0]])
         self.polynomial_tensor_a[(0, 1), (1, 0)] = 3
@@ -138,6 +166,15 @@ class PolynomialTensorTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             test_tensor[(0, 1), (1, 1), (0, 0)] = 5
 
+    def test_eq(self):
+        self.assertEqual(self.polynomial_tensor_a,
+                         self.polynomial_tensor_a)
+        self.assertTrue(self.polynomial_tensor_a == self.polynomial_tensor_a)
+        self.assertFalse(self.polynomial_tensor_a ==
+                         self.polynomial_tensor_hole)
+        self.assertFalse(self.polynomial_tensor_a ==
+                         self.polynomial_tensor_spinful)
+
     def test_neq(self):
         self.assertNotEqual(self.polynomial_tensor_a,
                             self.polynomial_tensor_b)
@@ -160,6 +197,10 @@ class PolynomialTensorTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.polynomial_tensor_a + self.polynomial_tensor_c
 
+    def test_invalid_tensor_keys_add(self):
+        with self.assertRaises(TypeError):
+            self.polynomial_tensor_a + self.polynomial_tensor_hole
+
     def test_neg(self):
         self.assertEqual(-self.polynomial_tensor_a,
                          self.polynomial_tensor_na)
@@ -181,6 +222,10 @@ class PolynomialTensorTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.polynomial_tensor_a - self.polynomial_tensor_c
 
+    def test_invalid_tensor_keys_sub(self):
+        with self.assertRaises(TypeError):
+            self.polynomial_tensor_a - self.polynomial_tensor_hole
+
     def test_mul(self):
         new_tensor = self.polynomial_tensor_a * self.polynomial_tensor_b
         self.assertEqual(new_tensor, self.polynomial_tensor_axb)
@@ -197,6 +242,10 @@ class PolynomialTensorTest(unittest.TestCase):
     def test_invalid_tensor_shape_mult(self):
         with self.assertRaises(TypeError):
             self.polynomial_tensor_a * self.polynomial_tensor_c
+
+    def test_invalid_tensor_keys_mult(self):
+        with self.assertRaises(TypeError):
+            self.polynomial_tensor_a * self.polynomial_tensor_hole
 
     def test_iter_and_str(self):
         one_body = numpy.zeros((self.n_qubits, self.n_qubits))
@@ -240,15 +289,25 @@ class PolynomialTensorTest(unittest.TestCase):
         one_body = numpy.zeros((self.n_qubits, self.n_qubits))
         two_body = numpy.zeros((self.n_qubits, self.n_qubits,
                                 self.n_qubits, self.n_qubits))
+        one_body_spinful = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
+        two_body_spinful = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits,
+                                        2 * self.n_qubits, 2 * self.n_qubits))
         i = 0
         j = 0
         for p in range(self.n_qubits):
             for q in range(self.n_qubits):
                 one_body[p, q] = i
+                one_body_spinful[p, q] = i
+                one_body_spinful[p + self.n_qubits, q + self.n_qubits] = i
                 i = i + 1
                 for r in range(self.n_qubits):
                     for s in range(self.n_qubits):
                         two_body[p, q, r, s] = j
+                        two_body_spinful[p, q, r, s] = j
+                        two_body_spinful[p + self.n_qubits,
+                                         q + self.n_qubits,
+                                         r + self.n_qubits,
+                                         s + self.n_qubits] = j
                         j = j + 1
         polynomial_tensor = PolynomialTensor(
                 self.constant,
@@ -256,9 +315,18 @@ class PolynomialTensorTest(unittest.TestCase):
         want_polynomial_tensor = PolynomialTensor(
                 self.constant,
                 {(1, 0): one_body, (1, 1, 0, 0): two_body})
+        polynomial_tensor_spinful = PolynomialTensor(
+                self.constant,
+                {(1, 0): one_body_spinful, (1, 1, 0, 0): two_body_spinful})
+        want_polynomial_tensor_spinful = PolynomialTensor(
+                self.constant,
+                {(1, 0): one_body_spinful, (1, 1, 0, 0): two_body_spinful})
 
         polynomial_tensor.rotate_basis(rotation_matrix_identical)
+        polynomial_tensor_spinful.rotate_basis(rotation_matrix_identical)
         self.assertEqual(polynomial_tensor, want_polynomial_tensor)
+        self.assertEqual(polynomial_tensor_spinful,
+                         want_polynomial_tensor_spinful)
 
     def test_rotate_basis_reverse(self):
         rotation_matrix_reverse = numpy.zeros((self.n_qubits, self.n_qubits))
