@@ -32,11 +32,11 @@ class FermiHubbardTest(unittest.TestCase):
 
     def test_two_by_two_spinful(self):
 
-        # Initialize the Hamiltonian.
+        # Initialize the Hamiltonians.
         hubbard_model = fermi_hubbard(
             self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
             self.chemical_potential, self.magnetic_field,
-            self.periodic, self.spinless)
+            self.periodic, self.spinless, False)
 
         # Check up spin on site terms.
         self.assertAlmostEqual(hubbard_model.terms[((0, 1), (0, 0))], -.75)
@@ -84,29 +84,74 @@ class FermiHubbardTest(unittest.TestCase):
         self.assertAlmostEqual(hubbard_model.terms[((6, 1), (6, 0),
                                                     (7, 1), (7, 0))], 1.)
 
+    def test_two_by_two_spinful_phs(self):
+        hubbard_model = fermi_hubbard(
+            self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
+            self.chemical_potential, self.magnetic_field,
+            self.periodic, self.spinless, False)
+
+        hubbard_model_phs = fermi_hubbard(
+            self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
+            self.chemical_potential, self.magnetic_field,
+            self.periodic, self.spinless, True)
+
+        # Compute difference between the models with and without
+        # spin symmetry.
+        difference = hubbard_model_phs - hubbard_model
+
+        # Check constant term in difference.
+        self.assertAlmostEqual(difference.terms[()], 1.0)
+
+        # Check up spin on site terms in difference.
+        self.assertAlmostEqual(difference.terms[((0, 1), (0, 0))], -.50)
+        self.assertAlmostEqual(difference.terms[((2, 1), (2, 0))], -.50)
+        self.assertAlmostEqual(difference.terms[((4, 1), (4, 0))], -.50)
+        self.assertAlmostEqual(difference.terms[((6, 1), (6, 0))], -.50)
+
+        # Check down spin on site terms in difference.
+        self.assertAlmostEqual(difference.terms[((1, 1), (1, 0))], -.50)
+        self.assertAlmostEqual(difference.terms[((3, 1), (3, 0))], -.50)
+        self.assertAlmostEqual(difference.terms[((5, 1), (5, 0))], -.50)
+        self.assertAlmostEqual(difference.terms[((7, 1), (7, 0))], -.50)
+
     def test_two_by_two_spinful_periodic_rudimentary(self):
         hubbard_model = fermi_hubbard(
             self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
             self.chemical_potential, self.magnetic_field,
-            periodic=True, spinless=False)
+            periodic=True, spinless=False, particle_hole_symmetry=False)
+
+        hubbard_model = fermi_hubbard(
+            self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
+            self.chemical_potential, self.magnetic_field,
+            periodic=True, spinless=False, particle_hole_symmetry=True)
 
     def test_two_by_two_spinful_aperiodic_rudimentary(self):
         hubbard_model = fermi_hubbard(
             self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
             self.chemical_potential, self.magnetic_field,
-            periodic=False, spinless=False)
+            periodic=False, spinless=False, particle_hole_symmetry=False)
+
+        hubbard_model = fermi_hubbard(
+            self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
+            self.chemical_potential, self.magnetic_field,
+            periodic=False, spinless=False, particle_hole_symmetry=True)
 
     def test_two_by_two_spinless_periodic_rudimentary(self):
         hubbard_model = fermi_hubbard(
             self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
             self.chemical_potential, self.magnetic_field,
-            periodic=True, spinless=True)
+            periodic=True, spinless=True, particle_hole_symmetry=False)
+
+        hubbard_model = fermi_hubbard(
+            self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
+            self.chemical_potential, self.magnetic_field,
+            periodic=True, spinless=True, particle_hole_symmetry=True)
 
     def test_two_by_three_spinless_periodic_rudimentary(self):
         hubbard_model = fermi_hubbard(
             2, 3, self.tunneling, self.coulomb,
             self.chemical_potential, self.magnetic_field,
-            periodic=True, spinless=True)
+            periodic=True, spinless=True, particle_hole_symmetry=False)
         # Check up top/bottom hopping terms.
         self.assertAlmostEqual(hubbard_model.terms[((4, 1), (0, 0))],
                                -self.tunneling)
@@ -115,7 +160,7 @@ class FermiHubbardTest(unittest.TestCase):
         hubbard_model = fermi_hubbard(
             3, 2, self.tunneling, self.coulomb,
             self.chemical_potential, self.magnetic_field,
-            periodic=True, spinless=True)
+            periodic=True, spinless=True, particle_hole_symmetry=False)
         # Check up top/bottom hopping terms.
         self.assertAlmostEqual(hubbard_model.terms[((2, 1), (0, 0))],
                                -self.tunneling)

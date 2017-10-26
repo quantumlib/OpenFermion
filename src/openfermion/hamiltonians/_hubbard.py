@@ -20,7 +20,7 @@ model depends on where the fermions are. In the standard Fermi-Hubbard model
 H = - tunneling sum_{<i,j>} sum_sigma (a^dagger_{i, sigma} a_{j, sigma}
   + a^dagger_{j, sigma} a_{i, sigma})
   + coulomb sum_{i} a^dagger_{i, up} a_{i, up} a^dagger_{j, down} a_{j, down}
-  + chemical_potential sum_i (a^dagger_{i, up} a_{i, up}
+  - chemical_potential sum_i (a^dagger_{i, up} a_{i, up}
   + a^dagger_{i, down} a_{i, down})
   + magnetic_field sum_i (a^dagger_{i, up} a_{i, up}
   - a^dagger_{i, down} a_{i, down}).
@@ -60,7 +60,8 @@ def down_index(index):
 
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                   chemical_potential=None, magnetic_field=None,
-                  periodic=True, spinless=False):
+                  periodic=True, spinless=False,
+                  particle_hole_symmetry=False):
     """Return symbolic representation of a Fermi-Hubbard Hamiltonian.
 
     Args:
@@ -76,6 +77,13 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
         spinless: An optional Boolean. If False, each site has spin up
             orbitals and spin down orbitals. If True, return a spinless
             Fermi-Hubbard model.
+        particle_hole_symmetry: an optional Boolean. If False, the repulsion
+            term corresponds to:
+            coulomb sum_{k=1}^{N-1} a_k^dagger a_k a_{k+1}^dagger a_{k+1}
+            If true, the repulsion term is replaced by:
+            coulomb sum_{k=1}^{N-1} (a_k^dagger a_k - 1/2)
+            (a_{k+1}^dagger a_{k+1} - 1/2)
+            which is unchanged under a particle-hole transformation.
         verbose: An optional Boolean. If True, print all second quantized
             terms.
 
@@ -89,6 +97,11 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
     else:
         n_spin_orbitals = 2 * n_sites
     hubbard_model = FermionOperator((), 0.0)
+    # select particle-hole symmetry
+    if particle_hole_symmetry:
+        coulomb_shift = FermionOperator((), 0.5)
+    else:
+        coulomb_shift = FermionOperator((), 0.0)
 
     # Loop through sites and add terms.
     for site in range(n_sites):
@@ -118,9 +131,11 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
         # Add local pair interaction terms.
         if not spinless:
-            operators = ((up_index(site), 1), (up_index(site), 0),
-                         (down_index(site), 1), (down_index(site), 0))
-            hubbard_model += FermionOperator(operators, coulomb)
+            operator_1 = number_operator(
+                n_spin_orbitals, up_index(site), 1.0) - coulomb_shift
+            operator_2 = number_operator(
+                n_spin_orbitals, down_index(site), 1.0) - coulomb_shift
+            hubbard_model += coulomb * operator_1 * operator_2
 
         # Index coupled orbitals.
         right_neighbor = site + 1
@@ -137,9 +152,11 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
         if (site + 1) % x_dimension or (periodic and x_dimension > 2):
             if spinless:
                 # Add Coulomb term.
-                operators = ((site, 1), (site, 0),
-                             (right_neighbor, 1), (right_neighbor, 0))
-                hubbard_model += FermionOperator(operators, coulomb)
+                operator_1 = number_operator(
+                    n_spin_orbitals, site, 1.0) - coulomb_shift
+                operator_2 = number_operator(
+                    n_spin_orbitals, right_neighbor, 1.0) - coulomb_shift
+                hubbard_model += coulomb * operator_1 * operator_2
 
                 # Add hopping term.
                 operators = ((site, 1), (right_neighbor, 0))
@@ -163,9 +180,11 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
         if site + x_dimension + 1 <= n_sites or (periodic and y_dimension > 2):
             if spinless:
                 # Add Coulomb term.
-                operators = ((site, 1), (site, 0),
-                             (bottom_neighbor, 1), (bottom_neighbor, 0))
-                hubbard_model += FermionOperator(operators, coulomb)
+                operator_1 = number_operator(
+                    n_spin_orbitals, site, 1.0) - coulomb_shift
+                operator_2 = number_operator(
+                    n_spin_orbitals, bottom_neighbor, 1.0) - coulomb_shift
+                hubbard_model += coulomb * operator_1 * operator_2
 
                 # Add hopping term.
                 operators = ((site, 1), (bottom_neighbor, 0))
