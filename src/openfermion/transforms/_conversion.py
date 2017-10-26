@@ -162,11 +162,11 @@ def get_fermion_operator(interaction_operator):
     # Add one-body terms.
     for p, q in itertools.product(range(n_qubits), repeat=2):
         fermion_operator += FermionOperator(
-            ((p, 1), (q, 0)), coefficient=interaction_operator[p, q])
+            ((p, 1), (q, 0)), coefficient=interaction_operator[(p, 1), (q, 0)])
 
     # Add two-body terms.
     for p, q, r, s in itertools.product(range(n_qubits), repeat=4):
-        coefficient = interaction_operator[p, q, r, s]
+        coefficient = interaction_operator[(p, 1), (q, 1), (r, 0), (s, 0)]
         fermion_operator += FermionOperator(((p, 1), (q, 1),
                                              (r, 0), (s, 0)),
                                             coefficient)

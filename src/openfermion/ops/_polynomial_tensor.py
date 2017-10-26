@@ -101,7 +101,7 @@ class PolynomialTensor(object):
     Attributes:
         n_qubits(int): The number of sites on which the tensor acts.
         constant(complex or float): A constant term in the operator given
-        as a complex number. For instance, the nuclear repulsion energy.
+            as a complex number. For instance, the nuclear repulsion energy.
         n_body_tensors(dict): A dictionary storing the tensors describing
             n-body interactions. The keys are tuples that indicate the
             type of tensor. For instance, n_body_tensors[(1, 0)] would
@@ -116,6 +116,9 @@ class PolynomialTensor(object):
         """Initialize the PolynomialTensor class.
 
         Args:
+            constant(complex or float): A constant term in the operator given
+                as a complex number. For instance, the nuclear repulsion
+                energy.
             n_body_tensors(dict): A dictionary storing the tensors describing
                 n-body interactions.
         """
@@ -130,9 +133,9 @@ class PolynomialTensor(object):
 
         Args:
             args: Tuples indicating which coefficient to get. For instance,
-                    my_tensor[(6, 1), (8, 1), (2, 0)]
+                `my_tensor[(6, 1), (8, 1), (2, 0)]`
                 returns
-                    my_tensor.n_body_tensors[1, 1, 0][6, 8, 2]
+                `my_tensor.n_body_tensors[1, 1, 0][6, 8, 2]`
         """
         if len(args) == 0:
             return self.constant
@@ -145,10 +148,7 @@ class PolynomialTensor(object):
         """Set matrix element.
 
         Args:
-            Ints giving indices of tensor.
-
-        Raises:
-            ValueError: args must be of even length.
+            args: Tuples indicating which coefficient to set.
         """
         if len(args) == 0:
             self.constant = value

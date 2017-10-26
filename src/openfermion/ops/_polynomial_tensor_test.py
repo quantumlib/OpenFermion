@@ -117,11 +117,11 @@ class PolynomialTensorTest(unittest.TestCase):
         self.assertEqual(
                 self.polynomial_tensor_a.n_body_tensors[(1, 1, 0, 0)][
                     0, 1, 1, 0],
-                    3)
+                3)
         self.assertEqual(
                 self.polynomial_tensor_a.n_body_tensors[(1, 1, 0, 0)][
                     1, 0, 0, 1],
-                    2)
+                2)
 
     def test_getitem_2body(self):
         self.assertEqual(

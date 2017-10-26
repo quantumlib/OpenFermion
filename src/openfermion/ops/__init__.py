@@ -16,7 +16,7 @@ from ._fermion_operator import (FermionOperator,
                                 number_operator)
 from ._qubit_operator import QubitOperator
 from ._polynomial_tensor import (PolynomialTensor,
-                                  one_body_basis_change,
-                                  two_body_basis_change)
+                                 one_body_basis_change,
+                                 two_body_basis_change)
 from ._interaction_operator import InteractionOperator
 from ._interaction_rdm import InteractionRDM
