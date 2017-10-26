@@ -249,7 +249,14 @@ class PolynomialTensor(object):
             yield ()
 
         # n-body elements
-        for key, n_body_tensor in self.n_body_tensors.items():
+        def sort_key(key):
+            """This determines how the keys to n_body_tensors
+            should be sorted."""
+            # Interpret key as an integer written in binary
+            key_int = int(''.join(map(str, key)))
+            return (len(key), key_int)
+        for key in sorted(self.n_body_tensors.keys(), key=sort_key):
+            n_body_tensor = self.n_body_tensors[key]
             for index in itertools.product(
                     range(self.n_qubits), repeat=len(key)):
                 if n_body_tensor[index]:
