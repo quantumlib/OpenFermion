@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests for polynomial_tensors.py."""
+"""Tests for polynomial_tensor.py."""
 from __future__ import absolute_import
 
 import unittest

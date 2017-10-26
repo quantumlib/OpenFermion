@@ -121,6 +121,12 @@ class InteractionRDM(PolynomialTensor):
                         expectation += coefficient
                     else:
                         indices = [operator[0] for operator in fermion_term]
+                        if len(indices) == 2:
+                            # One-body term
+                            indices = tuple(zip(indices, (1, 0)))
+                        else:
+                            # Two-body term
+                            indices = tuple(zip(indices, (1, 1, 0, 0)))
                         rdm_element = self[indices]
                         expectation += rdm_element * coefficient
 

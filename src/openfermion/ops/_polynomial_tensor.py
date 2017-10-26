@@ -35,7 +35,7 @@ def one_body_basis_change(one_body_tensor, rotation_matrix):
         one_body_tensor: A square numpy array or matrix containing information
             about a 1-body interaction tensor such as the 1-RDM.
         rotation_matrix: A square numpy array or matrix having dimensions of
-            n_sites by n_sites. Assumed to be real and invertible.
+            n_qubits by n_qubits. Assumed to be real and invertible.
 
     Returns:
         transformed_one_body_tensor: one_body_tensor in the rotated basis.
@@ -63,7 +63,7 @@ def two_body_basis_change(two_body_tensor, rotation_matrix):
     Args:
         two_body_tensor: a square rank 4 interaction tensor.
         rotation_matrix: A square numpy array or matrix having dimensions of
-            n_sites by n_sites. Assumed to be real and invertible.
+            n_qubits by n_qubits. Assumed to be real and invertible.
 
     Returns:
         transformed_two_body_tensor: two_body_tensor matrix in rotated basis.
@@ -91,7 +91,7 @@ class PolynomialTensor(object):
     For instance, in a quadratic Hamiltonian (degree 2 polynomial) which
     conserves particle number, there are only terms of the form
     a^\dagger_p a_q, and the coefficients can be stored in an
-    n_sites x n_sites matrix. Higher order terms would be described with
+    n_qubits x n_qubits matrix. Higher order terms would be described with
     tensors of higher dimension. Note that each tensor must have an even
     number of dimensions, since parity is conserved.
     Much of the functionality of this class is redudant with FermionOperator
@@ -99,13 +99,13 @@ class PolynomialTensor(object):
     such as basis rotations.
 
     Attributes:
-        n_sites(int): The number of sites on which the tensor acts.
+        n_qubits(int): The number of sites on which the tensor acts.
         constant(complex or float): A constant term in the operator given
         as a complex number. For instance, the nuclear repulsion energy.
         n_body_tensors(dict): A dictionary storing the tensors describing
             n-body interactions. The keys are tuples that indicate the
             type of tensor. For instance, n_body_tensors[(1, 0)] would
-            be an (n_sites x n_sites x n_sites x n_sites) numpy array,
+            be an (n_qubits x n_qubits x n_qubits x n_qubits) numpy array,
             and it could represent the coefficients of terms of the form
             a^\dagger_i a_j, whereas n_body_tensors[(0, 1)] would be
             an array of the same shape, but instead representing terms
@@ -123,7 +123,7 @@ class PolynomialTensor(object):
             constant = 0.
         self.constant = constant
         self.n_body_tensors = n_body_tensors
-        self.n_sites = list(n_body_tensors.values())[0].shape[0]
+        self.n_qubits = list(n_body_tensors.values())[0].shape[0]
 
     def __getitem__(self, args):
         """Look up matrix element.
@@ -176,7 +176,7 @@ class PolynomialTensor(object):
         if not issubclass(type(addend), PolynomialTensor):
             raise TypeError('Invalid type.')
 
-        if self.n_sites != addend.n_sites:
+        if self.n_qubits != addend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
         if self.n_body_tensors.keys() != addend.n_body_tensors.keys():
@@ -204,7 +204,7 @@ class PolynomialTensor(object):
         if not issubclass(type(subtrahend), PolynomialTensor):
             raise TypeError('Invalid type.')
 
-        if self.n_sites != subtrahend.n_sites:
+        if self.n_qubits != subtrahend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
         if self.n_body_tensors.keys() != subtrahend.n_body_tensors.keys():
@@ -225,7 +225,7 @@ class PolynomialTensor(object):
         if not issubclass(type(multiplier), PolynomialTensor):
             raise TypeError('Invalid type.')
 
-        if self.n_sites != multiplier.n_sites:
+        if self.n_qubits != multiplier.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
         if self.n_body_tensors.keys() != multiplier.n_body_tensors.keys():
@@ -251,7 +251,7 @@ class PolynomialTensor(object):
         # n-body elements
         for key, n_body_tensor in self.n_body_tensors.items():
             for index in itertools.product(
-                    range(self.n_sites), repeat=len(key)):
+                    range(self.n_qubits), repeat=len(key)):
                 if n_body_tensor[index]:
                     yield tuple(zip(index, key))
 
@@ -271,7 +271,7 @@ class PolynomialTensor(object):
 
         Args:
             rotation_matrix: A square numpy array or matrix having
-                dimensions of n_sites by n_sites. Assumed to be real and
+                dimensions of n_qubits by n_qubits. Assumed to be real and
                 invertible.
         """
         self.n_body_tensors[1, 0] = one_body_basis_change(
