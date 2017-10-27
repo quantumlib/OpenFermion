@@ -12,7 +12,7 @@
 
 """Module to manipulate basic models of quantum channels"""
 
-
+from functools import reduce
 from itertools import chain
 from numpy import array, dot, eye, kron, log2, sqrt
 
