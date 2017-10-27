@@ -267,15 +267,17 @@ def givens_decomposition(unitary_rows):
     Args:
         unitary_rows: A numpy array or matrix with orthonormal rows,
             representing the matrix Q.
+
     Returns:
         left_unitary: An m x m numpy array representing the matrix V.
+
         givens_rotations: A list of tuples of objects describing Givens
-            rotations. The list looks something like
-            [(G_1, ), (G_2, G_3), ... ]. The Givens rotations within a tuple
-            can be implemented in parallel. The description of a Givens
-            rotation is itself a tuple of the form (i, j, theta, phi), which
-            represents a Givens rotation of rows i and j by angles theta
-            and phi.
+            rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
+            The Givens rotations within a tuple can be implemented in parallel.
+            The description of a Givens rotation is itself a tuple of the
+            form (i, j, theta, phi), which represents a Givens rotation of
+            rows i and j by angles theta and phi.
+
         diagonal: A list of the nonzero entries of D.
     """
     current_matrix = numpy.copy(unitary_rows)

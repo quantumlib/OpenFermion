@@ -78,14 +78,14 @@ def uccsd_operator(single_amplitudes, double_amplitudes, anti_hermitian=True):
 def uccsd_convert_amplitude_format(single_amplitudes, double_amplitudes):
     """Re-format single_amplitudes and double_amplitudes from ndarrays to lists.
 
-        Args:
+    Args:
         single_amplitudes(ndarray): [NxN] array storing single excitation
             amplitudes corresponding to t[i,j] * (a_i^\dagger a_j - H.C.)
-        double_amplitudes(ndarray): [NxNxNxN] array storing double excitation
-            amplitudes corresponding to
+        double_amplitudes(ndarray): [NxNxNxN] array storing double
+            excitation amplitudes corresponding to
             t[i,j,k,l] * (a_i^\dagger a_j a_k^\dagger a_l - H.C.)
 
-        Returns:
+    Returns:
         single_amplitudes_list(list): list of lists with each sublist storing
             a list of indices followed by single excitation amplitudes
             i.e. [[[i,j],t_ij], ...]
