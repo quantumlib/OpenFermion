@@ -21,18 +21,18 @@ def _verify_channel_inputs(density_matrix, probability, target_qubit):
     """Verifies input parameters for channels
 
     Args:
-        density_matrix(numpy.ndarray): Density matrix of the system
-        probability(float): Probability error is applied p \in [0, 1]
-        target_qubit(int): target for the channel error.
+        density_matrix (numpy.ndarray): Density matrix of the system
+        probability (float): Probability error is applied p \in [0, 1]
+        target_qubit (int): target for the channel error.
 
     Returns:
-        new_density_matrix(numpu.ndarray): Density matrix with the channel
+        new_density_matrix(numpy.ndarray): Density matrix with the channel
             applied.
     """
     n_qubits = int(log2(density_matrix.shape[0]))
 
-    if (density_matrix.shape[0] != density_matrix.shape[1] or
-            len(density_matrix.shape) != 2):
+    if (len(density_matrix.shape) != 2 or
+            density_matrix.shape[0] != density_matrix.shape[1]):
         raise ValueError("Error in input of density matrix to channel.")
     if (probability < 0) or (probability > 1):
         raise ValueError("Channel probability must be between 0 and 1.")
@@ -44,20 +44,20 @@ def _lift_operator(operator, n_qubits, target_qubit):
     """Lift a single qubit operator into the n_qubit space by kron product
 
     Args:
-        operator(ndarray): Single qubit operator to lift into full space
-        n_qubits(int): Number of total qubits in the space
-        target_qubit(int): Qubit to act on
+        operator (ndarray): Single qubit operator to lift into full space
+        n_qubits (int): Number of total qubits in the space
+        target_qubit (int): Qubit to act on
 
     Return:
         new_operator(Sparse Operator): Operator representing the embedding in
             the full space.
     """
-    new_operator = reduce(kron,
-                          chain((eye(2)
-                                 for i in range(0, target_qubit)),
-                                [operator],
-                                (eye(2)
-                                 for i in range(target_qubit + 1, n_qubits))))
+    new_operator = (
+        reduce(kron,
+               chain(
+                   (eye(2) for i in range(0, target_qubit)),
+                   [operator],
+                   (eye(2) for i in range(target_qubit + 1, n_qubits)))))
     return new_operator
 
 
@@ -65,14 +65,14 @@ def amplitude_damping_channel(density_matrix, probability, target_qubit,
                               transpose=False):
     """Apply an amplitude damping channel
 
-    Applied an amplitude damping channel with a given probability to the target
+    Applies an amplitude damping channel with a given probability to the target
     qubit in the density_matrix.
 
     Args:
-        density_matrix(numpy.ndarray): Density matrix of the system
-        probability(float): Probability error is applied p \in [0, 1]
-        target_qubit(int): target for the channel error.
-        transpose(bool): Transpose channel operators, useful for acting on
+        density_matrix (numpy.ndarray): Density matrix of the system
+        probability (float): Probability error is applied p \in [0, 1]
+        target_qubit (int): target for the channel error.
+        transpose (bool): Transpose channel operators, useful for acting on
             Hamiltonians in variational channel state models
 
     Returns:
@@ -104,18 +104,18 @@ def dephasing_channel(density_matrix, probability, target_qubit,
                       transpose=False):
     """Apply a dephasing channel
 
-    Applied an amplitude damping channel with a given probability to the target
+    Applies an amplitude damping channel with a given probability to the target
     qubit in the density_matrix.
 
     Args:
-        density_matrix(numpy.ndarray): Density matrix of the system
-        probability(float): Probability error is applied p \in [0, 1]
-        target_qubit(int): target for the channel error.
-        transpose(bool): Transpose channel operators, useful for acting on
+        density_matrix (numpy.ndarray): Density matrix of the system
+        probability (float): Probability error is applied p \in [0, 1]
+        target_qubit (int): target for the channel error.
+        transpose (bool): Transpose channel operators, useful for acting on
             Hamiltonians in variational channel state models
 
     Returns:
-        new_density_matrix(numpy.ndarray): Density matrix with the channel
+        new_density_matrix (numpy.ndarray): Density matrix with the channel
             applied.
     """
     _verify_channel_inputs(density_matrix, probability, target_qubit)
@@ -141,18 +141,18 @@ def depolarizing_channel(density_matrix, probability, target_qubit,
                          transpose=False):
     """Apply a depolarizing channel
 
-    Applied an amplitude damping channel with a given probability to the target
+    Applies an amplitude damping channel with a given probability to the target
     qubit in the density_matrix.
 
     Args:
-        density_matrix(numpy.ndarray): Density matrix of the system
-        probability(float): Probability error is applied p \in [0, 1]
-        target_qubit(int): target for the channel error.
-        transpose(bool): Transpose channel operators, useful for acting on
+        density_matrix (numpy.ndarray): Density matrix of the system
+        probability (float): Probability error is applied p \in [0, 1]
+        target_qubit (int): target for the channel error.
+        transpose (bool): Transpose channel operators, useful for acting on
             Hamiltonians in variational channel state models
 
     Returns:
-        new_density_matrix(numpy.ndarray): Density matrix with the channel
+        new_density_matrix (numpy.ndarray): Density matrix with the channel
             applied.
     """
     _verify_channel_inputs(density_matrix, probability, target_qubit)
