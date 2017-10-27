@@ -17,7 +17,15 @@ OpenFermion
 
 .. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
-OpenFermion is an open source effort for compiling and analyzing quantum algorithms to simulate fermionic systems, including quantum chemistry. Among other functionalities, the current version features data structures and tools for obtaining and manipulating representations of fermionic and qubit Hamiltonians.
+OpenFermion is an open source effort for compiling and analyzing quantum
+algorithms to simulate fermionic systems, including quantum chemistry. Among
+other functionalities, the current version features data structures and tools
+for obtaining and manipulating representations of fermionic and qubit
+Hamiltonians. For more information, see our
+`release paper <https://arxiv.org/abs/1710.07629>`__
+and
+`press release <https://research.googleblog.com/2017/10/announcing-openfermion-open-source.html>`__
+about the project.
 
 
 Getting started
@@ -29,12 +37,14 @@ and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`
 `ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
 as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
-In the event that one is having trouble installing OpenFermion or its
-plugins, we have provided a Docker image and usage instructions in the
-`docker folder
-<https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
+Currently, OpenFermion is only tested on Mac and Linux for the reason that both
+electronic structure plugins are only compatible with Mac and Linux. However,
+for those who would like to use Windows, or for anyone having other difficulties
+with installing OpenFermion or its plugins, we have provided a Docker image
+and usage instructions in the
+`docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
 The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
-The Docker installation should run on any operating system (even Windows).
+The Docker installation should run on any operating system.
 
 Developer install
 -----------------
@@ -114,8 +124,8 @@ Authors
 `Yudong Cao <https://github.com/yudongcao>`__ (Harvard),
 `E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
 `Craig Gidney <https://github.com/Strilanc>`__ (Google),
-`Thomas Haener <https://github.com/thomashaener>`__ (ETH Zurich),
-`Vojtech Havlicek <https://github.com/VojtaHavlicek>`__ (Oxford),
+`Thomas Häner <https://github.com/thomashaener>`__ (ETH Zurich),
+`Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
@@ -137,7 +147,7 @@ When using OpenFermion for research projects, please cite:
     Zhang Jiang, Matthew Neeley, Jhonathan Romero, Nicholas Rubin, Nicolas P. D.
     Sawaya, Kanav Setia, Sukin Sim, Wei Sun, Kevin Sung and Ryan Babbush.
     *OpenFermion: The Electronic Structure Package for Quantum Computers*.
-    arXiv preprint. 2017.
+    `arXiv:1710.07629 <https://arxiv.org/abs/1710.07629>`__. 2017.
 
 We are happy to include future contributors as authors on later releases.
 

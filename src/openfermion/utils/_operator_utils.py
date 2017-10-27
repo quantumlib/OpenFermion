@@ -36,7 +36,7 @@ def count_qubits(operator):
 
     Args:
         operator: QubitOperator, InteractionOperator, FermionOperator,
-            InteractionTensor, or InteractionRDM.
+            PolynomialTensor, or InteractionRDM.
 
     Returns:
         n_qubits (int): The minimum number of qubits on which operator acts.
@@ -62,10 +62,10 @@ def count_qubits(operator):
                     n_qubits = term[-1][0] + 1
         return n_qubits
 
-    # Handle InteractionOperator, InteractionRDM, InteractionTensor.
+    # Handle InteractionOperator, InteractionRDM, PolynomialTensor.
     elif isinstance(operator, (InteractionOperator,
                                InteractionRDM,
-                               InteractionTensor)):
+                               PolynomialTensor)):
         return operator.n_qubits
 
     # Raise for other classes.
@@ -99,7 +99,7 @@ def eigenspectrum(operator):
 
     Args:
         operator: QubitOperator, InteractionOperator, FermionOperator,
-            InteractionTensor, or InteractionRDM.
+            PolynomialTensor, or InteractionRDM.
 
     Returns:
         eigenspectrum: dense numpy array of floats giving eigenspectrum.
