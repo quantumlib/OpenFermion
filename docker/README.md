@@ -1,6 +1,8 @@
 # Docker setup for OpenFermion and select plugins
 
-This Docker image will help users to install [OpenFermion](https://github.com/quantumlib/OpenFermion) and its available plugins for [ProjectQ](https://github.com/ProjectQ-Framework/ProjectQ), [Psi4](https://github.com/quantumlib/OpenFermion-Psi4), and [PySCF](https://github.com/quantumlib/OpenFermion-PySCF).
+This Docker image will help users to install [OpenFermion](https://github.com/quantumlib/OpenFermion)
+and its available plugins for [ProjectQ](https://github.com/ProjectQ-Framework/ProjectQ),
+[Psi4](https://github.com/quantumlib/OpenFermion-Psi4), and [PySCF](https://github.com/quantumlib/OpenFermion-PySCF).
 Check out Docker's [website](https://www.docker.com/what-container) that describes what a container image is and why it can be so useful.
 The Docker based installation is extremely robust and runs on any operating
 system and so is an ideal solution for anyone having difficulty installing
@@ -23,34 +25,7 @@ OpenFermion (or any of its plugins) using the standard installation.
 ## Setting up Docker for the first time
 
 You first need to install [Docker](https://www.docker.com/).
-Once Docker is installed, open a command line terminal and check the list
-of running virtual machines with `docker-machine ls`.
-Assuming this is the first time Docker has been run, the list should be empty.
-Create a virtual machine by running:
-```
-docker-machine create --driver virtualbox default
-```
-
-To be able to run this, one needs to install
-[VirtualBox](https://www.virtualbox.org/wiki/Downloads).
-Here, "default" is just the name of the virtual machine. You can replace it by
-any name that you prefer. To check that the virtual machine is indeed running,
-use `docker-machine ls` again.
-After the Docker virtual machine is created, configure the shell by running
-
-```
-docker-machine env default
-```
-
-where if you named the virtual machine differently from default you should also
-replace "default" with the customized name. The command above will return an OS
-dependent message containing the command to run for configuring the shell;
-follow those instructions.
-
-
-## Running OpenFermion with Docker
-
-Now that Docker is set up, one can navigate to the folder containing the
+Once Docker is setup, one can navigate to the folder containing the
 Dockerfile for building the OpenFermion image (docker/dockerfile) and run
 
 ```
@@ -58,9 +33,9 @@ docker build -t openfermion_docker .
 ```
 
 where "openfermion_docker" is just an arbitrary name for our docker image.
-What the Dockerfile does is to start from a base image of Ubuntu and install
+Building the Dockerfile starts from a base image of Ubuntu and then installs
 OpenFermion, its plugins, and the necessary applications needed for running these
-programs. This is a fairly involved installation and will take some time
+programs. This is a fairly involved setup and will take some time
 (perhaps up to thiry minutes depending on the computer). Once installation has
 completed, run the image with
 

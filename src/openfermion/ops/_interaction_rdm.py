@@ -17,7 +17,7 @@ import copy
 import numpy
 
 from openfermion.ops import (FermionOperator,
-                             InteractionTensor,
+                             PolynomialTensor,
                              InteractionOperator,
                              normal_ordered,
                              QubitOperator)
@@ -27,7 +27,7 @@ class InteractionRDMError(Exception):
     pass
 
 
-class InteractionRDM(InteractionTensor):
+class InteractionRDM(PolynomialTensor):
     """Class for storing 1- and 2-body reduced density matrices.
 
     Attributes:
@@ -44,8 +44,11 @@ class InteractionRDM(InteractionTensor):
             two_body_tensor: Expectation values
                 <a^\dagger_p a^\dagger_q a_r a_s>.
         """
-        super(InteractionRDM, self).__init__(None, one_body_tensor,
-                                             two_body_tensor)
+        super(InteractionRDM, self).__init__(
+                None,
+                {(1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor})
+        self.one_body_tensor = self.n_body_tensors[1, 0]
+        self.two_body_tensor = self.n_body_tensors[1, 1, 0, 0]
 
     @classmethod
     def from_spatial_rdm(cls, one_rdm_a, one_rdm_b,
@@ -118,6 +121,12 @@ class InteractionRDM(InteractionTensor):
                         expectation += coefficient
                     else:
                         indices = [operator[0] for operator in fermion_term]
+                        if len(indices) == 2:
+                            # One-body term
+                            indices = tuple(zip(indices, (1, 0)))
+                        else:
+                            # Two-body term
+                            indices = tuple(zip(indices, (1, 1, 0, 0)))
                         rdm_element = self[indices]
                         expectation += rdm_element * coefficient
 
