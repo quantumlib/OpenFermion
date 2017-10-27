@@ -19,7 +19,6 @@ import unittest
 
 from ._channel_state import *
 
-
 class ChannelTest(unittest.TestCase):
 
     def setUp(self):
