@@ -112,7 +112,3 @@ class ChannelTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             bad_density = zeros((3, 4))
             _ = amplitude_damping_channel(bad_density, 0.5, 3)
-
-
-if __name__ == "__main__":
-    unittest.main()
