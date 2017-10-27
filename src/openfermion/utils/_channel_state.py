@@ -61,7 +61,8 @@ def _lift_operator(operator, n_qubits, target_qubit):
     return new_operator
 
 
-def amplitude_damping_channel(density_matrix, probability, target_qubit):
+def amplitude_damping_channel(density_matrix, probability, target_qubit,
+                              transpose=False):
     """Apply an amplitude damping channel
 
     Applied an amplitude damping channel with a given probability to the target
@@ -71,6 +72,8 @@ def amplitude_damping_channel(density_matrix, probability, target_qubit):
         density_matrix(numpy.ndarray): Density matrix of the system
         probability(float): Probability error is applied p \in [0, 1]
         target_qubit(int): target for the channel error.
+        transpose(bool): Transpose channel operators, useful for acting on
+            Hamiltonians in variational channel state models
 
     Returns:
         new_density_matrix(numpy.ndarray): Density matrix with the channel
@@ -87,13 +90,18 @@ def amplitude_damping_channel(density_matrix, probability, target_qubit):
                                [0.0, 0.0]], dtype=complex),
                         n_qubits, target_qubit)
 
+    if transpose:
+        E0 = E0.T
+        E1 = E1.T
+
     new_density_matrix = (dot(E0, dot(density_matrix, E0.T)) +
                           dot(E1, dot(density_matrix, E1.T)))
 
     return new_density_matrix
 
 
-def dephasing_channel(density_matrix, probability, target_qubit):
+def dephasing_channel(density_matrix, probability, target_qubit,
+                      transpose=False):
     """Apply a dephasing channel
 
     Applied an amplitude damping channel with a given probability to the target
@@ -103,6 +111,8 @@ def dephasing_channel(density_matrix, probability, target_qubit):
         density_matrix(numpy.ndarray): Density matrix of the system
         probability(float): Probability error is applied p \in [0, 1]
         target_qubit(int): target for the channel error.
+        transpose(bool): Transpose channel operators, useful for acting on
+            Hamiltonians in variational channel state models
 
     Returns:
         new_density_matrix(numpy.ndarray): Density matrix with the channel
@@ -117,13 +127,18 @@ def dephasing_channel(density_matrix, probability, target_qubit):
                         array([[1.0, 0.0], [1.0, -1.0]]),
                         n_qubits, target_qubit)
 
+    if transpose:
+        E0 = E0.T
+        E1 = E1.T
+
     new_density_matrix = (dot(E0, dot(density_matrix, E0.T)) +
                           dot(E1, dot(density_matrix, E1.T)))
 
     return new_density_matrix
 
 
-def depolarizing_channel(density_matrix, probability, target_qubit):
+def depolarizing_channel(density_matrix, probability, target_qubit,
+                         transpose=False):
     """Apply a depolarizing channel
 
     Applied an amplitude damping channel with a given probability to the target
@@ -133,6 +148,8 @@ def depolarizing_channel(density_matrix, probability, target_qubit):
         density_matrix(numpy.ndarray): Density matrix of the system
         probability(float): Probability error is applied p \in [0, 1]
         target_qubit(int): target for the channel error.
+        transpose(bool): Transpose channel operators, useful for acting on
+            Hamiltonians in variational channel state models
 
     Returns:
         new_density_matrix(numpy.ndarray): Density matrix with the channel
@@ -152,6 +169,12 @@ def depolarizing_channel(density_matrix, probability, target_qubit):
     E3 = _lift_operator(sqrt(probability/3.) * array([[1.0, 0.0],
                                                       [0.0, -1.0]]),
                         n_qubits, target_qubit)
+
+    if transpose:
+        E0 = E0.T
+        E1 = E1.T
+        E2 = E2.T
+        E3 = E3.T
 
     new_density_matrix = (dot(E0, dot(density_matrix, E0.T)) +
                           dot(E1, dot(density_matrix, E1.T)) +

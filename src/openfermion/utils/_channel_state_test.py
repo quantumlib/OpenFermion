@@ -12,7 +12,7 @@
 
 from __future__ import absolute_import
 
-from numpy import array, dot, kron, zeros
+from numpy import dot, zeros
 from scipy.linalg import norm
 
 import unittest
@@ -42,6 +42,12 @@ class ChannelTest(unittest.TestCase):
         self.assertAlmostEquals(norm(self.density_matrix -
                                      test_density_matrix), 0.0)
 
+        test_density_matrix = (
+            amplitude_damping_channel(self.density_matrix, 0, 1,
+                                      transpose=True))
+        self.assertAlmostEquals(norm(self.density_matrix -
+                                     test_density_matrix), 0.0)
+
         # With probability 1
         correct_density_matrix = zeros((4, 4), dtype=complex)
         correct_density_matrix[2, 2] = 1
@@ -59,6 +65,17 @@ class ChannelTest(unittest.TestCase):
         test_density_matrix = (
             dephasing_channel(self.density_matrix, 1, 1))
         self.assertAlmostEquals(norm(self.density_matrix -
+                                     test_density_matrix), 0.0)
+
+        test_density_matrix = (
+            dephasing_channel(self.density_matrix, 1, 1,
+                              transpose=True))
+
+        correct_matrix = array([[0., 0., 0., 0.],
+                                [0., 0., 0., 0.],
+                                [0., 0., 0.5, -0.5],
+                                [0., 0., -0.5, 1.]])
+        self.assertAlmostEquals(norm(correct_matrix -
                                      test_density_matrix), 0.0)
 
         # Check for correct action on cat state
@@ -87,6 +104,12 @@ class ChannelTest(unittest.TestCase):
         self.assertAlmostEquals(norm(self.cat_matrix -
                                      test_density_matrix), 0.0)
 
+        test_density_matrix = (
+            depolarizing_channel(self.cat_matrix, 0, 1,
+                                 transpose=True))
+        self.assertAlmostEquals(norm(self.cat_matrix -
+                                     test_density_matrix), 0.0)
+
         # With probability 1 on both qubits
         correct_density_matrix = array([[0.0555555, 0.,  0.0,  0.27777778],
                                         [0.00, 0.00, -0.22222222, 0.000],
@@ -97,6 +120,17 @@ class ChannelTest(unittest.TestCase):
             depolarizing_channel(self.cat_matrix, 1, 0))
         test_density_matrix = (
             depolarizing_channel(test_density_matrix, 1, 1))
+
+        self.assertAlmostEquals(norm(correct_density_matrix -
+                                     test_density_matrix), 0.0, places=6)
+
+        # Depolarizing channel should be self-adjoint
+        test_density_matrix = (
+            depolarizing_channel(self.cat_matrix, 1, 0,
+                                 transpose=True))
+        test_density_matrix = (
+            depolarizing_channel(test_density_matrix, 1, 1,
+                                 transpose=True))
 
         self.assertAlmostEquals(norm(correct_density_matrix -
                                      test_density_matrix), 0.0, places=6)
