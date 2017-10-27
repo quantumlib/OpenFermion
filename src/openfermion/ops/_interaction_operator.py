@@ -15,14 +15,14 @@ from __future__ import absolute_import
 
 import itertools
 
-from openfermion.ops import InteractionTensor
+from openfermion.ops import PolynomialTensor
 
 
 class InteractionOperatorError(Exception):
     pass
 
 
-class InteractionOperator(InteractionTensor):
+class InteractionOperator(PolynomialTensor):
     """Class for storing 'interaction operators' which are defined to be
     fermionic operators consisting of one-body and two-body terms which
     conserve particle number and spin. The most common examples of data that
@@ -60,8 +60,11 @@ class InteractionOperator(InteractionTensor):
                 n_qubits numpy array of floats.
         """
         # Make sure nonzero elements are only for normal ordered terms.
-        super(InteractionOperator, self).__init__(constant, one_body_tensor,
-                                                  two_body_tensor)
+        super(InteractionOperator, self).__init__(
+                constant,
+                {(1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor})
+        self.one_body_tensor = self.n_body_tensors[1, 0]
+        self.two_body_tensor = self.n_body_tensors[1, 1, 0, 0]
 
     def unique_iter(self, complex_valued=False):
         """
@@ -82,20 +85,20 @@ class InteractionOperator(InteractionTensor):
         """
         # Constant.
         if self.constant:
-            yield []
+            yield ()
 
         # One-body terms.
         for p in range(self.n_qubits):
             for q in range(p + 1):
                 if self.one_body_tensor[p, q]:
-                    yield p, q
+                    yield (p, 1), (q, 0)
 
         # Two-body terms.
         seen = set()
         for quad in itertools.product(range(self.n_qubits), repeat=4):
-            if self[quad] and quad not in seen:
+            if self.two_body_tensor[quad] and quad not in seen:
                 seen |= set(_symmetric_two_body_terms(quad, complex_valued))
-                yield quad
+                yield tuple(zip(quad, (1, 1, 0, 0)))
 
 
 def _symmetric_two_body_terms(quad, complex_valued):
