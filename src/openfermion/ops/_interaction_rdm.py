@@ -50,14 +50,6 @@ class InteractionRDM(PolynomialTensor):
         self.one_body_tensor = self.n_body_tensors[1, 0]
         self.two_body_tensor = self.n_body_tensors[1, 1, 0, 0]
 
-    @classmethod
-    def from_spatial_rdm(cls, one_rdm_a, one_rdm_b,
-                         two_rdm_aa, two_rdm_ab, two_rdm_bb):
-        one_rdm, two_rdm = unpack_spatial_rdm(one_rdm_a, one_rdm_b,
-                                              two_rdm_aa, two_rdm_ab,
-                                              two_rdm_bb)
-        return cls(constant, one_rdm, two_rdm)
-
     def expectation(self, operator):
         """Return expectation value of an InteractionRDM with an operator.
 
