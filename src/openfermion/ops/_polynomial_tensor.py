@@ -58,7 +58,7 @@ def two_body_basis_change(two_body_tensor, rotation_matrix):
 
     Procedure we use is an N^5 transformation which can be expressed as
     (pq|rs) = \sum_a R^p_a
-      (\sum_b R^q_b (\sum_c R^r_c (\sum_d R^s_d (ab|cd)))).
+    (\sum_b R^q_b (\sum_c R^r_c (\sum_d R^s_d (ab|cd)))).
 
     Args:
         two_body_tensor: a square rank 4 interaction tensor.

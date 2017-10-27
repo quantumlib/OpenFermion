@@ -4,14 +4,14 @@ Code Documentation
 ==================
 
 openfermion.hamiltonians
---------------
+------------------------
 .. automodule:: openfermion.hamiltonians
     :members:
     :special-members: __init__
     :imported-members:
 
 openfermion.measurements
---------------
+------------------------
 
 .. automodule:: openfermion.measurements
     :members:
@@ -19,7 +19,7 @@ openfermion.measurements
     :imported-members:
 
 openfermion.ops
-------------
+---------------
 
 .. automodule:: openfermion.ops
     :members:
@@ -27,7 +27,7 @@ openfermion.ops
     :imported-members:
 
 openfermion.transforms
--------------------
+----------------------
 
 .. automodule:: openfermion.transforms
     :members:
@@ -35,7 +35,7 @@ openfermion.transforms
     :imported-members:
 
 openfermion.utils
---------------
+-----------------
 
 .. automodule:: openfermion.utils
     :members:
