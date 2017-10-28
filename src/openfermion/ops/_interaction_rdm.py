@@ -45,7 +45,6 @@ class InteractionRDM(PolynomialTensor):
                 <a^\dagger_p a^\dagger_q a_r a_s>.
         """
         super(InteractionRDM, self).__init__(
-                None,
                 {(1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor})
         self.one_body_tensor = self.n_body_tensors[1, 0]
         self.two_body_tensor = self.n_body_tensors[1, 1, 0, 0]

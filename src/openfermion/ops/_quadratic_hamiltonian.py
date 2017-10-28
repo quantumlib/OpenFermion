@@ -76,8 +76,8 @@ class QuadraticHamiltonian(PolynomialTensor):
             antisymmetric_part = numpy.zeros((n_qubits, n_qubits), complex)
 
         super(QuadraticHamiltonian, self).__init__(
-                constant,
-                {(1, 0): combined_hermitian_part,
+                {(): constant,
+                 (1, 0): combined_hermitian_part,
                  (1, 1): .5 * antisymmetric_part,
                  (0, 0): -.5 * antisymmetric_part.conj()})
         self.chemical_potential = chemical_potential
