@@ -39,13 +39,13 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
 
         # Initialize a particle-number-conserving Hamiltonian
         self.quad_ham_pc = QuadraticHamiltonian(
-                self.constant, self.chemical_potential,
-                self.hermitian_mat, zero_mat)
+                self.constant, self.hermitian_mat, zero_mat,
+                self.chemical_potential)
 
         # Initialize a non-particle-number-conserving Hamiltonian
         self.quad_ham_npc = QuadraticHamiltonian(
-                self.constant, self.chemical_potential,
-                self.hermitian_mat, self.antisymmetric_mat)
+                self.constant, self.hermitian_mat, self.antisymmetric_mat,
+                self.chemical_potential)
 
     def test_combined_hermitian_part(self):
         # Test getting the combined Hermitian part

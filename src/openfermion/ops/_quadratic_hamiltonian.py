@@ -49,8 +49,8 @@ class QuadraticHamiltonian(PolynomialTensor):
         constant: A constant term in the operator given as a float.
     """
 
-    def __init__(self, constant, chemical_potential,
-                 hermitian_part, antisymmetric_part):
+    def __init__(self, constant, hermitian_part, antisymmetric_part,
+                 chemical_potential=0.):
         """
         Initialize the QuadraticHamiltonian class.
 
@@ -76,15 +76,19 @@ class QuadraticHamiltonian(PolynomialTensor):
         self.chemical_potential = chemical_potential
 
     def combined_hermitian_part(self):
+        """Return the Hermitian part including the chemical potential."""
         return self.n_body_tensors[1, 0]
 
     def hermitian_part(self):
+        """Return the Hermitian part not including the chemical potential."""
         return (self.n_body_tensors[1, 0] +
                 self.chemical_potential * numpy.eye(self.n_qubits))
 
     def antisymmetric_part(self):
+        """Return the antisymmetric part."""
         return 2. * self.n_body_tensors[1, 1]
 
     def conserves_particle_number(self):
+        """Return whether Hamiltonian conserves particle number."""
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part()))
         return discrepancy < EQ_TOLERANCE
