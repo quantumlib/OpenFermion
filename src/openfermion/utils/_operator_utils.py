@@ -35,8 +35,7 @@ def count_qubits(operator):
     """Compute the minimum number of qubits on which operator acts.
 
     Args:
-        operator: QubitOperator, InteractionOperator, FermionOperator,
-            PolynomialTensor, or InteractionRDM.
+        operator: FermionOperator, QubitOperator, or PolynomialTensor.
 
     Returns:
         num_qubits (int): The minimum number of qubits on which operator acts.
@@ -62,10 +61,8 @@ def count_qubits(operator):
                     num_qubits = term[-1][0] + 1
         return num_qubits
 
-    # Handle InteractionOperator, InteractionRDM, PolynomialTensor.
-    elif isinstance(operator, (InteractionOperator,
-                               InteractionRDM,
-                               PolynomialTensor)):
+    # Handle PolynomialTensor
+    elif isinstance(operator, PolynomialTensor):
         return operator.n_qubits
 
     # Raise for other classes.
