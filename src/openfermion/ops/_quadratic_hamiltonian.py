@@ -18,9 +18,6 @@ import numpy
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import PolynomialTensor
-from openfermion.utils._slater_determinants import (
-        antisymmetric_canonical_form,
-        diagonalizing_fermionic_unitary)
 
 
 class QuadraticHamiltonianError(Exception):
