@@ -273,10 +273,11 @@ def jw_get_ground_states_by_particle_number(sparse_operator, particle_number,
         ground_energy(float): The lowest eigenvalue of sparse_operator within
             the eigenspace of the number operator corresponding to
             particle_number.
+
         ground_states(list[ndarray]): A list of the corresponding eigenstates.
 
-    Warning: The running time of this method is exponential in the number
-        of qubits.
+    Warning:
+        The running time of this method is exponential in the number of qubits.
     """
     # Check if operator is Hermitian
     if not is_hermitian(sparse_operator):

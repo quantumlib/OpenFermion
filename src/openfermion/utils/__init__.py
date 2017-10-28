@@ -10,6 +10,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from ._channel_state import (amplitude_damping_channel, dephasing_channel,
+                             depolarizing_channel)
+
 from ._grid import Grid
 
 from ._operator_utils import (commutator, count_qubits,
