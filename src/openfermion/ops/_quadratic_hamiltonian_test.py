@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests for quad_hams.py."""
+"""Tests for quadratic_hamiltonian.py."""
 from __future__ import absolute_import
 
 import numpy
