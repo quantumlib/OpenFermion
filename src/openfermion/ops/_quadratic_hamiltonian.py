@@ -46,25 +46,35 @@ class QuadraticHamiltonian(PolynomialTensor):
         constant: A constant term in the operator given as a float.
     """
 
-    def __init__(self, constant, hermitian_part, antisymmetric_part,
-                 chemical_potential=0.):
+    def __init__(self, constant, hermitian_part,
+                 antisymmetric_part=None, chemical_potential=None):
         """
         Initialize the QuadraticHamiltonian class.
 
         Args:
             constant(float): A constant term in the operator.
-            chemical_potential(float): The chemical potential \mu.
             hermitian_part(ndarray): The matrix M, which represents the
                 coefficients of the particle-number-conserving terms.
                 This is an n_qubits x n_qubits numpy array of complex numbers.
             antisymmetric_part(ndarray): The matrix A, which represents the
                 coefficients of the non-particle-number-conserving terms.
                 This is an n_qubits x n_qubits numpy array of complex numbers.
+            chemical_potential(float): The chemical potential \mu.
         """
-        # Make sure nonzero elements are only for normal ordered terms.
         n_qubits = hermitian_part.shape[0]
-        combined_hermitian_part = (hermitian_part -
-                                   chemical_potential * numpy.eye(n_qubits))
+
+        # Initialize combined Hermitian part
+        if not chemical_potential:
+            combined_hermitian_part = hermitian_part
+        else:
+            combined_hermitian_part = (
+                    hermitian_part -
+                    chemical_potential * numpy.eye(n_qubits))
+
+        # Initialize antisymmetric part
+        if antisymmetric_part is None:
+            antisymmetric_part = numpy.zeros((n_qubits, n_qubits), complex)
+
         super(QuadraticHamiltonian, self).__init__(
                 constant,
                 {(1, 0): combined_hermitian_part,
@@ -78,14 +88,17 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     def hermitian_part(self):
         """Return the Hermitian part not including the chemical potential."""
-        return (self.n_body_tensors[1, 0] +
-                self.chemical_potential * numpy.eye(self.n_qubits))
+        hermitian_part = self.combined_hermitian_part()
+        if self.chemical_potential:
+            hermitian_part += (self.chemical_potential *
+                               numpy.eye(self.n_qubits))
+        return hermitian_part
 
     def antisymmetric_part(self):
         """Return the antisymmetric part."""
         return 2. * self.n_body_tensors[1, 1]
 
     def conserves_particle_number(self):
-        """Return whether Hamiltonian conserves particle number."""
+        """Return whether this Hamiltonian conserves particle number."""
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part()))
         return discrepancy < EQ_TOLERANCE
