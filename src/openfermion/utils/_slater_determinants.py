@@ -120,23 +120,26 @@ def fermionic_gaussian_decomposition(unitary_rows):
         indices_to_zero_out = zip(row_indices, column_indices)
 
         for i, j in indices_to_zero_out:
-            # Compute the Givens rotation to zero out the (i, j) element
-            left_element = current_matrix[i, j - 1].conj()
+            # Compute the Givens rotation to zero out the (i, j) element,
+            # if needed
             right_element = current_matrix[i, j].conj()
-            givens_rotation = givens_matrix_elements(left_element,
-                                                     right_element)
-            # Need to switch the rows to zero out right_element
-            # rather than left_element
-            givens_rotation = givens_rotation[(1, 0), :]
+            if abs(right_element) > EQ_TOLERANCE:
+                # We actually need to perform a Givens rotation
+                left_element = current_matrix[i, j - 1].conj()
+                givens_rotation = givens_matrix_elements(left_element,
+                                                         right_element)
+                # Need to switch the rows to zero out right_element
+                # rather than left_element
+                givens_rotation = givens_rotation[(1, 0), :]
 
-            # Add the parameters to the list
-            theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
-            phi = numpy.angle(givens_rotation[1, 1])
-            parallel_ops.append((j - 1, j, theta, phi))
+                # Add the parameters to the list
+                theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+                phi = numpy.angle(givens_rotation[1, 1])
+                parallel_ops.append((j - 1, j, theta, phi))
 
-            # Update the matrix
-            double_givens_rotate(current_matrix, givens_rotation,
-                                 j - 1, j, which='col')
+                # Update the matrix
+                double_givens_rotate(current_matrix, givens_rotation,
+                                     j - 1, j, which='col')
 
         # Append the current list of parallel rotations to the list
         decomposition.append(tuple(parallel_ops))
@@ -351,8 +354,8 @@ def givens_decomposition(unitary_rows):
                 # if needed
                 right_element = current_matrix[i, j].conj()
                 if abs(right_element) > EQ_TOLERANCE:
-                    left_element = current_matrix[i, j - 1].conj()
                     # We actually need to perform a Givens rotation
+                    left_element = current_matrix[i, j - 1].conj()
                     givens_rotation = givens_matrix_elements(left_element,
                                                              right_element)
                     # Need to switch the rows to zero out right_element
