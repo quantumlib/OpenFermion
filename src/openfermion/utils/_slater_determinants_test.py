@@ -17,10 +17,14 @@ import numpy
 import unittest
 from scipy.linalg import qr
 
+from openfermion.config import EQ_TOLERANCE
 from openfermion.utils import (fermionic_gaussian_decomposition,
                                givens_decomposition)
 from openfermion.utils._slater_determinants import (
-        diagonalizing_fermionic_unitary, double_givens_rotate, givens_rotate,
+        antisymmetric_canonical_form,
+        diagonalizing_fermionic_unitary,
+        double_givens_rotate,
+        givens_rotate,
         swap_rows)
 
 
@@ -756,3 +760,33 @@ class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
         for i in numpy.ndindex((n, n)):
             self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
             self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+class AntisymmetricCanonicalFormTest(unittest.TestCase):
+
+    def test_equality(self):
+        """Test that the decomposition is valid."""
+        n = 7
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        canonical, orthogonal = antisymmetric_canonical_form(
+                antisymmetric_matrix)
+        result_matrix = orthogonal.dot(antisymmetric_matrix.dot(orthogonal.T))
+        for i in numpy.ndindex(result_matrix.shape):
+            self.assertAlmostEqual(result_matrix[i], canonical[i])
+
+    def test_canonical(self):
+        """Test that the returned canonical matrix has the right form."""
+        n = 7
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        canonical, orthogonal = antisymmetric_canonical_form(
+                antisymmetric_matrix)
+        for i in range(2 * n):
+            for j in range(2 * n):
+                if i < n and j == n + i:
+                    self.assertTrue(canonical[i, j] > -EQ_TOLERANCE)
+                elif i >= n and j == i - n:
+                    self.assertTrue(canonical[i, j] < -EQ_TOLERANCE)
+                else:
+                    self.assertAlmostEqual(canonical[i, j], 0.)

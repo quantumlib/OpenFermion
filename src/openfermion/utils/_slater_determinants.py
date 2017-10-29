@@ -202,7 +202,7 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
         [  0     D ]
         [ -D     0 ]
 
-    where D is a diagonal matrix.
+    where D is a diagonal matrix with nonnegative entries.
 
     Args:
         antisymmetric_matrix(ndarray): An antisymmetric matrix with even
@@ -238,6 +238,13 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_rows(canonical, num_blocks - 1, num_blocks + i)
             swap_columns(canonical, num_blocks - 1, num_blocks + i)
             swap_columns(orthogonal, num_blocks - 1, num_blocks + i)
+
+    # Now we permute so that the upper right block is non-negative
+    for i in range(num_blocks):
+        if canonical[i, num_blocks + i] < -EQ_TOLERANCE:
+            swap_rows(canonical, i, num_blocks+ i)
+            swap_columns(canonical, i, num_blocks+ i)
+            swap_columns(orthogonal, i, num_blocks+ i)
 
     return canonical, orthogonal.T
 
@@ -340,23 +347,26 @@ def givens_decomposition(unitary_rows):
 
             parallel_rotations = list()
             for i, j in indices_to_zero_out:
-                # Compute the Givens rotation to zero out the (i, j) element
-                left_element = current_matrix[i, j - 1].conj()
+                # Compute the Givens rotation to zero out the (i, j) element,
+                # if needed
                 right_element = current_matrix[i, j].conj()
-                givens_rotation = givens_matrix_elements(left_element,
-                                                         right_element)
-                # Need to switch the rows to zero out right_element
-                # rather than left_element
-                givens_rotation = givens_rotation[(1, 0), :]
+                if abs(right_element) > EQ_TOLERANCE:
+                    left_element = current_matrix[i, j - 1].conj()
+                    # We actually need to perform a Givens rotation
+                    givens_rotation = givens_matrix_elements(left_element,
+                                                             right_element)
+                    # Need to switch the rows to zero out right_element
+                    # rather than left_element
+                    givens_rotation = givens_rotation[(1, 0), :]
 
-                # Add the parameters to the list
-                theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
-                phi = numpy.angle(givens_rotation[1, 1])
-                parallel_rotations.append((j - 1, j, theta, phi))
+                    # Add the parameters to the list
+                    theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+                    phi = numpy.angle(givens_rotation[1, 1])
+                    parallel_rotations.append((j - 1, j, theta, phi))
 
-                # Update the matrix
-                givens_rotate(current_matrix, givens_rotation,
-                              j - 1, j, which='col')
+                    # Update the matrix
+                    givens_rotate(current_matrix, givens_rotation,
+                                  j - 1, j, which='col')
 
             # Append the current list of parallel rotations to the list
             givens_rotations.append(tuple(parallel_rotations))
@@ -393,12 +403,10 @@ def givens_matrix_elements(a, b):
     elif abs(b) < EQ_TOLERANCE:
         c = 0.
         s = 1.
-        sign_a = a / abs(a)
-        phase = sign_a
+        phase = 1.
     # Handle case that a and b are both nonzero
     else:
         denominator = numpy.sqrt(abs(a) ** 2 + abs(b) ** 2)
-
         c = abs(b) / denominator
         s = abs(a) / denominator
         sign_b = b / abs(b)
