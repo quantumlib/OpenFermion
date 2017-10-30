@@ -40,10 +40,6 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     We separate the chemical potential \mu from M so that we can use it
     to adjust the expectation value of the total number of particles.
-
-    Attributes:
-        n_qubits: An int giving the number of qubits.
-        constant: A constant term in the operator given as a float.
     """
 
     def __init__(self, constant, hermitian_part,
@@ -84,7 +80,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     def combined_hermitian_part(self):
         """Return the Hermitian part including the chemical potential."""
-        return self.n_body_tensors[1, 0]
+        return self.n_body_tensors[1, 0].copy()
 
     def hermitian_part(self):
         """Return the Hermitian part not including the chemical potential."""
@@ -96,7 +92,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     def antisymmetric_part(self):
         """Return the antisymmetric part."""
-        return 2. * self.n_body_tensors[1, 1]
+        return 2. * self.n_body_tensors[1, 1].copy()
 
     def conserves_particle_number(self):
         """Return whether this Hamiltonian conserves particle number."""
