@@ -121,17 +121,6 @@ def fermionic_gaussian_decomposition(unitary_rows):
         row_indices = range(end_row, end_row - len(column_indices), -1)
         indices_to_zero_out = zip(row_indices, column_indices)
 
-        ## Get the (row, column) indices of elements to zero out in parallel.
-        #if k < n:
-        #    end_row = k
-        #    end_column = k
-        #else:
-        #    end_row = n - 1
-        #    end_column = 2 * (n - 1) - k
-        #column_indices = range(end_column, 0, -2)
-        #row_indices = range(end_row, end_row - len(column_indices), -1)
-        #indices_to_zero_out = zip(row_indices, column_indices)
-
         for i, j in indices_to_zero_out:
             # Compute the Givens rotation to zero out the (i, j) element,
             # if needed
@@ -145,7 +134,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
                 # Add the parameters to the list
                 theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
                 phi = numpy.angle(givens_rotation[1, 1])
-                parallel_ops.append((j , j + 1, theta, phi))
+                parallel_ops.append((j, j + 1, theta, phi))
 
                 # Update the matrix
                 double_givens_rotate(current_matrix, givens_rotation,
@@ -255,9 +244,9 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     # Now we permute so that the upper right block is non-negative
     for i in range(num_blocks):
         if canonical[i, num_blocks + i] < -EQ_TOLERANCE:
-            swap_rows(canonical, i, num_blocks+ i)
-            swap_columns(canonical, i, num_blocks+ i)
-            swap_columns(orthogonal, i, num_blocks+ i)
+            swap_rows(canonical, i, num_blocks + i)
+            swap_columns(canonical, i, num_blocks + i)
+            swap_columns(orthogonal, i, num_blocks + i)
 
     return canonical, orthogonal.T
 

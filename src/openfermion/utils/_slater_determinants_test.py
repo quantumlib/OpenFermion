@@ -810,6 +810,7 @@ class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
             self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
             self.assertAlmostEqual(0., constraint_matrix_2[i])
 
+
 class AntisymmetricCanonicalFormTest(unittest.TestCase):
 
     def test_equality(self):
