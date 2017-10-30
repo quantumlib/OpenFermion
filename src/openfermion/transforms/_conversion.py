@@ -244,27 +244,18 @@ def get_quadratic_hamiltonian(fermion_operator,
     return quadratic_hamiltonian
 
 
-def get_fermion_operator(interaction_operator):
-    """Output InteractionOperator as instance of FermionOperator class.
+def get_fermion_operator(polynomial_tensor):
+    """Output PolynomialTensor as instance of FermionOperator class.
 
     Returns:
         fermion_operator: An instance of the FermionOperator class.
     """
-    # Initialize with identity term.
-    fermion_operator = FermionOperator((), interaction_operator.constant)
-    n_qubits = count_qubits(interaction_operator)
+    fermion_operator = FermionOperator()
+    n_qubits = count_qubits(polynomial_tensor)
 
-    # Add one-body terms.
-    for p, q in itertools.product(range(n_qubits), repeat=2):
+    for term in polynomial_tensor:
         fermion_operator += FermionOperator(
-            ((p, 1), (q, 0)), coefficient=interaction_operator[(p, 1), (q, 0)])
-
-    # Add two-body terms.
-    for p, q, r, s in itertools.product(range(n_qubits), repeat=4):
-        coefficient = interaction_operator[(p, 1), (q, 1), (r, 0), (s, 0)]
-        fermion_operator += FermionOperator(((p, 1), (q, 1),
-                                             (r, 0), (s, 0)),
-                                            coefficient)
+                term, coefficient=polynomial_tensor[term])
 
     return fermion_operator
 
