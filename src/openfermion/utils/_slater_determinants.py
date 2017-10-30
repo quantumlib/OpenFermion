@@ -22,7 +22,7 @@ from openfermion.config import EQ_TOLERANCE
 
 def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and
-    particle-hole transformations on the first fermionic mode.
+    particle-hole transformations on the last fermionic mode.
 
     The input is an n x (2 * n) matrix W with orthonormal rows.
     Furthermore, W has the block form::
@@ -36,17 +36,17 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     W can be decomposed as::
 
-        V * W * U^\dagger = [ 0  |  L ]
+        V * W * U^\dagger = [ 0  |  D ]
 
-    where V and U are unitary matrices and L is an antidiagonal unitary matrix.
+    where V and U are unitary matrices and D is a diagonal unitary matrix.
     Furthermore, we can decompose U as a sequence of Givens rotations
-    and particle-hole transformations on the first fermionic mode.
+    and particle-hole transformations on the last fermionic mode.
 
     The decomposition of U is returned as a list of tuples of objects
     describing rotations and particle-hole transformations. The list looks
-    something like [('p-h', ), (G_1, ), ('p-h', G_2), ... ].
-    The objects within a tuple are either the string 'p-h', which indicates
-    a particle-hole transformation on the first fermionic mode, or a tuple
+    something like [('pht', ), (G_1, ), ('pht', G_2), ... ].
+    The objects within a tuple are either the string 'pht', which indicates
+    a particle-hole transformation on the last fermionic mode, or a tuple
     of the form (i, j, theta, phi), which indicates a Givens roation
     of rows i and j by angles theta and phi.
 
@@ -57,7 +57,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
     Returns:
         left_unitary(ndarray): An n x n matrix representing V.
         decomposition(list[tuple]): The decomposition of U.
-        antidiagonal(ndarray): A list of the nonzero entries of L.
+        diagonal(ndarray): A list of the nonzero entries of D.
     """
     current_matrix = numpy.copy(unitary_rows)
     n, p = current_matrix.shape
@@ -85,9 +85,9 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     # Compute left_unitary using Givens rotations
     left_unitary = numpy.eye(n, dtype=complex)
-    for k in reversed(range(1, n)):
+    for k in range(n - 1):
         # Zero out entries in column k
-        for l in range(k):
+        for l in range(n - 1 - k):
             # Zero out entry in row l
             givens_rotation = givens_matrix_elements(current_matrix[l, k],
                                                      current_matrix[l + 1, k])
@@ -104,49 +104,57 @@ def fermionic_gaussian_decomposition(unitary_rows):
         parallel_ops = list()
 
         # Perform a particle-hole transformation if necessary
-        if k % 2 == 0 and abs(current_matrix[k // 2, 0]) > EQ_TOLERANCE:
-            parallel_ops.append('p-h')
-            swap_columns(current_matrix, 0, n)
+        if k % 2 == 0 and abs(current_matrix[k // 2, n - 1]) > EQ_TOLERANCE:
+            parallel_ops.append('pht')
+            swap_columns(current_matrix, n - 1, 2 * n - 1)
 
         # Get the (row, column) indices of elements to zero out in parallel.
         if k < n:
             end_row = k
-            end_column = k
+            end_column = n - 1 - k
         else:
             end_row = n - 1
-            end_column = 2 * (n - 1) - k
-        column_indices = range(end_column, 0, -2)
+            end_column = k - (n - 1)
+        column_indices = range(end_column, n - 1, 2)
         row_indices = range(end_row, end_row - len(column_indices), -1)
         indices_to_zero_out = zip(row_indices, column_indices)
+
+        ## Get the (row, column) indices of elements to zero out in parallel.
+        #if k < n:
+        #    end_row = k
+        #    end_column = k
+        #else:
+        #    end_row = n - 1
+        #    end_column = 2 * (n - 1) - k
+        #column_indices = range(end_column, 0, -2)
+        #row_indices = range(end_row, end_row - len(column_indices), -1)
+        #indices_to_zero_out = zip(row_indices, column_indices)
 
         for i, j in indices_to_zero_out:
             # Compute the Givens rotation to zero out the (i, j) element,
             # if needed
-            right_element = current_matrix[i, j].conj()
-            if abs(right_element) > EQ_TOLERANCE:
+            left_element = current_matrix[i, j].conj()
+            if abs(left_element) > EQ_TOLERANCE:
                 # We actually need to perform a Givens rotation
-                left_element = current_matrix[i, j - 1].conj()
+                right_element = current_matrix[i, j + 1].conj()
                 givens_rotation = givens_matrix_elements(left_element,
                                                          right_element)
-                # Need to switch the rows to zero out right_element
-                # rather than left_element
-                givens_rotation = givens_rotation[(1, 0), :]
 
                 # Add the parameters to the list
                 theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
                 phi = numpy.angle(givens_rotation[1, 1])
-                parallel_ops.append((j - 1, j, theta, phi))
+                parallel_ops.append((j , j + 1, theta, phi))
 
                 # Update the matrix
                 double_givens_rotate(current_matrix, givens_rotation,
-                                     j - 1, j, which='col')
+                                     j, j + 1, which='col')
 
         # Append the current list of parallel rotations to the list
         decomposition.append(tuple(parallel_ops))
 
-    # Get the antidiagonal entries
-    antidiagonal = current_matrix[range(n), range(2 * n - 1, n - 1, -1)]
-    return left_unitary, decomposition, antidiagonal
+    # Get the diagonal entries
+    diagonal = current_matrix[range(n), range(n, 2 * n)]
+    return left_unitary, decomposition, diagonal
 
 
 def diagonalizing_fermionic_unitary(antisymmetric_matrix):
