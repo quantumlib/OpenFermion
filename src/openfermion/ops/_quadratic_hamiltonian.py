@@ -119,40 +119,34 @@ class QuadraticHamiltonian(PolynomialTensor):
         and A is a (2 * n_qubits) x (2 * n_qubits) real antisymmetric matrix.
         This function returns the matrix A and the constant.
         """
-        # Assemble Hermitian and antisymmetric parts into a block matrix
         hermitian_part = self.combined_hermitian_part()
         antisymmetric_part = self.antisymmetric_part()
-        block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
-        block_matrix[:self.n_qubits, :self.n_qubits] = antisymmetric_part
-        block_matrix[
-                self.n_qubits:, self.n_qubits:] = -antisymmetric_part.conj()
-        block_matrix[:self.n_qubits, self.n_qubits:] = hermitian_part
-        block_matrix[self.n_qubits:, :self.n_qubits] = -hermitian_part.conj()
 
-        # Create the matrix that converts between fermionic ladder and
-        # Majorana bases
-        normalized_identity = (numpy.eye(self.n_qubits, dtype=complex) /
-                               numpy.sqrt(2.))
-        majorana_basis_change = numpy.eye(
-                2 * self.n_qubits, dtype=complex) / numpy.sqrt(2.)
-        majorana_basis_change[self.n_qubits:, self.n_qubits:] *= -1.j
-        majorana_basis_change[
-                :self.n_qubits, self.n_qubits:] = normalized_identity
-        majorana_basis_change[
-                self.n_qubits:, :self.n_qubits] = 1.j * normalized_identity
-
-        # Create the Majorana matrix
-        majorana_matrix = numpy.real(
-                -1.j *
-                majorana_basis_change.conj().dot(
-                    block_matrix.dot(
-                        majorana_basis_change.T.conj())))
+        # Compute the Majorana matrix using block matrix manipulations
+        majorana_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
+        # Set upper left block
+        majorana_matrix[:self.n_qubits, :self.n_qubits] = numpy.real(-.5j * (
+                hermitian_part - hermitian_part.conj() +
+                antisymmetric_part - antisymmetric_part.conj()))
+        # Set upper right block
+        majorana_matrix[:self.n_qubits, self.n_qubits:] = numpy.real(.5 * (
+                hermitian_part + hermitian_part.conj() -
+                antisymmetric_part - antisymmetric_part.conj()))
+        # Set lower left block
+        majorana_matrix[self.n_qubits:, :self.n_qubits] = numpy.real(-.5 * (
+                hermitian_part + hermitian_part.conj() +
+                antisymmetric_part + antisymmetric_part.conj()))
+        # Set lower right block
+        majorana_matrix[self.n_qubits:, self.n_qubits:] = numpy.real(-.5j * (
+                hermitian_part - hermitian_part.conj() -
+                antisymmetric_part + antisymmetric_part.conj()))
 
         # Compute the constant
         majorana_constant = (.5 * numpy.real(numpy.trace(hermitian_part)) +
-                    self.n_body_tensors[()])
+                             self.n_body_tensors[()])
 
         return majorana_matrix, majorana_constant
+
 
 def majorana_operator(term=None, coefficient=1.):
     """Initialize a Majorana operator.
