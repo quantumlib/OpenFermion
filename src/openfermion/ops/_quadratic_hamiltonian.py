@@ -19,6 +19,7 @@ from scipy.linalg import schur
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import FermionOperator, PolynomialTensor
+from openfermion.utils._slater_determinants import swap_columns, swap_rows
 
 
 class QuadraticHamiltonianError(Exception):
@@ -295,17 +296,3 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_columns(orthogonal, i, num_blocks + i)
 
     return canonical, orthogonal.T
-
-
-def swap_rows(M, i, j):
-    """Swap rows i and j of matrix M."""
-    row_i = M[i, :].copy()
-    row_j = M[j, :].copy()
-    M[i, :], M[j, :] = row_j, row_i
-
-
-def swap_columns(M, i, j):
-    """Swap columns i and j of matrix M."""
-    column_i = M[:, i].copy()
-    column_j = M[:, j].copy()
-    M[:, i], M[:, j] = column_j, column_i
