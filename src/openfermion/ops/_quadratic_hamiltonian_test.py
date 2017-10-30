@@ -27,7 +27,7 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
 
     def setUp(self):
         self.n_qubits = 5
-        self.constant = 1.
+        self.constant = 1.7
         self.chemical_potential = 2.
 
         # Obtain random Hermitian and antisymmetric matrices
