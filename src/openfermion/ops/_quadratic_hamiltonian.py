@@ -82,7 +82,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     def combined_hermitian_part(self):
         """Return the Hermitian part including the chemical potential."""
-        return self.n_body_tensors[1, 0]
+        return self.n_body_tensors[1, 0].copy()
 
     def hermitian_part(self):
         """Return the Hermitian part not including the chemical potential."""
@@ -95,7 +95,7 @@ class QuadraticHamiltonian(PolynomialTensor):
     def antisymmetric_part(self):
         """Return the antisymmetric part."""
         if (1, 1) in self.n_body_tensors:
-            return 2. * self.n_body_tensors[1, 1]
+            return 2. * self.n_body_tensors[1, 1].copy()
         else:
             return numpy.zeros((self.n_qubits, self.n_qubits), complex)
 
