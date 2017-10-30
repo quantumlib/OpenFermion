@@ -76,7 +76,10 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         self.hermitian_op_bad_term = FermionOperator('1^ 1 2', 3.)
         self.hermitian_op_bad_term += FermionOperator('2^ 1^ 1', 3.)
 
+        self.not_hermitian = FermionOperator('1^ 0^')
+
     def test_get_quadratic_hamiltonian_hermitian(self):
+        """Test a properly formed quadratic Hamiltonian."""
         quadratic_op = get_quadratic_hamiltonian(self.hermitian_op)
         fermion_operator = get_fermion_operator(quadratic_op)
         fermion_operator = normal_ordered(fermion_operator)
@@ -84,20 +87,24 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
                 normal_ordered(self.hermitian_op).isclose(fermion_operator))
 
     def test_get_quadratic_hamiltonian_hermitian_bad_term(self):
+        """Test an operator with non-quadratic terms."""
         with self.assertRaises(QuadraticHamiltonianError):
             get_quadratic_hamiltonian(self.hermitian_op_bad_term)
 
+    def test_get_quadratic_hamiltonian_not_hermitian(self):
+        """Test a non-Hermitian operator."""
+        with self.assertRaises(QuadraticHamiltonianError):
+            get_quadratic_hamiltonian(self.not_hermitian)
+
     def test_get_quadratic_hamiltonian_bad_input(self):
+        """Test improper input."""
         with self.assertRaises(TypeError):
             get_quadratic_hamiltonian('3')
 
     def test_get_quadratic_hamiltonian_too_few_qubits(self):
+        """Test asking for too few qubits."""
         with self.assertRaises(ValueError):
             get_quadratic_hamiltonian(FermionOperator('3^ 2^'), n_qubits=3)
-
-    def test_get_quadratic_hamiltonian_not_hermitian(self):
-        with self.assertRaises(QuadraticHamiltonianError):
-            get_quadratic_hamiltonian(FermionOperator('1^ 0^'))
 
 
 class GetSparseOperatorQubitTest(unittest.TestCase):
