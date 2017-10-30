@@ -18,11 +18,13 @@ import itertools
 import numpy
 from future.utils import iteritems
 
+from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
 from openfermion.ops import (FermionOperator,
                              normal_ordered,
                              InteractionOperator,
                              InteractionRDM,
+                             QuadraticHamiltonian,
                              QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.utils import (count_qubits,
@@ -147,6 +149,99 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
     # Form InteractionOperator and return.
     interaction_operator = InteractionOperator(constant, one_body, two_body)
     return interaction_operator
+
+
+def get_quadratic_hamiltonian(fermion_operator,
+                              chemical_potential=None, n_qubits=None):
+    """Convert a quadratic fermionic operator to QuadraticHamiltonian.
+
+    This function should only be called on fermionic operators which
+    consist of only a_p^\dagger a_q, a_p^\dagger a_q^\dagger, and a_p a_q
+    terms.
+
+    Returns:
+       quadratic_hamiltonian: An instance of the QuadraticHamiltonian class.
+
+    Raises:
+        TypeError: Input must be a FermionOperator.
+        TypeError: FermionOperator does not map to QuadraticHamiltonian.
+
+    Warning:
+        Even assuming that each creation or annihilation operator appears
+        at most a constant number of times in the original operator, the
+        runtime of this method is exponential in the number of qubits.
+    """
+    if not isinstance(fermion_operator, FermionOperator):
+        raise TypeError('Input must be a FermionOperator.')
+
+    if n_qubits is None:
+        n_qubits = count_qubits(fermion_operator)
+    if n_qubits < count_qubits(fermion_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    # Normal order the terms and initialize.
+    fermion_operator = normal_ordered(fermion_operator)
+    constant = 0.
+    combined_hermitian_part = numpy.zeros((n_qubits, n_qubits), complex)
+    antisymmetric_part = numpy.zeros((n_qubits, n_qubits), complex)
+
+    # Loop through terms and assign to matrix.
+    for term in fermion_operator.terms:
+        coefficient = fermion_operator.terms[term]
+
+        if len(term) == 0:
+            # Constant term
+            constant = coefficient
+        elif len(term) == 2:
+            ladder_type = [operator[1] for operator in term]
+            p, q = [operator[1] for operator in term]
+
+            if ladder_type == [1, 0]:
+                combined_hermitian_part[p, q] = coefficient
+            elif ladder_type  == [1, 1]:
+                antisymmetric_part[p, q] += coefficient
+            else:
+                # ladder_type == [0, 0]
+                antisymmetric_part[p, q] -= coefficient.conj()
+        else:
+            # Operator containst non-quadratic terms
+            raise InteractionOperatorError('FermionOperator does not map '
+                                           'to InteractionOperator'
+                                           '(contains non-quadratic terms).')
+
+    # Compute Hermitian part
+    if not chemical_potential:
+        hermitian_part = combined_hermitian_part
+    else:
+        hermitian_part = (combined_hermitian_part +
+                          chemical_potential * numpy.eye(n_qubits))
+
+    # Check that the operator is Hermitian
+    difference = hermitian_part - hermitian_part.T.conj()
+    discrepancy = numpy.max(numpy.abs(difference))
+    if discrepancy < EQ_TOLERANCE:
+        raise InteractionOperatorError('FermionOperator does not map '
+                                       'to QuadraticHamiltonian'
+                                       '(not Hermitian).')
+    difference = antisymmetric_part + antisymmetric_part.T
+    discrepancy = numpy.max(numpy.abs(difference))
+    if discrepancy < EQ_TOLERANCE:
+        raise InteractionOperatorError('FermionOperator does not map '
+                                       'to QuadraticHamiltonian'
+                                       '(not Hermitian).')
+
+    # Form QuadraticHamiltonian and return.
+    discrepancy = numpy.max(numpy.abs(antisymmetric_part))
+    if discrepancy < EQ_TOLERANCE:
+        # Hamiltonian conserves particle number
+        quadratic_hamiltonian = QuadraticHamiltonian(
+            constant, hermitian_part, chemical_potential=chemical_potential)
+    else:
+        # Hamiltonian does not conserve particle number
+        quadratic_hamiltonian = QuadraticHamiltonian(
+            constant, hermitian_part, antisymmetric_part, chemical_potential)
+
+    return quadratic_hamiltonian
 
 
 def get_fermion_operator(interaction_operator):
