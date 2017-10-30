@@ -255,12 +255,6 @@ def get_quadratic_hamiltonian(fermion_operator,
         raise QuadraticHamiltonianError(
                 'FermionOperator does not map '
                 'to QuadraticHamiltonian (not Hermitian).')
-    difference = antisymmetric_part + antisymmetric_part.T
-    discrepancy = numpy.max(numpy.abs(difference))
-    if discrepancy > EQ_TOLERANCE:
-        raise QuadraticHamiltonianError(
-                'FermionOperator does not map '
-                'to QuadraticHamiltonian (not Hermitian).')
 
     # Form QuadraticHamiltonian and return.
     discrepancy = numpy.max(numpy.abs(antisymmetric_part))
