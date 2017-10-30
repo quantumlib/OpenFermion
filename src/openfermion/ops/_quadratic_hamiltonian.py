@@ -17,7 +17,7 @@ from __future__ import absolute_import
 import numpy
 
 from openfermion.config import EQ_TOLERANCE
-from openfermion.ops import PolynomialTensor
+from openfermion.ops import FermionOperator, PolynomialTensor
 
 
 class QuadraticHamiltonianError(Exception):
@@ -120,7 +120,7 @@ class QuadraticHamiltonian(PolynomialTensor):
         This function returns the matrix A and the constant.
         """
         # Assemble Hermitian and antisymmetric parts into a block matrix
-        hermitian_part = self.hermitian_part()
+        hermitian_part = self.combined_hermitian_part()
         antisymmetric_part = self.antisymmetric_part()
         block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
         block_matrix[:self.n_qubits, :self.n_qubits] = antisymmetric_part
@@ -149,6 +149,47 @@ class QuadraticHamiltonian(PolynomialTensor):
                         majorana_basis_change.T.conj())))
 
         # Compute the constant
-        constant = numpy.trace(hermitian_part) + self.n_body_tensors[()]
+        majorana_constant = (.5 * numpy.real(numpy.trace(hermitian_part)) +
+                    self.n_body_tensors[()])
 
-        return majorana_matrix, constant
+        return majorana_matrix, majorana_constant
+
+def majorana_operator(term=None, coefficient=1.):
+    """Initialize a Majorana operator.
+
+    Args:
+        term(tuple): The first element of the tuple indicates the mode
+            on which the Majorana operator acts, starting from zero.
+            The second element of the tuple is an integer, either 1 or 0,
+            indicating which type of Majorana operator it is:
+                type 1: 1 / sqrt(2) (a^\dagger_j + a_j)
+                type 0: i / sqrt(2) (a^\dagger_j - a_j)
+            where the a^\dagger_j and a_j are the usual fermionic ladder
+            operators.
+            Default will result in the zero operator.
+        coefficient(complex or float, optional): The coefficient of the term.
+            Default value is 1.0.
+
+    Returns:
+        FermionOperator
+    """
+    if not isinstance(coefficient, (int, float, complex)):
+        raise ValueError('Coefficient must be scalar.')
+
+    if term is None:
+        # Return zero operator
+        return FermionOperator()
+    elif isinstance(term, tuple):
+        mode, operator_type = term
+        if operator_type == 1:
+            majorana_op = FermionOperator(((mode, 1),), coefficient / numpy.sqrt(2.))
+            majorana_op += FermionOperator(((mode, 0),), coefficient / numpy.sqrt(2.))
+        elif operator_type == 0:
+            majorana_op = FermionOperator(((mode, 1),), 1.j * coefficient / numpy.sqrt(2.))
+            majorana_op -= FermionOperator(((mode, 0),), 1.j * coefficient / numpy.sqrt(2.))
+        else:
+            raise ValueError('Operator specified incorrectly.')
+        return majorana_op
+    # Invalid input.
+    else:
+        raise ValueError('Operator specified incorrectly.')

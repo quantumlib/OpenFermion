@@ -16,7 +16,11 @@ from __future__ import absolute_import
 import numpy
 import unittest
 
-from openfermion.ops import QuadraticHamiltonian
+from openfermion.ops import (FermionOperator,
+                             QuadraticHamiltonian,
+                             normal_ordered)
+from openfermion.ops._quadratic_hamiltonian import majorana_operator
+from openfermion.transforms import get_fermion_operator
 
 
 class QuadraticHamiltoniansTest(unittest.TestCase):
@@ -85,4 +89,23 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
 
     def test_majorana_form(self):
         """Test getting the Majorana form."""
-        majorana_matrix = self.quad_ham_npc.majorana_form()
+        majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
+        # Convert the Majorana form to a FermionOperator
+        majorana_op = FermionOperator((), majorana_constant)
+        for i in range(2 * self.n_qubits):
+            if i < self.n_qubits:
+                left_op = majorana_operator((i, 1))
+            else:
+                left_op = majorana_operator((i - self.n_qubits, 0))
+            for j in range(2 * self.n_qubits):
+                if j < self.n_qubits:
+                    right_op = majorana_operator((j, 1), majorana_matrix[i, j])
+                else:
+                    right_op = majorana_operator((j - self.n_qubits, 0),
+                                                 majorana_matrix[i, j])
+                majorana_op += .5j * left_op * right_op
+        # Get FermionOperator for original Hamiltonian
+        fermion_operator = normal_ordered(
+                get_fermion_operator(self.quad_ham_npc))
+        self.assertTrue(
+                normal_ordered(majorana_op).isclose(fermion_operator))
