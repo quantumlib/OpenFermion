@@ -22,10 +22,7 @@ algorithms to simulate fermionic systems, including quantum chemistry. Among
 other functionalities, the current version features data structures and tools
 for obtaining and manipulating representations of fermionic and qubit
 Hamiltonians. For more information, see our
-`release paper <https://arxiv.org/abs/1710.07629>`__
-and
-`press release <https://research.googleblog.com/2017/10/announcing-openfermion-open-source.html>`__
-about the project.
+`release paper <https://arxiv.org/abs/1710.07629>`__ about the project.
 
 
 Getting started
@@ -120,6 +117,7 @@ Authors
 `Jarrod McClean <http://jarrodmcclean.com>`__ (Google),
 `Ian Kivlichan <http://aspuru.chem.harvard.edu/ian-kivlichan/>`__ (Harvard),
 `Damian Steiger <https://github.com/damiansteiger>`__ (ETH Zurich),
+`Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan),
 `Dave Bacon <https://github.com/dabacon>`__ (Google),
 `Yudong Cao <https://github.com/yudongcao>`__ (Harvard),
 `E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
@@ -133,9 +131,8 @@ Authors
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
-`Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
-`Wei Sun <https://github.com/Spaceenter>`__ (Google) and
-`Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan).
+`Hannah Sim <https://github.com/hsim13372>`__ (Harvard) and
+`Wei Sun <https://github.com/Spaceenter>`__ (Google).
 
 
 How to cite
