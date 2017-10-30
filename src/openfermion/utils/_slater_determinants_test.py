@@ -431,16 +431,23 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         lower_unitary = ferm_unitary[n:]
 
         # Get fermionic Gaussian decomposition of lower_unitary
-        left_unitary, decomposition, antidiagonal = (
+        left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(lower_unitary))
+
+        # Check that left_unitary zeroes out the correct entries of
+        # lower_unitary
+        product = left_unitary.dot(lower_unitary)
+        for i in range(n - 1):
+            for j in range(n - 1 - i):
+                self.assertAlmostEqual(product[i, j], 0.)
 
         # Compute right_unitary
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
             for op in parallel_set:
-                if op == 'p-h':
-                    swap_rows(combined_op, 0, n)
+                if op == 'pht':
+                    swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
                     i, j, theta, phi = op
                     c = numpy.cos(theta)
@@ -455,13 +462,13 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         # Compute left_unitary * lower_unitary * right_unitary^\dagger
         product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
 
-        # Construct the antidiagonal matrix
-        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
-        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+        # Construct the diagonal matrix
+        diag = numpy.zeros((n, 2 * n), dtype=complex)
+        diag[range(n), range(n, 2 * n)] = diagonal
 
         # Assert that W and D are the same
         for i in numpy.ndindex((n, 2 * n)):
-            self.assertAlmostEqual(anti_diag[i], product[i])
+            self.assertAlmostEqual(diag[i], product[i])
 
     def test_n_equals_4(self):
         n = 4
@@ -474,16 +481,23 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         lower_unitary = ferm_unitary[n:]
 
         # Get fermionic Gaussian decomposition of lower_unitary
-        left_unitary, decomposition, antidiagonal = (
+        left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(lower_unitary))
+
+        # Check that left_unitary zeroes out the correct entries of
+        # lower_unitary
+        product = left_unitary.dot(lower_unitary)
+        for i in range(n - 1):
+            for j in range(n - 1 - i):
+                self.assertAlmostEqual(product[i, j], 0.)
 
         # Compute right_unitary
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
             for op in parallel_set:
-                if op == 'p-h':
-                    swap_rows(combined_op, 0, n)
+                if op == 'pht':
+                    swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
                     i, j, theta, phi = op
                     c = numpy.cos(theta)
@@ -498,13 +512,13 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         # Compute left_unitary * lower_unitary * right_unitary^\dagger
         product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
 
-        # Construct the antidiagonal matrix
-        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
-        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+        # Construct the diagonal matrix
+        diag = numpy.zeros((n, 2 * n), dtype=complex)
+        diag[range(n), range(n, 2 * n)] = diagonal
 
         # Assert that W and D are the same
         for i in numpy.ndindex((n, 2 * n)):
-            self.assertAlmostEqual(anti_diag[i], product[i])
+            self.assertAlmostEqual(diag[i], product[i])
 
     def test_n_equals_5(self):
         n = 5
@@ -517,16 +531,23 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         lower_unitary = ferm_unitary[n:]
 
         # Get fermionic Gaussian decomposition of lower_unitary
-        left_unitary, decomposition, antidiagonal = (
+        left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(lower_unitary))
+
+        # Check that left_unitary zeroes out the correct entries of
+        # lower_unitary
+        product = left_unitary.dot(lower_unitary)
+        for i in range(n - 1):
+            for j in range(n - 1 - i):
+                self.assertAlmostEqual(product[i, j], 0.)
 
         # Compute right_unitary
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
             for op in parallel_set:
-                if op == 'p-h':
-                    swap_rows(combined_op, 0, n)
+                if op == 'pht':
+                    swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
                     i, j, theta, phi = op
                     c = numpy.cos(theta)
@@ -541,13 +562,13 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         # Compute left_unitary * lower_unitary * right_unitary^\dagger
         product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
 
-        # Construct the antidiagonal matrix
-        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
-        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+        # Construct the diagonal matrix
+        diag = numpy.zeros((n, 2 * n), dtype=complex)
+        diag[range(n), range(n, 2 * n)] = diagonal
 
         # Assert that W and D are the same
         for i in numpy.ndindex((n, 2 * n)):
-            self.assertAlmostEqual(anti_diag[i], product[i])
+            self.assertAlmostEqual(diag[i], product[i])
 
     def test_n_equals_6(self):
         n = 6
@@ -560,16 +581,23 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         lower_unitary = ferm_unitary[n:]
 
         # Get fermionic Gaussian decomposition of lower_unitary
-        left_unitary, decomposition, antidiagonal = (
+        left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(lower_unitary))
+
+        # Check that left_unitary zeroes out the correct entries of
+        # lower_unitary
+        product = left_unitary.dot(lower_unitary)
+        for i in range(n - 1):
+            for j in range(n - 1 - i):
+                self.assertAlmostEqual(product[i, j], 0.)
 
         # Compute right_unitary
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
             for op in parallel_set:
-                if op == 'p-h':
-                    swap_rows(combined_op, 0, n)
+                if op == 'pht':
+                    swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
                     i, j, theta, phi = op
                     c = numpy.cos(theta)
@@ -584,13 +612,13 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         # Compute left_unitary * lower_unitary * right_unitary^\dagger
         product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
 
-        # Construct the antidiagonal matrix
-        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
-        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+        # Construct the diagonal matrix
+        diag = numpy.zeros((n, 2 * n), dtype=complex)
+        diag[range(n), range(n, 2 * n)] = diagonal
 
         # Assert that W and D are the same
         for i in numpy.ndindex((n, 2 * n)):
-            self.assertAlmostEqual(anti_diag[i], product[i])
+            self.assertAlmostEqual(diag[i], product[i])
 
     def test_n_equals_7(self):
         n = 7
@@ -603,16 +631,23 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         lower_unitary = ferm_unitary[n:]
 
         # Get fermionic Gaussian decomposition of lower_unitary
-        left_unitary, decomposition, antidiagonal = (
+        left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(lower_unitary))
+
+        # Check that left_unitary zeroes out the correct entries of
+        # lower_unitary
+        product = left_unitary.dot(lower_unitary)
+        for i in range(n - 1):
+            for j in range(n - 1 - i):
+                self.assertAlmostEqual(product[i, j], 0.)
 
         # Compute right_unitary
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
             for op in parallel_set:
-                if op == 'p-h':
-                    swap_rows(combined_op, 0, n)
+                if op == 'pht':
+                    swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
                     i, j, theta, phi = op
                     c = numpy.cos(theta)
@@ -627,13 +662,13 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         # Compute left_unitary * lower_unitary * right_unitary^\dagger
         product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
 
-        # Construct the antidiagonal matrix
-        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
-        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+        # Construct the diagonal matrix
+        diag = numpy.zeros((n, 2 * n), dtype=complex)
+        diag[range(n), range(n, 2 * n)] = diagonal
 
         # Assert that W and D are the same
         for i in numpy.ndindex((n, 2 * n)):
-            self.assertAlmostEqual(anti_diag[i], product[i])
+            self.assertAlmostEqual(diag[i], product[i])
 
     def test_n_equals_8(self):
         n = 8
@@ -646,16 +681,23 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         lower_unitary = ferm_unitary[n:]
 
         # Get fermionic Gaussian decomposition of lower_unitary
-        left_unitary, decomposition, antidiagonal = (
+        left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(lower_unitary))
+
+        # Check that left_unitary zeroes out the correct entries of
+        # lower_unitary
+        product = left_unitary.dot(lower_unitary)
+        for i in range(n - 1):
+            for j in range(n - 1 - i):
+                self.assertAlmostEqual(product[i, j], 0.)
 
         # Compute right_unitary
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
             for op in parallel_set:
-                if op == 'p-h':
-                    swap_rows(combined_op, 0, n)
+                if op == 'pht':
+                    swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
                     i, j, theta, phi = op
                     c = numpy.cos(theta)
@@ -670,13 +712,13 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         # Compute left_unitary * lower_unitary * right_unitary^\dagger
         product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
 
-        # Construct the antidiagonal matrix
-        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
-        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+        # Construct the diagonal matrix
+        diag = numpy.zeros((n, 2 * n), dtype=complex)
+        diag[range(n), range(n, 2 * n)] = diagonal
 
         # Assert that W and D are the same
         for i in numpy.ndindex((n, 2 * n)):
-            self.assertAlmostEqual(anti_diag[i], product[i])
+            self.assertAlmostEqual(diag[i], product[i])
 
     def test_n_equals_9(self):
         n = 9
@@ -689,16 +731,23 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         lower_unitary = ferm_unitary[n:]
 
         # Get fermionic Gaussian decomposition of lower_unitary
-        left_unitary, decomposition, antidiagonal = (
+        left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(lower_unitary))
+
+        # Check that left_unitary zeroes out the correct entries of
+        # lower_unitary
+        product = left_unitary.dot(lower_unitary)
+        for i in range(n - 1):
+            for j in range(n - 1 - i):
+                self.assertAlmostEqual(product[i, j], 0.)
 
         # Compute right_unitary
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
             for op in parallel_set:
-                if op == 'p-h':
-                    swap_rows(combined_op, 0, n)
+                if op == 'pht':
+                    swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
                     i, j, theta, phi = op
                     c = numpy.cos(theta)
@@ -713,13 +762,13 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         # Compute left_unitary * lower_unitary * right_unitary^\dagger
         product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
 
-        # Construct the antidiagonal matrix
-        anti_diag = numpy.zeros((n, 2 * n), dtype=complex)
-        anti_diag[range(n), range(2 * n - 1, n - 1, -1)] = antidiagonal
+        # Construct the diagonal matrix
+        diag = numpy.zeros((n, 2 * n), dtype=complex)
+        diag[range(n), range(n, 2 * n)] = diagonal
 
         # Assert that W and D are the same
         for i in numpy.ndindex((n, 2 * n)):
-            self.assertAlmostEqual(anti_diag[i], product[i])
+            self.assertAlmostEqual(diag[i], product[i])
 
 
 class DiagonalizingFermionicUnitaryTest(unittest.TestCase):

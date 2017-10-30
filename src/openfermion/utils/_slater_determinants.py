@@ -41,6 +41,8 @@ def fermionic_gaussian_decomposition(unitary_rows):
     where V and U are unitary matrices and D is a diagonal unitary matrix.
     Furthermore, we can decompose U as a sequence of Givens rotations
     and particle-hole transformations on the last fermionic mode.
+    This particle-hole transformation maps a^\dagger_n to a^n and vice
+    versa, while leaving the other ladder operators invariant.
 
     The decomposition of U is returned as a list of tuples of objects
     describing rotations and particle-hole transformations. The list looks
