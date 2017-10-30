@@ -22,10 +22,7 @@ algorithms to simulate fermionic systems, including quantum chemistry. Among
 other functionalities, the current version features data structures and tools
 for obtaining and manipulating representations of fermionic and qubit
 Hamiltonians. For more information, see our
-`release paper <https://arxiv.org/abs/1710.07629>`__
-and
-`press release <https://research.googleblog.com/2017/10/announcing-openfermion-open-source.html>`__
-about the project.
+`release paper <https://arxiv.org/abs/1710.07629>`__ about the project.
 
 
 Getting started
