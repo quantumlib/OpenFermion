@@ -95,6 +95,10 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             get_quadratic_hamiltonian(FermionOperator('3^ 2^'), n_qubits=3)
 
+    def test_get_quadratic_hamiltonian_not_hermitian(self):
+        with self.assertRaises(QuadraticHamiltonianError):
+            get_quadratic_hamiltonian(FermionOperator('1^ 0^'))
+
 
 class GetSparseOperatorQubitTest(unittest.TestCase):
 
