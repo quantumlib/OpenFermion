@@ -76,7 +76,8 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         self.hermitian_op_bad_term = FermionOperator('1^ 1 2', 3.)
         self.hermitian_op_bad_term += FermionOperator('2^ 1^ 1', 3.)
 
-        self.not_hermitian = FermionOperator('1^ 0^')
+        self.not_hermitian_1 = FermionOperator('2^ 0^')
+        self.not_hermitian_2 = FermionOperator('2 0')
 
     def test_get_quadratic_hamiltonian_hermitian(self):
         """Test a properly formed quadratic Hamiltonian."""
@@ -92,9 +93,11 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
             get_quadratic_hamiltonian(self.hermitian_op_bad_term)
 
     def test_get_quadratic_hamiltonian_not_hermitian(self):
-        """Test a non-Hermitian operator."""
+        """Test non-Hermitian operators."""
         with self.assertRaises(QuadraticHamiltonianError):
-            get_quadratic_hamiltonian(self.not_hermitian)
+            get_quadratic_hamiltonian(self.not_hermitian_1)
+        with self.assertRaises(QuadraticHamiltonianError):
+            get_quadratic_hamiltonian(self.not_hermitian_2)
 
     def test_get_quadratic_hamiltonian_bad_input(self):
         """Test improper input."""

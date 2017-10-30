@@ -24,6 +24,7 @@ from openfermion.ops import (FermionOperator,
                              normal_ordered,
                              InteractionOperator,
                              InteractionRDM,
+                             PolynomialTensor,
                              QuadraticHamiltonian,
                              QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
@@ -35,8 +36,8 @@ from openfermion.utils import (count_qubits,
 
 def get_sparse_operator(operator, n_qubits=None):
     """Map a Fermion, Qubit, or InteractionOperator to a SparseOperator."""
-    if isinstance(operator, InteractionOperator):
-        return get_sparse_interaction_operator(operator)
+    if isinstance(operator, PolynomialTensor):
+        return get_sparse_polynomial_tensor(operator)
     elif isinstance(operator, FermionOperator):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
@@ -45,8 +46,8 @@ def get_sparse_operator(operator, n_qubits=None):
         return qubit_operator_sparse(operator, n_qubits)
 
 
-def get_sparse_interaction_operator(interaction_operator):
-    fermion_operator = get_fermion_operator(interaction_operator)
+def get_sparse_polynomial_tensor(polynomial_tensor):
+    fermion_operator = get_fermion_operator(polynomial_tensor)
     sparse_operator = jordan_wigner_sparse(fermion_operator)
     return sparse_operator
 
