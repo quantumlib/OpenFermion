@@ -5,6 +5,7 @@ Ryan Babbush (Google)
 Jarrod McClean (Google)
 Ian Kivlichan (Harvard)
 Damian Steiger (ETH Zurich)
+Kevin Sung (University of Michigan)
 
 Dave Bacon (Google)
 Yudong Cao (Harvard)
@@ -21,7 +22,6 @@ Nicolas Sawaya (Harvard)
 Kanav Setia (Dartmouth)
 Hannah Sim (Harvard)
 Wei Sun (Google)
-Kevin Sung (University of Michigan)
 
 OpenFermion developed as a fork of FermiLib with some code from ProjectQ.
 Code was forked from development branches of FermiLib and ProjectQ on 9/1/2017.
