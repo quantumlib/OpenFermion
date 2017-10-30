@@ -82,3 +82,7 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         """Test checking whether Hamiltonian conserves particle number."""
         self.assertTrue(self.quad_ham_pc.conserves_particle_number())
         self.assertFalse(self.quad_ham_npc.conserves_particle_number())
+
+    def test_majorana_form(self):
+        """Test getting the Majorana form."""
+        majorana_matrix = self.quad_ham_npc.majorana_form()

@@ -40,10 +40,6 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     We separate the chemical potential \mu from M so that we can use it
     to adjust the expectation value of the total number of particles.
-
-    Attributes:
-        n_qubits: An int giving the number of qubits.
-        constant: A constant term in the operator given as a float.
     """
 
     def __init__(self, constant, hermitian_part,
@@ -71,15 +67,17 @@ class QuadraticHamiltonian(PolynomialTensor):
                     hermitian_part -
                     chemical_potential * numpy.eye(n_qubits))
 
-        # Initialize antisymmetric part
         if antisymmetric_part is None:
-            antisymmetric_part = numpy.zeros((n_qubits, n_qubits), complex)
+            super(QuadraticHamiltonian, self).__init__(
+                    {(): constant,
+                     (1, 0): combined_hermitian_part})
+        else:
+            super(QuadraticHamiltonian, self).__init__(
+                    {(): constant,
+                     (1, 0): combined_hermitian_part,
+                     (1, 1): .5 * antisymmetric_part,
+                     (0, 0): -.5 * antisymmetric_part.conj()})
 
-        super(QuadraticHamiltonian, self).__init__(
-                {(): constant,
-                 (1, 0): combined_hermitian_part,
-                 (1, 1): .5 * antisymmetric_part,
-                 (0, 0): -.5 * antisymmetric_part.conj()})
         self.chemical_potential = chemical_potential
 
     def combined_hermitian_part(self):
@@ -96,9 +94,61 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     def antisymmetric_part(self):
         """Return the antisymmetric part."""
-        return 2. * self.n_body_tensors[1, 1]
+        if (1, 1) in self.n_body_tensors:
+            return 2. * self.n_body_tensors[1, 1]
+        else:
+            return numpy.zeros((self.n_qubits, self.n_qubits), complex)
 
     def conserves_particle_number(self):
         """Return whether this Hamiltonian conserves particle number."""
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part()))
         return discrepancy < EQ_TOLERANCE
+
+    def majorana_form(self):
+        """Return the Majorana represention of the Hamiltonian.
+
+        Any quadratic Hamiltonian can be written in the form
+
+            constant + i / 2 \sum_{j, k} A_{jk} s_j s_k.
+
+        where the s_i are normalized Majorana fermion operators:
+
+            s_j = i / sqrt(2) (a^\dagger_j - a_j)
+            s_{j + n_qubits} = 1 / sqrt(2) (a^\dagger_j + a_j)
+
+        and A is a (2 * n_qubits) x (2 * n_qubits) real antisymmetric matrix.
+        This function returns the matrix A and the constant.
+        """
+        # Assemble Hermitian and antisymmetric parts into a block matrix
+        hermitian_part = self.hermitian_part()
+        antisymmetric_part = self.antisymmetric_part()
+        block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
+        block_matrix[:self.n_qubits, :self.n_qubits] = antisymmetric_part
+        block_matrix[
+                self.n_qubits:, self.n_qubits:] = -antisymmetric_part.conj()
+        block_matrix[:self.n_qubits, self.n_qubits:] = hermitian_part
+        block_matrix[self.n_qubits:, :self.n_qubits] = -hermitian_part.conj()
+
+        # Create the matrix that converts between fermionic ladder and
+        # Majorana bases
+        normalized_identity = (numpy.eye(self.n_qubits, dtype=complex) /
+                               numpy.sqrt(2.))
+        majorana_basis_change = numpy.eye(
+                2 * self.n_qubits, dtype=complex) / numpy.sqrt(2.)
+        majorana_basis_change[self.n_qubits:, self.n_qubits:] *= -1.j
+        majorana_basis_change[
+                :self.n_qubits, self.n_qubits:] = normalized_identity
+        majorana_basis_change[
+                self.n_qubits:, :self.n_qubits] = 1.j * normalized_identity
+
+        # Create the Majorana matrix
+        majorana_matrix = numpy.real(
+                -1.j *
+                majorana_basis_change.conj().dot(
+                    block_matrix.dot(
+                        majorana_basis_change.T.conj())))
+
+        # Compute the constant
+        constant = numpy.trace(hermitian_part) + self.n_body_tensors[()]
+
+        return majorana_matrix, constant
