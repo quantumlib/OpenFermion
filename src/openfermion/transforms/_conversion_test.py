@@ -23,6 +23,7 @@ from openfermion.ops import (FermionOperator,
                              number_operator,
                              QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
+from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.transforms import *
 from openfermion.utils import *
 
@@ -61,6 +62,38 @@ class GetInteractionOperatorTest(unittest.TestCase):
 
     def test_get_molecular_data(self):
         """Test conversion to MolecularData from InteractionOperator"""
+
+
+class GetQuadraticHamiltonianTest(unittest.TestCase):
+
+    def setUp(self):
+        self.hermitian_op = FermionOperator('1^ 1', 3.)
+        self.hermitian_op += FermionOperator('1^ 2', 3. + 4.j)
+        self.hermitian_op += FermionOperator('2^ 1', 3. - 4.j)
+        self.hermitian_op += FermionOperator('3^ 4^', 2. + 5.j)
+        self.hermitian_op += FermionOperator('4 3', 2. - 5.j)
+
+        self.hermitian_op_bad_term = FermionOperator('1^ 1 2', 3.)
+        self.hermitian_op_bad_term += FermionOperator('2^ 1^ 1', 3.)
+
+    def test_get_quadratic_hamiltonian_hermitian(self):
+        quadratic_op = get_quadratic_hamiltonian(self.hermitian_op)
+        fermion_operator = get_fermion_operator(quadratic_op)
+        fermion_operator = normal_ordered(fermion_operator)
+        self.assertTrue(
+                normal_ordered(self.hermitian_op).isclose(fermion_operator))
+
+    def test_get_quadratic_hamiltonian_hermitian_bad_term(self):
+        with self.assertRaises(QuadraticHamiltonianError):
+            get_quadratic_hamiltonian(self.hermitian_op_bad_term)
+
+    def test_get_quadratic_hamiltonian_bad_input(self):
+        with self.assertRaises(TypeError):
+            get_quadratic_hamiltonian('3')
+
+    def test_get_quadratic_hamiltonian_too_few_qubits(self):
+        with self.assertRaises(ValueError):
+            get_quadratic_hamiltonian(FermionOperator('3^ 2^'), n_qubits=3)
 
 
 class GetSparseOperatorQubitTest(unittest.TestCase):

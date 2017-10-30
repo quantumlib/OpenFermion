@@ -27,6 +27,7 @@ from openfermion.ops import (FermionOperator,
                              QuadraticHamiltonian,
                              QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
+from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.utils import (count_qubits,
                                jordan_wigner_sparse,
                                qubit_operator_sparse)
@@ -194,20 +195,50 @@ def get_quadratic_hamiltonian(fermion_operator,
             constant = coefficient
         elif len(term) == 2:
             ladder_type = [operator[1] for operator in term]
-            p, q = [operator[1] for operator in term]
+            p, q = [operator[0] for operator in term]
 
             if ladder_type == [1, 0]:
                 combined_hermitian_part[p, q] = coefficient
-            elif ladder_type  == [1, 1]:
-                antisymmetric_part[p, q] += coefficient
+            elif ladder_type == [1, 1]:
+                # Need to check that the corresponding [0, 0] term is present
+                conjugate_term = ((p, 0), (q, 0))
+                if conjugate_term not in fermion_operator.terms:
+                    raise QuadraticHamiltonianError(
+                            'FermionOperator does not map '
+                            'to QuadraticHamiltonian (not Hermitian).')
+                else:
+                    matching_coefficient = -fermion_operator.terms[
+                            conjugate_term].conjugate()
+                    discrepancy = abs(coefficient - matching_coefficient)
+                    if discrepancy > EQ_TOLERANCE:
+                        raise QuadraticHamiltonianError(
+                                'FermionOperator does not map '
+                                'to QuadraticHamiltonian (not Hermitian).')
+                antisymmetric_part[p, q] += .5 * coefficient
+                antisymmetric_part[q, p] -= .5 * coefficient
             else:
                 # ladder_type == [0, 0]
-                antisymmetric_part[p, q] -= coefficient.conj()
+                # Need to check that the corresponding [1, 1] term is present
+                conjugate_term = ((p, 1), (q, 1))
+                if conjugate_term not in fermion_operator.terms:
+                    raise QuadraticHamiltonianError(
+                            'FermionOperator does not map '
+                            'to QuadraticHamiltonian (not Hermitian).')
+                else:
+                    matching_coefficient = -fermion_operator.terms[
+                            conjugate_term].conjugate()
+                    discrepancy = abs(coefficient - matching_coefficient)
+                    if discrepancy > EQ_TOLERANCE:
+                        raise QuadraticHamiltonianError(
+                                'FermionOperator does not map '
+                                'to QuadraticHamiltonian (not Hermitian).')
+                antisymmetric_part[p, q] -= .5 * coefficient.conjugate()
+                antisymmetric_part[q, p] += .5 * coefficient.conjugate()
         else:
-            # Operator containst non-quadratic terms
-            raise InteractionOperatorError('FermionOperator does not map '
-                                           'to InteractionOperator'
-                                           '(contains non-quadratic terms).')
+            # Operator contains non-quadratic terms
+            raise QuadraticHamiltonianError('FermionOperator does not map '
+                                            'to QuadraticHamiltonian'
+                                            '(contains non-quadratic terms).')
 
     # Compute Hermitian part
     if not chemical_potential:
@@ -219,16 +250,16 @@ def get_quadratic_hamiltonian(fermion_operator,
     # Check that the operator is Hermitian
     difference = hermitian_part - hermitian_part.T.conj()
     discrepancy = numpy.max(numpy.abs(difference))
-    if discrepancy < EQ_TOLERANCE:
-        raise InteractionOperatorError('FermionOperator does not map '
-                                       'to QuadraticHamiltonian'
-                                       '(not Hermitian).')
+    if discrepancy > EQ_TOLERANCE:
+        raise QuadraticHamiltonianError(
+                'FermionOperator does not map '
+                'to QuadraticHamiltonian (not Hermitian).')
     difference = antisymmetric_part + antisymmetric_part.T
     discrepancy = numpy.max(numpy.abs(difference))
-    if discrepancy < EQ_TOLERANCE:
-        raise InteractionOperatorError('FermionOperator does not map '
-                                       'to QuadraticHamiltonian'
-                                       '(not Hermitian).')
+    if discrepancy > EQ_TOLERANCE:
+        raise QuadraticHamiltonianError(
+                'FermionOperator does not map '
+                'to QuadraticHamiltonian (not Hermitian).')
 
     # Form QuadraticHamiltonian and return.
     discrepancy = numpy.max(numpy.abs(antisymmetric_part))
