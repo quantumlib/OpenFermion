@@ -18,14 +18,56 @@ import unittest
 from scipy.linalg import qr
 
 from openfermion.config import EQ_TOLERANCE
+from openfermion.ops import QuadraticHamiltonian
 from openfermion.utils import (fermionic_gaussian_decomposition,
-                               givens_decomposition)
+                               givens_decomposition,
+                               ground_state_preparation_circuit)
 from openfermion.utils._slater_determinants import (
         antisymmetric_canonical_form,
         diagonalizing_fermionic_unitary,
         double_givens_rotate,
         givens_rotate,
         swap_rows)
+
+
+class GroundStatePreparationCircuitTest(unittest.TestCase):
+
+    def setUp(self):
+        self.n_qubits = 5
+        self.constant = 1.7
+        self.chemical_potential = 2.
+
+        # Obtain random Hermitian and antisymmetric matrices
+        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat = rand_mat_A + 1.j * rand_mat_B
+        self.hermitian_mat = rand_mat + rand_mat.T.conj()
+        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat = rand_mat_A + 1.j * rand_mat_B
+        self.antisymmetric_mat = rand_mat - rand_mat.T
+
+        self.combined_hermitian = (
+                self.hermitian_mat -
+                self.chemical_potential * numpy.eye(self.n_qubits))
+
+        # Initialize a particle-number-conserving Hamiltonian
+        self.quad_ham_pc = QuadraticHamiltonian(
+                self.constant, self.hermitian_mat)
+
+        # Initialize a non-particle-number-conserving Hamiltonian
+        self.quad_ham_npc = QuadraticHamiltonian(
+                self.constant, self.hermitian_mat, self.antisymmetric_mat,
+                self.chemical_potential)
+
+    def test_no_error(self):
+        """Test that the procedure runs without error."""
+        # Test a particle-number-conserving Hamiltonian
+        circuit_description = (
+                ground_state_preparation_circuit(self.quad_ham_pc))
+        # Test a non-particle-number-conserving Hamiltonian
+        circuit_description = (
+                ground_state_preparation_circuit(self.quad_ham_npc))
 
 
 class GivensDecompositionTest(unittest.TestCase):

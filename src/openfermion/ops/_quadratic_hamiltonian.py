@@ -17,7 +17,7 @@ from __future__ import absolute_import
 import numpy
 
 from openfermion.config import EQ_TOLERANCE
-from openfermion.ops import PolynomialTensor
+from openfermion.ops import FermionOperator, PolynomialTensor
 
 
 class QuadraticHamiltonianError(Exception):
@@ -67,15 +67,17 @@ class QuadraticHamiltonian(PolynomialTensor):
                     hermitian_part -
                     chemical_potential * numpy.eye(n_qubits))
 
-        # Initialize antisymmetric part
         if antisymmetric_part is None:
-            antisymmetric_part = numpy.zeros((n_qubits, n_qubits), complex)
+            super(QuadraticHamiltonian, self).__init__(
+                    {(): constant,
+                     (1, 0): combined_hermitian_part})
+        else:
+            super(QuadraticHamiltonian, self).__init__(
+                    {(): constant,
+                     (1, 0): combined_hermitian_part,
+                     (1, 1): .5 * antisymmetric_part,
+                     (0, 0): -.5 * antisymmetric_part.conj()})
 
-        super(QuadraticHamiltonian, self).__init__(
-                {(): constant,
-                 (1, 0): combined_hermitian_part,
-                 (1, 1): .5 * antisymmetric_part,
-                 (0, 0): -.5 * antisymmetric_part.conj()})
         self.chemical_potential = chemical_potential
 
     def combined_hermitian_part(self):
@@ -92,9 +94,100 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     def antisymmetric_part(self):
         """Return the antisymmetric part."""
-        return 2. * self.n_body_tensors[1, 1].copy()
+        if (1, 1) in self.n_body_tensors:
+            return 2. * self.n_body_tensors[1, 1].copy()
+        else:
+            return numpy.zeros((self.n_qubits, self.n_qubits), complex)
 
     def conserves_particle_number(self):
         """Return whether this Hamiltonian conserves particle number."""
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part()))
         return discrepancy < EQ_TOLERANCE
+
+    def majorana_form(self):
+        """Return the Majorana represention of the Hamiltonian.
+
+        Any quadratic Hamiltonian can be written in the form
+
+            constant + i / 2 \sum_{j, k} A_{jk} s_j s_k.
+
+        where the s_i are normalized Majorana fermion operators:
+
+            s_j = i / sqrt(2) (a^\dagger_j - a_j)
+            s_{j + n_qubits} = 1 / sqrt(2) (a^\dagger_j + a_j)
+
+        and A is a (2 * n_qubits) x (2 * n_qubits) real antisymmetric matrix.
+        This function returns the matrix A and the constant.
+        """
+        hermitian_part = self.combined_hermitian_part()
+        antisymmetric_part = self.antisymmetric_part()
+
+        # Compute the Majorana matrix using block matrix manipulations
+        majorana_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
+        # Set upper left block
+        majorana_matrix[:self.n_qubits, :self.n_qubits] = numpy.real(-.5j * (
+                hermitian_part - hermitian_part.conj() +
+                antisymmetric_part - antisymmetric_part.conj()))
+        # Set upper right block
+        majorana_matrix[:self.n_qubits, self.n_qubits:] = numpy.real(.5 * (
+                hermitian_part + hermitian_part.conj() -
+                antisymmetric_part - antisymmetric_part.conj()))
+        # Set lower left block
+        majorana_matrix[self.n_qubits:, :self.n_qubits] = numpy.real(-.5 * (
+                hermitian_part + hermitian_part.conj() +
+                antisymmetric_part + antisymmetric_part.conj()))
+        # Set lower right block
+        majorana_matrix[self.n_qubits:, self.n_qubits:] = numpy.real(-.5j * (
+                hermitian_part - hermitian_part.conj() -
+                antisymmetric_part + antisymmetric_part.conj()))
+
+        # Compute the constant
+        majorana_constant = (.5 * numpy.real(numpy.trace(hermitian_part)) +
+                             self.n_body_tensors[()])
+
+        return majorana_matrix, majorana_constant
+
+
+def majorana_operator(term=None, coefficient=1.):
+    """Initialize a Majorana operator.
+
+    Args:
+        term(tuple): The first element of the tuple indicates the mode
+            on which the Majorana operator acts, starting from zero.
+            The second element of the tuple is an integer, either 1 or 0,
+            indicating which type of Majorana operator it is:
+                type 1: 1 / sqrt(2) (a^\dagger_j + a_j)
+                type 0: i / sqrt(2) (a^\dagger_j - a_j)
+            where the a^\dagger_j and a_j are the usual fermionic ladder
+            operators.
+            Default will result in the zero operator.
+        coefficient(complex or float, optional): The coefficient of the term.
+            Default value is 1.0.
+
+    Returns:
+        FermionOperator
+    """
+    if not isinstance(coefficient, (int, float, complex)):
+        raise ValueError('Coefficient must be scalar.')
+
+    if term is None:
+        # Return zero operator
+        return FermionOperator()
+    elif isinstance(term, tuple):
+        mode, operator_type = term
+        if operator_type == 1:
+            majorana_op = FermionOperator(
+                    ((mode, 1),), coefficient / numpy.sqrt(2.))
+            majorana_op += FermionOperator(
+                    ((mode, 0),), coefficient / numpy.sqrt(2.))
+        elif operator_type == 0:
+            majorana_op = FermionOperator(
+                    ((mode, 1),), 1.j * coefficient / numpy.sqrt(2.))
+            majorana_op -= FermionOperator(
+                    ((mode, 0),), 1.j * coefficient / numpy.sqrt(2.))
+        else:
+            raise ValueError('Operator specified incorrectly.')
+        return majorana_op
+    # Invalid input.
+    else:
+        raise ValueError('Operator specified incorrectly.')
