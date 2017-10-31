@@ -50,6 +50,8 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         # Slater determinant
         energies, diagonalizing_unitary = numpy.linalg.eigh(
                 hermitian_matrix)
+        # We get the ground state by filling the orbitals that have
+        # negative energy
         num_negative_energies = numpy.count_nonzero(
                 energies < -EQ_TOLERANCE)
         slater_determinant_matrix = diagonalizing_unitary.T[
