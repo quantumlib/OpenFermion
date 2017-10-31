@@ -459,19 +459,19 @@ def givens_matrix_elements(a, b):
     """
     # Handle case that a is zero
     if abs(a) < EQ_TOLERANCE:
-        c = 1.
-        s = 0.
+        cosine = 1.
+        sine = 0.
         phase = 1.
     # Handle case that b is zero and a is nonzero
     elif abs(b) < EQ_TOLERANCE:
-        c = 0.
-        s = 1.
+        cosine = 0.
+        sine = 1.
         phase = 1.
     # Handle case that a and b are both nonzero
     else:
         denominator = numpy.sqrt(abs(a) ** 2 + abs(b) ** 2)
-        c = abs(b) / denominator
-        s = abs(a) / denominator
+        cosine = abs(b) / denominator
+        sine = abs(a) / denominator
         sign_b = b / abs(b)
         sign_a = a / abs(a)
         phase = sign_a * sign_b.conjugate()
@@ -480,8 +480,8 @@ def givens_matrix_elements(a, b):
             phase = numpy.real(phase)
 
     # Construct matrix and return
-    givens_rotation = numpy.array([[c, -phase * s],
-                                  [s, phase * c]])
+    givens_rotation = numpy.array([[cosine, -phase * sine],
+                                  [sine, phase * cosine]])
     return givens_rotation
 
 
