@@ -37,7 +37,7 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
             is either the string 'pht', indicating a particle-hole
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
-            of qubits i and j by angles theta and phi.
+            of modes i and j by angles theta and phi.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
