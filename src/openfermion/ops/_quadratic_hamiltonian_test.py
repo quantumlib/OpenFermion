@@ -128,6 +128,23 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
                 self.quad_ham_npc.ground_state_preparation_circuit())
 
 
+class MajoranaOperatorTest(unittest.TestCase):
+
+    def test_none_term(self):
+        majorana_op = majorana_operator()
+        self.assertTrue(majorana_operator().isclose(FermionOperator()))
+
+    def test_bad_coefficient(self):
+        with self.assertRaises(ValueError):
+            majorana_op = majorana_operator((1, 1), 'a')
+
+    def test_bad_term(self):
+        with self.assertRaises(ValueError):
+            majorana_op = majorana_operator((2, 2))
+        with self.assertRaises(ValueError):
+            majorana_op = majorana_operator('a')
+
+
 class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
 
     def test_bad_dimensions(self):
