@@ -266,6 +266,8 @@ def givens_decomposition(unitary_rows):
 
     # Compute the decomposition of current_matrix into Givens rotations
     givens_rotations = list()
+    # If m = n (the matrix is square) then we don't need to perform any
+    # Givens rotations!
     if m != n:
         # Get the maximum number of simultaneous rotations that
         # will be performed
