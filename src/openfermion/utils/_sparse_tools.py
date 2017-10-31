@@ -197,14 +197,11 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
 
 
 def jw_hartree_fock_state(n_electrons, n_orbitals):
-    """Function to product Hartree-Fock state in JW representation."""
-    occupied = scipy.sparse.csr_matrix([[0], [1]], dtype=float)
-    psi = 1.
-    unoccupied = scipy.sparse.csr_matrix([[1], [0]], dtype=float)
-    for orbital in range(n_electrons):
-        psi = scipy.sparse.kron(psi, occupied, 'csr')
-    for orbital in range(n_orbitals - n_electrons):
-        psi = scipy.sparse.kron(psi, unoccupied, 'csr')
+    """Function to produce Hartree-Fock state in JW representation."""
+    one_index = sum([2 ** (n_orbitals - i - 1) for i in range(n_electrons)])
+    psi = scipy.sparse.csr_matrix(([1.], ([one_index], [0])),
+                                  shape=(2 ** n_orbitals, 1),
+                                  dtype=float)
     return psi
 
 
