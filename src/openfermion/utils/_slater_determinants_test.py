@@ -18,15 +18,56 @@ import unittest
 from scipy.linalg import qr
 
 from openfermion.config import EQ_TOLERANCE
-from openfermion.ops._quadratic_hamiltonian import (
-        antisymmetric_canonical_form,
-        diagonalizing_fermionic_unitary)
+from openfermion.ops import QuadraticHamiltonian
 from openfermion.utils import (fermionic_gaussian_decomposition,
-                               givens_decomposition)
+                               givens_decomposition,
+                               ground_state_preparation_circuit)
 from openfermion.utils._slater_determinants import (
+        antisymmetric_canonical_form,
+        diagonalizing_fermionic_unitary,
         double_givens_rotate,
         givens_rotate,
         swap_rows)
+
+
+class GroundStatePreparationCircuitTest(unittest.TestCase):
+
+    def setUp(self):
+        self.n_qubits = 5
+        self.constant = 1.7
+        self.chemical_potential = 2.
+
+        # Obtain random Hermitian and antisymmetric matrices
+        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat = rand_mat_A + 1.j * rand_mat_B
+        self.hermitian_mat = rand_mat + rand_mat.T.conj()
+        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat = rand_mat_A + 1.j * rand_mat_B
+        self.antisymmetric_mat = rand_mat - rand_mat.T
+
+        self.combined_hermitian = (
+                self.hermitian_mat -
+                self.chemical_potential * numpy.eye(self.n_qubits))
+
+        # Initialize a particle-number-conserving Hamiltonian
+        self.quad_ham_pc = QuadraticHamiltonian(
+                self.constant, self.hermitian_mat)
+
+        # Initialize a non-particle-number-conserving Hamiltonian
+        self.quad_ham_npc = QuadraticHamiltonian(
+                self.constant, self.hermitian_mat, self.antisymmetric_mat,
+                self.chemical_potential)
+
+    def test_no_error(self):
+        """Test that the procedure runs without error."""
+        # Test a particle-number-conserving Hamiltonian
+        circuit_description = (
+                ground_state_preparation_circuit(self.quad_ham_pc))
+        # Test a non-particle-number-conserving Hamiltonian
+        circuit_description = (
+                ground_state_preparation_circuit(self.quad_ham_npc))
 
 
 class GivensDecompositionTest(unittest.TestCase):
@@ -770,3 +811,74 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         # Assert that W and D are the same
         for i in numpy.ndindex((n, 2 * n)):
             self.assertAlmostEqual(diag[i], product[i])
+
+
+class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
+
+    def test_bad_dimensions(self):
+        n, p = (3, 4)
+        ones_mat = numpy.ones((n, p))
+        with self.assertRaises(ValueError):
+            ferm_unitary = diagonalizing_fermionic_unitary(ones_mat)
+
+    def test_not_antisymmetric(self):
+        n = 4
+        ones_mat = numpy.ones((n, n))
+        with self.assertRaises(ValueError):
+            ferm_unitary = diagonalizing_fermionic_unitary(ones_mat)
+
+    def test_n_equals_3(self):
+        n = 3
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+
+        # Get the diagonalizing fermionic unitary
+        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
+        lower_unitary = ferm_unitary[n:]
+        lower_left = lower_unitary[:, :n]
+        lower_right = lower_unitary[:, n:]
+
+        # Check that lower_left and lower_right satisfy the constraints
+        # necessary for the transformed fermionic operators to satisfy
+        # the fermionic anticommutation relations
+        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj()) +
+                               lower_right.dot(lower_right.T.conj()))
+        constraint_matrix_2 = (lower_left.dot(lower_right.T) +
+                               lower_right.dot(lower_left.T))
+
+        identity = numpy.eye(n, dtype=complex)
+        for i in numpy.ndindex((n, n)):
+            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
+            self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+
+class AntisymmetricCanonicalFormTest(unittest.TestCase):
+
+    def test_equality(self):
+        """Test that the decomposition is valid."""
+        n = 7
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        canonical, orthogonal = antisymmetric_canonical_form(
+                antisymmetric_matrix)
+        result_matrix = orthogonal.dot(antisymmetric_matrix.dot(orthogonal.T))
+        for i in numpy.ndindex(result_matrix.shape):
+            self.assertAlmostEqual(result_matrix[i], canonical[i])
+
+    def test_canonical(self):
+        """Test that the returned canonical matrix has the right form."""
+        n = 7
+        # Obtain a random antisymmetric matrix
+        rand_mat = numpy.random.randn(2 * n, 2 * n)
+        antisymmetric_matrix = rand_mat - rand_mat.T
+        canonical, orthogonal = antisymmetric_canonical_form(
+                antisymmetric_matrix)
+        for i in range(2 * n):
+            for j in range(2 * n):
+                if i < n and j == n + i:
+                    self.assertTrue(canonical[i, j] > -EQ_TOLERANCE)
+                elif i >= n and j == i - n:
+                    self.assertTrue(canonical[i, j] < -EQ_TOLERANCE)
+                else:
+                    self.assertAlmostEqual(canonical[i, j], 0.)

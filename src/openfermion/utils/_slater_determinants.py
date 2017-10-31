@@ -15,8 +15,51 @@ Slater determinants and fermionic Gaussian states."""
 from __future__ import absolute_import
 
 import numpy
+from scipy.linalg import schur
 
 from openfermion.config import EQ_TOLERANCE
+from openfermion.ops import QuadraticHamiltonian
+
+
+def ground_state_preparation_circuit(quadratic_hamiltonian):
+    """Obtain a description of a circuit which prepares the ground state
+    of a quadratic Hamiltonian."""
+    if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
+        raise ValueError('Input must be an instance of QuadraticHamiltonian.')
+
+    if quadratic_hamiltonian.conserves_particle_number():
+        # The Hamiltonian conserves particle number, so we don't need
+        # to use the most general procedure.
+        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
+        # Get the unitary rows which represent the ground state
+        # Slater determinant
+        energies, diagonalizing_unitary = numpy.linalg.eigh(
+                hermitian_matrix)
+        num_negative_energies = numpy.count_nonzero(
+                energies < -EQ_TOLERANCE)
+        slater_determinant_matrix = diagonalizing_unitary.T[
+                :num_negative_energies]
+        # Get the circuit description
+        left_unitary, decomposition, diagonal = givens_decomposition(
+                slater_determinant_matrix)
+        circuit_description = decomposition
+    else:
+        # The Hamiltonian does not conserve particle number, so we
+        # need to use the most general procedure.
+        majorana_matrix, majorana_constant = (
+                quadratic_hamiltonian.majorana_form())
+        # Get the unitary rows which represent the ground state
+        # Slater determinant
+        diagonalizing_unitary = diagonalizing_fermionic_unitary(
+                majorana_matrix)
+        slater_determinant_matrix = diagonalizing_unitary[
+                quadratic_hamiltonian.n_qubits:]
+        # Get the circuit description
+        left_unitary, decomposition, diagonal = (
+                fermionic_gaussian_decomposition(
+                    slater_determinant_matrix))
+        circuit_description = decomposition
+    return circuit_description
 
 
 def fermionic_gaussian_decomposition(unitary_rows):
@@ -273,6 +316,109 @@ def givens_decomposition(unitary_rows):
     diagonal = current_matrix.diagonal()
 
     return left_unitary, givens_rotations, diagonal
+
+
+def diagonalizing_fermionic_unitary(antisymmetric_matrix):
+    """Compute the unitary that diagonalizes a quadratic Hamiltonian.
+
+    The input matrix represents a quadratic Hamiltonian in the Majorana basis.
+    The output matrix is a unitary that represents a transformation (mixing)
+    of the fermionic ladder operators. We use the convention that the
+    creation operators are listed before the annihilation operators.
+    The returned unitary has additional structure which ensures
+    that the transformed ladder operators also satisfy the fermionic
+    anticommutation relations.
+
+    Args:
+        antisymmetric_matrix(ndarray): A (2 * n_qubits) x (2 * n_qubits)
+            antisymmetric matrix representing a quadratic Hamiltonian in the
+            Majorana basis.
+    Returns:
+        diagonalizing_unitary(ndarray): A (2 * n_qubits) x (2 * n_qubits)
+            unitary matrix representing a transformation of the fermionic
+            ladder operators.
+    """
+    m, n = antisymmetric_matrix.shape
+    n_qubits = n // 2
+
+    # Get the orthogonal transformation that puts antisymmetric_matrix
+    # into canonical form
+    canonical, orthogonal = antisymmetric_canonical_form(antisymmetric_matrix)
+
+    # Create the matrix that converts between fermionic ladder and
+    # Majorana bases
+    normalized_identity = numpy.eye(n_qubits, dtype=complex) / numpy.sqrt(2.)
+    majorana_basis_change = numpy.eye(
+            2 * n_qubits, dtype=complex) / numpy.sqrt(2.)
+    majorana_basis_change[n_qubits:, n_qubits:] *= -1.j
+    majorana_basis_change[:n_qubits, n_qubits:] = normalized_identity
+    majorana_basis_change[n_qubits:, :n_qubits] = 1.j * normalized_identity
+
+    # Compute the unitary and return
+    diagonalizing_unitary = majorana_basis_change.T.conj().dot(
+            orthogonal.dot(majorana_basis_change))
+
+    return diagonalizing_unitary
+
+
+def antisymmetric_canonical_form(antisymmetric_matrix):
+    """Compute the canonical form of an antisymmetric matrix.
+
+    The input is a real, antisymmetric n x n matrix A, where n is even.
+    Its canonical form is::
+
+        A = R^T C R
+
+    where R is a real, orthogonal matrix and C has the form::
+
+        [  0     D ]
+        [ -D     0 ]
+
+    where D is a diagonal matrix with nonnegative entries.
+
+    Args:
+        antisymmetric_matrix(ndarray): An antisymmetric matrix with even
+            dimension.
+
+    Returns:
+        canonical(ndarray): The canonical form C of antisymmetric_matrix
+        orthogonal(ndarray): The orthogonal transformation R.
+    """
+    m, n = antisymmetric_matrix.shape
+
+    if m != n or n % 2 != 0:
+        raise ValueError('The input matrix must be square with even '
+                         'dimension.')
+
+    # Check that input matrix is antisymmetric
+    matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
+    maxval = numpy.max(numpy.abs(matrix_plus_transpose))
+    if maxval > EQ_TOLERANCE:
+        raise ValueError('The input matrix must be antisymmetric.')
+
+    # Compute Schur decomposition
+    canonical, orthogonal = schur(antisymmetric_matrix, output='real')
+
+    # The returned form is block diagonal; we need to permute rows and columns
+    # to put it into the form we want
+    num_blocks = n // 2
+    for i in range(1, num_blocks, 2):
+        swap_rows(canonical, i, num_blocks + i - 1)
+        swap_columns(canonical, i, num_blocks + i - 1)
+        swap_columns(orthogonal, i, num_blocks + i - 1)
+        if num_blocks % 2 != 0:
+            swap_rows(canonical, num_blocks - 1, num_blocks + i)
+            swap_columns(canonical, num_blocks - 1, num_blocks + i)
+            swap_columns(orthogonal, num_blocks - 1, num_blocks + i)
+
+    # Now we permute so that the upper right block is non-negative
+    for i in range(num_blocks):
+        if canonical[i, num_blocks + i] < -EQ_TOLERANCE:
+            swap_rows(canonical, i, num_blocks + i)
+            swap_columns(canonical, i, num_blocks + i)
+            swap_columns(orthogonal, i, num_blocks + i)
+
+    return canonical, orthogonal.T
 
 
 def givens_matrix_elements(a, b):
