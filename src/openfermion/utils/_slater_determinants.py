@@ -16,6 +16,7 @@ from __future__ import absolute_import
 
 import numpy
 from scipy.linalg import schur
+from scipy.sparse import csc_matrix, eye, kron
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
@@ -533,6 +534,32 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
         # Rotate cols n + i and n + j
         givens_rotate(operator[:, n:], givens_rotation.conj(), i, j,
                       which='col')
+
+def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
+    """Return the matrix (acting on a full wavefunction) that performs a
+    Givens rotation of modes i and j in the Jordan-Wigner encoding."""
+    if j != i + 1:
+        raise ValueError('Only adjacent modes can be rotated.')
+    if j > n - 1:
+        raise ValueError('Too few qubits requested.')
+    cosine = numpy.cos(theta)
+    sine = numpy.sin(theta)
+    phase = numpy.exp(1.j * phi)
+    rotation_matrix = csc_matrix(
+            ([1., phase * cosine, sine, -phase * sine, cosine, 1.],
+                (0, 1, 1, 2, 2, 3), (0, 1, 1, 2, 2, 3)),
+            shape=(4, 4))
+    if i > 0:
+        right_eye = eye(2 ** i)
+        left_eye = eye(2 ** (n_qubits - i - 1))
+    else:
+        right_eye = None
+        left_eye = eye(2 ** (n_qubits - 2))
+    if right_eye:
+        givens_matrix = kron(right_eye, kron(rotation_matrix, left_eye))
+    else:
+        givens_matrix = kron(rotation_matrix, left_eye)
+    return givens_matrix
 
 
 def swap_rows(M, i, j):
