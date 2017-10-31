@@ -37,7 +37,7 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
             is either the string 'pht', indicating a particle-hole
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
-            of qubits i and j by angles theta and phi.
+            of modes i and j by angles theta and phi.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
@@ -50,6 +50,8 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         # Slater determinant
         energies, diagonalizing_unitary = numpy.linalg.eigh(
                 hermitian_matrix)
+        # We get the ground state by filling the orbitals that have
+        # negative energy
         num_negative_energies = numpy.count_nonzero(
                 energies < -EQ_TOLERANCE)
         slater_determinant_matrix = diagonalizing_unitary.T[
@@ -264,6 +266,8 @@ def givens_decomposition(unitary_rows):
 
     # Compute the decomposition of current_matrix into Givens rotations
     givens_rotations = list()
+    # If m = n (the matrix is square) then we don't need to perform any
+    # Givens rotations!
     if m != n:
         # Get the maximum number of simultaneous rotations that
         # will be performed
@@ -471,10 +475,13 @@ def givens_matrix_elements(a, b):
         sign_b = b / abs(b)
         sign_a = a / abs(a)
         phase = sign_a * sign_b.conjugate()
+        # If phase is a real number, convert it to a float
+        if numpy.isreal(phase):
+            phase = numpy.real(phase)
 
     # Construct matrix and return
     givens_rotation = numpy.array([[c, -phase * s],
-                                  [s, phase * c]], dtype=complex)
+                                  [s, phase * c]])
     return givens_rotation
 
 
