@@ -39,6 +39,11 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
             of modes i and j by angles theta and phi.
+        num_particles(int):
+            The number of particles to start with. This describes the
+            initial state that the circuit should be applied to: it should
+            be a Slater determinant (in the original basis) with the
+            first num_particles orbitals filled.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
@@ -61,6 +66,7 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         left_unitary, decomposition, diagonal = givens_decomposition(
                 slater_determinant_matrix)
         circuit_description = decomposition
+        num_particles = num_negative_energies
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
@@ -77,7 +83,34 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
                 fermionic_gaussian_decomposition(
                     slater_determinant_matrix))
         circuit_description = decomposition
-    return circuit_description
+        num_particles = 0
+    return circuit_description, num_particles
+
+
+def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
+    """Get the ground state of a quadratic hamiltonian as a sparse array
+    using the Jordan-Wigner encoding."""
+    n_qubits = quadratic_hamiltonian.n_qubits
+    # Obtain the circuit that prepares the ground state
+    circuit_description, num_particles = ground_state_preparation_circuit(
+            quadratic_hamiltonian)
+    # Initialize the starting state
+    one_index = sum([2 ** (n_qubits - i - 1) for i in range(num_particles)])
+    state = csc_matrix(([1.], ([one_index], [0])),
+                       shape=(2 ** n_qubits, 1))
+    # Apply the circuit
+    particle_hole_transformation = (
+            jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+    for parallel_ops in circuit_description:
+        for op in parallel_ops:
+            if op == 'pht':
+                state = particle_hole_transformation.dot(state)
+            else:
+                i, j, theta, phi = op
+                state = jw_sparse_givens_rotation(
+                            i, j, theta, phi, n_qubits).dot(state)
+
+    return state
 
 
 def fermionic_gaussian_decomposition(unitary_rows):
@@ -535,31 +568,58 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
         givens_rotate(operator[:, n:], givens_rotation.conj(), i, j,
                       which='col')
 
+
 def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
     """Return the matrix (acting on a full wavefunction) that performs a
     Givens rotation of modes i and j in the Jordan-Wigner encoding."""
     if j != i + 1:
         raise ValueError('Only adjacent modes can be rotated.')
-    if j > n - 1:
+    if j > n_qubits - 1:
         raise ValueError('Too few qubits requested.')
     cosine = numpy.cos(theta)
     sine = numpy.sin(theta)
     phase = numpy.exp(1.j * phi)
+
+    # Create the two-qubit rotation matrix
     rotation_matrix = csc_matrix(
             ([1., phase * cosine, sine, -phase * sine, cosine, 1.],
-                (0, 1, 1, 2, 2, 3), (0, 1, 1, 2, 2, 3)),
+                ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
             shape=(4, 4))
-    if i > 0:
-        right_eye = eye(2 ** i)
-        left_eye = eye(2 ** (n_qubits - i - 1))
+
+    if i == 0:
+        # The first qubit needs to be acted on
+        left_eye = None
     else:
+        # The first qubit does not need to be acted on
+        left_eye = eye(2 ** i)
+    if j == n_qubits - 1:
+        # The last qubit needs to be acted on
         right_eye = None
-        left_eye = eye(2 ** (n_qubits - 2))
-    if right_eye:
-        givens_matrix = kron(right_eye, kron(rotation_matrix, left_eye))
     else:
-        givens_matrix = kron(rotation_matrix, left_eye)
+        # The last qubit does not need to be acted on
+        right_eye = eye(2 ** (n_qubits - i - 2))
+
+    # Construct the matrix and return
+    if left_eye is None and right_eye is None:
+        givens_matrix = rotation_matrix
+    elif left_eye is None and right_eye is not None:
+        givens_matrix = kron(rotation_matrix, right_eye)
+    elif right_eye is None:
+        givens_matrix = kron(left_eye, rotation_matrix)
+    else:
+        givens_matrix = kron(left_eye, kron(rotation_matrix, right_eye))
+
     return givens_matrix
+
+
+def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
+    """Return the matrix (acting on a full wavefunction) that performs a
+    particle-hole transformation on the last mode in the Jordan-Wigner
+    encoding.
+    """
+    sigma_x = csc_matrix(([1., 1.], ((0, 1), (1, 0))), shape=(2, 2))
+    left_eye = eye(2 ** (n_qubits - 1))
+    return kron(left_eye, sigma_x)
 
 
 def swap_rows(M, i, j):
