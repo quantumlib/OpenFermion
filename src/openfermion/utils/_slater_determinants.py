@@ -39,11 +39,11 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
             of modes i and j by angles theta and phi.
-        num_particles(int):
-            The number of particles to start with. This describes the
+        n_electrons(int):
+            The number of electrons to start with. This describes the
             initial state that the circuit should be applied to: it should
             be a Slater determinant (in the original basis) with the
-            first num_particles orbitals filled.
+            first n_electrons orbitals filled.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
