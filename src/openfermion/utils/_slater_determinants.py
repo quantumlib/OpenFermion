@@ -23,7 +23,22 @@ from openfermion.ops import QuadraticHamiltonian
 
 def ground_state_preparation_circuit(quadratic_hamiltonian):
     """Obtain a description of a circuit which prepares the ground state
-    of a quadratic Hamiltonian."""
+    of a quadratic Hamiltonian.
+
+    Args:
+        quadratic_hamiltonian(QuadraticHamiltonian):
+            The Hamiltonian whose ground state is desired.
+
+    Returns:
+        circuit_description(list[tuple]):
+            A list of operations describing the circuit. Each operation
+            is a tuple of objects describing elementary operations that
+            can be performed in parallel. Each elementary operation
+            is either the string 'pht', indicating a particle-hole
+            transformation on the last fermionic mode, or a tuple of
+            the form (i, j, theta, phi), indicating a Givens rotation
+            of qubits i and j by angles theta and phi.
+    """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
 
@@ -91,7 +106,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
     something like [('pht', ), (G_1, ), ('pht', G_2), ... ].
     The objects within a tuple are either the string 'pht', which indicates
     a particle-hole transformation on the last fermionic mode, or a tuple
-    of the form (i, j, theta, phi), which indicates a Givens roation
+    of the form (i, j, theta, phi), which indicates a Givens rotation
     of rows i and j by angles theta and phi.
 
     Args:
