@@ -19,6 +19,8 @@ from scipy.linalg import schur
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import FermionOperator, PolynomialTensor
+from openfermion.utils import (givens_decomposition,
+                               fermionic_gaussian_decomposition)
 from openfermion.utils._slater_determinants import swap_columns, swap_rows
 
 
@@ -148,6 +150,41 @@ class QuadraticHamiltonian(PolynomialTensor):
                              self.n_body_tensors[()])
 
         return majorana_matrix, majorana_constant
+
+    def ground_state_preparation_circuit(self):
+        """Return a description of a circuit which prepares the ground state
+        of the Hamiltonian, which is a Slater determinant."""
+        if self.conserves_particle_number():
+            # The Hamiltonian conserves particle number, so we don't need
+            # to use the most general procedure.
+            hermitian_matrix = self.combined_hermitian_part()
+            # Get the unitary rows which represent the ground state
+            # Slater determinant
+            energies, diagonalizing_unitary = numpy.linalg.eigh(
+                    hermitian_matrix)
+            num_negative_energies = numpy.count_nonzero(
+                    energies < -EQ_TOLERANCE)
+            slater_determinant_matrix = diagonalizing_unitary.T[
+                    :num_negative_energies]
+            # Get the circuit description
+            left_unitary, decomposition, diagonal = givens_decomposition(
+                    slater_determinant_matrix)
+            circuit_description = decomposition
+        else:
+            # The Hamiltonian does not conserve particle number, so we
+            # need to use the most general procedure.
+            majorana_matrix, majorana_constant = self.majorana_form()
+            # Get the unitary rows which represent the ground state
+            # Slater determinant
+            diagonalizing_unitary = diagonalizing_fermionic_unitary(
+                    majorana_matrix)
+            slater_determinant_matrix = diagonalizing_unitary[self.n_qubits:]
+            # Get the circuit description
+            left_unitary, decomposition, diagonal = (
+                    fermionic_gaussian_decomposition(
+                        slater_determinant_matrix))
+            circuit_description = decomposition
+        return circuit_description
 
 
 def majorana_operator(term=None, coefficient=1.):

@@ -35,9 +35,13 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         self.chemical_potential = 2.
 
         # Obtain random Hermitian and antisymmetric matrices
-        rand_mat = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat = rand_mat_A + 1.j * rand_mat_B
         self.hermitian_mat = rand_mat + rand_mat.T.conj()
-        rand_mat = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat = rand_mat_A + 1.j * rand_mat_B
         self.antisymmetric_mat = rand_mat - rand_mat.T
 
         self.combined_hermitian = (
@@ -113,6 +117,15 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
                 get_fermion_operator(self.quad_ham_npc))
         self.assertTrue(
                 normal_ordered(majorana_op).isclose(fermion_operator))
+
+    def test_ground_state_preparation_circuit(self):
+        """Test obtaining the ground state preparation circuit."""
+        # Test a particle-number-conserving Hamiltonian
+        circuit_description = (
+                self.quad_ham_pc.ground_state_preparation_circuit())
+        # Test a non-particle-number-conserving Hamiltonian
+        circuit_description = (
+                self.quad_ham_npc.ground_state_preparation_circuit())
 
 
 class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
