@@ -382,7 +382,7 @@ def get_ground_state(sparse_operator):
     vectors = vectors[:, order]
     eigenvalue = values[0]
     eigenstate = scipy.sparse.csc_matrix(vectors[:, 0])
-    return eigenvalue, eigenstate.getH()
+    return eigenvalue, eigenstate.T
 
 
 def sparse_eigenspectrum(sparse_operator):

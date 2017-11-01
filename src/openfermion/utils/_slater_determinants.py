@@ -16,10 +16,11 @@ from __future__ import absolute_import
 
 import numpy
 from scipy.linalg import schur
-from scipy.sparse import csc_matrix, eye, kron
+from scipy.sparse import csr_matrix, eye, kron
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
+from openfermion.utils._sparse_tools import jw_hartree_fock_state
 
 
 def ground_state_preparation_circuit(quadratic_hamiltonian):
@@ -66,7 +67,7 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         left_unitary, decomposition, diagonal = givens_decomposition(
                 slater_determinant_matrix)
         circuit_description = decomposition
-        num_particles = num_negative_energies
+        n_electrons = num_negative_energies
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
@@ -83,21 +84,22 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
                 fermionic_gaussian_decomposition(
                     slater_determinant_matrix))
         circuit_description = decomposition
-        num_particles = 0
-    return circuit_description, num_particles
+        n_electrons = 0
+    return circuit_description, n_electrons
 
 
 def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
     """Get the ground state of a quadratic hamiltonian as a sparse array
     using the Jordan-Wigner encoding."""
     n_qubits = quadratic_hamiltonian.n_qubits
+
     # Obtain the circuit that prepares the ground state
-    circuit_description, num_particles = ground_state_preparation_circuit(
+    circuit_description, n_electrons = ground_state_preparation_circuit(
             quadratic_hamiltonian)
+
     # Initialize the starting state
-    one_index = sum([2 ** (n_qubits - i - 1) for i in range(num_particles)])
-    state = csc_matrix(([1.], ([one_index], [0])),
-                       shape=(2 ** n_qubits, 1))
+    state = jw_hartree_fock_state(n_electrons, n_qubits)
+
     # Apply the circuit
     particle_hole_transformation = (
             jw_sparse_particle_hole_transformation_last_mode(n_qubits))
@@ -581,9 +583,9 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
     phase = numpy.exp(1.j * phi)
 
     # Create the two-qubit rotation matrix
-    rotation_matrix = csc_matrix(
-            ([1., phase * cosine, sine, -phase * sine, cosine, 1.],
-                ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
+    rotation_matrix = csr_matrix(
+            ([1., phase * cosine, sine, -phase * sine, cosine, phase],
+             ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
             shape=(4, 4))
 
     if i == 0:
@@ -597,17 +599,19 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
         right_eye = None
     else:
         # The last qubit does not need to be acted on
-        right_eye = eye(2 ** (n_qubits - i - 2))
+        right_eye = eye(2 ** (n_qubits - 1 - j))
 
     # Construct the matrix and return
     if left_eye is None and right_eye is None:
         givens_matrix = rotation_matrix
     elif left_eye is None and right_eye is not None:
-        givens_matrix = kron(rotation_matrix, right_eye)
+        givens_matrix = kron(rotation_matrix, right_eye, format='csr')
     elif right_eye is None:
         givens_matrix = kron(left_eye, rotation_matrix)
     else:
-        givens_matrix = kron(left_eye, kron(rotation_matrix, right_eye))
+        givens_matrix = kron(left_eye, kron(rotation_matrix, right_eye,
+                                            format='csr'),
+                             format='csr')
 
     return givens_matrix
 
@@ -617,9 +621,9 @@ def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
     particle-hole transformation on the last mode in the Jordan-Wigner
     encoding.
     """
-    sigma_x = csc_matrix(([1., 1.], ((0, 1), (1, 0))), shape=(2, 2))
+    sigma_x = csr_matrix(([1., 1.], ((0, 1), (1, 0))), shape=(2, 2))
     left_eye = eye(2 ** (n_qubits - 1))
-    return kron(left_eye, sigma_x)
+    return kron(left_eye, sigma_x, format='csr')
 
 
 def swap_rows(M, i, j):
