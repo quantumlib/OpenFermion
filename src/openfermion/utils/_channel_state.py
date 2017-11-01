@@ -147,7 +147,8 @@ def depolarizing_channel(density_matrix, probability, target_qubit,
     Args:
         density_matrix (numpy.ndarray): Density matrix of the system
         probability (float): Probability error is applied p \in [0, 1]
-        target_qubit (int): target for the channel error.
+        target_qubit (int/str): target for the channel error, if given special
+            value "all", then a total depolarizing channel is applied.
         transpose (bool): Transpose channel operators, useful for acting on
             Hamiltonians in variational channel state models
 
@@ -155,8 +156,17 @@ def depolarizing_channel(density_matrix, probability, target_qubit,
         new_density_matrix (numpy.ndarray): Density matrix with the channel
             applied.
     """
-    _verify_channel_inputs(density_matrix, probability, target_qubit)
     n_qubits = int(log2(density_matrix.shape[0]))
+
+    # Toggle depolarizing channel on all qubits
+    if isinstance(target_qubit, str) and target_qubit.lower() == "all":
+        print("HERE")
+        new_density_matrix = ((1.0 - probability) * density_matrix +
+                              probability * eye(density_matrix.shape[0]))
+        return new_density_matrix
+
+    # For any other case, depolarize only the target qubit
+    _verify_channel_inputs(density_matrix, probability, target_qubit)
 
     E0 = _lift_operator(sqrt(1.0 - probability) * eye(2),
                         n_qubits, target_qubit)

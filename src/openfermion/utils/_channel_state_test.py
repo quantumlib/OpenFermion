@@ -135,6 +135,13 @@ class ChannelTest(unittest.TestCase):
         self.assertAlmostEquals(norm(correct_density_matrix -
                                      test_density_matrix), 0.0, places=6)
 
+        # With probability 1 for total depolarization
+        correct_density_matrix = eye(4)
+        test_density_matrix = (
+            depolarizing_channel(self.cat_matrix, 1, 'All'))
+        self.assertAlmostEquals(norm(correct_density_matrix -
+                                     test_density_matrix), 0.0, places=6)
+
     def test_verification(self):
         """Verify basic sanity checking on inputs"""
         with self.assertRaises(ValueError):
