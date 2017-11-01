@@ -583,13 +583,11 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
 
     cosine = numpy.cos(theta)
     sine = numpy.sin(theta)
-    #phase = numpy.exp(1.j * phi)
-    phase = numpy.exp(-1.j * phi)
+    phase = numpy.exp(1.j * phi)
 
     # Create the two-qubit rotation matrix
     rotation_matrix = csr_matrix(
-            #([1., phase * cosine, sine, -phase * sine, cosine, phase],
-            ([1., phase * cosine, -phase * sine, sine, cosine, phase],
+            ([1., phase * cosine, sine, -phase * sine, cosine, phase],
              ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
             shape=(4, 4))
 
