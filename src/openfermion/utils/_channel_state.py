@@ -14,7 +14,7 @@
 
 from functools import reduce
 from itertools import chain
-from numpy import array, dot, eye, kron, log2, sqrt
+from numpy import array, conj, dot, eye, kron, log2, sqrt
 
 
 def _verify_channel_inputs(density_matrix, probability, target_qubit):
@@ -72,8 +72,8 @@ def amplitude_damping_channel(density_matrix, probability, target_qubit,
         density_matrix (numpy.ndarray): Density matrix of the system
         probability (float): Probability error is applied p \in [0, 1]
         target_qubit (int): target for the channel error.
-        transpose (bool): Transpose channel operators, useful for acting on
-            Hamiltonians in variational channel state models
+        transpose (bool): Conjugate transpose channel operators, useful for
+            acting on Hamiltonians in variational channel state models
 
     Returns:
         new_density_matrix(numpy.ndarray): Density matrix with the channel
@@ -111,8 +111,8 @@ def dephasing_channel(density_matrix, probability, target_qubit,
         density_matrix (numpy.ndarray): Density matrix of the system
         probability (float): Probability error is applied p \in [0, 1]
         target_qubit (int): target for the channel error.
-        transpose (bool): Transpose channel operators, useful for acting on
-            Hamiltonians in variational channel state models
+        transpose (bool): Conjugate transpose channel operators, useful for
+            acting on Hamiltonians in variational channel state models
 
     Returns:
         new_density_matrix (numpy.ndarray): Density matrix with the channel
@@ -149,8 +149,9 @@ def depolarizing_channel(density_matrix, probability, target_qubit,
         probability (float): Probability error is applied p \in [0, 1]
         target_qubit (int/str): target for the channel error, if given special
             value "all", then a total depolarizing channel is applied.
-        transpose (bool): Transpose channel operators, useful for acting on
-            Hamiltonians in variational channel state models
+        transpose (bool): Dummy parameter to match signature of other
+            channels but depolarizing channel is symmetric under
+            conjugate transpose.
 
     Returns:
         new_density_matrix (numpy.ndarray): Density matrix with the channel
@@ -160,9 +161,9 @@ def depolarizing_channel(density_matrix, probability, target_qubit,
 
     # Toggle depolarizing channel on all qubits
     if isinstance(target_qubit, str) and target_qubit.lower() == "all":
-        print("HERE")
+        dimension = density_matrix.shape[0]
         new_density_matrix = ((1.0 - probability) * density_matrix +
-                              probability * eye(density_matrix.shape[0]))
+                              probability * eye(dimension)/float(dimension))
         return new_density_matrix
 
     # For any other case, depolarize only the target qubit
@@ -180,15 +181,9 @@ def depolarizing_channel(density_matrix, probability, target_qubit,
                                                       [0.0, -1.0]]),
                         n_qubits, target_qubit)
 
-    if transpose:
-        E0 = E0.T
-        E1 = E1.T
-        E2 = E2.T
-        E3 = E3.T
-
-    new_density_matrix = (dot(E0, dot(density_matrix, E0.T)) +
-                          dot(E1, dot(density_matrix, E1.T)) +
-                          dot(E2, dot(density_matrix, E2.T)) +
-                          dot(E3, dot(density_matrix, E3.T)))
+    new_density_matrix = (dot(E0, dot(density_matrix, E0)) +
+                          dot(E1, dot(density_matrix, E1)) +
+                          dot(E2, dot(density_matrix, E2)) +
+                          dot(E3, dot(density_matrix, E3)))
 
     return new_density_matrix
