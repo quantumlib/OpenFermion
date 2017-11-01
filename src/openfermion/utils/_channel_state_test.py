@@ -137,7 +137,7 @@ class ChannelTest(unittest.TestCase):
                                      test_density_matrix), 0.0, places=6)
 
         # With probability 1 for total depolarization
-        correct_density_matrix = eye(4)/4.0
+        correct_density_matrix = eye(4) / 4.0
         test_density_matrix = (
             depolarizing_channel(self.cat_matrix, 1, 'All'))
         self.assertAlmostEquals(norm(correct_density_matrix -
