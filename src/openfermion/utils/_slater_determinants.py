@@ -185,12 +185,13 @@ def fermionic_gaussian_decomposition(unitary_rows):
     for k in range(n - 1):
         # Zero out entries in column k
         for l in range(n - 1 - k):
-            # Zero out entry in row l
-            givens_rotation = givens_matrix_elements(current_matrix[l, k],
-                                                     current_matrix[l + 1, k])
-            # Apply Givens rotation
-            givens_rotate(current_matrix, givens_rotation, l, l + 1)
-            givens_rotate(left_unitary, givens_rotation, l, l + 1)
+            # Zero out entry in row l if needed
+            if abs(current_matrix[l, k]) > EQ_TOLERANCE:
+                givens_rotation = givens_matrix_elements(
+                        current_matrix[l, k], current_matrix[l + 1, k])
+                # Apply Givens rotation
+                givens_rotate(current_matrix, givens_rotation, l, l + 1)
+                givens_rotate(left_unitary, givens_rotation, l, l + 1)
 
     # Initialize list to store decomposition of current_matrix
     decomposition = list()
@@ -293,12 +294,13 @@ def givens_decomposition(unitary_rows):
     for k in reversed(range(n - m + 1, n)):
         # Zero out entries in column k
         for l in range(m - n + k):
-            # Zero out entry in row l
-            givens_rotation = givens_matrix_elements(current_matrix[l, k],
-                                                     current_matrix[l + 1, k])
-            # Apply Givens rotation
-            givens_rotate(current_matrix, givens_rotation, l, l + 1)
-            givens_rotate(left_unitary, givens_rotation, l, l + 1)
+            # Zero out entry in row l if needed
+            if abs(current_matrix[l, k]) > EQ_TOLERANCE:
+                givens_rotation = givens_matrix_elements(
+                        current_matrix[l, k], current_matrix[l + 1, k])
+                # Apply Givens rotation
+                givens_rotate(current_matrix, givens_rotation, l, l + 1)
+                givens_rotate(left_unitary, givens_rotation, l, l + 1)
 
     # Compute the decomposition of current_matrix into Givens rotations
     givens_rotations = list()
