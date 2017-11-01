@@ -66,7 +66,7 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         # Get the circuit description
         left_unitary, decomposition, diagonal = givens_decomposition(
                 slater_determinant_matrix)
-        circuit_description = decomposition
+        circuit_description = list(reversed(decomposition))
         n_electrons = num_negative_energies
     else:
         # The Hamiltonian does not conserve particle number, so we
@@ -587,10 +587,11 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
 
     # Create the two-qubit rotation matrix
     rotation_matrix = csr_matrix(
-            ([1., phase * cosine, sine, -phase * sine, cosine, phase],
+            ([1., phase * cosine, -phase * sine, sine, cosine, phase],
              ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
             shape=(4, 4))
 
+    # Initialize identity operators
     if i == 0:
         # The first qubit needs to be acted on
         left_eye = None
