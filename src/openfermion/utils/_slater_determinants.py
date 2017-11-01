@@ -351,9 +351,9 @@ def givens_decomposition(unitary_rows):
                     left_element = current_matrix[i, j - 1].conj()
                     givens_rotation = givens_matrix_elements(left_element,
                                                              right_element)
-                    # Need to switch the rows to zero out right_element
+                    # Need to swap the rows to zero out right_element
                     # rather than left_element
-                    givens_rotation = givens_rotation[(1, 0), :]
+                    swap_rows(givens_rotation, 0, 1)
 
                     # Add the parameters to the list
                     theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
@@ -578,13 +578,16 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
         raise ValueError('Only adjacent modes can be rotated.')
     if j > n_qubits - 1:
         raise ValueError('Too few qubits requested.')
+
     cosine = numpy.cos(theta)
     sine = numpy.sin(theta)
-    phase = numpy.exp(1.j * phi)
+    #phase = numpy.exp(1.j * phi)
+    phase = numpy.exp(-1.j * phi)
 
     # Create the two-qubit rotation matrix
     rotation_matrix = csr_matrix(
-            ([1., phase * cosine, sine, -phase * sine, cosine, phase],
+            #([1., phase * cosine, sine, -phase * sine, cosine, phase],
+            ([1., phase * cosine, -phase * sine, sine, cosine, phase],
              ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
             shape=(4, 4))
 
@@ -607,7 +610,7 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
     elif left_eye is None and right_eye is not None:
         givens_matrix = kron(rotation_matrix, right_eye, format='csr')
     elif right_eye is None:
-        givens_matrix = kron(left_eye, rotation_matrix)
+        givens_matrix = kron(left_eye, rotation_matrix, format='csr')
     else:
         givens_matrix = kron(left_eye, kron(rotation_matrix, right_eye,
                                             format='csr'),
