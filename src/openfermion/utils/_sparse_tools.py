@@ -203,6 +203,7 @@ def jw_slater_determinant(occupied_orbitals, n_orbitals):
         occupied_orbitals(list): A list of integers representing the indices
             of the occupied orbitals in the desired Slater determinant
         n_orbitals(int): The total number of orbitals
+
     Returns:
         slater_determinant(sparse): The JW-encoded Slater determinant as a
             sparse matrix
