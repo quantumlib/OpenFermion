@@ -111,10 +111,11 @@ class ChannelTest(unittest.TestCase):
                                      test_density_matrix), 0.0)
 
         # With probability 1 on both qubits
-        correct_density_matrix = array([[0.0555555, 0.,  0.0,  0.27777778],
-                                        [0.00, 0.00, -0.22222222, 0.000],
-                                        [0.00, -0.22222222, 0., 0.],
-                                        [0.27777778, 0.0, 0.0, 0.05555556]])
+        correct_density_matrix = (
+            array([[0.27777778, 0.00000000, 0.00000000, 0.05555556],
+                   [0.00000000, 0.22222222, 0.00000000, 0.00000000],
+                   [0.00000000, 0.00000000, 0.22222222, 0.00000000],
+                   [0.05555556, 0.00000000, 0.00000000, 0.27777778]]))
 
         test_density_matrix = (
             depolarizing_channel(self.cat_matrix, 1, 0))
@@ -132,6 +133,13 @@ class ChannelTest(unittest.TestCase):
             depolarizing_channel(test_density_matrix, 1, 1,
                                  transpose=True))
 
+        self.assertAlmostEquals(norm(correct_density_matrix -
+                                     test_density_matrix), 0.0, places=6)
+
+        # With probability 1 for total depolarization
+        correct_density_matrix = eye(4) / 4.0
+        test_density_matrix = (
+            depolarizing_channel(self.cat_matrix, 1, 'All'))
         self.assertAlmostEquals(norm(correct_density_matrix -
                                      test_density_matrix), 0.0, places=6)
 
