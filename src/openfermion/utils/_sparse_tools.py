@@ -34,7 +34,7 @@ from openfermion.hamiltonians._jellium import (momentum_vector,
 
 
 # Make global definitions.
-identity_csc = scipy.sparse.identity(2, format='csr', dtype=complex)
+identity_csc = scipy.sparse.identity(2, format='csc', dtype=complex)
 pauli_x_csc = scipy.sparse.csc_matrix([[0., 1.], [1., 0.]], dtype=complex)
 pauli_y_csc = scipy.sparse.csc_matrix([[0., -1.j], [1.j, 0.]], dtype=complex)
 pauli_z_csc = scipy.sparse.csc_matrix([[1., 0.], [0., -1.]], dtype=complex)
