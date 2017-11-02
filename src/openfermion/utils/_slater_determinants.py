@@ -16,7 +16,7 @@ from __future__ import absolute_import
 
 import numpy
 from scipy.linalg import schur
-from scipy.sparse import csr_matrix, eye, kron
+from scipy.sparse import csc_matrix, eye, kron
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
@@ -586,7 +586,7 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
     phase = numpy.exp(1.j * phi)
 
     # Create the two-qubit rotation matrix
-    rotation_matrix = csr_matrix(
+    rotation_matrix = csc_matrix(
             ([1., phase * cosine, -phase * sine, sine, cosine, phase],
              ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
             shape=(4, 4))
@@ -609,13 +609,13 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
     if left_eye is None and right_eye is None:
         givens_matrix = rotation_matrix
     elif left_eye is None and right_eye is not None:
-        givens_matrix = kron(rotation_matrix, right_eye, format='csr')
+        givens_matrix = kron(rotation_matrix, right_eye, format='csc')
     elif right_eye is None:
-        givens_matrix = kron(left_eye, rotation_matrix, format='csr')
+        givens_matrix = kron(left_eye, rotation_matrix, format='csc')
     else:
         givens_matrix = kron(left_eye, kron(rotation_matrix, right_eye,
-                                            format='csr'),
-                             format='csr')
+                                            format='csc'),
+                             format='csc')
 
     return givens_matrix
 
@@ -625,9 +625,9 @@ def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
     particle-hole transformation on the last mode in the Jordan-Wigner
     encoding.
     """
-    sigma_x = csr_matrix(([1., 1.], ((0, 1), (1, 0))), shape=(2, 2))
+    sigma_x = csc_matrix(([1., 1.], ((0, 1), (1, 0))), shape=(2, 2))
     left_eye = eye(2 ** (n_qubits - 1))
-    return kron(left_eye, sigma_x, format='csr')
+    return kron(left_eye, sigma_x, format='csc')
 
 
 def swap_rows(M, i, j):
