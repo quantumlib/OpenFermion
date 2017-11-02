@@ -201,6 +201,15 @@ class JordanWignerSparseTest(unittest.TestCase):
             expected.A))
 
 
+class JWSlaterDeterminantTest(unittest.TestCase):
+
+    def test_jw_hartree_fock_state(self):
+        hartree_fock_state = jw_hartree_fock_state(3, 7)
+        dense_array = hartree_fock_state.toarray()
+        self.assertAlmostEqual(dense_array[112, 0], 1.)
+        self.assertAlmostEqual(sum(dense_array), 1.)
+
+
 class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
     def test_jw_get_ground_states_by_particle_number_herm_conserving(self):
         # Initialize a particle-number-conserving Hermitian operator
