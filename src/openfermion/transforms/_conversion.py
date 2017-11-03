@@ -18,13 +18,17 @@ import itertools
 import numpy
 from future.utils import iteritems
 
+from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
 from openfermion.ops import (FermionOperator,
                              normal_ordered,
                              InteractionOperator,
                              InteractionRDM,
+                             PolynomialTensor,
+                             QuadraticHamiltonian,
                              QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
+from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.utils import (count_qubits,
                                jordan_wigner_sparse,
                                qubit_operator_sparse)
@@ -32,8 +36,8 @@ from openfermion.utils import (count_qubits,
 
 def get_sparse_operator(operator, n_qubits=None):
     """Map a Fermion, Qubit, or InteractionOperator to a SparseOperator."""
-    if isinstance(operator, InteractionOperator):
-        return get_sparse_interaction_operator(operator)
+    if isinstance(operator, PolynomialTensor):
+        return get_sparse_polynomial_tensor(operator)
     elif isinstance(operator, FermionOperator):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
@@ -42,8 +46,8 @@ def get_sparse_operator(operator, n_qubits=None):
         return qubit_operator_sparse(operator, n_qubits)
 
 
-def get_sparse_interaction_operator(interaction_operator):
-    fermion_operator = get_fermion_operator(interaction_operator)
+def get_sparse_polynomial_tensor(polynomial_tensor):
+    fermion_operator = get_fermion_operator(polynomial_tensor)
     sparse_operator = jordan_wigner_sparse(fermion_operator)
     return sparse_operator
 
@@ -149,27 +153,135 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
     return interaction_operator
 
 
-def get_fermion_operator(interaction_operator):
-    """Output InteractionOperator as instance of FermionOperator class.
+def get_quadratic_hamiltonian(fermion_operator,
+                              chemical_potential=None, n_qubits=None):
+    """Convert a quadratic fermionic operator to QuadraticHamiltonian.
+
+    This function should only be called on fermionic operators which
+    consist of only a_p^\dagger a_q, a_p^\dagger a_q^\dagger, and a_p a_q
+    terms.
+
+    Returns:
+       quadratic_hamiltonian: An instance of the QuadraticHamiltonian class.
+
+    Raises:
+        TypeError: Input must be a FermionOperator.
+        TypeError: FermionOperator does not map to QuadraticHamiltonian.
+
+    Warning:
+        Even assuming that each creation or annihilation operator appears
+        at most a constant number of times in the original operator, the
+        runtime of this method is exponential in the number of qubits.
+    """
+    if not isinstance(fermion_operator, FermionOperator):
+        raise TypeError('Input must be a FermionOperator.')
+
+    if n_qubits is None:
+        n_qubits = count_qubits(fermion_operator)
+    if n_qubits < count_qubits(fermion_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    # Normal order the terms and initialize.
+    fermion_operator = normal_ordered(fermion_operator)
+    constant = 0.
+    combined_hermitian_part = numpy.zeros((n_qubits, n_qubits), complex)
+    antisymmetric_part = numpy.zeros((n_qubits, n_qubits), complex)
+
+    # Loop through terms and assign to matrix.
+    for term in fermion_operator.terms:
+        coefficient = fermion_operator.terms[term]
+
+        if len(term) == 0:
+            # Constant term
+            constant = coefficient
+        elif len(term) == 2:
+            ladder_type = [operator[1] for operator in term]
+            p, q = [operator[0] for operator in term]
+
+            if ladder_type == [1, 0]:
+                combined_hermitian_part[p, q] = coefficient
+            elif ladder_type == [1, 1]:
+                # Need to check that the corresponding [0, 0] term is present
+                conjugate_term = ((p, 0), (q, 0))
+                if conjugate_term not in fermion_operator.terms:
+                    raise QuadraticHamiltonianError(
+                            'FermionOperator does not map '
+                            'to QuadraticHamiltonian (not Hermitian).')
+                else:
+                    matching_coefficient = -fermion_operator.terms[
+                            conjugate_term].conjugate()
+                    discrepancy = abs(coefficient - matching_coefficient)
+                    if discrepancy > EQ_TOLERANCE:
+                        raise QuadraticHamiltonianError(
+                                'FermionOperator does not map '
+                                'to QuadraticHamiltonian (not Hermitian).')
+                antisymmetric_part[p, q] += .5 * coefficient
+                antisymmetric_part[q, p] -= .5 * coefficient
+            else:
+                # ladder_type == [0, 0]
+                # Need to check that the corresponding [1, 1] term is present
+                conjugate_term = ((p, 1), (q, 1))
+                if conjugate_term not in fermion_operator.terms:
+                    raise QuadraticHamiltonianError(
+                            'FermionOperator does not map '
+                            'to QuadraticHamiltonian (not Hermitian).')
+                else:
+                    matching_coefficient = -fermion_operator.terms[
+                            conjugate_term].conjugate()
+                    discrepancy = abs(coefficient - matching_coefficient)
+                    if discrepancy > EQ_TOLERANCE:
+                        raise QuadraticHamiltonianError(
+                                'FermionOperator does not map '
+                                'to QuadraticHamiltonian (not Hermitian).')
+                antisymmetric_part[p, q] -= .5 * coefficient.conjugate()
+                antisymmetric_part[q, p] += .5 * coefficient.conjugate()
+        else:
+            # Operator contains non-quadratic terms
+            raise QuadraticHamiltonianError('FermionOperator does not map '
+                                            'to QuadraticHamiltonian'
+                                            '(contains non-quadratic terms).')
+
+    # Compute Hermitian part
+    if not chemical_potential:
+        hermitian_part = combined_hermitian_part
+    else:
+        hermitian_part = (combined_hermitian_part +
+                          chemical_potential * numpy.eye(n_qubits))
+
+    # Check that the operator is Hermitian
+    difference = hermitian_part - hermitian_part.T.conj()
+    discrepancy = numpy.max(numpy.abs(difference))
+    if discrepancy > EQ_TOLERANCE:
+        raise QuadraticHamiltonianError(
+                'FermionOperator does not map '
+                'to QuadraticHamiltonian (not Hermitian).')
+
+    # Form QuadraticHamiltonian and return.
+    discrepancy = numpy.max(numpy.abs(antisymmetric_part))
+    if discrepancy < EQ_TOLERANCE:
+        # Hamiltonian conserves particle number
+        quadratic_hamiltonian = QuadraticHamiltonian(
+            constant, hermitian_part, chemical_potential=chemical_potential)
+    else:
+        # Hamiltonian does not conserve particle number
+        quadratic_hamiltonian = QuadraticHamiltonian(
+            constant, hermitian_part, antisymmetric_part, chemical_potential)
+
+    return quadratic_hamiltonian
+
+
+def get_fermion_operator(polynomial_tensor):
+    """Output PolynomialTensor as instance of FermionOperator class.
 
     Returns:
         fermion_operator: An instance of the FermionOperator class.
     """
-    # Initialize with identity term.
-    fermion_operator = FermionOperator((), interaction_operator.constant)
-    n_qubits = count_qubits(interaction_operator)
+    fermion_operator = FermionOperator()
+    n_qubits = count_qubits(polynomial_tensor)
 
-    # Add one-body terms.
-    for p, q in itertools.product(range(n_qubits), repeat=2):
+    for term in polynomial_tensor:
         fermion_operator += FermionOperator(
-            ((p, 1), (q, 0)), coefficient=interaction_operator[(p, 1), (q, 0)])
-
-    # Add two-body terms.
-    for p, q, r, s in itertools.product(range(n_qubits), repeat=4):
-        coefficient = interaction_operator[(p, 1), (q, 1), (r, 0), (s, 0)]
-        fermion_operator += FermionOperator(((p, 1), (q, 1),
-                                             (r, 0), (s, 0)),
-                                            coefficient)
+                term, coefficient=polynomial_tensor[term])
 
     return fermion_operator
 

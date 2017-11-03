@@ -18,11 +18,70 @@ import numpy
 from scipy.linalg import schur
 
 from openfermion.config import EQ_TOLERANCE
+from openfermion.ops import QuadraticHamiltonian
+
+
+def ground_state_preparation_circuit(quadratic_hamiltonian):
+    """Obtain a description of a circuit which prepares the ground state
+    of a quadratic Hamiltonian.
+
+    Args:
+        quadratic_hamiltonian(QuadraticHamiltonian):
+            The Hamiltonian whose ground state is desired.
+
+    Returns:
+        circuit_description(list[tuple]):
+            A list of operations describing the circuit. Each operation
+            is a tuple of objects describing elementary operations that
+            can be performed in parallel. Each elementary operation
+            is either the string 'pht', indicating a particle-hole
+            transformation on the last fermionic mode, or a tuple of
+            the form (i, j, theta, phi), indicating a Givens rotation
+            of modes i and j by angles theta and phi.
+    """
+    if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
+        raise ValueError('Input must be an instance of QuadraticHamiltonian.')
+
+    if quadratic_hamiltonian.conserves_particle_number():
+        # The Hamiltonian conserves particle number, so we don't need
+        # to use the most general procedure.
+        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
+        # Get the unitary rows which represent the ground state
+        # Slater determinant
+        energies, diagonalizing_unitary = numpy.linalg.eigh(
+                hermitian_matrix)
+        # We get the ground state by filling the orbitals that have
+        # negative energy
+        num_negative_energies = numpy.count_nonzero(
+                energies < -EQ_TOLERANCE)
+        slater_determinant_matrix = diagonalizing_unitary.T[
+                :num_negative_energies]
+        # Get the circuit description
+        left_unitary, decomposition, diagonal = givens_decomposition(
+                slater_determinant_matrix)
+        circuit_description = decomposition
+    else:
+        # The Hamiltonian does not conserve particle number, so we
+        # need to use the most general procedure.
+        majorana_matrix, majorana_constant = (
+                quadratic_hamiltonian.majorana_form())
+        # Get the unitary rows which represent the ground state
+        # Slater determinant
+        diagonalizing_unitary = diagonalizing_fermionic_unitary(
+                majorana_matrix)
+        slater_determinant_matrix = diagonalizing_unitary[
+                quadratic_hamiltonian.n_qubits:]
+        # Get the circuit description
+        left_unitary, decomposition, diagonal = (
+                fermionic_gaussian_decomposition(
+                    slater_determinant_matrix))
+        circuit_description = decomposition
+    return circuit_description
 
 
 def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and
-    particle-hole transformations on the first fermionic mode.
+    particle-hole transformations on the last fermionic mode.
 
     The input is an n x (2 * n) matrix W with orthonormal rows.
     Furthermore, W has the block form::
@@ -36,18 +95,20 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     W can be decomposed as::
 
-        V * W * U^\dagger = [ 0  |  L ]
+        V * W * U^\dagger = [ 0  |  D ]
 
-    where V and U are unitary matrices and L is an antidiagonal unitary matrix.
+    where V and U are unitary matrices and D is a diagonal unitary matrix.
     Furthermore, we can decompose U as a sequence of Givens rotations
-    and particle-hole transformations on the first fermionic mode.
+    and particle-hole transformations on the last fermionic mode.
+    This particle-hole transformation maps a^\dagger_n to a^n and vice
+    versa, while leaving the other ladder operators invariant.
 
     The decomposition of U is returned as a list of tuples of objects
     describing rotations and particle-hole transformations. The list looks
-    something like [('p-h', ), (G_1, ), ('p-h', G_2), ... ].
-    The objects within a tuple are either the string 'p-h', which indicates
-    a particle-hole transformation on the first fermionic mode, or a tuple
-    of the form (i, j, theta, phi), which indicates a Givens roation
+    something like [('pht', ), (G_1, ), ('pht', G_2), ... ].
+    The objects within a tuple are either the string 'pht', which indicates
+    a particle-hole transformation on the last fermionic mode, or a tuple
+    of the form (i, j, theta, phi), which indicates a Givens rotation
     of rows i and j by angles theta and phi.
 
     Args:
@@ -57,7 +118,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
     Returns:
         left_unitary(ndarray): An n x n matrix representing V.
         decomposition(list[tuple]): The decomposition of U.
-        antidiagonal(ndarray): A list of the nonzero entries of L.
+        diagonal(ndarray): A list of the nonzero entries of D.
     """
     current_matrix = numpy.copy(unitary_rows)
     n, p = current_matrix.shape
@@ -85,9 +146,9 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     # Compute left_unitary using Givens rotations
     left_unitary = numpy.eye(n, dtype=complex)
-    for k in reversed(range(1, n)):
+    for k in range(n - 1):
         # Zero out entries in column k
-        for l in range(k):
+        for l in range(n - 1 - k):
             # Zero out entry in row l
             givens_rotation = givens_matrix_elements(current_matrix[l, k],
                                                      current_matrix[l + 1, k])
@@ -104,46 +165,176 @@ def fermionic_gaussian_decomposition(unitary_rows):
         parallel_ops = list()
 
         # Perform a particle-hole transformation if necessary
-        if k % 2 == 0 and abs(current_matrix[k // 2, 0]) > EQ_TOLERANCE:
-            parallel_ops.append('p-h')
-            swap_columns(current_matrix, 0, n)
+        if k % 2 == 0 and abs(current_matrix[k // 2, n - 1]) > EQ_TOLERANCE:
+            parallel_ops.append('pht')
+            swap_columns(current_matrix, n - 1, 2 * n - 1)
 
         # Get the (row, column) indices of elements to zero out in parallel.
         if k < n:
             end_row = k
-            end_column = k
+            end_column = n - 1 - k
         else:
             end_row = n - 1
-            end_column = 2 * (n - 1) - k
-        column_indices = range(end_column, 0, -2)
+            end_column = k - (n - 1)
+        column_indices = range(end_column, n - 1, 2)
         row_indices = range(end_row, end_row - len(column_indices), -1)
         indices_to_zero_out = zip(row_indices, column_indices)
 
         for i, j in indices_to_zero_out:
-            # Compute the Givens rotation to zero out the (i, j) element
-            left_element = current_matrix[i, j - 1].conj()
-            right_element = current_matrix[i, j].conj()
-            givens_rotation = givens_matrix_elements(left_element,
-                                                     right_element)
-            # Need to switch the rows to zero out right_element
-            # rather than left_element
-            givens_rotation = givens_rotation[(1, 0), :]
+            # Compute the Givens rotation to zero out the (i, j) element,
+            # if needed
+            left_element = current_matrix[i, j].conj()
+            if abs(left_element) > EQ_TOLERANCE:
+                # We actually need to perform a Givens rotation
+                right_element = current_matrix[i, j + 1].conj()
+                givens_rotation = givens_matrix_elements(left_element,
+                                                         right_element)
 
-            # Add the parameters to the list
-            theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
-            phi = numpy.angle(givens_rotation[1, 1])
-            parallel_ops.append((j - 1, j, theta, phi))
+                # Add the parameters to the list
+                theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+                phi = numpy.angle(givens_rotation[1, 1])
+                parallel_ops.append((j, j + 1, theta, phi))
 
-            # Update the matrix
-            double_givens_rotate(current_matrix, givens_rotation,
-                                 j - 1, j, which='col')
+                # Update the matrix
+                double_givens_rotate(current_matrix, givens_rotation,
+                                     j, j + 1, which='col')
 
         # Append the current list of parallel rotations to the list
         decomposition.append(tuple(parallel_ops))
 
-    # Get the antidiagonal entries
-    antidiagonal = current_matrix[range(n), range(2 * n - 1, n - 1, -1)]
-    return left_unitary, decomposition, antidiagonal
+    # Get the diagonal entries
+    diagonal = current_matrix[range(n), range(n, 2 * n)]
+    return left_unitary, decomposition, diagonal
+
+
+def givens_decomposition(unitary_rows):
+    """Decompose a matrix into a sequence of Givens rotations.
+
+    The input is an m x n matrix Q with m <= n. The rows of Q are orthonormal.
+    Q can be decomposed as follows:
+
+        V * Q * U^\dagger = D
+
+    where V and U are unitary matrices, and D is an m x n matrix with the
+    first m columns forming a diagonal matrix and the rest of the columns
+    being zero. Furthermore, we can decompose U as
+
+        U = G_k * ... * G_1
+
+    where G_1, ..., G_k are complex Givens rotations, which are invertible
+    n x n matrices. We describe a complex Givens rotation by the column
+    indices (i, j) that it acts on, plus two angles (theta, phi) that
+    characterize the corresponding 2x2 unitary matrix
+
+        [ cos(theta)    -e^{i phi} sin(theta) ]
+        [ sin(theta)     e^{i phi} cos(theta) ]
+
+    Args:
+        unitary_rows: A numpy array or matrix with orthonormal rows,
+            representing the matrix Q.
+
+    Returns:
+        left_unitary: An m x m numpy array representing the matrix V.
+
+        givens_rotations: A list of tuples of objects describing Givens
+            rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
+            The Givens rotations within a tuple can be implemented in parallel.
+            The description of a Givens rotation is itself a tuple of the
+            form (i, j, theta, phi), which represents a Givens rotation of
+            rows i and j by angles theta and phi.
+
+        diagonal: A list of the nonzero entries of D.
+    """
+    current_matrix = numpy.copy(unitary_rows)
+    m, n = current_matrix.shape
+
+    # Check that m <= n
+    if m > n:
+        raise ValueError('The input m x n matrix must have m <= n')
+
+    # Compute left_unitary using Givens rotations
+    left_unitary = numpy.eye(m, dtype=complex)
+    for k in reversed(range(n - m + 1, n)):
+        # Zero out entries in column k
+        for l in range(m - n + k):
+            # Zero out entry in row l
+            givens_rotation = givens_matrix_elements(current_matrix[l, k],
+                                                     current_matrix[l + 1, k])
+            # Apply Givens rotation
+            givens_rotate(current_matrix, givens_rotation, l, l + 1)
+            givens_rotate(left_unitary, givens_rotation, l, l + 1)
+
+    # Compute the decomposition of current_matrix into Givens rotations
+    givens_rotations = list()
+    # If m = n (the matrix is square) then we don't need to perform any
+    # Givens rotations!
+    if m != n:
+        # Get the maximum number of simultaneous rotations that
+        # will be performed
+        max_simul_rotations = min(m, n - m)
+        # There are n - 1 iterations (the circuit depth is n - 1)
+        for k in range(n - 1):
+            # Get the (row, column) indices of elements to zero out in
+            # parallel.
+            if k < max_simul_rotations - 1:
+                # There are k + 1 elements to zero out
+                start_row = 0
+                end_row = k + 1
+                start_column = n - m - k
+                end_column = start_column + 2 * (k + 1)
+            elif k > n - 1 - max_simul_rotations:
+                # There are n - 1 - k elements to zero out
+                start_row = m - (n - 1 - k)
+                end_row = m
+                start_column = m - (n - 1 - k) + 1
+                end_column = start_column + 2 * (n - 1 - k)
+            else:
+                # There are max_simul_rotations elements to zero out
+                if max_simul_rotations == m:
+                    start_row = 0
+                    end_row = m
+                    start_column = n - m - k
+                    end_column = start_column + 2 * m
+                else:
+                    start_row = k + 1 - max_simul_rotations
+                    end_row = k + 1
+                    start_column = k + 1 - max_simul_rotations + 1
+                    end_column = start_column + 2 * max_simul_rotations
+
+            row_indices = range(start_row, end_row)
+            column_indices = range(start_column, end_column, 2)
+            indices_to_zero_out = zip(row_indices, column_indices)
+
+            parallel_rotations = list()
+            for i, j in indices_to_zero_out:
+                # Compute the Givens rotation to zero out the (i, j) element,
+                # if needed
+                right_element = current_matrix[i, j].conj()
+                if abs(right_element) > EQ_TOLERANCE:
+                    # We actually need to perform a Givens rotation
+                    left_element = current_matrix[i, j - 1].conj()
+                    givens_rotation = givens_matrix_elements(left_element,
+                                                             right_element)
+                    # Need to switch the rows to zero out right_element
+                    # rather than left_element
+                    givens_rotation = givens_rotation[(1, 0), :]
+
+                    # Add the parameters to the list
+                    theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+                    phi = numpy.angle(givens_rotation[1, 1])
+                    parallel_rotations.append((j - 1, j, theta, phi))
+
+                    # Update the matrix
+                    givens_rotate(current_matrix, givens_rotation,
+                                  j - 1, j, which='col')
+
+            # Append the current list of parallel rotations to the list
+            givens_rotations.append(tuple(parallel_rotations))
+
+    # Get the diagonal entries
+    diagonal = current_matrix.diagonal()
+
+    return left_unitary, givens_rotations, diagonal
 
 
 def diagonalizing_fermionic_unitary(antisymmetric_matrix):
@@ -202,7 +393,7 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
         [  0     D ]
         [ -D     0 ]
 
-    where D is a diagonal matrix.
+    where D is a diagonal matrix with nonnegative entries.
 
     Args:
         antisymmetric_matrix(ndarray): An antisymmetric matrix with even
@@ -239,130 +430,14 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_columns(canonical, num_blocks - 1, num_blocks + i)
             swap_columns(orthogonal, num_blocks - 1, num_blocks + i)
 
+    # Now we permute so that the upper right block is non-negative
+    for i in range(num_blocks):
+        if canonical[i, num_blocks + i] < -EQ_TOLERANCE:
+            swap_rows(canonical, i, num_blocks + i)
+            swap_columns(canonical, i, num_blocks + i)
+            swap_columns(orthogonal, i, num_blocks + i)
+
     return canonical, orthogonal.T
-
-
-def givens_decomposition(unitary_rows):
-    """Decompose a matrix into a sequence of Givens rotations.
-
-    The input is an m x n matrix Q with m <= n. The rows of Q are orthonormal.
-    Q can be decomposed as follows:
-
-        V * Q * U^\dagger = D
-
-    where V and U are unitary matrices, and D is an m x n matrix with the
-    first m columns forming a diagonal matrix and the rest of the columns
-    being zero. Furthermore, we can decompose U as
-
-        U = G_k * ... * G_1
-
-    where G_1, ..., G_k are complex Givens rotations, which are invertible
-    n x n matrices. We describe a complex Givens rotation by the column
-    indices (i, j) that it acts on, plus two angles (theta, phi) that
-    characterize the corresponding 2x2 unitary matrix
-
-        [ cos(theta)    -e^{i phi} sin(theta) ]
-        [ sin(theta)     e^{i phi} cos(theta) ]
-
-    Args:
-        unitary_rows: A numpy array or matrix with orthonormal rows,
-            representing the matrix Q.
-    Returns:
-        left_unitary: An m x m numpy array representing the matrix V.
-        givens_rotations: A list of tuples of objects describing Givens
-            rotations. The list looks something like
-            [(G_1, ), (G_2, G_3), ... ]. The Givens rotations within a tuple
-            can be implemented in parallel. The description of a Givens
-            rotation is itself a tuple of the form (i, j, theta, phi), which
-            represents a Givens rotation of rows i and j by angles theta
-            and phi.
-        diagonal: A list of the nonzero entries of D.
-    """
-    current_matrix = numpy.copy(unitary_rows)
-    m, n = current_matrix.shape
-
-    # Check that m <= n
-    if m > n:
-        raise ValueError('The input m x n matrix must have m <= n')
-
-    # Compute left_unitary using Givens rotations
-    left_unitary = numpy.eye(m, dtype=complex)
-    for k in reversed(range(n - m + 1, n)):
-        # Zero out entries in column k
-        for l in range(m - n + k):
-            # Zero out entry in row l
-            givens_rotation = givens_matrix_elements(current_matrix[l, k],
-                                                     current_matrix[l + 1, k])
-            # Apply Givens rotation
-            givens_rotate(current_matrix, givens_rotation, l, l + 1)
-            givens_rotate(left_unitary, givens_rotation, l, l + 1)
-
-    # Compute the decomposition of current_matrix into Givens rotations
-    givens_rotations = list()
-    if m != n:
-        # Get the maximum number of simultaneous rotations that
-        # will be performed
-        max_simul_rotations = min(m, n - m)
-        # There are n - 1 iterations (the circuit depth is n - 1)
-        for k in range(n - 1):
-            # Get the (row, column) indices of elements to zero out in
-            # parallel.
-            if k < max_simul_rotations - 1:
-                # There are k + 1 elements to zero out
-                start_row = 0
-                end_row = k + 1
-                start_column = n - m - k
-                end_column = start_column + 2 * (k + 1)
-            elif k > n - 1 - max_simul_rotations:
-                # There are n - 1 - k elements to zero out
-                start_row = m - (n - 1 - k)
-                end_row = m
-                start_column = m - (n - 1 - k) + 1
-                end_column = start_column + 2 * (n - 1 - k)
-            else:
-                # There are max_simul_rotations elements to zero out
-                if max_simul_rotations == m:
-                    start_row = 0
-                    end_row = m
-                    start_column = n - m - k
-                    end_column = start_column + 2 * m
-                else:
-                    start_row = k + 1 - max_simul_rotations
-                    end_row = k + 1
-                    start_column = k + 1 - max_simul_rotations + 1
-                    end_column = start_column + 2 * max_simul_rotations
-
-            row_indices = range(start_row, end_row)
-            column_indices = range(start_column, end_column, 2)
-            indices_to_zero_out = zip(row_indices, column_indices)
-
-            parallel_rotations = list()
-            for i, j in indices_to_zero_out:
-                # Compute the Givens rotation to zero out the (i, j) element
-                left_element = current_matrix[i, j - 1].conj()
-                right_element = current_matrix[i, j].conj()
-                givens_rotation = givens_matrix_elements(left_element,
-                                                         right_element)
-                # Need to switch the rows to zero out right_element
-                # rather than left_element
-                givens_rotation = givens_rotation[(1, 0), :]
-
-                # Add the parameters to the list
-                theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
-                phi = numpy.angle(givens_rotation[1, 1])
-                parallel_rotations.append((j - 1, j, theta, phi))
-
-                # Update the matrix
-                givens_rotate(current_matrix, givens_rotation,
-                              j - 1, j, which='col')
-
-            # Append the current list of parallel rotations to the list
-            givens_rotations.append(tuple(parallel_rotations))
-
-    # Get the diagonal entries
-    diagonal = current_matrix.diagonal()
-
-    return left_unitary, givens_rotations, diagonal
 
 
 def givens_matrix_elements(a, b):
@@ -391,21 +466,22 @@ def givens_matrix_elements(a, b):
     elif abs(b) < EQ_TOLERANCE:
         c = 0.
         s = 1.
-        sign_a = a / abs(a)
-        phase = sign_a
+        phase = 1.
     # Handle case that a and b are both nonzero
     else:
         denominator = numpy.sqrt(abs(a) ** 2 + abs(b) ** 2)
-
         c = abs(b) / denominator
         s = abs(a) / denominator
         sign_b = b / abs(b)
         sign_a = a / abs(a)
         phase = sign_a * sign_b.conjugate()
+        # If phase is a real number, convert it to a float
+        if numpy.isreal(phase):
+            phase = numpy.real(phase)
 
     # Construct matrix and return
     givens_rotation = numpy.array([[c, -phase * s],
-                                  [s, phase * c]], dtype=complex)
+                                  [s, phase * c]])
     return givens_rotation
 
 

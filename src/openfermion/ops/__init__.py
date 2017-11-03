@@ -20,3 +20,4 @@ from ._polynomial_tensor import (PolynomialTensor,
                                  two_body_basis_change)
 from ._interaction_operator import InteractionOperator
 from ._interaction_rdm import InteractionRDM
+from ._quadratic_hamiltonian import QuadraticHamiltonian
