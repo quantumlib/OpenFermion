@@ -815,6 +815,47 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
 
 class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
 
+    def setUp(self):
+        self.n_qubits = 5
+        self.constant = 1.7
+        self.chemical_potential = 2.
+
+        # Obtain random Hermitian and antisymmetric matrices
+        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat = rand_mat_A + 1.j * rand_mat_B
+        self.hermitian_mat = rand_mat + rand_mat.T.conj()
+        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
+        rand_mat = rand_mat_A + 1.j * rand_mat_B
+        self.antisymmetric_mat = rand_mat - rand_mat.T
+
+        # Initialize a non-particle-number-conserving Hamiltonian
+        self.quad_ham_npc = QuadraticHamiltonian(
+                self.constant, self.hermitian_mat, self.antisymmetric_mat,
+                self.chemical_potential)
+
+    def test_diagonalizes_quadratic_hamiltonian(self):
+        """Test that the unitary returned indeed diagonalizes a
+        quadratic Hamiltonian."""
+        hermitian_part = self.quad_ham_npc.combined_hermitian_part()
+        antisymmetric_part = self.quad_ham_npc.antisymmetric_part()
+        block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits),
+                                    dtype=complex)
+        block_matrix[:self.n_qubits, :self.n_qubits] = antisymmetric_part
+        block_matrix[:self.n_qubits, self.n_qubits:] = hermitian_part
+        block_matrix[self.n_qubits:, :self.n_qubits] = -hermitian_part.conj()
+        block_matrix[self.n_qubits:, self.n_qubits:] = (
+                -antisymmetric_part.conj())
+
+        majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
+        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
+        ferm_unitary = diagonalizing_fermionic_unitary(majorana_matrix)
+        diagonalized = ferm_unitary.conj().dot(
+                block_matrix.dot(ferm_unitary.T.conj()))
+        for i in numpy.ndindex((2 * self.n_qubits, 2 * self.n_qubits)):
+            self.assertAlmostEqual(diagonalized[i], canonical[i])
+
     def test_bad_dimensions(self):
         n, p = (3, 4)
         ones_mat = numpy.ones((n, p))
@@ -879,6 +920,6 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
                 if i < n and j == n + i:
                     self.assertTrue(canonical[i, j] > -EQ_TOLERANCE)
                 elif i >= n and j == i - n:
-                    self.assertTrue(canonical[i, j] < -EQ_TOLERANCE)
+                    self.assertTrue(canonical[i, j] < EQ_TOLERANCE)
                 else:
                     self.assertAlmostEqual(canonical[i, j], 0.)

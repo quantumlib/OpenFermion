@@ -113,8 +113,8 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         where the s_i are normalized Majorana fermion operators:
 
-            s_j = i / sqrt(2) (a^\dagger_j - a_j)
-            s_{j + n_qubits} = 1 / sqrt(2) (a^\dagger_j + a_j)
+            s_j = 1 / sqrt(2) (a^\dagger_j + a_j)
+            s_{j + n_qubits} = i / sqrt(2) (a^\dagger_j - a_j)
 
         and A is a (2 * n_qubits) x (2 * n_qubits) real antisymmetric matrix.
         This function returns the matrix A and the constant.

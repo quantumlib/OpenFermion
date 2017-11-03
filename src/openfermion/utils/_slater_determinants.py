@@ -20,7 +20,8 @@ from scipy.sparse import csc_matrix, eye, kron
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
-from openfermion.utils._sparse_tools import jw_hartree_fock_state
+from openfermion.utils._sparse_tools import (jw_hartree_fock_state,
+                                             pauli_matrix_map)
 
 
 def ground_state_preparation_circuit(quadratic_hamiltonian):
@@ -83,7 +84,7 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(
                     slater_determinant_matrix))
-        circuit_description = decomposition
+        circuit_description = list(reversed(decomposition))
         n_electrons = 0
     return circuit_description, n_electrons
 
@@ -533,7 +534,7 @@ def givens_rotate(operator, givens_rotation, i, j, which='row'):
                        givens_rotation[0, 1] * row_j)
         operator[j] = (givens_rotation[1, 0] * row_i +
                        givens_rotation[1, 1] * row_j)
-    else:
+    elif which == 'col':
         # Rotate columns i and j
         col_i = operator[:, i].copy()
         col_j = operator[:, j].copy()
@@ -541,6 +542,8 @@ def givens_rotate(operator, givens_rotation, i, j, which='row'):
                           givens_rotation[0, 1].conj() * col_j)
         operator[:, j] = (givens_rotation[1, 0] * col_i +
                           givens_rotation[1, 1].conj() * col_j)
+    else:
+        raise ValueError('"which" must be equal to "row" or "col".')
 
 
 def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
@@ -561,7 +564,7 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
         givens_rotate(operator[:n], givens_rotation, i, j, which='row')
         # Rotate rows n + i and n + j
         givens_rotate(operator[n:], givens_rotation.conj(), i, j, which='row')
-    else:
+    elif which == 'col':
         if p % 2 != 0:
             raise ValueError('To apply a double Givens rotation on columns, '
                              'the number of columns must be even.')
@@ -571,6 +574,8 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
         # Rotate cols n + i and n + j
         givens_rotate(operator[:, n:], givens_rotation.conj(), i, j,
                       which='col')
+    else:
+        raise ValueError('"which" must be equal to "row" or "col".')
 
 
 def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
@@ -588,6 +593,7 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
     # Create the two-qubit rotation matrix
     rotation_matrix = csc_matrix(
             ([1., phase * cosine, -phase * sine, sine, cosine, phase],
+            #([1., phase * cosine, sine, -phase * sine, cosine, phase],
              ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
             shape=(4, 4))
 
@@ -597,13 +603,13 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
         left_eye = None
     else:
         # The first qubit does not need to be acted on
-        left_eye = eye(2 ** i)
+        left_eye = eye(2 ** i, format='csc')
     if j == n_qubits - 1:
         # The last qubit needs to be acted on
         right_eye = None
     else:
         # The last qubit does not need to be acted on
-        right_eye = eye(2 ** (n_qubits - 1 - j))
+        right_eye = eye(2 ** (n_qubits - 1 - j), format='csc')
 
     # Construct the matrix and return
     if left_eye is None and right_eye is None:
@@ -625,9 +631,8 @@ def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
     particle-hole transformation on the last mode in the Jordan-Wigner
     encoding.
     """
-    sigma_x = csc_matrix(([1., 1.], ((0, 1), (1, 0))), shape=(2, 2))
-    left_eye = eye(2 ** (n_qubits - 1))
-    return kron(left_eye, sigma_x, format='csc')
+    left_eye = eye(2 ** (n_qubits - 1), format='csc')
+    return kron(left_eye, pauli_matrix_map['X'], format='csc')
 
 
 def swap_rows(M, i, j):
