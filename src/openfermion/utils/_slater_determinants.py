@@ -594,7 +594,6 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
     # Create the two-qubit rotation matrix
     rotation_matrix = csc_matrix(
             ([1., phase * cosine, -phase * sine, sine, cosine, phase],
-            #([1., phase * cosine, sine, -phase * sine, cosine, phase],
              ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
             shape=(4, 4))
 
