@@ -106,6 +106,7 @@ def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
             jw_sparse_particle_hole_transformation_last_mode(n_qubits))
     for parallel_ops in circuit_description:
         for op in parallel_ops:
+            print(op)
             if op == 'pht':
                 state = particle_hole_transformation.dot(state)
             else:

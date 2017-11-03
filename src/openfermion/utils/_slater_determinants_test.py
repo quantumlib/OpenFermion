@@ -165,7 +165,7 @@ class GivensDecompositionTest(unittest.TestCase):
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
             combined_givens = numpy.eye(n, dtype=complex)
-            for i, j, theta, phi in parallel_set:
+            for i, j, theta, phi in reversed(parallel_set):
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
@@ -202,7 +202,7 @@ class GivensDecompositionTest(unittest.TestCase):
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
             combined_givens = numpy.eye(n, dtype=complex)
-            for i, j, theta, phi in parallel_set:
+            for i, j, theta, phi in reversed(parallel_set):
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
@@ -239,7 +239,7 @@ class GivensDecompositionTest(unittest.TestCase):
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
             combined_givens = numpy.eye(n, dtype=complex)
-            for i, j, theta, phi in parallel_set:
+            for i, j, theta, phi in reversed(parallel_set):
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
@@ -276,7 +276,7 @@ class GivensDecompositionTest(unittest.TestCase):
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
             combined_givens = numpy.eye(n, dtype=complex)
-            for i, j, theta, phi in parallel_set:
+            for i, j, theta, phi in reversed(parallel_set):
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
@@ -313,7 +313,7 @@ class GivensDecompositionTest(unittest.TestCase):
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
             combined_givens = numpy.eye(n, dtype=complex)
-            for i, j, theta, phi in parallel_set:
+            for i, j, theta, phi in reversed(parallel_set):
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
@@ -350,7 +350,7 @@ class GivensDecompositionTest(unittest.TestCase):
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
             combined_givens = numpy.eye(n, dtype=complex)
-            for i, j, theta, phi in parallel_set:
+            for i, j, theta, phi in reversed(parallel_set):
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
@@ -387,7 +387,7 @@ class GivensDecompositionTest(unittest.TestCase):
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
             combined_givens = numpy.eye(n, dtype=complex)
-            for i, j, theta, phi in parallel_set:
+            for i, j, theta, phi in reversed(parallel_set):
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
@@ -424,7 +424,7 @@ class GivensDecompositionTest(unittest.TestCase):
         U = numpy.eye(n, dtype=complex)
         for parallel_set in givens_rotations:
             combined_givens = numpy.eye(n, dtype=complex)
-            for i, j, theta, phi in parallel_set:
+            for i, j, theta, phi in reversed(parallel_set):
                 c = numpy.cos(theta)
                 s = numpy.sin(theta)
                 phase = numpy.exp(1.j * phi)
@@ -487,7 +487,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
-            for op in parallel_set:
+            for op in reversed(parallel_set):
                 if op == 'pht':
                     swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
@@ -537,7 +537,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
-            for op in parallel_set:
+            for op in reversed(parallel_set):
                 if op == 'pht':
                     swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
@@ -587,7 +587,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
-            for op in parallel_set:
+            for op in reversed(parallel_set):
                 if op == 'pht':
                     swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
@@ -637,7 +637,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
-            for op in parallel_set:
+            for op in reversed(parallel_set):
                 if op == 'pht':
                     swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
@@ -687,7 +687,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
-            for op in parallel_set:
+            for op in reversed(parallel_set):
                 if op == 'pht':
                     swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
@@ -737,7 +737,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
-            for op in parallel_set:
+            for op in reversed(parallel_set):
                 if op == 'pht':
                     swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
@@ -787,7 +787,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         right_unitary = numpy.eye(2 * n, dtype=complex)
         for parallel_set in decomposition:
             combined_op = numpy.eye(2 * n, dtype=complex)
-            for op in parallel_set:
+            for op in reversed(parallel_set):
                 if op == 'pht':
                     swap_rows(combined_op, n - 1, 2 * n - 1)
                 else:
