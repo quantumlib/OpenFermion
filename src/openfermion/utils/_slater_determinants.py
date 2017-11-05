@@ -598,30 +598,13 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
             shape=(4, 4))
 
     # Initialize identity operators
-    if i == 0:
-        # The first qubit needs to be acted on
-        left_eye = None
-    else:
-        # The first qubit does not need to be acted on
-        left_eye = eye(2 ** i, format='csc')
-    if j == n_qubits - 1:
-        # The last qubit needs to be acted on
-        right_eye = None
-    else:
-        # The last qubit does not need to be acted on
-        right_eye = eye(2 ** (n_qubits - 1 - j), format='csc')
+    left_eye = eye(2 ** i, format='csc')
+    right_eye = eye(2 ** (n_qubits - 1 - j), format='csc')
 
     # Construct the matrix and return
-    if left_eye is None and right_eye is None:
-        givens_matrix = rotation_matrix
-    elif left_eye is None and right_eye is not None:
-        givens_matrix = kron(rotation_matrix, right_eye, format='csc')
-    elif right_eye is None:
-        givens_matrix = kron(left_eye, rotation_matrix, format='csc')
-    else:
-        givens_matrix = kron(left_eye, kron(rotation_matrix, right_eye,
-                                            format='csc'),
-                             format='csc')
+    givens_matrix = kron(left_eye, kron(rotation_matrix, right_eye,
+                                        format='csc'),
+                         format='csc')
 
     return givens_matrix
 
@@ -632,7 +615,7 @@ def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
     encoding.
     """
     left_eye = eye(2 ** (n_qubits - 1), format='csc')
-    return kron(left_eye, pauli_matrix_map['X'], format='csc')
+    return kron(left_eye, pauli_matrix_map['Y'], format='csc')
 
 
 def swap_rows(M, i, j):
