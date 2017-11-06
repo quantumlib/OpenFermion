@@ -699,16 +699,16 @@ class MolecularData(object):
             data = f["ccsd_energy"][...]
             self.ccsd_energy = data if data.dtype.num != 0 else None
             # Load general calculations
-            try:
+            if ("general_calculations_keys" in f and
+                    "general_calculations_values" in f):
                 keys = f["general_calculations_keys"]
                 values = f["general_calculations_values"]
                 if keys.shape != (()):
                     self.general_calculations = {
                         key.tobytes().decode('utf-8'): value for key, value
                         in zip(keys[...], values[...])}
-            except KeyError:
+            else:
                 self.general_calculations = None
-
 
     def get_from_file(self, property_name):
         """Helper routine to re-open HDF5 file and pull out single property
