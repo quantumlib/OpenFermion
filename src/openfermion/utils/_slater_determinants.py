@@ -16,11 +16,12 @@ from __future__ import absolute_import
 
 import numpy
 from scipy.linalg import schur
-from scipy.sparse import csc_matrix, eye, kron
+from scipy.sparse import csc_matrix, eye
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.utils._sparse_tools import (jw_hartree_fock_state,
+                                             kronecker_operators,
                                              pauli_matrix_map)
 
 
@@ -601,9 +602,7 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
     right_eye = eye(2 ** (n_qubits - 1 - j), format='csc')
 
     # Construct the matrix and return
-    givens_matrix = kron(left_eye, kron(rotation_matrix, right_eye,
-                                        format='csc'),
-                         format='csc')
+    givens_matrix = kronecker_operators([left_eye, rotation_matrix, right_eye])
 
     return givens_matrix
 
@@ -614,7 +613,7 @@ def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
     encoding.
     """
     left_eye = eye(2 ** (n_qubits - 1), format='csc')
-    return kron(left_eye, pauli_matrix_map['X'], format='csc')
+    return kronecker_operators([left_eye, pauli_matrix_map['X']])
 
 
 def swap_rows(M, i, j):
