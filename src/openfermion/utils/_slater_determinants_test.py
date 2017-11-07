@@ -34,12 +34,14 @@ from openfermion.utils._slater_determinants import (
         givens_matrix_elements,
         swap_rows)
 
+
 class GroundStatePreparationCircuitTest(unittest.TestCase):
 
     def test_bad_input(self):
         """Test bad input."""
         with self.assertRaises(ValueError):
             description, n_electrons = ground_state_preparation_circuit('a')
+
 
 class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
 
