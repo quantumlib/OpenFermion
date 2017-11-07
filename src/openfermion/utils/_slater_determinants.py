@@ -521,7 +521,7 @@ def givens_matrix_elements(a, b):
 
     # Construct matrix and return
     givens_rotation = numpy.array([[cosine, -phase * sine],
-                                  [sine, phase * cosine]])
+                                   [sine, phase * cosine]])
     return givens_rotation
 
 
