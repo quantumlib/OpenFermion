@@ -97,6 +97,9 @@ def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
         ground_energy(float): The lowest eigenvalue.
         state(sparse): The lowest eigenstate in scipy.sparse csc format.
     """
+    if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
+        raise ValueError('Input must be an instance of QuadraticHamiltonian.')
+
     n_qubits = quadratic_hamiltonian.n_qubits
 
     # Compute the ground energy
@@ -555,7 +558,7 @@ def givens_matrix_elements(a, b, which='left'):
         else:
             givens_rotation = numpy.array([[cosine, -phase * sine],
                                            [sine, phase * cosine]])
-    else:
+    elif which == 'right':
         # We want to zero out b
         if numpy.isreal(a) and numpy.isreal(b):
             givens_rotation = numpy.array([[sine, phase * cosine],
@@ -563,6 +566,8 @@ def givens_matrix_elements(a, b, which='left'):
         else:
             givens_rotation = numpy.array([[sine, phase * cosine],
                                            [cosine, -phase * sine]])
+    else:
+        raise ValueError('"which" must be equal to "left" or "right".')
     return givens_rotation
 
 

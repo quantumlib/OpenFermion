@@ -23,6 +23,7 @@ from openfermion.transforms import get_fermion_operator
 from openfermion.utils import (fermionic_gaussian_decomposition,
                                get_ground_state,
                                givens_decomposition,
+                               ground_state_preparation_circuit,
                                jordan_wigner_sparse,
                                jw_get_quadratic_hamiltonian_ground_state)
 from openfermion.utils._slater_determinants import (
@@ -33,6 +34,12 @@ from openfermion.utils._slater_determinants import (
         givens_matrix_elements,
         swap_rows)
 
+class GroundStatePreparationCircuitTest(unittest.TestCase):
+
+    def test_bad_input(self):
+        """Test bad input."""
+        with self.assertRaises(ValueError):
+            description, n_electrons = ground_state_preparation_circuit('a')
 
 class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
 
@@ -119,6 +126,11 @@ class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
                 discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_bad_input(self):
+        """Test bad input."""
+        with self.assertRaises(ValueError):
+            energy, state = jw_get_quadratic_hamiltonian_ground_state('a')
 
 
 class GivensDecompositionTest(unittest.TestCase):
@@ -465,7 +477,18 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
 class GivensMatrixElementsTest(unittest.TestCase):
 
     def setUp(self):
-        self.num_test_repetitions = 10
+        self.num_test_repetitions = 5
+
+    def test_already_zero(self):
+        """Test when some entries are already zero."""
+        # Test when left entry is zero
+        v = numpy.array([0., numpy.random.randn()])
+        G = givens_matrix_elements(v[0], v[1])
+        self.assertAlmostEqual(G.dot(v)[0], 0.)
+        # Test when right entry is zero
+        v = numpy.array([numpy.random.randn(), 0.])
+        G = givens_matrix_elements(v[0], v[1])
+        self.assertAlmostEqual(G.dot(v)[0], 0.)
 
     def test_real(self):
         """Test that the procedure works for real numbers."""
@@ -475,3 +498,40 @@ class GivensMatrixElementsTest(unittest.TestCase):
             G_right = givens_matrix_elements(v[0], v[1], which='right')
             self.assertAlmostEqual(G_left.dot(v)[0], 0.)
             self.assertAlmostEqual(G_right.dot(v)[1], 0.)
+
+    def test_bad_input(self):
+        """Test bad input."""
+        with self.assertRaises(ValueError):
+            v = numpy.random.randn(2)
+            G = givens_matrix_elements(v[0], v[1], which='a')
+
+
+class GivensRotateTest(unittest.TestCase):
+
+    def test_bad_input(self):
+        """Test bad input."""
+        with self.assertRaises(ValueError):
+            v = numpy.random.randn(2)
+            G = givens_matrix_elements(v[0], v[1])
+            givens_rotate(v, G, 0, 1, which='a')
+
+
+class DoubleGivensRotateTest(unittest.TestCase):
+
+    def test_odd_dimension(self):
+        """Test that it raises an error for odd-dimensional input."""
+        A = numpy.random.randn(3, 3)
+        v = numpy.random.randn(2)
+        G = givens_matrix_elements(v[0], v[1])
+        with self.assertRaises(ValueError):
+            double_givens_rotate(A, G, 0, 1, which='row')
+        with self.assertRaises(ValueError):
+            double_givens_rotate(A, G, 0, 1, which='col')
+
+    def test_bad_input(self):
+        """Test bad input."""
+        A = numpy.random.randn(3, 3)
+        v = numpy.random.randn(2)
+        G = givens_matrix_elements(v[0], v[1])
+        with self.assertRaises(ValueError):
+            double_givens_rotate(A, G, 0, 1, which='a')
