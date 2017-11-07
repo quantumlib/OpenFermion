@@ -91,9 +91,32 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
 
 
 def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
-    """Get the ground state of a quadratic hamiltonian as a sparse array
-    using the Jordan-Wigner encoding."""
+    """Compute the lowest eigenvalue and eigenstate of a quadratic Hamiltonian.
+
+    Returns:
+        ground_energy(float): The lowest eigenvalue.
+        state(sparse): The lowest eigenstate in scipy.sparse csc format.
+    """
     n_qubits = quadratic_hamiltonian.n_qubits
+
+    # Compute the ground energy
+    if quadratic_hamiltonian.conserves_particle_number():
+        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
+        energies, diagonalizing_unitary = numpy.linalg.eigh(
+                hermitian_matrix)
+        num_negative_energies = numpy.count_nonzero(
+                energies < -EQ_TOLERANCE)
+        negative_energies = energies[:num_negative_energies]
+        ground_energy = (numpy.sum(negative_energies) +
+                         quadratic_hamiltonian.constant)
+    else:
+        majorana_matrix, majorana_constant = (
+                quadratic_hamiltonian.majorana_form())
+        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
+        negative_diagonal_entries = canonical[range(n_qubits, 2 * n_qubits),
+                                              range(n_qubits)]
+        ground_energy = (.5 * numpy.sum(negative_diagonal_entries) +
+                         majorana_constant)
 
     # Obtain the circuit that prepares the ground state
     circuit_description, n_electrons = ground_state_preparation_circuit(
@@ -114,7 +137,7 @@ def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
                 state = jw_sparse_givens_rotation(
                             i, j, theta, phi, n_qubits).dot(state)
 
-    return state
+    return ground_energy, state
 
 
 def fermionic_gaussian_decomposition(unitary_rows):

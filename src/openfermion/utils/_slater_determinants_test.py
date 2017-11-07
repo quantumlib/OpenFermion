@@ -61,8 +61,12 @@ class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
             ground_energy, ground_state = get_ground_state(sparse_operator)
 
             # Compute the ground state using the circuit
-            circuit_state = jw_get_quadratic_hamiltonian_ground_state(
-                    quadratic_hamiltonian)
+            circuit_energy, circuit_state = (
+                    jw_get_quadratic_hamiltonian_ground_state(
+                        quadratic_hamiltonian))
+
+            # Check that the energies match
+            self.assertAlmostEqual(ground_energy, circuit_energy)
 
             # Check that the state obtained using the circuit is a ground state
             difference = (sparse_operator * circuit_state -
@@ -100,8 +104,12 @@ class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
             ground_energy, ground_state = get_ground_state(sparse_operator)
 
             # Compute the ground state using the circuit
-            circuit_state = jw_get_quadratic_hamiltonian_ground_state(
-                    quadratic_hamiltonian)
+            circuit_energy, circuit_state = (
+                    jw_get_quadratic_hamiltonian_ground_state(
+                        quadratic_hamiltonian))
+
+            # Check that the energies match
+            self.assertAlmostEqual(ground_energy, circuit_energy)
 
             # Check that the state obtained using the circuit is a ground state
             difference = (sparse_operator * circuit_state -

@@ -78,6 +78,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                      (1, 1): .5 * antisymmetric_part,
                      (0, 0): -.5 * antisymmetric_part.conj()})
 
+        self.constant = self.n_body_tensors[()]
         self.chemical_potential = chemical_potential
 
     def combined_hermitian_part(self):
