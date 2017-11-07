@@ -57,6 +57,10 @@ def kronecker_operators(*args):
 def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
     """Make a matrix representation of a fermion ladder operator.
 
+    Operators are mapped as follows:
+    a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
+    a_j -> Z_0 .. Z_{j-1} (X_j + iY_j) / 2
+
     Args:
         index: This is a nonzero integer. The integer indicates the tensor
             factor and the sign indicates raising or lowering.
@@ -65,18 +69,22 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
     Returns:
         The corresponding SparseOperator.
     """
+    parities = tensor_factor * [pauli_z_csc]
     identities = [scipy.sparse.identity(
-        2 ** tensor_factor, dtype=complex, format='csc')]
-    parities = (n_qubits - tensor_factor - 1) * [pauli_z_csc]
+        2 ** (n_qubits - tensor_factor - 1), dtype=complex, format='csc')]
     if ladder_type:
-        operator = kronecker_operators(identities + [q_raise_csc] + parities)
+        operator = kronecker_operators(parities + [q_raise_csc] + identities)
     else:
-        operator = kronecker_operators(identities + [q_lower_csc] + parities)
+        operator = kronecker_operators(parities + [q_lower_csc] + identities)
     return operator
 
 
 def jordan_wigner_sparse(fermion_operator, n_qubits=None):
     """Initialize a SparseOperator from a FermionOperator.
+
+    Operators are mapped as follows:
+    a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
+    a_j -> Z_0 .. Z_{j-1} (X_j + iY_j) / 2
 
     Args:
         fermion_operator(FermionOperator): instance of the FermionOperator

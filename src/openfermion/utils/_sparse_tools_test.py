@@ -162,7 +162,7 @@ class JordanWignerSparseTest(unittest.TestCase):
             expected.A))
 
     def test_jw_sparse_1annihilate(self):
-        expected = csc_matrix(([1, 1], ([0, 2], [1, 3])), shape=(4, 4))
+        expected = csc_matrix(([1, -1], ([0, 2], [1, 3])), shape=(4, 4))
         self.assertTrue(numpy.allclose(
             jordan_wigner_sparse(FermionOperator('1')).A,
             expected.A))

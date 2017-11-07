@@ -177,3 +177,12 @@ class ReverseJWTest(unittest.TestCase):
     def test_bad_type(self):
         with self.assertRaises(TypeError):
             reverse_jordan_wigner(3)
+
+    def test_jw_convention(self):
+        """Test that the Jordan-Wigner convention places the Z-string on
+        lower indices."""
+        qubit_op = QubitOperator('Z0 X1')
+        transformed_op = reverse_jordan_wigner(qubit_op)
+        expected_op = FermionOperator('1^')
+        expected_op += FermionOperator('1')
+        self.assertTrue(transformed_op.isclose(expected_op))
