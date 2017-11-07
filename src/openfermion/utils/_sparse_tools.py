@@ -34,7 +34,7 @@ from openfermion.hamiltonians._jellium import (momentum_vector,
 
 
 # Make global definitions.
-identity_csc = scipy.sparse.identity(2, format='csr', dtype=complex)
+identity_csc = scipy.sparse.identity(2, format='csc', dtype=complex)
 pauli_x_csc = scipy.sparse.csc_matrix([[0., 1.], [1., 0.]], dtype=complex)
 pauli_y_csc = scipy.sparse.csc_matrix([[0., -1.j], [1.j, 0.]], dtype=complex)
 pauli_z_csc = scipy.sparse.csc_matrix([[1., 0.], [0., -1.]], dtype=complex)
@@ -204,16 +204,29 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     return sparse_operator
 
 
+def jw_slater_determinant(occupied_orbitals, n_orbitals):
+    """Function to produce a Slater determinant in JW representation.
+
+    Args:
+        occupied_orbitals(list): A list of integers representing the indices
+            of the occupied orbitals in the desired Slater determinant
+        n_orbitals(int): The total number of orbitals
+
+    Returns:
+        slater_determinant(sparse): The JW-encoded Slater determinant as a
+            sparse matrix
+    """
+    one_index = sum([2 ** (n_orbitals - 1 - i) for i in occupied_orbitals])
+    slater_determinant = scipy.sparse.csc_matrix(([1.], ([one_index], [0])),
+                                                 shape=(2 ** n_orbitals, 1),
+                                                 dtype=float)
+    return slater_determinant
+
+
 def jw_hartree_fock_state(n_electrons, n_orbitals):
-    """Function to product Hartree-Fock state in JW representation."""
-    occupied = scipy.sparse.csr_matrix([[0], [1]], dtype=float)
-    psi = 1.
-    unoccupied = scipy.sparse.csr_matrix([[1], [0]], dtype=float)
-    for orbital in range(n_electrons):
-        psi = scipy.sparse.kron(psi, occupied, 'csr')
-    for orbital in range(n_orbitals - n_electrons):
-        psi = scipy.sparse.kron(psi, unoccupied, 'csr')
-    return psi
+    """Function to produce Hartree-Fock state in JW representation."""
+    hartree_fock_state = jw_slater_determinant(range(n_electrons), n_orbitals)
+    return hartree_fock_state
 
 
 def jw_number_indices(n_electrons, n_qubits):
