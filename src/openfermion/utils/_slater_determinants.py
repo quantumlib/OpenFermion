@@ -44,7 +44,7 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         n_electrons(int):
             The number of electrons to start with. This describes the
             initial state that the circuit should be applied to: it should
-            be a Slater determinant (in the original basis) with the
+            be a Slater determinant (in the computational basis) with the
             first n_electrons orbitals filled.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
