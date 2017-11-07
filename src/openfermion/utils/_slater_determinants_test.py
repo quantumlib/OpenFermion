@@ -30,6 +30,7 @@ from openfermion.utils._slater_determinants import (
         diagonalizing_fermionic_unitary,
         double_givens_rotate,
         givens_rotate,
+        givens_matrix_elements,
         swap_rows)
 
 
@@ -118,6 +119,78 @@ class GivensDecompositionTest(unittest.TestCase):
         self.test_dimensions = [(3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9),
                                 (4, 7), (4, 8), (4, 9)]
 
+    def test_main_procedure(self):
+        for m, n in self.test_dimensions:
+            # Obtain a random matrix of orthonormal rows
+            x = numpy.random.randn(n, n)
+            y = numpy.random.randn(n, n)
+            A = x + 1.j*y
+            Q, R = qr(A)
+            Q = Q[:m, :]
+
+            # Get Givens decomposition of Q
+            V, givens_rotations, diagonal = givens_decomposition(Q)
+
+            # Compute U
+            U = numpy.eye(n, dtype=complex)
+            for parallel_set in givens_rotations:
+                combined_givens = numpy.eye(n, dtype=complex)
+                for i, j, theta, phi in reversed(parallel_set):
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    G = numpy.array([[c, -phase * s],
+                                    [s, phase * c]], dtype=complex)
+                    givens_rotate(combined_givens, G, i, j)
+                U = combined_givens.dot(U)
+
+            # Compute V * Q * U^\dagger
+            W = V.dot(Q.dot(U.T.conj()))
+
+            # Construct the diagonal matrix
+            D = numpy.zeros((m, n), dtype=complex)
+            D[numpy.diag_indices(m)] = diagonal
+
+            # Assert that W and D are the same
+            for i in range(m):
+                for j in range(n):
+                    self.assertAlmostEqual(D[i, j], W[i, j])
+
+    def test_real_numbers(self):
+        for m, n in self.test_dimensions:
+            # Obtain a random matrix of orthonormal rows
+            A = numpy.random.randn(n, n)
+            Q, R = qr(A)
+            Q = Q[:m, :]
+
+            # Get Givens decomposition of Q
+            V, givens_rotations, diagonal = givens_decomposition(Q)
+
+            # Compute U
+            U = numpy.eye(n, dtype=complex)
+            for parallel_set in givens_rotations:
+                combined_givens = numpy.eye(n, dtype=complex)
+                for i, j, theta, phi in reversed(parallel_set):
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    G = numpy.array([[c, -phase * s],
+                                    [s, phase * c]], dtype=complex)
+                    givens_rotate(combined_givens, G, i, j)
+                U = combined_givens.dot(U)
+
+            # Compute V * Q * U^\dagger
+            W = V.dot(Q.dot(U.T.conj()))
+
+            # Construct the diagonal matrix
+            D = numpy.zeros((m, n), dtype=complex)
+            D[numpy.diag_indices(m)] = diagonal
+
+            # Assert that W and D are the same
+            for i in range(m):
+                for j in range(n):
+                    self.assertAlmostEqual(D[i, j], W[i, j])
+
     def test_bad_dimensions(self):
         m, n = (3, 2)
 
@@ -195,62 +268,11 @@ class GivensDecompositionTest(unittest.TestCase):
             for j in range(n):
                 self.assertAlmostEqual(D[i, j], W[i, j])
 
-    def test_main_procedure(self):
-        for m, n in self.test_dimensions:
-            # Obtain a random matrix of orthonormal rows
-            x = numpy.random.randn(n, n)
-            y = numpy.random.randn(n, n)
-            A = x + 1.j*y
-            Q, R = qr(A)
-            Q = Q[:m, :]
-
-            # Get Givens decomposition of Q
-            V, givens_rotations, diagonal = givens_decomposition(Q)
-
-            # Compute U
-            U = numpy.eye(n, dtype=complex)
-            for parallel_set in givens_rotations:
-                combined_givens = numpy.eye(n, dtype=complex)
-                for i, j, theta, phi in reversed(parallel_set):
-                    c = numpy.cos(theta)
-                    s = numpy.sin(theta)
-                    phase = numpy.exp(1.j * phi)
-                    G = numpy.array([[c, -phase * s],
-                                    [s, phase * c]], dtype=complex)
-                    givens_rotate(combined_givens, G, i, j)
-                U = combined_givens.dot(U)
-
-            # Compute V * Q * U^\dagger
-            W = V.dot(Q.dot(U.T.conj()))
-
-            # Construct the diagonal matrix
-            D = numpy.zeros((m, n), dtype=complex)
-            D[numpy.diag_indices(m)] = diagonal
-
-            # Assert that W and D are the same
-            for i in range(m):
-                for j in range(n):
-                    self.assertAlmostEqual(D[i, j], W[i, j])
-
 
 class FermionicGaussianDecompositionTest(unittest.TestCase):
 
     def setUp(self):
         self.test_dimensions = [3, 4, 5, 6, 7, 8, 9]
-
-    def test_bad_dimensions(self):
-        n, p = (3, 7)
-        rand_mat = numpy.random.randn(n, p)
-        with self.assertRaises(ValueError):
-            left_unitary, decomposition, antidiagonal = (
-                    fermionic_gaussian_decomposition(rand_mat))
-
-    def test_bad_constraints(self):
-        n = 3
-        ones_mat = numpy.ones((n, 2 * n))
-        with self.assertRaises(ValueError):
-            left_unitary, decomposition, antidiagonal = (
-                    fermionic_gaussian_decomposition(ones_mat))
 
     def test_main_procedure(self):
         for n in self.test_dimensions:
@@ -304,6 +326,20 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             # Assert that W and D are the same
             for i in numpy.ndindex((n, 2 * n)):
                 self.assertAlmostEqual(diag[i], product[i])
+
+    def test_bad_dimensions(self):
+        n, p = (3, 7)
+        rand_mat = numpy.random.randn(n, p)
+        with self.assertRaises(ValueError):
+            left_unitary, decomposition, antidiagonal = (
+                    fermionic_gaussian_decomposition(rand_mat))
+
+    def test_bad_constraints(self):
+        n = 3
+        ones_mat = numpy.ones((n, 2 * n))
+        with self.assertRaises(ValueError):
+            left_unitary, decomposition, antidiagonal = (
+                    fermionic_gaussian_decomposition(ones_mat))
 
 
 class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
@@ -416,3 +452,18 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
                     self.assertTrue(canonical[i, j] < EQ_TOLERANCE)
                 else:
                     self.assertAlmostEqual(canonical[i, j], 0.)
+
+
+class GivensMatrixElementsTest(unittest.TestCase):
+
+    def setUp(self):
+        self.num_test_repetitions = 10
+
+    def test_real(self):
+        """Test that the procedure works for real numbers."""
+        for _ in range(self.num_test_repetitions):
+            v = numpy.random.randn(2)
+            G_left = givens_matrix_elements(v[0], v[1], which='left')
+            G_right = givens_matrix_elements(v[0], v[1], which='right')
+            self.assertAlmostEqual(G_left.dot(v)[0], 0.)
+            self.assertAlmostEqual(G_right.dot(v)[1], 0.)

@@ -230,7 +230,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
                                                          right_element)
 
                 # Add the parameters to the list
-                theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+                theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
                 phi = numpy.angle(givens_rotation[1, 1])
                 parallel_ops.append((j, j + 1, theta, phi))
 
@@ -353,14 +353,11 @@ def givens_decomposition(unitary_rows):
                 if abs(right_element) > EQ_TOLERANCE:
                     # We actually need to perform a Givens rotation
                     left_element = current_matrix[i, j - 1].conj()
-                    givens_rotation = givens_matrix_elements(left_element,
-                                                             right_element)
-                    # Need to swap the rows to zero out right_element
-                    # rather than left_element
-                    swap_rows(givens_rotation, 0, 1)
+                    givens_rotation = givens_matrix_elements(
+                            left_element, right_element, which='right')
 
                     # Add the parameters to the list
-                    theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+                    theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
                     phi = numpy.angle(givens_rotation[1, 1])
                     parallel_rotations.append((j - 1, j, theta, phi))
 
@@ -480,22 +477,29 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     return canonical, orthogonal.T
 
 
-def givens_matrix_elements(a, b):
+def givens_matrix_elements(a, b, which='left'):
     """Compute the matrix elements of the Givens rotation that zeroes out one
     of two row entries.
 
-    Returns a matrix G such that
+    If `which='left'` then returns a matrix G such that
 
         G * [a  b]^T= [0  r]^T
+
+    otherwise, returns a matrix G such that
+
+        G * [a  b]^T= [r  0]^T
 
     where r is a complex number.
 
     Args:
-        a: A complex number representing the upper row entry
-        b: A complex number representing the lower row entry
+        a(complex or float): A complex number representing the upper row entry
+        b(complex or float): A complex number representing the lower row entry
+        which(string): Either 'left' or 'right', indicating whether to
+            zero out the left element (first argument) or right element
+            (second argument). Default is `left`.
     Returns:
-        G: A 2 x 2 numpy array representing the matrix G. The numbers in the
-            first column of G are real.
+        G(ndarray): A 2 x 2 numpy array representing the matrix G.
+            The numbers in the first column of G are real.
     """
     # Handle case that a is zero
     if abs(a) < EQ_TOLERANCE:
@@ -520,8 +524,22 @@ def givens_matrix_elements(a, b):
             phase = numpy.real(phase)
 
     # Construct matrix and return
-    givens_rotation = numpy.array([[cosine, -phase * sine],
-                                   [sine, phase * cosine]])
+    if which == 'left':
+        # We want to zero out a
+        if numpy.isreal(a) and numpy.isreal(b):
+            givens_rotation = numpy.array([[cosine, -phase * sine],
+                                           [phase * sine, cosine]])
+        else:
+            givens_rotation = numpy.array([[cosine, -phase * sine],
+                                           [sine, phase * cosine]])
+    else:
+        # We want to zero out b
+        if numpy.isreal(a) and numpy.isreal(b):
+            givens_rotation = numpy.array([[sine, phase * cosine],
+                                           [-phase * cosine, sine]])
+        else:
+            givens_rotation = numpy.array([[sine, phase * cosine],
+                                           [cosine, -phase * sine]])
     return givens_rotation
 
 
