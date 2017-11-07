@@ -614,7 +614,7 @@ def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
     encoding.
     """
     left_eye = eye(2 ** (n_qubits - 1), format='csc')
-    return kron(left_eye, pauli_matrix_map['Y'], format='csc')
+    return kron(left_eye, pauli_matrix_map['X'], format='csc')
 
 
 def swap_rows(M, i, j):
