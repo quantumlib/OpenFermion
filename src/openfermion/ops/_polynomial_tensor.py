@@ -126,6 +126,29 @@ class PolynomialTensor(object):
             key = next(key_iterator)
         self.n_qubits = n_body_tensors[key].shape[0]
 
+    def constant(self):
+        """Get the constant term of the tensor."""
+        if () in self.n_body_tensors:
+            return self.n_body_tensors[()]
+        else:
+            return 0.
+
+    def rotate_basis(self, rotation_matrix):
+        """
+        Rotate the orbital basis of the PolynomialTensor.
+
+        Args:
+            rotation_matrix: A square numpy array or matrix having
+                dimensions of n_qubits by n_qubits. Assumed to be real and
+                invertible.
+        """
+        if (1, 0) in self.n_body_tensors:
+            self.n_body_tensors[1, 0] = one_body_basis_change(
+                self.n_body_tensors[1, 0], rotation_matrix)
+        if (1, 1, 0, 0) in self.n_body_tensors:
+            self.n_body_tensors[1, 1, 0, 0] = two_body_basis_change(
+                self.n_body_tensors[1, 1, 0, 0], rotation_matrix)
+
     def __getitem__(self, args):
         """Look up matrix element.
 
@@ -266,22 +289,6 @@ class PolynomialTensor(object):
         for key in self:
             strings.append('{} {}\n'.format(key, self[key]))
         return ''.join(strings) if strings else '0'
-
-    def rotate_basis(self, rotation_matrix):
-        """
-        Rotate the orbital basis of the PolynomialTensor.
-
-        Args:
-            rotation_matrix: A square numpy array or matrix having
-                dimensions of n_qubits by n_qubits. Assumed to be real and
-                invertible.
-        """
-        if (1, 0) in self.n_body_tensors:
-            self.n_body_tensors[1, 0] = one_body_basis_change(
-                self.n_body_tensors[1, 0], rotation_matrix)
-        if (1, 1, 0, 0) in self.n_body_tensors:
-            self.n_body_tensors[1, 1, 0, 0] = two_body_basis_change(
-                self.n_body_tensors[1, 1, 0, 0], rotation_matrix)
 
     def __repr__(self):
         return str(self)

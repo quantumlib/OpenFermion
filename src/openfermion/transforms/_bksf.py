@@ -80,7 +80,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
     n_qubits = count_qubits(iop)
 
     # Initialize qubit operator as constant.
-    qubit_operator = QubitOperator((), iop.constant)
+    qubit_operator = QubitOperator((), iop.constant())
     edge_matrix = bravyi_kitaev_fast_edge_matrix(iop)
     edge_matrix_indices = numpy.array(numpy.nonzero(numpy.triu(edge_matrix) -
                                       numpy.diag(numpy.diag(edge_matrix))))

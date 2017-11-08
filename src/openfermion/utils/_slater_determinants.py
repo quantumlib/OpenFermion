@@ -111,7 +111,7 @@ def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
                 energies < -EQ_TOLERANCE)
         negative_energies = energies[:num_negative_energies]
         ground_energy = (numpy.sum(negative_energies) +
-                         quadratic_hamiltonian.constant)
+                         quadratic_hamiltonian.constant())
     else:
         majorana_matrix, majorana_constant = (
                 quadratic_hamiltonian.majorana_form())
