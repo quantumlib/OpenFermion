@@ -51,9 +51,9 @@ class LiHIntegrationTest(unittest.TestCase):
         self.fci_rdm = self.molecule.get_molecular_rdm(use_fci=1)
 
         # Get explicit coefficients.
-        self.nuclear_repulsion = self.molecular_hamiltonian.constant
-        self.one_body = self.molecular_hamiltonian.one_body_tensor
-        self.two_body = self.molecular_hamiltonian.two_body_tensor
+        self.nuclear_repulsion = self.molecular_hamiltonian.constant()
+        self.one_body = self.molecular_hamiltonian.one_body_tensor()
+        self.two_body = self.molecular_hamiltonian.two_body_tensor()
 
         # Get fermion Hamiltonian.
         self.fermion_hamiltonian = normal_ordered(get_fermion_operator(
@@ -63,9 +63,9 @@ class LiHIntegrationTest(unittest.TestCase):
         self.qubit_hamiltonian = jordan_wigner(self.fermion_hamiltonian)
 
         # Get explicit coefficients.
-        self.nuclear_repulsion = self.molecular_hamiltonian.constant
-        self.one_body = self.molecular_hamiltonian.one_body_tensor
-        self.two_body = self.molecular_hamiltonian.two_body_tensor
+        self.nuclear_repulsion = self.molecular_hamiltonian.constant()
+        self.one_body = self.molecular_hamiltonian.one_body_tensor()
+        self.two_body = self.molecular_hamiltonian.two_body_tensor()
 
         # Get matrix form.
         self.hamiltonian_matrix = get_sparse_operator(
@@ -87,9 +87,9 @@ class LiHIntegrationTest(unittest.TestCase):
 
         # Test RDM energy.
         fci_rdm_energy = self.nuclear_repulsion
-        fci_rdm_energy += numpy.sum(self.fci_rdm.one_body_tensor *
+        fci_rdm_energy += numpy.sum(self.fci_rdm.one_body_tensor() *
                                     self.one_body)
-        fci_rdm_energy += numpy.sum(self.fci_rdm.two_body_tensor *
+        fci_rdm_energy += numpy.sum(self.fci_rdm.two_body_tensor() *
                                     self.two_body)
         self.assertAlmostEqual(fci_rdm_energy, self.molecule.fci_energy)
 

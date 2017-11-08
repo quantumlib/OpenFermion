@@ -67,11 +67,11 @@ class InteractionOperator(PolynomialTensor):
 
     def one_body_tensor(self):
         """Get the one-body tensor."""
-        return self.n_body_tensors[1, 0]
+        return self.n_body_tensors[1, 0].copy()
 
     def two_body_tensor(self):
         """Get the two-body tensor."""
-        return self.n_body_tensors[1, 1, 0, 0]
+        return self.n_body_tensors[1, 1, 0, 0].copy()
 
     def unique_iter(self, complex_valued=False):
         """

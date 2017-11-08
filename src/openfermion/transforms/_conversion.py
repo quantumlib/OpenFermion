@@ -329,9 +329,9 @@ def get_molecular_data(interaction_operator,
 
     molecule.n_orbitals = len(reduction_indices)
 
-    molecule.one_body_integrals = interaction_operator.one_body_tensor[
+    molecule.one_body_integrals = interaction_operator.one_body_tensor()[
         numpy.ix_(reduction_indices, reduction_indices)]
-    molecule.two_body_integrals = interaction_operator.two_body_tensor[
+    molecule.two_body_integrals = interaction_operator.two_body_tensor()[
         numpy.ix_(reduction_indices, reduction_indices,
                   reduction_indices, reduction_indices)]
 

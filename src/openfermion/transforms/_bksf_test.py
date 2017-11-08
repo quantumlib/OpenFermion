@@ -252,7 +252,7 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         one_body[(1, 1)] = .5
         one_body[(2, 2)] = .6
         one_body[(3, 3)] = .7
-        two_body = self.molecular_hamiltonian.two_body_tensor
+        two_body = self.molecular_hamiltonian.two_body_tensor()
         # initiating number operator terms for all the possible cases
         two_body[(1, 2, 3, 1)] = 0.1
         two_body[(1, 3, 2, 1)] = 0.1

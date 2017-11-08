@@ -280,7 +280,6 @@ class InteractionOperatorsJWTest(unittest.TestCase):
         test_op += hermitian_conjugated(test_op)
 
         interaction_op = get_interaction_operator(test_op)
-        interaction_op.constant = 0.0
 
         retransformed_test_op = reverse_jordan_wigner(jordan_wigner(
             interaction_op))
