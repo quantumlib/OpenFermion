@@ -16,9 +16,13 @@ from __future__ import absolute_import
 
 import numpy
 from scipy.linalg import schur
+from scipy.sparse import csc_matrix, eye
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
+from openfermion.utils._sparse_tools import (jw_hartree_fock_state,
+                                             kronecker_operators,
+                                             pauli_matrix_map)
 
 
 def ground_state_preparation_circuit(quadratic_hamiltonian):
@@ -38,6 +42,11 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
             of modes i and j by angles theta and phi.
+        n_electrons(int):
+            The number of electrons to start with. This describes the
+            initial state that the circuit should be applied to: it should
+            be a Slater determinant (in the computational basis) with the
+            first n_electrons orbitals filled.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
@@ -59,7 +68,8 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         # Get the circuit description
         left_unitary, decomposition, diagonal = givens_decomposition(
                 slater_determinant_matrix)
-        circuit_description = decomposition
+        circuit_description = list(reversed(decomposition))
+        n_electrons = num_negative_energies
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
@@ -75,8 +85,62 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(
                     slater_determinant_matrix))
-        circuit_description = decomposition
-    return circuit_description
+        circuit_description = list(reversed(decomposition))
+        n_electrons = 0
+    return circuit_description, n_electrons
+
+
+def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
+    """Compute the lowest eigenvalue and eigenstate of a quadratic Hamiltonian.
+
+    Returns:
+        ground_energy(float): The lowest eigenvalue.
+        state(sparse): The lowest eigenstate in scipy.sparse csc format.
+    """
+    if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
+        raise ValueError('Input must be an instance of QuadraticHamiltonian.')
+
+    n_qubits = quadratic_hamiltonian.n_qubits
+
+    # Compute the ground energy
+    if quadratic_hamiltonian.conserves_particle_number():
+        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
+        energies, diagonalizing_unitary = numpy.linalg.eigh(
+                hermitian_matrix)
+        num_negative_energies = numpy.count_nonzero(
+                energies < -EQ_TOLERANCE)
+        negative_energies = energies[:num_negative_energies]
+        ground_energy = (numpy.sum(negative_energies) +
+                         quadratic_hamiltonian.constant)
+    else:
+        majorana_matrix, majorana_constant = (
+                quadratic_hamiltonian.majorana_form())
+        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
+        negative_diagonal_entries = canonical[range(n_qubits, 2 * n_qubits),
+                                              range(n_qubits)]
+        ground_energy = (.5 * numpy.sum(negative_diagonal_entries) +
+                         majorana_constant)
+
+    # Obtain the circuit that prepares the ground state
+    circuit_description, n_electrons = ground_state_preparation_circuit(
+            quadratic_hamiltonian)
+
+    # Initialize the starting state
+    state = jw_hartree_fock_state(n_electrons, n_qubits)
+
+    # Apply the circuit
+    particle_hole_transformation = (
+            jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+    for parallel_ops in circuit_description:
+        for op in parallel_ops:
+            if op == 'pht':
+                state = particle_hole_transformation.dot(state)
+            else:
+                i, j, theta, phi = op
+                state = jw_sparse_givens_rotation(
+                            i, j, theta, phi, n_qubits).dot(state)
+
+    return ground_energy, state
 
 
 def fermionic_gaussian_decomposition(unitary_rows):
@@ -149,12 +213,13 @@ def fermionic_gaussian_decomposition(unitary_rows):
     for k in range(n - 1):
         # Zero out entries in column k
         for l in range(n - 1 - k):
-            # Zero out entry in row l
-            givens_rotation = givens_matrix_elements(current_matrix[l, k],
-                                                     current_matrix[l + 1, k])
-            # Apply Givens rotation
-            givens_rotate(current_matrix, givens_rotation, l, l + 1)
-            givens_rotate(left_unitary, givens_rotation, l, l + 1)
+            # Zero out entry in row l if needed
+            if abs(current_matrix[l, k]) > EQ_TOLERANCE:
+                givens_rotation = givens_matrix_elements(
+                        current_matrix[l, k], current_matrix[l + 1, k])
+                # Apply Givens rotation
+                givens_rotate(current_matrix, givens_rotation, l, l + 1)
+                givens_rotate(left_unitary, givens_rotation, l, l + 1)
 
     # Initialize list to store decomposition of current_matrix
     decomposition = list()
@@ -191,7 +256,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
                                                          right_element)
 
                 # Add the parameters to the list
-                theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+                theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
                 phi = numpy.angle(givens_rotation[1, 1])
                 parallel_ops.append((j, j + 1, theta, phi))
 
@@ -257,12 +322,13 @@ def givens_decomposition(unitary_rows):
     for k in reversed(range(n - m + 1, n)):
         # Zero out entries in column k
         for l in range(m - n + k):
-            # Zero out entry in row l
-            givens_rotation = givens_matrix_elements(current_matrix[l, k],
-                                                     current_matrix[l + 1, k])
-            # Apply Givens rotation
-            givens_rotate(current_matrix, givens_rotation, l, l + 1)
-            givens_rotate(left_unitary, givens_rotation, l, l + 1)
+            # Zero out entry in row l if needed
+            if abs(current_matrix[l, k]) > EQ_TOLERANCE:
+                givens_rotation = givens_matrix_elements(
+                        current_matrix[l, k], current_matrix[l + 1, k])
+                # Apply Givens rotation
+                givens_rotate(current_matrix, givens_rotation, l, l + 1)
+                givens_rotate(left_unitary, givens_rotation, l, l + 1)
 
     # Compute the decomposition of current_matrix into Givens rotations
     givens_rotations = list()
@@ -313,14 +379,11 @@ def givens_decomposition(unitary_rows):
                 if abs(right_element) > EQ_TOLERANCE:
                     # We actually need to perform a Givens rotation
                     left_element = current_matrix[i, j - 1].conj()
-                    givens_rotation = givens_matrix_elements(left_element,
-                                                             right_element)
-                    # Need to switch the rows to zero out right_element
-                    # rather than left_element
-                    givens_rotation = givens_rotation[(1, 0), :]
+                    givens_rotation = givens_matrix_elements(
+                            left_element, right_element, which='right')
 
                     # Add the parameters to the list
-                    theta = numpy.arccos(numpy.real(givens_rotation[0, 0]))
+                    theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
                     phi = numpy.angle(givens_rotation[1, 1])
                     parallel_rotations.append((j - 1, j, theta, phi))
 
@@ -440,38 +503,45 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     return canonical, orthogonal.T
 
 
-def givens_matrix_elements(a, b):
+def givens_matrix_elements(a, b, which='left'):
     """Compute the matrix elements of the Givens rotation that zeroes out one
     of two row entries.
 
-    Returns a matrix G such that
+    If `which='left'` then returns a matrix G such that
 
         G * [a  b]^T= [0  r]^T
+
+    otherwise, returns a matrix G such that
+
+        G * [a  b]^T= [r  0]^T
 
     where r is a complex number.
 
     Args:
-        a: A complex number representing the upper row entry
-        b: A complex number representing the lower row entry
+        a(complex or float): A complex number representing the upper row entry
+        b(complex or float): A complex number representing the lower row entry
+        which(string): Either 'left' or 'right', indicating whether to
+            zero out the left element (first argument) or right element
+            (second argument). Default is `left`.
     Returns:
-        G: A 2 x 2 numpy array representing the matrix G. The numbers in the
-            first column of G are real.
+        G(ndarray): A 2 x 2 numpy array representing the matrix G.
+            The numbers in the first column of G are real.
     """
     # Handle case that a is zero
     if abs(a) < EQ_TOLERANCE:
-        c = 1.
-        s = 0.
+        cosine = 1.
+        sine = 0.
         phase = 1.
     # Handle case that b is zero and a is nonzero
     elif abs(b) < EQ_TOLERANCE:
-        c = 0.
-        s = 1.
+        cosine = 0.
+        sine = 1.
         phase = 1.
     # Handle case that a and b are both nonzero
     else:
         denominator = numpy.sqrt(abs(a) ** 2 + abs(b) ** 2)
-        c = abs(b) / denominator
-        s = abs(a) / denominator
+        cosine = abs(b) / denominator
+        sine = abs(a) / denominator
         sign_b = b / abs(b)
         sign_a = a / abs(a)
         phase = sign_a * sign_b.conjugate()
@@ -480,8 +550,24 @@ def givens_matrix_elements(a, b):
             phase = numpy.real(phase)
 
     # Construct matrix and return
-    givens_rotation = numpy.array([[c, -phase * s],
-                                  [s, phase * c]])
+    if which == 'left':
+        # We want to zero out a
+        if numpy.isreal(a) and numpy.isreal(b):
+            givens_rotation = numpy.array([[cosine, -phase * sine],
+                                           [phase * sine, cosine]])
+        else:
+            givens_rotation = numpy.array([[cosine, -phase * sine],
+                                           [sine, phase * cosine]])
+    elif which == 'right':
+        # We want to zero out b
+        if numpy.isreal(a) and numpy.isreal(b):
+            givens_rotation = numpy.array([[sine, phase * cosine],
+                                           [-phase * cosine, sine]])
+        else:
+            givens_rotation = numpy.array([[sine, phase * cosine],
+                                           [cosine, -phase * sine]])
+    else:
+        raise ValueError('"which" must be equal to "left" or "right".')
     return givens_rotation
 
 
@@ -495,7 +581,7 @@ def givens_rotate(operator, givens_rotation, i, j, which='row'):
                        givens_rotation[0, 1] * row_j)
         operator[j] = (givens_rotation[1, 0] * row_i +
                        givens_rotation[1, 1] * row_j)
-    else:
+    elif which == 'col':
         # Rotate columns i and j
         col_i = operator[:, i].copy()
         col_j = operator[:, j].copy()
@@ -503,6 +589,8 @@ def givens_rotate(operator, givens_rotation, i, j, which='row'):
                           givens_rotation[0, 1].conj() * col_j)
         operator[:, j] = (givens_rotation[1, 0] * col_i +
                           givens_rotation[1, 1].conj() * col_j)
+    else:
+        raise ValueError('"which" must be equal to "row" or "col".')
 
 
 def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
@@ -523,7 +611,7 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
         givens_rotate(operator[:n], givens_rotation, i, j, which='row')
         # Rotate rows n + i and n + j
         givens_rotate(operator[n:], givens_rotation.conj(), i, j, which='row')
-    else:
+    elif which == 'col':
         if p % 2 != 0:
             raise ValueError('To apply a double Givens rotation on columns, '
                              'the number of columns must be even.')
@@ -533,6 +621,45 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
         # Rotate cols n + i and n + j
         givens_rotate(operator[:, n:], givens_rotation.conj(), i, j,
                       which='col')
+    else:
+        raise ValueError('"which" must be equal to "row" or "col".')
+
+
+def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
+    """Return the matrix (acting on a full wavefunction) that performs a
+    Givens rotation of modes i and j in the Jordan-Wigner encoding."""
+    if j != i + 1:
+        raise ValueError('Only adjacent modes can be rotated.')
+    if j > n_qubits - 1:
+        raise ValueError('Too few qubits requested.')
+
+    cosine = numpy.cos(theta)
+    sine = numpy.sin(theta)
+    phase = numpy.exp(1.j * phi)
+
+    # Create the two-qubit rotation matrix
+    rotation_matrix = csc_matrix(
+            ([1., phase * cosine, -phase * sine, sine, cosine, phase],
+             ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
+            shape=(4, 4))
+
+    # Initialize identity operators
+    left_eye = eye(2 ** i, format='csc')
+    right_eye = eye(2 ** (n_qubits - 1 - j), format='csc')
+
+    # Construct the matrix and return
+    givens_matrix = kronecker_operators([left_eye, rotation_matrix, right_eye])
+
+    return givens_matrix
+
+
+def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
+    """Return the matrix (acting on a full wavefunction) that performs a
+    particle-hole transformation on the last mode in the Jordan-Wigner
+    encoding.
+    """
+    left_eye = eye(2 ** (n_qubits - 1), format='csc')
+    return kronecker_operators([left_eye, pauli_matrix_map['X']])
 
 
 def swap_rows(M, i, j):

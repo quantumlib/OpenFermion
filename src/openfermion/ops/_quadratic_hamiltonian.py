@@ -40,6 +40,10 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     We separate the chemical potential \mu from M so that we can use it
     to adjust the expectation value of the total number of particles.
+
+    Attributes:
+        constant(float): A constant term in the operator.
+        chemical_potential(float): The chemical potential \mu.
     """
 
     def __init__(self, constant, hermitian_part,
@@ -67,6 +71,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                     hermitian_part -
                     chemical_potential * numpy.eye(n_qubits))
 
+        # Initialize the PolynomialTensor
         if antisymmetric_part is None:
             super(QuadraticHamiltonian, self).__init__(
                     {(): constant,
@@ -78,6 +83,8 @@ class QuadraticHamiltonian(PolynomialTensor):
                      (1, 1): .5 * antisymmetric_part,
                      (0, 0): -.5 * antisymmetric_part.conj()})
 
+        # Add remaining attributes
+        self.constant = self.n_body_tensors[()]
         self.chemical_potential = chemical_potential
 
     def combined_hermitian_part(self):
@@ -113,8 +120,8 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         where the s_i are normalized Majorana fermion operators:
 
-            s_j = i / sqrt(2) (a^\dagger_j - a_j)
-            s_{j + n_qubits} = 1 / sqrt(2) (a^\dagger_j + a_j)
+            s_j = 1 / sqrt(2) (a^\dagger_j + a_j)
+            s_{j + n_qubits} = i / sqrt(2) (a^\dagger_j - a_j)
 
         and A is a (2 * n_qubits) x (2 * n_qubits) real antisymmetric matrix.
         This function returns the matrix A and the constant.

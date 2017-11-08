@@ -21,7 +21,8 @@ from scipy.sparse import csc_matrix
 
 from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.ops import FermionOperator, normal_ordered, number_operator
-from openfermion.transforms import get_sparse_operator, jordan_wigner
+from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
+                                    jordan_wigner)
 from openfermion.utils import fourier_transform, Grid
 from openfermion.utils._jellium_hf_state import (
     lowest_single_particle_energy_states)
@@ -268,11 +269,42 @@ class GroundStateTest(unittest.TestCase):
 
         self.assertAlmostEqual(ground[0], -2)
         self.assertAlmostEqual(
-            numpy.absolute(expected_state.T.dot(ground[1].A))[0, 0], 1.0)
+            numpy.absolute(
+                expected_state.T.conj().dot(ground[1].A))[0, 0], 1.0)
 
     def test_get_ground_state_nonhermitian(self):
         with self.assertRaises(ValueError):
             get_ground_state(get_sparse_operator(1j * QubitOperator('X1')))
+
+    def test_get_ground_state_quadratic_hamiltonian(self):
+        """Test when input is QuadraticHamiltonian."""
+        n_qubits = 3
+        # Obtain a random Hermitian matrix
+        rand_mat_A = numpy.random.randn(n_qubits, n_qubits)
+        rand_mat_B = numpy.random.randn(n_qubits, n_qubits)
+        rand_mat = rand_mat_A + 1.j * rand_mat_B
+        hermitian_mat = rand_mat + rand_mat.T.conj()
+
+        # Initialize a particle-number-conserving Hamiltonian
+        quadratic_hamiltonian = QuadraticHamiltonian(
+                0., hermitian_mat)
+
+        # Compute the ground energy by passing in a QuadraticHamiltonian
+        energy_1, state_1 = get_ground_state(quadratic_hamiltonian)
+
+        # Compute the ground energy by passing in a sparse operator
+        fermion_operator = get_fermion_operator(quadratic_hamiltonian)
+        sparse_operator = jordan_wigner_sparse(fermion_operator)
+        energy_2, state_2 = get_ground_state(sparse_operator)
+
+        # Check that the energies match
+        self.assertAlmostEqual(energy_1, energy_2)
+
+    def test_bad_input(self):
+        """Test bad input."""
+        H = numpy.eye(3)
+        with self.assertRaises(ValueError):
+            get_ground_state(H)
 
 
 class ExpectationTest(unittest.TestCase):
