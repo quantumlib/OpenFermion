@@ -78,7 +78,7 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
         raise ValueError('Invalid number of qubits specified.')
 
     # Initialize qubit operator as constant.
-    qubit_operator = QubitOperator((), iop.constant)
+    qubit_operator = QubitOperator((), iop.constant())
 
     # Loop through all indices.
     for p in range(n_qubits):

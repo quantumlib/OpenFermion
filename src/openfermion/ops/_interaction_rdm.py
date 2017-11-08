@@ -46,8 +46,14 @@ class InteractionRDM(PolynomialTensor):
         """
         super(InteractionRDM, self).__init__(
                 {(1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor})
-        self.one_body_tensor = self.n_body_tensors[1, 0]
-        self.two_body_tensor = self.n_body_tensors[1, 1, 0, 0]
+
+    def one_body_tensor(self):
+        """Get the one-body tensor."""
+        return self.n_body_tensors[1, 0]
+
+    def two_body_tensor(self):
+        """Get the two-body tensor."""
+        return self.n_body_tensors[1, 1, 0, 0]
 
     def expectation(self, operator):
         """Return expectation value of an InteractionRDM with an operator.
@@ -68,11 +74,11 @@ class InteractionRDM(PolynomialTensor):
                 expectation += (operator.terms[qubit_term] *
                                 expectation_op.terms[qubit_term])
         elif isinstance(operator, InteractionOperator):
-            expectation = operator.constant
-            expectation += numpy.sum(self.one_body_tensor *
-                                     operator.one_body_tensor)
-            expectation += numpy.sum(self.two_body_tensor *
-                                     operator.two_body_tensor)
+            expectation = operator.constant()
+            expectation += numpy.sum(self.one_body_tensor() *
+                                     operator.one_body_tensor())
+            expectation += numpy.sum(self.two_body_tensor() *
+                                     operator.two_body_tensor())
         else:
             raise InteractionRDMError('Invalid operator type provided.')
         return expectation
