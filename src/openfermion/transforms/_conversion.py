@@ -319,7 +319,7 @@ def get_molecular_data(interaction_operator,
                              multiplicity=multiplicity,
                              data_directory=data_directory)
 
-    molecule.nuclear_repulsion = interaction_operator.constant
+    molecule.nuclear_repulsion = interaction_operator.constant()
 
     # Remove spin from integrals and put into molecular operator
     if reduce_spin:
