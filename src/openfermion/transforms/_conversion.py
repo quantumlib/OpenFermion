@@ -120,6 +120,9 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
     # Loop through terms and assign to matrix.
     for term in fermion_operator.terms:
         coefficient = fermion_operator.terms[term]
+        # Ignore this term if the coefficient is zero
+        if abs(coefficient) < EQ_TOLERANCE:
+            continue
 
         # Handle constant shift.
         if len(term) == 0:
@@ -190,6 +193,9 @@ def get_quadratic_hamiltonian(fermion_operator,
     # Loop through terms and assign to matrix.
     for term in fermion_operator.terms:
         coefficient = fermion_operator.terms[term]
+        # Ignore this term if the coefficient is zero
+        if abs(coefficient) < EQ_TOLERANCE:
+            continue
 
         if len(term) == 0:
             # Constant term
