@@ -238,7 +238,7 @@ def get_quadratic_hamiltonian(fermion_operator,
         else:
             # Operator contains non-quadratic terms
             raise QuadraticHamiltonianError('FermionOperator does not map '
-                                            'to QuadraticHamiltonian'
+                                            'to QuadraticHamiltonian '
                                             '(contains non-quadratic terms).')
 
     # Compute Hermitian part
