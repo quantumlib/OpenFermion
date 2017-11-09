@@ -92,6 +92,27 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         self.assertTrue(self.quad_ham_pc.conserves_particle_number())
         self.assertFalse(self.quad_ham_npc.conserves_particle_number())
 
+    def test_add_chemical_potential(self):
+        """Test adding a chemical potential."""
+        self.quad_ham_npc.add_chemical_potential(2.4)
+
+        combined_hermitian_part = self.quad_ham_npc.combined_hermitian_part()
+        hermitian_part = self.quad_ham_npc.hermitian_part()
+
+        want_combined = (self.combined_hermitian -
+                         2.4 * numpy.eye(self.n_qubits))
+        want_hermitian = self.hermitian_mat
+
+        for i in numpy.ndindex(combined_hermitian_part.shape):
+            self.assertAlmostEqual(combined_hermitian_part[i],
+                                   want_combined[i])
+
+        for i in numpy.ndindex(hermitian_part.shape):
+            self.assertAlmostEqual(hermitian_part[i], want_hermitian[i])
+
+        self.assertAlmostEqual(2.4 + self.chemical_potential,
+                               self.quad_ham_npc.chemical_potential)
+
     def test_majorana_form(self):
         """Test getting the Majorana form."""
         majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()

@@ -111,6 +111,12 @@ class QuadraticHamiltonian(PolynomialTensor):
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part()))
         return discrepancy < EQ_TOLERANCE
 
+    def add_chemical_potential(self, chemical_potential):
+        """Add a chemical potential."""
+        self.n_body_tensors[1, 0] -= (chemical_potential *
+                                      numpy.eye(self.n_qubits))
+        self.chemical_potential += chemical_potential
+
     def majorana_form(self):
         """Return the Majorana represention of the Hamiltonian.
 
