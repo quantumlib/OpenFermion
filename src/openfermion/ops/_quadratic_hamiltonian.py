@@ -85,7 +85,10 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         # Add remaining attributes
         self.constant = self.n_body_tensors[()]
-        self.chemical_potential = chemical_potential
+        if chemical_potential is None:
+            self.chemical_potential = 0.
+        else:
+            self.chemical_potential = chemical_potential
 
     def combined_hermitian_part(self):
         """Return the Hermitian part including the chemical potential."""
