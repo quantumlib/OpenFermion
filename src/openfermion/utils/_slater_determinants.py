@@ -25,13 +25,23 @@ from openfermion.utils._sparse_tools import (jw_hartree_fock_state,
                                              pauli_matrix_map)
 
 
-def ground_state_preparation_circuit(quadratic_hamiltonian):
-    """Obtain a description of a circuit which prepares the ground state
-    of a quadratic Hamiltonian.
+def gaussian_state_preparation_circuit(
+        quadratic_hamiltonian, occupied_orbitals=None):
+    """Obtain a description of a circuit which prepares an eigenstate of a
+    quadratic Hamiltonian.
+
+    Eigenstates of quadratic Hamiltonians are also known as fermionic
+    Gaussian states. If the Hamiltonian conserves particle number, then
+    these are Slater determinants.
 
     Args:
         quadratic_hamiltonian(QuadraticHamiltonian):
-            The Hamiltonian whose ground state is desired.
+            The Hamiltonian whose eigenstate is desired.
+        occupied_orbitals(list):
+            A list of integers representing the indices of the occupied
+            orbitals in the desired Gaussian state. If this is None
+            (the default), then it is assumed that the ground state is
+            desired, i.e., the orbitals with negative energies are filled.
 
     Returns:
         circuit_description(list[tuple]):
@@ -42,11 +52,11 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
             of modes i and j by angles theta and phi.
-        n_electrons(int):
-            The number of electrons to start with. This describes the
+        occupied_orbitals(list):
+            The occupied orbitals to start with. This describes the
             initial state that the circuit should be applied to: it should
-            be a Slater determinant (in the computational basis) with the
-            first n_electrons orbitals filled.
+            be a Slater determinant (in the computational basis) with these
+            orbitals filled.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
@@ -55,39 +65,48 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         # The Hamiltonian conserves particle number, so we don't need
         # to use the most general procedure.
         hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
-        # Get the unitary rows which represent the ground state
-        # Slater determinant
         energies, diagonalizing_unitary = numpy.linalg.eigh(
                 hermitian_matrix)
-        # We get the ground state by filling the orbitals that have
-        # negative energy
-        num_negative_energies = numpy.count_nonzero(
-                energies < -EQ_TOLERANCE)
-        slater_determinant_matrix = diagonalizing_unitary.T[
-                :num_negative_energies]
+
+        if occupied_orbitals is None:
+            # The ground state is desired, so we fill the orbitals that have
+            # negative energy
+            num_negative_energies = numpy.count_nonzero(
+                    energies < -EQ_TOLERANCE)
+            occupied_orbitals = range(num_negative_energies)
+
+        # Get the unitary rows which represent the Slater determinant
+        slater_determinant_matrix = diagonalizing_unitary.T[occupied_orbitals]
+
         # Get the circuit description
         left_unitary, decomposition, diagonal = givens_decomposition(
                 slater_determinant_matrix)
         circuit_description = list(reversed(decomposition))
-        n_electrons = num_negative_energies
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
         majorana_matrix, majorana_constant = (
                 quadratic_hamiltonian.majorana_form())
-        # Get the unitary rows which represent the ground state
-        # Slater determinant
         diagonalizing_unitary = diagonalizing_fermionic_unitary(
                 majorana_matrix)
+
+        # Get the unitary rows which represent the ground state
+        # Slater determinant
         slater_determinant_matrix = diagonalizing_unitary[
                 quadratic_hamiltonian.n_qubits:]
+
         # Get the circuit description
         left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(
                     slater_determinant_matrix))
         circuit_description = list(reversed(decomposition))
-        n_electrons = 0
-    return circuit_description, n_electrons
+
+        if occupied_orbitals is None:
+            # The ground state is desired, so the circuit should be applied
+            # to the vaccuum state
+            occupied_orbitals = []
+
+    return circuit_description, occupied_orbitals
 
 
 def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
