@@ -477,14 +477,14 @@ def diagonalizing_fermionic_unitary(antisymmetric_matrix):
 
 
 def antisymmetric_canonical_form(antisymmetric_matrix):
-    """Compute the canonical form of an antisymmetric matrix.
+    """Compute the canonical form of a real antisymmetric matrix.
 
-    The input is a real, antisymmetric n x n matrix A, where n is even.
+    The input is a real antisymmetric n x n matrix A, where n is even.
     Its canonical form is::
 
         A = R^T C R
 
-    where R is a real, orthogonal matrix and C has the form::
+    where R is a real orthogonal matrix and C has the form::
 
         [  0     D ]
         [ -D     0 ]
