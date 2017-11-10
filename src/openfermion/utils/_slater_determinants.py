@@ -20,7 +20,7 @@ from scipy.sparse import csc_matrix, eye
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
-from openfermion.utils._sparse_tools import (jw_hartree_fock_state,
+from openfermion.utils._sparse_tools import (jw_slater_determinant,
                                              kronecker_operators,
                                              pauli_matrix_map)
 
@@ -52,7 +52,7 @@ def gaussian_state_preparation_circuit(
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
             of modes i and j by angles theta and phi.
-        occupied_orbitals(list):
+        start_orbitals(list):
             The occupied orbitals to start with. This describes the
             initial state that the circuit should be applied to: it should
             be a Slater determinant (in the computational basis) with these
@@ -82,6 +82,7 @@ def gaussian_state_preparation_circuit(
         left_unitary, decomposition, diagonal = givens_decomposition(
                 slater_determinant_matrix)
         circuit_description = list(reversed(decomposition))
+        start_orbitals = occupied_orbitals
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
@@ -96,17 +97,19 @@ def gaussian_state_preparation_circuit(
                 quadratic_hamiltonian.n_qubits:]
 
         # Get the circuit description
+        # THIS STEP NEEDS TO BE UPDATED
         left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(
                     slater_determinant_matrix))
         circuit_description = list(reversed(decomposition))
-
         if occupied_orbitals is None:
             # The ground state is desired, so the circuit should be applied
             # to the vaccuum state
-            occupied_orbitals = []
+            start_orbitals = []
+        else:
+            start_orbitals = occupied_orbitals
 
-    return circuit_description, occupied_orbitals
+    return circuit_description, start_orbitals
 
 
 def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
@@ -141,11 +144,11 @@ def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
                          majorana_constant)
 
     # Obtain the circuit that prepares the ground state
-    circuit_description, n_electrons = ground_state_preparation_circuit(
+    circuit_description, start_orbitals = gaussian_state_preparation_circuit(
             quadratic_hamiltonian)
 
     # Initialize the starting state
-    state = jw_hartree_fock_state(n_electrons, n_qubits)
+    state = jw_slater_determinant(start_orbitals, n_qubits)
 
     # Apply the circuit
     particle_hole_transformation = (

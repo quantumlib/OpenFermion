@@ -23,7 +23,7 @@ from openfermion.transforms import get_fermion_operator
 from openfermion.utils import (fermionic_gaussian_decomposition,
                                get_ground_state,
                                givens_decomposition,
-                               ground_state_preparation_circuit,
+                               gaussian_state_preparation_circuit,
                                jordan_wigner_sparse,
                                jw_get_quadratic_hamiltonian_ground_state)
 from openfermion.utils._slater_determinants import (
@@ -35,12 +35,12 @@ from openfermion.utils._slater_determinants import (
         swap_rows)
 
 
-class GroundStatePreparationCircuitTest(unittest.TestCase):
+class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
     def test_bad_input(self):
         """Test bad input."""
         with self.assertRaises(ValueError):
-            description, n_electrons = ground_state_preparation_circuit('a')
+            description, n_electrons = gaussian_state_preparation_circuit('a')
 
 
 class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
