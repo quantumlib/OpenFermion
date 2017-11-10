@@ -27,12 +27,12 @@ from openfermion.utils._sparse_tools import (jw_slater_determinant,
 
 def gaussian_state_preparation_circuit(
         quadratic_hamiltonian, occupied_orbitals=None):
-    """Obtain a description of a circuit which prepares an eigenstate of a
-    quadratic Hamiltonian.
+    """Obtain a description of a circuit which prepares a fermionic Gaussian
+    state.
 
-    Eigenstates of quadratic Hamiltonians are also known as fermionic
-    Gaussian states. If the Hamiltonian conserves particle number, then
-    these are Slater determinants.
+    Fermionic Gaussian states can be regarded as eigenstates of quadratic
+    Hamiltonians. If the Hamiltonian conserves particle number, then these are
+    just Slater determinants.
 
     Args:
         quadratic_hamiltonian(QuadraticHamiltonian):
@@ -65,8 +65,7 @@ def gaussian_state_preparation_circuit(
         # The Hamiltonian conserves particle number, so we don't need
         # to use the most general procedure.
         hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
-        energies, diagonalizing_unitary = numpy.linalg.eigh(
-                hermitian_matrix)
+        energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
 
         if occupied_orbitals is None:
             # The ground state is desired, so we fill the orbitals that have
@@ -91,16 +90,15 @@ def gaussian_state_preparation_circuit(
         diagonalizing_unitary = diagonalizing_fermionic_unitary(
                 majorana_matrix)
 
-        # Get the unitary rows which represent the ground state
-        # Slater determinant
-        slater_determinant_matrix = diagonalizing_unitary[
+        # Get the unitary rows which represent the Gaussian unitary
+        gaussian_unitary_matrix = diagonalizing_unitary[
                 quadratic_hamiltonian.n_qubits:]
 
         # Get the circuit description
         # THIS STEP NEEDS TO BE UPDATED
         left_unitary, decomposition, diagonal = (
                 fermionic_gaussian_decomposition(
-                    slater_determinant_matrix))
+                    gaussian_unitary_matrix))
         circuit_description = list(reversed(decomposition))
         if occupied_orbitals is None:
             # The ground state is desired, so the circuit should be applied
@@ -112,32 +110,45 @@ def gaussian_state_preparation_circuit(
     return circuit_description, start_orbitals
 
 
-def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
-    """Compute the lowest eigenvalue and eigenstate of a quadratic Hamiltonian.
+def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
+    """Compute an eigenvalue and eigenstate of a quadratic Hamiltonian.
+
+    Eigenstates of a quadratic Hamiltonian are also known as fermionic
+    Gaussian states.
+
+    Args:
+        quadratic_hamiltonian(QuadraticHamiltonian):
+            The Hamiltonian whose eigenstate is desired.
+        occupied_orbitals(list):
+            A list of integers representing the indices of the occupied
+            orbitals in the desired Gaussian state. If this is None
+            (the default), then it is assumed that the ground state is
+            desired, i.e., the orbitals with negative energies are filled.
 
     Returns:
-        ground_energy(float): The lowest eigenvalue.
-        state(sparse): The lowest eigenstate in scipy.sparse csc format.
+        energy(float): The eigenvalue.
+        state(sparse): The eigenstate in scipy.sparse csc format.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
 
     n_qubits = quadratic_hamiltonian.n_qubits
 
-    # Compute the ground energy
+    # Compute the energy
     if quadratic_hamiltonian.conserves_particle_number():
         hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
-        energies, diagonalizing_unitary = numpy.linalg.eigh(
-                hermitian_matrix)
-        num_negative_energies = numpy.count_nonzero(
-                energies < -EQ_TOLERANCE)
-        negative_energies = energies[:num_negative_energies]
-        ground_energy = (numpy.sum(negative_energies) +
-                         quadratic_hamiltonian.constant)
+        energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
+        if occupied_orbitals is None:
+            num_negative_energies = numpy.count_nonzero(
+                    energies < -EQ_TOLERANCE)
+            occupied_orbitals = range(num_negative_energies)
+        energies = energies[occupied_orbitals]
+        energy = numpy.sum(energies) + quadratic_hamiltonian.constant
     else:
         majorana_matrix, majorana_constant = (
                 quadratic_hamiltonian.majorana_form())
         canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
+        # THIS PART NEEDS TO BE CHANGED
         negative_diagonal_entries = canonical[range(n_qubits, 2 * n_qubits),
                                               range(n_qubits)]
         ground_energy = (.5 * numpy.sum(negative_diagonal_entries) +
@@ -521,6 +532,8 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_rows(canonical, i, num_blocks + i)
             swap_columns(canonical, i, num_blocks + i)
             swap_columns(orthogonal, i, num_blocks + i)
+
+    # NEED TO PERMUTE AGAIN TO ORDER ENTRIES BY MAGNITUDE
 
     return canonical, orthogonal.T
 
