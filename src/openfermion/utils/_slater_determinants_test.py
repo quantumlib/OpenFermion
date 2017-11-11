@@ -389,8 +389,8 @@ class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
     def test_diagonalizes_quadratic_hamiltonian(self):
         """Test that the unitary returned indeed diagonalizes a
         quadratic Hamiltonian."""
-        hermitian_part = self.quad_ham_npc.combined_hermitian_part()
-        antisymmetric_part = self.quad_ham_npc.antisymmetric_part()
+        hermitian_part = self.quad_ham_npc.combined_hermitian_part
+        antisymmetric_part = self.quad_ham_npc.antisymmetric_part
         block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits),
                                    dtype=complex)
         block_matrix[:self.n_qubits, :self.n_qubits] = antisymmetric_part

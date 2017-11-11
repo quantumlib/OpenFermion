@@ -51,10 +51,10 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
 
-    if quadratic_hamiltonian.conserves_particle_number():
+    if quadratic_hamiltonian.conserves_particle_number:
         # The Hamiltonian conserves particle number, so we don't need
         # to use the most general procedure.
-        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
+        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part
         # Get the unitary rows which represent the ground state
         # Slater determinant
         energies, diagonalizing_unitary = numpy.linalg.eigh(
@@ -103,8 +103,8 @@ def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
     n_qubits = quadratic_hamiltonian.n_qubits
 
     # Compute the ground energy
-    if quadratic_hamiltonian.conserves_particle_number():
-        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
+    if quadratic_hamiltonian.conserves_particle_number:
+        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part
         energies, diagonalizing_unitary = numpy.linalg.eigh(
                 hermitian_matrix)
         num_negative_energies = numpy.count_nonzero(

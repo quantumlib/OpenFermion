@@ -56,41 +56,41 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
 
     def test_combined_hermitian_part(self):
         """Test getting the combined Hermitian part."""
-        combined_hermitian_part = self.quad_ham_pc.combined_hermitian_part()
+        combined_hermitian_part = self.quad_ham_pc.combined_hermitian_part
         for i in numpy.ndindex(combined_hermitian_part.shape):
             self.assertAlmostEqual(self.hermitian_mat[i],
                                    combined_hermitian_part[i])
 
-        combined_hermitian_part = self.quad_ham_npc.combined_hermitian_part()
+        combined_hermitian_part = self.quad_ham_npc.combined_hermitian_part
         for i in numpy.ndindex(combined_hermitian_part.shape):
             self.assertAlmostEqual(self.combined_hermitian[i],
                                    combined_hermitian_part[i])
 
     def test_hermitian_part(self):
         """Test getting the Hermitian part."""
-        hermitian_part = self.quad_ham_pc.hermitian_part()
+        hermitian_part = self.quad_ham_pc.hermitian_part
         for i in numpy.ndindex(hermitian_part.shape):
             self.assertAlmostEqual(self.hermitian_mat[i], hermitian_part[i])
 
-        hermitian_part = self.quad_ham_npc.hermitian_part()
+        hermitian_part = self.quad_ham_npc.hermitian_part
         for i in numpy.ndindex(hermitian_part.shape):
             self.assertAlmostEqual(self.hermitian_mat[i], hermitian_part[i])
 
     def test_antisymmetric_part(self):
         """Test getting the antisymmetric part."""
-        antisymmetric_part = self.quad_ham_pc.antisymmetric_part()
+        antisymmetric_part = self.quad_ham_pc.antisymmetric_part
         for i in numpy.ndindex(antisymmetric_part.shape):
             self.assertAlmostEqual(0., antisymmetric_part[i])
 
-        antisymmetric_part = self.quad_ham_npc.antisymmetric_part()
+        antisymmetric_part = self.quad_ham_npc.antisymmetric_part
         for i in numpy.ndindex(antisymmetric_part.shape):
             self.assertAlmostEqual(self.antisymmetric_mat[i],
                                    antisymmetric_part[i])
 
     def test_conserves_particle_number(self):
         """Test checking whether Hamiltonian conserves particle number."""
-        self.assertTrue(self.quad_ham_pc.conserves_particle_number())
-        self.assertFalse(self.quad_ham_npc.conserves_particle_number())
+        self.assertTrue(self.quad_ham_pc.conserves_particle_number)
+        self.assertFalse(self.quad_ham_npc.conserves_particle_number)
 
     def test_add_chemical_potential(self):
         """Test adding a chemical potential."""

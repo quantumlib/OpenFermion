@@ -64,7 +64,6 @@ class InteractionOperator(PolynomialTensor):
                 {(): constant,
                  (1, 0): one_body_tensor,
                  (1, 1, 0, 0): two_body_tensor})
-        self.constant = self.n_body_tensors[()]
         self.one_body_tensor = self.n_body_tensors[1, 0]
         self.two_body_tensor = self.n_body_tensors[1, 1, 0, 0]
 
