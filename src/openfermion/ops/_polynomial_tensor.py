@@ -126,6 +126,11 @@ class PolynomialTensor(object):
             key = next(key_iterator)
         self.n_qubits = n_body_tensors[key].shape[0]
 
+    @property
+    def constant(self):
+        """Get the value of the constant term."""
+        return self.n_body_tensors[()]
+
     def __getitem__(self, args):
         """Look up matrix element.
 
