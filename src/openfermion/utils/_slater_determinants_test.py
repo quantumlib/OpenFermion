@@ -475,6 +475,10 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
                 else:
                     self.assertAlmostEqual(canonical[i, j], 0.)
 
+        diagonal = canonical[range(n), range(n, 2 * n)]
+        for i in range(n - 1):
+            self.assertTrue(diagonal[i] <= diagonal[i + 1])
+
 
 class GivensMatrixElementsTest(unittest.TestCase):
 

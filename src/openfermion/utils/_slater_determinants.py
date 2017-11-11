@@ -466,9 +466,9 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
         canonical(ndarray): The canonical form C of antisymmetric_matrix
         orthogonal(ndarray): The orthogonal transformation R.
     """
-    m, n = antisymmetric_matrix.shape
+    m, p = antisymmetric_matrix.shape
 
-    if m != n or n % 2 != 0:
+    if m != p or p % 2 != 0:
         raise ValueError('The input matrix must be square with even '
                          'dimension.')
 
@@ -483,22 +483,41 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
 
     # The returned form is block diagonal; we need to permute rows and columns
     # to put it into the form we want
-    num_blocks = n // 2
-    for i in range(1, num_blocks, 2):
-        swap_rows(canonical, i, num_blocks + i - 1)
-        swap_columns(canonical, i, num_blocks + i - 1)
-        swap_columns(orthogonal, i, num_blocks + i - 1)
-        if num_blocks % 2 != 0:
-            swap_rows(canonical, num_blocks - 1, num_blocks + i)
-            swap_columns(canonical, num_blocks - 1, num_blocks + i)
-            swap_columns(orthogonal, num_blocks - 1, num_blocks + i)
+    n = p // 2
+    for i in range(1, n, 2):
+        swap_rows(canonical, i, n + i - 1)
+        swap_columns(canonical, i, n + i - 1)
+        swap_columns(orthogonal, i, n + i - 1)
+        if n % 2 != 0:
+            swap_rows(canonical, n - 1, n + i)
+            swap_columns(canonical, n - 1, n + i)
+            swap_columns(orthogonal, n - 1, n + i)
 
     # Now we permute so that the upper right block is non-negative
-    for i in range(num_blocks):
-        if canonical[i, num_blocks + i] < -EQ_TOLERANCE:
-            swap_rows(canonical, i, num_blocks + i)
-            swap_columns(canonical, i, num_blocks + i)
-            swap_columns(orthogonal, i, num_blocks + i)
+    for i in range(n):
+        if canonical[i, n + i] < -EQ_TOLERANCE:
+            swap_rows(canonical, i, n + i)
+            swap_columns(canonical, i, n + i)
+            swap_columns(orthogonal, i, n + i)
+
+    # Now we permute so that the nonzero entries are ordered by magnitude
+    # We use insertion sort
+    diagonal = canonical[range(n), range(n, 2 * n)]
+    for i in range(n):
+        # Insert the smallest element from the unsorted part of the list into
+        # index i
+        arg_min = numpy.argmin(diagonal[i:]) + i
+        if arg_min != i:
+            # Permute the upper right block
+            swap_rows(canonical, i, arg_min)
+            swap_columns(canonical, n + i, n + arg_min)
+            swap_columns(orthogonal, n + i, n + arg_min)
+            # Permute the lower left block
+            swap_rows(canonical, n + i, n + arg_min)
+            swap_columns(canonical, i, arg_min)
+            swap_columns(orthogonal, i, arg_min)
+            # Update diagonal
+            diagonal[i], diagonal[arg_min] = diagonal[arg_min], diagonal[i]
 
     return canonical, orthogonal.T
 
