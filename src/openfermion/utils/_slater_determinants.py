@@ -517,7 +517,7 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_columns(canonical, i, arg_min)
             swap_columns(orthogonal, i, arg_min)
             # Update diagonal
-            diagonal[i], diagonal[arg_min] = diagonal[arg_min], diagonal[i]
+            swap_rows(diagonal, i, arg_min)
 
     return canonical, orthogonal.T
 
@@ -683,13 +683,19 @@ def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
 
 def swap_rows(M, i, j):
     """Swap rows i and j of matrix M."""
-    row_i = M[i, :].copy()
-    row_j = M[j, :].copy()
-    M[i, :], M[j, :] = row_j, row_i
+    if len(M.shape) == 1:
+        M[i], M[j] = M[j], M[i]
+    else:
+        row_i = M[i, :].copy()
+        row_j = M[j, :].copy()
+        M[i, :], M[j, :] = row_j, row_i
 
 
 def swap_columns(M, i, j):
     """Swap columns i and j of matrix M."""
-    column_i = M[:, i].copy()
-    column_j = M[:, j].copy()
-    M[:, i], M[:, j] = column_j, column_i
+    if len(M.shape) == 1:
+        M[i], M[j] = M[j], M[i]
+    else:
+        column_i = M[:, i].copy()
+        column_j = M[:, j].copy()
+        M[:, i], M[:, j] = column_j, column_i
