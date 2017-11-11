@@ -389,8 +389,8 @@ class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
     def test_diagonalizes_quadratic_hamiltonian(self):
         """Test that the unitary returned indeed diagonalizes a
         quadratic Hamiltonian."""
-        hermitian_part = self.quad_ham_npc.combined_hermitian_part()
-        antisymmetric_part = self.quad_ham_npc.antisymmetric_part()
+        hermitian_part = self.quad_ham_npc.combined_hermitian_part
+        antisymmetric_part = self.quad_ham_npc.antisymmetric_part
         block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits),
                                    dtype=complex)
         block_matrix[:self.n_qubits, :self.n_qubits] = antisymmetric_part
@@ -474,6 +474,10 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
                     self.assertTrue(canonical[i, j] < EQ_TOLERANCE)
                 else:
                     self.assertAlmostEqual(canonical[i, j], 0.)
+
+        diagonal = canonical[range(n), range(n, 2 * n)]
+        for i in range(n - 1):
+            self.assertTrue(diagonal[i] <= diagonal[i + 1])
 
 
 class GivensMatrixElementsTest(unittest.TestCase):
