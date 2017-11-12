@@ -291,7 +291,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
     def test_main_procedure(self):
         for n in self.test_dimensions:
             # Obtain a random antisymmetric matrix
-            antisymmetric_mat = random_antisymmetric_matrix(2 * n)
+            antisymmetric_mat = random_antisymmetric_matrix(2 * n, real=True)
 
             # Get the diagonalizing fermionic unitary
             ferm_unitary = diagonalizing_fermionic_unitary(
