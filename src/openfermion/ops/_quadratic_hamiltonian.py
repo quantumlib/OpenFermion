@@ -40,6 +40,10 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     We separate the chemical potential \mu from M so that we can use it
     to adjust the expectation value of the total number of particles.
+
+    Attributes:
+        constant(float): A constant term in the operator.
+        chemical_potential(float): The chemical potential \mu.
     """
 
     def __init__(self, constant, hermitian_part,
@@ -67,6 +71,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                     hermitian_part -
                     chemical_potential * numpy.eye(n_qubits))
 
+        # Initialize the PolynomialTensor
         if antisymmetric_part is None:
             super(QuadraticHamiltonian, self).__init__(
                     {(): constant,
@@ -78,30 +83,35 @@ class QuadraticHamiltonian(PolynomialTensor):
                      (1, 1): .5 * antisymmetric_part,
                      (0, 0): -.5 * antisymmetric_part.conj()})
 
-        self.chemical_potential = chemical_potential
+        # Add remaining attributes
+        if chemical_potential is None:
+            self.chemical_potential = 0.
+        else:
+            self.chemical_potential = chemical_potential
 
+    @property
     def combined_hermitian_part(self):
         """Return the Hermitian part including the chemical potential."""
-        return self.n_body_tensors[1, 0].copy()
+        return self.n_body_tensors[1, 0]
 
-    def hermitian_part(self):
-        """Return the Hermitian part not including the chemical potential."""
-        hermitian_part = self.combined_hermitian_part()
-        if self.chemical_potential:
-            hermitian_part += (self.chemical_potential *
-                               numpy.eye(self.n_qubits))
-        return hermitian_part
-
+    @property
     def antisymmetric_part(self):
         """Return the antisymmetric part."""
         if (1, 1) in self.n_body_tensors:
-            return 2. * self.n_body_tensors[1, 1].copy()
+            return 2. * self.n_body_tensors[1, 1]
         else:
             return numpy.zeros((self.n_qubits, self.n_qubits), complex)
 
+    @property
+    def hermitian_part(self):
+        """Return the Hermitian part not including the chemical potential."""
+        return (self.combined_hermitian_part +
+                self.chemical_potential * numpy.eye(self.n_qubits))
+
+    @property
     def conserves_particle_number(self):
         """Return whether this Hamiltonian conserves particle number."""
-        discrepancy = numpy.max(numpy.abs(self.antisymmetric_part()))
+        discrepancy = numpy.max(numpy.abs(self.antisymmetric_part))
         return discrepancy < EQ_TOLERANCE
 
     def majorana_form(self):
@@ -113,14 +123,14 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         where the s_i are normalized Majorana fermion operators:
 
-            s_j = i / sqrt(2) (a^\dagger_j - a_j)
-            s_{j + n_qubits} = 1 / sqrt(2) (a^\dagger_j + a_j)
+            s_j = 1 / sqrt(2) (a^\dagger_j + a_j)
+            s_{j + n_qubits} = i / sqrt(2) (a^\dagger_j - a_j)
 
         and A is a (2 * n_qubits) x (2 * n_qubits) real antisymmetric matrix.
         This function returns the matrix A and the constant.
         """
-        hermitian_part = self.combined_hermitian_part()
-        antisymmetric_part = self.antisymmetric_part()
+        hermitian_part = self.combined_hermitian_part
+        antisymmetric_part = self.antisymmetric_part
 
         # Compute the Majorana matrix using block matrix manipulations
         majorana_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))

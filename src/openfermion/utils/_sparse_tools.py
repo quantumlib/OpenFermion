@@ -26,7 +26,8 @@ import warnings
 
 from openfermion.config import *
 from openfermion.ops import (FermionOperator, hermitian_conjugated,
-                             normal_ordered, number_operator, QubitOperator)
+                             normal_ordered, number_operator,
+                             QuadraticHamiltonian, QubitOperator)
 from openfermion.utils import commutator, fourier_transform, Grid
 from openfermion.hamiltonians._jellium import (momentum_vector,
                                                position_vector,
@@ -57,6 +58,10 @@ def kronecker_operators(*args):
 def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
     """Make a matrix representation of a fermion ladder operator.
 
+    Operators are mapped as follows:
+    a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
+    a_j -> Z_0 .. Z_{j-1} (X_j + iY_j) / 2
+
     Args:
         index: This is a nonzero integer. The integer indicates the tensor
             factor and the sign indicates raising or lowering.
@@ -65,18 +70,22 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
     Returns:
         The corresponding SparseOperator.
     """
+    parities = tensor_factor * [pauli_z_csc]
     identities = [scipy.sparse.identity(
-        2 ** tensor_factor, dtype=complex, format='csc')]
-    parities = (n_qubits - tensor_factor - 1) * [pauli_z_csc]
+        2 ** (n_qubits - tensor_factor - 1), dtype=complex, format='csc')]
     if ladder_type:
-        operator = kronecker_operators(identities + [q_raise_csc] + parities)
+        operator = kronecker_operators(parities + [q_raise_csc] + identities)
     else:
-        operator = kronecker_operators(identities + [q_lower_csc] + parities)
+        operator = kronecker_operators(parities + [q_lower_csc] + identities)
     return operator
 
 
 def jordan_wigner_sparse(fermion_operator, n_qubits=None):
     """Initialize a SparseOperator from a FermionOperator.
+
+    Operators are mapped as follows:
+    a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
+    a_j -> Z_0 .. Z_{j-1} (X_j + iY_j) / 2
 
     Args:
         fermion_operator(FermionOperator): instance of the FermionOperator
@@ -377,25 +386,35 @@ def is_hermitian(sparse_operator):
     return True
 
 
-def get_ground_state(sparse_operator):
+def get_ground_state(operator):
     """Compute lowest eigenvalue and eigenstate.
 
     Returns:
         eigenvalue: The lowest eigenvalue, a float.
         eigenstate: The lowest eigenstate in scipy.sparse csc format.
     """
-    if not is_hermitian(sparse_operator):
-        raise ValueError('sparse_operator must be Hermitian.')
+    if isinstance(operator, QuadraticHamiltonian):
+        from openfermion.utils._slater_determinants import (
+                jw_get_quadratic_hamiltonian_ground_state)
+        eigenvalue, eigenstate = (
+                jw_get_quadratic_hamiltonian_ground_state(operator))
+    elif isinstance(operator, scipy.sparse.spmatrix):
+        if not is_hermitian(operator):
+            raise ValueError('operator must be Hermitian.')
 
-    values, vectors = scipy.sparse.linalg.eigsh(
-        sparse_operator, 2, which='SA', maxiter=1e7)
+        values, vectors = scipy.sparse.linalg.eigsh(
+            operator, 2, which='SA', maxiter=1e7)
 
-    order = numpy.argsort(values)
-    values = values[order]
-    vectors = vectors[:, order]
-    eigenvalue = values[0]
-    eigenstate = scipy.sparse.csc_matrix(vectors[:, 0])
-    return eigenvalue, eigenstate.getH()
+        order = numpy.argsort(values)
+        values = values[order]
+        vectors = vectors[:, order]
+        eigenvalue = values[0]
+        eigenstate = scipy.sparse.csc_matrix(vectors[:, 0]).T
+    else:
+        raise ValueError('operator must be a sparse matrix or '
+                         'QuadraticHamiltonian.')
+
+    return eigenvalue, eigenstate
 
 
 def sparse_eigenspectrum(sparse_operator):

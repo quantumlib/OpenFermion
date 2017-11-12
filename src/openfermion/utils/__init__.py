@@ -22,7 +22,8 @@ from ._operator_utils import (commutator, count_qubits,
 
 from ._slater_determinants import (fermionic_gaussian_decomposition,
                                    givens_decomposition,
-                                   ground_state_preparation_circuit)
+                                   ground_state_preparation_circuit,
+                                   jw_get_quadratic_hamiltonian_ground_state)
 
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,
@@ -34,6 +35,7 @@ from ._sparse_tools import (expectation,
                             jw_hartree_fock_state,
                             jw_get_ground_states_by_particle_number,
                             jw_number_restrict_operator,
+                            jw_slater_determinant,
                             qubit_operator_sparse,
                             sparse_eigenspectrum)
 
