@@ -122,15 +122,17 @@ class QuadraticHamiltonian(PolynomialTensor):
         self.chemical_potential += chemical_potential
 
     def orbital_energies(self):
-        """Return the ground energy and the energies of the orbitals.
+        """Return the energies of the orbitals and the ground energy.
 
         Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
         of the form::
 
             \sum_{j} \epsilon_j a^\dagger_j a_j + constant.
 
-        The constant is the ground energy and the \epsilon_j are the energies
-        of the orbitals.
+        The \epsilon_j are the energies of the orbitals and the constant is
+        the ground energy (lowest eigenvalue) of the Hamiltonian.
+        The eigenvalues of the Hamiltonian are sums of subsets of the
+        orbital energies (up to the additive constant).
 
         Returns:
             orbital_energies(float): the \epsilon_j
