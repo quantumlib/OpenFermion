@@ -547,17 +547,19 @@ class DoubleGivensRotateTest(unittest.TestCase):
 
 def random_hermitian_matrix(n, real=False):
     """Generate a random n x n Hermitian matrix."""
-    rand_mat = numpy.random.randn(n, n)
-    if not real:
-        rand_mat = rand_mat + 1.j * numpy.random.randn(n, n)
+    if real:
+        rand_mat = numpy.random.randn(n, n)
+    else:
+        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
     hermitian_mat = rand_mat + rand_mat.T.conj()
     return hermitian_mat
 
 
 def random_antisymmetric_matrix(n, real=False):
     """Generate a random n x n antisymmetric matrix."""
-    rand_mat = numpy.random.randn(n, n)
-    if not real:
-        rand_mat = rand_mat + 1.j * numpy.random.randn(n, n)
+    if real:
+        rand_mat = numpy.random.randn(n, n)
+    else:
+        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
     antisymmetric_mat = rand_mat - rand_mat.T
     return antisymmetric_mat
