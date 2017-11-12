@@ -25,7 +25,7 @@ from openfermion.utils import (fermionic_gaussian_decomposition,
                                givens_decomposition,
                                gaussian_state_preparation_circuit,
                                jordan_wigner_sparse,
-                               jw_get_quadratic_hamiltonian_ground_state)
+                               jw_get_gaussian_state)
 from openfermion.utils._slater_determinants import (
         antisymmetric_canonical_form,
         diagonalizing_fermionic_unitary,
@@ -71,7 +71,7 @@ class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
 
             # Compute the ground state using the circuit
             circuit_energy, circuit_state = (
-                    jw_get_quadratic_hamiltonian_ground_state(
+                    jw_get_gaussian_state(
                         quadratic_hamiltonian))
 
             # Check that the energies match
@@ -114,7 +114,7 @@ class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
 
             # Compute the ground state using the circuit
             circuit_energy, circuit_state = (
-                    jw_get_quadratic_hamiltonian_ground_state(
+                    jw_get_gaussian_state(
                         quadratic_hamiltonian))
 
             # Check that the energies match
@@ -132,7 +132,7 @@ class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
     def test_bad_input(self):
         """Test bad input."""
         with self.assertRaises(ValueError):
-            energy, state = jw_get_quadratic_hamiltonian_ground_state('a')
+            energy, state = jw_get_gaussian_state('a')
 
 
 class GivensDecompositionTest(unittest.TestCase):
@@ -151,7 +151,7 @@ class GivensDecompositionTest(unittest.TestCase):
             Q = Q[:m, :]
 
             # Get Givens decomposition of Q
-            V, givens_rotations, diagonal = givens_decomposition(Q)
+            givens_rotations, V, diagonal = givens_decomposition(Q)
 
             # Compute U
             U = numpy.eye(n, dtype=complex)
@@ -186,7 +186,7 @@ class GivensDecompositionTest(unittest.TestCase):
             Q = Q[:m, :]
 
             # Get Givens decomposition of Q
-            V, givens_rotations, diagonal = givens_decomposition(Q)
+            givens_rotations, V, diagonal = givens_decomposition(Q)
 
             # Compute U
             U = numpy.eye(n, dtype=complex)
@@ -224,12 +224,12 @@ class GivensDecompositionTest(unittest.TestCase):
         Q = Q[:m, :n]
 
         with self.assertRaises(ValueError):
-            V, givens_rotations, diagonal = givens_decomposition(Q)
+            givens_rotations, V, diagonal = givens_decomposition(Q)
 
     def test_identity(self):
         n = 3
         Q = numpy.eye(n, dtype=complex)
-        V, givens_rotations, diagonal = givens_decomposition(Q)
+        givens_rotations, V, diagonal = givens_decomposition(Q)
 
         # V should be the identity
         I = numpy.eye(n, dtype=complex)
@@ -250,7 +250,7 @@ class GivensDecompositionTest(unittest.TestCase):
         Q[0, 2] = 1.
         Q[1, 1] = 1.
         Q[2, 0] = 1.
-        V, givens_rotations, diagonal = givens_decomposition(Q)
+        givens_rotations, V, diagonal = givens_decomposition(Q)
 
         # There should be no Givens rotations
         self.assertEqual(givens_rotations, list())
@@ -273,7 +273,7 @@ class GivensDecompositionTest(unittest.TestCase):
         Q = Q[:m, :]
 
         # Get Givens decomposition of Q
-        V, givens_rotations, diagonal = givens_decomposition(Q)
+        givens_rotations, V, diagonal = givens_decomposition(Q)
 
         # There should be no Givens rotations
         self.assertEqual(givens_rotations, list())
@@ -308,7 +308,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             lower_unitary = ferm_unitary[n:]
 
             # Get fermionic Gaussian decomposition of lower_unitary
-            left_unitary, decomposition, diagonal = (
+            decomposition, left_unitary, diagonal = (
                     fermionic_gaussian_decomposition(lower_unitary))
 
             # Check that left_unitary zeroes out the correct entries of
@@ -353,14 +353,14 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         n, p = (3, 7)
         rand_mat = numpy.random.randn(n, p)
         with self.assertRaises(ValueError):
-            left_unitary, decomposition, antidiagonal = (
+            decomposition, left_unitary, antidiagonal = (
                     fermionic_gaussian_decomposition(rand_mat))
 
     def test_bad_constraints(self):
         n = 3
         ones_mat = numpy.ones((n, 2 * n))
         with self.assertRaises(ValueError):
-            left_unitary, decomposition, antidiagonal = (
+            decomposition, left_unitary, antidiagonal = (
                     fermionic_gaussian_decomposition(ones_mat))
 
 

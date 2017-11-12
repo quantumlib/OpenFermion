@@ -78,7 +78,7 @@ def gaussian_state_preparation_circuit(
         slater_determinant_matrix = diagonalizing_unitary.T[occupied_orbitals]
 
         # Get the circuit description
-        left_unitary, decomposition, diagonal = givens_decomposition(
+        decomposition, left_unitary, diagonal = givens_decomposition(
                 slater_determinant_matrix)
         circuit_description = list(reversed(decomposition))
         start_orbitals = occupied_orbitals
@@ -96,7 +96,7 @@ def gaussian_state_preparation_circuit(
 
         # Get the circuit description
         # THIS STEP NEEDS TO BE UPDATED
-        left_unitary, decomposition, diagonal = (
+        decomposition, left_unitary, diagonal = (
                 fermionic_gaussian_decomposition(
                     gaussian_unitary_matrix))
         circuit_description = list(reversed(decomposition))
@@ -136,7 +136,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
 
     # Compute the energy
     if quadratic_hamiltonian.conserves_particle_number:
-        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part()
+        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part
         energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
         if occupied_orbitals is None:
             num_negative_energies = numpy.count_nonzero(
@@ -148,15 +148,16 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
         majorana_matrix, majorana_constant = (
                 quadratic_hamiltonian.majorana_form())
         canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
-        # THIS PART NEEDS TO BE CHANGED
-        negative_diagonal_entries = canonical[range(n_qubits, 2 * n_qubits),
-                                              range(n_qubits)]
-        ground_energy = (.5 * numpy.sum(negative_diagonal_entries) +
-                         majorana_constant)
+        diagonal_entries = canonical[range(n_qubits),
+                                     range(n_qubits, 2 * n_qubits)]
+        ground_energy = -.5 * numpy.sum(diagonal_entries) + majorana_constant
+        if occupied_orbitals is None:
+            occupied_orbitals = []
+        energy = numpy.sum(diagonal_entries[occupied_orbitals]) + ground_energy
 
-    # Obtain the circuit that prepares the ground state
+    # Obtain the circuit that prepares the Gaussian state
     circuit_description, start_orbitals = gaussian_state_preparation_circuit(
-            quadratic_hamiltonian)
+            quadratic_hamiltonian, occupied_orbitals)
 
     # Initialize the starting state
     state = jw_slater_determinant(start_orbitals, n_qubits)
@@ -173,7 +174,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
                 state = jw_sparse_givens_rotation(
                             i, j, theta, phi, n_qubits).dot(state)
 
-    return ground_energy, state
+    return energy, state
 
 
 def fermionic_gaussian_decomposition(unitary_rows):
@@ -208,13 +209,16 @@ def fermionic_gaussian_decomposition(unitary_rows):
     of the form (i, j, theta, phi), which indicates a Givens rotation
     of rows i and j by angles theta and phi.
 
+    The matrix V^T, the transpose of V, can also be decomposed as a sequence
+    of Givens rotations.
+
     Args:
         unitary_rows(ndarray): A matrix with orthonormal rows and
             additional structure described above.
 
     Returns:
-        left_unitary(ndarray): An n x n matrix representing V.
         decomposition(list[tuple]): The decomposition of U.
+        left_decomposition(list[tuple]): The decomposition of V^T.
         diagonal(ndarray): A list of the nonzero entries of D.
     """
     current_matrix = numpy.copy(unitary_rows)
@@ -302,7 +306,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     # Get the diagonal entries
     diagonal = current_matrix[range(n), range(n, 2 * n)]
-    return left_unitary, decomposition, diagonal
+    return decomposition, left_unitary, diagonal
 
 
 def givens_decomposition(unitary_rows):
@@ -332,15 +336,13 @@ def givens_decomposition(unitary_rows):
             representing the matrix Q.
 
     Returns:
-        left_unitary: An m x m numpy array representing the matrix V.
-
         givens_rotations: A list of tuples of objects describing Givens
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
             form (i, j, theta, phi), which represents a Givens rotation of
             rows i and j by angles theta and phi.
-
+        left_unitary: An m x m numpy array representing the matrix V.
         diagonal: A list of the nonzero entries of D.
     """
     current_matrix = numpy.copy(unitary_rows)
@@ -430,7 +432,7 @@ def givens_decomposition(unitary_rows):
     # Get the diagonal entries
     diagonal = current_matrix.diagonal()
 
-    return left_unitary, givens_rotations, diagonal
+    return givens_rotations, left_unitary, diagonal
 
 
 def diagonalizing_fermionic_unitary(antisymmetric_matrix):
