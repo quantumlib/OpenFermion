@@ -120,6 +120,38 @@ class QuadraticHamiltonian(PolynomialTensor):
                                       numpy.eye(self.n_qubits))
         self.chemical_potential += chemical_potential
 
+    def orbital_energies(self):
+        """Return the ground energy and the energies of the orbitals.
+
+        Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
+        of the form::
+
+            \sum_{j} \epsilon_j a^\dagger_j a_j + constant.
+
+        The constant is the ground energy and the \epsilon_j are the energies
+        of the orbitals.
+
+        Returns:
+            ground_energy(float): the constant
+            orbital_energies(float): the \epsilon_j
+        """
+        if self.conserves_particle_number:
+            hermitian_matrix = self.combined_hermitian_part
+            orbital_energies, diagonalizing_unitary = numpy.linalg.eigh(
+                    hermitian_matrix)
+            ground_energy = 0.
+        else:
+            from openfermion.utils._slater_determinants import (
+                    antisymmetric_canonical_form)
+            majorana_matrix, majorana_constant = self.majorana_form()
+            canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
+            orbital_energies = canonical[range(n_qubits),
+                                         range(n_qubits, 2 * n_qubits)]
+            ground_energy = (-.5 * numpy.sum(orbital_energies) +
+                             majorana_constant)
+
+        return ground_energy, orbital_energies
+
     def majorana_form(self):
         """Return the Majorana represention of the Hamiltonian.
 

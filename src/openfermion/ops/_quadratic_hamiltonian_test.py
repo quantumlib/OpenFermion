@@ -96,8 +96,8 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         """Test adding a chemical potential."""
         self.quad_ham_npc.add_chemical_potential(2.4)
 
-        combined_hermitian_part = self.quad_ham_npc.combined_hermitian_part()
-        hermitian_part = self.quad_ham_npc.hermitian_part()
+        combined_hermitian_part = self.quad_ham_npc.combined_hermitian_part
+        hermitian_part = self.quad_ham_npc.hermitian_part
 
         want_combined = (self.combined_hermitian -
                          2.4 * numpy.eye(self.n_qubits))
