@@ -43,21 +43,19 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
             description, n_electrons = gaussian_state_preparation_circuit('a')
 
 
-class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
+class JWGetGaussianStateTest(unittest.TestCase):
 
     def setUp(self):
         self.n_qubits_range = range(2, 10)
 
-    def test_particle_conserving(self):
-        """Test the case that the Hamiltonian conserves particle number."""
+    def test_ground_state_particle_conserving(self):
+        """Test getting the ground state of a Hamiltonian that conserves
+        particle number."""
         constant = 1.7
         chemical_potential = 2.4
         for n_qubits in self.n_qubits_range:
             # Obtain a random Hermitian matrix
-            rand_mat_A = numpy.random.randn(n_qubits, n_qubits)
-            rand_mat_B = numpy.random.randn(n_qubits, n_qubits)
-            rand_mat = rand_mat_A + 1.j * rand_mat_B
-            hermitian_mat = rand_mat + rand_mat.T.conj()
+            hermitian_mat = random_hermitian_matrix(n_qubits)
 
             # Initialize a particle-number-conserving Hamiltonian
             quadratic_hamiltonian = QuadraticHamiltonian(
@@ -86,21 +84,15 @@ class GetQuadraticHamiltonianGroundStateTest(unittest.TestCase):
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
-    def test_particle_nonconserving(self):
-        """Test the case that the Hamiltonian does not conserve particle
-        number."""
+    def test_ground_state_particle_nonconserving(self):
+        """Test getting the ground state of a Hamiltonian that does not
+        conserve particle number."""
         constant = 1.7
         chemical_potential = 2.4
         for n_qubits in self.n_qubits_range:
             # Obtain random Hermitian and antisymmetric matrices
-            rand_mat_A = numpy.random.randn(n_qubits, n_qubits)
-            rand_mat_B = numpy.random.randn(n_qubits, n_qubits)
-            rand_mat = rand_mat_A + 1.j * rand_mat_B
-            hermitian_mat = rand_mat + rand_mat.T.conj()
-            rand_mat_A = numpy.random.randn(n_qubits, n_qubits)
-            rand_mat_B = numpy.random.randn(n_qubits, n_qubits)
-            rand_mat = rand_mat_A + 1.j * rand_mat_B
-            antisymmetric_mat = rand_mat - rand_mat.T
+            hermitian_mat = random_hermitian_matrix(n_qubits)
+            antisymmetric_mat = random_antisymmetric_matrix(n_qubits)
 
             # Initialize a non-particle-number-conserving Hamiltonian
             quadratic_hamiltonian = QuadraticHamiltonian(
@@ -299,12 +291,11 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
     def test_main_procedure(self):
         for n in self.test_dimensions:
             # Obtain a random antisymmetric matrix
-            rand_mat = numpy.random.randn(2 * n, 2 * n)
-            antisymmetric_matrix = rand_mat - rand_mat.T
+            antisymmetric_mat = random_antisymmetric_matrix(2 * n)
 
             # Get the diagonalizing fermionic unitary
             ferm_unitary = diagonalizing_fermionic_unitary(
-                    antisymmetric_matrix)
+                    antisymmetric_mat)
             lower_unitary = ferm_unitary[n:]
 
             # Get fermionic Gaussian decomposition of lower_unitary
@@ -390,14 +381,8 @@ class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
         self.chemical_potential = 2.
 
         # Obtain random Hermitian and antisymmetric matrices
-        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
-        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
-        rand_mat = rand_mat_A + 1.j * rand_mat_B
-        self.hermitian_mat = rand_mat + rand_mat.T.conj()
-        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
-        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
-        rand_mat = rand_mat_A + 1.j * rand_mat_B
-        self.antisymmetric_mat = rand_mat - rand_mat.T
+        self.hermitian_mat = random_hermitian_matrix(self.n_qubits)
+        self.antisymmetric_mat = random_antisymmetric_matrix(self.n_qubits)
 
         # Initialize a non-particle-number-conserving Hamiltonian
         self.quad_ham_npc = QuadraticHamiltonian(
@@ -559,3 +544,20 @@ class DoubleGivensRotateTest(unittest.TestCase):
         G = givens_matrix_elements(v[0], v[1])
         with self.assertRaises(ValueError):
             double_givens_rotate(A, G, 0, 1, which='a')
+
+def random_hermitian_matrix(n, real=False):
+    """Generate a random n x n Hermitian matrix."""
+    rand_mat = numpy.random.randn(n, n)
+    if not real:
+        rand_mat = rand_mat + 1.j * numpy.random.randn(n, n)
+    hermitian_mat = rand_mat + rand_mat.T.conj()
+    return hermitian_mat
+
+
+def random_antisymmetric_matrix(n, real=False):
+    """Generate a random n x n antisymmetric matrix."""
+    rand_mat = numpy.random.randn(n, n)
+    if not real:
+        rand_mat = rand_mat + 1.j * numpy.random.randn(n, n)
+    antisymmetric_mat = rand_mat - rand_mat.T
+    return antisymmetric_mat

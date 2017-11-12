@@ -95,7 +95,6 @@ def gaussian_state_preparation_circuit(
                 quadratic_hamiltonian.n_qubits:]
 
         # Get the circuit description
-        # THIS STEP NEEDS TO BE UPDATED
         decomposition, left_decomposition, diagonal, left_diagonal = (
                 fermionic_gaussian_decomposition(
                     gaussian_unitary_matrix))
