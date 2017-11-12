@@ -21,7 +21,7 @@ from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import (
         antisymmetric_canonical_form, diagonalizing_fermionic_unitary,
-        swap_columns, swap_rows)
+        swap_columns)
 from openfermion.utils._sparse_tools import (jw_hartree_fock_state,
                                              kronecker_operators,
                                              pauli_matrix_map)

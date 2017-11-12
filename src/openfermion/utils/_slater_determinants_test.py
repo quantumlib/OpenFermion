@@ -19,6 +19,7 @@ from scipy.linalg import qr
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
+from openfermion.ops._quadratic_hamiltonian import swap_rows
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import (fermionic_gaussian_decomposition,
                                get_ground_state,
@@ -31,8 +32,7 @@ from openfermion.utils._slater_determinants import (
         diagonalizing_fermionic_unitary,
         double_givens_rotate,
         givens_rotate,
-        givens_matrix_elements,
-        swap_rows)
+        givens_matrix_elements)
 
 
 class GroundStatePreparationCircuitTest(unittest.TestCase):
