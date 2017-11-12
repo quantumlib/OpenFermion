@@ -21,7 +21,8 @@ from openfermion.ops import (FermionOperator,
                              QuadraticHamiltonian,
                              normal_ordered)
 from openfermion.ops._quadratic_hamiltonian import majorana_operator
-from openfermion.transforms import get_fermion_operator
+from openfermion.transforms import get_fermion_operator, get_sparse_operator
+from openfermion.utils import get_ground_state
 
 
 class QuadraticHamiltoniansTest(unittest.TestCase):
@@ -32,14 +33,8 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         self.chemical_potential = 2.
 
         # Obtain random Hermitian and antisymmetric matrices
-        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
-        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
-        rand_mat = rand_mat_A + 1.j * rand_mat_B
-        self.hermitian_mat = rand_mat + rand_mat.T.conj()
-        rand_mat_A = numpy.random.randn(self.n_qubits, self.n_qubits)
-        rand_mat_B = numpy.random.randn(self.n_qubits, self.n_qubits)
-        rand_mat = rand_mat_A + 1.j * rand_mat_B
-        self.antisymmetric_mat = rand_mat - rand_mat.T
+        self.hermitian_mat = random_hermitian_matrix(self.n_qubits)
+        self.antisymmetric_mat = random_antisymmetric_matrix(self.n_qubits)
 
         self.combined_hermitian = (
                 self.hermitian_mat -
@@ -113,6 +108,27 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         self.assertAlmostEqual(2.4 + self.chemical_potential,
                                self.quad_ham_npc.chemical_potential)
 
+    def test_orbital_energies(self):
+        """Test getting the orbital energies."""
+        # Test the particle-number-conserving case
+        # Test the ground energy
+        orbital_energies, constant = self.quad_ham_pc.orbital_energies()
+        energy = numpy.sum(
+                orbital_energies[orbital_energies < -EQ_TOLERANCE]) + constant
+        quad_ham_pc_sparse = get_sparse_operator(self.quad_ham_pc)
+        ground_energy, ground_state = get_ground_state(quad_ham_pc_sparse)
+        self.assertAlmostEqual(energy, ground_energy)
+
+        # Test the non-particle-number-conserving case
+        # Test the ground energy
+        orbital_energies, constant = self.quad_ham_npc.orbital_energies()
+        energy = numpy.sum(
+                orbital_energies[orbital_energies < -EQ_TOLERANCE]) + constant
+        quad_ham_npc_sparse = get_sparse_operator(self.quad_ham_npc)
+        ground_energy, ground_state = get_ground_state(quad_ham_npc_sparse)
+        self.assertAlmostEqual(energy, ground_energy)
+
+
     def test_majorana_form(self):
         """Test getting the Majorana form."""
         majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
@@ -152,3 +168,23 @@ class MajoranaOperatorTest(unittest.TestCase):
             majorana_op = majorana_operator((2, 2))
         with self.assertRaises(ValueError):
             majorana_op = majorana_operator('a')
+
+
+def random_hermitian_matrix(n, real=False):
+    """Generate a random n x n Hermitian matrix."""
+    if real:
+        rand_mat = numpy.random.randn(n, n)
+    else:
+        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
+    hermitian_mat = rand_mat + rand_mat.T.conj()
+    return hermitian_mat
+
+
+def random_antisymmetric_matrix(n, real=False):
+    """Generate a random n x n antisymmetric matrix."""
+    if real:
+        rand_mat = numpy.random.randn(n, n)
+    else:
+        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
+    antisymmetric_mat = rand_mat - rand_mat.T
+    return antisymmetric_mat

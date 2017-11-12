@@ -20,6 +20,8 @@ from scipy.linalg import qr
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import swap_rows
+from openfermion.ops._quadratic_hamiltonian_test import (
+        random_hermitian_matrix, random_antisymmetric_matrix)
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import (fermionic_gaussian_decomposition,
                                get_ground_state,
@@ -544,22 +546,3 @@ class DoubleGivensRotateTest(unittest.TestCase):
         G = givens_matrix_elements(v[0], v[1])
         with self.assertRaises(ValueError):
             double_givens_rotate(A, G, 0, 1, which='a')
-
-def random_hermitian_matrix(n, real=False):
-    """Generate a random n x n Hermitian matrix."""
-    if real:
-        rand_mat = numpy.random.randn(n, n)
-    else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
-    hermitian_mat = rand_mat + rand_mat.T.conj()
-    return hermitian_mat
-
-
-def random_antisymmetric_matrix(n, real=False):
-    """Generate a random n x n antisymmetric matrix."""
-    if real:
-        rand_mat = numpy.random.randn(n, n)
-    else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
-    antisymmetric_mat = rand_mat - rand_mat.T
-    return antisymmetric_mat

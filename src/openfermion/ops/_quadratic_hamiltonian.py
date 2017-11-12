@@ -147,8 +147,9 @@ class QuadraticHamiltonian(PolynomialTensor):
             majorana_matrix, majorana_constant = self.majorana_form()
             canonical, orthogonal = antisymmetric_canonical_form(
                     majorana_matrix)
-            orbital_energies = canonical[range(n_qubits),
-                                         range(n_qubits, 2 * n_qubits)]
+            orbital_energies = canonical[
+                    range(self.n_qubits),
+                    range(self.n_qubits, 2 * self.n_qubits)]
             constant = -.5 * numpy.sum(orbital_energies) + majorana_constant
 
         return orbital_energies, constant
