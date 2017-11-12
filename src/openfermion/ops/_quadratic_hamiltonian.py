@@ -133,14 +133,14 @@ class QuadraticHamiltonian(PolynomialTensor):
         of the orbitals.
 
         Returns:
-            ground_energy(float): the constant
             orbital_energies(float): the \epsilon_j
+            ground_energy(float): the constant
         """
         if self.conserves_particle_number:
             hermitian_matrix = self.combined_hermitian_part
             orbital_energies, diagonalizing_unitary = numpy.linalg.eigh(
                     hermitian_matrix)
-            ground_energy = 0.
+            ground_energy = 0. + self.constant
         else:
             majorana_matrix, majorana_constant = self.majorana_form()
             canonical, orthogonal = antisymmetric_canonical_form(
@@ -150,7 +150,7 @@ class QuadraticHamiltonian(PolynomialTensor):
             ground_energy = (-.5 * numpy.sum(orbital_energies) +
                              majorana_constant)
 
-        return ground_energy, orbital_energies
+        return orbital_energies, ground_energy
 
     def majorana_form(self):
         """Return the Majorana represention of the Hamiltonian.
