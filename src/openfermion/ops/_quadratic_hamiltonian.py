@@ -122,37 +122,36 @@ class QuadraticHamiltonian(PolynomialTensor):
         self.chemical_potential += chemical_potential
 
     def orbital_energies(self):
-        """Return the energies of the orbitals and the ground energy.
+        """Return the orbital energies.
 
         Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
         of the form::
 
             \sum_{j} \epsilon_j a^\dagger_j a_j + constant.
 
-        The \epsilon_j are the energies of the orbitals and the constant is
-        the ground energy (lowest eigenvalue) of the Hamiltonian.
+        We call the \epsilon_j the orbital energies.
         The eigenvalues of the Hamiltonian are sums of subsets of the
         orbital energies (up to the additive constant).
 
         Returns:
-            orbital_energies(float): the \epsilon_j
-            ground_energy(float): the constant
+            orbital_energies(ndarray): A one-dimensional array containing
+                the \epsilon_j
+            constant(float): the constant
         """
         if self.conserves_particle_number:
             hermitian_matrix = self.combined_hermitian_part
             orbital_energies, diagonalizing_unitary = numpy.linalg.eigh(
                     hermitian_matrix)
-            ground_energy = 0. + self.constant
+            constant = self.constant
         else:
             majorana_matrix, majorana_constant = self.majorana_form()
             canonical, orthogonal = antisymmetric_canonical_form(
                     majorana_matrix)
             orbital_energies = canonical[range(n_qubits),
                                          range(n_qubits, 2 * n_qubits)]
-            ground_energy = (-.5 * numpy.sum(orbital_energies) +
-                             majorana_constant)
+            constant = -.5 * numpy.sum(orbital_energies) + majorana_constant
 
-        return orbital_energies, ground_energy
+        return orbital_energies, constant
 
     def majorana_form(self):
         """Return the Majorana represention of the Hamiltonian.
