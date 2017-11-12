@@ -22,12 +22,11 @@ from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import swap_rows
 from openfermion.ops._quadratic_hamiltonian_test import (
         random_hermitian_matrix, random_antisymmetric_matrix)
-from openfermion.transforms import get_fermion_operator
+from openfermion.transforms import get_sparse_operator
 from openfermion.utils import (fermionic_gaussian_decomposition,
                                get_ground_state,
                                givens_decomposition,
                                gaussian_state_preparation_circuit,
-                               jordan_wigner_sparse,
                                jw_get_gaussian_state)
 from openfermion.utils._slater_determinants import (
         antisymmetric_canonical_form,
@@ -53,20 +52,13 @@ class JWGetGaussianStateTest(unittest.TestCase):
     def test_ground_state_particle_conserving(self):
         """Test getting the ground state of a Hamiltonian that conserves
         particle number."""
-        constant = 1.7
-        chemical_potential = 2.4
         for n_qubits in self.n_qubits_range:
-            # Obtain a random Hermitian matrix
-            hermitian_mat = random_hermitian_matrix(n_qubits)
-
             # Initialize a particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = QuadraticHamiltonian(
-                    constant, hermitian_mat,
-                    chemical_potential=chemical_potential)
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, True)
 
             # Compute the true ground state
-            fermion_operator = get_fermion_operator(quadratic_hamiltonian)
-            sparse_operator = jordan_wigner_sparse(fermion_operator)
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
             ground_energy, ground_state = get_ground_state(sparse_operator)
 
             # Compute the ground state using the circuit
@@ -89,21 +81,13 @@ class JWGetGaussianStateTest(unittest.TestCase):
     def test_ground_state_particle_nonconserving(self):
         """Test getting the ground state of a Hamiltonian that does not
         conserve particle number."""
-        constant = 1.7
-        chemical_potential = 2.4
         for n_qubits in self.n_qubits_range:
-            # Obtain random Hermitian and antisymmetric matrices
-            hermitian_mat = random_hermitian_matrix(n_qubits)
-            antisymmetric_mat = random_antisymmetric_matrix(n_qubits)
-
             # Initialize a non-particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = QuadraticHamiltonian(
-                    constant, hermitian_mat, antisymmetric_mat,
-                    chemical_potential)
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, False)
 
             # Compute the true ground state
-            fermion_operator = get_fermion_operator(quadratic_hamiltonian)
-            sparse_operator = jordan_wigner_sparse(fermion_operator)
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
             ground_energy, ground_state = get_ground_state(sparse_operator)
 
             # Compute the ground state using the circuit
@@ -117,6 +101,78 @@ class JWGetGaussianStateTest(unittest.TestCase):
             # Check that the state obtained using the circuit is a ground state
             difference = (sparse_operator * circuit_state -
                           ground_energy * circuit_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_excited_state_particle_conserving(self):
+        """Test getting an excited state of a Hamiltonian that conserves
+        particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, True)
+
+            # Pick some orbitals to occupy
+            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
+            occupied_orbitals = numpy.random.choice(
+                    range(n_qubits), num_occupied_orbitals, False)
+
+            # Compute the Gaussian state
+            circuit_energy, gaussian_state = jw_get_gaussian_state(
+                    quadratic_hamiltonian, occupied_orbitals)
+
+            # Compute the true energy
+            orbital_energies, constant = (
+                    quadratic_hamiltonian.orbital_energies())
+            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
+
+            # Check that the energies match
+            self.assertAlmostEqual(energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is an eigenstate
+            # with the correct eigenvalue
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            difference = (sparse_operator * gaussian_state -
+                          energy * gaussian_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_excited_state_particle_nonconserving(self):
+        """Test getting an excited state of a Hamiltonian that conserves
+        particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a non-particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, False)
+
+            # Pick some orbitals to occupy
+            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
+            occupied_orbitals = numpy.random.choice(
+                    range(n_qubits), num_occupied_orbitals, False)
+
+            # Compute the Gaussian state
+            circuit_energy, gaussian_state = jw_get_gaussian_state(
+                    quadratic_hamiltonian, occupied_orbitals)
+
+            # Compute the true energy
+            orbital_energies, constant = (
+                    quadratic_hamiltonian.orbital_energies())
+            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
+
+            # Check that the energies match
+            self.assertAlmostEqual(energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is an eigenstate
+            # with the correct eigenvalue
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            difference = (sparse_operator * gaussian_state -
+                          energy * gaussian_state)
             discrepancy = 0.
             if difference.nnz:
                 discrepancy = max(abs(difference.data))
@@ -546,3 +602,28 @@ class DoubleGivensRotateTest(unittest.TestCase):
         G = givens_matrix_elements(v[0], v[1])
         with self.assertRaises(ValueError):
             double_givens_rotate(A, G, 0, 1, which='a')
+
+
+def random_quadratic_hamiltonian(n_qubits,
+                                 conserves_particle_number=False,
+                                 real=False):
+    """Generate a random instance of QuadraticHamiltonian
+
+    Args:
+        n_qubits(int): the number of qubits
+        conserves_particle_number(bool): whether the returned Hamiltonian
+            should conserve particle number
+        real(bool): whether to use only real numbers
+
+    Returns:
+        QuadraticHamiltonian
+    """
+    constant = numpy.random.randn()
+    chemical_potential = numpy.random.randn()
+    hermitian_mat = random_hermitian_matrix(n_qubits, real)
+    if conserves_particle_number:
+        antisymmetric_mat = None
+    else:
+        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
+    return QuadraticHamiltonian(constant, hermitian_mat,
+                                antisymmetric_mat, chemical_potential)

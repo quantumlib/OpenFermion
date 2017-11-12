@@ -111,8 +111,8 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
     def test_orbital_energies(self):
         """Test getting the orbital energies."""
         # Test the particle-number-conserving case
-        # Test the ground energy
         orbital_energies, constant = self.quad_ham_pc.orbital_energies()
+        # Test the ground energy
         energy = numpy.sum(
                 orbital_energies[orbital_energies < -EQ_TOLERANCE]) + constant
         quad_ham_pc_sparse = get_sparse_operator(self.quad_ham_pc)
@@ -120,14 +120,12 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         self.assertAlmostEqual(energy, ground_energy)
 
         # Test the non-particle-number-conserving case
-        # Test the ground energy
         orbital_energies, constant = self.quad_ham_npc.orbital_energies()
-        energy = numpy.sum(
-                orbital_energies[orbital_energies < -EQ_TOLERANCE]) + constant
+        # Test the ground energy
+        energy = constant
         quad_ham_npc_sparse = get_sparse_operator(self.quad_ham_npc)
         ground_energy, ground_state = get_ground_state(quad_ham_npc_sparse)
         self.assertAlmostEqual(energy, ground_energy)
-
 
     def test_majorana_form(self):
         """Test getting the Majorana form."""

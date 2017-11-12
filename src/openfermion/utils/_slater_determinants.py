@@ -83,7 +83,7 @@ def gaussian_state_preparation_circuit(
         decomposition, left_unitary, diagonal = givens_decomposition(
                 slater_determinant_matrix)
         circuit_description = list(reversed(decomposition))
-        start_orbitals = occupied_orbitals
+        start_orbitals = range(len(occupied_orbitals))
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
@@ -140,25 +140,15 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
     n_qubits = quadratic_hamiltonian.n_qubits
 
     # Compute the energy
-    if quadratic_hamiltonian.conserves_particle_number:
-        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part
-        energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
-        if occupied_orbitals is None:
+    orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+    if occupied_orbitals is None:
+        if quadratic_hamiltonian.conserves_particle_number:
             num_negative_energies = numpy.count_nonzero(
-                    energies < -EQ_TOLERANCE)
+                    orbital_energies < -EQ_TOLERANCE)
             occupied_orbitals = range(num_negative_energies)
-        energies = energies[occupied_orbitals]
-        energy = numpy.sum(energies) + quadratic_hamiltonian.constant
-    else:
-        majorana_matrix, majorana_constant = (
-                quadratic_hamiltonian.majorana_form())
-        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
-        diagonal_entries = canonical[range(n_qubits),
-                                     range(n_qubits, 2 * n_qubits)]
-        ground_energy = -.5 * numpy.sum(diagonal_entries) + majorana_constant
-        if occupied_orbitals is None:
+        else:
             occupied_orbitals = []
-        energy = numpy.sum(diagonal_entries[occupied_orbitals]) + ground_energy
+    energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
 
     # Obtain the circuit that prepares the Gaussian state
     circuit_description, start_orbitals = gaussian_state_preparation_circuit(
@@ -354,7 +344,6 @@ def fermionic_gaussian_decomposition(unitary_rows):
                 # Update the matrix
                 givens_rotate(current_matrix, givens_rotation,
                               j - 1, j, which='col')
-                print(current_matrix)
 
         # Append the current list of parallel rotations to the list
         left_decomposition.append(tuple(parallel_ops))
