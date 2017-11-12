@@ -308,8 +308,26 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             lower_unitary = ferm_unitary[n:]
 
             # Get fermionic Gaussian decomposition of lower_unitary
-            decomposition, left_unitary, diagonal = (
+            decomposition, left_decomposition, diagonal, left_diagonal = (
                     fermionic_gaussian_decomposition(lower_unitary))
+
+            # Compute left_unitary
+            left_unitary = numpy.eye(n, dtype=complex)
+            for parallel_set in left_decomposition:
+                combined_op = numpy.eye(n, dtype=complex)
+                for op in reversed(parallel_set):
+                    i, j, theta, phi = op
+                    c = numpy.cos(theta)
+                    s = numpy.sin(theta)
+                    phase = numpy.exp(1.j * phi)
+                    givens_rotation = numpy.array(
+                            [[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                    givens_rotate(combined_op, givens_rotation, i, j)
+                left_unitary = combined_op.dot(left_unitary)
+            for i in range(n):
+                left_unitary[i] *= left_diagonal[i]
+            left_unitary = left_unitary.T
 
             # Check that left_unitary zeroes out the correct entries of
             # lower_unitary

@@ -96,16 +96,20 @@ def gaussian_state_preparation_circuit(
 
         # Get the circuit description
         # THIS STEP NEEDS TO BE UPDATED
-        decomposition, left_unitary, diagonal = (
+        decomposition, left_decomposition, diagonal, left_diagonal = (
                 fermionic_gaussian_decomposition(
                     gaussian_unitary_matrix))
-        circuit_description = list(reversed(decomposition))
         if occupied_orbitals is None:
             # The ground state is desired, so the circuit should be applied
             # to the vaccuum state
             start_orbitals = []
+            circuit_description = list(reversed(decomposition))
         else:
             start_orbitals = occupied_orbitals
+            # The circuit won't be applied to the ground state, so we need to
+            # use left_decomposition
+            circuit_description = list(reversed(
+                                       decomposition + left_decomposition))
 
     return circuit_description, start_orbitals
 
@@ -210,7 +214,8 @@ def fermionic_gaussian_decomposition(unitary_rows):
     of rows i and j by angles theta and phi.
 
     The matrix V^T, the transpose of V, can also be decomposed as a sequence
-    of Givens rotations.
+    of Givens rotations. This decomposition is needed for a circuit that
+    prepares an excited state.
 
     Args:
         unitary_rows(ndarray): A matrix with orthonormal rows and
@@ -220,6 +225,8 @@ def fermionic_gaussian_decomposition(unitary_rows):
         decomposition(list[tuple]): The decomposition of U.
         left_decomposition(list[tuple]): The decomposition of V^T.
         diagonal(ndarray): A list of the nonzero entries of D.
+        left_diagonal(ndarray): A list of the diagonal entries left from
+            the decomposition of V.
     """
     current_matrix = numpy.copy(unitary_rows)
     n, p = current_matrix.shape
@@ -259,12 +266,12 @@ def fermionic_gaussian_decomposition(unitary_rows):
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
 
     # Initialize list to store decomposition of current_matrix
-    decomposition = list()
+    decomposition = []
     # There are 2 * n - 1 iterations (that is the circuit depth)
     for k in range(2 * n - 1):
         # Initialize the list of parallel operations to perform
         # in this iteration
-        parallel_ops = list()
+        parallel_ops = []
 
         # Perform a particle-hole transformation if necessary
         if k % 2 == 0 and abs(current_matrix[k // 2, n - 1]) > EQ_TOLERANCE:
@@ -306,7 +313,55 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     # Get the diagonal entries
     diagonal = current_matrix[range(n), range(n, 2 * n)]
-    return decomposition, left_unitary, diagonal
+
+    # Compute the decomposition of left_unitary^T
+    current_matrix = left_unitary.T
+    left_decomposition = []
+
+    for k in range(2 * (n - 1) - 1):
+        # Initialize the list of parallel operations to perform
+        # in this iteration
+        parallel_ops = []
+
+        # Get the (row, column) indices of elements to zero out in parallel.
+        if k < n - 1:
+            start_row = 0
+            start_column = n - 1 - k
+        else:
+            start_row = k - (n - 2)
+            start_column = k - (n - 3)
+        column_indices = range(start_column, n, 2)
+        row_indices = range(start_row, start_row + len(column_indices))
+        indices_to_zero_out = zip(row_indices, column_indices)
+
+        for i, j in indices_to_zero_out:
+            # Compute the Givens rotation to zero out the (i, j) element,
+            # if needed
+            right_element = current_matrix[i, j].conj()
+            if abs(right_element) > EQ_TOLERANCE:
+                # We actually need to perform a Givens rotation
+                left_element = current_matrix[i, j - 1].conj()
+                givens_rotation = givens_matrix_elements(left_element,
+                                                         right_element,
+                                                         which='right')
+
+                # Add the parameters to the list
+                theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
+                phi = numpy.angle(givens_rotation[1, 1])
+                parallel_ops.append((j - 1, j, theta, phi))
+
+                # Update the matrix
+                givens_rotate(current_matrix, givens_rotation,
+                              j - 1, j, which='col')
+                print(current_matrix)
+
+        # Append the current list of parallel rotations to the list
+        left_decomposition.append(tuple(parallel_ops))
+
+    # Get the diagonal entries
+    left_diagonal = current_matrix[range(n), range(n)]
+
+    return decomposition, left_decomposition, diagonal, left_diagonal
 
 
 def givens_decomposition(unitary_rows):
@@ -366,7 +421,7 @@ def givens_decomposition(unitary_rows):
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
 
     # Compute the decomposition of current_matrix into Givens rotations
-    givens_rotations = list()
+    givens_rotations = []
     # If m = n (the matrix is square) then we don't need to perform any
     # Givens rotations!
     if m != n:
@@ -406,7 +461,7 @@ def givens_decomposition(unitary_rows):
             column_indices = range(start_column, end_column, 2)
             indices_to_zero_out = zip(row_indices, column_indices)
 
-            parallel_rotations = list()
+            parallel_rotations = []
             for i, j in indices_to_zero_out:
                 # Compute the Givens rotation to zero out the (i, j) element,
                 # if needed
