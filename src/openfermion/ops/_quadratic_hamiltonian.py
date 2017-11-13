@@ -15,6 +15,7 @@ in the fermionic ladder operators."""
 from __future__ import absolute_import
 
 import numpy
+from scipy.linalg import schur
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import FermionOperator, PolynomialTensor
@@ -114,6 +115,45 @@ class QuadraticHamiltonian(PolynomialTensor):
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part))
         return discrepancy < EQ_TOLERANCE
 
+    def add_chemical_potential(self, chemical_potential):
+        """Add a chemical potential."""
+        self.n_body_tensors[1, 0] -= (chemical_potential *
+                                      numpy.eye(self.n_qubits))
+        self.chemical_potential += chemical_potential
+
+    def orbital_energies(self):
+        """Return the orbital energies.
+
+        Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
+        of the form::
+
+            \sum_{j} \epsilon_j a^\dagger_j a_j + constant.
+
+        We call the \epsilon_j the orbital energies.
+        The eigenvalues of the Hamiltonian are sums of subsets of the
+        orbital energies (up to the additive constant).
+
+        Returns:
+            orbital_energies(ndarray): A one-dimensional array containing
+                the \epsilon_j
+            constant(float): the constant
+        """
+        if self.conserves_particle_number:
+            hermitian_matrix = self.combined_hermitian_part
+            orbital_energies, diagonalizing_unitary = numpy.linalg.eigh(
+                    hermitian_matrix)
+            constant = self.constant
+        else:
+            majorana_matrix, majorana_constant = self.majorana_form()
+            canonical, orthogonal = antisymmetric_canonical_form(
+                    majorana_matrix)
+            orbital_energies = canonical[
+                    range(self.n_qubits),
+                    range(self.n_qubits, 2 * self.n_qubits)]
+            constant = -.5 * numpy.sum(orbital_energies) + majorana_constant
+
+        return orbital_energies, constant
+
     def majorana_form(self):
         """Return the Majorana represention of the Hamiltonian.
 
@@ -201,3 +241,145 @@ def majorana_operator(term=None, coefficient=1.):
     # Invalid input.
     else:
         raise ValueError('Operator specified incorrectly.')
+
+
+def diagonalizing_fermionic_unitary(antisymmetric_matrix):
+    """Compute the unitary that diagonalizes a quadratic Hamiltonian.
+
+    The input matrix represents a quadratic Hamiltonian in the Majorana basis.
+    The output matrix is a unitary that represents a transformation (mixing)
+    of the fermionic ladder operators. We use the convention that the
+    creation operators are listed before the annihilation operators.
+    The returned unitary has additional structure which ensures
+    that the transformed ladder operators also satisfy the fermionic
+    anticommutation relations.
+
+    Args:
+        antisymmetric_matrix(ndarray): A (2 * n_qubits) x (2 * n_qubits)
+            antisymmetric matrix representing a quadratic Hamiltonian in the
+            Majorana basis.
+    Returns:
+        diagonalizing_unitary(ndarray): A (2 * n_qubits) x (2 * n_qubits)
+            unitary matrix representing a transformation of the fermionic
+            ladder operators.
+    """
+    m, n = antisymmetric_matrix.shape
+    n_qubits = n // 2
+
+    # Get the orthogonal transformation that puts antisymmetric_matrix
+    # into canonical form
+    canonical, orthogonal = antisymmetric_canonical_form(antisymmetric_matrix)
+
+    # Create the matrix that converts between fermionic ladder and
+    # Majorana bases
+    normalized_identity = numpy.eye(n_qubits, dtype=complex) / numpy.sqrt(2.)
+    majorana_basis_change = numpy.eye(
+            2 * n_qubits, dtype=complex) / numpy.sqrt(2.)
+    majorana_basis_change[n_qubits:, n_qubits:] *= -1.j
+    majorana_basis_change[:n_qubits, n_qubits:] = normalized_identity
+    majorana_basis_change[n_qubits:, :n_qubits] = 1.j * normalized_identity
+
+    # Compute the unitary and return
+    diagonalizing_unitary = majorana_basis_change.T.conj().dot(
+            orthogonal.dot(majorana_basis_change))
+
+    return diagonalizing_unitary
+
+
+def antisymmetric_canonical_form(antisymmetric_matrix):
+    """Compute the canonical form of an antisymmetric matrix.
+
+    The input is a real, antisymmetric n x n matrix A, where n is even.
+    Its canonical form is::
+
+        A = R^T C R
+
+    where R is a real, orthogonal matrix and C has the form::
+
+        [  0     D ]
+        [ -D     0 ]
+
+    where D is a diagonal matrix with nonnegative entries.
+
+    Args:
+        antisymmetric_matrix(ndarray): An antisymmetric matrix with even
+            dimension.
+
+    Returns:
+        canonical(ndarray): The canonical form C of antisymmetric_matrix
+        orthogonal(ndarray): The orthogonal transformation R.
+    """
+    m, p = antisymmetric_matrix.shape
+
+    if m != p or p % 2 != 0:
+        raise ValueError('The input matrix must be square with even '
+                         'dimension.')
+
+    # Check that input matrix is antisymmetric
+    matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
+    maxval = numpy.max(numpy.abs(matrix_plus_transpose))
+    if maxval > EQ_TOLERANCE:
+        raise ValueError('The input matrix must be antisymmetric.')
+
+    # Compute Schur decomposition
+    canonical, orthogonal = schur(antisymmetric_matrix, output='real')
+
+    # The returned form is block diagonal; we need to permute rows and columns
+    # to put it into the form we want
+    n = p // 2
+    for i in range(1, n, 2):
+        swap_rows(canonical, i, n + i - 1)
+        swap_columns(canonical, i, n + i - 1)
+        swap_columns(orthogonal, i, n + i - 1)
+        if n % 2 != 0:
+            swap_rows(canonical, n - 1, n + i)
+            swap_columns(canonical, n - 1, n + i)
+            swap_columns(orthogonal, n - 1, n + i)
+
+    # Now we permute so that the upper right block is non-negative
+    for i in range(n):
+        if canonical[i, n + i] < -EQ_TOLERANCE:
+            swap_rows(canonical, i, n + i)
+            swap_columns(canonical, i, n + i)
+            swap_columns(orthogonal, i, n + i)
+
+    # Now we permute so that the nonzero entries are ordered by magnitude
+    # We use insertion sort
+    diagonal = canonical[range(n), range(n, 2 * n)]
+    for i in range(n):
+        # Insert the smallest element from the unsorted part of the list into
+        # index i
+        arg_min = numpy.argmin(diagonal[i:]) + i
+        if arg_min != i:
+            # Permute the upper right block
+            swap_rows(canonical, i, arg_min)
+            swap_columns(canonical, n + i, n + arg_min)
+            swap_columns(orthogonal, n + i, n + arg_min)
+            # Permute the lower left block
+            swap_rows(canonical, n + i, n + arg_min)
+            swap_columns(canonical, i, arg_min)
+            swap_columns(orthogonal, i, arg_min)
+            # Update diagonal
+            swap_rows(diagonal, i, arg_min)
+
+    return canonical, orthogonal.T
+
+
+def swap_rows(M, i, j):
+    """Swap rows i and j of matrix M."""
+    if len(M.shape) == 1:
+        M[i], M[j] = M[j], M[i]
+    else:
+        row_i = M[i, :].copy()
+        row_j = M[j, :].copy()
+        M[i, :], M[j, :] = row_j, row_i
+
+
+def swap_columns(M, i, j):
+    """Swap columns i and j of matrix M."""
+    if len(M.shape) == 1:
+        M[i], M[j] = M[j], M[i]
+    else:
+        column_i = M[:, i].copy()
+        column_j = M[:, j].copy()
+        M[:, i], M[:, j] = column_j, column_i

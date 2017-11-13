@@ -395,9 +395,9 @@ def get_ground_state(operator):
     """
     if isinstance(operator, QuadraticHamiltonian):
         from openfermion.utils._slater_determinants import (
-                jw_get_quadratic_hamiltonian_ground_state)
+                jw_get_gaussian_state)
         eigenvalue, eigenstate = (
-                jw_get_quadratic_hamiltonian_ground_state(operator))
+                jw_get_gaussian_state(operator))
     elif isinstance(operator, scipy.sparse.spmatrix):
         if not is_hermitian(operator):
             raise ValueError('operator must be Hermitian.')
