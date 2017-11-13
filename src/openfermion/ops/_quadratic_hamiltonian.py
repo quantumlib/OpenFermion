@@ -43,7 +43,6 @@ class QuadraticHamiltonian(PolynomialTensor):
     to adjust the expectation value of the total number of particles.
 
     Attributes:
-        constant(float): A constant term in the operator.
         chemical_potential(float): The chemical potential \mu.
     """
 
