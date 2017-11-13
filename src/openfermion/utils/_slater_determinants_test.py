@@ -19,7 +19,10 @@ from scipy.linalg import qr
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
-from openfermion.ops._quadratic_hamiltonian import swap_rows
+from openfermion.ops._quadratic_hamiltonian import (
+        antisymmetric_canonical_form,
+        diagonalizing_fermionic_unitary,
+        swap_rows)
 from openfermion.ops._quadratic_hamiltonian_test import (
         random_hermitian_matrix, random_antisymmetric_matrix)
 from openfermion.transforms import get_sparse_operator
@@ -27,16 +30,98 @@ from openfermion.utils import (fermionic_gaussian_decomposition,
                                get_ground_state,
                                givens_decomposition,
                                gaussian_state_preparation_circuit,
-                               jw_get_gaussian_state)
+                               jw_get_gaussian_state,
+                               jw_slater_determinant)
 from openfermion.utils._slater_determinants import (
-        antisymmetric_canonical_form,
-        diagonalizing_fermionic_unitary,
         double_givens_rotate,
         givens_rotate,
-        givens_matrix_elements)
+        givens_matrix_elements,
+        jw_sparse_givens_rotation,
+        jw_sparse_particle_hole_transformation_last_mode)
 
 
 class GaussianStatePreparationCircuitTest(unittest.TestCase):
+
+    def setUp(self):
+        self.n_qubits_range = range(3, 6)
+
+    def test_ground_state_particle_conserving(self):
+        """Test getting the ground state preparation circuit for a Hamiltonian
+        that conserves particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, True, True)
+
+            # Compute the true ground state
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            ground_energy, ground_state = get_ground_state(sparse_operator)
+
+            # Obtain the circuit
+            circuit_description, start_orbitals = (
+                    gaussian_state_preparation_circuit(quadratic_hamiltonian))
+
+            # Initialize the starting state
+            state = jw_slater_determinant(start_orbitals, n_qubits)
+
+            # Apply the circuit
+            particle_hole_transformation = (
+                    jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+            for parallel_ops in circuit_description:
+                for op in parallel_ops:
+                    if op == 'pht':
+                        state = particle_hole_transformation.dot(state)
+                    else:
+                        i, j, theta, phi = op
+                        state = jw_sparse_givens_rotation(
+                                    i, j, theta, phi, n_qubits).dot(state)
+
+            # Check that the state obtained using the circuit is a ground state
+            difference = sparse_operator * state - ground_energy * state
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_ground_state_particle_nonconserving(self):
+        """Test getting the ground state preparation circuit for a Hamiltonian
+        that does not conserve particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, False, True)
+
+            # Compute the true ground state
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            ground_energy, ground_state = get_ground_state(sparse_operator)
+
+            # Obtain the circuit
+            circuit_description, start_orbitals = (
+                    gaussian_state_preparation_circuit(quadratic_hamiltonian))
+
+            # Initialize the starting state
+            state = jw_slater_determinant(start_orbitals, n_qubits)
+
+            # Apply the circuit
+            particle_hole_transformation = (
+                    jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+            for parallel_ops in circuit_description:
+                for op in parallel_ops:
+                    if op == 'pht':
+                        state = particle_hole_transformation.dot(state)
+                    else:
+                        i, j, theta, phi = op
+                        state = jw_sparse_givens_rotation(
+                                    i, j, theta, phi, n_qubits).dot(state)
+
+            # Check that the state obtained using the circuit is a ground state
+            difference = sparse_operator * state - ground_energy * state
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
 
     def test_bad_input(self):
         """Test bad input."""
@@ -62,9 +147,8 @@ class JWGetGaussianStateTest(unittest.TestCase):
             ground_energy, ground_state = get_ground_state(sparse_operator)
 
             # Compute the ground state using the circuit
-            circuit_energy, circuit_state = (
-                    jw_get_gaussian_state(
-                        quadratic_hamiltonian))
+            circuit_energy, circuit_state = jw_get_gaussian_state(
+                    quadratic_hamiltonian)
 
             # Check that the energies match
             self.assertAlmostEqual(ground_energy, circuit_energy)
@@ -604,6 +688,15 @@ class DoubleGivensRotateTest(unittest.TestCase):
         G = givens_matrix_elements(v[0], v[1])
         with self.assertRaises(ValueError):
             double_givens_rotate(A, G, 0, 1, which='a')
+
+
+class JWSparseGivensRotationTest(unittest.TestCase):
+
+    def test_bad_input(self):
+        with self.assertRaises(ValueError):
+            givens_matrix = jw_sparse_givens_rotation(0, 2, 1., 1., 5)
+        with self.assertRaises(ValueError):
+            givens_matrix = jw_sparse_givens_rotation(4, 5, 1., 1., 5)
 
 
 def random_quadratic_hamiltonian(n_qubits,
