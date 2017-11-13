@@ -27,39 +27,43 @@ class QuadraticHamiltonianError(Exception):
 
 class QuadraticHamiltonian(PolynomialTensor):
     """Class for storing Hamiltonians that are quadratic in the fermionic
-    ladder operators. The operators stored in this class take the form::
+    ladder operators. The operators stored in this class take the form
+
+    .. math::
 
         \sum_{p, q} (M_{pq} - \mu \delta_{pq}) a^\dagger_p a_q
-        + 1 / 2 \sum_{p, q} (A_{pq} a^\dagger_p a^\dagger_q + h.c.)
-        + constant
+        + \\frac12 \sum_{p, q} (A_{pq} a^\dagger_p a^\dagger_q + \\text{h.c.})
+        + \\text{constant}
 
     where
-        M is a Hermitian n_qubits x n_qubits matrix.
-        A is an antisymmetric n_qubits x n_qubits matrix.
-        \mu is a float representing the chemical potential term.
-        \delta_{pq} is the Kronecker delta symbol.
 
-    We separate the chemical potential \mu from M so that we can use it
-    to adjust the expectation value of the total number of particles.
+        * :math:`M` is a Hermitian n_qubits x n_qubits matrix.
+        * :math:`A` is an antisymmetric n_qubits x n_qubits matrix.
+        * :math:`\mu` is a float representing the chemical potential term.
+        * :math:`\delta_{pq}` is the Kronecker delta symbol.
+
+    We separate the chemical potential :math:`\mu` from :math:`M` so that
+    we can use it to adjust the expectation value of the total number of
+    particles.
 
     Attributes:
-        chemical_potential(float): The chemical potential \mu.
+        chemical_potential(float): The chemical potential :math:`\mu`.
     """
 
     def __init__(self, constant, hermitian_part,
-                 antisymmetric_part=None, chemical_potential=None):
+                 antisymmetric_part=None, chemical_potential=0.):
         """
         Initialize the QuadraticHamiltonian class.
 
         Args:
             constant(float): A constant term in the operator.
-            hermitian_part(ndarray): The matrix M, which represents the
+            hermitian_part(ndarray): The matrix :math:`M`, which represents the
                 coefficients of the particle-number-conserving terms.
                 This is an n_qubits x n_qubits numpy array of complex numbers.
-            antisymmetric_part(ndarray): The matrix A, which represents the
-                coefficients of the non-particle-number-conserving terms.
+            antisymmetric_part(ndarray): The matrix :math:`A`, which represents
+            the coefficients of the non-particle-number-conserving terms.
                 This is an n_qubits x n_qubits numpy array of complex numbers.
-            chemical_potential(float): The chemical potential \mu.
+            chemical_potential(float): The chemical potential :math:`\mu`.
         """
         n_qubits = hermitian_part.shape[0]
 
@@ -84,10 +88,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                      (0, 0): -.5 * antisymmetric_part.conj()})
 
         # Add remaining attributes
-        if chemical_potential is None:
-            self.chemical_potential = 0.
-        else:
-            self.chemical_potential = chemical_potential
+        self.chemical_potential = chemical_potential
 
     @property
     def combined_hermitian_part(self):
