@@ -37,8 +37,8 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     where
 
-        * :math:`M` is a Hermitian n_qubits x n_qubits matrix.
-        * :math:`A` is an antisymmetric n_qubits x n_qubits matrix.
+        * :math:`M` is a Hermitian `n_qubits` x `n_qubits` matrix.
+        * :math:`A` is an antisymmetric `n_qubits` x `n_qubits` matrix.
         * :math:`\mu` is a float representing the chemical potential term.
         * :math:`\delta_{pq}` is the Kronecker delta symbol.
 
@@ -59,10 +59,10 @@ class QuadraticHamiltonian(PolynomialTensor):
             constant(float): A constant term in the operator.
             hermitian_part(ndarray): The matrix :math:`M`, which represents the
                 coefficients of the particle-number-conserving terms.
-                This is an n_qubits x n_qubits numpy array of complex numbers.
+                This is an `n_qubits` x `n_qubits` numpy array of complex numbers.
             antisymmetric_part(ndarray): The matrix :math:`A`, which represents
-            the coefficients of the non-particle-number-conserving terms.
-                This is an n_qubits x n_qubits numpy array of complex numbers.
+                the coefficients of the non-particle-number-conserving terms.
+                This is an `n_qubits` x `n_qubits` numpy array of complex numbers.
             chemical_potential(float): The chemical potential :math:`\mu`.
         """
         n_qubits = hermitian_part.shape[0]
@@ -125,17 +125,19 @@ class QuadraticHamiltonian(PolynomialTensor):
         """Return the orbital energies.
 
         Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
-        of the form::
+        of the form
+        
+        .. math::
 
-            \sum_{j} \epsilon_j a^\dagger_j a_j + constant.
+            \sum_{j} \\varepsilon_j a^\dagger_j a_j + \\text{constant}.
 
-        We call the \epsilon_j the orbital energies.
+        We call the :math:`\\varepsilon_j` the orbital energies.
         The eigenvalues of the Hamiltonian are sums of subsets of the
         orbital energies (up to the additive constant).
 
         Returns:
             orbital_energies(ndarray): A one-dimensional array containing
-                the \epsilon_j
+                the :math:`\\varepsilon_j`
             constant(float): the constant
         """
         if self.conserves_particle_number:
@@ -159,15 +161,20 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         Any quadratic Hamiltonian can be written in the form
 
-            constant + i / 2 \sum_{j, k} A_{jk} s_j s_k.
+        .. math::
 
-        where the s_i are normalized Majorana fermion operators:
+            \\frac{i}{2} \sum_{j, k} A_{jk} f_j f_k + \\text{constant}
 
-            s_j = 1 / sqrt(2) (a^\dagger_j + a_j)
-            s_{j + n_qubits} = i / sqrt(2) (a^\dagger_j - a_j)
+        where the :math:`f_i` are normalized Majorana fermion operators:
 
-        and A is a (2 * n_qubits) x (2 * n_qubits) real antisymmetric matrix.
-        This function returns the matrix A and the constant.
+        .. math::
+
+            f_j = \\frac{1}{\\sqrt{2}} (a^\dagger_j + a_j)
+
+            f_{j + N} = \\frac{i}{\\sqrt{2}} (a^\dagger_j - a_j)
+
+        and :math:`A` is a (2 * `n_qubits`) x (2 * `n_qubits`) real antisymmetric matrix.
+        This function returns the matrix :math:`A` and the constant.
         """
         hermitian_part = self.combined_hermitian_part
         antisymmetric_part = self.antisymmetric_part
