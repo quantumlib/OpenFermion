@@ -142,6 +142,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
     # Compute the energy
     orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
     if occupied_orbitals is None:
+        # The ground energy is desired
         if quadratic_hamiltonian.conserves_particle_number:
             num_negative_energies = numpy.count_nonzero(
                     orbital_energies < -EQ_TOLERANCE)
