@@ -36,9 +36,6 @@ class InteractionOperator(PolynomialTensor):
         \sum_{p, q, r, s} h_[p, q, r, s] a^\dagger_p a^\dagger_q a_r a_s.
 
     Attributes:
-        n_qubits: An int giving the number of qubits.
-        constant: A constant term in the operator given as a float.
-            For instance, the nuclear repulsion energy.
         one_body_tensor: The coefficients of the one-body terms (h[p, q]).
             This is an n_qubits x n_qubits numpy array of floats.
         two_body_tensor: The coefficients of the two-body terms
