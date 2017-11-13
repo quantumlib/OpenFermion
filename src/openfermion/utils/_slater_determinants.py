@@ -15,23 +15,35 @@ Slater determinants and fermionic Gaussian states."""
 from __future__ import absolute_import
 
 import numpy
-from scipy.linalg import schur
 from scipy.sparse import csc_matrix, eye
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
-from openfermion.utils._sparse_tools import (jw_hartree_fock_state,
+from openfermion.ops._quadratic_hamiltonian import (
+        antisymmetric_canonical_form, diagonalizing_fermionic_unitary,
+        swap_columns)
+from openfermion.utils._sparse_tools import (jw_slater_determinant,
                                              kronecker_operators,
                                              pauli_matrix_map)
 
 
-def ground_state_preparation_circuit(quadratic_hamiltonian):
-    """Obtain a description of a circuit which prepares the ground state
-    of a quadratic Hamiltonian.
+def gaussian_state_preparation_circuit(
+        quadratic_hamiltonian, occupied_orbitals=None):
+    """Obtain a description of a circuit which prepares a fermionic Gaussian
+    state.
+
+    Fermionic Gaussian states can be regarded as eigenstates of quadratic
+    Hamiltonians. If the Hamiltonian conserves particle number, then these are
+    just Slater determinants.
 
     Args:
         quadratic_hamiltonian(QuadraticHamiltonian):
-            The Hamiltonian whose ground state is desired.
+            The Hamiltonian whose eigenstate is desired.
+        occupied_orbitals(list):
+            A list of integers representing the indices of the occupied
+            orbitals in the desired Gaussian state. If this is None
+            (the default), then it is assumed that the ground state is
+            desired, i.e., the orbitals with negative energies are filled.
 
     Returns:
         circuit_description(list[tuple]):
@@ -42,11 +54,11 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
             of modes i and j by angles theta and phi.
-        n_electrons(int):
-            The number of electrons to start with. This describes the
+        start_orbitals(list):
+            The occupied orbitals to start with. This describes the
             initial state that the circuit should be applied to: it should
-            be a Slater determinant (in the computational basis) with the
-            first n_electrons orbitals filled.
+            be a Slater determinant (in the computational basis) with these
+            orbitals filled.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
@@ -55,78 +67,95 @@ def ground_state_preparation_circuit(quadratic_hamiltonian):
         # The Hamiltonian conserves particle number, so we don't need
         # to use the most general procedure.
         hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part
-        # Get the unitary rows which represent the ground state
-        # Slater determinant
-        energies, diagonalizing_unitary = numpy.linalg.eigh(
-                hermitian_matrix)
-        # We get the ground state by filling the orbitals that have
-        # negative energy
-        num_negative_energies = numpy.count_nonzero(
-                energies < -EQ_TOLERANCE)
-        slater_determinant_matrix = diagonalizing_unitary.T[
-                :num_negative_energies]
+        energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
+
+        if occupied_orbitals is None:
+            # The ground state is desired, so we fill the orbitals that have
+            # negative energy
+            num_negative_energies = numpy.count_nonzero(
+                    energies < -EQ_TOLERANCE)
+            occupied_orbitals = range(num_negative_energies)
+
+        # Get the unitary rows which represent the Slater determinant
+        slater_determinant_matrix = diagonalizing_unitary.T[occupied_orbitals]
+
         # Get the circuit description
-        left_unitary, decomposition, diagonal = givens_decomposition(
+        decomposition, left_unitary, diagonal = givens_decomposition(
                 slater_determinant_matrix)
         circuit_description = list(reversed(decomposition))
-        n_electrons = num_negative_energies
+        start_orbitals = range(len(occupied_orbitals))
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
         majorana_matrix, majorana_constant = (
                 quadratic_hamiltonian.majorana_form())
-        # Get the unitary rows which represent the ground state
-        # Slater determinant
         diagonalizing_unitary = diagonalizing_fermionic_unitary(
                 majorana_matrix)
-        slater_determinant_matrix = diagonalizing_unitary[
+
+        # Get the unitary rows which represent the Gaussian unitary
+        gaussian_unitary_matrix = diagonalizing_unitary[
                 quadratic_hamiltonian.n_qubits:]
+
         # Get the circuit description
-        left_unitary, decomposition, diagonal = (
+        decomposition, left_decomposition, diagonal, left_diagonal = (
                 fermionic_gaussian_decomposition(
-                    slater_determinant_matrix))
-        circuit_description = list(reversed(decomposition))
-        n_electrons = 0
-    return circuit_description, n_electrons
+                    gaussian_unitary_matrix))
+        if occupied_orbitals is None:
+            # The ground state is desired, so the circuit should be applied
+            # to the vaccuum state
+            start_orbitals = []
+            circuit_description = list(reversed(decomposition))
+        else:
+            start_orbitals = occupied_orbitals
+            # The circuit won't be applied to the ground state, so we need to
+            # use left_decomposition
+            circuit_description = list(reversed(
+                                       decomposition + left_decomposition))
+
+    return circuit_description, start_orbitals
 
 
-def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
-    """Compute the lowest eigenvalue and eigenstate of a quadratic Hamiltonian.
+def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
+    """Compute an eigenvalue and eigenstate of a quadratic Hamiltonian.
+
+    Eigenstates of a quadratic Hamiltonian are also known as fermionic
+    Gaussian states.
+
+    Args:
+        quadratic_hamiltonian(QuadraticHamiltonian):
+            The Hamiltonian whose eigenstate is desired.
+        occupied_orbitals(list):
+            A list of integers representing the indices of the occupied
+            orbitals in the desired Gaussian state. If this is None
+            (the default), then it is assumed that the ground state is
+            desired, i.e., the orbitals with negative energies are filled.
 
     Returns:
-        ground_energy(float): The lowest eigenvalue.
-        state(sparse): The lowest eigenstate in scipy.sparse csc format.
+        energy(float): The eigenvalue.
+        state(sparse): The eigenstate in scipy.sparse csc format.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
 
     n_qubits = quadratic_hamiltonian.n_qubits
 
-    # Compute the ground energy
-    if quadratic_hamiltonian.conserves_particle_number:
-        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part
-        energies, diagonalizing_unitary = numpy.linalg.eigh(
-                hermitian_matrix)
-        num_negative_energies = numpy.count_nonzero(
-                energies < -EQ_TOLERANCE)
-        negative_energies = energies[:num_negative_energies]
-        ground_energy = (numpy.sum(negative_energies) +
-                         quadratic_hamiltonian.constant)
-    else:
-        majorana_matrix, majorana_constant = (
-                quadratic_hamiltonian.majorana_form())
-        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
-        negative_diagonal_entries = canonical[range(n_qubits, 2 * n_qubits),
-                                              range(n_qubits)]
-        ground_energy = (.5 * numpy.sum(negative_diagonal_entries) +
-                         majorana_constant)
+    # Compute the energy
+    orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+    if occupied_orbitals is None:
+        if quadratic_hamiltonian.conserves_particle_number:
+            num_negative_energies = numpy.count_nonzero(
+                    orbital_energies < -EQ_TOLERANCE)
+            occupied_orbitals = range(num_negative_energies)
+        else:
+            occupied_orbitals = []
+    energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
 
-    # Obtain the circuit that prepares the ground state
-    circuit_description, n_electrons = ground_state_preparation_circuit(
-            quadratic_hamiltonian)
+    # Obtain the circuit that prepares the Gaussian state
+    circuit_description, start_orbitals = gaussian_state_preparation_circuit(
+            quadratic_hamiltonian, occupied_orbitals)
 
     # Initialize the starting state
-    state = jw_hartree_fock_state(n_electrons, n_qubits)
+    state = jw_slater_determinant(start_orbitals, n_qubits)
 
     # Apply the circuit
     particle_hole_transformation = (
@@ -140,7 +169,7 @@ def jw_get_quadratic_hamiltonian_ground_state(quadratic_hamiltonian):
                 state = jw_sparse_givens_rotation(
                             i, j, theta, phi, n_qubits).dot(state)
 
-    return ground_energy, state
+    return energy, state
 
 
 def fermionic_gaussian_decomposition(unitary_rows):
@@ -175,14 +204,20 @@ def fermionic_gaussian_decomposition(unitary_rows):
     of the form (i, j, theta, phi), which indicates a Givens rotation
     of rows i and j by angles theta and phi.
 
+    The matrix V^T D^*, the transpose of V times the complex conjugate of D,
+    can also be decomposed as a sequence of Givens rotations. This
+    decomposition is needed for a circuit that prepares an excited state.
+
     Args:
         unitary_rows(ndarray): A matrix with orthonormal rows and
             additional structure described above.
 
     Returns:
-        left_unitary(ndarray): An n x n matrix representing V.
         decomposition(list[tuple]): The decomposition of U.
+        left_decomposition(list[tuple]): The decomposition of V^T D^*.
         diagonal(ndarray): A list of the nonzero entries of D.
+        left_diagonal(ndarray): A list of the nonzero entries left from
+            the decomposition of V^T D^*.
     """
     current_matrix = numpy.copy(unitary_rows)
     n, p = current_matrix.shape
@@ -222,12 +257,12 @@ def fermionic_gaussian_decomposition(unitary_rows):
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
 
     # Initialize list to store decomposition of current_matrix
-    decomposition = list()
+    decomposition = []
     # There are 2 * n - 1 iterations (that is the circuit depth)
     for k in range(2 * n - 1):
         # Initialize the list of parallel operations to perform
         # in this iteration
-        parallel_ops = list()
+        parallel_ops = []
 
         # Perform a particle-hole transformation if necessary
         if k % 2 == 0 and abs(current_matrix[k // 2, n - 1]) > EQ_TOLERANCE:
@@ -269,7 +304,56 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     # Get the diagonal entries
     diagonal = current_matrix[range(n), range(n, 2 * n)]
-    return left_unitary, decomposition, diagonal
+
+    # Compute the decomposition of left_unitary^T * diagonal^*
+    current_matrix = left_unitary.T
+    for k in range(n):
+        current_matrix[:, k] *= diagonal[k].conj()
+    left_decomposition = []
+
+    for k in range(2 * (n - 1) - 1):
+        # Initialize the list of parallel operations to perform
+        # in this iteration
+        parallel_ops = []
+
+        # Get the (row, column) indices of elements to zero out in parallel.
+        if k < n - 1:
+            start_row = 0
+            start_column = n - 1 - k
+        else:
+            start_row = k - (n - 2)
+            start_column = k - (n - 3)
+        column_indices = range(start_column, n, 2)
+        row_indices = range(start_row, start_row + len(column_indices))
+        indices_to_zero_out = zip(row_indices, column_indices)
+
+        for i, j in indices_to_zero_out:
+            # Compute the Givens rotation to zero out the (i, j) element,
+            # if needed
+            right_element = current_matrix[i, j].conj()
+            if abs(right_element) > EQ_TOLERANCE:
+                # We actually need to perform a Givens rotation
+                left_element = current_matrix[i, j - 1].conj()
+                givens_rotation = givens_matrix_elements(left_element,
+                                                         right_element,
+                                                         which='right')
+
+                # Add the parameters to the list
+                theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
+                phi = numpy.angle(givens_rotation[1, 1])
+                parallel_ops.append((j - 1, j, theta, phi))
+
+                # Update the matrix
+                givens_rotate(current_matrix, givens_rotation,
+                              j - 1, j, which='col')
+
+        # Append the current list of parallel rotations to the list
+        left_decomposition.append(tuple(parallel_ops))
+
+    # Get the diagonal entries
+    left_diagonal = current_matrix[range(n), range(n)]
+
+    return decomposition, left_decomposition, diagonal, left_diagonal
 
 
 def givens_decomposition(unitary_rows):
@@ -299,15 +383,13 @@ def givens_decomposition(unitary_rows):
             representing the matrix Q.
 
     Returns:
-        left_unitary: An m x m numpy array representing the matrix V.
-
         givens_rotations: A list of tuples of objects describing Givens
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
             form (i, j, theta, phi), which represents a Givens rotation of
             rows i and j by angles theta and phi.
-
+        left_unitary: An m x m numpy array representing the matrix V.
         diagonal: A list of the nonzero entries of D.
     """
     current_matrix = numpy.copy(unitary_rows)
@@ -331,7 +413,7 @@ def givens_decomposition(unitary_rows):
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
 
     # Compute the decomposition of current_matrix into Givens rotations
-    givens_rotations = list()
+    givens_rotations = []
     # If m = n (the matrix is square) then we don't need to perform any
     # Givens rotations!
     if m != n:
@@ -371,7 +453,7 @@ def givens_decomposition(unitary_rows):
             column_indices = range(start_column, end_column, 2)
             indices_to_zero_out = zip(row_indices, column_indices)
 
-            parallel_rotations = list()
+            parallel_rotations = []
             for i, j in indices_to_zero_out:
                 # Compute the Givens rotation to zero out the (i, j) element,
                 # if needed
@@ -397,110 +479,7 @@ def givens_decomposition(unitary_rows):
     # Get the diagonal entries
     diagonal = current_matrix.diagonal()
 
-    return left_unitary, givens_rotations, diagonal
-
-
-def diagonalizing_fermionic_unitary(antisymmetric_matrix):
-    """Compute the unitary that diagonalizes a quadratic Hamiltonian.
-
-    The input matrix represents a quadratic Hamiltonian in the Majorana basis.
-    The output matrix is a unitary that represents a transformation (mixing)
-    of the fermionic ladder operators. We use the convention that the
-    creation operators are listed before the annihilation operators.
-    The returned unitary has additional structure which ensures
-    that the transformed ladder operators also satisfy the fermionic
-    anticommutation relations.
-
-    Args:
-        antisymmetric_matrix(ndarray): A (2 * n_qubits) x (2 * n_qubits)
-            antisymmetric matrix representing a quadratic Hamiltonian in the
-            Majorana basis.
-    Returns:
-        diagonalizing_unitary(ndarray): A (2 * n_qubits) x (2 * n_qubits)
-            unitary matrix representing a transformation of the fermionic
-            ladder operators.
-    """
-    m, n = antisymmetric_matrix.shape
-    n_qubits = n // 2
-
-    # Get the orthogonal transformation that puts antisymmetric_matrix
-    # into canonical form
-    canonical, orthogonal = antisymmetric_canonical_form(antisymmetric_matrix)
-
-    # Create the matrix that converts between fermionic ladder and
-    # Majorana bases
-    normalized_identity = numpy.eye(n_qubits, dtype=complex) / numpy.sqrt(2.)
-    majorana_basis_change = numpy.eye(
-            2 * n_qubits, dtype=complex) / numpy.sqrt(2.)
-    majorana_basis_change[n_qubits:, n_qubits:] *= -1.j
-    majorana_basis_change[:n_qubits, n_qubits:] = normalized_identity
-    majorana_basis_change[n_qubits:, :n_qubits] = 1.j * normalized_identity
-
-    # Compute the unitary and return
-    diagonalizing_unitary = majorana_basis_change.T.conj().dot(
-            orthogonal.dot(majorana_basis_change))
-
-    return diagonalizing_unitary
-
-
-def antisymmetric_canonical_form(antisymmetric_matrix):
-    """Compute the canonical form of an antisymmetric matrix.
-
-    The input is a real, antisymmetric n x n matrix A, where n is even.
-    Its canonical form is::
-
-        A = R^T C R
-
-    where R is a real, orthogonal matrix and C has the form::
-
-        [  0     D ]
-        [ -D     0 ]
-
-    where D is a diagonal matrix with nonnegative entries.
-
-    Args:
-        antisymmetric_matrix(ndarray): An antisymmetric matrix with even
-            dimension.
-
-    Returns:
-        canonical(ndarray): The canonical form C of antisymmetric_matrix
-        orthogonal(ndarray): The orthogonal transformation R.
-    """
-    m, n = antisymmetric_matrix.shape
-
-    if m != n or n % 2 != 0:
-        raise ValueError('The input matrix must be square with even '
-                         'dimension.')
-
-    # Check that input matrix is antisymmetric
-    matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
-    maxval = numpy.max(numpy.abs(matrix_plus_transpose))
-    if maxval > EQ_TOLERANCE:
-        raise ValueError('The input matrix must be antisymmetric.')
-
-    # Compute Schur decomposition
-    canonical, orthogonal = schur(antisymmetric_matrix, output='real')
-
-    # The returned form is block diagonal; we need to permute rows and columns
-    # to put it into the form we want
-    num_blocks = n // 2
-    for i in range(1, num_blocks, 2):
-        swap_rows(canonical, i, num_blocks + i - 1)
-        swap_columns(canonical, i, num_blocks + i - 1)
-        swap_columns(orthogonal, i, num_blocks + i - 1)
-        if num_blocks % 2 != 0:
-            swap_rows(canonical, num_blocks - 1, num_blocks + i)
-            swap_columns(canonical, num_blocks - 1, num_blocks + i)
-            swap_columns(orthogonal, num_blocks - 1, num_blocks + i)
-
-    # Now we permute so that the upper right block is non-negative
-    for i in range(num_blocks):
-        if canonical[i, num_blocks + i] < -EQ_TOLERANCE:
-            swap_rows(canonical, i, num_blocks + i)
-            swap_columns(canonical, i, num_blocks + i)
-            swap_columns(orthogonal, i, num_blocks + i)
-
-    return canonical, orthogonal.T
+    return givens_rotations, left_unitary, diagonal
 
 
 def givens_matrix_elements(a, b, which='left'):
@@ -660,17 +639,3 @@ def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
     """
     left_eye = eye(2 ** (n_qubits - 1), format='csc')
     return kronecker_operators([left_eye, pauli_matrix_map['X']])
-
-
-def swap_rows(M, i, j):
-    """Swap rows i and j of matrix M."""
-    row_i = M[i, :].copy()
-    row_j = M[j, :].copy()
-    M[i, :], M[j, :] = row_j, row_i
-
-
-def swap_columns(M, i, j):
-    """Swap columns i and j of matrix M."""
-    column_i = M[:, i].copy()
-    column_j = M[:, j].copy()
-    M[:, i], M[:, j] = column_j, column_i
