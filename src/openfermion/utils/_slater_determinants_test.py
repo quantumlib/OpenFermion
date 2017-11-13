@@ -377,6 +377,8 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             for i in range(n):
                 left_unitary[i] *= left_diagonal[i]
             left_unitary = left_unitary.T
+            for i in range(n):
+                left_unitary[i] *= diagonal[i]
 
             # Check that left_unitary zeroes out the correct entries of
             # lower_unitary

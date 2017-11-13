@@ -204,9 +204,9 @@ def fermionic_gaussian_decomposition(unitary_rows):
     of the form (i, j, theta, phi), which indicates a Givens rotation
     of rows i and j by angles theta and phi.
 
-    The matrix V^T, the transpose of V, can also be decomposed as a sequence
-    of Givens rotations. This decomposition is needed for a circuit that
-    prepares an excited state.
+    The matrix V^T D^*, the transpose of V times the complex conjugate of D,
+    can also be decomposed as a sequence of Givens rotations. This
+    decomposition is needed for a circuit that prepares an excited state.
 
     Args:
         unitary_rows(ndarray): A matrix with orthonormal rows and
@@ -214,10 +214,10 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     Returns:
         decomposition(list[tuple]): The decomposition of U.
-        left_decomposition(list[tuple]): The decomposition of V^T.
+        left_decomposition(list[tuple]): The decomposition of V^T D^*.
         diagonal(ndarray): A list of the nonzero entries of D.
-        left_diagonal(ndarray): A list of the diagonal entries left from
-            the decomposition of V.
+        left_diagonal(ndarray): A list of the nonzero entries left from
+            the decomposition of V^T D^*.
     """
     current_matrix = numpy.copy(unitary_rows)
     n, p = current_matrix.shape
@@ -305,8 +305,10 @@ def fermionic_gaussian_decomposition(unitary_rows):
     # Get the diagonal entries
     diagonal = current_matrix[range(n), range(n, 2 * n)]
 
-    # Compute the decomposition of left_unitary^T
+    # Compute the decomposition of left_unitary^T * diagonal^*
     current_matrix = left_unitary.T
+    for k in range(n):
+        current_matrix[:, k] *= diagonal[k].conj()
     left_decomposition = []
 
     for k in range(2 * (n - 1) - 1):
