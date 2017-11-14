@@ -401,22 +401,30 @@ def givens_decomposition(unitary_rows):
     indices (i, j) that it acts on, plus two angles (theta, phi) that
     characterize the corresponding 2x2 unitary matrix
 
-        [ cos(theta)    -e^{i phi} sin(theta) ]
-        [ sin(theta)     e^{i phi} cos(theta) ]
+    .. math::
+
+        \\begin{pmatrix}
+            \\cos(\\theta) & -e^{i \\phi} \\sin(\\theta) \\\\
+            \\sin(\\theta) &     e^{i \\phi} \\cos(\\theta)
+        \\end{pmatrix}
 
     Args:
         unitary_rows: A numpy array or matrix with orthonormal rows,
             representing the matrix Q.
 
-    Returns:
-        givens_rotations: A list of tuples of objects describing Givens
+    Returns
+    -------
+        givens_rotations (list[tuple])
+            A list of tuples of objects describing Givens
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
             form (i, j, theta, phi), which represents a Givens rotation of
             rows i and j by angles theta and phi.
-        left_unitary: An m x m numpy array representing the matrix V.
-        diagonal: A list of the nonzero entries of D.
+        left_unitary (ndarray)
+            An m x m numpy array representing the matrix V.
+        diagonal (ndarray)
+            A list of the nonzero entries of D.
     """
     current_matrix = numpy.copy(unitary_rows)
     m, n = current_matrix.shape
