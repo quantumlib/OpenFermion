@@ -27,40 +27,43 @@ class QuadraticHamiltonianError(Exception):
 
 class QuadraticHamiltonian(PolynomialTensor):
     """Class for storing Hamiltonians that are quadratic in the fermionic
-    ladder operators. The operators stored in this class take the form::
+    ladder operators. The operators stored in this class take the form
+
+    .. math::
 
         \sum_{p, q} (M_{pq} - \mu \delta_{pq}) a^\dagger_p a_q
-        + 1 / 2 \sum_{p, q} (A_{pq} a^\dagger_p a^\dagger_q + h.c.)
-        + constant
+        + \\frac12 \sum_{p, q} (A_{pq} a^\dagger_p a^\dagger_q + \\text{h.c.})
+        + \\text{constant}
 
     where
-        M is a Hermitian n_qubits x n_qubits matrix.
-        A is an antisymmetric n_qubits x n_qubits matrix.
-        \mu is a float representing the chemical potential term.
-        \delta_{pq} is the Kronecker delta symbol.
 
-    We separate the chemical potential \mu from M so that we can use it
-    to adjust the expectation value of the total number of particles.
+        * :math:`M` is a Hermitian `n_qubits` x `n_qubits` matrix.
+        * :math:`A` is an antisymmetric `n_qubits` x `n_qubits` matrix.
+        * :math:`\mu` is a real number representing the chemical potential.
+        * :math:`\delta_{pq}` is the Kronecker delta symbol.
+
+    We separate the chemical potential :math:`\mu` from :math:`M` so that
+    we can use it to adjust the expectation value of the total number of
+    particles.
 
     Attributes:
-        constant(float): A constant term in the operator.
-        chemical_potential(float): The chemical potential \mu.
+        chemical_potential(float): The chemical potential :math:`\mu`.
     """
 
     def __init__(self, constant, hermitian_part,
-                 antisymmetric_part=None, chemical_potential=None):
+                 antisymmetric_part=None, chemical_potential=0.):
         """
         Initialize the QuadraticHamiltonian class.
 
         Args:
             constant(float): A constant term in the operator.
-            hermitian_part(ndarray): The matrix M, which represents the
+            hermitian_part(ndarray): The matrix :math:`M`, which represents the
                 coefficients of the particle-number-conserving terms.
-                This is an n_qubits x n_qubits numpy array of complex numbers.
-            antisymmetric_part(ndarray): The matrix A, which represents the
-                coefficients of the non-particle-number-conserving terms.
-                This is an n_qubits x n_qubits numpy array of complex numbers.
-            chemical_potential(float): The chemical potential \mu.
+                This is an `n_qubits` x `n_qubits` numpy array of complex numbers.
+            antisymmetric_part(ndarray): The matrix :math:`A`, which represents
+                the coefficients of the non-particle-number-conserving terms.
+                This is an `n_qubits` x `n_qubits` numpy array of complex numbers.
+            chemical_potential(float): The chemical potential :math:`\mu`.
         """
         n_qubits = hermitian_part.shape[0]
 
@@ -85,19 +88,16 @@ class QuadraticHamiltonian(PolynomialTensor):
                      (0, 0): -.5 * antisymmetric_part.conj()})
 
         # Add remaining attributes
-        if chemical_potential is None:
-            self.chemical_potential = 0.
-        else:
-            self.chemical_potential = chemical_potential
+        self.chemical_potential = chemical_potential
 
     @property
     def combined_hermitian_part(self):
-        """Return the Hermitian part including the chemical potential."""
+        """The Hermitian part including the chemical potential."""
         return self.n_body_tensors[1, 0]
 
     @property
     def antisymmetric_part(self):
-        """Return the antisymmetric part."""
+        """The antisymmetric part."""
         if (1, 1) in self.n_body_tensors:
             return 2. * self.n_body_tensors[1, 1]
         else:
@@ -105,18 +105,18 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     @property
     def hermitian_part(self):
-        """Return the Hermitian part not including the chemical potential."""
+        """The Hermitian part not including the chemical potential."""
         return (self.combined_hermitian_part +
                 self.chemical_potential * numpy.eye(self.n_qubits))
 
     @property
     def conserves_particle_number(self):
-        """Return whether this Hamiltonian conserves particle number."""
+        """Whether this Hamiltonian conserves particle number."""
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part))
         return discrepancy < EQ_TOLERANCE
 
     def add_chemical_potential(self, chemical_potential):
-        """Add a chemical potential."""
+        """Increase (or decrease) the chemical potential by some value."""
         self.n_body_tensors[1, 0] -= (chemical_potential *
                                       numpy.eye(self.n_qubits))
         self.chemical_potential += chemical_potential
@@ -125,18 +125,22 @@ class QuadraticHamiltonian(PolynomialTensor):
         """Return the orbital energies.
 
         Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
-        of the form::
+        of the form
+        
+        .. math::
 
-            \sum_{j} \epsilon_j a^\dagger_j a_j + constant.
+            \sum_{j} \\varepsilon_j a^\dagger_j a_j + \\text{constant}.
 
-        We call the \epsilon_j the orbital energies.
+        We call the :math:`\\varepsilon_j` the orbital energies.
         The eigenvalues of the Hamiltonian are sums of subsets of the
         orbital energies (up to the additive constant).
 
-        Returns:
-            orbital_energies(ndarray): A one-dimensional array containing
-                the \epsilon_j
-            constant(float): the constant
+        Returns
+        -------
+        orbital_energies(ndarray)
+            A one-dimensional array containing the :math:`\\varepsilon_j`
+        constant(float)
+            The constant
         """
         if self.conserves_particle_number:
             hermitian_matrix = self.combined_hermitian_part
@@ -159,15 +163,20 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         Any quadratic Hamiltonian can be written in the form
 
-            constant + i / 2 \sum_{j, k} A_{jk} s_j s_k.
+        .. math::
 
-        where the s_i are normalized Majorana fermion operators:
+            \\frac{i}{2} \sum_{j, k} A_{jk} f_j f_k + \\text{constant}
 
-            s_j = 1 / sqrt(2) (a^\dagger_j + a_j)
-            s_{j + n_qubits} = i / sqrt(2) (a^\dagger_j - a_j)
+        where the :math:`f_i` are normalized Majorana fermion operators:
 
-        and A is a (2 * n_qubits) x (2 * n_qubits) real antisymmetric matrix.
-        This function returns the matrix A and the constant.
+        .. math::
+
+            f_j = \\frac{1}{\\sqrt{2}} (a^\dagger_j + a_j)
+
+            f_{j + N} = \\frac{i}{\\sqrt{2}} (a^\dagger_j - a_j)
+
+        and :math:`A` is a (2 * `n_qubits`) x (2 * `n_qubits`) real antisymmetric matrix.
+        This function returns the matrix :math:`A` and the constant.
         """
         hermitian_part = self.combined_hermitian_part
         antisymmetric_part = self.antisymmetric_part
