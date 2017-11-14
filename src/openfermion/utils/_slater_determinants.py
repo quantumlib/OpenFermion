@@ -45,8 +45,9 @@ def gaussian_state_preparation_circuit(
             (the default), then it is assumed that the ground state is
             desired, i.e., the orbitals with negative energies are filled.
 
-    Returns:
-        circuit_description(list[tuple]):
+    Returns
+    -------
+        circuit_description (list[tuple])
             A list of operations describing the circuit. Each operation
             is a tuple of objects describing elementary operations that
             can be performed in parallel. Each elementary operation
@@ -54,7 +55,7 @@ def gaussian_state_preparation_circuit(
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
             of modes i and j by angles theta and phi.
-        start_orbitals(list):
+        start_orbitals (list)
             The occupied orbitals to start with. This describes the
             initial state that the circuit should be applied to: it should
             be a Slater determinant (in the computational basis) with these
@@ -130,9 +131,12 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
             (the default), then it is assumed that the ground state is
             desired, i.e., the orbitals with negative energies are filled.
 
-    Returns:
-        energy(float): The eigenvalue.
-        state(sparse): The eigenstate in scipy.sparse csc format.
+    Returns
+    -------
+        energy (float)
+            The eigenvalue.
+        state (sparse)
+            The eigenstate in scipy.sparse csc format.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
@@ -177,27 +181,43 @@ def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and
     particle-hole transformations on the last fermionic mode.
 
-    The input is an n x (2 * n) matrix W with orthonormal rows.
-    Furthermore, W has the block form::
+    The input is an `N` x (`2N`) matrix :math:`W` with orthonormal rows.
+    Furthermore, :math:`W` must have the block form
 
-        W = [ W_1  |  W_2 ]
+    .. math::
 
-    where W_1 and W_2 satisfy::
+        W = ( W_1 \hspace{4pt} W_2 )
 
-        W_1 * W_1^\dagger + W_2 * W_2^\dagger = I
-        W_1 * W_2^T + W_2 * W_1^T = 0
+    where :math:`W_1` and :math:`W_2` satisfy
 
-    W can be decomposed as::
+    .. math::
 
-        V * W * U^\dagger = [ 0  |  D ]
+        W_1  W_1^\dagger + W_2  W_2^\dagger &= I
 
-    where V and U are unitary matrices and D is a diagonal unitary matrix.
-    Furthermore, we can decompose U as a sequence of Givens rotations
-    and particle-hole transformations on the last fermionic mode.
-    This particle-hole transformation maps a^\dagger_n to a^n and vice
-    versa, while leaving the other ladder operators invariant.
+        W_1  W_2^T + W_2  W_1^T &= 0.
 
-    The decomposition of U is returned as a list of tuples of objects
+    Then :math:`W` can be decomposed as
+
+    .. math::
+
+        V  W  U^\dagger = ( 0 \hspace{6pt} D )
+
+    where :math:`V` and :math:`U` are unitary matrices and :math:`D`
+    is a diagonal unitary matrix. Furthermore, :math:`U` can be decomposed
+    as follows:
+
+    .. math::
+
+        U = B G_{k} \cdots B G_3 G_2 B G_1 B,
+
+    where each :math:`G_i` is a Givens rotation, and :math:`B` represents
+    swapping the `N`-th column with the `2N`-th column, which corresponds
+    to a particle-hole transformation
+    on the last fermionic mode. This particle-hole transformation maps
+    :math:`a^\dagger_N` to :math:`a_N` and vice versa, while leaving the
+    other ladder operators invariant.
+
+    The decomposition of :math:`U` is returned as a list of tuples of objects
     describing rotations and particle-hole transformations. The list looks
     something like [('pht', ), (G_1, ), ('pht', G_2), ... ].
     The objects within a tuple are either the string 'pht', which indicates
@@ -205,20 +225,25 @@ def fermionic_gaussian_decomposition(unitary_rows):
     of the form (i, j, theta, phi), which indicates a Givens rotation
     of rows i and j by angles theta and phi.
 
-    The matrix V^T D^*, the transpose of V times the complex conjugate of D,
-    can also be decomposed as a sequence of Givens rotations. This
-    decomposition is needed for a circuit that prepares an excited state.
+    The matrix :math:`V^T D^*` can also be decomposed as a sequence of
+    Givens rotations. This decomposition is needed for a circuit that
+    prepares an excited state.
 
     Args:
         unitary_rows(ndarray): A matrix with orthonormal rows and
             additional structure described above.
 
-    Returns:
-        decomposition(list[tuple]): The decomposition of U.
-        left_decomposition(list[tuple]): The decomposition of V^T D^*.
-        diagonal(ndarray): A list of the nonzero entries of D.
-        left_diagonal(ndarray): A list of the nonzero entries left from
-            the decomposition of V^T D^*.
+    Returns
+    -------
+        decomposition (list[tuple])
+            The decomposition of :math:`U`.
+        left_decomposition (list[tuple])
+            The decomposition of :math:`V^T D^*`.
+        diagonal (ndarray)
+            A list of the nonzero entries of :math:`D`.
+        left_diagonal (ndarray)
+            A list of the nonzero entries left from the decomposition
+            of :math:`V^T D^*`.
     """
     current_matrix = numpy.copy(unitary_rows)
     n, p = current_matrix.shape
