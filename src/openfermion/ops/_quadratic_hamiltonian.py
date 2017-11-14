@@ -39,7 +39,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         * :math:`M` is a Hermitian `n_qubits` x `n_qubits` matrix.
         * :math:`A` is an antisymmetric `n_qubits` x `n_qubits` matrix.
-        * :math:`\mu` is a float representing the chemical potential term.
+        * :math:`\mu` is a real number representing the chemical potential.
         * :math:`\delta_{pq}` is the Kronecker delta symbol.
 
     We separate the chemical potential :math:`\mu` from :math:`M` so that
@@ -92,12 +92,12 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     @property
     def combined_hermitian_part(self):
-        """Return the Hermitian part including the chemical potential."""
+        """The Hermitian part including the chemical potential."""
         return self.n_body_tensors[1, 0]
 
     @property
     def antisymmetric_part(self):
-        """Return the antisymmetric part."""
+        """The antisymmetric part."""
         if (1, 1) in self.n_body_tensors:
             return 2. * self.n_body_tensors[1, 1]
         else:
@@ -105,18 +105,18 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     @property
     def hermitian_part(self):
-        """Return the Hermitian part not including the chemical potential."""
+        """The Hermitian part not including the chemical potential."""
         return (self.combined_hermitian_part +
                 self.chemical_potential * numpy.eye(self.n_qubits))
 
     @property
     def conserves_particle_number(self):
-        """Return whether this Hamiltonian conserves particle number."""
+        """Whether this Hamiltonian conserves particle number."""
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part))
         return discrepancy < EQ_TOLERANCE
 
     def add_chemical_potential(self, chemical_potential):
-        """Add a chemical potential."""
+        """Increase (or decrease) the chemical potential by some value."""
         self.n_body_tensors[1, 0] -= (chemical_potential *
                                       numpy.eye(self.n_qubits))
         self.chemical_potential += chemical_potential
@@ -135,10 +135,12 @@ class QuadraticHamiltonian(PolynomialTensor):
         The eigenvalues of the Hamiltonian are sums of subsets of the
         orbital energies (up to the additive constant).
 
-        Returns:
-            orbital_energies(ndarray): A one-dimensional array containing
-                the :math:`\\varepsilon_j`
-            constant(float): the constant
+        Returns
+        -------
+        orbital_energies(ndarray)
+            A one-dimensional array containing the :math:`\\varepsilon_j`
+        constant(float)
+            The constant
         """
         if self.conserves_particle_number:
             hermitian_matrix = self.combined_hermitian_part
