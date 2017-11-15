@@ -47,7 +47,7 @@ def gaussian_state_preparation_circuit(
 
     Returns
     -------
-        circuit_description (list[tuple])
+        circuit_description (list[tuple]):
             A list of operations describing the circuit. Each operation
             is a tuple of objects describing elementary operations that
             can be performed in parallel. Each elementary operation
@@ -55,7 +55,7 @@ def gaussian_state_preparation_circuit(
             transformation on the last fermionic mode, or a tuple of
             the form (i, j, theta, phi), indicating a Givens rotation
             of modes i and j by angles theta and phi.
-        start_orbitals (list)
+        start_orbitals (list):
             The occupied orbitals to start with. This describes the
             initial state that the circuit should be applied to: it should
             be a Slater determinant (in the computational basis) with these
@@ -133,9 +133,9 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
 
     Returns
     -------
-        energy (float)
+        energy (float):
             The eigenvalue.
-        state (sparse)
+        state (sparse):
             The eigenstate in scipy.sparse csc format.
     """
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
@@ -235,13 +235,13 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     Returns
     -------
-        decomposition (list[tuple])
+        decomposition (list[tuple]):
             The decomposition of :math:`U`.
-        left_decomposition (list[tuple])
+        left_decomposition (list[tuple]):
             The decomposition of :math:`V^T D^*`.
-        diagonal (ndarray)
+        diagonal (ndarray):
             A list of the nonzero entries of :math:`D`.
-        left_diagonal (ndarray)
+        left_diagonal (ndarray):
             A list of the nonzero entries left from the decomposition
             of :math:`V^T D^*`.
     """
@@ -385,28 +385,34 @@ def fermionic_gaussian_decomposition(unitary_rows):
 def givens_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations.
 
-    The input is an m x n matrix Q with m <= n. The rows of Q are orthonormal.
-    Q can be decomposed as follows:
+    The input is an :math:`m \\times n` matrix :math:`Q` with :math:`m \leq n`.
+    The rows of :math:`Q` are orthonormal.
+    :math:`Q` can be decomposed as follows:
 
-        V * Q * U^\dagger = D
+    .. math::
 
-    where V and U are unitary matrices, and D is an m x n matrix with the
-    first m columns forming a diagonal matrix and the rest of the columns
-    being zero. Furthermore, we can decompose U as
+        V Q U^\dagger = D
 
-        U = G_k * ... * G_1
+    where :math:`V` and :math:`U` are unitary matrices, and :math:`D`
+    is an :math:`m \\times n` matrix with the
+    first :math:`m` columns forming a diagonal matrix and the rest of the
+    columns being zero. Furthermore, we can decompose :math:`U` as
 
-    where G_1, ..., G_k are complex Givens rotations, which are invertible
-    n x n matrices. We describe a complex Givens rotation by the column
-    indices (i, j) that it acts on, plus two angles (theta, phi) that
-    characterize the corresponding 2x2 unitary matrix
+    .. math::
+
+        U = G_k ... G_1
+
+    where :math:`G_1, \\ldots, G_k` are complex Givens rotations.
+    A Givens rotation is a rotation within the two-dimensional subspace
+    spanned by two coordinate axes. Within the two relevant coordinate
+    axes, a Givens rotation has the form
 
     .. math::
 
         \\begin{pmatrix}
             \\cos(\\theta) & -e^{i \\phi} \\sin(\\theta) \\\\
             \\sin(\\theta) &     e^{i \\phi} \\cos(\\theta)
-        \\end{pmatrix}
+        \\end{pmatrix}.
 
     Args:
         unitary_rows: A numpy array or matrix with orthonormal rows,
@@ -414,17 +420,20 @@ def givens_decomposition(unitary_rows):
 
     Returns
     -------
-        givens_rotations (list[tuple])
+        givens_rotations (list[tuple]):
             A list of tuples of objects describing Givens
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
-            form (i, j, theta, phi), which represents a Givens rotation of
-            rows i and j by angles theta and phi.
-        left_unitary (ndarray)
-            An m x m numpy array representing the matrix V.
-        diagonal (ndarray)
-            A list of the nonzero entries of D.
+            form :math:`(i, j, \\theta, \\phi)`, which represents a
+            Givens rotation of coordinates
+            :math:`i` and :math:`j` by angles :math:`\\theta` and
+            :math:`\\phi`.
+        left_unitary (ndarray):
+            An :math:`m \\times m` numpy array representing the matrix
+            :math:`V`.
+        diagonal (ndarray):
+            A list of the nonzero entries of :math:`D`.
     """
     current_matrix = numpy.copy(unitary_rows)
     m, n = current_matrix.shape
