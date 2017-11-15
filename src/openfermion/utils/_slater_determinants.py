@@ -183,8 +183,8 @@ def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and
     particle-hole transformations on the last fermionic mode.
 
-    The input is an :math:`N \\times 2N` matrix :math:`W` with orthonormal rows.
-    Furthermore, :math:`W` must have the block form
+    The input is an :math:`N \\times 2N` matrix :math:`W` with orthonormal
+    rows. Furthermore, :math:`W` must have the block form
 
     .. math::
 
