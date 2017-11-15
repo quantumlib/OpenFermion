@@ -53,8 +53,10 @@ def gaussian_state_preparation_circuit(
             can be performed in parallel. Each elementary operation
             is either the string 'pht', indicating a particle-hole
             transformation on the last fermionic mode, or a tuple of
-            the form (i, j, theta, phi), indicating a Givens rotation
-            of modes i and j by angles theta and phi.
+            the form :math:`(i, j, \\theta, \\phi)`,
+            indicating a Givens rotation
+            of modes :math:`i` and :math:`j` by angles :math:`\\theta`
+            and :math:`\\phi`.
         start_orbitals (list):
             The occupied orbitals to start with. This describes the
             initial state that the circuit should be applied to: it should
@@ -181,7 +183,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and
     particle-hole transformations on the last fermionic mode.
 
-    The input is an `N` x (`2N`) matrix :math:`W` with orthonormal rows.
+    The input is an :math:`N \\times 2N` matrix :math:`W` with orthonormal rows.
     Furthermore, :math:`W` must have the block form
 
     .. math::
@@ -211,19 +213,20 @@ def fermionic_gaussian_decomposition(unitary_rows):
         U = B G_{k} \cdots B G_3 G_2 B G_1 B,
 
     where each :math:`G_i` is a Givens rotation, and :math:`B` represents
-    swapping the `N`-th column with the `2N`-th column, which corresponds
-    to a particle-hole transformation
+    swapping the :math:`N`-th column with the :math:`2N`-th column,
+    which corresponds to a particle-hole transformation
     on the last fermionic mode. This particle-hole transformation maps
     :math:`a^\dagger_N` to :math:`a_N` and vice versa, while leaving the
-    other ladder operators invariant.
+    other fermionic ladder operators invariant.
 
     The decomposition of :math:`U` is returned as a list of tuples of objects
     describing rotations and particle-hole transformations. The list looks
     something like [('pht', ), (G_1, ), ('pht', G_2), ... ].
     The objects within a tuple are either the string 'pht', which indicates
     a particle-hole transformation on the last fermionic mode, or a tuple
-    of the form (i, j, theta, phi), which indicates a Givens rotation
-    of rows i and j by angles theta and phi.
+    of the form :math:`(i, j, \\theta, \\phi)`, which indicates a
+    Givens rotation of rows :math:`i` and :math:`j` by angles
+    :math:`\\theta` and :math:`\\phi`.
 
     The matrix :math:`V^T D^*` can also be decomposed as a sequence of
     Givens rotations. This decomposition is needed for a circuit that
