@@ -12,11 +12,13 @@
 """Tests for _trotter_exp_to_qgates.py"""
 
 import unittest
-import os
-import cStringIO
-
-from openfermion.ops import QubitOperator
-from _trotter_exp_to_qgates import *
+from openfermion.utils._trotter_exp_to_qgates import *
+from openfermion.utils._trotter_exp_to_qgates import _third_order_trotter_helper
+from openfermion.utils import count_qubits
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 class TrottQasmTest(unittest.TestCase):
@@ -31,8 +33,9 @@ class TrottQasmTest(unittest.TestCase):
         for a, b in zip(gold, res):
             self.assertEqual(len(a.terms), 1)
             self.assertEqual(len(b.terms), 1)
-            self.assertEqual(a.terms.keys()[0], b.terms.keys()[0])
-            self.assertAlmostEqual(a.terms.values()[0], b.terms.values()[0])
+            for key in set(a.terms.keys()).union(b.terms.keys()):
+                self.assertEqual(key in a.terms, key in b.terms)
+                self.assertAlmostEqual(a.terms[key],b.terms[key])
 
     def test_3rd_order_helper_2ops(self):
         # Test 3rd-order helper, H=A+B
@@ -50,7 +53,7 @@ class TrottQasmTest(unittest.TestCase):
         gold.append(op_b * (1.))
 
         # Second arg must be in list form
-        res = third_order_trotter_helper(op_a, [op_b])
+        res = _third_order_trotter_helper([op_a, op_b])
 
         # Assert each term in list of QubitOperators is correct
         self.compare_qubop_lists(gold, res)
@@ -85,19 +88,19 @@ class TrottQasmTest(unittest.TestCase):
         gold.append(op_c * 1.0)
 
         # Second arg must be in list form
-        res = third_order_trotter_helper(op_a, [op_b, op_c])
+        res = _third_order_trotter_helper([op_a, op_b, op_c])
 
         # Assert each term in list of QubitOperators is correct
         self.compare_qubop_lists(gold, res)
 
     def test_get_trott_qubops(self):
         # Testing the Trotter decomposition function
-        res = get_trotterized_qubops(
+        res = [op for op in trotter_operator_grouping(
                 self.qo1,
                 trotter_number=2,
                 trotter_order=1,
                 term_ordering=None,
-                k_exp=None)
+                k_exp=1.0)]
 
         gold = []
         gold.append(0.5*self.opA)
@@ -114,9 +117,7 @@ class TrottQasmTest(unittest.TestCase):
 
         op = QubitOperator('X0 Z1 Y3', 0.5)
 
-        strioQasm = cStringIO.StringIO()
-
-        exp_sgl_pauli_string_to_qasm(strioQasm, op)
+        string_output = next(pauli_exp_to_qasm([op]))
 
         strcorrect = '''H 0
 Rx 1.57079632679 3
@@ -128,19 +129,20 @@ CNOT 0 1
 H 0
 Rx -1.57079632679 3
 '''
-        self.assertEqual(strioQasm.getvalue(), strcorrect)
+        self.assertEqual(string_output, strcorrect)
 
     def test_complete_to_qasm(self):
         # Test of highest-level function in module
-        strioQasm = cStringIO.StringIO()
-
-        trotterize_exp_qubop_to_qasm(
-                strioQasm,
-                self.qo1,
-                trotter_number=1,
-                trotter_order=2,
-                term_ordering=None,
-                k_exp=None)
+        strioQasm = StringIO()
+        strioQasm.write(str(count_qubits(self.qo1)))
+        strioQasm.write('\n# ***\n')
+        for returned_string in trotterize_exp_qubop_to_qasm(self.qo1,
+                                                            trotter_number=1,
+                                                            trotter_order=2,
+                                                            term_ordering=None,
+                                                            k_exp=1.0):
+            print(returned_string)
+            strioQasm.write(returned_string)
 
         strcorrect = '''5
 # ***
