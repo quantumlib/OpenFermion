@@ -32,15 +32,16 @@ class QuadraticHamiltonian(PolynomialTensor):
     .. math::
 
         \sum_{p, q} (M_{pq} - \mu \delta_{pq}) a^\dagger_p a_q
-        + \\frac12 \sum_{p, q} (A_{pq} a^\dagger_p a^\dagger_q + \\text{h.c.})
+        + \\frac12 \sum_{p, q}
+            (\\Delta_{pq} a^\dagger_p a^\dagger_q + \\text{h.c.})
         + \\text{constant}
 
     where
 
-        * :math:`M` is a Hermitian `n_qubits` x `n_qubits` matrix.
-        * :math:`A` is an antisymmetric `n_qubits` x `n_qubits` matrix.
-        * :math:`\mu` is a real number representing the chemical potential.
-        * :math:`\delta_{pq}` is the Kronecker delta symbol.
+        - :math:`M` is a Hermitian `n_qubits` x `n_qubits` matrix.
+        - :math:`\\Delta` is an antisymmetric `n_qubits` x `n_qubits` matrix.
+        - :math:`\mu` is a real number representing the chemical potential.
+        - :math:`\delta_{pq}` is the Kronecker delta symbol.
 
     We separate the chemical potential :math:`\mu` from :math:`M` so that
     we can use it to adjust the expectation value of the total number of
@@ -59,10 +60,13 @@ class QuadraticHamiltonian(PolynomialTensor):
             constant(float): A constant term in the operator.
             hermitian_part(ndarray): The matrix :math:`M`, which represents the
                 coefficients of the particle-number-conserving terms.
-                This is an `n_qubits` x `n_qubits` numpy array of complex numbers.
-            antisymmetric_part(ndarray): The matrix :math:`A`, which represents
-                the coefficients of the non-particle-number-conserving terms.
-                This is an `n_qubits` x `n_qubits` numpy array of complex numbers.
+                This is an `n_qubits` x `n_qubits` numpy array of complex
+                numbers.
+            antisymmetric_part(ndarray): The matrix :math:`\\Delta`,
+                which represents the coefficients of the
+                non-particle-number-conserving terms.
+                This is an `n_qubits` x `n_qubits` numpy array of complex
+                numbers.
             chemical_potential(float): The chemical potential :math:`\mu`.
         """
         n_qubits = hermitian_part.shape[0]
@@ -126,7 +130,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
         of the form
-        
+
         .. math::
 
             \sum_{j} \\varepsilon_j a^\dagger_j a_j + \\text{constant}.
@@ -175,8 +179,9 @@ class QuadraticHamiltonian(PolynomialTensor):
 
             f_{j + N} = \\frac{i}{\\sqrt{2}} (a^\dagger_j - a_j)
 
-        and :math:`A` is a (2 * `n_qubits`) x (2 * `n_qubits`) real antisymmetric matrix.
-        This function returns the matrix :math:`A` and the constant.
+        and :math:`A` is a (2 * `n_qubits`) x (2 * `n_qubits`) real
+        antisymmetric matrix. This function returns the matrix
+        :math:`A` and the constant.
         """
         hermitian_part = self.combined_hermitian_part
         antisymmetric_part = self.antisymmetric_part
