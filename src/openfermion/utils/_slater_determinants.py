@@ -15,16 +15,11 @@ Slater determinants and fermionic Gaussian states."""
 from __future__ import absolute_import
 
 import numpy
-from scipy.sparse import csc_matrix, eye
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import (
-        antisymmetric_canonical_form, diagonalizing_fermionic_unitary,
-        swap_columns)
-from openfermion.utils._sparse_tools import (jw_slater_determinant,
-                                             kronecker_operators,
-                                             pauli_matrix_map)
+        diagonalizing_fermionic_unitary, swap_columns)
 
 
 def gaussian_state_preparation_circuit(
@@ -117,67 +112,6 @@ def gaussian_state_preparation_circuit(
                                        decomposition + left_decomposition))
 
     return circuit_description, start_orbitals
-
-
-def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
-    """Compute an eigenvalue and eigenstate of a quadratic Hamiltonian.
-
-    Eigenstates of a quadratic Hamiltonian are also known as fermionic
-    Gaussian states.
-
-    Args:
-        quadratic_hamiltonian(QuadraticHamiltonian):
-            The Hamiltonian whose eigenstate is desired.
-        occupied_orbitals(list):
-            A list of integers representing the indices of the occupied
-            orbitals in the desired Gaussian state. If this is None
-            (the default), then it is assumed that the ground state is
-            desired, i.e., the orbitals with negative energies are filled.
-
-    Returns
-    -------
-        energy (float):
-            The eigenvalue.
-        state (sparse):
-            The eigenstate in scipy.sparse csc format.
-    """
-    if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
-        raise ValueError('Input must be an instance of QuadraticHamiltonian.')
-
-    n_qubits = quadratic_hamiltonian.n_qubits
-
-    # Compute the energy
-    orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
-    if occupied_orbitals is None:
-        # The ground energy is desired
-        if quadratic_hamiltonian.conserves_particle_number:
-            num_negative_energies = numpy.count_nonzero(
-                    orbital_energies < -EQ_TOLERANCE)
-            occupied_orbitals = range(num_negative_energies)
-        else:
-            occupied_orbitals = []
-    energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
-
-    # Obtain the circuit that prepares the Gaussian state
-    circuit_description, start_orbitals = gaussian_state_preparation_circuit(
-            quadratic_hamiltonian, occupied_orbitals)
-
-    # Initialize the starting state
-    state = jw_slater_determinant(start_orbitals, n_qubits)
-
-    # Apply the circuit
-    particle_hole_transformation = (
-            jw_sparse_particle_hole_transformation_last_mode(n_qubits))
-    for parallel_ops in circuit_description:
-        for op in parallel_ops:
-            if op == 'pht':
-                state = particle_hole_transformation.dot(state)
-            else:
-                i, j, theta, phi = op
-                state = jw_sparse_givens_rotation(
-                            i, j, theta, phi, n_qubits).dot(state)
-
-    return energy, state
 
 
 def fermionic_gaussian_decomposition(unitary_rows):
@@ -649,40 +583,3 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
                       which='col')
     else:
         raise ValueError('"which" must be equal to "row" or "col".')
-
-
-def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
-    """Return the matrix (acting on a full wavefunction) that performs a
-    Givens rotation of modes i and j in the Jordan-Wigner encoding."""
-    if j != i + 1:
-        raise ValueError('Only adjacent modes can be rotated.')
-    if j > n_qubits - 1:
-        raise ValueError('Too few qubits requested.')
-
-    cosine = numpy.cos(theta)
-    sine = numpy.sin(theta)
-    phase = numpy.exp(1.j * phi)
-
-    # Create the two-qubit rotation matrix
-    rotation_matrix = csc_matrix(
-            ([1., phase * cosine, -phase * sine, sine, cosine, phase],
-             ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
-            shape=(4, 4))
-
-    # Initialize identity operators
-    left_eye = eye(2 ** i, format='csc')
-    right_eye = eye(2 ** (n_qubits - 1 - j), format='csc')
-
-    # Construct the matrix and return
-    givens_matrix = kronecker_operators([left_eye, rotation_matrix, right_eye])
-
-    return givens_matrix
-
-
-def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
-    """Return the matrix (acting on a full wavefunction) that performs a
-    particle-hole transformation on the last mode in the Jordan-Wigner
-    encoding.
-    """
-    left_eye = eye(2 ** (n_qubits - 1), format='csc')
-    return kronecker_operators([left_eye, pauli_matrix_map['X']])
