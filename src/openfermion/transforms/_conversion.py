@@ -157,7 +157,7 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
 
 
 def get_quadratic_hamiltonian(fermion_operator,
-                              chemical_potential=None, n_qubits=None):
+                              chemical_potential=0., n_qubits=None):
     """Convert a quadratic fermionic operator to QuadraticHamiltonian.
 
     This function should only be called on fermionic operators which
@@ -248,11 +248,8 @@ def get_quadratic_hamiltonian(fermion_operator,
                                             '(contains non-quadratic terms).')
 
     # Compute Hermitian part
-    if not chemical_potential:
-        hermitian_part = combined_hermitian_part
-    else:
-        hermitian_part = (combined_hermitian_part +
-                          chemical_potential * numpy.eye(n_qubits))
+    hermitian_part = (combined_hermitian_part +
+                      chemical_potential * numpy.eye(n_qubits))
 
     # Check that the operator is Hermitian
     difference = hermitian_part - hermitian_part.T.conj()
