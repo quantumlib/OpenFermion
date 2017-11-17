@@ -34,7 +34,8 @@ def gaussian_state_preparation_circuit(
 
     Fermionic Gaussian states can be regarded as eigenstates of quadratic
     Hamiltonians. If the Hamiltonian conserves particle number, then these are
-    just Slater determinants.
+    just Slater determinants. See arXiv:1711.05395 for a detailed description
+    of how this procedure works.
 
     Args:
         quadratic_hamiltonian(QuadraticHamiltonian):
