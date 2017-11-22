@@ -487,9 +487,13 @@ def is_hermitian(sparse_operator):
 
 def get_ground_state(sparse_operator):
     """Compute lowest eigenvalue and eigenstate.
-    Returns:
-        eigenvalue: The lowest eigenvalue, a float.
-        eigenstate: The lowest eigenstate in scipy.sparse csc format.
+
+    Returns
+    -------
+        eigenvalue:
+            The lowest eigenvalue, a float.
+        eigenstate:
+            The lowest eigenstate in scipy.sparse csc format.
     """
     if not is_hermitian(sparse_operator):
         raise ValueError('sparse_operator must be Hermitian.')
