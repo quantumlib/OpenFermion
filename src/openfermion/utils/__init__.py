@@ -20,9 +20,8 @@ from ._operator_utils import (commutator, count_qubits,
                               get_file_path, inverse_fourier_transform,
                               is_identity, load_operator, save_operator)
 
-from ._slater_determinants import (fermionic_gaussian_decomposition,
-                                   givens_decomposition,
-                                   gaussian_state_preparation_circuit)
+from ._slater_determinants import (gaussian_state_preparation_circuit,
+                                   slater_determinant_preparation_circuit)
 
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,

@@ -24,16 +24,16 @@ from openfermion.ops._quadratic_hamiltonian import (
 from openfermion.ops._quadratic_hamiltonian_test import (
         random_hermitian_matrix, random_antisymmetric_matrix)
 from openfermion.transforms import get_sparse_operator
-from openfermion.utils import (fermionic_gaussian_decomposition,
+from openfermion.utils import (gaussian_state_preparation_circuit,
                                get_ground_state,
-                               givens_decomposition,
-                               gaussian_state_preparation_circuit,
                                jw_get_gaussian_state,
                                jw_slater_determinant)
 from openfermion.utils._slater_determinants import (
         double_givens_rotate,
-        givens_rotate,
-        givens_matrix_elements)
+        fermionic_gaussian_decomposition,
+        givens_decomposition,
+        givens_matrix_elements,
+        givens_rotate)
 from openfermion.utils._sparse_tools import (
         jw_sparse_givens_rotation,
         jw_sparse_particle_hole_transformation_last_mode)

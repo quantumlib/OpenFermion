@@ -24,7 +24,7 @@ from openfermion.ops._quadratic_hamiltonian import (
 
 def gaussian_state_preparation_circuit(
         quadratic_hamiltonian, occupied_orbitals=None):
-    """Obtain a description of a circuit which prepares a fermionic Gaussian
+    """Obtain the description of a circuit which prepares a fermionic Gaussian
     state.
 
     Fermionic Gaussian states can be regarded as eigenstates of quadratic
@@ -113,14 +113,14 @@ def gaussian_state_preparation_circuit(
     return circuit_description, start_orbitals
 
 def slater_determinant_preparation_circuit(slater_determinant_matrix):
-    """Obtain a description of a circuit which prepares a Slater determinant.
+    """Obtain the description of a circuit which prepares a Slater determinant.
 
-    The input is an :math:`m \\times N` matrix :math:`Q` with orthonormal rows.
-    Such a matrix describes the Slater determinant
+    The input is an :math:`N_f \\times N` matrix :math:`Q` with orthonormal
+    rows. Such a matrix describes the Slater determinant
 
     .. math::
 
-        b^\dagger_1 \cdots b^\dagger_m \lvert \\text{vac} \\rangle,
+        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \\text{vac} \\rangle,
 
     where
     
@@ -130,6 +130,9 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
 
     The output is the description of a circuit which prepares this
     Slater determinant, up to a global phase.
+    The starting state which the circuit should be applied to 
+    is a Slater determinant (in the computational basis) with
+    the first :math:`N_f` orbitals filled.
 
     Args:
         slater_determinant_matrix: The matrix :math:`Q` which describes the
@@ -142,9 +145,6 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
             :math:`(i, j, \\theta, \\phi)`, indicating a Givens rotation
             of modes :math:`i` and :math:`j` by angles :math:`\\theta`
             and :math:`\\phi`.
-            The starting state which the circuit should be applied to 
-            is a Slater determinant (in the computational basis) with
-            the first :math:`m` orbitals filled.
     """
     decomposition, left_unitary, diagonal = givens_decomposition(
             slater_determinant_matrix)
