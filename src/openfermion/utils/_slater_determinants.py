@@ -79,9 +79,8 @@ def gaussian_state_preparation_circuit(
         slater_determinant_matrix = diagonalizing_unitary.T[occupied_orbitals]
 
         # Get the circuit description
-        decomposition, left_unitary, diagonal = givens_decomposition(
+        circuit_description = slater_determinant_preparation_circuit(
                 slater_determinant_matrix)
-        circuit_description = list(reversed(decomposition))
         start_orbitals = range(len(occupied_orbitals))
     else:
         # The Hamiltonian does not conserve particle number, so we
@@ -113,6 +112,44 @@ def gaussian_state_preparation_circuit(
 
     return circuit_description, start_orbitals
 
+def slater_determinant_preparation_circuit(slater_determinant_matrix):
+    """Obtain a description of a circuit which prepares a Slater determinant.
+
+    The input is an :math:`m \\times N` matrix :math:`Q` with orthonormal rows.
+    Such a matrix describes the Slater determinant
+
+    .. math::
+
+        b^\dagger_1 \cdots b^\dagger_m \lvert \\text{vac} \\rangle,
+
+    where
+    
+    .. math::
+
+        b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
+
+    The output is the description of a circuit which prepares this
+    Slater determinant, up to a global phase.
+
+    Args:
+        slater_determinant_matrix: The matrix :math:`Q` which describes the
+            Slater determinant to be prepared.
+    Returns:
+        circuit_description:
+            A list of operations describing the circuit. Each operation
+            is a tuple of elementary operations that can be performed in
+            parallel. Each elementary operation is a tuple of the form
+            :math:`(i, j, \\theta, \\phi)`, indicating a Givens rotation
+            of modes :math:`i` and :math:`j` by angles :math:`\\theta`
+            and :math:`\\phi`.
+            The starting state which the circuit should be applied to 
+            is a Slater determinant (in the computational basis) with
+            the first :math:`m` orbitals filled.
+    """
+    decomposition, left_unitary, diagonal = givens_decomposition(
+            slater_determinant_matrix)
+    circuit_description = list(reversed(decomposition))
+    return circuit_description
 
 def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and
