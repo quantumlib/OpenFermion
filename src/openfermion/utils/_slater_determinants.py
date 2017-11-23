@@ -15,26 +15,22 @@ Slater determinants and fermionic Gaussian states."""
 from __future__ import absolute_import
 
 import numpy
-from scipy.sparse import csc_matrix, eye
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import (
-        antisymmetric_canonical_form, diagonalizing_fermionic_unitary,
-        swap_columns)
-from openfermion.utils._sparse_tools import (jw_slater_determinant,
-                                             kronecker_operators,
-                                             pauli_matrix_map)
+        diagonalizing_fermionic_unitary, swap_columns)
 
 
 def gaussian_state_preparation_circuit(
         quadratic_hamiltonian, occupied_orbitals=None):
-    """Obtain a description of a circuit which prepares a fermionic Gaussian
+    """Obtain the description of a circuit which prepares a fermionic Gaussian
     state.
 
     Fermionic Gaussian states can be regarded as eigenstates of quadratic
     Hamiltonians. If the Hamiltonian conserves particle number, then these are
-    just Slater determinants.
+    just Slater determinants. See arXiv:1711.05395 for a detailed description
+    of how this procedure works.
 
     Args:
         quadratic_hamiltonian(QuadraticHamiltonian):
@@ -45,16 +41,19 @@ def gaussian_state_preparation_circuit(
             (the default), then it is assumed that the ground state is
             desired, i.e., the orbitals with negative energies are filled.
 
-    Returns:
-        circuit_description(list[tuple]):
+    Returns
+    -------
+        circuit_description (list[tuple]):
             A list of operations describing the circuit. Each operation
             is a tuple of objects describing elementary operations that
             can be performed in parallel. Each elementary operation
             is either the string 'pht', indicating a particle-hole
             transformation on the last fermionic mode, or a tuple of
-            the form (i, j, theta, phi), indicating a Givens rotation
-            of modes i and j by angles theta and phi.
-        start_orbitals(list):
+            the form :math:`(i, j, \\theta, \\phi)`,
+            indicating a Givens rotation
+            of modes :math:`i` and :math:`j` by angles :math:`\\theta`
+            and :math:`\\phi`.
+        start_orbitals (list):
             The occupied orbitals to start with. This describes the
             initial state that the circuit should be applied to: it should
             be a Slater determinant (in the computational basis) with these
@@ -80,9 +79,8 @@ def gaussian_state_preparation_circuit(
         slater_determinant_matrix = diagonalizing_unitary.T[occupied_orbitals]
 
         # Get the circuit description
-        decomposition, left_unitary, diagonal = givens_decomposition(
+        circuit_description = slater_determinant_preparation_circuit(
                 slater_determinant_matrix)
-        circuit_description = list(reversed(decomposition))
         start_orbitals = range(len(occupied_orbitals))
     else:
         # The Hamiltonian does not conserve particle number, so we
@@ -114,110 +112,113 @@ def gaussian_state_preparation_circuit(
 
     return circuit_description, start_orbitals
 
+def slater_determinant_preparation_circuit(slater_determinant_matrix):
+    """Obtain the description of a circuit which prepares a Slater determinant.
 
-def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
-    """Compute an eigenvalue and eigenstate of a quadratic Hamiltonian.
+    The input is an :math:`N_f \\times N` matrix :math:`Q` with orthonormal
+    rows. Such a matrix describes the Slater determinant
 
-    Eigenstates of a quadratic Hamiltonian are also known as fermionic
-    Gaussian states.
+    .. math::
+
+        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \\text{vac} \\rangle,
+
+    where
+    
+    .. math::
+
+        b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
+
+    The output is the description of a circuit which prepares this
+    Slater determinant, up to a global phase.
+    The starting state which the circuit should be applied to 
+    is a Slater determinant (in the computational basis) with
+    the first :math:`N_f` orbitals filled.
 
     Args:
-        quadratic_hamiltonian(QuadraticHamiltonian):
-            The Hamiltonian whose eigenstate is desired.
-        occupied_orbitals(list):
-            A list of integers representing the indices of the occupied
-            orbitals in the desired Gaussian state. If this is None
-            (the default), then it is assumed that the ground state is
-            desired, i.e., the orbitals with negative energies are filled.
-
+        slater_determinant_matrix: The matrix :math:`Q` which describes the
+            Slater determinant to be prepared.
     Returns:
-        energy(float): The eigenvalue.
-        state(sparse): The eigenstate in scipy.sparse csc format.
+        circuit_description:
+            A list of operations describing the circuit. Each operation
+            is a tuple of elementary operations that can be performed in
+            parallel. Each elementary operation is a tuple of the form
+            :math:`(i, j, \\theta, \\phi)`, indicating a Givens rotation
+            of modes :math:`i` and :math:`j` by angles :math:`\\theta`
+            and :math:`\\phi`.
     """
-    if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
-        raise ValueError('Input must be an instance of QuadraticHamiltonian.')
-
-    n_qubits = quadratic_hamiltonian.n_qubits
-
-    # Compute the energy
-    orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
-    if occupied_orbitals is None:
-        if quadratic_hamiltonian.conserves_particle_number:
-            num_negative_energies = numpy.count_nonzero(
-                    orbital_energies < -EQ_TOLERANCE)
-            occupied_orbitals = range(num_negative_energies)
-        else:
-            occupied_orbitals = []
-    energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
-
-    # Obtain the circuit that prepares the Gaussian state
-    circuit_description, start_orbitals = gaussian_state_preparation_circuit(
-            quadratic_hamiltonian, occupied_orbitals)
-
-    # Initialize the starting state
-    state = jw_slater_determinant(start_orbitals, n_qubits)
-
-    # Apply the circuit
-    particle_hole_transformation = (
-            jw_sparse_particle_hole_transformation_last_mode(n_qubits))
-    for parallel_ops in circuit_description:
-        for op in parallel_ops:
-            if op == 'pht':
-                state = particle_hole_transformation.dot(state)
-            else:
-                i, j, theta, phi = op
-                state = jw_sparse_givens_rotation(
-                            i, j, theta, phi, n_qubits).dot(state)
-
-    return energy, state
-
+    decomposition, left_unitary, diagonal = givens_decomposition(
+            slater_determinant_matrix)
+    circuit_description = list(reversed(decomposition))
+    return circuit_description
 
 def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and
     particle-hole transformations on the last fermionic mode.
 
-    The input is an n x (2 * n) matrix W with orthonormal rows.
-    Furthermore, W has the block form::
+    The input is an :math:`N \\times 2N` matrix :math:`W` with orthonormal
+    rows. Furthermore, :math:`W` must have the block form
 
-        W = [ W_1  |  W_2 ]
+    .. math::
 
-    where W_1 and W_2 satisfy::
+        W = ( W_1 \hspace{4pt} W_2 )
 
-        W_1 * W_1^\dagger + W_2 * W_2^\dagger = I
-        W_1 * W_2^T + W_2 * W_1^T = 0
+    where :math:`W_1` and :math:`W_2` satisfy
 
-    W can be decomposed as::
+    .. math::
 
-        V * W * U^\dagger = [ 0  |  D ]
+        W_1  W_1^\dagger + W_2  W_2^\dagger &= I
 
-    where V and U are unitary matrices and D is a diagonal unitary matrix.
-    Furthermore, we can decompose U as a sequence of Givens rotations
-    and particle-hole transformations on the last fermionic mode.
-    This particle-hole transformation maps a^\dagger_n to a^n and vice
-    versa, while leaving the other ladder operators invariant.
+        W_1  W_2^T + W_2  W_1^T &= 0.
 
-    The decomposition of U is returned as a list of tuples of objects
+    Then :math:`W` can be decomposed as
+
+    .. math::
+
+        V  W  U^\dagger = ( 0 \hspace{6pt} D )
+
+    where :math:`V` and :math:`U` are unitary matrices and :math:`D`
+    is a diagonal unitary matrix. Furthermore, :math:`U` can be decomposed
+    as follows:
+
+    .. math::
+
+        U = B G_{k} \cdots B G_3 G_2 B G_1 B,
+
+    where each :math:`G_i` is a Givens rotation, and :math:`B` represents
+    swapping the :math:`N`-th column with the :math:`2N`-th column,
+    which corresponds to a particle-hole transformation
+    on the last fermionic mode. This particle-hole transformation maps
+    :math:`a^\dagger_N` to :math:`a_N` and vice versa, while leaving the
+    other fermionic ladder operators invariant.
+
+    The decomposition of :math:`U` is returned as a list of tuples of objects
     describing rotations and particle-hole transformations. The list looks
     something like [('pht', ), (G_1, ), ('pht', G_2), ... ].
     The objects within a tuple are either the string 'pht', which indicates
     a particle-hole transformation on the last fermionic mode, or a tuple
-    of the form (i, j, theta, phi), which indicates a Givens rotation
-    of rows i and j by angles theta and phi.
+    of the form :math:`(i, j, \\theta, \\phi)`, which indicates a
+    Givens rotation of rows :math:`i` and :math:`j` by angles
+    :math:`\\theta` and :math:`\\phi`.
 
-    The matrix V^T D^*, the transpose of V times the complex conjugate of D,
-    can also be decomposed as a sequence of Givens rotations. This
-    decomposition is needed for a circuit that prepares an excited state.
+    The matrix :math:`V^T D^*` can also be decomposed as a sequence of
+    Givens rotations. This decomposition is needed for a circuit that
+    prepares an excited state.
 
     Args:
         unitary_rows(ndarray): A matrix with orthonormal rows and
             additional structure described above.
 
-    Returns:
-        decomposition(list[tuple]): The decomposition of U.
-        left_decomposition(list[tuple]): The decomposition of V^T D^*.
-        diagonal(ndarray): A list of the nonzero entries of D.
-        left_diagonal(ndarray): A list of the nonzero entries left from
-            the decomposition of V^T D^*.
+    Returns
+    -------
+        decomposition (list[tuple]):
+            The decomposition of :math:`U`.
+        left_decomposition (list[tuple]):
+            The decomposition of :math:`V^T D^*`.
+        diagonal (ndarray):
+            A list of the nonzero entries of :math:`D`.
+        left_diagonal (ndarray):
+            A list of the nonzero entries left from the decomposition
+            of :math:`V^T D^*`.
     """
     current_matrix = numpy.copy(unitary_rows)
     n, p = current_matrix.shape
@@ -359,38 +360,55 @@ def fermionic_gaussian_decomposition(unitary_rows):
 def givens_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations.
 
-    The input is an m x n matrix Q with m <= n. The rows of Q are orthonormal.
-    Q can be decomposed as follows:
+    The input is an :math:`m \\times n` matrix :math:`Q` with :math:`m \leq n`.
+    The rows of :math:`Q` are orthonormal.
+    :math:`Q` can be decomposed as follows:
 
-        V * Q * U^\dagger = D
+    .. math::
 
-    where V and U are unitary matrices, and D is an m x n matrix with the
-    first m columns forming a diagonal matrix and the rest of the columns
-    being zero. Furthermore, we can decompose U as
+        V Q U^\dagger = D
 
-        U = G_k * ... * G_1
+    where :math:`V` and :math:`U` are unitary matrices, and :math:`D`
+    is an :math:`m \\times n` matrix with the
+    first :math:`m` columns forming a diagonal matrix and the rest of the
+    columns being zero. Furthermore, we can decompose :math:`U` as
 
-    where G_1, ..., G_k are complex Givens rotations, which are invertible
-    n x n matrices. We describe a complex Givens rotation by the column
-    indices (i, j) that it acts on, plus two angles (theta, phi) that
-    characterize the corresponding 2x2 unitary matrix
+    .. math::
 
-        [ cos(theta)    -e^{i phi} sin(theta) ]
-        [ sin(theta)     e^{i phi} cos(theta) ]
+        U = G_k ... G_1
+
+    where :math:`G_1, \\ldots, G_k` are complex Givens rotations.
+    A Givens rotation is a rotation within the two-dimensional subspace
+    spanned by two coordinate axes. Within the two relevant coordinate
+    axes, a Givens rotation has the form
+
+    .. math::
+
+        \\begin{pmatrix}
+            \\cos(\\theta) & -e^{i \\phi} \\sin(\\theta) \\\\
+            \\sin(\\theta) &     e^{i \\phi} \\cos(\\theta)
+        \\end{pmatrix}.
 
     Args:
         unitary_rows: A numpy array or matrix with orthonormal rows,
             representing the matrix Q.
 
-    Returns:
-        givens_rotations: A list of tuples of objects describing Givens
+    Returns
+    -------
+        givens_rotations (list[tuple]):
+            A list of tuples of objects describing Givens
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
-            form (i, j, theta, phi), which represents a Givens rotation of
-            rows i and j by angles theta and phi.
-        left_unitary: An m x m numpy array representing the matrix V.
-        diagonal: A list of the nonzero entries of D.
+            form :math:`(i, j, \\theta, \\phi)`, which represents a
+            Givens rotation of coordinates
+            :math:`i` and :math:`j` by angles :math:`\\theta` and
+            :math:`\\phi`.
+        left_unitary (ndarray):
+            An :math:`m \\times m` numpy array representing the matrix
+            :math:`V`.
+        diagonal (ndarray):
+            A list of the nonzero entries of :math:`D`.
     """
     current_matrix = numpy.copy(unitary_rows)
     m, n = current_matrix.shape
@@ -602,40 +620,3 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
                       which='col')
     else:
         raise ValueError('"which" must be equal to "row" or "col".')
-
-
-def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
-    """Return the matrix (acting on a full wavefunction) that performs a
-    Givens rotation of modes i and j in the Jordan-Wigner encoding."""
-    if j != i + 1:
-        raise ValueError('Only adjacent modes can be rotated.')
-    if j > n_qubits - 1:
-        raise ValueError('Too few qubits requested.')
-
-    cosine = numpy.cos(theta)
-    sine = numpy.sin(theta)
-    phase = numpy.exp(1.j * phi)
-
-    # Create the two-qubit rotation matrix
-    rotation_matrix = csc_matrix(
-            ([1., phase * cosine, -phase * sine, sine, cosine, phase],
-             ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
-            shape=(4, 4))
-
-    # Initialize identity operators
-    left_eye = eye(2 ** i, format='csc')
-    right_eye = eye(2 ** (n_qubits - 1 - j), format='csc')
-
-    # Construct the matrix and return
-    givens_matrix = kronecker_operators([left_eye, rotation_matrix, right_eye])
-
-    return givens_matrix
-
-
-def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
-    """Return the matrix (acting on a full wavefunction) that performs a
-    particle-hole transformation on the last mode in the Jordan-Wigner
-    encoding.
-    """
-    left_eye = eye(2 ** (n_qubits - 1), format='csc')
-    return kronecker_operators([left_eye, pauli_matrix_map['X']])

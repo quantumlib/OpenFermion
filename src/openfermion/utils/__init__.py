@@ -20,10 +20,8 @@ from ._operator_utils import (commutator, count_qubits,
                               get_file_path, inverse_fourier_transform,
                               is_identity, load_operator, save_operator)
 
-from ._slater_determinants import (fermionic_gaussian_decomposition,
-                                   givens_decomposition,
-                                   gaussian_state_preparation_circuit,
-                                   jw_get_gaussian_state)
+from ._slater_determinants import (gaussian_state_preparation_circuit,
+                                   slater_determinant_preparation_circuit)
 
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,
@@ -33,6 +31,7 @@ from ._sparse_tools import (expectation,
                             is_hermitian,
                             jordan_wigner_sparse,
                             jw_hartree_fock_state,
+                            jw_get_gaussian_state,
                             jw_get_ground_states_by_particle_number,
                             jw_number_restrict_operator,
                             jw_slater_determinant,

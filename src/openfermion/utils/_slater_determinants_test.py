@@ -20,22 +20,21 @@ from scipy.linalg import qr
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import (
-        antisymmetric_canonical_form,
-        diagonalizing_fermionic_unitary,
-        swap_rows)
+        diagonalizing_fermionic_unitary, swap_rows)
 from openfermion.ops._quadratic_hamiltonian_test import (
         random_hermitian_matrix, random_antisymmetric_matrix)
 from openfermion.transforms import get_sparse_operator
-from openfermion.utils import (fermionic_gaussian_decomposition,
+from openfermion.utils import (gaussian_state_preparation_circuit,
                                get_ground_state,
-                               givens_decomposition,
-                               gaussian_state_preparation_circuit,
                                jw_get_gaussian_state,
                                jw_slater_determinant)
 from openfermion.utils._slater_determinants import (
         double_givens_rotate,
-        givens_rotate,
+        fermionic_gaussian_decomposition,
+        givens_decomposition,
         givens_matrix_elements,
+        givens_rotate)
+from openfermion.utils._sparse_tools import (
         jw_sparse_givens_rotation,
         jw_sparse_particle_hole_transformation_last_mode)
 
@@ -127,146 +126,6 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
         """Test bad input."""
         with self.assertRaises(ValueError):
             description, n_electrons = gaussian_state_preparation_circuit('a')
-
-
-class JWGetGaussianStateTest(unittest.TestCase):
-
-    def setUp(self):
-        self.n_qubits_range = range(2, 10)
-
-    def test_ground_state_particle_conserving(self):
-        """Test getting the ground state of a Hamiltonian that conserves
-        particle number."""
-        for n_qubits in self.n_qubits_range:
-            # Initialize a particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, True)
-
-            # Compute the true ground state
-            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, ground_state = get_ground_state(sparse_operator)
-
-            # Compute the ground state using the circuit
-            circuit_energy, circuit_state = jw_get_gaussian_state(
-                    quadratic_hamiltonian)
-
-            # Check that the energies match
-            self.assertAlmostEqual(ground_energy, circuit_energy)
-
-            # Check that the state obtained using the circuit is a ground state
-            difference = (sparse_operator * circuit_state -
-                          ground_energy * circuit_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
-
-    def test_ground_state_particle_nonconserving(self):
-        """Test getting the ground state of a Hamiltonian that does not
-        conserve particle number."""
-        for n_qubits in self.n_qubits_range:
-            # Initialize a non-particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, False)
-
-            # Compute the true ground state
-            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, ground_state = get_ground_state(sparse_operator)
-
-            # Compute the ground state using the circuit
-            circuit_energy, circuit_state = (
-                    jw_get_gaussian_state(
-                        quadratic_hamiltonian))
-
-            # Check that the energies match
-            self.assertAlmostEqual(ground_energy, circuit_energy)
-
-            # Check that the state obtained using the circuit is a ground state
-            difference = (sparse_operator * circuit_state -
-                          ground_energy * circuit_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
-
-    def test_excited_state_particle_conserving(self):
-        """Test getting an excited state of a Hamiltonian that conserves
-        particle number."""
-        for n_qubits in self.n_qubits_range:
-            # Initialize a particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, True)
-
-            # Pick some orbitals to occupy
-            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
-            occupied_orbitals = numpy.random.choice(
-                    range(n_qubits), num_occupied_orbitals, False)
-
-            # Compute the Gaussian state
-            circuit_energy, gaussian_state = jw_get_gaussian_state(
-                    quadratic_hamiltonian, occupied_orbitals)
-
-            # Compute the true energy
-            orbital_energies, constant = (
-                    quadratic_hamiltonian.orbital_energies())
-            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
-
-            # Check that the energies match
-            self.assertAlmostEqual(energy, circuit_energy)
-
-            # Check that the state obtained using the circuit is an eigenstate
-            # with the correct eigenvalue
-            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            difference = (sparse_operator * gaussian_state -
-                          energy * gaussian_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
-
-    def test_excited_state_particle_nonconserving(self):
-        """Test getting an excited state of a Hamiltonian that conserves
-        particle number."""
-        for n_qubits in self.n_qubits_range:
-            # Initialize a non-particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, False)
-
-            # Pick some orbitals to occupy
-            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
-            occupied_orbitals = numpy.random.choice(
-                    range(n_qubits), num_occupied_orbitals, False)
-
-            # Compute the Gaussian state
-            circuit_energy, gaussian_state = jw_get_gaussian_state(
-                    quadratic_hamiltonian, occupied_orbitals)
-
-            # Compute the true energy
-            orbital_energies, constant = (
-                    quadratic_hamiltonian.orbital_energies())
-            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
-
-            # Check that the energies match
-            self.assertAlmostEqual(energy, circuit_energy)
-
-            # Check that the state obtained using the circuit is an eigenstate
-            # with the correct eigenvalue
-            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            difference = (sparse_operator * gaussian_state -
-                          energy * gaussian_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
-
-    def test_bad_input(self):
-        """Test bad input."""
-        with self.assertRaises(ValueError):
-            energy, state = jw_get_gaussian_state('a')
 
 
 class GivensDecompositionTest(unittest.TestCase):
@@ -515,116 +374,6 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             decomposition, left_unitary, antidiagonal = (
                     fermionic_gaussian_decomposition(ones_mat))
-
-
-class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
-
-    def setUp(self):
-        self.n_qubits = 5
-        self.constant = 1.7
-        self.chemical_potential = 2.
-
-        # Obtain random Hermitian and antisymmetric matrices
-        self.hermitian_mat = random_hermitian_matrix(self.n_qubits)
-        self.antisymmetric_mat = random_antisymmetric_matrix(self.n_qubits)
-
-        # Initialize a non-particle-number-conserving Hamiltonian
-        self.quad_ham_npc = QuadraticHamiltonian(
-                self.constant, self.hermitian_mat, self.antisymmetric_mat,
-                self.chemical_potential)
-
-    def test_diagonalizes_quadratic_hamiltonian(self):
-        """Test that the unitary returned indeed diagonalizes a
-        quadratic Hamiltonian."""
-        hermitian_part = self.quad_ham_npc.combined_hermitian_part
-        antisymmetric_part = self.quad_ham_npc.antisymmetric_part
-        block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits),
-                                   dtype=complex)
-        block_matrix[:self.n_qubits, :self.n_qubits] = antisymmetric_part
-        block_matrix[:self.n_qubits, self.n_qubits:] = hermitian_part
-        block_matrix[self.n_qubits:, :self.n_qubits] = -hermitian_part.conj()
-        block_matrix[self.n_qubits:, self.n_qubits:] = (
-                -antisymmetric_part.conj())
-
-        majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
-        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
-        ferm_unitary = diagonalizing_fermionic_unitary(majorana_matrix)
-        diagonalized = ferm_unitary.conj().dot(
-                block_matrix.dot(ferm_unitary.T.conj()))
-        for i in numpy.ndindex((2 * self.n_qubits, 2 * self.n_qubits)):
-            self.assertAlmostEqual(diagonalized[i], canonical[i])
-
-    def test_bad_dimensions(self):
-        n, p = (3, 4)
-        ones_mat = numpy.ones((n, p))
-        with self.assertRaises(ValueError):
-            ferm_unitary = diagonalizing_fermionic_unitary(ones_mat)
-
-    def test_not_antisymmetric(self):
-        n = 4
-        ones_mat = numpy.ones((n, n))
-        with self.assertRaises(ValueError):
-            ferm_unitary = diagonalizing_fermionic_unitary(ones_mat)
-
-    def test_n_equals_3(self):
-        n = 3
-        # Obtain a random antisymmetric matrix
-        rand_mat = numpy.random.randn(2 * n, 2 * n)
-        antisymmetric_matrix = rand_mat - rand_mat.T
-
-        # Get the diagonalizing fermionic unitary
-        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
-        lower_unitary = ferm_unitary[n:]
-        lower_left = lower_unitary[:, :n]
-        lower_right = lower_unitary[:, n:]
-
-        # Check that lower_left and lower_right satisfy the constraints
-        # necessary for the transformed fermionic operators to satisfy
-        # the fermionic anticommutation relations
-        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj()) +
-                               lower_right.dot(lower_right.T.conj()))
-        constraint_matrix_2 = (lower_left.dot(lower_right.T) +
-                               lower_right.dot(lower_left.T))
-
-        identity = numpy.eye(n, dtype=complex)
-        for i in numpy.ndindex((n, n)):
-            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
-            self.assertAlmostEqual(0., constraint_matrix_2[i])
-
-
-class AntisymmetricCanonicalFormTest(unittest.TestCase):
-
-    def test_equality(self):
-        """Test that the decomposition is valid."""
-        n = 7
-        rand_mat = numpy.random.randn(2 * n, 2 * n)
-        antisymmetric_matrix = rand_mat - rand_mat.T
-        canonical, orthogonal = antisymmetric_canonical_form(
-                antisymmetric_matrix)
-        result_matrix = orthogonal.dot(antisymmetric_matrix.dot(orthogonal.T))
-        for i in numpy.ndindex(result_matrix.shape):
-            self.assertAlmostEqual(result_matrix[i], canonical[i])
-
-    def test_canonical(self):
-        """Test that the returned canonical matrix has the right form."""
-        n = 7
-        # Obtain a random antisymmetric matrix
-        rand_mat = numpy.random.randn(2 * n, 2 * n)
-        antisymmetric_matrix = rand_mat - rand_mat.T
-        canonical, orthogonal = antisymmetric_canonical_form(
-                antisymmetric_matrix)
-        for i in range(2 * n):
-            for j in range(2 * n):
-                if i < n and j == n + i:
-                    self.assertTrue(canonical[i, j] > -EQ_TOLERANCE)
-                elif i >= n and j == i - n:
-                    self.assertTrue(canonical[i, j] < EQ_TOLERANCE)
-                else:
-                    self.assertAlmostEqual(canonical[i, j], 0.)
-
-        diagonal = canonical[range(n), range(n, 2 * n)]
-        for i in range(n - 1):
-            self.assertTrue(diagonal[i] <= diagonal[i + 1])
 
 
 class GivensMatrixElementsTest(unittest.TestCase):
