@@ -15,7 +15,6 @@ from __future__ import absolute_import
 
 import numpy
 
-from openfermion.config import *
 from openfermion.ops import FermionOperator, QubitOperator
 
 
