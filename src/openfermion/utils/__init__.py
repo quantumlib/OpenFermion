@@ -40,9 +40,9 @@ from ._sparse_tools import (expectation,
 
 from ._trotter_error import error_bound, error_operator
 
-from ._trotter_exp_to_qgates import (trotter_operator_grouping,
-                                     pauli_exp_to_qasm,
-                                     trotterize_exp_qubop_to_qasm)
+from ._trotter_exp_to_qgates import (pauli_exp_to_qasm,
+									 trotterize_exp_qubop_to_qasm,
+									 trotter_operator_grouping)
 
 from ._unitary_cc import (uccsd_convert_amplitude_format,
                           uccsd_operator,

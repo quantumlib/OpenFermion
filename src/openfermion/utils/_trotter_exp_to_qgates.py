@@ -29,17 +29,18 @@ Description:
 """
 
 
-
 def _third_order_trotter_helper(op_list):
-    """Iteratively trotterize the evolution under a QubitOperator according
-        to the scheme: e^(A+B) = e^(7/24 * A) e^(2/3 * B) e^(3/4 * A)
-        e^(-2/3 * B) e^(-1/24 * A) e^(B)
+    """Iteratively find 3rd-order Trotter ordering of a QubitOperator.
+
+    This Trotter ordering is done according to the scheme:
+    e^(A+B) = e^(7/24 * A) e^(2/3 * B) e^(3/4 * A) * e^(-2/3 * B)
+        * e^(-1/24 * A) e^(B)
 
     Note:
         See N. Hatano and M. Suzuki Lect. Notes Phys 679, 37-68 (2005)
 
     Args:
-        op_list: (list of QubitOperator) the terms in the
+        op_list (list of QubitOperator's): the terms in the
                 hamiltonian as a list of QubitOperators
     Returns:
         list of QubitOperators giving the trotterized hamiltonian
@@ -51,7 +52,6 @@ def _third_order_trotter_helper(op_list):
                                 -2.0 / 3.0 * op_list[-1],
                                 -1.0 / 24.0 * op_list[-2],
                                 1.0 * op_list[-1]])
-
 
     for i in reversed(range(len(op_list)-2)):
         temp_ret_val = copy.deepcopy(ret_val)
@@ -70,24 +70,25 @@ def trotter_operator_grouping(hamiltonian,
                               trotter_order=1,
                               term_ordering=None,
                               k_exp=1.0):
-    """Trotter decomposes operators into groups without exponentiating, to be
-    exponentiated later. Operators are still Hermitian at the end of this method
-    but have been multiplied by k_exp
+    """Trotter-decomposes operators into groups without exponentiating.
+
+    Operators are still Hermitian at the end of this method but have been
+        multiplied by k_exp.
 
     Note:
         The default term_ordering is simply the ordered keys of
         the QubitOperators.terms dict.
 
     Args:
-        hamiltonian(QubitOperator): full hamiltonian
-        trotter_number(int): optional number of trotter steps -
+        hamiltonian (QubitOperator): full hamiltonian
+        trotter_number (int): optional number of trotter steps -
             default is 1
-        trotter_order(int): optional order of trotterization as
+        trotter_order (int): optional order of trotterization as
             an integer from 1-3 - default is 1
         term_ordering (list of (tuples of tuples)): optional list
             of QubitOperator terms dictionary keys that specifies
             order of terms when trotterizing
-        k_exp (float, int, or double): optional exponential factor
+        k_exp (float): optional exponential factor
             to all terms when trotterizing
 
     Yields:
@@ -97,21 +98,21 @@ def trotter_operator_grouping(hamiltonian,
         ValueError if order > 3 or order <= 0,
         TypeError for incorrect types
     """
-
     # Check for default arguments and type errors
-    if trotter_order > 3 or trotter_order <= 0:
+    if (trotter_order > 3) or (trotter_order <= 0):
         raise ValueError("Invalid trotter order: " + str(trotter_order))
-    if isinstance(k_exp, int):
-        k_exp = float(k_exp)
     if not isinstance(hamiltonian, QubitOperator):
         raise TypeError("Hamiltonian must be a QubitOperator.")
-    if not hamiltonian.terms:
+    if len(hamiltonian.terms) == 0:
         raise TypeError("Hamiltonian must be a non-empty QubitOperator.")
     if term_ordering is None:
         # To have consistent default behavior, ordering = sorted keys.
         term_ordering = sorted(list(hamiltonian.terms.keys()))
     if len(term_ordering) == 0:
         raise TypeError("term_ordering must None or non-empty list.")
+
+    # Enforce float
+    k_exp = float(k_exp)
 
     ret_val = []
     # First order trotter
@@ -132,8 +133,8 @@ def trotter_operator_grouping(hamiltonian,
             for op in term_ordering[:-1]:
                 yield QubitOperator(op,
                                     (hamiltonian.terms[op]
-                                    * k_exp
-                                    / (2.0 * float(trotter_number))))
+                                     * k_exp
+                                     / (2.0 * float(trotter_number))))
 
             yield QubitOperator(term_ordering[-1],
                                 hamiltonian.terms[term_ordering[-1]]
@@ -161,24 +162,26 @@ def trotter_operator_grouping(hamiltonian,
                 yield returned_op
 
 
-
 def pauli_exp_to_qasm(qubit_operator_list,
                       evolution_time=1.0):
-    """Exponentiate a list of QubitOperators
-    and yield string generators in QASM format
-    using the formula:  exp(evolution_time * op)
+    """Exponentiate a list of QubitOperators to a QASM string generator.
+
+    Exponentiates a list of QubitOperators, and yields string generators in
+        QASM format using the formula:  exp(-1.0j * evolution_time * op).
 
     Args:
         qubit_operator_list (list of QubitOperators): list of single Pauli-term
             QubitOperators to be exponentiated
-        evolution_time (float, int): evolution time of the operators in
+        evolution_time (float): evolution time of the operators in
             the list
 
     Yields:
         string
     """
     for qubit_operator in qubit_operator_list:
-        ret_val = ""
+        # ret_val = ""
+        ret_list = []
+
         for term in qubit_operator.terms:
             term_coeff = qubit_operator.terms[term]
 
@@ -199,8 +202,10 @@ def pauli_exp_to_qasm(qubit_operator_list,
                     string_basis_1.append("H {}".format(qid))    # Hadamard
                     string_basis_2.append("H {}".format(qid))    # Hadamard
                 elif pop == 'Y':
-                    string_basis_1.append("Rx 1.57079632679 {}".format(qid))
-                    string_basis_2.append("Rx -1.57079632679 {}".format(qid))
+                    string_basis_1.append(
+                        "Rx 1.5707963267948966 {}".format(qid))
+                    string_basis_2.append(
+                        "Rx -1.5707963267948966 {}".format(qid))
 
             # Prep for CNOTs
             cnot_pairs = numpy.vstack((qids[:-1], qids[1:]))
@@ -216,27 +221,23 @@ def pauli_exp_to_qasm(qubit_operator_list,
             # Exponentiating each Pauli string requires five parts
 
             # 1. Perform basis rotations
-            ret_val += '\n'.join(string_basis_1)
-            if not len(string_basis_1) == 0:
-                ret_val += '\n'
+            ret_list = ret_list + string_basis_1
 
             # 2. First set CNOTs
-            ret_val += '\n'.join(cnots1)
-            ret_val += '\n'
+            ret_list = ret_list + cnots1
 
             # 3. Rotation (Note kexp & Ntrot)
-            ret_val += "Rz {} {}\n".format(term_coeff*evolution_time, qids[-1])
+            ret_list = ret_list + ["Rz {} {}".format(
+                        term_coeff * evolution_time, qids[-1])]
 
             # 4. Second set of CNOTs
-            ret_val += '\n'.join(cnots2)
-            ret_val += '\n'
+            ret_list = ret_list + cnots2
 
             # 5. Rotate back to Z basis
-            ret_val += '\n'.join(string_basis_2)
-            if not len(string_basis_2) == 0:
-                ret_val += '\n'
-        yield ret_val
+            ret_list = ret_list + string_basis_2
 
+            for gate in ret_list:
+                yield gate
 
 
 def trotterize_exp_qubop_to_qasm(hamiltonian,
@@ -244,15 +245,14 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
                                  trotter_order=1,
                                  term_ordering=None,
                                  k_exp=1.0):
-    """Trotterize a Qubit hamiltonian, exponentiate each trotterized term
-    and write it to a QASM output stream.
+    """Trotterize a Qubit hamiltonian and write it to QASM format.
 
     Assumes input hamiltonian is still hermitian and -1.0j has not yet been
     applied. Therefore, signs of coefficients should reflect this. Returns
-    a generator, which generates
+    a generator which generates a QASM file.
 
     Args:
-        hamiltonian(QubitOperator): hamiltonian
+        hamiltonian (QubitOperator): hamiltonian
         trotter_number (int): optional number of trotter steps (slices) for
             trotterization as an integer - default = 1
         trotter_order: optional order of trotterization as an integer -
@@ -260,7 +260,7 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
         term_ordering (list of (tuples of tuples)): list of tuples
             (QubitOperator terms dictionary keys) that specifies
             order of terms when trotterizing
-        k_exp (int, float, double): optional exponential factor to all
+        k_exp (float): optional exponential factor to all
             terms when trotterizing
 
         Yields:
