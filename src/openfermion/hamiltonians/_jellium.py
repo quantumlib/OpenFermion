@@ -15,6 +15,7 @@ from __future__ import absolute_import
 
 import numpy
 
+from openfermion.config import *
 from openfermion.ops import FermionOperator, QubitOperator
 
 
@@ -140,12 +141,13 @@ def momentum_vector(momentum_indices, grid):
     return 2. * numpy.pi * adjusted_vector / grid.scale
 
 
-def plane_wave_kinetic(grid, spinless=False):
+def plane_wave_kinetic(grid, spinless=False, e_cutoff=None):
     """Return the kinetic energy operator in the plane wave basis.
 
     Args:
         grid (openfermion.utils.Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
+        e_cutoff (float): Energy cutoff.
 
     Returns:
         FermionOperator: The kinetic momentum operator.
@@ -159,6 +161,10 @@ def plane_wave_kinetic(grid, spinless=False):
         momenta = momentum_vector(momenta_indices, grid)
         coefficient = momenta.dot(momenta) / 2.
 
+        # Energy cutoff.
+        if e_cutoff is not None and coefficient > e_cutoff:
+            continue
+
         # Loop over spins.
         for spin in spins:
             orbital = orbital_id(grid, momenta_indices, spin)
@@ -170,12 +176,13 @@ def plane_wave_kinetic(grid, spinless=False):
     return operator
 
 
-def plane_wave_potential(grid, spinless=False):
+def plane_wave_potential(grid, spinless=False, e_cutoff=None):
     """Return the potential operator in the plane wave basis.
 
     Args:
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
+        e_cutoff (float): Energy cutoff.
 
     Returns:
         operator (FermionOperator)
@@ -211,14 +218,19 @@ def plane_wave_potential(grid, spinless=False):
         shifted_omega_indices = shifted_omega_indices_dict[omega_indices]
 
         # Get the momenta vectors.
-        omega_momenta = momentum_vector(omega_indices, grid)
+        momenta = momentum_vector(omega_indices, grid)
+        momenta_squared = momenta.dot(momenta)
 
-        # Skip if omega momentum is zero.
-        if not omega_momenta.any():
+        # Skip if momentum is zero.
+        if momenta_squared == 0:
+            continue
+
+        # Energy cutoff.
+        if e_cutoff is not None and momenta_squared / 2. > e_cutoff:
             continue
 
         # Compute coefficient.
-        coefficient = prefactor / omega_momenta.dot(omega_momenta)
+        coefficient = prefactor / momenta_squared
 
         for grid_indices_a in grid.all_points_indices():
             shifted_indices_d = (
@@ -248,7 +260,7 @@ def plane_wave_potential(grid, spinless=False):
 
 def dual_basis_jellium_model(grid, spinless=False,
                              kinetic=True, potential=True,
-                             include_constant=False):
+                             include_constant=False, e_cutoff=None):
     """Return jellium Hamiltonian in the dual basis of arXiv:1706.00023
 
     Args:
@@ -257,6 +269,7 @@ def dual_basis_jellium_model(grid, spinless=False,
         kinetic (bool): Whether to include kinetic terms.
         potential (bool): Whether to include potential terms.
         include_constant (bool): Whether to include the Madelung constant.
+        e_cutoff (float): Energy cutoff.
 
     Returns:
         operator (FermionOperator)
@@ -296,6 +309,11 @@ def dual_basis_jellium_model(grid, spinless=False,
                 momenta_squared = momenta_squared_dict[momenta_indices]
                 if momenta_squared == 0:
                     continue
+
+                # Energy cutoff.
+                if e_cutoff is not None and momenta_squared / 2. > e_cutoff:
+                    continue
+
                 cos_difference = numpy.cos(momenta.dot(differences))
                 if kinetic:
                     kinetic_coefficient += (
@@ -333,34 +351,38 @@ def dual_basis_jellium_model(grid, spinless=False,
     return operator
 
 
-def dual_basis_kinetic(grid, spinless=False):
+def dual_basis_kinetic(grid, spinless=False, e_cutoff=None):
     """Return the kinetic operator in the dual basis of arXiv:1706.00023.
 
     Args:
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
+        e_cutoff (float): Energy cutoff.
 
     Returns:
         operator (FermionOperator)
     """
-    return dual_basis_jellium_model(grid, spinless, True, False)
+    return dual_basis_jellium_model(grid, spinless, True, False, False,
+                                    e_cutoff)
 
 
-def dual_basis_potential(grid, spinless=False):
+def dual_basis_potential(grid, spinless=False, e_cutoff=None):
     """Return the potential operator in the dual basis of arXiv:1706.00023
 
     Args:
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
+        e_cutoff (float): Energy cutoff.
 
     Returns:
         operator (FermionOperator)
     """
-    return dual_basis_jellium_model(grid, spinless, False, True)
+    return dual_basis_jellium_model(grid, spinless, False, True, False,
+                                    e_cutoff)
 
 
 def jellium_model(grid, spinless=False, plane_wave=True,
-                  include_constant=False):
+                  include_constant=False, e_cutoff=None):
     """Return jellium Hamiltonian as FermionOperator class.
 
     Args:
@@ -369,15 +391,17 @@ def jellium_model(grid, spinless=False, plane_wave=True,
         plane_wave (bool): Whether to return in momentum space (True)
             or position space (False).
         include_constant (bool): Whether to include the Madelung constant.
+        e_cutoff (float): Energy cutoff.
 
     Returns:
         FermionOperator: The Hamiltonian of the model.
     """
     if plane_wave:
-        hamiltonian = plane_wave_kinetic(grid, spinless)
-        hamiltonian += plane_wave_potential(grid, spinless)
+        hamiltonian = plane_wave_kinetic(grid, spinless, e_cutoff)
+        hamiltonian += plane_wave_potential(grid, spinless, e_cutoff)
     else:
-        hamiltonian = dual_basis_jellium_model(grid, spinless)
+        hamiltonian = dual_basis_jellium_model(grid, spinless, True, True,
+                                               False, e_cutoff)
     # Include the Madelung constant if requested.
     if include_constant:
         hamiltonian += FermionOperator.identity() * (2.8372 / grid.scale)
@@ -385,13 +409,14 @@ def jellium_model(grid, spinless=False, plane_wave=True,
 
 
 def jordan_wigner_dual_basis_jellium(grid, spinless=False,
-                                     include_constant=False):
+                                     include_constant=False, e_cutoff=None):
     """Return the jellium Hamiltonian as QubitOperator in the dual basis.
 
     Args:
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
         include_constant (bool): Whether to include the Madelung constant.
+        e_cutoff (float): Energy cutoff.
 
     Returns:
         hamiltonian (QubitOperator)
@@ -418,13 +443,19 @@ def jordan_wigner_dual_basis_jellium(grid, spinless=False,
     z_coefficient = 0.
     for k_indices in grid.all_points_indices():
         momenta = momentum_vectors[k_indices]
-        if momenta.any():
-            momenta_squared = momenta.dot(momenta)
-            identity_coefficient += momenta_squared / 2.
-            identity_coefficient -= (numpy.pi * float(n_orbitals) /
-                                     (momenta_squared * volume))
-            z_coefficient += numpy.pi / (momenta_squared * volume)
-            z_coefficient -= momenta_squared / (4. * float(n_orbitals))
+        momenta_squared = momenta.dot(momenta)
+        if momenta_squared == 0:
+            continue
+
+        # Energy cutoff.
+        if e_cutoff is not None and momenta_squared / 2. > e_cutoff:
+            continue
+
+        identity_coefficient += momenta_squared / 2.
+        identity_coefficient -= (numpy.pi * float(n_orbitals) /
+                                 (momenta_squared * volume))
+        z_coefficient += numpy.pi / (momenta_squared * volume)
+        z_coefficient -= momenta_squared / (4. * float(n_orbitals))
     if spinless:
         identity_coefficient /= 2.
 
@@ -459,6 +490,11 @@ def jordan_wigner_dual_basis_jellium(grid, spinless=False,
                 momenta_squared = momenta_squared_dict[k_indices]
                 if momenta_squared == 0:
                     continue
+
+                # Energy cutoff.
+                if e_cutoff is not None and momenta_squared / 2. > e_cutoff:
+                    continue
+
                 cos_difference = numpy.cos(momenta.dot(difference))
 
                 zpzq_coefficient += (zz_prefactor * cos_difference /
