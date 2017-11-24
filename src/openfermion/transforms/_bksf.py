@@ -89,7 +89,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
         for q in range(n_qubits):
 
             # Handle one-body terms.
-            coefficient = complex(iop[p, q])
+            coefficient = complex(iop[(p, 1), (q, 0)])
             if coefficient and p >= q:
                 qubit_operator += (coefficient *
                                    one_body(edge_matrix_indices, p, q))
@@ -97,7 +97,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
             # Keep looping for the two-body terms.
             for r in range(n_qubits):
                 for s in range(n_qubits):
-                    coefficient = complex(iop[p, q, r, s])
+                    coefficient = complex(iop[(p, 1), (q, 1), (r, 0), (s, 0)])
 
                     # Skip zero terms.
                     if (not coefficient) or (p == q) or (r == s):
@@ -140,14 +140,14 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
         for q in range(n_qubits):
 
             # Handle one-body terms.
-            coefficient = complex(iop[p, q])
+            coefficient = complex(iop[(p, 1), (q, 0)])
             if coefficient and p >= q:
-                edge_matrix[p, q] = bool(complex(iop[p, q]))
+                edge_matrix[p, q] = bool(complex(iop[(p, 1), (q, 0)]))
 
             # Keep looping for the two-body terms.
             for r in range(n_qubits):
                 for s in range(n_qubits):
-                    coefficient2 = complex(iop[p, q, r, s])
+                    coefficient2 = complex(iop[(p, 1), (q, 1), (r, 0), (s, 0)])
 
                     # Skip zero terms.
                     if (not coefficient2) or (p == q) or (r == s):
@@ -165,9 +165,11 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
                     if len(set([p, q, r, s])) == 4:
 
                         if coefficient2 and p >= q:
-                            edge_matrix[p, q] = bool(complex(iop[p, q, r, s]))
+                            edge_matrix[p, q] = bool(complex(
+                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
                             a, b = sorted([r, s])
-                            edge_matrix[b, a] = bool(complex(iop[p, q, r, s]))
+                            edge_matrix[b, a] = bool(complex(
+                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
 
                     # Handle case of three unique indices.
                     elif len(set([p, q, r, s])) == 3:
@@ -175,26 +177,32 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
                         # Identify equal tensor factors.
                         if p == r:
                             a, b = sorted([q, s])
-                            edge_matrix[b, a] = bool(complex(iop[p, q, r, s]))
+                            edge_matrix[b, a] = bool(complex(
+                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
                         elif p == s:
                             a, b = sorted([q, r])
-                            edge_matrix[b, a] = bool(complex(iop[p, q, r, s]))
+                            edge_matrix[b, a] = bool(complex(
+                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
                         elif q == r:
                             a, b = sorted([p, s])
-                            edge_matrix[b, a] = bool(complex(iop[p, q, r, s]))
+                            edge_matrix[b, a] = bool(complex(
+                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
                         elif q == s:
                             a, b = sorted([p, r])
-                            edge_matrix[b, a] = bool(complex(iop[p, q, r, s]))
+                            edge_matrix[b, a] = bool(complex(
+                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
 
                     # Handle case of two unique indices.
                     elif len(set([p, q, r, s])) == 2:
                         if p == s:
                             a, b = sorted([p, q])
-                            edge_matrix[b, a] = bool(complex(iop[p, q, r, s]))
+                            edge_matrix[b, a] = bool(complex(
+                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
 
                         else:
                             a, b = sorted([p, q])
-                            edge_matrix[b, a] = bool(complex(iop[p, q, r, s]))
+                            edge_matrix[b, a] = bool(complex(
+                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
 
     return edge_matrix.transpose()
 

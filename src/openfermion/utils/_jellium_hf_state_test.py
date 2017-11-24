@@ -7,16 +7,15 @@ from scipy.sparse import csr_matrix
 import numpy
 import unittest
 
+from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.transforms import get_sparse_operator
 from openfermion.utils import (expectation, get_ground_state,
-                               Grid, jellium_model)
-from openfermion.utils._plane_wave_hamiltonian import wigner_seitz_length_scale
-from openfermion.utils._sparse_tools import jw_number_restrict_operator
-
-from openfermion.utils._jellium_hf_state import hartree_fock_state_jellium
+                               Grid, hartree_fock_state_jellium,
+                               jw_number_restrict_operator)
 
 
 class JelliumHartreeFockStateTest(unittest.TestCase):
+
     def test_hf_state_energy_close_to_ground_energy_at_high_density(self):
         grid_length = 8
         dimension = 1

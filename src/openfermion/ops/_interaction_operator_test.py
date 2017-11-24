@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests for interaction_operators.py."""
+"""Tests for interaction_operator.py."""
 from __future__ import absolute_import
 
 import numpy
@@ -19,7 +19,7 @@ import unittest
 from openfermion.ops import InteractionOperator
 
 
-class InteractionOperatorsTest(unittest.TestCase):
+class InteractionOperatorTest(unittest.TestCase):
 
     def setUp(self):
         self.n_qubits = 5

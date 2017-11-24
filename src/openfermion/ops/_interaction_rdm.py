@@ -17,7 +17,7 @@ import copy
 import numpy
 
 from openfermion.ops import (FermionOperator,
-                             InteractionTensor,
+                             PolynomialTensor,
                              InteractionOperator,
                              normal_ordered,
                              QubitOperator)
@@ -27,7 +27,7 @@ class InteractionRDMError(Exception):
     pass
 
 
-class InteractionRDM(InteractionTensor):
+class InteractionRDM(PolynomialTensor):
     """Class for storing 1- and 2-body reduced density matrices.
 
     Attributes:
@@ -44,16 +44,10 @@ class InteractionRDM(InteractionTensor):
             two_body_tensor: Expectation values
                 <a^\dagger_p a^\dagger_q a_r a_s>.
         """
-        super(InteractionRDM, self).__init__(None, one_body_tensor,
-                                             two_body_tensor)
-
-    @classmethod
-    def from_spatial_rdm(cls, one_rdm_a, one_rdm_b,
-                         two_rdm_aa, two_rdm_ab, two_rdm_bb):
-        one_rdm, two_rdm = unpack_spatial_rdm(one_rdm_a, one_rdm_b,
-                                              two_rdm_aa, two_rdm_ab,
-                                              two_rdm_bb)
-        return cls(constant, one_rdm, two_rdm)
+        super(InteractionRDM, self).__init__(
+                {(1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor})
+        self.one_body_tensor = self.n_body_tensors[1, 0]
+        self.two_body_tensor = self.n_body_tensors[1, 1, 0, 0]
 
     def expectation(self, operator):
         """Return expectation value of an InteractionRDM with an operator.
@@ -118,6 +112,12 @@ class InteractionRDM(InteractionTensor):
                         expectation += coefficient
                     else:
                         indices = [operator[0] for operator in fermion_term]
+                        if len(indices) == 2:
+                            # One-body term
+                            indices = tuple(zip(indices, (1, 0)))
+                        else:
+                            # Two-body term
+                            indices = tuple(zip(indices, (1, 1, 0, 0)))
                         rdm_element = self[indices]
                         expectation += rdm_element * coefficient
 

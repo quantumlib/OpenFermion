@@ -54,6 +54,7 @@ class FenwickTreeTest(unittest.TestCase):
         self.assertEqual(f.get_node(7).children[0], f.get_node(3))
         self.assertEqual(f.get_node(7).children[1], f.get_node(5))
         self.assertEqual(f.get_node(7).children[2], f.get_node(6))
+        self.assertEqual(len(f.get_children_set(7)), 3)
 
     def test_fenwick_tree_ancestor_children(self):
         """Ancestor children test. Checks get_remainder_set(j) on 8 qubit

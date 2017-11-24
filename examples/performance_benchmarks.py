@@ -14,7 +14,9 @@
 import numpy
 import time
 
-from openfermion.ops import FermionOperator, InteractionOperator, normal_ordered
+from openfermion.ops import (FermionOperator,
+                             InteractionOperator,
+                             normal_ordered)
 from openfermion.transforms import get_fermion_operator, jordan_wigner
 from openfermion.utils import jordan_wigner_sparse
 
@@ -180,29 +182,29 @@ def benchmark_jordan_wigner_sparse(n_qubits):
 # Run benchmarks.
 if __name__ == '__main__':
 
+    # Seed random number generator.
+    numpy.random.seed(8)
+
     # Run InteractionOperator.jordan_wigner_transform() benchmark.
-    if 1:
-        n_qubits = 18
-        print('Starting test on InteractionOperator.jordan_wigner_transform()')
-        runtime = benchmark_molecular_operator_jordan_wigner(n_qubits)
-        print('InteractionOperator.jordan_wigner_transform() ' +
-              'takes {} seconds on {} qubits.'.format(runtime, n_qubits))
+    n_qubits = 18
+    print('Starting test on InteractionOperator.jordan_wigner_transform()')
+    runtime = benchmark_molecular_operator_jordan_wigner(n_qubits)
+    print('InteractionOperator.jordan_wigner_transform() ' +
+          'takes {} seconds on {} qubits.\n'.format(runtime, n_qubits))
 
     # Run benchmark on FermionOperator math and normal-ordering.
-    if 1:
-        n_qubits = 20
-        term_length = 5
-        power = 15
-        print('Starting test on FermionOperator math and normal ordering.')
-        runtime_math, runtime_normal = benchmark_fermion_math_and_normal_order(
-            n_qubits, term_length, power)
-        print('Math took {} seconds. Normal ordering took {} seconds.'.format(
-            runtime_math, runtime_normal))
+    n_qubits = 20
+    term_length = 10
+    power = 15
+    print('Starting test on FermionOperator math and normal ordering.')
+    runtime_math, runtime_normal = benchmark_fermion_math_and_normal_order(
+        n_qubits, term_length, power)
+    print('Math took {} seconds. Normal ordering took {} seconds.\n'.format(
+        runtime_math, runtime_normal))
 
     # Run FermionOperator.jordan_wigner_sparse() benchmark.
-    if 1:
-        n_qubits = 10
-        print('Starting test on FermionOperator.jordan_wigner_sparse().')
-        runtime = benchmark_jordan_wigner_sparse(n_qubits)
-        print('Construction of SparseOperator took {} seconds.'.format(
-            runtime))
+    n_qubits = 10
+    print('Starting test on FermionOperator.jordan_wigner_sparse().')
+    runtime = benchmark_jordan_wigner_sparse(n_qubits)
+    print('Construction of SparseOperator took {} seconds.'.format(
+        runtime))

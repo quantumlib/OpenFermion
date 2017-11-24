@@ -19,12 +19,15 @@ import unittest
 from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix
 
+from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.ops import FermionOperator, normal_ordered, number_operator
-from openfermion.transforms import get_sparse_operator, jordan_wigner
-from openfermion.utils import (fourier_transform, Grid, jellium_model,
-                               wigner_seitz_length_scale)
+from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
+                                    jordan_wigner)
+from openfermion.utils import fourier_transform, Grid
 from openfermion.utils._jellium_hf_state import (
     lowest_single_particle_energy_states)
+from openfermion.utils._slater_determinants_test import (
+        random_quadratic_hamiltonian)
 from openfermion.utils._sparse_tools import *
 
 
@@ -162,7 +165,7 @@ class JordanWignerSparseTest(unittest.TestCase):
             expected.A))
 
     def test_jw_sparse_1annihilate(self):
-        expected = csc_matrix(([1, 1], ([0, 2], [1, 3])), shape=(4, 4))
+        expected = csc_matrix(([1, -1], ([0, 2], [1, 3])), shape=(4, 4))
         self.assertTrue(numpy.allclose(
             jordan_wigner_sparse(FermionOperator('1')).A,
             expected.A))
@@ -201,6 +204,203 @@ class JordanWignerSparseTest(unittest.TestCase):
             expected.A))
 
 
+class JWSlaterDeterminantTest(unittest.TestCase):
+
+    def test_jw_hartree_fock_state(self):
+        hartree_fock_state = jw_hartree_fock_state(3, 7)
+        dense_array = hartree_fock_state.toarray()
+        self.assertAlmostEqual(dense_array[112, 0], 1.)
+        self.assertAlmostEqual(sum(dense_array), 1.)
+
+
+class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
+    def test_jw_get_ground_states_by_particle_number_herm_conserving(self):
+        # Initialize a particle-number-conserving Hermitian operator
+        ferm_op = FermionOperator('0^ 1') + FermionOperator('1^ 0') + \
+            FermionOperator('1^ 2') + FermionOperator('2^ 1') + \
+            FermionOperator('1^ 3', -.4) + FermionOperator('3^ 1', -.4)
+        jw_hamiltonian = jordan_wigner(ferm_op)
+        sparse_operator = get_sparse_operator(jw_hamiltonian)
+        n_qubits = 4
+
+        # Test each possible particle number
+        for particle_number in range(n_qubits):
+            # Get the ground energy and ground states at this particle number
+            energy, states = jw_get_ground_states_by_particle_number(
+                    sparse_operator,
+                    particle_number)
+            # For each vector returned, make sure that it is indeed an
+            # eigenvector of the original operator with the returned eigenvalue
+            for vec in states:
+                op_vec_product = sparse_operator.dot(vec)
+                difference = op_vec_product - energy * vec
+                if difference.nnz:
+                    discrepancy = max(map(abs, difference.data))
+                    self.assertAlmostEqual(0, discrepancy)
+        return
+
+    def test_jw_get_ground_states_by_particle_number_herm_nonconserving(self):
+        # Initialize a non-particle-number-conserving Hermitian operator
+        ferm_op = FermionOperator('0^ 1') + FermionOperator('1^ 0') + \
+            FermionOperator('1^ 2^') + FermionOperator('2 1')
+        jw_hamiltonian = jordan_wigner(ferm_op)
+        sparse_operator = get_sparse_operator(jw_hamiltonian)
+
+        with self.assertRaises(ValueError):
+            jw_get_ground_states_by_particle_number(sparse_operator, 0)
+        return
+
+    def test_get_ground_states_by_particle_number_nonhermitian(self):
+        # Initialize a non-Hermitian operator
+        ferm_op = FermionOperator('0^ 1') + FermionOperator('2^ 1')
+        jw_hamiltonian = jordan_wigner(ferm_op)
+        sparse_operator = get_sparse_operator(jw_hamiltonian)
+
+        with self.assertRaises(ValueError):
+            jw_get_ground_states_by_particle_number(sparse_operator, 0)
+        return
+
+
+class JWGetGaussianStateTest(unittest.TestCase):
+
+    def setUp(self):
+        self.n_qubits_range = range(2, 10)
+
+    def test_ground_state_particle_conserving(self):
+        """Test getting the ground state of a Hamiltonian that conserves
+        particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, True)
+
+            # Compute the true ground state
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            ground_energy, ground_state = get_ground_state(sparse_operator)
+
+            # Compute the ground state using the circuit
+            circuit_energy, circuit_state = jw_get_gaussian_state(
+                    quadratic_hamiltonian)
+
+            # Check that the energies match
+            self.assertAlmostEqual(ground_energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is a ground state
+            difference = (sparse_operator * circuit_state -
+                          ground_energy * circuit_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_ground_state_particle_nonconserving(self):
+        """Test getting the ground state of a Hamiltonian that does not
+        conserve particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a non-particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, False)
+
+            # Compute the true ground state
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            ground_energy, ground_state = get_ground_state(sparse_operator)
+
+            # Compute the ground state using the circuit
+            circuit_energy, circuit_state = (
+                    jw_get_gaussian_state(
+                        quadratic_hamiltonian))
+
+            # Check that the energies match
+            self.assertAlmostEqual(ground_energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is a ground state
+            difference = (sparse_operator * circuit_state -
+                          ground_energy * circuit_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_excited_state_particle_conserving(self):
+        """Test getting an excited state of a Hamiltonian that conserves
+        particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, True)
+
+            # Pick some orbitals to occupy
+            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
+            occupied_orbitals = numpy.random.choice(
+                    range(n_qubits), num_occupied_orbitals, False)
+
+            # Compute the Gaussian state
+            circuit_energy, gaussian_state = jw_get_gaussian_state(
+                    quadratic_hamiltonian, occupied_orbitals)
+
+            # Compute the true energy
+            orbital_energies, constant = (
+                    quadratic_hamiltonian.orbital_energies())
+            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
+
+            # Check that the energies match
+            self.assertAlmostEqual(energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is an eigenstate
+            # with the correct eigenvalue
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            difference = (sparse_operator * gaussian_state -
+                          energy * gaussian_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_excited_state_particle_nonconserving(self):
+        """Test getting an excited state of a Hamiltonian that conserves
+        particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a non-particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                    n_qubits, False)
+
+            # Pick some orbitals to occupy
+            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
+            occupied_orbitals = numpy.random.choice(
+                    range(n_qubits), num_occupied_orbitals, False)
+
+            # Compute the Gaussian state
+            circuit_energy, gaussian_state = jw_get_gaussian_state(
+                    quadratic_hamiltonian, occupied_orbitals)
+
+            # Compute the true energy
+            orbital_energies, constant = (
+                    quadratic_hamiltonian.orbital_energies())
+            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
+
+            # Check that the energies match
+            self.assertAlmostEqual(energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is an eigenstate
+            # with the correct eigenvalue
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            difference = (sparse_operator * gaussian_state -
+                          energy * gaussian_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_bad_input(self):
+        """Test bad input."""
+        with self.assertRaises(ValueError):
+            energy, state = jw_get_gaussian_state('a')
+
+
 class GroundStateTest(unittest.TestCase):
     def test_get_ground_state_hermitian(self):
         ground = get_ground_state(get_sparse_operator(
@@ -211,7 +411,8 @@ class GroundStateTest(unittest.TestCase):
 
         self.assertAlmostEqual(ground[0], -2)
         self.assertAlmostEqual(
-            numpy.absolute(expected_state.T.dot(ground[1].A))[0, 0], 1.0)
+            numpy.absolute(
+                expected_state.T.conj().dot(ground[1].A))[0, 0], 1.0)
 
     def test_get_ground_state_nonhermitian(self):
         with self.assertRaises(ValueError):

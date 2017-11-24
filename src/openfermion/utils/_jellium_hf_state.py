@@ -13,11 +13,11 @@
 """This module constructs the uniform electron gas' Hartree-Fock state."""
 from __future__ import absolute_import
 
+from openfermion.hamiltonians import jellium_model, plane_wave_kinetic
 from openfermion.ops import FermionOperator, normal_ordered
-from openfermion.utils import (count_qubits, jellium_model,
-                               inverse_fourier_transform, plane_wave_kinetic)
+from openfermion.utils import count_qubits, inverse_fourier_transform
 
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, dok_matrix
 
 import numpy
 
@@ -94,9 +94,8 @@ def hartree_fock_state_jellium(grid, n_electrons, spinless=True,
             dual_basis_hf_creation_operator)
 
         # Initialize the HF state as a sparse matrix.
-        hartree_fock_state = csr_matrix(
-            ([], ([], [])), shape=(2 ** count_qubits(hamiltonian), 1),
-            dtype=complex)
+        hartree_fock_state = dok_matrix(
+            (2 ** count_qubits(hamiltonian), 1), dtype=complex)
 
         # Populate the elements of the HF state in the dual basis.
         for term in dual_basis_hf_creation.terms:
@@ -104,5 +103,6 @@ def hartree_fock_state_jellium(grid, n_electrons, spinless=True,
             for operator in term:
                 index += 2 ** operator[0]
             hartree_fock_state[index, 0] = dual_basis_hf_creation.terms[term]
+        hartree_fock_state = hartree_fock_state.tocsr()
 
     return hartree_fock_state

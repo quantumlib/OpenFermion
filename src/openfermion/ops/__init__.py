@@ -15,6 +15,9 @@ from ._fermion_operator import (FermionOperator,
                                 normal_ordered,
                                 number_operator)
 from ._qubit_operator import QubitOperator
-from ._interaction_tensor import InteractionTensor
+from ._polynomial_tensor import (PolynomialTensor,
+                                 one_body_basis_change,
+                                 two_body_basis_change)
 from ._interaction_operator import InteractionOperator
 from ._interaction_rdm import InteractionRDM
+from ._quadratic_hamiltonian import QuadraticHamiltonian

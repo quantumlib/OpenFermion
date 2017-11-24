@@ -22,17 +22,21 @@ import numpy.linalg
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
+import warnings
 
 from openfermion.config import *
 from openfermion.ops import (FermionOperator, hermitian_conjugated,
-                             normal_ordered, QubitOperator)
-from openfermion.utils import fourier_transform, Grid
-from openfermion.utils._jellium import (momentum_vector, position_vector,
-                                        grid_indices)
+                             normal_ordered, number_operator,
+                             QuadraticHamiltonian, QubitOperator)
+from openfermion.utils import (commutator, fourier_transform,
+                               gaussian_state_preparation_circuit, Grid)
+from openfermion.hamiltonians._jellium import (momentum_vector,
+                                               position_vector,
+                                               grid_indices)
 
 
 # Make global definitions.
-identity_csc = scipy.sparse.identity(2, format='csr', dtype=complex)
+identity_csc = scipy.sparse.identity(2, format='csc', dtype=complex)
 pauli_x_csc = scipy.sparse.csc_matrix([[0., 1.], [1., 0.]], dtype=complex)
 pauli_y_csc = scipy.sparse.csc_matrix([[0., -1.j], [1.j, 0.]], dtype=complex)
 pauli_z_csc = scipy.sparse.csc_matrix([[1., 0.], [0., -1.]], dtype=complex)
@@ -55,6 +59,10 @@ def kronecker_operators(*args):
 def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
     """Make a matrix representation of a fermion ladder operator.
 
+    Operators are mapped as follows:
+    a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
+    a_j -> Z_0 .. Z_{j-1} (X_j + iY_j) / 2
+
     Args:
         index: This is a nonzero integer. The integer indicates the tensor
             factor and the sign indicates raising or lowering.
@@ -63,18 +71,22 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
     Returns:
         The corresponding SparseOperator.
     """
+    parities = tensor_factor * [pauli_z_csc]
     identities = [scipy.sparse.identity(
-        2 ** tensor_factor, dtype=complex, format='csc')]
-    parities = (n_qubits - tensor_factor - 1) * [pauli_z_csc]
+        2 ** (n_qubits - tensor_factor - 1), dtype=complex, format='csc')]
     if ladder_type:
-        operator = kronecker_operators(identities + [q_raise_csc] + parities)
+        operator = kronecker_operators(parities + [q_raise_csc] + identities)
     else:
-        operator = kronecker_operators(identities + [q_lower_csc] + parities)
+        operator = kronecker_operators(parities + [q_lower_csc] + identities)
     return operator
 
 
 def jordan_wigner_sparse(fermion_operator, n_qubits=None):
     """Initialize a SparseOperator from a FermionOperator.
+
+    Operators are mapped as follows:
+    a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
+    a_j -> Z_0 .. Z_{j-1} (X_j + iY_j) / 2
 
     Args:
         fermion_operator(FermionOperator): instance of the FermionOperator
@@ -194,16 +206,29 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     return sparse_operator
 
 
+def jw_slater_determinant(occupied_orbitals, n_orbitals):
+    """Function to produce a Slater determinant in JW representation.
+
+    Args:
+        occupied_orbitals(list): A list of integers representing the indices
+            of the occupied orbitals in the desired Slater determinant
+        n_orbitals(int): The total number of orbitals
+
+    Returns:
+        slater_determinant(sparse): The JW-encoded Slater determinant as a
+            sparse matrix
+    """
+    one_index = sum([2 ** (n_orbitals - 1 - i) for i in occupied_orbitals])
+    slater_determinant = scipy.sparse.csc_matrix(([1.], ([one_index], [0])),
+                                                 shape=(2 ** n_orbitals, 1),
+                                                 dtype=float)
+    return slater_determinant
+
+
 def jw_hartree_fock_state(n_electrons, n_orbitals):
-    """Function to product Hartree-Fock state in JW representation."""
-    occupied = scipy.sparse.csr_matrix([[0], [1]], dtype=float)
-    psi = 1.
-    unoccupied = scipy.sparse.csr_matrix([[1], [0]], dtype=float)
-    for orbital in range(n_electrons):
-        psi = scipy.sparse.kron(psi, occupied, 'csr')
-    for orbital in range(n_orbitals - n_electrons):
-        psi = scipy.sparse.kron(psi, unoccupied, 'csr')
-    return psi
+    """Function to produce Hartree-Fock state in JW representation."""
+    hartree_fock_state = jw_slater_determinant(range(n_electrons), n_orbitals)
+    return hartree_fock_state
 
 
 def jw_number_indices(n_electrons, n_qubits):
@@ -250,6 +275,197 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
     return operator[numpy.ix_(select_indices, select_indices)]
 
 
+def jw_get_ground_states_by_particle_number(sparse_operator, particle_number,
+                                            sparse=True, num_eigs=3):
+    """For a Jordan-Wigner encoded Hermitian operator, compute the lowest
+    eigenvalue and eigenstates at a particular particle number. The operator
+    must conserve particle number.
+
+    Args:
+        sparse_operator(sparse): A Jordan-Wigner encoded sparse operator.
+        particle_number(int): The particle number at which to compute
+            ground states.
+        sparse(boolean, optional): Whether to use sparse eigensolver.
+            Default is True.
+        num_eigs(int, optional): The number of eigenvalues to request from the
+            sparse eigensolver. Needs to be at least as large as the degeneracy
+            of the ground energy in order to obtain all ground states.
+            Only used if `sparse=True`. Default is 3.
+
+    Returns:
+        ground_energy(float): The lowest eigenvalue of sparse_operator within
+            the eigenspace of the number operator corresponding to
+            particle_number.
+
+        ground_states(list[ndarray]): A list of the corresponding eigenstates.
+
+    Warning:
+        The running time of this method is exponential in the number of qubits.
+    """
+    # Check if operator is Hermitian
+    if not is_hermitian(sparse_operator):
+        raise ValueError('sparse_operator must be Hermitian.')
+
+    n_qubits = int(numpy.log2(sparse_operator.shape[0]))
+
+    # Check if operator conserves particle number
+    sparse_num_op = jordan_wigner_sparse(number_operator(n_qubits))
+    com = commutator(sparse_num_op, sparse_operator)
+    if com.nnz:
+        maxval = max(map(abs, com.data))
+        if maxval > EQ_TOLERANCE:
+            raise ValueError('sparse_operator must conserve particle number.')
+
+    # Get the operator restricted to the subspace of the desired
+    # particle number
+    restricted_operator = jw_number_restrict_operator(sparse_operator,
+                                                      particle_number,
+                                                      n_qubits)
+
+    if sparse and num_eigs >= restricted_operator.shape[0] - 1:
+        # Restricted operator too small for sparse eigensolver
+        sparse = False
+
+    # Compute eigenvalues and eigenvectors
+    if sparse:
+        eigvals, eigvecs = scipy.sparse.linalg.eigsh(restricted_operator,
+                                                     k=num_eigs,
+                                                     which='SA')
+        if abs(max(eigvals) - min(eigvals)) < EQ_TOLERANCE:
+            warnings.warn('The lowest {} eigenvalues are degenerate. '
+                          'There may be more ground states; increase '
+                          'num_eigs or set sparse=False to get '
+                          'them.'.format(num_eigs),
+                          RuntimeWarning)
+    else:
+        dense_restricted_operator = restricted_operator.toarray()
+        eigvals, eigvecs = numpy.linalg.eigh(dense_restricted_operator)
+
+    # Get the ground energy
+    if sparse:
+        ground_energy = sorted(eigvals)[0]
+    else:
+        # No need to sort in the case of dense eigenvalue computation
+        ground_energy = eigvals[0]
+
+    # Get the indices of eigenvectors corresponding to the ground energy
+    ground_state_indices = numpy.where(abs(eigvals - ground_energy) <
+                                       EQ_TOLERANCE)
+
+    ground_states = list()
+
+    for i in ground_state_indices[0]:
+        restricted_ground_state = eigvecs[:, i]
+        # Expand this ground state to the whole vector space
+        number_indices = jw_number_indices(particle_number, n_qubits)
+        expanded_ground_state = scipy.sparse.csc_matrix(
+                (restricted_ground_state.flatten(),
+                 (number_indices, [0] * len(number_indices))),
+                shape=(2 ** n_qubits, 1))
+        # Add the expanded ground state to the list
+        ground_states.append(expanded_ground_state)
+
+    return ground_energy, ground_states
+
+
+def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
+    """Compute an eigenvalue and eigenstate of a quadratic Hamiltonian.
+
+    Eigenstates of a quadratic Hamiltonian are also known as fermionic
+    Gaussian states.
+
+    Args:
+        quadratic_hamiltonian(QuadraticHamiltonian):
+            The Hamiltonian whose eigenstate is desired.
+        occupied_orbitals(list):
+            A list of integers representing the indices of the occupied
+            orbitals in the desired Gaussian state. If this is None
+            (the default), then it is assumed that the ground state is
+            desired, i.e., the orbitals with negative energies are filled.
+
+    Returns
+    -------
+        energy (float):
+            The eigenvalue.
+        state (sparse):
+            The eigenstate in scipy.sparse csc format.
+    """
+    if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
+        raise ValueError('Input must be an instance of QuadraticHamiltonian.')
+
+    n_qubits = quadratic_hamiltonian.n_qubits
+
+    # Compute the energy
+    orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+    if occupied_orbitals is None:
+        # The ground energy is desired
+        if quadratic_hamiltonian.conserves_particle_number:
+            num_negative_energies = numpy.count_nonzero(
+                    orbital_energies < -EQ_TOLERANCE)
+            occupied_orbitals = range(num_negative_energies)
+        else:
+            occupied_orbitals = []
+    energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
+
+    # Obtain the circuit that prepares the Gaussian state
+    circuit_description, start_orbitals = gaussian_state_preparation_circuit(
+            quadratic_hamiltonian, occupied_orbitals)
+
+    # Initialize the starting state
+    state = jw_slater_determinant(start_orbitals, n_qubits)
+
+    # Apply the circuit
+    particle_hole_transformation = (
+            jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+    for parallel_ops in circuit_description:
+        for op in parallel_ops:
+            if op == 'pht':
+                state = particle_hole_transformation.dot(state)
+            else:
+                i, j, theta, phi = op
+                state = jw_sparse_givens_rotation(
+                            i, j, theta, phi, n_qubits).dot(state)
+
+    return energy, state
+
+
+def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
+    """Return the matrix (acting on a full wavefunction) that performs a
+    Givens rotation of modes i and j in the Jordan-Wigner encoding."""
+    if j != i + 1:
+        raise ValueError('Only adjacent modes can be rotated.')
+    if j > n_qubits - 1:
+        raise ValueError('Too few qubits requested.')
+
+    cosine = numpy.cos(theta)
+    sine = numpy.sin(theta)
+    phase = numpy.exp(1.j * phi)
+
+    # Create the two-qubit rotation matrix
+    rotation_matrix = scipy.sparse.csc_matrix(
+            ([1., phase * cosine, -phase * sine, sine, cosine, phase],
+             ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
+            shape=(4, 4))
+
+    # Initialize identity operators
+    left_eye = scipy.sparse.eye(2 ** i, format='csc')
+    right_eye = scipy.sparse.eye(2 ** (n_qubits - 1 - j), format='csc')
+
+    # Construct the matrix and return
+    givens_matrix = kronecker_operators([left_eye, rotation_matrix, right_eye])
+
+    return givens_matrix
+
+
+def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
+    """Return the matrix (acting on a full wavefunction) that performs a
+    particle-hole transformation on the last mode in the Jordan-Wigner
+    encoding.
+    """
+    left_eye = scipy.sparse.eye(2 ** (n_qubits - 1), format='csc')
+    return kronecker_operators([left_eye, pauli_matrix_map['X']])
+
+
 def get_density_matrix(states, probabilities):
     n_qubits = states[0].shape[0]
     density_matrix = scipy.sparse.csc_matrix(
@@ -272,9 +488,12 @@ def is_hermitian(sparse_operator):
 def get_ground_state(sparse_operator):
     """Compute lowest eigenvalue and eigenstate.
 
-    Returns:
-        eigenvalue: The lowest eigenvalue, a float.
-        eigenstate: The lowest eigenstate in scipy.sparse csc format.
+    Returns
+    -------
+        eigenvalue:
+            The lowest eigenvalue, a float.
+        eigenstate:
+            The lowest eigenstate in scipy.sparse csc format.
     """
     if not is_hermitian(sparse_operator):
         raise ValueError('sparse_operator must be Hermitian.')
@@ -282,9 +501,12 @@ def get_ground_state(sparse_operator):
     values, vectors = scipy.sparse.linalg.eigsh(
         sparse_operator, 2, which='SA', maxiter=1e7)
 
-    eigenstate = scipy.sparse.csc_matrix(vectors[:, 0])
+    order = numpy.argsort(values)
+    values = values[order]
+    vectors = vectors[:, order]
     eigenvalue = values[0]
-    return eigenvalue, eigenstate.getH()
+    eigenstate = scipy.sparse.csc_matrix(vectors[:, 0])
+    return eigenvalue, eigenstate.T
 
 
 def sparse_eigenspectrum(sparse_operator):
@@ -471,23 +693,35 @@ def expectation_two_body_db_operator_computational_basis_state(
     """
     expectation_value = 0.0
 
-    r_a = position_vector(grid_indices(dual_basis_action[0][0],
-                                       grid, spinless), grid)
-    r_b = position_vector(grid_indices(dual_basis_action[1][0],
-                                       grid, spinless), grid)
-    r_c = position_vector(grid_indices(dual_basis_action[2][0],
-                                       grid, spinless), grid)
-    r_d = position_vector(grid_indices(dual_basis_action[3][0],
-                                       grid, spinless), grid)
+    r = {}
+    for i in range(4):
+        r[i] = position_vector(grid_indices(dual_basis_action[i][0], grid,
+                                            spinless), grid)
+
+    rr = {}
+    k_map = {}
+    for i in range(2):
+        rr[i] = {}
+        k_map[i] = {}
+        for j in range(2, 4):
+            rr[i][j] = r[i] - r[j]
+            k_map[i][j] = {}
+
+    # Pre-computations.
+    for o in plane_wave_occ_orbitals:
+        k = momentum_vector(grid_indices(o, grid, spinless), grid)
+        for i in range(2):
+            for j in range(2, 4):
+                k_map[i][j][o] = k.dot(rr[i][j])
 
     for orbital1 in plane_wave_occ_orbitals:
-        k_1 = momentum_vector(grid_indices(orbital1,
-                                           grid, spinless), grid)
+        k1ac = k_map[0][2][orbital1]
+        k1ad = k_map[0][3][orbital1]
 
         for orbital2 in plane_wave_occ_orbitals:
             if orbital1 != orbital2:
-                k_2 = momentum_vector(grid_indices(orbital2,
-                                                   grid, spinless), grid)
+                k2bc = k_map[1][2][orbital2]
+                k2bd = k_map[1][3][orbital2]
 
                 # The Fourier transform is spin-conserving. This means that
                 # the parity of the orbitals involved in the transition must
@@ -497,8 +731,8 @@ def expectation_two_body_db_operator_computational_basis_state(
                          dual_basis_action[3][0] % 2 == orbital1 % 2) and
                         (dual_basis_action[1][0] % 2 ==
                          dual_basis_action[2][0] % 2 == orbital2 % 2)):
-                    value = numpy.exp(-1j * (
-                        k_1.dot(r_a - r_d) + k_2.dot(r_b - r_c)))
+                    value = numpy.exp(-1j * (k1ad + k2bc))
+
                     # Add because it came from two anti-commutations.
                     expectation_value += value
 
@@ -510,8 +744,8 @@ def expectation_two_body_db_operator_computational_basis_state(
                          dual_basis_action[2][0] % 2 == orbital1 % 2) and
                         (dual_basis_action[1][0] % 2 ==
                          dual_basis_action[3][0] % 2 == orbital2 % 2)):
-                    value = numpy.exp(-1j * (
-                        k_1.dot(r_a - r_c) + k_2.dot(r_b - r_d)))
+                    value = numpy.exp(-1j * (k1ac + k2bd))
+
                     # Subtract because it came from a single anti-commutation.
                     expectation_value -= value
 
@@ -535,32 +769,43 @@ def expectation_three_body_db_operator_computational_basis_state(
     """
     expectation_value = 0.0
 
-    r_a = position_vector(grid_indices(dual_basis_action[0][0],
-                                       grid, spinless), grid)
-    r_b = position_vector(grid_indices(dual_basis_action[1][0],
-                                       grid, spinless), grid)
-    r_c = position_vector(grid_indices(dual_basis_action[2][0],
-                                       grid, spinless), grid)
-    r_d = position_vector(grid_indices(dual_basis_action[3][0],
-                                       grid, spinless), grid)
-    r_e = position_vector(grid_indices(dual_basis_action[4][0],
-                                       grid, spinless), grid)
-    r_f = position_vector(grid_indices(dual_basis_action[5][0],
-                                       grid, spinless), grid)
+    r = {}
+    for i in range(6):
+        r[i] = position_vector(grid_indices(dual_basis_action[i][0], grid,
+                                            spinless), grid)
+
+    rr = {}
+    k_map = {}
+    for i in range(3):
+        rr[i] = {}
+        k_map[i] = {}
+        for j in range(3, 6):
+            rr[i][j] = r[i] - r[j]
+            k_map[i][j] = {}
+
+    # Pre-computations.
+    for o in plane_wave_occ_orbitals:
+        k = momentum_vector(grid_indices(o, grid, spinless), grid)
+        for i in range(3):
+            for j in range(3, 6):
+                k_map[i][j][o] = k.dot(rr[i][j])
 
     for orbital1 in plane_wave_occ_orbitals:
-        k_1 = momentum_vector(grid_indices(orbital1,
-                                           grid, spinless), grid)
+        k1ad = k_map[0][3][orbital1]
+        k1ae = k_map[0][4][orbital1]
+        k1af = k_map[0][5][orbital1]
 
         for orbital2 in plane_wave_occ_orbitals:
             if orbital1 != orbital2:
-                k_2 = momentum_vector(grid_indices(orbital2,
-                                                   grid, spinless), grid)
+                k2bd = k_map[1][3][orbital2]
+                k2be = k_map[1][4][orbital2]
+                k2bf = k_map[1][5][orbital2]
 
                 for orbital3 in plane_wave_occ_orbitals:
                     if orbital1 != orbital3 and orbital2 != orbital3:
-                        k_3 = momentum_vector(
-                            grid_indices(orbital3, grid, spinless), grid)
+                        k3cd = k_map[2][3][orbital3]
+                        k3ce = k_map[2][4][orbital3]
+                        k3cf = k_map[2][5][orbital3]
 
                         # Handle \delta_{ad} \delta_{bf} \delta_{ce} after FT.
                         # The Fourier transform is spin-conserving.
@@ -575,8 +820,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[4][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value += numpy.exp(-1j * (
-                                k_1.dot(r_a - r_d) + k_2.dot(r_b - r_f) +
-                                k_3.dot(r_c - r_e)))
+                                k1ad + k2bf + k3ce))
 
                         # Handle -\delta_{ad} \delta_{be} \delta_{cf} after FT.
                         # The Fourier transform is spin-conserving.
@@ -591,8 +835,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[5][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value -= numpy.exp(-1j * (
-                                k_1.dot(r_a - r_d) + k_2.dot(r_b - r_e) +
-                                k_3.dot(r_c - r_f)))
+                                k1ad + k2be + k3cf))
 
                         # Handle -\delta_{ae} \delta_{bf} \delta_{cd} after FT.
                         # The Fourier transform is spin-conserving.
@@ -607,8 +850,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[3][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value -= numpy.exp(-1j * (
-                                k_1.dot(r_a - r_e) + k_2.dot(r_b - r_f) +
-                                k_3.dot(r_c - r_d)))
+                                k1ae + k2bf + k3cd))
 
                         # Handle \delta_{ae} \delta_{bd} \delta_{cf} after FT.
                         # The Fourier transform is spin-conserving.
@@ -623,8 +865,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[5][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value += numpy.exp(-1j * (
-                                k_1.dot(r_a - r_e) + k_2.dot(r_b - r_d) +
-                                k_3.dot(r_c - r_f)))
+                                k1ae + k2bd + k3cf))
 
                         # Handle \delta_{af} \delta_{be} \delta_{cd} after FT.
                         # The Fourier transform is spin-conserving.
@@ -639,8 +880,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[3][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value += numpy.exp(-1j * (
-                                k_1.dot(r_a - r_f) + k_2.dot(r_b - r_e) +
-                                k_3.dot(r_c - r_d)))
+                                k1af + k2be + k3cd))
 
                         # Handle -\delta_{af} \delta_{bd} \delta_{ce} after FT.
                         # The Fourier transform is spin-conserving.
@@ -655,8 +895,7 @@ def expectation_three_body_db_operator_computational_basis_state(
                                  dual_basis_action[4][0] % 2 ==
                                  orbital3 % 2)):
                             expectation_value -= numpy.exp(-1j * (
-                                k_1.dot(r_a - r_f) + k_2.dot(r_b - r_d) +
-                                k_3.dot(r_c - r_e)))
+                                k1af + k2bd + k3ce))
 
     return expectation_value
 
