@@ -12,8 +12,10 @@
 """Tests for _trotter_exp_to_qgates.py"""
 
 import unittest
-from _trotter_exp_to_qgates import *
-from _trotter_exp_to_qgates import _third_order_trotter_helper
+#from _trotter_exp_to_qgates import *
+#from _trotter_exp_to_qgates import _third_order_trotter_helper
+from openfermion.utils._trotter_exp_to_qgates import *
+from openfermion.utils._trotter_exp_to_qgates import _third_order_trotter_helper
 from openfermion.utils import count_qubits
 
 
