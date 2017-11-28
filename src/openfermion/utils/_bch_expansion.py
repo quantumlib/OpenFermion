@@ -16,7 +16,7 @@ import itertools
 import numpy as np
 from scipy.misc import comb, factorial
 
-# from openfermion.utils import commutator
+from openfermion.utils import commutator
 
 def bch_expand(x, y, order):
     """Compute log[e^x e^y] using the Baker-Campbell-Hausdorff formula
