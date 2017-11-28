@@ -36,12 +36,12 @@ def bch_expand(x, y, order):
     """
 
     max_order = 11
+    if (not isinstance(order, int)) or order < 0:
+        raise ValueError('Invalid order parameter.')
     if order > max_order:
         raise ValueError('Order exceeds maximum order supported.')
     if type(x) != type(y):
         raise ValueError('Operator x is not same type as operator y.')
-    elif (not isinstance(order, int)) or order < 0:
-        raise ValueError('Invalid order parameter.')
 
     z = None
     terms, coeff = generate_nested_commutator(order)
