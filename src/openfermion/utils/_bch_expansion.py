@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Module to efficiently compute the Baker–Campbell–Hausdorff formula."""
+"""Module to efficiently compute the Baker-Campbell-Hausdorff formula."""
 
 import itertools
 import numpy as np

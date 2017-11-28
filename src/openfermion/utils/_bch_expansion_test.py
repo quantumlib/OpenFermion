@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from __future__ import absolute_import
 import unittest
 from numpy.random import rand, seed
 from numpy.linalg import norm
@@ -35,10 +36,6 @@ def bch_expand_baseline(x, y, order):
     """
     # Initialize.
     max_order = 4
-    if type(x) != type(y):
-        raise ValueError('Operator x is not same type as operator y.')
-    elif (not isinstance(order, int)) or order < 0:
-        raise ValueError('Invalid order parameter.')
 
     # Zeroth order.
     z = x + y
@@ -71,11 +68,7 @@ def bch_expand_baseline(x, y, order):
         z += commutator(
             x, commutator(y, commutator(x, commutator(y, x)))) / 120.
 
-    # Return.
-    if order > max_order:
-        raise ValueError('Order exceeds maximum order supported.')
-    else:
-        return z
+    return z
 
 class BCHTest(unittest.TestCase):
 
