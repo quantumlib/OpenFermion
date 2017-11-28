@@ -105,11 +105,11 @@ def compute_coeff(split_bin_str):
     return c/N
 
 def dfs_root(split_bin_str, n, l):
-    cn = 0
+    class context:
+        cn = 0
     def dfs(split_bin_str, n, l, sol=[], cur_sum=0):
         ''' Partition an integer value of n into l bins each with min 1
         '''
-        nonlocal cn
         cur_idx = len(sol)
         if cur_idx < l: 
             m = len(split_bin_str[cur_idx])
@@ -119,9 +119,9 @@ def dfs_root(split_bin_str, n, l):
         elif cur_idx == l:
             if cur_sum == n:
                 eta_lst = sol
-                cn += compute_block(split_bin_str, eta_lst)
+                context.cn += compute_block(split_bin_str, eta_lst)
     dfs(split_bin_str, n, l)
-    return cn
+    return context.cn
 
 def compute_block(split_bin_str, eta_lst):
     assert len(split_bin_str) == len(eta_lst)
