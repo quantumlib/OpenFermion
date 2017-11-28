@@ -76,7 +76,8 @@ def commutator(operator_a, operator_b):
     Args:
         operator_a, operator_b: Operators in commutator. Any operators
             are accepted so long as implicit subtraction and multiplication are
-            supported; e.g. QubitOperators, FermionOperators or numpy arrays.
+            supported; e.g. QubitOperators, FermionOperators or Scipy sparse
+            matrices.
 
     Raises:
         TypeError: operator_a and operator_b are not of the same type.
