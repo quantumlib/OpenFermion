@@ -25,6 +25,53 @@ class PolynomialTensorError(Exception):
     pass
 
 
+def general_basis_change(general_tensor, rotation_matrix, key):
+    """Change the basis of an general interaction tensor.
+
+    M' = R^T.M.R where R is the rotation matrix, M is the general tensor
+    and M' is the transformed general tensor.
+
+    Args:
+        general_tensor: A square numpy array or matrix containing information
+            about a general interaction tensor.
+        rotation_matrix: A square numpy array or matrix having dimensions of
+            n_qubits by n_qubits. Assumed to be unitary.
+        key: A tuple indicating the type of general_tensor. Assumed to be
+            non-empty.
+
+    Returns:
+        transformed_general_tensor: general_tensor in the rotated basis.
+    """
+    # If operator acts on spin degrees of freedom, enlarge rotation matrix.
+    n_orbitals = rotation_matrix.shape[0]
+    if general_tensor.shape[0] == 2 * n_orbitals:
+        rotation_matrix = numpy.kron(rotation_matrix, numpy.eye(2))
+
+    order = len(key)
+    if order > 26:
+        raise PolynomialTensorError('Order exceeds maximum order '
+                                    'supported (26).')
+
+    # 'abcd'
+    subscripts_first = ''.join(chr(ord('a') + i) for i in range(order))
+
+    # 'aA,bB,cC,dD'
+    subscripts_rest = ','.join(chr(ord('a') + i) +
+                               chr(ord('A') + i) for i in range(order))
+
+    subscripts = subscripts_first + ',' + subscripts_rest
+
+    rotation_matrices = [rotation_matrix.conj() if x == 0 else
+                         rotation_matrix for x in key]
+
+    # "optimize = True" does greedy optimization, which will be enough here
+    transformed_general_tensor = numpy.einsum(subscripts,
+                                              general_tensor,
+                                              *rotation_matrices,
+                                              optimize=True)
+    return transformed_general_tensor
+
+
 def one_body_basis_change(one_body_tensor, rotation_matrix):
     """Change the basis of an 1-body interaction tensor such as the 1-RDM.
 
@@ -40,17 +87,7 @@ def one_body_basis_change(one_body_tensor, rotation_matrix):
     Returns:
         transformed_one_body_tensor: one_body_tensor in the rotated basis.
     """
-    # If operator acts on spin degrees of freedom, enlarge rotation matrix.
-    n_orbitals = rotation_matrix.shape[0]
-    if one_body_tensor.shape[0] == 2 * n_orbitals:
-        rotation_matrix = numpy.kron(rotation_matrix, numpy.eye(2))
-
-    # Effect transformation and return.
-    transformed_one_body_tensor = numpy.einsum('qp, qr, rs',
-                                               rotation_matrix,
-                                               one_body_tensor,
-                                               rotation_matrix)
-    return transformed_one_body_tensor
+    return general_basis_change(one_body_tensor, rotation_matrix, (1, 0))
 
 
 def two_body_basis_change(two_body_tensor, rotation_matrix):
@@ -68,21 +105,7 @@ def two_body_basis_change(two_body_tensor, rotation_matrix):
     Returns:
         transformed_two_body_tensor: two_body_tensor matrix in rotated basis.
     """
-    # If operator acts on spin degrees of freedom, enlarge rotation matrix.
-    n_orbitals = rotation_matrix.shape[0]
-    if two_body_tensor.shape[0] == 2 * n_orbitals:
-        rotation_matrix = numpy.kron(rotation_matrix, numpy.eye(2))
-
-    # Effect transformation and return.
-    two_body_tensor = numpy.einsum('prsq', two_body_tensor)
-    first_sum = numpy.einsum('ds, abcd', rotation_matrix, two_body_tensor)
-    second_sum = numpy.einsum('cr, abcs', rotation_matrix, first_sum)
-    third_sum = numpy.einsum('bq, abrs', rotation_matrix, second_sum)
-    transformed_two_body_tensor = numpy.einsum('ap, aqrs',
-                                               rotation_matrix, third_sum)
-    transformed_two_body_tensor = numpy.einsum('psqr',
-                                               transformed_two_body_tensor)
-    return transformed_two_body_tensor
+    return general_basis_change(two_body_tensor, rotation_matrix, (1, 1, 0, 0))
 
 
 class PolynomialTensor(object):
@@ -286,12 +309,12 @@ class PolynomialTensor(object):
                 dimensions of n_qubits by n_qubits. Assumed to be real and
                 invertible.
         """
-        if (1, 0) in self.n_body_tensors:
-            self.n_body_tensors[1, 0] = one_body_basis_change(
-                self.n_body_tensors[1, 0], rotation_matrix)
-        if (1, 1, 0, 0) in self.n_body_tensors:
-            self.n_body_tensors[1, 1, 0, 0] = two_body_basis_change(
-                self.n_body_tensors[1, 1, 0, 0], rotation_matrix)
+        for key in self.n_body_tensors:
+            if key == ():
+                pass
+            else:
+                self.n_body_tensors[key] = general_basis_change(
+                    self.n_body_tensors[key], rotation_matrix, key)
 
     def __repr__(self):
         return str(self)
