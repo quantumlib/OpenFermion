@@ -361,10 +361,15 @@ class PolynomialTensorTest(unittest.TestCase):
         polynomial_tensor.rotate_basis(rotation_matrix_reverse)
         self.assertEqual(polynomial_tensor, want_polynomial_tensor)
 
-    def test_rotate_basis_quadratic_hamiltonian(self):
+    def test_rotate_basis_quadratic_hamiltonian_real(self):
+        self.do_rotate_basis_quadratic_hamiltonian(True)
+
+    def test_rotate_basis_quadratic_hamiltonian_complex(self):
+        self.do_rotate_basis_quadratic_hamiltonian(False)
+
+    def do_rotate_basis_quadratic_hamiltonian(self, real):
         """Test diagonalizing a quadratic Hamiltonian that conserves particle
         number."""
-        real = True
         n_qubits = 5
 
         # Initialize a particle-number-conserving quadratic Hamiltonian
