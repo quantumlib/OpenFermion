@@ -19,6 +19,8 @@ import copy
 import numpy
 
 from openfermion.ops import PolynomialTensor
+from openfermion.utils._slater_determinants_test import (
+        random_quadratic_hamiltonian)
 
 
 class PolynomialTensorTest(unittest.TestCase):
@@ -358,3 +360,33 @@ class PolynomialTensorTest(unittest.TestCase):
                  (1, 1, 0, 0): two_body_reverse})
         polynomial_tensor.rotate_basis(rotation_matrix_reverse)
         self.assertEqual(polynomial_tensor, want_polynomial_tensor)
+
+    def test_rotate_basis_quadratic_hamiltonian(self):
+        """Test diagonalizing a quadratic Hamiltonian that conserves particle
+        number."""
+        real = True
+        n_qubits = 5
+
+        # Initialize a particle-number-conserving quadratic Hamiltonian
+        # and compute its orbital energies
+        quad_ham = random_quadratic_hamiltonian(n_qubits, True, real=real)
+        orbital_energies, constant = quad_ham.orbital_energies()
+
+        # Rotate a basis where the Hamiltonian is diagonal
+        hermitian_matrix = quad_ham.combined_hermitian_part
+        energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
+        quad_ham.rotate_basis(diagonalizing_unitary.conj())
+
+        # Check that the rotated Hamiltonian is diagonal with the correct
+        # orbital energies
+        D = numpy.zeros((n_qubits, n_qubits), dtype=complex)
+        D[numpy.diag_indices(n_qubits)] = orbital_energies
+        self.assertTrue(numpy.allclose(quad_ham.combined_hermitian_part, D))
+
+        # Check that the new Hamiltonian still conserves particle number
+        self.assertTrue(quad_ham.conserves_particle_number)
+
+        # Check that the orbital energies and constant are the same
+        new_orbital_energies, new_constant = quad_ham.orbital_energies()
+        self.assertTrue(numpy.allclose(orbital_energies, new_orbital_energies))
+        self.assertAlmostEqual(constant, new_constant)
