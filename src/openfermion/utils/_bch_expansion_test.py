@@ -11,9 +11,10 @@
 #   limitations under the License.
 
 from __future__ import absolute_import
-import unittest
+import numpy
 from numpy.random import rand, seed
 from numpy.linalg import norm
+import unittest
 
 from openfermion.utils._bch_expansion import *
 
@@ -34,9 +35,6 @@ def bch_expand_baseline(x, y, order):
         ValueError: invalid order parameter.
         ValueError: order exceeds maximum order supported.
     """
-    # Initialize.
-    max_order = 4
-
     # Zeroth order.
     z = x + y
 
@@ -92,12 +90,12 @@ class BCHTest(unittest.TestCase):
         """Verify basic sanity checking on inputs"""
         with self.assertRaises(ValueError):
             order = 2
-            _ = bch_expand(1, np.ones((2, 2)), order)
+            _ = bch_expand(1, numpy.ones((2, 2)), order)
 
         with self.assertRaises(ValueError):
             order = 100
-            _ = bch_expand(np.ones((2, 2)), np.ones((2, 2)), order)
+            _ = bch_expand(numpy.ones((2, 2)), numpy.ones((2, 2)), order)
 
         with self.assertRaises(ValueError):
             order = '38'
-            _ = bch_expand(np.ones((2, 2)), np.ones((2, 2)), order)
+            _ = bch_expand(numpy.ones((2, 2)), numpy.ones((2, 2)), order)

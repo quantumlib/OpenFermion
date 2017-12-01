@@ -131,8 +131,10 @@ Authors
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
-`Hannah Sim <https://github.com/hsim13372>`__ (Harvard) and
-`Wei Sun <https://github.com/Spaceenter>`__ (Google).
+`Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
+`Wei Sun <https://github.com/Spaceenter>`__ (Google),
+`Chengyu Dai <https://github.com/jdaaph>`__ (University of Michigan) and
+`Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan).
 
 
 How to cite

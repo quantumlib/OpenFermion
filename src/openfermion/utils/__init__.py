@@ -10,6 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from ._bch_expansion import bch_expand
+
 from ._channel_state import (amplitude_damping_channel, dephasing_channel,
                              depolarizing_channel)
 
@@ -50,5 +52,3 @@ from ._dual_basis_trotter_error import (dual_basis_error_bound,
                                         dual_basis_error_operator)
 
 from ._jellium_hf_state import hartree_fock_state_jellium
-
-from ._bch_expansion import bch_expand

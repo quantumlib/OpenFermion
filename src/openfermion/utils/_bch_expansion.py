@@ -13,16 +13,16 @@
 """Module to efficiently compute the Baker-Campbell-Hausdorff formula."""
 
 import itertools
-import numpy as np
 from scipy.misc import comb, factorial
 
 from openfermion.utils import commutator
 
-def bch_expand(x, y, order):
+def bch_expand(x, y, order=6):
     """Compute log[e^x e^y] using the Baker-Campbell-Hausdorff formula
     Args:
         x: An operator for which multiplication and addition are supported.
-            For instance, a QubitOperator, FermionOperator or numpy array.
+            For instance, a QubitOperator, FermionOperator or scipy sparse
+            matrix.
         y: The same type as x.
         order(int): The order to truncate the BCH expansions.
 
@@ -35,123 +35,151 @@ def bch_expand(x, y, order):
         ValueError: order exceeds maximum order supported.
     """
 
-    max_order = 11
     if (not isinstance(order, int)) or order < 0:
         raise ValueError('Invalid order parameter.')
-    if order > max_order:
-        raise ValueError('Order exceeds maximum order supported.')
     if type(x) != type(y):
         raise ValueError('Operator x is not same type as operator y.')
 
     z = None
-    terms, coeff = generate_nested_commutator(order)
-    for bin_str, c in zip(terms, coeff):
-        t = bin_str_to_commutator(bin_str, x, y)
+    term_list, coeff_list = generate_nested_commutator(order)
+    for bin_str, coeff in zip(term_list, coeff_list):
+        term = bin_str_to_commutator(bin_str, x, y)
         if z is None:
-            z = t * c
+            z = term * coeff
         else:
-            z += t * c
+            z += term * coeff
 
     # Return.
     return z
 
 def bin_str_to_commutator(bin_str, x, y):
+    """
+    Generate nested commutator in Dynkin's style with binary string representation
+    e.g. '010...' -> [X,[Y,[X, ...]]]
+    """
     char_to_xy = lambda char: x if char == '0' else y
-    op = char_to_xy(bin_str[0])
-
+    next_term = char_to_xy(bin_str[0])
+    later_terms = bin_str[1:]
     if len(bin_str) == 1:
-        return op
+        return next_term
     else:
-        return commutator(op, bin_str_to_commutator(bin_str[1:], x, y))
+        return commutator(next_term, bin_str_to_commutator(later_terms, x, y))
 
 def generate_nested_commutator(order):
     """
-    using bin strings to encode nested commutators like [X,[Y,[X, ...]]] as '010...'
+    using bin strings to encode nested commutators up to given order
+    e.g. terms like [X,[Y,[X, ...]]] as '010...'
     """
-    terms = []
-    coeff = []
+    term_list = []
+    coeff_list = []
 
     for i in range(1, order + 1):
-        t = [list(x) for x in itertools.product(['0', '1'], repeat=i)]
-        if i > 1:
-            t = filter(lambda x: x[-1] != x[-2], t)
-        t = ["".join(x) for x in t]
-        terms += t
+        term_of_order_i = [list(x) for x in itertools.product(['0', '1'], repeat=i)]
 
-    for t in terms:
-        split_bin_str = split_by_descending_edge(t)
-        coeff.append(compute_coeff(split_bin_str))
-    return terms, coeff
+        # filter out trivially zero terms by checking if last two terms are the same
+        if i > 1:
+            term_of_order_i = filter(lambda x: x[-1] != x[-2], term_of_order_i)
+        term_of_order_i = ["".join(x) for x in term_of_order_i]
+        term_list += term_of_order_i
+
+    for term in term_list:
+        split_bin_str = split_by_descending_edge(term)
+        coeff_list.append(compute_coeff(split_bin_str))
+    return term_list, coeff_list
 
 def split_by_descending_edge(bin_str):
+    """
+    Split binary string representation by descending edges, i.e. '0101' -> '01 | 01'
+    e.g. '01001101' -> ['01', '0011', '01']
+    """
     prev = '0'
     split_idx = [0]
 
+    # generate a list of indices where split needs to happen
     for idx, i in enumerate(bin_str):
         if prev == '1' and i == '0':
             split_idx.append(idx)
         prev = i
 
+    # split by taking substrings between each two split indices
     if len(split_idx) == 1:
         return [bin_str]
     else:
         return [bin_str[i:j] for i, j in zip(split_idx, split_idx[1:]+[None])]
 
 def compute_coeff(split_bin_str):
-    N = len(''.join(split_bin_str))
-    l = len(split_bin_str) - 1
-    cn = lambda n: dfs_root(split_bin_str, n, len(split_bin_str))
-    c = sum([(-1)**(n+1) / n * cn(n) for n in range(l+1, N+1)])
-    return c/N
+    """
+    Compute coefficient from split binary string representation
+    """
+    order = len(''.join(split_bin_str))
+    num_block = len(split_bin_str) - 1
+    cn = lambda n: coeff_monomial(split_bin_str, n, len(split_bin_str))
+    c = sum([(-1)**(n+1) / n * cn(n) for n in range(num_block+1, order+1)])
+    return c/order
 
-def dfs_root(split_bin_str, n, l):
+def coeff_monomial(split_bin_str, n, l):
+    """
+    Compute Coefficient for each monomial in Dynkin's formula represented by split
+    binary string. Sum over all possible combinations of number of partitions in
+    each block. We want to put (n) partitions inside (l+1) blocks, with each block
+    has at least one partition. Each possible combination is discovered and computed
+    by the sub function depth_first_search.
+    """
+
+    # Python 2 compatible solution for nonlocal variable `coeff
     class context:
-        cn = 0
-    def dfs(split_bin_str, n, l, sol=[], cur_sum=0):
+        coeff = 0
+
+    def depth_first_search(split_bin_str, n, l, sol=[], cur_sum=0):
         ''' Partition an integer value of n into l bins each with min 1
         '''
         cur_idx = len(sol)
-        if cur_idx < l: 
+        if cur_idx < l:
             m = len(split_bin_str[cur_idx])
             n_avail = n - cur_sum
             for j in range(1, min(m, n_avail - (l - 1 - cur_idx)) + 1):
-                dfs(split_bin_str, n, l, sol=sol + [j], cur_sum=cur_sum + j)
+                depth_first_search(split_bin_str, n, l, sol=sol + [j], cur_sum=cur_sum + j)
         elif cur_idx == l:
             if cur_sum == n:
-                eta_lst = sol
-                context.cn += compute_block(split_bin_str, eta_lst)
-    dfs(split_bin_str, n, l)
-    return context.cn
+                partition_list = sol
+                context.coeff += coeff_monomial_with_partition(split_bin_str, partition_list)
 
-def compute_block(split_bin_str, eta_lst):
-    assert len(split_bin_str) == len(eta_lst)
+    # start from the root
+    depth_first_search(split_bin_str, n, l)
+    return context.coeff
+
+def coeff_monomial_with_partition(split_bin_str, parition_lst):
+    "Given fixed parition numbers in blocks, return monomial coefficient"
+    assert len(split_bin_str) == len(parition_lst)
     ret = 1
-    for block, eta in zip(split_bin_str, eta_lst):
+    for block, num_partition in zip(split_bin_str, parition_lst):
         cnt_x = block.count('0')
         cnt_y = block.count('1')
-        ret *= g(cnt_x, cnt_y, eta)
+        ret *= coeff_for_non_descending_block(cnt_x, cnt_y, num_partition)
     return ret
 
 
-def g(cnt_x, cnt_y, eta):
+def coeff_for_non_descending_block(cnt_x, cnt_y, eta):
     "Coefficient component within one block of non-descending bin_string"
-
     if cnt_x == 0:
-        return f(cnt_y, eta)
+        return coeff_for_consectutive_op(cnt_y, eta)
     if cnt_y == 0:
-        return f(cnt_x, eta)
+        return coeff_for_consectutive_op(cnt_x, eta)
 
     ret = 0
     for eta_x in range(1, eta):
-        ret += f(cnt_x, eta_x) * f(cnt_y, eta - eta_x)
+        ret += coeff_for_consectutive_op(cnt_x, eta_x) * \
+               coeff_for_consectutive_op(cnt_y, eta - eta_x)
     for eta_x in range(1, eta + 1):
-        ret += f(cnt_x, eta_x) * f(cnt_y, eta + 1 - eta_x)
+        ret += coeff_for_consectutive_op(cnt_x, eta_x) * \
+               coeff_for_consectutive_op(cnt_y, eta + 1 - eta_x)
     return ret
 
-
-def f(cnt_x, eta_x):
-    "Coefficient component within only X or only Y block with given numbers of partition eta"
+def coeff_for_consectutive_op(cnt_x, num_partition):
+    """
+    Coefficient component within only X or only Y block with given numbers of partition eta
+    """
     ret = 0
-    for z in range(eta_x):
-        ret += (-1)**z * (eta_x - z)**cnt_x * comb(eta_x, z)
+    for num_zero in range(num_partition):
+        ret += (-1)**num_zero * (num_partition - num_zero)**cnt_x * comb(num_partition, num_zero)
     return ret / factorial(cnt_x)
