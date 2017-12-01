@@ -22,7 +22,8 @@ def bch_expand(x, y, order=6):
             For instance, a QubitOperator, FermionOperator or scipy sparse
             matrix.
         y: The same type as x.
-        order(int): The order to truncate the BCH expansions.
+        order(int): The max degree of monomial with respect to X and Y
+            to truncate the BCH expansions.
 
     Returns:
         z: The truncated BCH operator.
@@ -32,7 +33,7 @@ def bch_expand(x, y, order=6):
         ValueError: invalid order parameter.
         ValueError: order exceeds maximum order supported.
     """
-    MAX_ORDER = 20
+    MAX_ORDER = 15
     if (not isinstance(order, int)) or order < 0:
         raise ValueError('Invalid order parameter.')
     if order >= MAX_ORDER:

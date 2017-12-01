@@ -37,24 +37,24 @@ def bch_expand_baseline(x, y, order):
     """
     from openfermion.utils import commutator
 
-    # Zeroth order.
-    z = x + y
-
     # First order.
-    if order > 0:
-        z += commutator(x, y) / 2.
+    z = x + y
 
     # Second order.
     if order > 1:
-        z += commutator(x, commutator(x, y)) / 12.
-        z += commutator(y, commutator(y, x)) / 12.
+        z += commutator(x, y) / 2.
 
     # Third order.
     if order > 2:
-        z -= commutator(y, commutator(x, commutator(x, y))) / 24.
+        z += commutator(x, commutator(x, y)) / 12.
+        z += commutator(y, commutator(y, x)) / 12.
 
     # Fourth order.
     if order > 3:
+        z -= commutator(y, commutator(x, commutator(x, y))) / 24.
+
+    # Fifth order.
+    if order > 4:
         z -= commutator(
             y, commutator(y, commutator(y, commutator(y, x)))) / 720.
         z -= commutator(
@@ -76,7 +76,7 @@ class BCHTest(unittest.TestCase):
         """Initialize a few density matrices"""
         self.seed = [13579, 34628, 2888, 11111, 67917]
         self.dim = 6
-        self.test_order = 4
+        self.test_order = 5
 
     def test_bch(self):
         """Test efficient bch expansion against hard coded baseline coefficients"""
