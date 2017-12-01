@@ -11,14 +11,14 @@
 #   limitations under the License.
 
 """Tests for polynomial_tensor.py."""
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import unittest
 
 import copy
 import numpy
 
-from openfermion.ops import PolynomialTensor
+from openfermion.ops import PolynomialTensor, PolynomialTensorError
 from openfermion.utils._slater_determinants_test import (
         random_quadratic_hamiltonian)
 
@@ -395,3 +395,32 @@ class PolynomialTensorTest(unittest.TestCase):
         new_orbital_energies, new_constant = quad_ham.orbital_energies()
         self.assertTrue(numpy.allclose(orbital_energies, new_orbital_energies))
         self.assertAlmostEqual(constant, new_constant)
+
+    def test_rotate_basis_max_order(self):
+        for order in [15, 16]:
+            tensor, want_tensor = self.do_rotate_basis_high_order(order)
+            self.assertEqual(tensor, want_tensor)
+        # I originally wanted to test 25 and 26, but it turns out that
+        # numpy.einsum complains "too many subscripts in einsum" before 26.
+
+        for order in [27, 28]:
+            with self.assertRaises(PolynomialTensorError):
+                tensor, want_tensor = self.do_rotate_basis_high_order(order)
+            
+    def do_rotate_basis_high_order(self, order):
+        key = (1,) * (order // 2) + (0,) * ((order + 1) // 2)
+        shape = (1,) * order
+        num = numpy.random.rand()
+        rotation = numpy.exp(numpy.random.rand() * numpy.pi * 2j)
+
+        polynomial_tensor = PolynomialTensor(
+                {key: numpy.zeros(shape) + num})
+
+        # If order is odd, there are one more 0 than 1 in key
+        if order % 2 == 1: num *= rotation
+        want_polynomial_tensor = PolynomialTensor(
+                {key: numpy.zeros(shape) + num})
+
+        polynomial_tensor.rotate_basis(numpy.array([[rotation]]))
+
+        return polynomial_tensor, want_polynomial_tensor
