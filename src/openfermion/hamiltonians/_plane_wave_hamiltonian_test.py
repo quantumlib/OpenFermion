@@ -140,7 +140,7 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
             jordan_wigner_dual_basis_hamiltonian(
                 grid, geometry=[('Unobtainium', (0, 0, 0))])
 
-    def test_plane_wave_hamiltonian_integration(self):
+    def test_plane_wave_energy_cutoff(self):
         geometry = [('H', (0,)), ('H', (0.8,))]
         grid = Grid(dimensions=1, scale=1.1, length=5)
         e_cutoff = 50.0
