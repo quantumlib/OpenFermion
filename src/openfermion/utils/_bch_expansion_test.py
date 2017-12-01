@@ -85,7 +85,7 @@ class BCHTest(unittest.TestCase):
             x = rand(self.dim, self.dim)
             y = rand(self.dim, self.dim)
             test = bch_expand(x, y, self.test_order)
-            baseline = bch_expand_baseline(x, y, self.test_order)
+            baseline = bch_expand_baseline(x, y, self.test_order) 
             self.assertAlmostEquals(norm(test-baseline), 0.0)
 
     def test_verification(self):
@@ -93,10 +93,6 @@ class BCHTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             order = 2
             _ = bch_expand(1, numpy.ones((2, 2)), order)
-
-        with self.assertRaises(ValueError):
-            order = 100
-            _ = bch_expand(numpy.ones((2, 2)), numpy.ones((2, 2)), order)
 
         with self.assertRaises(ValueError):
             order = '38'

@@ -33,11 +33,8 @@ def bch_expand(x, y, order=6):
         ValueError: invalid order parameter.
         ValueError: order exceeds maximum order supported.
     """
-    MAX_ORDER = 15
     if (not isinstance(order, int)) or order < 0:
         raise ValueError('Invalid order parameter.')
-    if order >= MAX_ORDER:
-        raise ValueError('The order is too big, use it at your own discretion.')
     if type(x) != type(y):
         raise ValueError('Operator x is not same type as operator y.')
 
