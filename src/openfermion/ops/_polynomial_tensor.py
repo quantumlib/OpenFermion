@@ -28,8 +28,16 @@ class PolynomialTensorError(Exception):
 def general_basis_change(general_tensor, rotation_matrix, key):
     """Change the basis of an general interaction tensor.
 
-    M' = R^T.M.R where R is the rotation matrix, M is the general tensor
-    and M' is the transformed general tensor.
+    M'^{p_1p_2...p_n} = R^{p_1}_{a_1} R^{p_2}_{a_2} ...
+                        R^{p_n}_{a_n} M^{a_1a_2...a_n}
+
+    where R is the rotation matrix, M is the general tensor, M' is the
+    transformed general tensor, and a_k and p_k are indices. The formula uses
+    the Einstein notation (implicit sum over repeated indices).
+
+    In case R is complex, the k-th R in the above formula need to be conjugated
+    if key has a 1 in the k-th place (meaning that the corresponding operator
+    is a creation operator).
 
     Args:
         general_tensor: A square numpy array or matrix containing information
