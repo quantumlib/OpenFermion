@@ -328,3 +328,19 @@ class JelliumTest(unittest.TestCase):
         expected = FermionOperator.identity() * (2.8372 / length_scale)
 
         self.assertTrue(expected.isclose(difference))
+
+    def test_plane_wave_energy_cutoff(self):
+        grid = Grid(dimensions=1, length=5, scale=1.0)
+        spinless = True
+        e_cutoff = 20.0
+
+        hamiltonian_1 = jellium_model(grid, spinless, True, False)
+        jw_1 = jordan_wigner(hamiltonian_1)
+        spectrum_1 = eigenspectrum(jw_1)
+
+        hamiltonian_2 = jellium_model(grid, spinless, True, False, e_cutoff)
+        jw_2 = jordan_wigner(hamiltonian_2)
+        spectrum_2 = eigenspectrum(jw_2)
+
+        diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
+        self.assertGreater(diff, 0.)
