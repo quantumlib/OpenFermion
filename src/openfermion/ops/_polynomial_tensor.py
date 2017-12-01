@@ -28,7 +28,7 @@ class PolynomialTensorError(Exception):
 def one_body_basis_change(one_body_tensor, rotation_matrix):
     """Change the basis of an 1-body interaction tensor such as the 1-RDM.
 
-    M' = R^T.M.R where R is the rotation matrix, M is the 1-body tensor
+    M' = R.M.R^T where R is the rotation matrix, M is the 1-body tensor
     and M' is the transformed 1-body tensor.
 
     Args:
@@ -46,7 +46,7 @@ def one_body_basis_change(one_body_tensor, rotation_matrix):
         rotation_matrix = numpy.kron(rotation_matrix, numpy.eye(2))
 
     # Effect transformation and return.
-    transformed_one_body_tensor = numpy.einsum('qp, qr, rs',
+    transformed_one_body_tensor = numpy.einsum('pq, qr, sr',
                                                rotation_matrix,
                                                one_body_tensor,
                                                rotation_matrix)
