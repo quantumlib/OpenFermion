@@ -79,42 +79,6 @@ def general_basis_change(general_tensor, rotation_matrix, key):
     return transformed_general_tensor
 
 
-def one_body_basis_change(one_body_tensor, rotation_matrix):
-    """Change the basis of an 1-body interaction tensor such as the 1-RDM.
-
-    M' = R.M.R^T where R is the rotation matrix, M is the 1-body tensor
-    and M' is the transformed 1-body tensor.
-
-    Args:
-        one_body_tensor: A square numpy array or matrix containing information
-            about a 1-body interaction tensor such as the 1-RDM.
-        rotation_matrix: A square numpy array or matrix having dimensions of
-            n_qubits by n_qubits. Assumed to be real and invertible.
-
-    Returns:
-        transformed_one_body_tensor: one_body_tensor in the rotated basis.
-    """
-    return general_basis_change(one_body_tensor, rotation_matrix, (1, 0))
-
-
-def two_body_basis_change(two_body_tensor, rotation_matrix):
-    """Change the basis of 2-body interaction tensor such as 2-RDM.
-
-    Procedure we use is an N^5 transformation which can be expressed as
-    (pq|rs) = \sum_a R^p_a
-    (\sum_b R^q_b (\sum_c R^r_c (\sum_d R^s_d (ab|cd)))).
-
-    Args:
-        two_body_tensor: a square rank 4 interaction tensor.
-        rotation_matrix: A square numpy array or matrix having dimensions of
-            n_qubits by n_qubits. Assumed to be real and invertible.
-
-    Returns:
-        transformed_two_body_tensor: two_body_tensor matrix in rotated basis.
-    """
-    return general_basis_change(two_body_tensor, rotation_matrix, (1, 1, 0, 0))
-
-
 class PolynomialTensor(object):
     """Class for storing tensor representations of operators that correspond
     with multilinear polynomials in the fermionic ladder operators.
