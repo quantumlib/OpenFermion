@@ -139,3 +139,20 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             jordan_wigner_dual_basis_hamiltonian(
                 grid, geometry=[('Unobtainium', (0, 0, 0))])
+
+    def test_plane_wave_energy_cutoff(self):
+        geometry = [('H', (0,)), ('H', (0.8,))]
+        grid = Grid(dimensions=1, scale=1.1, length=5)
+        e_cutoff = 50.0
+
+        h_1 = plane_wave_hamiltonian(grid, geometry, True, True, True)
+        jw_1 = jordan_wigner(h_1)
+        spectrum_1 = eigenspectrum(jw_1)
+
+        h_2 = plane_wave_hamiltonian(grid, geometry, True, True, True,
+                                     e_cutoff)
+        jw_2 = jordan_wigner(h_2)
+        spectrum_2 = eigenspectrum(jw_2)
+
+        max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
+        self.assertGreater(max_diff, 0.)
