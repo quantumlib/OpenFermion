@@ -35,6 +35,8 @@ def bch_expand_baseline(x, y, order):
         ValueError: invalid order parameter.
         ValueError: order exceeds maximum order supported.
     """
+    from openfermion.utils import commutator
+
     # Zeroth order.
     z = x + y
 

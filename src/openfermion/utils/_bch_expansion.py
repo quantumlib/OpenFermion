@@ -15,8 +15,6 @@
 import itertools
 from scipy.misc import comb, factorial
 
-from openfermion.utils import commutator
-
 def bch_expand(x, y, order=6):
     """Compute log[e^x e^y] using the Baker-Campbell-Hausdorff formula
     Args:
@@ -34,9 +32,11 @@ def bch_expand(x, y, order=6):
         ValueError: invalid order parameter.
         ValueError: order exceeds maximum order supported.
     """
-
+    MAX_ORDER = 20
     if (not isinstance(order, int)) or order < 0:
         raise ValueError('Invalid order parameter.')
+    if order >= MAX_ORDER:
+        raise ValueError('The order is too big, use it at your own discretion.')
     if type(x) != type(y):
         raise ValueError('Operator x is not same type as operator y.')
 
@@ -57,6 +57,8 @@ def bin_str_to_commutator(bin_str, x, y):
     Generate nested commutator in Dynkin's style with binary string representation
     e.g. '010...' -> [X,[Y,[X, ...]]]
     """
+    from openfermion.utils import commutator
+
     char_to_xy = lambda char: x if char == '0' else y
     next_term = char_to_xy(bin_str[0])
     later_terms = bin_str[1:]
