@@ -10,6 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from ._bch_expansion import bch_expand
+
 from ._channel_state import (amplitude_damping_channel, dephasing_channel,
                              depolarizing_channel)
 
