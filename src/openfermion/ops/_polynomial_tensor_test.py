@@ -18,7 +18,7 @@ import unittest
 import copy
 import numpy
 
-from openfermion.ops import PolynomialTensor, PolynomialTensorError
+from openfermion.ops import PolynomialTensor
 from openfermion.utils._slater_determinants_test import (
         random_quadratic_hamiltonian)
 
@@ -404,7 +404,7 @@ class PolynomialTensorTest(unittest.TestCase):
         # numpy.einsum complains "too many subscripts in einsum" before 26.
 
         for order in [27, 28]:
-            with self.assertRaises(PolynomialTensorError):
+            with self.assertRaises(ValueError):
                 tensor, want_tensor = self.do_rotate_basis_high_order(order)
             
     def do_rotate_basis_high_order(self, order):

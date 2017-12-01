@@ -57,8 +57,7 @@ def general_basis_change(general_tensor, rotation_matrix, key):
 
     order = len(key)
     if order > 26:
-        raise PolynomialTensorError('Order exceeds maximum order '
-                                    'supported (26).')
+        raise ValueError('Order exceeds maximum order upported (26).')
 
     # 'abcd'
     subscripts_first = ''.join(chr(ord('a') + i) for i in range(order))
