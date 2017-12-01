@@ -120,10 +120,12 @@ Authors
 `Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan),
 `Dave Bacon <https://github.com/dabacon>`__ (Google),
 `Yudong Cao <https://github.com/yudongcao>`__ (Harvard),
+`Chengyu Dai <https://github.com/jdaaph>`__ (University of Michigan),
 `E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
 `Craig Gidney <https://github.com/Strilanc>`__ (Google),
 `Thomas Häner <https://github.com/thomashaener>`__ (ETH Zurich),
 `Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
+`Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
@@ -131,10 +133,8 @@ Authors
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
-`Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
-`Wei Sun <https://github.com/Spaceenter>`__ (Google),
-`Chengyu Dai <https://github.com/jdaaph>`__ (University of Michigan) and
-`Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan).
+`Hannah Sim <https://github.com/hsim13372>`__ (Harvard) and
+`Wei Sun <https://github.com/Spaceenter>`__ (Google).
 
 
 How to cite
