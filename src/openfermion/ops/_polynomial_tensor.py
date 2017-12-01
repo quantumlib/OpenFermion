@@ -56,12 +56,12 @@ def general_basis_change(general_tensor, rotation_matrix, key):
     subscripts_first = ''.join(chr(ord('a') + i) for i in range(order))
 
     # 'aA,bB,cC,dD'
-    subscripts_rest = ','.join(chr(ord('a') + i) +
-                               chr(ord('A') + i) for i in range(order))
+    subscripts_rest = ','.join(chr(ord('A') + i) +
+                               chr(ord('a') + i) for i in range(order))
 
     subscripts = subscripts_first + ',' + subscripts_rest
 
-    rotation_matrices = [rotation_matrix.conj() if x == 0 else
+    rotation_matrices = [rotation_matrix.conj() if x == 1 else
                          rotation_matrix for x in key]
 
     # "optimize = True" does greedy optimization, which will be enough here
@@ -75,7 +75,7 @@ def general_basis_change(general_tensor, rotation_matrix, key):
 def one_body_basis_change(one_body_tensor, rotation_matrix):
     """Change the basis of an 1-body interaction tensor such as the 1-RDM.
 
-    M' = R^T.M.R where R is the rotation matrix, M is the 1-body tensor
+    M' = R.M.R^T where R is the rotation matrix, M is the 1-body tensor
     and M' is the transformed 1-body tensor.
 
     Args:

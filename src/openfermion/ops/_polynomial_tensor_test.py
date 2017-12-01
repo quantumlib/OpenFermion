@@ -380,7 +380,7 @@ class PolynomialTensorTest(unittest.TestCase):
         # Rotate a basis where the Hamiltonian is diagonal
         hermitian_matrix = quad_ham.combined_hermitian_part
         energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
-        quad_ham.rotate_basis(diagonalizing_unitary.conj())
+        quad_ham.rotate_basis(diagonalizing_unitary.T)
 
         # Check that the rotated Hamiltonian is diagonal with the correct
         # orbital energies
