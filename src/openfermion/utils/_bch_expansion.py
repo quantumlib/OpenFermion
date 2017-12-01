@@ -117,7 +117,7 @@ def compute_coeff(split_bin_str):
     order = len(''.join(split_bin_str))
     num_block = len(split_bin_str) - 1
     cn = lambda n: coeff_monomial(split_bin_str, n, len(split_bin_str))
-    c = sum([(-1)**(n+1) / n * cn(n) for n in range(num_block+1, order+1)])
+    c = sum([(-1)**(n+1) / float(n) * cn(n) for n in range(num_block+1, order+1)])
     return c/order
 
 def coeff_monomial(split_bin_str, n, l):
@@ -185,4 +185,4 @@ def coeff_for_consectutive_op(cnt_x, num_partition):
     ret = 0
     for num_zero in range(num_partition):
         ret += (-1)**num_zero * (num_partition - num_zero)**cnt_x * comb(num_partition, num_zero)
-    return ret / factorial(cnt_x)
+    return ret / float(factorial(cnt_x))
