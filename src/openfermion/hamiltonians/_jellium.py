@@ -355,7 +355,7 @@ def dual_basis_kinetic(grid, spinless=False):
     Returns:
         operator (FermionOperator)
     """
-    return dual_basis_jellium_model(grid, spinless, True, False, False)
+    return dual_basis_jellium_model(grid, spinless, True, False)
 
 
 def dual_basis_potential(grid, spinless=False):
@@ -368,7 +368,7 @@ def dual_basis_potential(grid, spinless=False):
     Returns:
         operator (FermionOperator)
     """
-    return dual_basis_jellium_model(grid, spinless, False, True, False)
+    return dual_basis_jellium_model(grid, spinless, False, True)
 
 
 def jellium_model(grid, spinless=False, plane_wave=True,
@@ -390,8 +390,7 @@ def jellium_model(grid, spinless=False, plane_wave=True,
         hamiltonian = plane_wave_kinetic(grid, spinless, e_cutoff)
         hamiltonian += plane_wave_potential(grid, spinless, e_cutoff)
     else:
-        hamiltonian = dual_basis_jellium_model(grid, spinless, True, True,
-                                               False)
+        hamiltonian = dual_basis_jellium_model(grid, spinless)
     # Include the Madelung constant if requested.
     if include_constant:
         hamiltonian += FermionOperator.identity() * (2.8372 / grid.scale)
