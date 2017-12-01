@@ -23,6 +23,7 @@ from openfermion.ops import *
 from openfermion.transforms import jordan_wigner, get_interaction_operator
 from openfermion.utils import Grid
 from openfermion.utils._operator_utils import *
+from openfermion.utils._sparse_tools import pauli_matrix_map
 
 
 class OperatorUtilsTest(unittest.TestCase):
@@ -207,6 +208,13 @@ class CommutatorTest(unittest.TestCase):
         self.assertTrue(commutator(self.qubit_operator, operator_b).isclose(
             self.qubit_operator * operator_b -
             operator_b * self.qubit_operator))
+
+    def test_ndarray_input(self):
+        """Test when the inputs are Numpy arrays."""
+        X = pauli_matrix_map['X'].toarray()
+        Y = pauli_matrix_map['Y'].toarray()
+        Z = pauli_matrix_map['Z'].toarray()
+        self.assertTrue(numpy.allclose(commutator(X, Y), 2.j * Z))
 
     def test_commutator_operator_a_bad_type(self):
         with self.assertRaises(TypeError):
