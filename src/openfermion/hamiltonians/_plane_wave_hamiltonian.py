@@ -55,7 +55,7 @@ def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
     return length_scale
 
 
-def dual_basis_external_potential(grid, geometry, spinless, e_cutoff=None):
+def dual_basis_external_potential(grid, geometry, spinless):
     """Return the external potential in the dual basis of arXiv:1706.00023.
 
     Args:
@@ -64,7 +64,6 @@ def dual_basis_external_potential(grid, geometry, spinless, e_cutoff=None):
             example is [('H', (0, 0, 0)), ('H', (0, 0, 0.7414))].
             Distances in atomic units. Use atomic symbols to specify atoms.
         spinless (bool): Whether to use the spinless model or not.
-        e_cutoff (float): Energy cutoff.
 
     Returns:
         FermionOperator: The dual basis operator.
@@ -83,10 +82,6 @@ def dual_basis_external_potential(grid, geometry, spinless, e_cutoff=None):
                 momenta = momentum_vector(momenta_indices, grid)
                 momenta_squared = momenta.dot(momenta)
                 if momenta_squared == 0:
-                    continue
-
-                # Energy cutoff.
-                if e_cutoff is not None and momenta_squared / 2. > e_cutoff:
                     continue
 
                 exp_index = 1.0j * momenta.dot(coordinate_j - coordinate_p)
@@ -195,14 +190,13 @@ def plane_wave_hamiltonian(grid, geometry=None,
             grid, geometry, spinless, e_cutoff)
     else:
         external_potential = dual_basis_external_potential(
-            grid, geometry, spinless, e_cutoff)
+            grid, geometry, spinless)
 
     return jellium_op + external_potential
 
 
 def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
-                                         include_constant=False,
-                                         e_cutoff=None):
+                                         include_constant=False):
     """Return the dual basis Hamiltonian as QubitOperator.
 
     Args:
@@ -212,13 +206,12 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
             Distances in atomic units. Use atomic symbols to specify atoms.
         spinless (bool): Whether to use the spinless model or not.
         include_constant (bool): Whether to include the Madelung constant.
-        e_cutoff (float): Energy cutoff.
 
     Returns:
         hamiltonian (QubitOperator)
     """
     jellium_op = jordan_wigner_dual_basis_jellium(
-        grid, spinless, include_constant, e_cutoff)
+        grid, spinless, include_constant)
 
     if geometry is None:
         return jellium_op
@@ -242,10 +235,6 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
         momenta = momentum_vector(k_indices, grid)
         momenta_squared = momenta.dot(momenta)
         if momenta_squared == 0:
-            continue
-
-        # Energy cutoff.
-        if e_cutoff is not None and momenta_squared / 2. > e_cutoff:
             continue
 
         for p in range(n_qubits):
