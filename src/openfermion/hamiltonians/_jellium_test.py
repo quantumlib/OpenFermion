@@ -342,5 +342,5 @@ class JelliumTest(unittest.TestCase):
         jw_2 = jordan_wigner(hamiltonian_2)
         spectrum_2 = eigenspectrum(jw_2)
 
-        diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
-        self.assertGreater(diff, 0.)
+        max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
+        self.assertGreater(max_diff, 0.)
