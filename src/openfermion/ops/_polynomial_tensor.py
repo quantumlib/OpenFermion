@@ -57,17 +57,27 @@ def general_basis_change(general_tensor, rotation_matrix, key):
 
     order = len(key)
     if order > 26:
-        raise ValueError('Order exceeds maximum order upported (26).')
+        raise ValueError('Order exceeds maximum order supported (26).')
 
-    # 'abcd'
+    # Do the basis change through a single call of numpy.einsum. For example,
+    # for the (1, 1, 0, 0) tensor, the call is:
+    #     numpy.einsum('abcd,Aa,Bb,Cc,Dd',
+    #                  general_tensor,
+    #                  rotation_matrix.conj(),
+    #                  rotation_matrix.conj(),
+    #                  rotation_matrix,
+    #                  rotation_matrix)
+
+    # The 'abcd' part of the subscripts
     subscripts_first = ''.join(chr(ord('a') + i) for i in range(order))
 
-    # 'aA,bB,cC,dD'
+    # The 'Aa,Bb,Cc,Dd' part of the subscripts
     subscripts_rest = ','.join(chr(ord('A') + i) +
                                chr(ord('a') + i) for i in range(order))
 
     subscripts = subscripts_first + ',' + subscripts_rest
 
+    # The list of rotation matrices, conjugated as necessary
     rotation_matrices = [rotation_matrix.conj() if x == 1 else
                          rotation_matrix for x in key]
 
