@@ -133,8 +133,9 @@ Authors
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
-`Hannah Sim <https://github.com/hsim13372>`__ (Harvard) and
-`Wei Sun <https://github.com/Spaceenter>`__ (Google).
+`Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
+`Wei Sun <https://github.com/Spaceenter>`__ (Google) and
+`Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan).
 
 
 How to cite

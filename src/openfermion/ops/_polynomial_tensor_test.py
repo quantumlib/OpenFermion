@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 """Tests for polynomial_tensor.py."""
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import unittest
 
@@ -19,6 +19,8 @@ import copy
 import numpy
 
 from openfermion.ops import PolynomialTensor
+from openfermion.utils._slater_determinants_test import (
+        random_quadratic_hamiltonian)
 
 
 class PolynomialTensorTest(unittest.TestCase):
@@ -358,3 +360,67 @@ class PolynomialTensorTest(unittest.TestCase):
                  (1, 1, 0, 0): two_body_reverse})
         polynomial_tensor.rotate_basis(rotation_matrix_reverse)
         self.assertEqual(polynomial_tensor, want_polynomial_tensor)
+
+    def test_rotate_basis_quadratic_hamiltonian_real(self):
+        self.do_rotate_basis_quadratic_hamiltonian(True)
+
+    def test_rotate_basis_quadratic_hamiltonian_complex(self):
+        self.do_rotate_basis_quadratic_hamiltonian(False)
+
+    def do_rotate_basis_quadratic_hamiltonian(self, real):
+        """Test diagonalizing a quadratic Hamiltonian that conserves particle
+        number."""
+        n_qubits = 5
+
+        # Initialize a particle-number-conserving quadratic Hamiltonian
+        # and compute its orbital energies
+        quad_ham = random_quadratic_hamiltonian(n_qubits, True, real=real)
+        orbital_energies, constant = quad_ham.orbital_energies()
+
+        # Rotate a basis where the Hamiltonian is diagonal
+        hermitian_matrix = quad_ham.combined_hermitian_part
+        energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
+        quad_ham.rotate_basis(diagonalizing_unitary.T)
+
+        # Check that the rotated Hamiltonian is diagonal with the correct
+        # orbital energies
+        D = numpy.zeros((n_qubits, n_qubits), dtype=complex)
+        D[numpy.diag_indices(n_qubits)] = orbital_energies
+        self.assertTrue(numpy.allclose(quad_ham.combined_hermitian_part, D))
+
+        # Check that the new Hamiltonian still conserves particle number
+        self.assertTrue(quad_ham.conserves_particle_number)
+
+        # Check that the orbital energies and constant are the same
+        new_orbital_energies, new_constant = quad_ham.orbital_energies()
+        self.assertTrue(numpy.allclose(orbital_energies, new_orbital_energies))
+        self.assertAlmostEqual(constant, new_constant)
+
+    def test_rotate_basis_max_order(self):
+        for order in [15, 16]:
+            tensor, want_tensor = self.do_rotate_basis_high_order(order)
+            self.assertEqual(tensor, want_tensor)
+        # I originally wanted to test 25 and 26, but it turns out that
+        # numpy.einsum complains "too many subscripts in einsum" before 26.
+
+        for order in [27, 28]:
+            with self.assertRaises(ValueError):
+                tensor, want_tensor = self.do_rotate_basis_high_order(order)
+            
+    def do_rotate_basis_high_order(self, order):
+        key = (1,) * (order // 2) + (0,) * ((order + 1) // 2)
+        shape = (1,) * order
+        num = numpy.random.rand()
+        rotation = numpy.exp(numpy.random.rand() * numpy.pi * 2j)
+
+        polynomial_tensor = PolynomialTensor(
+                {key: numpy.zeros(shape) + num})
+
+        # If order is odd, there are one more 0 than 1 in key
+        if order % 2 == 1: num *= rotation
+        want_polynomial_tensor = PolynomialTensor(
+                {key: numpy.zeros(shape) + num})
+
+        polynomial_tensor.rotate_basis(numpy.array([[rotation]]))
+
+        return polynomial_tensor, want_polynomial_tensor
