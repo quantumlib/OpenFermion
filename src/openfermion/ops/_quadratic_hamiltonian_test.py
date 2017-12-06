@@ -22,8 +22,7 @@ from openfermion.ops import (FermionOperator,
                              normal_ordered)
 from openfermion.ops._quadratic_hamiltonian import (
         majorana_operator,
-        antisymmetric_canonical_form,
-        diagonalizing_fermionic_unitary)
+        antisymmetric_canonical_form)
 from openfermion.transforms import get_fermion_operator, get_sparse_operator
 from openfermion.utils import get_ground_state
 
@@ -153,6 +152,45 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         self.assertTrue(
                 normal_ordered(majorana_op).isclose(fermion_operator))
 
+    def test_diagonalizing_bogoliubov_transform(self):
+        """Test getting the diagonalizing Bogoliubov transformation."""
+        hermitian_part = self.quad_ham_npc.combined_hermitian_part
+        antisymmetric_part = self.quad_ham_npc.antisymmetric_part
+        block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits),
+                                   dtype=complex)
+        block_matrix[:self.n_qubits, :self.n_qubits] = antisymmetric_part
+        block_matrix[:self.n_qubits, self.n_qubits:] = hermitian_part
+        block_matrix[self.n_qubits:, :self.n_qubits] = -hermitian_part.conj()
+        block_matrix[self.n_qubits:, self.n_qubits:] = (
+                -antisymmetric_part.conj())
+
+        ferm_unitary = self.quad_ham_npc.diagonalizing_bogoliubov_transform()
+
+        # Check that the transformation is diagonalizing
+        majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
+        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
+        diagonalized = ferm_unitary.conj().dot(
+                block_matrix.dot(ferm_unitary.T.conj()))
+        for i in numpy.ndindex((2 * self.n_qubits, 2 * self.n_qubits)):
+            self.assertAlmostEqual(diagonalized[i], canonical[i])
+
+        lower_unitary = ferm_unitary[self.n_qubits:]
+        lower_left = lower_unitary[:, :self.n_qubits]
+        lower_right = lower_unitary[:, self.n_qubits:]
+
+        # Check that lower_left and lower_right satisfy the constraints
+        # necessary for the transformed fermionic operators to satisfy
+        # the fermionic anticommutation relations
+        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj()) +
+                               lower_right.dot(lower_right.T.conj()))
+        constraint_matrix_2 = (lower_left.dot(lower_right.T) +
+                               lower_right.dot(lower_left.T))
+
+        identity = numpy.eye(self.n_qubits, dtype=complex)
+        for i in numpy.ndindex((self.n_qubits, self.n_qubits)):
+            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
+            self.assertAlmostEqual(0., constraint_matrix_2[i])
+
 
 class MajoranaOperatorTest(unittest.TestCase):
 
@@ -178,72 +216,9 @@ class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
         self.constant = 1.7
         self.chemical_potential = 2.
 
-        # Obtain random Hermitian and antisymmetric matrices
-        self.hermitian_mat = random_hermitian_matrix(self.n_qubits)
-        self.antisymmetric_mat = random_antisymmetric_matrix(self.n_qubits)
+        # Obtain random non-particle-number-conserving Hamiltonian
+        self.quad_ham_npc = random_quadratic_hamiltonian(self.n_qubits)
 
-        # Initialize a non-particle-number-conserving Hamiltonian
-        self.quad_ham_npc = QuadraticHamiltonian(
-                self.constant, self.hermitian_mat, self.antisymmetric_mat,
-                self.chemical_potential)
-
-    def test_diagonalizes_quadratic_hamiltonian(self):
-        """Test that the unitary returned indeed diagonalizes a
-        quadratic Hamiltonian."""
-        hermitian_part = self.quad_ham_npc.combined_hermitian_part
-        antisymmetric_part = self.quad_ham_npc.antisymmetric_part
-        block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits),
-                                   dtype=complex)
-        block_matrix[:self.n_qubits, :self.n_qubits] = antisymmetric_part
-        block_matrix[:self.n_qubits, self.n_qubits:] = hermitian_part
-        block_matrix[self.n_qubits:, :self.n_qubits] = -hermitian_part.conj()
-        block_matrix[self.n_qubits:, self.n_qubits:] = (
-                -antisymmetric_part.conj())
-
-        majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
-        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
-        ferm_unitary = diagonalizing_fermionic_unitary(majorana_matrix)
-        diagonalized = ferm_unitary.conj().dot(
-                block_matrix.dot(ferm_unitary.T.conj()))
-        for i in numpy.ndindex((2 * self.n_qubits, 2 * self.n_qubits)):
-            self.assertAlmostEqual(diagonalized[i], canonical[i])
-
-    def test_bad_dimensions(self):
-        n, p = (3, 4)
-        ones_mat = numpy.ones((n, p))
-        with self.assertRaises(ValueError):
-            ferm_unitary = diagonalizing_fermionic_unitary(ones_mat)
-
-    def test_not_antisymmetric(self):
-        n = 4
-        ones_mat = numpy.ones((n, n))
-        with self.assertRaises(ValueError):
-            ferm_unitary = diagonalizing_fermionic_unitary(ones_mat)
-
-    def test_n_equals_3(self):
-        n = 3
-        # Obtain a random antisymmetric matrix
-        rand_mat = numpy.random.randn(2 * n, 2 * n)
-        antisymmetric_matrix = rand_mat - rand_mat.T
-
-        # Get the diagonalizing fermionic unitary
-        ferm_unitary = diagonalizing_fermionic_unitary(antisymmetric_matrix)
-        lower_unitary = ferm_unitary[n:]
-        lower_left = lower_unitary[:, :n]
-        lower_right = lower_unitary[:, n:]
-
-        # Check that lower_left and lower_right satisfy the constraints
-        # necessary for the transformed fermionic operators to satisfy
-        # the fermionic anticommutation relations
-        constraint_matrix_1 = (lower_left.dot(lower_left.T.conj()) +
-                               lower_right.dot(lower_right.T.conj()))
-        constraint_matrix_2 = (lower_left.dot(lower_right.T) +
-                               lower_right.dot(lower_left.T))
-
-        identity = numpy.eye(n, dtype=complex)
-        for i in numpy.ndindex((n, n)):
-            self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
-            self.assertAlmostEqual(0., constraint_matrix_2[i])
 
 
 class AntisymmetricCanonicalFormTest(unittest.TestCase):
@@ -280,6 +255,18 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
         for i in range(n - 1):
             self.assertTrue(diagonal[i] <= diagonal[i + 1])
 
+    def test_bad_dimensions(self):
+        n, p = (3, 4)
+        ones_mat = numpy.ones((n, p))
+        with self.assertRaises(ValueError):
+            _ = antisymmetric_canonical_form(ones_mat)
+
+    def test_not_antisymmetric(self):
+        n = 4
+        ones_mat = numpy.ones((n, n))
+        with self.assertRaises(ValueError):
+            _ = antisymmetric_canonical_form(ones_mat)
+
 
 def random_hermitian_matrix(n, real=False):
     """Generate a random n x n Hermitian matrix."""
@@ -299,3 +286,28 @@ def random_antisymmetric_matrix(n, real=False):
         rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
     antisymmetric_mat = rand_mat - rand_mat.T
     return antisymmetric_mat
+
+
+def random_quadratic_hamiltonian(n_qubits,
+                                 conserves_particle_number=False,
+                                 real=False):
+    """Generate a random instance of QuadraticHamiltonian
+
+    Args:
+        n_qubits(int): the number of qubits
+        conserves_particle_number(bool): whether the returned Hamiltonian
+            should conserve particle number
+        real(bool): whether to use only real numbers
+
+    Returns:
+        QuadraticHamiltonian
+    """
+    constant = numpy.random.randn()
+    chemical_potential = numpy.random.randn()
+    hermitian_mat = random_hermitian_matrix(n_qubits, real)
+    if conserves_particle_number:
+        antisymmetric_mat = None
+    else:
+        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
+    return QuadraticHamiltonian(constant, hermitian_mat,
+                                antisymmetric_mat, chemical_potential)

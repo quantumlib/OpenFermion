@@ -18,8 +18,7 @@ import numpy
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
-from openfermion.ops._quadratic_hamiltonian import (
-        diagonalizing_fermionic_unitary, swap_columns)
+from openfermion.ops._quadratic_hamiltonian import swap_columns
 
 
 def gaussian_state_preparation_circuit(
@@ -85,10 +84,8 @@ def gaussian_state_preparation_circuit(
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
-        majorana_matrix, majorana_constant = (
-                quadratic_hamiltonian.majorana_form())
-        diagonalizing_unitary = diagonalizing_fermionic_unitary(
-                majorana_matrix)
+        diagonalizing_unitary = (
+                quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
 
         # Get the unitary rows which represent the Gaussian unitary
         gaussian_unitary_matrix = diagonalizing_unitary[
