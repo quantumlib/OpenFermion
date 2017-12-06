@@ -109,6 +109,7 @@ def gaussian_state_preparation_circuit(
 
     return circuit_description, start_orbitals
 
+
 def slater_determinant_preparation_circuit(slater_determinant_matrix):
     """Obtain the description of a circuit which prepares a Slater determinant.
 
@@ -120,14 +121,14 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
         b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \\text{vac} \\rangle,
 
     where
-    
+
     .. math::
 
         b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
 
     The output is the description of a circuit which prepares this
     Slater determinant, up to a global phase.
-    The starting state which the circuit should be applied to 
+    The starting state which the circuit should be applied to
     is a Slater determinant (in the computational basis) with
     the first :math:`N_f` orbitals filled.
 
@@ -147,6 +148,7 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
             slater_determinant_matrix)
     circuit_description = list(reversed(decomposition))
     return circuit_description
+
 
 def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and

@@ -255,7 +255,7 @@ class QuadraticHamiltonian(PolynomialTensor):
         """
         majorana_matrix, majorana_constant = self.majorana_form()
 
-        # Get the orthogonal transformation that puts majorana_matrix 
+        # Get the orthogonal transformation that puts majorana_matrix
         # into canonical form
         canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
 

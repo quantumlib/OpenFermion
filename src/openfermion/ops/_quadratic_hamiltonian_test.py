@@ -209,18 +209,6 @@ class MajoranaOperatorTest(unittest.TestCase):
             majorana_op = majorana_operator('a')
 
 
-class DiagonalizingFermionicUnitaryTest(unittest.TestCase):
-
-    def setUp(self):
-        self.n_qubits = 5
-        self.constant = 1.7
-        self.chemical_potential = 2.
-
-        # Obtain random non-particle-number-conserving Hamiltonian
-        self.quad_ham_npc = random_quadratic_hamiltonian(self.n_qubits)
-
-
-
 class AntisymmetricCanonicalFormTest(unittest.TestCase):
 
     def test_equality(self):
