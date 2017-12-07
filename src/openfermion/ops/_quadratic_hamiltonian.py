@@ -125,7 +125,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                                       numpy.eye(self.n_qubits))
         self.chemical_potential += chemical_potential
 
-    def orbital_energies(self):
+    def orbital_energies(self, non_negative=False):
         """Return the orbital energies.
 
         Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
@@ -146,7 +146,7 @@ class QuadraticHamiltonian(PolynomialTensor):
         constant(float)
             The constant
         """
-        if self.conserves_particle_number:
+        if self.conserves_particle_number and not non_negative:
             hermitian_matrix = self.combined_hermitian_part
             orbital_energies, diagonalizing_unitary = numpy.linalg.eigh(
                     hermitian_matrix)
