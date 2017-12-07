@@ -278,51 +278,6 @@ class QuadraticHamiltonian(PolynomialTensor):
         return diagonalizing_unitary
 
 
-def majorana_operator(term=None, coefficient=1.):
-    """Initialize a Majorana operator.
-
-    Args:
-        term(tuple): The first element of the tuple indicates the mode
-            on which the Majorana operator acts, starting from zero.
-            The second element of the tuple is an integer, either 1 or 0,
-            indicating which type of Majorana operator it is:
-                type 1: 1 / sqrt(2) (a^\dagger_j + a_j)
-                type 0: i / sqrt(2) (a^\dagger_j - a_j)
-            where the a^\dagger_j and a_j are the usual fermionic ladder
-            operators.
-            Default will result in the zero operator.
-        coefficient(complex or float, optional): The coefficient of the term.
-            Default value is 1.0.
-
-    Returns:
-        FermionOperator
-    """
-    if not isinstance(coefficient, (int, float, complex)):
-        raise ValueError('Coefficient must be scalar.')
-
-    if term is None:
-        # Return zero operator
-        return FermionOperator()
-    elif isinstance(term, tuple):
-        mode, operator_type = term
-        if operator_type == 1:
-            majorana_op = FermionOperator(
-                    ((mode, 1),), coefficient / numpy.sqrt(2.))
-            majorana_op += FermionOperator(
-                    ((mode, 0),), coefficient / numpy.sqrt(2.))
-        elif operator_type == 0:
-            majorana_op = FermionOperator(
-                    ((mode, 1),), 1.j * coefficient / numpy.sqrt(2.))
-            majorana_op -= FermionOperator(
-                    ((mode, 0),), 1.j * coefficient / numpy.sqrt(2.))
-        else:
-            raise ValueError('Operator specified incorrectly.')
-        return majorana_op
-    # Invalid input.
-    else:
-        raise ValueError('Operator specified incorrectly.')
-
-
 def antisymmetric_canonical_form(antisymmetric_matrix):
     """Compute the canonical form of an antisymmetric matrix.
 

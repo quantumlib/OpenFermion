@@ -17,12 +17,9 @@ import numpy
 import unittest
 
 from openfermion.config import EQ_TOLERANCE
-from openfermion.ops import (FermionOperator,
-                             QuadraticHamiltonian,
-                             normal_ordered)
-from openfermion.ops._quadratic_hamiltonian import (
-        majorana_operator,
-        antisymmetric_canonical_form)
+from openfermion.ops import (majorana_operator, normal_ordered,
+                             FermionOperator, QuadraticHamiltonian)
+from openfermion.ops._quadratic_hamiltonian import antisymmetric_canonical_form
 from openfermion.transforms import get_fermion_operator, get_sparse_operator
 from openfermion.utils import get_ground_state
 
