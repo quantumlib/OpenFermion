@@ -299,8 +299,10 @@ def fermionic_gaussian_decomposition(unitary_rows):
                 double_givens_rotate(current_matrix, givens_rotation,
                                      j, j + 1, which='col')
 
-        # Append the current list of parallel rotations to the list
-        decomposition.append(tuple(parallel_ops))
+        # If the current list of parallel operations is not empty,
+        # append it to the list,
+        if parallel_ops:
+            decomposition.append(tuple(parallel_ops))
 
     # Get the diagonal entries
     diagonal = current_matrix[range(n), range(n, 2 * n)]
@@ -347,8 +349,10 @@ def fermionic_gaussian_decomposition(unitary_rows):
                 givens_rotate(current_matrix, givens_rotation,
                               j - 1, j, which='col')
 
-        # Append the current list of parallel rotations to the list
-        left_decomposition.append(tuple(parallel_ops))
+        # If the current list of parallel operations is not empty,
+        # append it to the list,
+        if parallel_ops:
+            left_decomposition.append(tuple(parallel_ops))
 
     # Get the diagonal entries
     left_diagonal = current_matrix[range(n), range(n)]
@@ -490,8 +494,10 @@ def givens_decomposition(unitary_rows):
                     givens_rotate(current_matrix, givens_rotation,
                                   j - 1, j, which='col')
 
-            # Append the current list of parallel rotations to the list
-            givens_rotations.append(tuple(parallel_rotations))
+            # If the current list of parallel operations is not empty,
+            # append it to the list,
+            if parallel_rotations:
+                givens_rotations.append(tuple(parallel_rotations))
 
     # Get the diagonal entries
     diagonal = current_matrix.diagonal()
