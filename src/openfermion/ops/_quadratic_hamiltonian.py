@@ -168,6 +168,11 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         return orbital_energies, constant
 
+    def ground_energy(self):
+        """Return the ground energy."""
+        orbital_energies, constant = self.orbital_energies(non_negative=True)
+        return constant
+
     def majorana_form(self):
         """Return the Majorana represention of the Hamiltonian.
 

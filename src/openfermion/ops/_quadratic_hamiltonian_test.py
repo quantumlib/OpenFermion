@@ -48,6 +48,15 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
                 self.constant, self.hermitian_mat, self.antisymmetric_mat,
                 self.chemical_potential)
 
+        # Initialize the sparse operators and get their ground energies
+        self.quad_ham_pc_sparse = get_sparse_operator(self.quad_ham_pc)
+        self.quad_ham_npc_sparse = get_sparse_operator(self.quad_ham_npc)
+
+        self.pc_ground_energy, self.pc_ground_state = get_ground_state(
+                self.quad_ham_pc_sparse)
+        self.npc_ground_energy, self.npc_ground_state = get_ground_state(
+                self.quad_ham_npc_sparse)
+
     def test_combined_hermitian_part(self):
         """Test getting the combined Hermitian part."""
         combined_hermitian_part = self.quad_ham_pc.combined_hermitian_part
@@ -114,17 +123,22 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         # Test the ground energy
         energy = numpy.sum(
                 orbital_energies[orbital_energies < -EQ_TOLERANCE]) + constant
-        quad_ham_pc_sparse = get_sparse_operator(self.quad_ham_pc)
-        ground_energy, ground_state = get_ground_state(quad_ham_pc_sparse)
-        self.assertAlmostEqual(energy, ground_energy)
+        self.assertAlmostEqual(energy, self.pc_ground_energy)
 
         # Test the non-particle-number-conserving case
         orbital_energies, constant = self.quad_ham_npc.orbital_energies()
         # Test the ground energy
         energy = constant
-        quad_ham_npc_sparse = get_sparse_operator(self.quad_ham_npc)
-        ground_energy, ground_state = get_ground_state(quad_ham_npc_sparse)
-        self.assertAlmostEqual(energy, ground_energy)
+        self.assertAlmostEqual(energy, self.npc_ground_energy)
+
+    def test_ground_energy(self):
+        """Test getting the ground energy."""
+        # Test particle-number-conserving case
+        energy = self.quad_ham_pc.ground_energy()
+        self.assertAlmostEqual(energy, self.pc_ground_energy)
+        # Test non-particle-number-conserving case
+        energy = self.quad_ham_npc.ground_energy()
+        self.assertAlmostEqual(energy, self.npc_ground_energy)
 
     def test_majorana_form(self):
         """Test getting the Majorana form."""
