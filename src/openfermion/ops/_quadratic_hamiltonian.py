@@ -139,6 +139,12 @@ class QuadraticHamiltonian(PolynomialTensor):
         The eigenvalues of the Hamiltonian are sums of subsets of the
         orbital energies (up to the additive constant).
 
+        Args:
+            non_negative(bool): If True, always return a list of orbital
+                energies that are non-negative. This option is ignored if
+                the Hamiltonian does not conserve particle number, in which
+                case the returned orbital energies are always non-negative.
+
         Returns
         -------
         orbital_energies(ndarray)
