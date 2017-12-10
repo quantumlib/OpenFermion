@@ -137,10 +137,7 @@ class GivensDecompositionTest(unittest.TestCase):
     def test_main_procedure(self):
         for m, n in self.test_dimensions:
             # Obtain a random matrix of orthonormal rows
-            x = numpy.random.randn(n, n)
-            y = numpy.random.randn(n, n)
-            A = x + 1.j*y
-            Q, R = qr(A)
+            Q = random_unitary(n)
             Q = Q[:m, :]
 
             # Get Givens decomposition of Q
@@ -173,9 +170,8 @@ class GivensDecompositionTest(unittest.TestCase):
 
     def test_real_numbers(self):
         for m, n in self.test_dimensions:
-            # Obtain a random matrix of orthonormal rows
-            A = numpy.random.randn(n, n)
-            Q, R = qr(A)
+            # Obtain a random real matrix of orthonormal rows
+            Q = random_unitary(n, real=True)
             Q = Q[:m, :]
 
             # Get Givens decomposition of Q
@@ -210,10 +206,8 @@ class GivensDecompositionTest(unittest.TestCase):
         m, n = (3, 2)
 
         # Obtain a random matrix of orthonormal rows
-        x = numpy.random.randn(m, m)
-        y = numpy.random.randn(m, m)
-        A = x + 1.j*y
-        Q, R = qr(A)
+        Q = random_unitary(m)
+        Q = Q[:m, :]
         Q = Q[:m, :n]
 
         with self.assertRaises(ValueError):
@@ -258,11 +252,10 @@ class GivensDecompositionTest(unittest.TestCase):
 
     def test_square(self):
         m, n = (3, 3)
+
         # Obtain a random matrix of orthonormal rows
-        x = numpy.random.randn(n, n)
-        y = numpy.random.randn(n, n)
-        A = x + 1.j*y
-        Q, R = qr(A)
+        Q = random_unitary(n)
+        Q = Q[:m, :]
         Q = Q[:m, :]
 
         # Get Givens decomposition of Q
@@ -446,3 +439,13 @@ class JWSparseGivensRotationTest(unittest.TestCase):
             givens_matrix = jw_sparse_givens_rotation(0, 2, 1., 1., 5)
         with self.assertRaises(ValueError):
             givens_matrix = jw_sparse_givens_rotation(4, 5, 1., 1., 5)
+
+
+def random_unitary(n, real=False):
+    """Obtain a random n x n unitary matrix."""
+    if real:
+        rand_mat = numpy.random.randn(n, n)
+    else:
+        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
+    Q, R = qr(rand_mat)
+    return Q
