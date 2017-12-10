@@ -22,6 +22,8 @@ from openfermion.ops import (majorana_operator, normal_ordered,
 from openfermion.ops._quadratic_hamiltonian import antisymmetric_canonical_form
 from openfermion.transforms import get_fermion_operator, get_sparse_operator
 from openfermion.utils import get_ground_state
+from openfermion.tests._testing_utils import (random_antisymmetric_matrix,
+                                              random_hermitian_matrix)
 
 
 class QuadraticHamiltoniansTest(unittest.TestCase):
@@ -265,48 +267,3 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
         ones_mat = numpy.ones((n, n))
         with self.assertRaises(ValueError):
             _ = antisymmetric_canonical_form(ones_mat)
-
-
-def random_hermitian_matrix(n, real=False):
-    """Generate a random n x n Hermitian matrix."""
-    if real:
-        rand_mat = numpy.random.randn(n, n)
-    else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
-    hermitian_mat = rand_mat + rand_mat.T.conj()
-    return hermitian_mat
-
-
-def random_antisymmetric_matrix(n, real=False):
-    """Generate a random n x n antisymmetric matrix."""
-    if real:
-        rand_mat = numpy.random.randn(n, n)
-    else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
-    antisymmetric_mat = rand_mat - rand_mat.T
-    return antisymmetric_mat
-
-
-def random_quadratic_hamiltonian(n_qubits,
-                                 conserves_particle_number=False,
-                                 real=False):
-    """Generate a random instance of QuadraticHamiltonian
-
-    Args:
-        n_qubits(int): the number of qubits
-        conserves_particle_number(bool): whether the returned Hamiltonian
-            should conserve particle number
-        real(bool): whether to use only real numbers
-
-    Returns:
-        QuadraticHamiltonian
-    """
-    constant = numpy.random.randn()
-    chemical_potential = numpy.random.randn()
-    hermitian_mat = random_hermitian_matrix(n_qubits, real)
-    if conserves_particle_number:
-        antisymmetric_mat = None
-    else:
-        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
-    return QuadraticHamiltonian(constant, hermitian_mat,
-                                antisymmetric_mat, chemical_potential)

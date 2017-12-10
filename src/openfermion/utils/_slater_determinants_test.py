@@ -20,9 +20,9 @@ from scipy.linalg import qr
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import swap_rows
-from openfermion.ops._quadratic_hamiltonian_test import (
+from openfermion.tests._testing_utils import (
         random_antisymmetric_matrix, random_hermitian_matrix,
-        random_quadratic_hamiltonian)
+        random_quadratic_hamiltonian, random_unitary_matrix)
 from openfermion.transforms import get_sparse_operator
 from openfermion.utils import (gaussian_state_preparation_circuit,
                                get_ground_state,
@@ -430,22 +430,3 @@ class DoubleGivensRotateTest(unittest.TestCase):
         G = givens_matrix_elements(v[0], v[1])
         with self.assertRaises(ValueError):
             double_givens_rotate(A, G, 0, 1, which='a')
-
-
-class JWSparseGivensRotationTest(unittest.TestCase):
-
-    def test_bad_input(self):
-        with self.assertRaises(ValueError):
-            givens_matrix = jw_sparse_givens_rotation(0, 2, 1., 1., 5)
-        with self.assertRaises(ValueError):
-            givens_matrix = jw_sparse_givens_rotation(4, 5, 1., 1., 5)
-
-
-def random_unitary_matrix(n, real=False):
-    """Obtain a random n x n unitary matrix."""
-    if real:
-        rand_mat = numpy.random.randn(n, n)
-    else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
-    Q, R = qr(rand_mat)
-    return Q
