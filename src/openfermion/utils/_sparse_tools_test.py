@@ -401,6 +401,15 @@ class JWGetGaussianStateTest(unittest.TestCase):
             energy, state = jw_get_gaussian_state('a')
 
 
+class JWSparseGivensRotationTest(unittest.TestCase):
+
+    def test_bad_input(self):
+        with self.assertRaises(ValueError):
+            givens_matrix = jw_sparse_givens_rotation(0, 2, 1., 1., 5)
+        with self.assertRaises(ValueError):
+            givens_matrix = jw_sparse_givens_rotation(4, 5, 1., 1., 5)
+
+
 class GroundStateTest(unittest.TestCase):
     def test_get_ground_state_hermitian(self):
         ground = get_ground_state(get_sparse_operator(

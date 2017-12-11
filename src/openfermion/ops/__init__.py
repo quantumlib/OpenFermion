@@ -12,6 +12,7 @@
 
 from ._fermion_operator import (FermionOperator,
                                 hermitian_conjugated,
+                                majorana_operator,
                                 normal_ordered,
                                 number_operator)
 from ._qubit_operator import QubitOperator

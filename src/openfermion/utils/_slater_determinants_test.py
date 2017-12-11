@@ -19,10 +19,7 @@ from scipy.linalg import qr
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
-from openfermion.ops._quadratic_hamiltonian import (
-        diagonalizing_fermionic_unitary, swap_rows)
-from openfermion.ops._quadratic_hamiltonian_test import (
-        random_hermitian_matrix, random_antisymmetric_matrix)
+from openfermion.ops._quadratic_hamiltonian import swap_rows
 from openfermion.transforms import get_sparse_operator
 from openfermion.utils import (gaussian_state_preparation_circuit,
                                get_ground_state,
@@ -37,6 +34,9 @@ from openfermion.utils._slater_determinants import (
 from openfermion.utils._sparse_tools import (
         jw_sparse_givens_rotation,
         jw_sparse_particle_hole_transformation_last_mode)
+from openfermion.utils._testing_utils import (
+        random_antisymmetric_matrix, random_hermitian_matrix,
+        random_quadratic_hamiltonian, random_unitary_matrix)
 
 
 class GaussianStatePreparationCircuitTest(unittest.TestCase):
@@ -137,10 +137,7 @@ class GivensDecompositionTest(unittest.TestCase):
     def test_main_procedure(self):
         for m, n in self.test_dimensions:
             # Obtain a random matrix of orthonormal rows
-            x = numpy.random.randn(n, n)
-            y = numpy.random.randn(n, n)
-            A = x + 1.j*y
-            Q, R = qr(A)
+            Q = random_unitary_matrix(n)
             Q = Q[:m, :]
 
             # Get Givens decomposition of Q
@@ -173,9 +170,8 @@ class GivensDecompositionTest(unittest.TestCase):
 
     def test_real_numbers(self):
         for m, n in self.test_dimensions:
-            # Obtain a random matrix of orthonormal rows
-            A = numpy.random.randn(n, n)
-            Q, R = qr(A)
+            # Obtain a random real matrix of orthonormal rows
+            Q = random_unitary_matrix(n, real=True)
             Q = Q[:m, :]
 
             # Get Givens decomposition of Q
@@ -210,10 +206,8 @@ class GivensDecompositionTest(unittest.TestCase):
         m, n = (3, 2)
 
         # Obtain a random matrix of orthonormal rows
-        x = numpy.random.randn(m, m)
-        y = numpy.random.randn(m, m)
-        A = x + 1.j*y
-        Q, R = qr(A)
+        Q = random_unitary_matrix(m)
+        Q = Q[:m, :]
         Q = Q[:m, :n]
 
         with self.assertRaises(ValueError):
@@ -258,11 +252,10 @@ class GivensDecompositionTest(unittest.TestCase):
 
     def test_square(self):
         m, n = (3, 3)
+
         # Obtain a random matrix of orthonormal rows
-        x = numpy.random.randn(n, n)
-        y = numpy.random.randn(n, n)
-        A = x + 1.j*y
-        Q, R = qr(A)
+        Q = random_unitary_matrix(n)
+        Q = Q[:m, :]
         Q = Q[:m, :]
 
         # Get Givens decomposition of Q
@@ -291,12 +284,12 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
 
     def test_main_procedure(self):
         for n in self.test_dimensions:
-            # Obtain a random antisymmetric matrix
-            antisymmetric_mat = random_antisymmetric_matrix(2 * n, real=True)
+            # Obtain a random quadratic Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(n)
 
             # Get the diagonalizing fermionic unitary
-            ferm_unitary = diagonalizing_fermionic_unitary(
-                    antisymmetric_mat)
+            ferm_unitary = (
+                    quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
             lower_unitary = ferm_unitary[n:]
 
             # Get fermionic Gaussian decomposition of lower_unitary
@@ -437,37 +430,3 @@ class DoubleGivensRotateTest(unittest.TestCase):
         G = givens_matrix_elements(v[0], v[1])
         with self.assertRaises(ValueError):
             double_givens_rotate(A, G, 0, 1, which='a')
-
-
-class JWSparseGivensRotationTest(unittest.TestCase):
-
-    def test_bad_input(self):
-        with self.assertRaises(ValueError):
-            givens_matrix = jw_sparse_givens_rotation(0, 2, 1., 1., 5)
-        with self.assertRaises(ValueError):
-            givens_matrix = jw_sparse_givens_rotation(4, 5, 1., 1., 5)
-
-
-def random_quadratic_hamiltonian(n_qubits,
-                                 conserves_particle_number=False,
-                                 real=False):
-    """Generate a random instance of QuadraticHamiltonian
-
-    Args:
-        n_qubits(int): the number of qubits
-        conserves_particle_number(bool): whether the returned Hamiltonian
-            should conserve particle number
-        real(bool): whether to use only real numbers
-
-    Returns:
-        QuadraticHamiltonian
-    """
-    constant = numpy.random.randn()
-    chemical_potential = numpy.random.randn()
-    hermitian_mat = random_hermitian_matrix(n_qubits, real)
-    if conserves_particle_number:
-        antisymmetric_mat = None
-    else:
-        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
-    return QuadraticHamiltonian(constant, hermitian_mat,
-                                antisymmetric_mat, chemical_potential)

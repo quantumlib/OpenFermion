@@ -18,6 +18,7 @@ import unittest
 
 from openfermion.utils._bch_expansion import *
 
+
 def bch_expand_baseline(x, y, order):
     """Compute log[e^x e^y] using the Baker-Campbell-Hausdorff formula
     Args:
@@ -70,6 +71,7 @@ def bch_expand_baseline(x, y, order):
 
     return z
 
+
 class BCHTest(unittest.TestCase):
 
     def setUp(self):
@@ -79,13 +81,14 @@ class BCHTest(unittest.TestCase):
         self.test_order = 5
 
     def test_bch(self):
-        """Test efficient bch expansion against hard coded baseline coefficients"""
+        """Test efficient bch expansion against hard-coded baseline
+        coefficients"""
         for s in self.seed:
             seed(s)
             x = rand(self.dim, self.dim)
             y = rand(self.dim, self.dim)
             test = bch_expand(x, y, self.test_order)
-            baseline = bch_expand_baseline(x, y, self.test_order) 
+            baseline = bch_expand_baseline(x, y, self.test_order)
             self.assertAlmostEquals(norm(test-baseline), 0.0)
 
     def test_verification(self):

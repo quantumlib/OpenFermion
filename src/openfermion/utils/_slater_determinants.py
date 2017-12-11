@@ -18,8 +18,7 @@ import numpy
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
-from openfermion.ops._quadratic_hamiltonian import (
-        diagonalizing_fermionic_unitary, swap_columns)
+from openfermion.ops._quadratic_hamiltonian import swap_columns
 
 
 def gaussian_state_preparation_circuit(
@@ -85,10 +84,8 @@ def gaussian_state_preparation_circuit(
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
-        majorana_matrix, majorana_constant = (
-                quadratic_hamiltonian.majorana_form())
-        diagonalizing_unitary = diagonalizing_fermionic_unitary(
-                majorana_matrix)
+        diagonalizing_unitary = (
+                quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
 
         # Get the unitary rows which represent the Gaussian unitary
         gaussian_unitary_matrix = diagonalizing_unitary[
@@ -112,6 +109,7 @@ def gaussian_state_preparation_circuit(
 
     return circuit_description, start_orbitals
 
+
 def slater_determinant_preparation_circuit(slater_determinant_matrix):
     """Obtain the description of a circuit which prepares a Slater determinant.
 
@@ -123,14 +121,14 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
         b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \\text{vac} \\rangle,
 
     where
-    
+
     .. math::
 
         b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
 
     The output is the description of a circuit which prepares this
     Slater determinant, up to a global phase.
-    The starting state which the circuit should be applied to 
+    The starting state which the circuit should be applied to
     is a Slater determinant (in the computational basis) with
     the first :math:`N_f` orbitals filled.
 
@@ -150,6 +148,7 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
             slater_determinant_matrix)
     circuit_description = list(reversed(decomposition))
     return circuit_description
+
 
 def fermionic_gaussian_decomposition(unitary_rows):
     """Decompose a matrix into a sequence of Givens rotations and
@@ -300,8 +299,10 @@ def fermionic_gaussian_decomposition(unitary_rows):
                 double_givens_rotate(current_matrix, givens_rotation,
                                      j, j + 1, which='col')
 
-        # Append the current list of parallel rotations to the list
-        decomposition.append(tuple(parallel_ops))
+        # If the current list of parallel operations is not empty,
+        # append it to the list,
+        if parallel_ops:
+            decomposition.append(tuple(parallel_ops))
 
     # Get the diagonal entries
     diagonal = current_matrix[range(n), range(n, 2 * n)]
@@ -348,8 +349,10 @@ def fermionic_gaussian_decomposition(unitary_rows):
                 givens_rotate(current_matrix, givens_rotation,
                               j - 1, j, which='col')
 
-        # Append the current list of parallel rotations to the list
-        left_decomposition.append(tuple(parallel_ops))
+        # If the current list of parallel operations is not empty,
+        # append it to the list,
+        if parallel_ops:
+            left_decomposition.append(tuple(parallel_ops))
 
     # Get the diagonal entries
     left_diagonal = current_matrix[range(n), range(n)]
@@ -491,8 +494,10 @@ def givens_decomposition(unitary_rows):
                     givens_rotate(current_matrix, givens_rotation,
                                   j - 1, j, which='col')
 
-            # Append the current list of parallel rotations to the list
-            givens_rotations.append(tuple(parallel_rotations))
+            # If the current list of parallel operations is not empty,
+            # append it to the list,
+            if parallel_rotations:
+                givens_rotations.append(tuple(parallel_rotations))
 
     # Get the diagonal entries
     diagonal = current_matrix.diagonal()

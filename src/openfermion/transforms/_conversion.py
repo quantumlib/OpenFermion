@@ -35,7 +35,8 @@ from openfermion.utils import (count_qubits,
 
 
 def get_sparse_operator(operator, n_qubits=None):
-    """Map a Fermion, Qubit, or InteractionOperator to a SparseOperator."""
+    """Map a FermionOperator, QubitOperator, or PolyomialTensor to a
+    sparse matrix."""
     if isinstance(operator, PolynomialTensor):
         return get_sparse_polynomial_tensor(operator)
     elif isinstance(operator, FermionOperator):

@@ -406,7 +406,7 @@ class PolynomialTensorTest(unittest.TestCase):
         for order in [27, 28]:
             with self.assertRaises(ValueError):
                 tensor, want_tensor = self.do_rotate_basis_high_order(order)
-            
+
     def do_rotate_basis_high_order(self, order):
         key = (1,) * (order // 2) + (0,) * ((order + 1) // 2)
         shape = (1,) * order
@@ -417,7 +417,8 @@ class PolynomialTensorTest(unittest.TestCase):
                 {key: numpy.zeros(shape) + num})
 
         # If order is odd, there are one more 0 than 1 in key
-        if order % 2 == 1: num *= rotation
+        if order % 2 == 1:
+            num *= rotation
         want_polynomial_tensor = PolynomialTensor(
                 {key: numpy.zeros(shape) + num})
 

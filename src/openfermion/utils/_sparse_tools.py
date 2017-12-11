@@ -415,8 +415,9 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
     state = jw_slater_determinant(start_orbitals, n_qubits)
 
     # Apply the circuit
-    particle_hole_transformation = (
-            jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+    if not quadratic_hamiltonian.conserves_particle_number:
+        particle_hole_transformation = (
+                jw_sparse_particle_hole_transformation_last_mode(n_qubits))
     for parallel_ops in circuit_description:
         for op in parallel_ops:
             if op == 'pht':
