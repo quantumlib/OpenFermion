@@ -17,9 +17,9 @@ import time
 from openfermion.ops import (FermionOperator,
                              InteractionOperator,
                              normal_ordered)
-from openfermion.tests._testing_utils import random_interaction_operator
 from openfermion.transforms import get_fermion_operator, jordan_wigner
 from openfermion.utils import jordan_wigner_sparse
+from openfermion.utils._testing_utils import random_interaction_operator
 
 
 def benchmark_molecular_operator_jordan_wigner(n_qubits):

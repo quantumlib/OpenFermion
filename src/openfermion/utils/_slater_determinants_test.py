@@ -20,9 +20,6 @@ from scipy.linalg import qr
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import swap_rows
-from openfermion.tests._testing_utils import (
-        random_antisymmetric_matrix, random_hermitian_matrix,
-        random_quadratic_hamiltonian, random_unitary_matrix)
 from openfermion.transforms import get_sparse_operator
 from openfermion.utils import (gaussian_state_preparation_circuit,
                                get_ground_state,
@@ -37,6 +34,9 @@ from openfermion.utils._slater_determinants import (
 from openfermion.utils._sparse_tools import (
         jw_sparse_givens_rotation,
         jw_sparse_particle_hole_transformation_last_mode)
+from openfermion.utils._testing_utils import (
+        random_antisymmetric_matrix, random_hermitian_matrix,
+        random_quadratic_hamiltonian, random_unitary_matrix)
 
 
 class GaussianStatePreparationCircuitTest(unittest.TestCase):
