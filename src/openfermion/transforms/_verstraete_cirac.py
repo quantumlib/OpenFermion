@@ -1,0 +1,207 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+"""Jordan-Wigner transform on fermionic operators."""
+from __future__ import absolute_import
+
+import itertools
+
+import networkx
+import numpy
+
+from openfermion.ops import majorana_operator, QubitOperator
+
+
+def verstraete_cirac_2d_square(operator, x_dimension, y_dimension):
+    """ Apply the Verstraete-Cirac transform on a 2-d square lattice.
+
+    NOTE: Currently this only works if x_dim=y_dim and x_dim is even.
+
+    Args:
+        operator (FermionOperator): The operator to transform.
+        x_dimension (int): The number of columns of the grid.
+        y_dimension (int): The number of rows of the grid.
+
+    Returns:
+        transformed_operator: A QubitOperator.
+    """
+    return
+
+
+def jw_index_2d_square(column, row, x_dimension, y_dimension):
+    """Obtain the JWT index of a coordinate on a 2-d grid.
+
+    This uses the 'snake' ordering.
+    """
+    if column > x_dimension - 1:
+        raise ValueError('Column index exceeds x_dimension - 1.')
+    if row > y_dimension - 1:
+        raise ValueError('Row index exceeds y_dimension - 1.')
+
+    if row % 2 == 0:
+        index = row * x_dimension + column
+    else:
+        index = (row + 1) * x_dimension - 1 - column
+
+    return index
+
+
+def jw_coordinates_2d_square(index, x_dimension, y_dimension):
+    """Obtain the column and row coordinates corresponding to a JWT index
+    on a 2-d grid.
+
+    This uses the 'snake' ordering.
+    """
+    if index > x_dimension * y_dimension - 1:
+        raise ValueError('Index exceeds x_dimension * y_dimension - 1.')
+
+    row = index // x_dimension
+    if row % 2 == 0:
+        column = index % x_dimension
+    else:
+        column = x_dimension - 1 - index % x_dimension
+
+    return column, row
+
+
+def jw_index_2d_square_sys(column, row, x_dimension, y_dimension):
+    """Obtain the JWT index of a system qubit in the combined system."""
+    index = 2 * jw_index_2d_square(column, row, x_dimension, y_dimension)
+    return index
+
+
+def jw_index_2d_square_aux(column, row, x_dimension, y_dimension):
+    """Obtain the JWT index of an auxiliary qubit in the combined system."""
+    index = 2 * jw_index_2d_square(column, row, x_dimension, y_dimension) + 1
+    return index
+
+
+def jw_coordinates_2d_square_sys(index, x_dimension, y_dimension):
+    """Obtain the column and row coordinates of a system qubit from its
+    JWT index in the combined system."""
+    sys_graph_index = index // 2
+    return jw_coordinates_2d_square(sys_graph_index, x_dimension, y_dimension)
+
+
+def jw_coordinates_2d_square_aux(index, x_dimension, y_dimension):
+    """Obtain the column and row coordinates of an auxiliary qubit from its
+    JWT index in the combined system."""
+    aux_graph_index = (index - 1) // 2
+    return jw_coordinates_2d_square(aux_graph_index, x_dimension, y_dimension)
+
+
+def auxiliary_graph_2d_square(x_dimension, y_dimension):
+    """Obtain the auxiliary graph for a 2-d grid.
+
+    NOTE: Currently this only works if x_dim=y_dim and x_dim is even.
+    """
+    if not (x_dimension == y_dimension and x_dimension % 2 == 0):
+        raise ValueError('Currently only square grids of even dimension are '
+                         'supported.')
+
+    graph = networkx.DiGraph()
+    graph.add_nodes_from(range(x_dimension * y_dimension))
+
+    for k in range(0, x_dimension, 2):
+        # Create the loop spanning columns k and k + 1
+        # Add top edge
+        graph.add_edge(k + 1, k)
+        # Add bottom edge
+        graph.add_edge(jw_index_2d_square(k, y_dimension - 1,
+                                          x_dimension, y_dimension),
+                       jw_index_2d_square(k + 1, y_dimension - 1,
+                                          x_dimension, y_dimension))
+        for l in range(y_dimension - 1):
+            # Add edges between rows l and l + 1
+            # Add left edge
+            graph.add_edge(jw_index_2d_square(k, l,
+                                              x_dimension, y_dimension),
+                           jw_index_2d_square(k, l + 1,
+                                              x_dimension, y_dimension))
+            # Add right edge
+            graph.add_edge(jw_index_2d_square(k + 1, l + 1,
+                                              x_dimension, y_dimension),
+                           jw_index_2d_square(k + 1, l,
+                                              x_dimension, y_dimension))
+
+    return graph
+
+
+def stabilizer(i, j):
+    """P_{ij} in the paper.
+
+    NOTE: We may want to flip the sign.
+    """
+    c = majorana_operator((i, 1), numpy.sqrt(2.))
+    d = majorana_operator((j, 0), numpy.sqrt(2.))
+    return -1.j * c * d
+
+
+def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
+    """The local version of P_{ij} for a 2-d grid.
+
+    i and j are indices on the auxiliary graph.
+
+    NOTE: Currently this only works if x_dim=y_dim and x_dim is even.
+    """
+    i_col, i_row = jw_coordinates_2d_square(i, x_dimension, y_dimension)
+    j_col, j_row = jw_coordinates_2d_square(j, x_dimension, y_dimension)
+    if not (abs(i_row - j_row) == 1 and i_col == j_col or
+            abs(i_col - j_col) == 1 and i_row == j_row):
+        raise ValueError("Vertices i and j are not adjacent")
+
+    stab = stabilizer(i, j)
+    if abs(i_row - j_row) == 1:
+        # Term is vertical, so we may need to multiply by extra stabilizers
+        top_row = min(i_row, j_row)
+        if top_row % 2 == 0:
+            # Term is right-closed
+            if i_col < x_dimension - 1:
+                extra_term_top = jw_index_2d_square(i_col + 1, top_row,
+                                                    x_dimension, y_dimension)
+                extra_term_bot = jw_index_2d_square(i_col + 1, top_row + 1,
+                                                    x_dimension, y_dimension)
+                if (i_col + 1) % 2 == 0:
+                    stab *= stabilizer(extra_term_top, extra_term_bot)
+                else:
+                    stab *= stabilizer(extra_term_bot, extra_term_top)
+        else:
+            # Term is left-closed
+            if i_col > 0:
+                extra_term_top = jw_index_2d_square(i_col - 1, top_row,
+                                                    x_dimension, y_dimension)
+                extra_term_bot = jw_index_2d_square(i_col - 1, top_row + 1,
+                                                    x_dimension, y_dimension)
+                if (i_col - 1) % 2 == 0:
+                    stab *= stabilizer(extra_term_top, extra_term_bot)
+                else:
+                    stab *= stabilizer(extra_term_bot, extra_term_top)
+
+    return stab
+
+
+def row_indices(row, x_dimension):
+    """Obtain the indices in a row from left to right."""
+    indices = range(row * x_dimension, (row + 1) * x_dimension)
+    if row % 2 != 0:
+        indices = reversed(indices)
+    return indices
+
+
+def vertical_edges(x_dimension, y_dimension):
+    """Obtain the vertical edges."""
+    edges = []
+    for row in range(y_dimension - 1):
+        upper_row = row_indices(row, x_dimension)
+        lower_row = row_indices(row + 1, x_dimension)
+        edges += zip(upper_row, lower_row)
+    return edges
