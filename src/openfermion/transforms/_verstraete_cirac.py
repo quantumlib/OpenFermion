@@ -18,13 +18,14 @@ import itertools
 import networkx
 import numpy
 
-from openfermion.ops import majorana_operator, QubitOperator
+from openfermion.ops import majorana_operator, FermionOperator, QubitOperator
+from openfermion.transforms import jordan_wigner
 
 
 def verstraete_cirac_2d_square(operator, x_dimension, y_dimension):
     """ Apply the Verstraete-Cirac transform on a 2-d square lattice.
 
-    NOTE: Currently this only works if x_dim=y_dim and x_dim is even.
+    NOTE: This is just skeleton code and doesn't work yet.
 
     Args:
         operator (FermionOperator): The operator to transform.
@@ -34,8 +35,43 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension):
     Returns:
         transformed_operator: A QubitOperator.
     """
+    vert_edges = vertical_edges(x_dimension, y_dimension)
+    horiz_edges = horizontal_edges(x_dimension, y_dimension)
+
+    transformed_operator = QubitOperator()
+    for term in operator.terms:
+        if len(term) == 2:
+            print(term)
+            i, j = term[0][0], term[1][0]
+            if (i, j) in vert_edges or (j, i) in vert_edges:
+                print(i, j)
+    
     return
 
+
+def verstraete_cirac_2d_square_hopping_term(term, x_dimension, y_dimension):
+    vert_edges = vertical_edges(x_dimension, y_dimension)
+    horiz_edges = horizontal_edges(x_dimension, y_dimension)
+    i, j = term[0][0], term[1][0]
+
+    # Get the JWT indices in the combined system
+    i_combined = 2 * i
+    j_combined = 2 * j
+
+    # Initialize term
+    transformed_term = FermionOperator(((i_combined, term[0][1]),
+                                        (j_combined, term[1][1])))
+
+    # If the term corresponds to a vertical edge, multiply by stabilizer
+    if (i, j) in vert_edges or (j, i) in vert_edges:
+        i_aux = 2 * i + 1
+        j_aux = 2 * j + 1
+        transformed_term *= stabilizer_local_2d_square(
+                i_aux, j_aux, x_dimension, y_dimension)
+
+    transformed_term = jordan_wigner(transformed_term)
+
+    return transformed_term
 
 def jw_index_2d_square(column, row, x_dimension, y_dimension):
     """Obtain the JWT index of a coordinate on a 2-d grid.
@@ -74,27 +110,39 @@ def jw_coordinates_2d_square(index, x_dimension, y_dimension):
 
 
 def jw_index_2d_square_sys(column, row, x_dimension, y_dimension):
-    """Obtain the JWT index of a system qubit in the combined system."""
+    """Obtain the JWT index of a system qubit in the combined system.
+
+    NOTE: This may need to be modified to handle odd x_dimension.
+    """
     index = 2 * jw_index_2d_square(column, row, x_dimension, y_dimension)
     return index
 
 
 def jw_index_2d_square_aux(column, row, x_dimension, y_dimension):
-    """Obtain the JWT index of an auxiliary qubit in the combined system."""
+    """Obtain the JWT index of an auxiliary qubit in the combined system.
+
+    NOTE: This may need to be modified to handle odd x_dimension.
+    """
     index = 2 * jw_index_2d_square(column, row, x_dimension, y_dimension) + 1
     return index
 
 
 def jw_coordinates_2d_square_sys(index, x_dimension, y_dimension):
     """Obtain the column and row coordinates of a system qubit from its
-    JWT index in the combined system."""
+    JWT index in the combined system.
+    
+    NOTE: This may need to be modified to handle odd x_dimension.
+    """
     sys_graph_index = index // 2
     return jw_coordinates_2d_square(sys_graph_index, x_dimension, y_dimension)
 
 
 def jw_coordinates_2d_square_aux(index, x_dimension, y_dimension):
     """Obtain the column and row coordinates of an auxiliary qubit from its
-    JWT index in the combined system."""
+    JWT index in the combined system.
+    
+    NOTE: This may need to be modified to handle odd x_dimension.
+    """
     aux_graph_index = (index - 1) // 2
     return jw_coordinates_2d_square(aux_graph_index, x_dimension, y_dimension)
 
@@ -102,10 +150,10 @@ def jw_coordinates_2d_square_aux(index, x_dimension, y_dimension):
 def auxiliary_graph_2d_square(x_dimension, y_dimension):
     """Obtain the auxiliary graph for a 2-d grid.
 
-    NOTE: Currently this only works if x_dim=y_dim and x_dim is even.
+    NOTE: Currently this only works for even x_dimension.
     """
-    if not (x_dimension == y_dimension and x_dimension % 2 == 0):
-        raise ValueError('Currently only square grids of even dimension are '
+    if not (x_dimension % 2 == 0):
+        raise ValueError('Currently only an even number of columns is '
                          'supported.')
 
     graph = networkx.DiGraph()
@@ -151,7 +199,7 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
 
     i and j are indices on the auxiliary graph.
 
-    NOTE: Currently this only works if x_dim=y_dim and x_dim is even.
+    NOTE: Currently this only works for even x_dimension.
     """
     i_col, i_row = jw_coordinates_2d_square(i, x_dimension, y_dimension)
     j_col, j_row = jw_coordinates_2d_square(j, x_dimension, y_dimension)
@@ -198,7 +246,7 @@ def row_indices(row, x_dimension):
     indices = range(row * x_dimension, (row + 1) * x_dimension)
     if row % 2 != 0:
         indices = reversed(indices)
-    return indices
+    return list(indices)
 
 
 def vertical_edges(x_dimension, y_dimension):
@@ -208,4 +256,14 @@ def vertical_edges(x_dimension, y_dimension):
         upper_row = row_indices(row, x_dimension)
         lower_row = row_indices(row + 1, x_dimension)
         edges += zip(upper_row, lower_row)
+    return edges
+
+
+def horizontal_edges(x_dimension, y_dimension):
+    """Obtain the horizontal edges."""
+    edges = []
+    for row in range(y_dimension):
+        indices = row_indices(row, x_dimension)
+        for i in range(x_dimension - 1):
+            edges.append((indices[i], indices[i + 1]))
     return edges
