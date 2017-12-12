@@ -159,17 +159,21 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
             abs(i_col - j_col) == 1 and i_row == j_row):
         raise ValueError("Vertices i and j are not adjacent")
 
-    stab = stabilizer(i, j)
+    # Get the JWT indices in the combined system
+    i_combined = 2 * i + 1
+    j_combined = 2 * j + 1
+
+    stab = stabilizer(i_combined, j_combined)
     if abs(i_row - j_row) == 1:
         # Term is vertical, so we may need to multiply by extra stabilizers
         top_row = min(i_row, j_row)
         if top_row % 2 == 0:
             # Term is right-closed
             if i_col < x_dimension - 1:
-                extra_term_top = jw_index_2d_square(i_col + 1, top_row,
-                                                    x_dimension, y_dimension)
-                extra_term_bot = jw_index_2d_square(i_col + 1, top_row + 1,
-                                                    x_dimension, y_dimension)
+                extra_term_top = jw_index_2d_square_aux(
+                        i_col + 1, top_row, x_dimension, y_dimension)
+                extra_term_bot = jw_index_2d_square_aux(
+                        i_col + 1, top_row + 1, x_dimension, y_dimension)
                 if (i_col + 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
                 else:
@@ -177,10 +181,10 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
         else:
             # Term is left-closed
             if i_col > 0:
-                extra_term_top = jw_index_2d_square(i_col - 1, top_row,
-                                                    x_dimension, y_dimension)
-                extra_term_bot = jw_index_2d_square(i_col - 1, top_row + 1,
-                                                    x_dimension, y_dimension)
+                extra_term_top = jw_index_2d_square_aux(
+                        i_col - 1, top_row, x_dimension, y_dimension)
+                extra_term_bot = jw_index_2d_square_aux(
+                        i_col - 1, top_row + 1, x_dimension, y_dimension)
                 if (i_col - 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
                 else:
