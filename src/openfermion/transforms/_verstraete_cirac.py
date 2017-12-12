@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Jordan-Wigner transform on fermionic operators."""
+"""Verstraete-Cirac transform on fermionic operators."""
 from __future__ import absolute_import
 
 import itertools
