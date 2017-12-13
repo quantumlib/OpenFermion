@@ -135,10 +135,15 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
         # Add chemical potential and magnetic field terms.
         if chemical_potential and spinless:
+            coefficient = -1. * chemical_potential
+            hubbard_model += number_operator(
+                n_spin_orbitals, site, coefficient)
+
+        if magnetic_field and spinless:
             x_index = site % x_dimension
-            y_index = (site - 1) // x_dimension
+            y_index = site // x_dimension
             sign = (-1.) ** (x_index + y_index)
-            coefficient = sign * chemical_potential
+            coefficient = sign * magnetic_field
             hubbard_model += number_operator(
                 n_spin_orbitals, site, coefficient)
 
