@@ -10,37 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""This module constructions Hamiltonians  the Fermi-Hubbard model.
-
-The idea is that some fermions move around on a grid and the energy of the
-model depends on where the fermions are. In the standard Fermi-Hubbard model
-(which we call the "spinful" model), there is room  an "up" fermion and a
-"down" fermion at each site on the grid. Accordingly, the Hamiltonian is
-
-H = - tunneling sum_{<i,j>} sum_sigma (a^dagger_{i, sigma} a_{j, sigma}
-  + a^dagger_{j, sigma} a_{i, sigma})
-  + coulomb sum_{i} a^dagger_{i, up} a_{i, up} a^dagger_{j, down} a_{j, down}
-  - chemical_potential sum_i (a^dagger_{i, up} a_{i, up}
-  + a^dagger_{i, down} a_{i, down})
-  + magnetic_field sum_i (a^dagger_{i, up} a_{i, up}
-  - a^dagger_{i, down} a_{i, down}).
-
-There are N sites and 2*N spin-orbitals. The operators a^dagger_i and a_i are
-fermionic creation and annihilation operators. One can transm these
-operators to qubit operator using the Jordan-Wigner transmation:
-
-a^dagger_j = 0.5 (X - i Y) prod_{k = 1}^{j - 1} Z_k
-a_j = 0.5 (X + i Y) prod_{k = 1}^{j - 1} Z_k
-
-The code also allows one to construct the spinless Fermi-Hubbard model,
-H = - tunneling sum_{k=1}^{N-1} (a_k^dagger a_{k + 1} + a_{k+1}^dagger a_k)
-  + coulomb sum_{k=1}^{N-1} a_k^dagger a_k a_{k+1}^dagger a_{k+1}
-  + magnetic_field sum_{k=1}^N (-1)^k a_k^dagger a_k
-  - chemical_potential sum_{k=1}^N a_k^dagger a_k.
-
-These Hamiltonians live a square lattice which has dimensions of
-x_dimension by y_dimension. They can have periodic boundary conditions or not.
-"""
+"""This module constructs Hamiltonians for the Fermi-Hubbard model."""
 from __future__ import absolute_import
 
 from openfermion.ops import (FermionOperator,
@@ -64,28 +34,76 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                   particle_hole_symmetry=False):
     """Return symbolic representation of a Fermi-Hubbard Hamiltonian.
 
+    The idea of this model is that some fermions move around on a grid and the
+    energy of the model depends on where the fermions are. In the standard
+    Fermi-Hubbard model (which we call the "spinful" model), there is room
+    for an "up" fermion and a "down" fermion at each site on the grid.
+    Accordingly, the Hamiltonian is
+
+    .. math::
+
+        \\begin{align}
+        H = &- t \sum_{\langle i,j \\rangle} \sum_{\sigma}
+                     (a^\dagger_{i, \sigma} a_{j, \sigma} +
+                     a^\dagger_{j, \sigma} a_{i, \sigma})
+             + U \sum_{i} a^\dagger_{i, \\uparrow} a_{i, \\uparrow}
+                         a^\dagger_{j, \downarrow} a_{j, \downarrow}
+            \\\\
+            &- \mu \sum_i (a^\dagger_{i, \\uparrow} a_{i, \\uparrow} +
+                         a^\dagger_{i, \downarrow} a_{i, \downarrow})
+             - h \sum_i (a^\dagger_{i, \\uparrow} a_{i, \\uparrow} -
+                       a^\dagger_{i, \downarrow} a_{i, \downarrow}).
+        \\end{align}
+
+    where
+
+        - :math:`\sigma \in \\{\\uparrow, \downarrow\\}` is the spin
+        - :math:`t` is the tunneling amplitude
+        - :math:`U` is the Coulomb potential
+        - :math:`\mu` is the chemical potential
+        - :math:`h` is the magnetic field
+
+    The code also allows one to construct the spinless Fermi-Hubbard model:
+
+    .. math::
+
+        H = - t \sum_{k=1}^{N-1} (a_k^\dagger a_{k + 1} + a_{k+1}^\dagger a_k)
+            + U \sum_{k=1}^{N-1} a_k^\dagger a_k a_{k+1}^\dagger a_{k+1}
+            + h \sum_{k=1}^N (-1)^k a_k^\dagger a_k
+            - \mu \sum_{k=1}^N a_k^\dagger a_k.
+
+    These Hamiltonians live on a grid of dimensions x_dimension by y_dimension.
+    They can have periodic boundary conditions or not.
+
     Args:
-        x_dimension: An integer giving the number of sites in width.
-        y_dimension: An integer giving the number of sites in height.
-        tunneling: A float giving the tunneling amplitude.
-        coulomb: A float giving the attractive local interaction strength.
-        chemical_potential: An optional float giving the potential of each
-            site. Default value is None.
-        magnetic_field: An optional float giving a magnetic field at each
-            site. Default value is None.
-        periodic: If True, add periodic boundary conditions.
-        spinless: An optional Boolean. If False, each site has spin up
-            orbitals and spin down orbitals. If True, return a spinless
-            Fermi-Hubbard model.
-        particle_hole_symmetry: an optional Boolean. If False, the repulsion
+        x_dimension (int): The width of the grid.
+        y_dimension (int): The height of the grid.
+        tunneling (float): The tunneling amplitude :math:`t`.
+        coulomb (float): The attractive local interaction strength :math:`U`.
+        chemical_potential (float, optional): The chemical potential
+            :math:`\mu` at each site. Default value is None.
+        magnetic_field (float, optional): The magnetic field :math:`h`
+            at each site. Default value is None.
+        periodic (bool, optional): If True, add periodic boundary conditions.
+            Default is True.
+        spinless (bool, optional): If True, return a spinless Fermi-Hubbard
+            model. Default is False.
+        particle_hole_symmetry (bool, optional): If False, the repulsion
             term corresponds to:
-            coulomb sum_{k=1}^{N-1} a_k^dagger a_k a_{k+1}^dagger a_{k+1}
-            If true, the repulsion term is replaced by:
-            coulomb sum_{k=1}^{N-1} (a_k^dagger a_k - 1/2)
-            (a_{k+1}^dagger a_{k+1} - 1/2)
+
+            .. math::
+
+                U \sum_{k=1}^{N-1} a_k^\dagger a_k a_{k+1}^\dagger a_{k+1}
+
+            If True, the repulsion term is replaced by:
+
+            .. math::
+
+                U \sum_{k=1}^{N-1} (a_k^\dagger a_k - \\frac12)
+                                   (a_{k+1}^\dagger a_{k+1} - \\frac12)
+
             which is unchanged under a particle-hole transformation.
-        verbose: An optional Boolean. If True, print all second quantized
-            terms.
+            Default is False
 
     Returns:
         hubbard_model: An instance of the FermionOperator class.
