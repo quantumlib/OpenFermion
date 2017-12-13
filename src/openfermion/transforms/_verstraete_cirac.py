@@ -66,12 +66,134 @@ def verstraete_cirac_2d_square_hopping_term(term, x_dimension, y_dimension):
     if (i, j) in vert_edges or (j, i) in vert_edges:
         i_aux = 2 * i + 1
         j_aux = 2 * j + 1
-        transformed_term *= stabilizer_local_2d_square(
-                i_aux, j_aux, x_dimension, y_dimension)
+        transformed_term *= stabilizer(i_aux, j_aux)
 
     transformed_term = jordan_wigner(transformed_term)
 
     return transformed_term
+
+
+def stabilizer(i, j):
+    """P_{ij} in the paper.
+
+    NOTE: We may want to flip the sign.
+    """
+    c = majorana_operator((i, 1), numpy.sqrt(2.))
+    d = majorana_operator((j, 0), numpy.sqrt(2.))
+    return 1.j * c * d
+
+
+def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
+    """The local version of P_{ij} for a 2-d grid.
+
+    i and j are indices on the auxiliary graph.
+
+    NOTE: Currently this only works for even x_dimension.
+    """
+    i_col, i_row = jw_coordinates_2d_square(i, x_dimension, y_dimension)
+    j_col, j_row = jw_coordinates_2d_square(j, x_dimension, y_dimension)
+    if not (abs(i_row - j_row) == 1 and i_col == j_col or
+            abs(i_col - j_col) == 1 and i_row == j_row):
+        raise ValueError("Vertices i and j are not adjacent")
+
+    # Get the JWT indices in the combined system
+    i_combined = 2 * i + 1
+    j_combined = 2 * j + 1
+
+    stab = stabilizer(i_combined, j_combined)
+    if abs(i_row - j_row) == 1:
+        # Term is vertical, so we may need to multiply by extra stabilizers
+        top_row = min(i_row, j_row)
+        if top_row % 2 == 0:
+            # Term is right-closed
+            if i_col < x_dimension - 1:
+                extra_term_top = jw_index_2d_square_aux(
+                        i_col + 1, top_row, x_dimension, y_dimension)
+                extra_term_bot = jw_index_2d_square_aux(
+                        i_col + 1, top_row + 1, x_dimension, y_dimension)
+                if (i_col + 1) % 2 == 0:
+                    stab *= stabilizer(extra_term_top, extra_term_bot)
+                else:
+                    stab *= stabilizer(extra_term_bot, extra_term_top)
+        else:
+            # Term is left-closed
+            if i_col > 0:
+                extra_term_top = jw_index_2d_square_aux(
+                        i_col - 1, top_row, x_dimension, y_dimension)
+                extra_term_bot = jw_index_2d_square_aux(
+                        i_col - 1, top_row + 1, x_dimension, y_dimension)
+                if (i_col - 1) % 2 == 0:
+                    stab *= stabilizer(extra_term_top, extra_term_bot)
+                else:
+                    stab *= stabilizer(extra_term_bot, extra_term_top)
+
+    return stab
+
+
+def auxiliary_graph_2d_square(x_dimension, y_dimension):
+    """Obtain the auxiliary graph for a 2-d grid.
+
+    NOTE: Currently this only works for even x_dimension.
+    """
+    if not (x_dimension % 2 == 0):
+        raise ValueError('Currently only an even number of columns is '
+                         'supported.')
+
+    graph = networkx.DiGraph()
+    graph.add_nodes_from(range(x_dimension * y_dimension))
+
+    for k in range(0, x_dimension, 2):
+        # Create the loop spanning columns k and k + 1
+        # Add top edge
+        graph.add_edge(k + 1, k)
+        # Add bottom edge
+        graph.add_edge(jw_index_2d_square(k, y_dimension - 1,
+                                          x_dimension, y_dimension),
+                       jw_index_2d_square(k + 1, y_dimension - 1,
+                                          x_dimension, y_dimension))
+        for l in range(y_dimension - 1):
+            # Add edges between rows l and l + 1
+            # Add left edge
+            graph.add_edge(jw_index_2d_square(k, l,
+                                              x_dimension, y_dimension),
+                           jw_index_2d_square(k, l + 1,
+                                              x_dimension, y_dimension))
+            # Add right edge
+            graph.add_edge(jw_index_2d_square(k + 1, l + 1,
+                                              x_dimension, y_dimension),
+                           jw_index_2d_square(k + 1, l,
+                                              x_dimension, y_dimension))
+
+    return graph
+
+
+def row_indices(row, x_dimension):
+    """Obtain the indices in a row from left to right."""
+    indices = range(row * x_dimension, (row + 1) * x_dimension)
+    if row % 2 != 0:
+        indices = reversed(indices)
+    return list(indices)
+
+
+def vertical_edges(x_dimension, y_dimension):
+    """Obtain the vertical edges."""
+    edges = []
+    for row in range(y_dimension - 1):
+        upper_row = row_indices(row, x_dimension)
+        lower_row = row_indices(row + 1, x_dimension)
+        edges += zip(upper_row, lower_row)
+    return edges
+
+
+def horizontal_edges(x_dimension, y_dimension):
+    """Obtain the horizontal edges."""
+    edges = []
+    for row in range(y_dimension):
+        indices = row_indices(row, x_dimension)
+        for i in range(x_dimension - 1):
+            edges.append((indices[i], indices[i + 1]))
+    return edges
+
 
 def jw_index_2d_square(column, row, x_dimension, y_dimension):
     """Obtain the JWT index of a coordinate on a 2-d grid.
@@ -145,125 +267,3 @@ def jw_coordinates_2d_square_aux(index, x_dimension, y_dimension):
     """
     aux_graph_index = (index - 1) // 2
     return jw_coordinates_2d_square(aux_graph_index, x_dimension, y_dimension)
-
-
-def auxiliary_graph_2d_square(x_dimension, y_dimension):
-    """Obtain the auxiliary graph for a 2-d grid.
-
-    NOTE: Currently this only works for even x_dimension.
-    """
-    if not (x_dimension % 2 == 0):
-        raise ValueError('Currently only an even number of columns is '
-                         'supported.')
-
-    graph = networkx.DiGraph()
-    graph.add_nodes_from(range(x_dimension * y_dimension))
-
-    for k in range(0, x_dimension, 2):
-        # Create the loop spanning columns k and k + 1
-        # Add top edge
-        graph.add_edge(k + 1, k)
-        # Add bottom edge
-        graph.add_edge(jw_index_2d_square(k, y_dimension - 1,
-                                          x_dimension, y_dimension),
-                       jw_index_2d_square(k + 1, y_dimension - 1,
-                                          x_dimension, y_dimension))
-        for l in range(y_dimension - 1):
-            # Add edges between rows l and l + 1
-            # Add left edge
-            graph.add_edge(jw_index_2d_square(k, l,
-                                              x_dimension, y_dimension),
-                           jw_index_2d_square(k, l + 1,
-                                              x_dimension, y_dimension))
-            # Add right edge
-            graph.add_edge(jw_index_2d_square(k + 1, l + 1,
-                                              x_dimension, y_dimension),
-                           jw_index_2d_square(k + 1, l,
-                                              x_dimension, y_dimension))
-
-    return graph
-
-
-def stabilizer(i, j):
-    """P_{ij} in the paper.
-
-    NOTE: We may want to flip the sign.
-    """
-    c = majorana_operator((i, 1), numpy.sqrt(2.))
-    d = majorana_operator((j, 0), numpy.sqrt(2.))
-    return -1.j * c * d
-
-
-def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
-    """The local version of P_{ij} for a 2-d grid.
-
-    i and j are indices on the auxiliary graph.
-
-    NOTE: Currently this only works for even x_dimension.
-    """
-    i_col, i_row = jw_coordinates_2d_square(i, x_dimension, y_dimension)
-    j_col, j_row = jw_coordinates_2d_square(j, x_dimension, y_dimension)
-    if not (abs(i_row - j_row) == 1 and i_col == j_col or
-            abs(i_col - j_col) == 1 and i_row == j_row):
-        raise ValueError("Vertices i and j are not adjacent")
-
-    # Get the JWT indices in the combined system
-    i_combined = 2 * i + 1
-    j_combined = 2 * j + 1
-
-    stab = stabilizer(i_combined, j_combined)
-    if abs(i_row - j_row) == 1:
-        # Term is vertical, so we may need to multiply by extra stabilizers
-        top_row = min(i_row, j_row)
-        if top_row % 2 == 0:
-            # Term is right-closed
-            if i_col < x_dimension - 1:
-                extra_term_top = jw_index_2d_square_aux(
-                        i_col + 1, top_row, x_dimension, y_dimension)
-                extra_term_bot = jw_index_2d_square_aux(
-                        i_col + 1, top_row + 1, x_dimension, y_dimension)
-                if (i_col + 1) % 2 == 0:
-                    stab *= stabilizer(extra_term_top, extra_term_bot)
-                else:
-                    stab *= stabilizer(extra_term_bot, extra_term_top)
-        else:
-            # Term is left-closed
-            if i_col > 0:
-                extra_term_top = jw_index_2d_square_aux(
-                        i_col - 1, top_row, x_dimension, y_dimension)
-                extra_term_bot = jw_index_2d_square_aux(
-                        i_col - 1, top_row + 1, x_dimension, y_dimension)
-                if (i_col - 1) % 2 == 0:
-                    stab *= stabilizer(extra_term_top, extra_term_bot)
-                else:
-                    stab *= stabilizer(extra_term_bot, extra_term_top)
-
-    return stab
-
-
-def row_indices(row, x_dimension):
-    """Obtain the indices in a row from left to right."""
-    indices = range(row * x_dimension, (row + 1) * x_dimension)
-    if row % 2 != 0:
-        indices = reversed(indices)
-    return list(indices)
-
-
-def vertical_edges(x_dimension, y_dimension):
-    """Obtain the vertical edges."""
-    edges = []
-    for row in range(y_dimension - 1):
-        upper_row = row_indices(row, x_dimension)
-        lower_row = row_indices(row + 1, x_dimension)
-        edges += zip(upper_row, lower_row)
-    return edges
-
-
-def horizontal_edges(x_dimension, y_dimension):
-    """Obtain the horizontal edges."""
-    edges = []
-    for row in range(y_dimension):
-        indices = row_indices(row, x_dimension)
-        for i in range(x_dimension - 1):
-            edges.append((indices[i], indices[i + 1]))
-    return edges
