@@ -140,9 +140,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                 n_spin_orbitals, site, coefficient)
 
         if magnetic_field and spinless:
-            x_index = site % x_dimension
-            y_index = site // x_dimension
-            sign = (-1.) ** (x_index + y_index)
+            sign = (-1.) ** (site)
             coefficient = sign * magnetic_field
             hubbard_model += number_operator(
                 n_spin_orbitals, site, coefficient)
