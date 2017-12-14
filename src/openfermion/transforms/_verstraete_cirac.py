@@ -41,44 +41,58 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
     Returns:
         transformed_operator: A QubitOperator.
     """
+    # Obtain the vertical and horizontal edges of the snake ordering
     vert_edges = vertical_edges(x_dimension, y_dimension)
     horiz_edges = horizontal_edges(x_dimension, y_dimension)
 
     transformed_operator = QubitOperator()
     for term in operator.terms:
+
         indices = [ladder_operator[0] for ladder_operator in term]
         raise_or_lower = [ladder_operator[1] for ladder_operator in term]
-        if len(term) == 2:
-            print(term)
-            i, j = term[0][0], term[1][0]
+        coefficient = operater.terms[term]
+
+        # If the indices aren't in snake order, we need to convert them
+        if not snake:
+            indices = [lexicographic_index_to_snake_index(index)
+                       for index in indices]
+
+        # Convert the indices to indices of system qubits in the combined
+        # system, which includes the auxiliary qubits interleaved
+        transformed_indices = [2 * index for index in indices]
+
+        # Initialize the transformed term as a FermionOperator
+        transformed_term = FermionOperator(
+                tuple(zip(transformed_indices, raise_or_lower)), coefficient)
+
+        # If necessary, multiply the transformed term by a stabilizer to
+        # cancel out Jordan-Wigner strings
+        if len(indices) == 2:
+            # Term is quadratic
+            i, j = indices[0], indices[1]
             if (i, j) in vert_edges or (j, i) in vert_edges:
-                print(i, j)
+                # Term corresponds to a vertical edge, so we need to multiply
+                # by a stabilizer
+                top = min(i, j)
+                bot = max(i, j)
+                # Get the indices of the corresponding auxiliary qubits
+                top_aux = 2 * top + 1
+                bot_aux = 2 * bot + 1
+                # Get the column that this edge is on
+                col, row = snake_index_to_coordinates(
+                        top, x_dimension, y_dimension)
+                # Multiply by a stabilizer. If the column is even, the
+                # stabilizer corresponds to an edge that points down;
+                # otherwise, the edge points up
+                if col % 2 == 0:
+                    transformed_term *= stabilizer(top_aux, bot_aux)
+                else:
+                    transformed_term *= stabilizer(bot_aux, top_aux)
+
+        # Transform the term to a QubitOperator and add it to the operator
+        transformed_operator += jordan_wigner(transformed_term)
     
-    return
-
-
-def verstraete_cirac_2d_square_hopping_term(term, x_dimension, y_dimension):
-    vert_edges = vertical_edges(x_dimension, y_dimension)
-    horiz_edges = horizontal_edges(x_dimension, y_dimension)
-    i, j = term[0][0], term[1][0]
-
-    # Get the JWT indices in the combined system
-    i_combined = 2 * i
-    j_combined = 2 * j
-
-    # Initialize term
-    transformed_term = FermionOperator(((i_combined, term[0][1]),
-                                        (j_combined, term[1][1])))
-
-    # If the term corresponds to a vertical edge, multiply by stabilizer
-    if (i, j) in vert_edges or (j, i) in vert_edges:
-        i_aux = 2 * i + 1
-        j_aux = 2 * j + 1
-        transformed_term *= stabilizer(i_aux, j_aux)
-
-    transformed_term = jordan_wigner(transformed_term)
-
-    return transformed_term
+    return transformed_operator
 
 
 def stabilizer(i, j):
