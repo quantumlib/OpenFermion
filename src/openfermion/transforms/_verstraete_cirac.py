@@ -22,7 +22,8 @@ from openfermion.ops import majorana_operator, FermionOperator, QubitOperator
 from openfermion.transforms import jordan_wigner
 
 
-def verstraete_cirac_2d_square(operator, x_dimension, y_dimension):
+def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
+                               snake=False):
     """Apply the Verstraete-Cirac transform on a 2-d square lattice.
 
     NOTE: This is just skeleton code and doesn't work yet.
@@ -32,6 +33,10 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension):
         operator (FermionOperator): The operator to transform.
         x_dimension (int): The number of columns of the grid.
         y_dimension (int): The number of rows of the grid.
+        snake (bool, optional): Indicates whether the fermions are already
+            ordered according to the 2-d "snake" ordering. If False,
+            we assume they are in "lexicographic" order by row and column
+            index. Default is False.
 
     Returns:
         transformed_operator: A QubitOperator.
@@ -41,6 +46,8 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension):
 
     transformed_operator = QubitOperator()
     for term in operator.terms:
+        indices = [ladder_operator[0] for ladder_operator in term]
+        raise_or_lower = [ladder_operator[1] for ladder_operator in term]
         if len(term) == 2:
             print(term)
             i, j = term[0][0], term[1][0]
@@ -91,8 +98,8 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
 
     NOTE: Currently this only works for even x_dimension.
     """
-    i_col, i_row = jw_coordinates_2d_square(i, x_dimension, y_dimension)
-    j_col, j_row = jw_coordinates_2d_square(j, x_dimension, y_dimension)
+    i_col, i_row = snake_index_to_coordinates(i, x_dimension, y_dimension)
+    j_col, j_row = snake_index_to_coordinates(j, x_dimension, y_dimension)
     if not (abs(i_row - j_row) == 1 and i_col == j_col or
             abs(i_col - j_col) == 1 and i_row == j_row):
         raise ValueError("Vertices i and j are not adjacent")
@@ -108,9 +115,9 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
         if top_row % 2 == 0:
             # Term is right-closed
             if i_col < x_dimension - 1:
-                extra_term_top = jw_index_2d_square_aux(
+                extra_term_top = coordinates_to_snake_index_aux(
                         i_col + 1, top_row, x_dimension, y_dimension)
-                extra_term_bot = jw_index_2d_square_aux(
+                extra_term_bot = coordinates_to_snake_index_aux(
                         i_col + 1, top_row + 1, x_dimension, y_dimension)
                 if (i_col + 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
@@ -119,9 +126,9 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
         else:
             # Term is left-closed
             if i_col > 0:
-                extra_term_top = jw_index_2d_square_aux(
+                extra_term_top = coordinates_to_snake_index_aux(
                         i_col - 1, top_row, x_dimension, y_dimension)
-                extra_term_bot = jw_index_2d_square_aux(
+                extra_term_bot = coordinates_to_snake_index_aux(
                         i_col - 1, top_row + 1, x_dimension, y_dimension)
                 if (i_col - 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
@@ -148,21 +155,21 @@ def auxiliary_graph_2d_square(x_dimension, y_dimension):
         # Add top edge
         graph.add_edge(k + 1, k)
         # Add bottom edge
-        graph.add_edge(jw_index_2d_square(k, y_dimension - 1,
+        graph.add_edge(coordinates_to_snake_index(k, y_dimension - 1,
                                           x_dimension, y_dimension),
-                       jw_index_2d_square(k + 1, y_dimension - 1,
+                       coordinates_to_snake_index(k + 1, y_dimension - 1,
                                           x_dimension, y_dimension))
         for l in range(y_dimension - 1):
             # Add edges between rows l and l + 1
             # Add left edge
-            graph.add_edge(jw_index_2d_square(k, l,
+            graph.add_edge(coordinates_to_snake_index(k, l,
                                               x_dimension, y_dimension),
-                           jw_index_2d_square(k, l + 1,
+                           coordinates_to_snake_index(k, l + 1,
                                               x_dimension, y_dimension))
             # Add right edge
-            graph.add_edge(jw_index_2d_square(k + 1, l + 1,
+            graph.add_edge(coordinates_to_snake_index(k + 1, l + 1,
                                               x_dimension, y_dimension),
-                           jw_index_2d_square(k + 1, l,
+                           coordinates_to_snake_index(k + 1, l,
                                               x_dimension, y_dimension))
 
     return graph
@@ -196,7 +203,7 @@ def horizontal_edges(x_dimension, y_dimension):
     return edges
 
 
-def jw_index_2d_square(column, row, x_dimension, y_dimension):
+def coordinates_to_snake_index(column, row, x_dimension, y_dimension):
     """Obtain the JWT index of a coordinate on a 2-d grid.
 
     This uses the 'snake' ordering.
@@ -214,7 +221,7 @@ def jw_index_2d_square(column, row, x_dimension, y_dimension):
     return index
 
 
-def jw_coordinates_2d_square(index, x_dimension, y_dimension):
+def snake_index_to_coordinates(index, x_dimension, y_dimension):
     """Obtain the column and row coordinates corresponding to a JWT index
     on a 2-d grid.
 
@@ -232,39 +239,39 @@ def jw_coordinates_2d_square(index, x_dimension, y_dimension):
     return column, row
 
 
-def jw_index_2d_square_sys(column, row, x_dimension, y_dimension):
+def coordinates_to_snake_index_sys(column, row, x_dimension, y_dimension):
     """Obtain the JWT index of a system qubit in the combined system.
 
     NOTE: This may need to be modified to handle odd x_dimension.
     """
-    index = 2 * jw_index_2d_square(column, row, x_dimension, y_dimension)
+    index = 2 * coordinates_to_snake_index(column, row, x_dimension, y_dimension)
     return index
 
 
-def jw_index_2d_square_aux(column, row, x_dimension, y_dimension):
+def coordinates_to_snake_index_aux(column, row, x_dimension, y_dimension):
     """Obtain the JWT index of an auxiliary qubit in the combined system.
 
     NOTE: This may need to be modified to handle odd x_dimension.
     """
-    index = 2 * jw_index_2d_square(column, row, x_dimension, y_dimension) + 1
+    index = 2 * coordinates_to_snake_index(column, row, x_dimension, y_dimension) + 1
     return index
 
 
-def jw_coordinates_2d_square_sys(index, x_dimension, y_dimension):
+def snake_index_to_coordinates_sys(index, x_dimension, y_dimension):
     """Obtain the column and row coordinates of a system qubit from its
     JWT index in the combined system.
     
     NOTE: This may need to be modified to handle odd x_dimension.
     """
     sys_graph_index = index // 2
-    return jw_coordinates_2d_square(sys_graph_index, x_dimension, y_dimension)
+    return snake_index_to_coordinates(sys_graph_index, x_dimension, y_dimension)
 
 
-def jw_coordinates_2d_square_aux(index, x_dimension, y_dimension):
+def snake_index_to_coordinates_aux(index, x_dimension, y_dimension):
     """Obtain the column and row coordinates of an auxiliary qubit from its
     JWT index in the combined system.
     
     NOTE: This may need to be modified to handle odd x_dimension.
     """
     aux_graph_index = (index - 1) // 2
-    return jw_coordinates_2d_square(aux_graph_index, x_dimension, y_dimension)
+    return snake_index_to_coordinates(aux_graph_index, x_dimension, y_dimension)
