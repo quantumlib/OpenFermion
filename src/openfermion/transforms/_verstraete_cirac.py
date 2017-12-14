@@ -26,8 +26,8 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
                                snake=False):
     """Apply the Verstraete-Cirac transform on a 2-d square lattice.
 
-    NOTE: This is just skeleton code and doesn't work yet.
-    NOTE: Currently only even x_dimension is supported.
+    Currently only spinless models are supported. Furthermore, x_dimension
+    should be even.
 
     Args:
         operator (FermionOperator): The operator to transform.
@@ -96,13 +96,10 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
 
 
 def stabilizer(i, j):
-    """P_{ij} in the paper.
-
-    NOTE: We may want to flip the sign.
-    """
-    c = majorana_operator((i, 1), numpy.sqrt(2.))
-    d = majorana_operator((j, 0), numpy.sqrt(2.))
-    return 1.j * c * d
+    """P_{ij} in the paper."""
+    c_i = majorana_operator((i, 1), numpy.sqrt(2.))
+    d_j = majorana_operator((j, 0), numpy.sqrt(2.))
+    return 1.j * c_i * d_j
 
 
 def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
@@ -129,10 +126,10 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
         if top_row % 2 == 0:
             # Term is right-closed
             if i_col < x_dimension - 1:
-                extra_term_top = coordinates_to_snake_index_aux(
-                        i_col + 1, top_row, x_dimension, y_dimension)
-                extra_term_bot = coordinates_to_snake_index_aux(
-                        i_col + 1, top_row + 1, x_dimension, y_dimension)
+                extra_term_top = 2 * coordinates_to_snake_index(
+                        i_col + 1, top_row, x_dimension, y_dimension) + 1
+                extra_term_bot = 2 * coordinates_to_snake_index(
+                        i_col + 1, top_row + 1, x_dimension, y_dimension) + 1
                 if (i_col + 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
                 else:
@@ -140,10 +137,10 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
         else:
             # Term is left-closed
             if i_col > 0:
-                extra_term_top = coordinates_to_snake_index_aux(
-                        i_col - 1, top_row, x_dimension, y_dimension)
-                extra_term_bot = coordinates_to_snake_index_aux(
-                        i_col - 1, top_row + 1, x_dimension, y_dimension)
+                extra_term_top = 2 * coordinates_to_snake_index(
+                        i_col - 1, top_row, x_dimension, y_dimension) + 1
+                extra_term_bot = 2 * coordinates_to_snake_index(
+                        i_col - 1, top_row + 1, x_dimension, y_dimension) + 1
                 if (i_col - 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
                 else:
@@ -253,39 +250,9 @@ def snake_index_to_coordinates(index, x_dimension, y_dimension):
     return column, row
 
 
-def coordinates_to_snake_index_sys(column, row, x_dimension, y_dimension):
-    """Obtain the JWT index of a system qubit in the combined system.
-
-    NOTE: This may need to be modified to handle odd x_dimension.
-    """
-    index = 2 * coordinates_to_snake_index(column, row, x_dimension, y_dimension)
-    return index
-
-
-def coordinates_to_snake_index_aux(column, row, x_dimension, y_dimension):
-    """Obtain the JWT index of an auxiliary qubit in the combined system.
-
-    NOTE: This may need to be modified to handle odd x_dimension.
-    """
-    index = 2 * coordinates_to_snake_index(column, row, x_dimension, y_dimension) + 1
-    return index
-
-
-def snake_index_to_coordinates_sys(index, x_dimension, y_dimension):
-    """Obtain the column and row coordinates of a system qubit from its
-    JWT index in the combined system.
-    
-    NOTE: This may need to be modified to handle odd x_dimension.
-    """
-    sys_graph_index = index // 2
-    return snake_index_to_coordinates(sys_graph_index, x_dimension, y_dimension)
-
-
-def snake_index_to_coordinates_aux(index, x_dimension, y_dimension):
-    """Obtain the column and row coordinates of an auxiliary qubit from its
-    JWT index in the combined system.
-    
-    NOTE: This may need to be modified to handle odd x_dimension.
-    """
-    aux_graph_index = (index - 1) // 2
-    return snake_index_to_coordinates(aux_graph_index, x_dimension, y_dimension)
+def lexicographic_index_to_snake_index(index, x_dimension, y_dimension):
+    """Convert an index from lexicographic (row, col) order to snake order."""
+    row = index // x_dimension
+    col = index % x_dimension
+    snake_index = coordinates_to_snake_index(col, row,
+                                             x_dimension, y_dimension)
