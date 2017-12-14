@@ -23,9 +23,10 @@ from openfermion.transforms import jordan_wigner
 
 
 def verstraete_cirac_2d_square(operator, x_dimension, y_dimension):
-    """ Apply the Verstraete-Cirac transform on a 2-d square lattice.
+    """Apply the Verstraete-Cirac transform on a 2-d square lattice.
 
     NOTE: This is just skeleton code and doesn't work yet.
+    NOTE: Currently only even x_dimension is supported.
 
     Args:
         operator (FermionOperator): The operator to transform.
