@@ -43,14 +43,13 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
     """
     # Obtain the vertical and horizontal edges of the snake ordering
     vert_edges = vertical_edges(x_dimension, y_dimension)
-    horiz_edges = horizontal_edges(x_dimension, y_dimension)
 
     transformed_operator = QubitOperator()
     for term in operator.terms:
 
         indices = [ladder_operator[0] for ladder_operator in term]
         raise_or_lower = [ladder_operator[1] for ladder_operator in term]
-        coefficient = operater.terms[term]
+        coefficient = operator.terms[term]
 
         # If the indices aren't in snake order, we need to convert them
         if not snake:
@@ -59,7 +58,7 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
 
         # Convert the indices to indices of system qubits in the combined
         # system, which includes the auxiliary qubits interleaved
-        transformed_indices = [2 * index for index in indices]
+        transformed_indices = [expand_sys_index(index) for index in indices]
 
         # Initialize the transformed term as a FermionOperator
         transformed_term = FermionOperator(
@@ -76,8 +75,8 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
                 top = min(i, j)
                 bot = max(i, j)
                 # Get the indices of the corresponding auxiliary qubits
-                top_aux = 2 * top + 1
-                bot_aux = 2 * bot + 1
+                top_aux = expand_aux_index(top)
+                bot_aux = expand_aux_index(bot)
                 # Get the column that this edge is on
                 col, row = snake_index_to_coordinates(
                         top, x_dimension, y_dimension)
@@ -116,8 +115,8 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
         raise ValueError("Vertices i and j are not adjacent")
 
     # Get the JWT indices in the combined system
-    i_combined = 2 * i + 1
-    j_combined = 2 * j + 1
+    i_combined = expand_aux_index(i)
+    j_combined = expand_aux_index(j)
 
     stab = stabilizer(i_combined, j_combined)
     if abs(i_row - j_row) == 1:
@@ -126,10 +125,10 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
         if top_row % 2 == 0:
             # Term is right-closed
             if i_col < x_dimension - 1:
-                extra_term_top = 2 * coordinates_to_snake_index(
-                        i_col + 1, top_row, x_dimension, y_dimension) + 1
-                extra_term_bot = 2 * coordinates_to_snake_index(
-                        i_col + 1, top_row + 1, x_dimension, y_dimension) + 1
+                extra_term_top = expand_aux_index(coordinates_to_snake_index(
+                        i_col + 1, top_row, x_dimension, y_dimension))
+                extra_term_bot = expand_aux_index(coordinates_to_snake_index(
+                        i_col + 1, top_row + 1, x_dimension, y_dimension))
                 if (i_col + 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
                 else:
@@ -137,10 +136,10 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
         else:
             # Term is left-closed
             if i_col > 0:
-                extra_term_top = 2 * coordinates_to_snake_index(
-                        i_col - 1, top_row, x_dimension, y_dimension) + 1
-                extra_term_bot = 2 * coordinates_to_snake_index(
-                        i_col - 1, top_row + 1, x_dimension, y_dimension) + 1
+                extra_term_top = expand_aux_index(coordinates_to_snake_index(
+                        i_col - 1, top_row, x_dimension, y_dimension))
+                extra_term_bot = expand_aux_index(coordinates_to_snake_index(
+                        i_col - 1, top_row + 1, x_dimension, y_dimension))
                 if (i_col - 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
                 else:
@@ -256,3 +255,12 @@ def lexicographic_index_to_snake_index(index, x_dimension, y_dimension):
     col = index % x_dimension
     snake_index = coordinates_to_snake_index(col, row,
                                              x_dimension, y_dimension)
+
+def expand_sys_index(index):
+    """Convert the index of a system fermion to the combined system."""
+    return 2 * index
+
+
+def expand_aux_index(index):
+    """Convert the index of a system fermion to the combined system."""
+    return 2 * index + 1
