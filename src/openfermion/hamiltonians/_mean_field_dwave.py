@@ -10,29 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""This module contains constructions for mean-field Hamiltonian models.
-
-The mean-field d-wave model has the form
-
-H = - tunneling sum_{<i,j>} sum_sigma (a^dagger_{i, sigma} a_{j, sigma}
-  + a^dagger_{j, sigma} a_{i, sigma})
-  - sum_{<i,j>} Delta_{ij}
-  (a^dagger_{i, up} a^dagger_{j, down} - a^dagger_{i, down} a^dagger_{j, up}
-  + a_{j, down} a_{i, up} - a_{j, up} a_{i, down})
-
-where Delta_{ij} = +sc_gap/2 for horizontal edges and -sc_gap/2 for vertical
-edges.
-
-There are N sites and 2*N spin-orbitals. The operators a^dagger_i and a_i are
-fermionic creation and annihilation operators. One can transform these
-operators to qubit operator using the Jordan-Wigner transmation:
-
-a^dagger_j = 0.5 (X - i Y) prod_{k = 1}^{j - 1} Z_k
-a_j = 0.5 (X + i Y) prod_{k = 1}^{j - 1} Z_k
-
-These Hamiltonians live on a square lattice which has dimensions of
-x_dimension by y_dimension. They can have periodic boundary conditions or not.
-"""
+"""This module constructs Hamiltonians for the BCS mean-field d-wave model."""
 from __future__ import absolute_import
 
 from openfermion.hamiltonians._hubbard import up_index, down_index
@@ -41,17 +19,47 @@ from openfermion.ops import (FermionOperator,
 
 
 def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
-                     periodic=True, verbose=False):
+                     periodic=True):
     """Return symbolic representation of a BCS mean-field d-wave Hamiltonian.
 
+    The Hamiltonians of this model live on a grid of dimensions
+    `x_dimension` x `y_dimension`.
+    The grid can have periodic boundary conditions or not.
+    Each site on the grid can have an "up" fermion and a "down" fermion.
+    Therefore, there are a total of `2N` spin-orbitals,
+    where `N = x_dimension * y_dimension` is the number of sites.
+
+    The Hamiltonian for this model has the form
+
+    .. math::
+
+        H = - t \sum_{\langle i,j \\rangle} \sum_\sigma
+                (a^\dagger_{i, \sigma} a_{j, \sigma} +
+                 a^\dagger_{j, \sigma} a_{i, \sigma})
+            - \sum_{\langle i,j \\rangle} \Delta_{ij}
+              (a^\dagger_{i, \\uparrow} a^\dagger_{j, \downarrow} -
+               a^\dagger_{i, \downarrow} a^\dagger_{j, \\uparrow} +
+               a_{j, \downarrow} a_{i, \\uparrow} -
+               a_{j, \\uparrow} a_{i, \downarrow})
+
+    where
+
+        - The indices :math:`\langle i, j \\rangle` run over pairs
+          :math:`i` and :math:`j` of sites that are connected to each other
+          in the grid
+        - :math:`\sigma \in \\{\\uparrow, \downarrow\\}` is the spin
+        - :math:`t` is the tunneling amplitude
+        - :math:`\Delta_{ij}` is equal to :math:`+\Delta/2` for
+          horizontal edges and :math:`-\Delta/2` for vertical edges,
+          where :math:`\Delta` is the superconducting gap.
+
     Args:
-        x_dimension: An integer giving the number of sites in width.
-        y_dimension: An integer giving the number of sites in height.
-        tunneling: A float giving the tunneling amplitude.
-        sc_gap: A float giving the magnitude of the superconducting gap.
-        periodic: If True, add periodic boundary conditions.
-        verbose: An optional Boolean. If True, print all second quantized
-            terms.
+        x_dimension (int): The width of the grid.
+        y_dimension (int): The height of the grid.
+        tunneling (float): The tunneling amplitude :math:`t`.
+        sc_gap (float): The superconducting gap :math:`\Delta`
+        periodic (bool, optional): If True, add periodic boundary conditions.
+            Default is True.
 
     Returns:
         mean_field_dwave_model: An instance of the FermionOperator class.
