@@ -43,7 +43,7 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
         transformed_operator: A QubitOperator.
     """
     # Obtain the vertical edges of the snake ordering
-    vert_edges = vertical_edges(x_dimension, y_dimension)
+    vert_edges = vertical_edges_snake(x_dimension, y_dimension)
 
     # Initialize a coefficient to scale the auxiliary Hamiltonian by.
     # The gap of the auxiliary Hamiltonian needs to be large enough to
@@ -108,9 +108,8 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
         # Construct the auxiliary Hamiltonian
         aux_ham = FermionOperator()
         for i, j in aux_ham_graph.edges():
-            i_expanded = expand_aux_index(i)
-            j_expanded = expand_aux_index(j)
-            aux_ham -= stabilizer(i_expanded, j_expanded)
+            aux_ham -= stabilizer_local_2d_square(
+                    i, j, x_dimension, y_dimension)
         # Add an identity term to ensure that the auxiliary Hamiltonian
         # has ground energy equal to zero
         aux_ham += FermionOperator((), aux_ham_graph.size())
@@ -123,18 +122,18 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
 
 
 def stabilizer(i, j):
-    """P_{ij} in the paper."""
+    """Stabilizer operators which act on the auxiliary space.
+    In the original paper, these are referred to as P_{ij}."""
     c_i = majorana_operator((i, 1), numpy.sqrt(2.))
     d_j = majorana_operator((j, 0), numpy.sqrt(2.))
     return 1.j * c_i * d_j
 
 
 def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
-    """The local version of P_{ij} for a 2-d grid.
+    """The local version of the stabilizers for a 2-d grid.
 
     i and j are indices on the auxiliary graph.
-
-    NOTE: Currently this only works for even x_dimension.
+    Currently this only works for even x_dimension.
     """
     i_col, i_row = snake_index_to_coordinates(i, x_dimension, y_dimension)
     j_col, j_row = snake_index_to_coordinates(j, x_dimension, y_dimension)
@@ -179,12 +178,8 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
 def auxiliary_graph_2d_square(x_dimension, y_dimension):
     """Obtain the auxiliary graph for a 2-d grid.
 
-    NOTE: Currently this only works for even x_dimension.
+    Currently this only works for even x_dimension.
     """
-    if not (x_dimension % 2 == 0):
-        raise ValueError('Currently only an even number of columns is '
-                         'supported.')
-
     graph = networkx.DiGraph()
     graph.add_nodes_from(range(x_dimension * y_dimension))
 
@@ -214,39 +209,8 @@ def auxiliary_graph_2d_square(x_dimension, y_dimension):
     return graph
 
 
-def row_indices(row, x_dimension):
-    """Obtain the indices in a row from left to right."""
-    indices = range(row * x_dimension, (row + 1) * x_dimension)
-    if row % 2 != 0:
-        indices = reversed(indices)
-    return list(indices)
-
-
-def vertical_edges(x_dimension, y_dimension):
-    """Obtain the vertical edges."""
-    edges = []
-    for row in range(y_dimension - 1):
-        upper_row = row_indices(row, x_dimension)
-        lower_row = row_indices(row + 1, x_dimension)
-        edges += zip(upper_row, lower_row)
-    return edges
-
-
-def horizontal_edges(x_dimension, y_dimension):
-    """Obtain the horizontal edges."""
-    edges = []
-    for row in range(y_dimension):
-        indices = row_indices(row, x_dimension)
-        for i in range(x_dimension - 1):
-            edges.append((indices[i], indices[i + 1]))
-    return edges
-
-
 def coordinates_to_snake_index(column, row, x_dimension, y_dimension):
-    """Obtain the JWT index of a coordinate on a 2-d grid.
-
-    This uses the 'snake' ordering.
-    """
+    """Obtain the index in the snake ordering of a coordinate on a 2-d grid."""
     if column > x_dimension - 1:
         raise ValueError('Column index exceeds x_dimension - 1.')
     if row > y_dimension - 1:
@@ -261,10 +225,8 @@ def coordinates_to_snake_index(column, row, x_dimension, y_dimension):
 
 
 def snake_index_to_coordinates(index, x_dimension, y_dimension):
-    """Obtain the column and row coordinates corresponding to a JWT index
-    on a 2-d grid.
-
-    This uses the 'snake' ordering.
+    """Obtain the column and row coordinates corresponding to a snake ordering
+    index on a 2-d grid.
     """
     if index > x_dimension * y_dimension - 1:
         raise ValueError('Index exceeds x_dimension * y_dimension - 1.')
@@ -295,3 +257,22 @@ def expand_sys_index(index):
 def expand_aux_index(index):
     """Convert the index of a system fermion to the combined system."""
     return 2 * index + 1
+
+
+def row_indices_snake(row, x_dimension):
+    """Obtain the indices in a row from left to right in the
+    2-d snake ordering."""
+    indices = range(row * x_dimension, (row + 1) * x_dimension)
+    if row % 2 != 0:
+        indices = reversed(indices)
+    return list(indices)
+
+
+def vertical_edges_snake(x_dimension, y_dimension):
+    """Obtain the vertical edges in the 2-d snake ordering."""
+    edges = []
+    for row in range(y_dimension - 1):
+        upper_row = row_indices_snake(row, x_dimension)
+        lower_row = row_indices_snake(row + 1, x_dimension)
+        edges += zip(upper_row, lower_row)
+    return edges
