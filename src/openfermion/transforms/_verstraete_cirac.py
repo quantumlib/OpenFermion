@@ -23,6 +23,7 @@ from openfermion.transforms import jordan_wigner
 
 
 def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
+                               add_auxiliary_hamiltonian=True,
                                snake=False):
     """Apply the Verstraete-Cirac transform on a 2-d square lattice.
 
@@ -41,8 +42,13 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
     Returns:
         transformed_operator: A QubitOperator.
     """
-    # Obtain the vertical and horizontal edges of the snake ordering
+    # Obtain the vertical edges of the snake ordering
     vert_edges = vertical_edges(x_dimension, y_dimension)
+
+    # Initialize a coefficient to scale the auxiliary Hamiltonian by.
+    # The gap of the auxiliary Hamiltonian needs to be large enough to
+    # to ensure the ground state of the original operator is preserved.
+    aux_ham_coefficient = 1.
 
     transformed_operator = QubitOperator()
     for term in operator.terms:
@@ -53,7 +59,8 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
 
         # If the indices aren't in snake order, we need to convert them
         if not snake:
-            indices = [lexicographic_index_to_snake_index(index)
+            indices = [lexicographic_index_to_snake_index(
+                               index, x_dimension, y_dimension)
                        for index in indices]
 
         # Convert the indices to indices of system qubits in the combined
@@ -87,9 +94,30 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
                     transformed_term *= stabilizer(top_aux, bot_aux)
                 else:
                     transformed_term *= stabilizer(bot_aux, top_aux)
+                # Update the auxiliary Hamiltonian coefficient
+                aux_ham_coefficient += abs(coefficient)
 
         # Transform the term to a QubitOperator and add it to the operator
         transformed_operator += jordan_wigner(transformed_term)
+
+        # Add the auxiliary Hamiltonian if requested and compute the
+        # resulting energy shift
+        if add_auxiliary_hamiltonian:
+            # Construct the auxiliary Hamiltonian graph
+            aux_ham_graph = auxiliary_graph_2d_square(x_dimension, y_dimension)
+            # Construct the auxiliary Hamiltonian
+            aux_ham = FermionOperator()
+            for i, j in aux_ham_graph.edges():
+                i_expanded = expand_aux_index(i)
+                j_expanded = expand_aux_index(j)
+                aux_ham -= stabilizer(i_expanded, j_expanded)
+            # Add an identity term to ensure that the auxiliary Hamiltonian
+            # has ground energy equal to zero
+            aux_ham += FermionOperator((), aux_ham_graph.size())
+            # Scale the auxiliary Hamiltonian
+            aux_ham *= aux_ham_coefficient
+            # Add it to the operator
+            transformed_operator += jordan_wigner(aux_ham)
     
     return transformed_operator
 
@@ -115,10 +143,10 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
         raise ValueError("Vertices i and j are not adjacent")
 
     # Get the JWT indices in the combined system
-    i_combined = expand_aux_index(i)
-    j_combined = expand_aux_index(j)
+    i_expanded = expand_aux_index(i)
+    j_expanded = expand_aux_index(j)
 
-    stab = stabilizer(i_combined, j_combined)
+    stab = stabilizer(i_expanded, j_expanded)
     if abs(i_row - j_row) == 1:
         # Term is vertical, so we may need to multiply by extra stabilizers
         top_row = min(i_row, j_row)
@@ -255,6 +283,7 @@ def lexicographic_index_to_snake_index(index, x_dimension, y_dimension):
     col = index % x_dimension
     snake_index = coordinates_to_snake_index(col, row,
                                              x_dimension, y_dimension)
+    return snake_index
 
 def expand_sys_index(index):
     """Convert the index of a system fermion to the combined system."""
