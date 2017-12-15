@@ -100,25 +100,25 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
         # Transform the term to a QubitOperator and add it to the operator
         transformed_operator += jordan_wigner(transformed_term)
 
-        # Add the auxiliary Hamiltonian if requested and compute the
-        # resulting energy shift
-        if add_auxiliary_hamiltonian:
-            # Construct the auxiliary Hamiltonian graph
-            aux_ham_graph = auxiliary_graph_2d_square(x_dimension, y_dimension)
-            # Construct the auxiliary Hamiltonian
-            aux_ham = FermionOperator()
-            for i, j in aux_ham_graph.edges():
-                i_expanded = expand_aux_index(i)
-                j_expanded = expand_aux_index(j)
-                aux_ham -= stabilizer(i_expanded, j_expanded)
-            # Add an identity term to ensure that the auxiliary Hamiltonian
-            # has ground energy equal to zero
-            aux_ham += FermionOperator((), aux_ham_graph.size())
-            # Scale the auxiliary Hamiltonian
-            aux_ham *= aux_ham_coefficient
-            # Add it to the operator
-            transformed_operator += jordan_wigner(aux_ham)
-    
+    # Add the auxiliary Hamiltonian if requested and compute the
+    # resulting energy shift
+    if add_auxiliary_hamiltonian:
+        # Construct the auxiliary Hamiltonian graph
+        aux_ham_graph = auxiliary_graph_2d_square(x_dimension, y_dimension)
+        # Construct the auxiliary Hamiltonian
+        aux_ham = FermionOperator()
+        for i, j in aux_ham_graph.edges():
+            i_expanded = expand_aux_index(i)
+            j_expanded = expand_aux_index(j)
+            aux_ham -= stabilizer(i_expanded, j_expanded)
+        # Add an identity term to ensure that the auxiliary Hamiltonian
+        # has ground energy equal to zero
+        aux_ham += FermionOperator((), aux_ham_graph.size())
+        # Scale the auxiliary Hamiltonian
+        aux_ham *= aux_ham_coefficient
+        # Add it to the operator
+        transformed_operator += jordan_wigner(aux_ham)
+
     return transformed_operator
 
 
@@ -194,21 +194,22 @@ def auxiliary_graph_2d_square(x_dimension, y_dimension):
         graph.add_edge(k + 1, k)
         # Add bottom edge
         graph.add_edge(coordinates_to_snake_index(k, y_dimension - 1,
-                                          x_dimension, y_dimension),
+                                                  x_dimension, y_dimension),
                        coordinates_to_snake_index(k + 1, y_dimension - 1,
-                                          x_dimension, y_dimension))
+                                                  x_dimension, y_dimension))
         for l in range(y_dimension - 1):
             # Add edges between rows l and l + 1
             # Add left edge
-            graph.add_edge(coordinates_to_snake_index(k, l,
-                                              x_dimension, y_dimension),
-                           coordinates_to_snake_index(k, l + 1,
-                                              x_dimension, y_dimension))
+            graph.add_edge(
+                    coordinates_to_snake_index(k, l, x_dimension, y_dimension),
+                    coordinates_to_snake_index(k, l + 1,
+                                               x_dimension, y_dimension))
             # Add right edge
-            graph.add_edge(coordinates_to_snake_index(k + 1, l + 1,
-                                              x_dimension, y_dimension),
-                           coordinates_to_snake_index(k + 1, l,
-                                              x_dimension, y_dimension))
+            graph.add_edge(
+                    coordinates_to_snake_index(k + 1, l + 1,
+                                               x_dimension, y_dimension),
+                    coordinates_to_snake_index(k + 1, l,
+                                               x_dimension, y_dimension))
 
     return graph
 
@@ -284,6 +285,7 @@ def lexicographic_index_to_snake_index(index, x_dimension, y_dimension):
     snake_index = coordinates_to_snake_index(col, row,
                                              x_dimension, y_dimension)
     return snake_index
+
 
 def expand_sys_index(index):
     """Convert the index of a system fermion to the combined system."""
