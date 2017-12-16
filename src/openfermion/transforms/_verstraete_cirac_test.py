@@ -58,10 +58,6 @@ class VerstraeteCirac2dSquareGroundStateTest(unittest.TestCase):
         self.assertAlmostEqual(self.transformed_ground_energy,
                                self.ferm_op_ground_energy)
 
-    def test_ground_state(self):
-        """Test that the ground state is a tensor product state between
-        the system qubits and the auxiliary qubits."""
-
 
 class VerstraeteCirac2dSquareOperatorLocalityTest(unittest.TestCase):
     """Test that the transform results in local qubit operators."""
