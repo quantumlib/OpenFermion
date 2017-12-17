@@ -42,6 +42,10 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
     Returns:
         transformed_operator: A QubitOperator.
     """
+    if x_dimension % 2 != 0:
+        raise NotImplementedError('Currently only even x_dimension '
+                                  'is supported.')
+
     # Obtain the vertical edges of the snake ordering
     vert_edges = vertical_edges_snake(x_dimension, y_dimension)
 

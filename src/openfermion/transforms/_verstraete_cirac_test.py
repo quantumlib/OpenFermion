@@ -97,8 +97,13 @@ class VerstraeteCirac2dSquareOperatorLocalityTest(unittest.TestCase):
             self.assertTrue(len(term) <= 6)
 
 
-class BadInputTest(unittest.TestCase):
-    """Test that exceptions are raised for bad inputs."""
+class ExceptionTest(unittest.TestCase):
+    """Test that exceptions are raised correctly."""
+
+    def test_verstraete_cirac_2d_square(self):
+        ferm_op = fermi_hubbard(3, 2, 1., 0., spinless=True)
+        with self.assertRaises(NotImplementedError):
+            operator = verstraete_cirac_2d_square(ferm_op, 3, 2)
 
     def test_stabilizer_local_2d_square(self):
         with self.assertRaises(ValueError):
