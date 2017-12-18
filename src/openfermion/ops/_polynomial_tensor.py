@@ -45,7 +45,10 @@ def general_basis_change(general_tensor, rotation_matrix, key):
         rotation_matrix: A square numpy array or matrix having dimensions of
             n_qubits by n_qubits. Assumed to be unitary.
         key: A tuple indicating the type of general_tensor. Assumed to be
-            non-empty.
+            non-empty. For example, a tensor storing coefficients of
+            a^\dagger_p a_q would have a key of (1, 0) whereas a tensor
+            storing coefficients of a^\dagger_p a_q a_r a^\dagger_s would
+            have a key of (1, 0, 0, 1).
 
     Returns:
         transformed_general_tensor: general_tensor in the rotated basis.
