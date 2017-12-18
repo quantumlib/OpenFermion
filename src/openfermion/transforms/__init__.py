@@ -21,3 +21,4 @@ from ._conversion import (get_fermion_operator,
                           get_sparse_polynomial_tensor)
 from ._jordan_wigner import jordan_wigner
 from ._reverse_jordan_wigner import reverse_jordan_wigner
+from ._verstraete_cirac import verstraete_cirac_2d_square
