@@ -714,7 +714,7 @@ class MolecularData(object):
         """Helper routine to re-open HDF5 file and pull out single property
 
         Args:
-            property_name(string): Property name to load from self.filename
+            property_name: Property name to load from self.filename
 
         Returns:
             The data located at file[property_name] for the HDF5 file at
@@ -768,9 +768,9 @@ class MolecularData(object):
             n an orthonormal basis set.
 
         Args:
-            occupied_indices(list): A list of spatial orbital indices
+            occupied_indices: A list of spatial orbital indices
                 indicating which orbitals should be considered doubly occupied.
-            active_indices(list): A list of spatial orbital indices indicating
+            active_indices: A list of spatial orbital indices indicating
                 which orbitals should be considered active.
 
         Returns:
