@@ -47,6 +47,5 @@ install:
 
 script: export OMP_NUM_THREADS=1 && pytest src/openfermion --cov src/openfermion
 
-
 after_success:
   - coveralls
