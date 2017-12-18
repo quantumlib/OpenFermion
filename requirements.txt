@@ -6,4 +6,3 @@ h5py
 jupyter
 networkx
 matplotlib
-Sphinx

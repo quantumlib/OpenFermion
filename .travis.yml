@@ -44,9 +44,11 @@ install:
   - pip$PY install pytest
   - pip$PY install pytest-cov
   - pip$PY install coveralls
+  - pip$PY install sphinx
+  - pip$PY install sphinx_rtd_theme
 
-script: export OMP_NUM_THREADS=1 && pytest src/openfermion --cov src/openfermion
 script: sphinx-build -nW -b html -d docs/_build/doctrees/ docs/ docs/_build/html
+script: export OMP_NUM_THREADS=1 && pytest src/openfermion --cov src/openfermion
 
 after_success:
   - coveralls
