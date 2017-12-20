@@ -60,7 +60,7 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
 
         # Get the sparse matrix.
         self.hamiltonian_matrix = get_sparse_operator(
-                                                    self.molecular_hamiltonian)
+            self.molecular_hamiltonian)
 
     def test_bad_input(self):
         with self.assertRaises(TypeError):
@@ -131,7 +131,7 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         # to make sure half of the jordan-wigner number operator spectrum
         # can be found in bksf number operator spectrum.
         bravyi_kitaev_fast_n = _bksf.number_operator(
-                                                    self.molecular_hamiltonian)
+            self.molecular_hamiltonian)
         jw_n = QubitOperator()
         n_qubits = count_qubits(self.molecular_hamiltonian)
         for i in range(n_qubits):
@@ -143,14 +143,14 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
             if bool(numpy.size(numpy.where(jw_eig_spec[i] ==
                                            bravyi_kitaev_fast_eig_spec))):
                 evensector += 1
-        self.assertEqual(evensector, 2**(n_qubits - 1))
+        self.assertEqual(evensector, 2 ** (n_qubits - 1))
 
     def test_bravyi_kitaev_fast_jw_hamiltonian(self):
         # make sure half of the jordan-wigner Hamiltonian eigenspectrum can
         # be found in bksf Hamiltonian eigenspectrum.
         n_qubits = count_qubits(self.molecular_hamiltonian)
         bravyi_kitaev_fast_H = _bksf.bravyi_kitaev_fast(
-                                                    self.molecular_hamiltonian)
+            self.molecular_hamiltonian)
         jw_H = jordan_wigner(self.molecular_hamiltonian)
         bravyi_kitaev_fast_H_eig = eigenspectrum(bravyi_kitaev_fast_H)
         jw_H_eig = eigenspectrum(jw_H)
@@ -161,23 +161,22 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
             if bool(numpy.size(numpy.where(jw_H_eig[i] ==
                                            bravyi_kitaev_fast_H_eig))):
                 evensector += 1
-        self.assertEqual(evensector, 2**(n_qubits - 1))
+        self.assertEqual(evensector, 2 ** (n_qubits - 1))
 
     def test_bravyi_kitaev_fast_generate_fermions(self):
         # test for generating two fermions
         edge_matrix = _bksf.bravyi_kitaev_fast_edge_matrix(
-                        self.molecular_hamiltonian)
+            self.molecular_hamiltonian)
         edge_matrix_indices = numpy.array(numpy.nonzero(
-                                numpy.triu(edge_matrix) - numpy.diag(
-                                        numpy.diag(edge_matrix))))
+            numpy.triu(edge_matrix) - numpy.diag(edge_matrix)))
         fermion_generation_operator = _bksf.generate_fermions(
-                                      edge_matrix_indices, 2, 3)
+            edge_matrix_indices, 2, 3)
         fermion_generation_sp_matrix = get_sparse_operator(
-                                        fermion_generation_operator)
+            fermion_generation_operator)
         fermion_generation_matrix = fermion_generation_sp_matrix.toarray()
         bksf_vacuum_state_operator = _bksf.vacuum_operator(edge_matrix_indices)
         bksf_vacuum_state_sp_matrix = get_sparse_operator(
-                                      bksf_vacuum_state_operator)
+            bksf_vacuum_state_operator)
         bksf_vacuum_state_matrix = bksf_vacuum_state_sp_matrix.toarray()
         vacuum_state = numpy.zeros((64, 1))
         vacuum_state[0] = 1.
