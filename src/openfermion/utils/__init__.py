@@ -15,10 +15,11 @@ from ._bch_expansion import bch_expand
 from ._channel_state import (amplitude_damping_channel, dephasing_channel,
                              depolarizing_channel)
 
+from ._commutators import commutator, double_commutator
+
 from ._grid import Grid
 
-from ._operator_utils import (commutator, count_qubits,
-                              eigenspectrum, fourier_transform,
+from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               get_file_path, inverse_fourier_transform,
                               is_identity, load_operator, save_operator)
 
