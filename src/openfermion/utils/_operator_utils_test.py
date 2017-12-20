@@ -23,7 +23,6 @@ from openfermion.ops import *
 from openfermion.transforms import jordan_wigner, get_interaction_operator
 from openfermion.utils import Grid
 from openfermion.utils._operator_utils import *
-from openfermion.utils._sparse_tools import pauli_matrix_map
 
 
 class OperatorUtilsTest(unittest.TestCase):
@@ -155,78 +154,6 @@ class SaveLoadOperatorTest(unittest.TestCase):
     def test_save_bad_type(self):
         with self.assertRaises(TypeError):
             save_operator('ping', 'somewhere')
-
-
-class CommutatorTest(unittest.TestCase):
-
-    def setUp(self):
-        self.fermion_term = FermionOperator('1^ 2^ 3 4', -3.17)
-        self.fermion_operator = self.fermion_term + hermitian_conjugated(
-            self.fermion_term)
-        self.qubit_operator = jordan_wigner(self.fermion_operator)
-
-    def test_commutes_identity(self):
-        com = commutator(FermionOperator.identity(),
-                         FermionOperator('2^ 3', 2.3))
-        self.assertTrue(com.isclose(FermionOperator.zero()))
-
-    def test_commutes_no_intersection(self):
-        com = commutator(FermionOperator('2^ 3'), FermionOperator('4^ 5^ 3'))
-        com = normal_ordered(com)
-        self.assertTrue(com.isclose(FermionOperator.zero()))
-
-    def test_commutes_number_operators(self):
-        com = commutator(FermionOperator('4^ 3^ 4 3'), FermionOperator('2^ 2'))
-        com = normal_ordered(com)
-        self.assertTrue(com.isclose(FermionOperator.zero()))
-
-    def test_commutator_hopping_operators(self):
-        com = commutator(3 * FermionOperator('1^ 2'), FermionOperator('2^ 3'))
-        com = normal_ordered(com)
-        self.assertTrue(com.isclose(FermionOperator('1^ 3', 3)))
-
-    def test_commutator_hopping_with_single_number(self):
-        com = commutator(FermionOperator('1^ 2', 1j), FermionOperator('1^ 1'))
-        com = normal_ordered(com)
-        self.assertTrue(com.isclose(-FermionOperator('1^ 2') * 1j))
-
-    def test_commutator_hopping_with_double_number_one_intersection(self):
-        com = commutator(FermionOperator('1^ 3'), FermionOperator('3^ 2^ 3 2'))
-        com = normal_ordered(com)
-        self.assertTrue(com.isclose(-FermionOperator('2^ 1^ 3 2')))
-
-    def test_commutator_hopping_with_double_number_two_intersections(self):
-        com = commutator(FermionOperator('2^ 3'), FermionOperator('3^ 2^ 3 2'))
-        com = normal_ordered(com)
-        self.assertTrue(com.isclose(FermionOperator.zero()))
-
-    def test_commutator(self):
-        operator_a = FermionOperator('')
-        self.assertTrue(FermionOperator().isclose(
-            commutator(operator_a, self.fermion_operator)))
-        operator_b = QubitOperator('X1 Y2')
-        self.assertTrue(commutator(self.qubit_operator, operator_b).isclose(
-            self.qubit_operator * operator_b -
-            operator_b * self.qubit_operator))
-
-    def test_ndarray_input(self):
-        """Test when the inputs are Numpy arrays."""
-        X = pauli_matrix_map['X'].toarray()
-        Y = pauli_matrix_map['Y'].toarray()
-        Z = pauli_matrix_map['Z'].toarray()
-        self.assertTrue(numpy.allclose(commutator(X, Y), 2.j * Z))
-
-    def test_commutator_operator_a_bad_type(self):
-        with self.assertRaises(TypeError):
-            commutator(1, self.fermion_operator)
-
-    def test_commutator_operator_b_bad_type(self):
-        with self.assertRaises(TypeError):
-            commutator(self.qubit_operator, "hello")
-
-    def test_commutator_not_same_type(self):
-        with self.assertRaises(TypeError):
-            commutator(self.fermion_operator, self.qubit_operator)
 
 
 class FourierTransformTest(unittest.TestCase):
