@@ -181,10 +181,10 @@ class TrottQasmTest(unittest.TestCase):
             k_exp=1.0)]
 
         gold = []
-        gold.append(0.5*self.opA)
-        gold.append(0.5*self.opB)
-        gold.append(0.5*self.opA)
-        gold.append(0.5*self.opB)
+        gold.append(0.5 * self.opA)
+        gold.append(0.5 * self.opB)
+        gold.append(0.5 * self.opA)
+        gold.append(0.5 * self.opB)
 
         # Assert each term in list of QubitOperators is correct
         self.compare_qubop_lists(gold, res)

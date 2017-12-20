@@ -63,14 +63,14 @@ def majorana_operator(term=None, coefficient=1.):
         mode, operator_type = term
         if operator_type == 1:
             majorana_op = FermionOperator(
-                    ((mode, 1),), coefficient / numpy.sqrt(2.))
+                ((mode, 1),), coefficient / numpy.sqrt(2.))
             majorana_op += FermionOperator(
-                    ((mode, 0),), coefficient / numpy.sqrt(2.))
+                ((mode, 0),), coefficient / numpy.sqrt(2.))
         elif operator_type == 0:
             majorana_op = FermionOperator(
-                    ((mode, 1),), 1.j * coefficient / numpy.sqrt(2.))
+                ((mode, 1),), 1.j * coefficient / numpy.sqrt(2.))
             majorana_op -= FermionOperator(
-                    ((mode, 0),), 1.j * coefficient / numpy.sqrt(2.))
+                ((mode, 0),), 1.j * coefficient / numpy.sqrt(2.))
         else:
             raise ValueError('Operator specified incorrectly.')
         return majorana_op

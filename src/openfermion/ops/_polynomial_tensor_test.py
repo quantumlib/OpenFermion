@@ -20,7 +20,7 @@ import numpy
 
 from openfermion.ops import PolynomialTensor
 from openfermion.utils._slater_determinants_test import (
-        random_quadratic_hamiltonian)
+    random_quadratic_hamiltonian)
 
 
 class PolynomialTensorTest(unittest.TestCase):
@@ -38,9 +38,7 @@ class PolynomialTensorTest(unittest.TestCase):
         two_body_a[1, 1, 0, 0] = 5
 
         self.polynomial_tensor_a = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body_a,
-                 (1, 1, 0, 0): two_body_a})
+            {(): self.constant, (1, 0): one_body_a, (1, 1, 0, 0): two_body_a})
 
         one_body_na = numpy.zeros((self.n_qubits, self.n_qubits))
         two_body_na = numpy.zeros((self.n_qubits, self.n_qubits,
@@ -50,9 +48,8 @@ class PolynomialTensorTest(unittest.TestCase):
         two_body_na[0, 1, 0, 1] = -4
         two_body_na[1, 1, 0, 0] = -5
         self.polynomial_tensor_na = PolynomialTensor(
-                {(): -self.constant,
-                 (1, 0): one_body_na,
-                 (1, 1, 0, 0): two_body_na})
+            {(): -self.constant, (1, 0): one_body_na,
+             (1, 1, 0, 0): two_body_na})
 
         one_body_b = numpy.zeros((self.n_qubits, self.n_qubits))
         two_body_b = numpy.zeros((self.n_qubits, self.n_qubits,
@@ -62,9 +59,8 @@ class PolynomialTensorTest(unittest.TestCase):
         two_body_b[0, 1, 0, 1] = 3
         two_body_b[1, 0, 0, 1] = 4
         self.polynomial_tensor_b = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body_b,
-                 (1, 1, 0, 0): two_body_b})
+            {(): self.constant, (1, 0): one_body_b,
+             (1, 1, 0, 0): two_body_b})
 
         one_body_ab = numpy.zeros((self.n_qubits, self.n_qubits))
         two_body_ab = numpy.zeros((self.n_qubits, self.n_qubits,
@@ -75,9 +71,8 @@ class PolynomialTensorTest(unittest.TestCase):
         two_body_ab[1, 0, 0, 1] = 4
         two_body_ab[1, 1, 0, 0] = 5
         self.polynomial_tensor_ab = PolynomialTensor(
-                {(): 2.0 * self.constant,
-                 (1, 0): one_body_ab,
-                 (1, 1, 0, 0): two_body_ab})
+            {(): 2.0 * self.constant, (1, 0): one_body_ab,
+             (1, 1, 0, 0): two_body_ab})
 
         constant_axb = self.constant * self.constant
         one_body_axb = numpy.zeros((self.n_qubits, self.n_qubits))
@@ -87,9 +82,8 @@ class PolynomialTensorTest(unittest.TestCase):
         one_body_axb[1, 0] = 6
         two_body_axb[0, 1, 0, 1] = 12
         self.polynomial_tensor_axb = PolynomialTensor(
-                {(): constant_axb,
-                 (1, 0): one_body_axb,
-                 (1, 1, 0, 0): two_body_axb})
+            {(): constant_axb, (1, 0): one_body_axb,
+             (1, 1, 0, 0): two_body_axb})
 
         self.n_qubits_plus_one = self.n_qubits + 1
         one_body_c = numpy.zeros((self.n_qubits_plus_one,
@@ -103,9 +97,8 @@ class PolynomialTensorTest(unittest.TestCase):
         two_body_c[0, 1, 0, 1] = 3
         two_body_c[1, 0, 0, 1] = 4
         self.polynomial_tensor_c = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body_c,
-                 (1, 1, 0, 0): two_body_c})
+            {(): self.constant, (1, 0): one_body_c,
+             (1, 1, 0, 0): two_body_c})
 
         one_body_hole = numpy.zeros((self.n_qubits, self.n_qubits))
         two_body_hole = numpy.zeros((self.n_qubits, self.n_qubits,
@@ -116,9 +109,8 @@ class PolynomialTensorTest(unittest.TestCase):
         two_body_hole[1, 1, 0, 0] = 5
 
         self.polynomial_tensor_hole = PolynomialTensor(
-                {(): self.constant,
-                 (0, 1): one_body_hole,
-                 (0, 0, 1, 1): two_body_hole})
+            {(): self.constant, (0, 1): one_body_hole,
+             (0, 0, 1, 1): two_body_hole})
 
         one_body_spinful = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
         two_body_spinful = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits,
@@ -133,9 +125,8 @@ class PolynomialTensorTest(unittest.TestCase):
         two_body_spinful[3, 3, 2, 2] = 9
 
         self.polynomial_tensor_spinful = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body_spinful,
-                 (1, 1, 0, 0): two_body_spinful})
+            {(): self.constant, (1, 0): one_body_spinful,
+             (1, 1, 0, 0): two_body_spinful})
 
     def test_setitem_1body(self):
         expected_one_body_tensor = numpy.array([[0, 3], [2, 0]])
@@ -153,19 +144,17 @@ class PolynomialTensorTest(unittest.TestCase):
         self.polynomial_tensor_a[(0, 1), (1, 1), (1, 0), (0, 0)] = 3
         self.polynomial_tensor_a[(1, 1), (0, 1), (0, 0), (1, 0)] = 2
         self.assertEqual(
-                self.polynomial_tensor_a.n_body_tensors[(1, 1, 0, 0)][
-                    0, 1, 1, 0],
-                3)
+            self.polynomial_tensor_a.n_body_tensors[
+                (1, 1, 0, 0)][0, 1, 1, 0], 3)
         self.assertEqual(
-                self.polynomial_tensor_a.n_body_tensors[(1, 1, 0, 0)][
-                    1, 0, 0, 1],
-                2)
+            self.polynomial_tensor_a.n_body_tensors[
+                (1, 1, 0, 0)][1, 0, 0, 1], 2)
 
     def test_getitem_2body(self):
         self.assertEqual(
-                self.polynomial_tensor_c[(0, 1), (1, 1), (0, 0), (1, 0)], 3)
+            self.polynomial_tensor_c[(0, 1), (1, 1), (0, 0), (1, 0)], 3)
         self.assertEqual(
-                self.polynomial_tensor_c[(1, 1), (0, 1), (0, 0), (1, 0)], 4)
+            self.polynomial_tensor_c[(1, 1), (0, 1), (0, 0), (1, 0)], 4)
 
     def test_invalid_getitem_indexing(self):
         with self.assertRaises(KeyError):
@@ -179,16 +168,14 @@ class PolynomialTensorTest(unittest.TestCase):
     def test_eq(self):
         self.assertEqual(self.polynomial_tensor_a,
                          self.polynomial_tensor_a)
-        self.assertTrue(self.polynomial_tensor_a == self.polynomial_tensor_a)
-        self.assertFalse(self.polynomial_tensor_a ==
-                         self.polynomial_tensor_hole)
-        self.assertFalse(self.polynomial_tensor_a ==
-                         self.polynomial_tensor_spinful)
+        self.assertNotEqual(self.polynomial_tensor_a,
+                            self.polynomial_tensor_hole)
+        self.assertNotEqual(self.polynomial_tensor_a,
+                            self.polynomial_tensor_spinful)
 
     def test_neq(self):
         self.assertNotEqual(self.polynomial_tensor_a,
                             self.polynomial_tensor_b)
-        self.assertTrue(self.polynomial_tensor_a != self.polynomial_tensor_b)
 
     def test_add(self):
         new_tensor = self.polynomial_tensor_a + self.polynomial_tensor_b
@@ -264,12 +251,10 @@ class PolynomialTensorTest(unittest.TestCase):
         one_body[0, 1] = 11.0
         two_body[0, 1, 1, 0] = 22.0
         polynomial_tensor = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body,
-                 (1, 1, 0, 0): two_body})
+            {(): self.constant, (1, 0): one_body, (1, 1, 0, 0): two_body})
         want_str = ('() 23.0\n((0, 1), (1, 0)) 11.0\n'
                     '((0, 1), (1, 1), (1, 0), (0, 0)) 22.0\n')
-        self.assertEqual(polynomial_tensor.__str__(), want_str)
+        self.assertEqual(str(polynomial_tensor), want_str)
         self.assertEqual(polynomial_tensor.__repr__(), want_str)
 
     def test_rotate_basis_identical(self):
@@ -301,21 +286,15 @@ class PolynomialTensorTest(unittest.TestCase):
                                          s + self.n_qubits] = j
                         j = j + 1
         polynomial_tensor = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body,
-                 (1, 1, 0, 0): two_body})
+            {(): self.constant, (1, 0): one_body, (1, 1, 0, 0): two_body})
         want_polynomial_tensor = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body,
-                 (1, 1, 0, 0): two_body})
+            {(): self.constant, (1, 0): one_body, (1, 1, 0, 0): two_body})
         polynomial_tensor_spinful = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body_spinful,
-                 (1, 1, 0, 0): two_body_spinful})
+            {(): self.constant, (1, 0): one_body_spinful,
+             (1, 1, 0, 0): two_body_spinful})
         want_polynomial_tensor_spinful = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body_spinful,
-                 (1, 1, 0, 0): two_body_spinful})
+            {(): self.constant, (1, 0): one_body_spinful,
+             (1, 1, 0, 0): two_body_spinful})
 
         polynomial_tensor.rotate_basis(rotation_matrix_identical)
         polynomial_tensor_spinful.rotate_basis(rotation_matrix_identical)
@@ -351,13 +330,10 @@ class PolynomialTensorTest(unittest.TestCase):
                         two_body_reverse[p, q, r, s] = j_reverse
                         j_reverse = j_reverse - 1
         polynomial_tensor = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body,
-                 (1, 1, 0, 0): two_body})
+            {(): self.constant, (1, 0): one_body, (1, 1, 0, 0): two_body})
         want_polynomial_tensor = PolynomialTensor(
-                {(): self.constant,
-                 (1, 0): one_body_reverse,
-                 (1, 1, 0, 0): two_body_reverse})
+            {(): self.constant, (1, 0): one_body_reverse,
+             (1, 1, 0, 0): two_body_reverse})
         polynomial_tensor.rotate_basis(rotation_matrix_reverse)
         self.assertEqual(polynomial_tensor, want_polynomial_tensor)
 
@@ -413,14 +389,13 @@ class PolynomialTensorTest(unittest.TestCase):
         num = numpy.random.rand()
         rotation = numpy.exp(numpy.random.rand() * numpy.pi * 2j)
 
-        polynomial_tensor = PolynomialTensor(
-                {key: numpy.zeros(shape) + num})
+        polynomial_tensor = PolynomialTensor({key: numpy.zeros(shape) + num})
 
         # If order is odd, there are one more 0 than 1 in key
         if order % 2 == 1:
             num *= rotation
         want_polynomial_tensor = PolynomialTensor(
-                {key: numpy.zeros(shape) + num})
+            {key: numpy.zeros(shape) + num})
 
         polynomial_tensor.rotate_basis(numpy.array([[rotation]]))
 
