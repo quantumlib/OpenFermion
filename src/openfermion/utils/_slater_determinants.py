@@ -71,7 +71,7 @@ def gaussian_state_preparation_circuit(
             # The ground state is desired, so we fill the orbitals that have
             # negative energy
             num_negative_energies = numpy.count_nonzero(
-                    energies < -EQ_TOLERANCE)
+                energies < -EQ_TOLERANCE)
             occupied_orbitals = range(num_negative_energies)
 
         # Get the unitary rows which represent the Slater determinant
@@ -79,22 +79,21 @@ def gaussian_state_preparation_circuit(
 
         # Get the circuit description
         circuit_description = slater_determinant_preparation_circuit(
-                slater_determinant_matrix)
+            slater_determinant_matrix)
         start_orbitals = range(len(occupied_orbitals))
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
         diagonalizing_unitary = (
-                quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
+            quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
 
         # Get the unitary rows which represent the Gaussian unitary
         gaussian_unitary_matrix = diagonalizing_unitary[
-                quadratic_hamiltonian.n_qubits:]
+            quadratic_hamiltonian.n_qubits:]
 
         # Get the circuit description
         decomposition, left_decomposition, diagonal, left_diagonal = (
-                fermionic_gaussian_decomposition(
-                    gaussian_unitary_matrix))
+            fermionic_gaussian_decomposition(gaussian_unitary_matrix))
         if occupied_orbitals is None:
             # The ground state is desired, so the circuit should be applied
             # to the vaccuum state
@@ -105,7 +104,7 @@ def gaussian_state_preparation_circuit(
             # The circuit won't be applied to the ground state, so we need to
             # use left_decomposition
             circuit_description = list(reversed(
-                                       decomposition + left_decomposition))
+                decomposition + left_decomposition))
 
     return circuit_description, start_orbitals
 
@@ -145,7 +144,7 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
             and :math:`\\phi`.
     """
     decomposition, left_unitary, diagonal = givens_decomposition(
-            slater_determinant_matrix)
+        slater_determinant_matrix)
     circuit_description = list(reversed(decomposition))
     return circuit_description
 
@@ -251,7 +250,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
             # Zero out entry in row l if needed
             if abs(current_matrix[l, k]) > EQ_TOLERANCE:
                 givens_rotation = givens_matrix_elements(
-                        current_matrix[l, k], current_matrix[l + 1, k])
+                    current_matrix[l, k], current_matrix[l + 1, k])
                 # Apply Givens rotation
                 givens_rotate(current_matrix, givens_rotation, l, l + 1)
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
@@ -428,7 +427,7 @@ def givens_decomposition(unitary_rows):
             # Zero out entry in row l if needed
             if abs(current_matrix[l, k]) > EQ_TOLERANCE:
                 givens_rotation = givens_matrix_elements(
-                        current_matrix[l, k], current_matrix[l + 1, k])
+                    current_matrix[l, k], current_matrix[l + 1, k])
                 # Apply Givens rotation
                 givens_rotate(current_matrix, givens_rotation, l, l + 1)
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
@@ -483,7 +482,7 @@ def givens_decomposition(unitary_rows):
                     # We actually need to perform a Givens rotation
                     left_element = current_matrix[i, j - 1].conj()
                     givens_rotation = givens_matrix_elements(
-                            left_element, right_element, which='right')
+                        left_element, right_element, which='right')
 
                     # Add the parameters to the list
                     theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))

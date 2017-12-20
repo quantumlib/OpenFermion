@@ -119,11 +119,9 @@ def trotter_operator_grouping(hamiltonian,
     if trotter_order == 1:
         for step in range(trotter_number):
             for op in term_ordering:
-                yield QubitOperator(op,
-                                    hamiltonian.terms[op]
-                                    * float(k_exp)
-                                    / float(trotter_number)
-                                    )
+                yield QubitOperator(
+                    op, hamiltonian.terms[op] * k_exp / trotter_number)
+
     # Second order trotter
     elif trotter_order == 2:
         if len(term_ordering) < 2:
@@ -131,20 +129,16 @@ def trotter_operator_grouping(hamiltonian,
                              "second order trotterization")
         for step in range(trotter_number):
             for op in term_ordering[:-1]:
-                yield QubitOperator(op,
-                                    (hamiltonian.terms[op]
-                                     * k_exp
-                                     / (2.0 * float(trotter_number))))
+                yield QubitOperator(
+                    op, hamiltonian.terms[op] * k_exp / (2.0 * trotter_number))
 
-            yield QubitOperator(term_ordering[-1],
-                                hamiltonian.terms[term_ordering[-1]]
-                                * float(k_exp)
-                                / float(trotter_number))
+            yield QubitOperator(
+                term_ordering[-1],
+                hamiltonian.terms[term_ordering[-1]] * k_exp / trotter_number)
 
             for op in reversed(term_ordering[:-1]):
-                yield QubitOperator(op, hamiltonian.terms[op]
-                                    * float(k_exp)
-                                    / (2.0 * float(trotter_number)))
+                yield QubitOperator(
+                    op, hamiltonian.terms[op] * k_exp / (2.0 * trotter_number))
 
     # Third order trotter
     elif trotter_order == 3:
@@ -152,8 +146,7 @@ def trotter_operator_grouping(hamiltonian,
             raise ValueError("Not enough terms in the Hamiltonian to do " +
                              "third order trotterization")
         # Make sure original hamiltonian is not modified
-        ham = hamiltonian / float(trotter_number)
-        ham *= float(k_exp)
+        ham = hamiltonian * k_exp / float(trotter_number)
         ham_temp = []
         for term in term_ordering:
             ham_temp.append(QubitOperator(term, ham.terms[term]))
@@ -228,7 +221,7 @@ def pauli_exp_to_qasm(qubit_operator_list,
 
             # 3. Rotation (Note kexp & Ntrot)
             ret_list = ret_list + ["Rz {} {}".format(
-                        term_coeff * evolution_time, qids[-1])]
+                term_coeff * evolution_time, qids[-1])]
 
             # 4. Second set of CNOTs
             ret_list = ret_list + cnots2

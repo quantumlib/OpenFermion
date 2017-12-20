@@ -26,17 +26,14 @@ from openfermion.utils import (gaussian_state_preparation_circuit,
                                jw_get_gaussian_state,
                                jw_slater_determinant)
 from openfermion.utils._slater_determinants import (
-        double_givens_rotate,
-        fermionic_gaussian_decomposition,
-        givens_decomposition,
-        givens_matrix_elements,
-        givens_rotate)
+    double_givens_rotate, fermionic_gaussian_decomposition,
+    givens_decomposition, givens_matrix_elements, givens_rotate)
 from openfermion.utils._sparse_tools import (
-        jw_sparse_givens_rotation,
-        jw_sparse_particle_hole_transformation_last_mode)
+    jw_sparse_givens_rotation,
+    jw_sparse_particle_hole_transformation_last_mode)
 from openfermion.utils._testing_utils import (
-        random_antisymmetric_matrix, random_hermitian_matrix,
-        random_quadratic_hamiltonian, random_unitary_matrix)
+    random_antisymmetric_matrix, random_hermitian_matrix,
+    random_quadratic_hamiltonian, random_unitary_matrix)
 
 
 class GaussianStatePreparationCircuitTest(unittest.TestCase):
@@ -50,7 +47,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
         for n_qubits in self.n_qubits_range:
             # Initialize a particle-number-conserving Hamiltonian
             quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, True, True)
+                n_qubits, True, True)
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
@@ -58,14 +55,14 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
             # Obtain the circuit
             circuit_description, start_orbitals = (
-                    gaussian_state_preparation_circuit(quadratic_hamiltonian))
+                gaussian_state_preparation_circuit(quadratic_hamiltonian))
 
             # Initialize the starting state
             state = jw_slater_determinant(start_orbitals, n_qubits)
 
             # Apply the circuit
             particle_hole_transformation = (
-                    jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+                jw_sparse_particle_hole_transformation_last_mode(n_qubits))
             for parallel_ops in circuit_description:
                 for op in parallel_ops:
                     if op == 'pht':
@@ -73,7 +70,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
                     else:
                         i, j, theta, phi = op
                         state = jw_sparse_givens_rotation(
-                                    i, j, theta, phi, n_qubits).dot(state)
+                            i, j, theta, phi, n_qubits).dot(state)
 
             # Check that the state obtained using the circuit is a ground state
             difference = sparse_operator * state - ground_energy * state
@@ -89,7 +86,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
         for n_qubits in self.n_qubits_range:
             # Initialize a particle-number-conserving Hamiltonian
             quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, False, True)
+                n_qubits, False, True)
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
@@ -97,14 +94,14 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
             # Obtain the circuit
             circuit_description, start_orbitals = (
-                    gaussian_state_preparation_circuit(quadratic_hamiltonian))
+                gaussian_state_preparation_circuit(quadratic_hamiltonian))
 
             # Initialize the starting state
             state = jw_slater_determinant(start_orbitals, n_qubits)
 
             # Apply the circuit
             particle_hole_transformation = (
-                    jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+                jw_sparse_particle_hole_transformation_last_mode(n_qubits))
             for parallel_ops in circuit_description:
                 for op in parallel_ops:
                     if op == 'pht':
@@ -112,7 +109,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
                     else:
                         i, j, theta, phi = op
                         state = jw_sparse_givens_rotation(
-                                    i, j, theta, phi, n_qubits).dot(state)
+                            i, j, theta, phi, n_qubits).dot(state)
 
             # Check that the state obtained using the circuit is a ground state
             difference = sparse_operator * state - ground_energy * state
@@ -152,7 +149,7 @@ class GivensDecompositionTest(unittest.TestCase):
                     s = numpy.sin(theta)
                     phase = numpy.exp(1.j * phi)
                     G = numpy.array([[c, -phase * s],
-                                    [s, phase * c]], dtype=complex)
+                                     [s, phase * c]], dtype=complex)
                     givens_rotate(combined_givens, G, i, j)
                 U = combined_givens.dot(U)
 
@@ -289,12 +286,12 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
 
             # Get the diagonalizing fermionic unitary
             ferm_unitary = (
-                    quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
+                quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
             lower_unitary = ferm_unitary[n:]
 
             # Get fermionic Gaussian decomposition of lower_unitary
             decomposition, left_decomposition, diagonal, left_diagonal = (
-                    fermionic_gaussian_decomposition(lower_unitary))
+                fermionic_gaussian_decomposition(lower_unitary))
 
             # Compute left_unitary
             left_unitary = numpy.eye(n, dtype=complex)
@@ -306,8 +303,8 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
                     s = numpy.sin(theta)
                     phase = numpy.exp(1.j * phi)
                     givens_rotation = numpy.array(
-                            [[c, -phase * s],
-                             [s, phase * c]], dtype=complex)
+                        [[c, -phase * s],
+                         [s, phase * c]], dtype=complex)
                     givens_rotate(combined_op, givens_rotation, i, j)
                 left_unitary = combined_op.dot(left_unitary)
             for i in range(n):
@@ -336,15 +333,15 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
                         s = numpy.sin(theta)
                         phase = numpy.exp(1.j * phi)
                         givens_rotation = numpy.array(
-                                [[c, -phase * s],
-                                 [s, phase * c]], dtype=complex)
-                        double_givens_rotate(
-                                combined_op, givens_rotation, i, j)
+                            [[c, -phase * s],
+                             [s, phase * c]], dtype=complex)
+                        double_givens_rotate(combined_op, givens_rotation,
+                                             i, j)
                 right_unitary = combined_op.dot(right_unitary)
 
             # Compute left_unitary * lower_unitary * right_unitary^\dagger
             product = left_unitary.dot(lower_unitary.dot(
-                                       right_unitary.T.conj()))
+                right_unitary.T.conj()))
 
             # Construct the diagonal matrix
             diag = numpy.zeros((n, 2 * n), dtype=complex)
@@ -359,14 +356,14 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         rand_mat = numpy.random.randn(n, p)
         with self.assertRaises(ValueError):
             decomposition, left_unitary, antidiagonal = (
-                    fermionic_gaussian_decomposition(rand_mat))
+                fermionic_gaussian_decomposition(rand_mat))
 
     def test_bad_constraints(self):
         n = 3
         ones_mat = numpy.ones((n, 2 * n))
         with self.assertRaises(ValueError):
             decomposition, left_unitary, antidiagonal = (
-                    fermionic_gaussian_decomposition(ones_mat))
+                fermionic_gaussian_decomposition(ones_mat))
 
 
 class GivensMatrixElementsTest(unittest.TestCase):
