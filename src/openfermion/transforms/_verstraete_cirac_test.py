@@ -21,9 +21,8 @@ from openfermion.hamiltonians import fermi_hubbard
 from openfermion.transforms import (get_sparse_operator,
                                     verstraete_cirac_2d_square)
 from openfermion.transforms._verstraete_cirac import (
-        coordinates_to_snake_index,
-        snake_index_to_coordinates,
-        stabilizer_local_2d_square)
+    coordinates_to_snake_index, snake_index_to_coordinates,
+    stabilizer_local_2d_square)
 from openfermion.utils import get_ground_state
 
 
@@ -51,7 +50,7 @@ class VerstraeteCirac2dSquareGroundStateTest(unittest.TestCase):
         # Get the ground energy and state of the transformed operator
         self.transformed_sparse = get_sparse_operator(self.transformed_op)
         self.transformed_ground_energy, self.transformed_ground_state = (
-                get_ground_state(self.transformed_sparse))
+            get_ground_state(self.transformed_sparse))
 
     def test_ground_energy(self):
         """Test that the transformation preserves the ground energy."""
@@ -68,7 +67,7 @@ class VerstraeteCirac2dSquareOperatorLocalityTest(unittest.TestCase):
 
         # Create a Hubbard Hamiltonian
         self.ferm_op = fermi_hubbard(self.x_dimension, self.y_dimension,
-                                     1., 4., None, None, False, True)
+                                     1.0, 4.0, None, None, False, True)
 
         # Transform the FermionOperator to a QubitOperator without including
         # the auxiliary Hamiltonian

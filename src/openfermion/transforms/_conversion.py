@@ -210,16 +210,16 @@ def get_quadratic_hamiltonian(fermion_operator,
                 conjugate_term = ((p, 0), (q, 0))
                 if conjugate_term not in fermion_operator.terms:
                     raise QuadraticHamiltonianError(
-                            'FermionOperator does not map '
-                            'to QuadraticHamiltonian (not Hermitian).')
+                        'FermionOperator does not map '
+                        'to QuadraticHamiltonian (not Hermitian).')
                 else:
                     matching_coefficient = -fermion_operator.terms[
-                            conjugate_term].conjugate()
+                        conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
                         raise QuadraticHamiltonianError(
-                                'FermionOperator does not map '
-                                'to QuadraticHamiltonian (not Hermitian).')
+                            'FermionOperator does not map '
+                            'to QuadraticHamiltonian (not Hermitian).')
                 antisymmetric_part[p, q] += .5 * coefficient
                 antisymmetric_part[q, p] -= .5 * coefficient
             else:
@@ -228,16 +228,16 @@ def get_quadratic_hamiltonian(fermion_operator,
                 conjugate_term = ((p, 1), (q, 1))
                 if conjugate_term not in fermion_operator.terms:
                     raise QuadraticHamiltonianError(
-                            'FermionOperator does not map '
-                            'to QuadraticHamiltonian (not Hermitian).')
+                        'FermionOperator does not map '
+                        'to QuadraticHamiltonian (not Hermitian).')
                 else:
                     matching_coefficient = -fermion_operator.terms[
-                            conjugate_term].conjugate()
+                        conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
                         raise QuadraticHamiltonianError(
-                                'FermionOperator does not map '
-                                'to QuadraticHamiltonian (not Hermitian).')
+                            'FermionOperator does not map '
+                            'to QuadraticHamiltonian (not Hermitian).')
                 antisymmetric_part[p, q] -= .5 * coefficient.conjugate()
                 antisymmetric_part[q, p] += .5 * coefficient.conjugate()
         else:
@@ -255,8 +255,8 @@ def get_quadratic_hamiltonian(fermion_operator,
     discrepancy = numpy.max(numpy.abs(difference))
     if discrepancy > EQ_TOLERANCE:
         raise QuadraticHamiltonianError(
-                'FermionOperator does not map '
-                'to QuadraticHamiltonian (not Hermitian).')
+            'FermionOperator does not map '
+            'to QuadraticHamiltonian (not Hermitian).')
 
     # Form QuadraticHamiltonian and return.
     discrepancy = numpy.max(numpy.abs(antisymmetric_part))
@@ -283,7 +283,7 @@ def get_fermion_operator(polynomial_tensor):
 
     for term in polynomial_tensor:
         fermion_operator += FermionOperator(
-                term, coefficient=polynomial_tensor[term])
+            term, coefficient=polynomial_tensor[term])
 
     return fermion_operator
 

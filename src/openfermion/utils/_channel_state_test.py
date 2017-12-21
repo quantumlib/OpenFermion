@@ -86,9 +86,9 @@ class ChannelTest(unittest.TestCase):
                                      test_density_matrix), 0.0)
         # With probability = 1
 
-        correct_matrix = array([[0.50,  0.25,  0.00,  0.00],
-                                [0.25,  0.25, 0.00, -0.25],
-                                [0.00,  0.00,  0.00,  0.00],
+        correct_matrix = array([[0.50, 0.25, 0.00, 0.00],
+                                [0.25, 0.25, 0.00, -0.25],
+                                [0.00, 0.00, 0.00, 0.00],
                                 [0.00, -0.25, 0.00, 0.50]])
         test_density_matrix = (
             dephasing_channel(self.cat_matrix, 1, 1))

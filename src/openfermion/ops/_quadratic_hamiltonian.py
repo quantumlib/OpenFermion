@@ -13,9 +13,9 @@
 """Class and functions to store and manipulate Hamiltonians that are quadratic
 in the fermionic ladder operators."""
 from __future__ import absolute_import
+from scipy.linalg import schur
 
 import numpy
-from scipy.linalg import schur
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import FermionOperator, PolynomialTensor
@@ -76,20 +76,17 @@ class QuadraticHamiltonian(PolynomialTensor):
             combined_hermitian_part = hermitian_part
         else:
             combined_hermitian_part = (
-                    hermitian_part -
-                    chemical_potential * numpy.eye(n_qubits))
+                hermitian_part - chemical_potential * numpy.eye(n_qubits))
 
         # Initialize the PolynomialTensor
         if antisymmetric_part is None:
             super(QuadraticHamiltonian, self).__init__(
-                    {(): constant,
-                     (1, 0): combined_hermitian_part})
+                {(): constant, (1, 0): combined_hermitian_part})
         else:
             super(QuadraticHamiltonian, self).__init__(
-                    {(): constant,
-                     (1, 0): combined_hermitian_part,
-                     (1, 1): .5 * antisymmetric_part,
-                     (0, 0): -.5 * antisymmetric_part.conj()})
+                {(): constant, (1, 0): combined_hermitian_part,
+                 (1, 1): 0.5 * antisymmetric_part,
+                 (0, 0): -0.5 * antisymmetric_part.conj()})
 
         # Add remaining attributes
         self.chemical_potential = chemical_potential
@@ -155,22 +152,21 @@ class QuadraticHamiltonian(PolynomialTensor):
         if self.conserves_particle_number and not non_negative:
             hermitian_matrix = self.combined_hermitian_part
             orbital_energies, diagonalizing_unitary = numpy.linalg.eigh(
-                    hermitian_matrix)
+                hermitian_matrix)
             constant = self.constant
         else:
             majorana_matrix, majorana_constant = self.majorana_form()
             canonical, orthogonal = antisymmetric_canonical_form(
-                    majorana_matrix)
+                majorana_matrix)
             orbital_energies = canonical[
-                    range(self.n_qubits),
-                    range(self.n_qubits, 2 * self.n_qubits)]
-            constant = -.5 * numpy.sum(orbital_energies) + majorana_constant
+                range(self.n_qubits), range(self.n_qubits, 2 * self.n_qubits)]
+            constant = -0.5 * numpy.sum(orbital_energies) + majorana_constant
 
         return orbital_energies, constant
 
     def ground_energy(self):
         """Return the ground energy."""
-        orbital_energies, constant = self.orbital_energies(non_negative=True)
+        _, constant = self.orbital_energies(non_negative=True)
         return constant
 
     def majorana_form(self):
@@ -200,24 +196,24 @@ class QuadraticHamiltonian(PolynomialTensor):
         # Compute the Majorana matrix using block matrix manipulations
         majorana_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
         # Set upper left block
-        majorana_matrix[:self.n_qubits, :self.n_qubits] = numpy.real(-.5j * (
-                hermitian_part - hermitian_part.conj() +
-                antisymmetric_part - antisymmetric_part.conj()))
+        majorana_matrix[:self.n_qubits, :self.n_qubits] = numpy.real(-0.5j * (
+            hermitian_part - hermitian_part.conj() +
+            antisymmetric_part - antisymmetric_part.conj()))
         # Set upper right block
-        majorana_matrix[:self.n_qubits, self.n_qubits:] = numpy.real(.5 * (
-                hermitian_part + hermitian_part.conj() -
-                antisymmetric_part - antisymmetric_part.conj()))
+        majorana_matrix[:self.n_qubits, self.n_qubits:] = numpy.real(0.5 * (
+            hermitian_part + hermitian_part.conj() -
+            antisymmetric_part - antisymmetric_part.conj()))
         # Set lower left block
-        majorana_matrix[self.n_qubits:, :self.n_qubits] = numpy.real(-.5 * (
-                hermitian_part + hermitian_part.conj() +
-                antisymmetric_part + antisymmetric_part.conj()))
+        majorana_matrix[self.n_qubits:, :self.n_qubits] = numpy.real(-0.5 * (
+            hermitian_part + hermitian_part.conj() +
+            antisymmetric_part + antisymmetric_part.conj()))
         # Set lower right block
-        majorana_matrix[self.n_qubits:, self.n_qubits:] = numpy.real(-.5j * (
-                hermitian_part - hermitian_part.conj() -
-                antisymmetric_part + antisymmetric_part.conj()))
+        majorana_matrix[self.n_qubits:, self.n_qubits:] = numpy.real(-0.5j * (
+            hermitian_part - hermitian_part.conj() -
+            antisymmetric_part + antisymmetric_part.conj()))
 
         # Compute the constant
-        majorana_constant = (.5 * numpy.real(numpy.trace(hermitian_part)) +
+        majorana_constant = (0.5 * numpy.real(numpy.trace(hermitian_part)) +
                              self.n_body_tensors[()])
 
         return majorana_matrix, majorana_constant
@@ -275,7 +271,7 @@ class QuadraticHamiltonian(PolynomialTensor):
         normalized_identity = (numpy.eye(self.n_qubits, dtype=complex) /
                                numpy.sqrt(2.))
         majorana_basis_change = numpy.eye(
-                2 * self.n_qubits, dtype=complex) / numpy.sqrt(2.)
+            2 * self.n_qubits, dtype=complex) / numpy.sqrt(2.)
         majorana_basis_change[self.n_qubits:, self.n_qubits:] *= -1.j
         majorana_basis_change[:self.n_qubits,
                               self.n_qubits:] = normalized_identity
@@ -284,7 +280,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         # Compute the unitary and return
         diagonalizing_unitary = majorana_basis_change.T.conj().dot(
-                orthogonal.dot(majorana_basis_change))
+            orthogonal.dot(majorana_basis_change))
 
         return diagonalizing_unitary
 

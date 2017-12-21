@@ -182,7 +182,7 @@ class PolynomialTensor(object):
             self_tensor = self.n_body_tensors[key]
             other_tensor = other_operator.n_body_tensors[key]
             discrepancy = numpy.amax(
-                              numpy.absolute(self_tensor - other_tensor))
+                numpy.absolute(self_tensor - other_tensor))
             diff = max(diff, discrepancy)
         return diff < EQ_TOLERANCE
 
@@ -227,7 +227,7 @@ class PolynomialTensor(object):
 
         for key in self.n_body_tensors:
             self.n_body_tensors[key] = numpy.subtract(
-                    self.n_body_tensors[key], subtrahend.n_body_tensors[key])
+                self.n_body_tensors[key], subtrahend.n_body_tensors[key])
         return self
 
     def __sub__(self, subtrahend):
@@ -247,7 +247,7 @@ class PolynomialTensor(object):
 
         for key in self.n_body_tensors:
             self.n_body_tensors[key] = numpy.multiply(
-                    self.n_body_tensors[key], multiplier.n_body_tensors[key])
+                self.n_body_tensors[key], multiplier.n_body_tensors[key])
         return self
 
     def __mul__(self, multiplier):
