@@ -12,9 +12,10 @@
 """Tests for _trotter_exp_to_qgates.py"""
 
 import unittest
+
 from openfermion.utils._trotter_exp_to_qgates import *
 from openfermion.utils._trotter_exp_to_qgates import (
-        _third_order_trotter_helper)
+    _third_order_trotter_helper)
 from openfermion.utils import count_qubits
 
 
@@ -129,9 +130,7 @@ class TrottQasmTest(unittest.TestCase):
         ham = op_a + op_b + op_c
 
         # Result from code
-        res = [op for op in trotter_operator_grouping(
-            ham, trotter_order=3
-            )]
+        res = [op for op in trotter_operator_grouping(ham, trotter_order=3)]
 
         gold = []
         gold.append(op_a * 7./24)
@@ -166,9 +165,7 @@ class TrottQasmTest(unittest.TestCase):
         op_c = QubitOperator('Z3', 1.)
         ham = op_a + op_b + op_c
 
-        res = [op for op in trotter_operator_grouping(
-            ham, trotter_order=2
-            )]
+        res = [op for op in trotter_operator_grouping(ham, trotter_order=2)]
 
         gold = []
         gold.append(op_a * 0.5)
@@ -180,17 +177,14 @@ class TrottQasmTest(unittest.TestCase):
     def test_get_trott_qubops(self):
         # Testing with trotter number of 2 (first-order)
         res = [op for op in trotter_operator_grouping(
-                self.qo1,
-                trotter_number=2,
-                trotter_order=1,
-                term_ordering=None,
-                k_exp=1.0)]
+            self.qo1, trotter_number=2, trotter_order=1, term_ordering=None,
+            k_exp=1.0)]
 
         gold = []
-        gold.append(0.5*self.opA)
-        gold.append(0.5*self.opB)
-        gold.append(0.5*self.opA)
-        gold.append(0.5*self.opB)
+        gold.append(0.5 * self.opA)
+        gold.append(0.5 * self.opB)
+        gold.append(0.5 * self.opA)
+        gold.append(0.5 * self.opB)
 
         # Assert each term in list of QubitOperators is correct
         self.compare_qubop_lists(gold, res)

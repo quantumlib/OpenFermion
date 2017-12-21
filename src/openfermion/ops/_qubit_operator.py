@@ -264,7 +264,7 @@ class QubitOperator(object):
                             left_operator_index += 1
                             right_operator_index += 1
                             (scalar, loc_op) = _PAULI_OPERATOR_PRODUCTS[
-                                                  (left_loc_op, right_loc_op)]
+                                (left_loc_op, right_loc_op)]
 
                             # Add new term.
                             if loc_op != 'I':
@@ -284,7 +284,7 @@ class QubitOperator(object):
                     # Finish the remainding operators:
                     if left_operator_index == n_operators_left:
                         product_operators += right_term[
-                                                right_operator_index::]
+                            right_operator_index::]
                     elif right_operator_index == n_operators_right:
                         product_operators += left_term[left_operator_index::]
 

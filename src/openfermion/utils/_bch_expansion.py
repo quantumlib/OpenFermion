@@ -193,11 +193,11 @@ def coeff_for_non_descending_block(cnt_x, cnt_y, eta):
 
     ret = 0
     for eta_x in range(1, eta):
-        ret += coeff_for_consectutive_op(cnt_x, eta_x) * \
-               coeff_for_consectutive_op(cnt_y, eta - eta_x)
+        ret += (coeff_for_consectutive_op(cnt_x, eta_x) *
+                coeff_for_consectutive_op(cnt_y, eta - eta_x))
     for eta_x in range(1, eta + 1):
-        ret += coeff_for_consectutive_op(cnt_x, eta_x) * \
-               coeff_for_consectutive_op(cnt_y, eta + 1 - eta_x)
+        ret += (coeff_for_consectutive_op(cnt_x, eta_x) *
+                coeff_for_consectutive_op(cnt_y, eta + 1 - eta_x))
     return ret
 
 

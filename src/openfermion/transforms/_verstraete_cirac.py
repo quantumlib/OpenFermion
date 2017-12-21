@@ -14,7 +14,6 @@
 from __future__ import absolute_import
 
 import itertools
-
 import networkx
 import numpy
 
@@ -64,8 +63,7 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
         # If the indices aren't in snake order, we need to convert them
         if not snake:
             indices = [lexicographic_index_to_snake_index(
-                               index, x_dimension, y_dimension)
-                       for index in indices]
+                index, x_dimension, y_dimension) for index in indices]
 
         # Convert the indices to indices of system qubits in the combined
         # system, which includes the auxiliary qubits interleaved
@@ -73,7 +71,7 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
 
         # Initialize the transformed term as a FermionOperator
         transformed_term = FermionOperator(
-                tuple(zip(transformed_indices, raise_or_lower)), coefficient)
+            tuple(zip(transformed_indices, raise_or_lower)), coefficient)
 
         # If necessary, multiply the transformed term by a stabilizer to
         # cancel out Jordan-Wigner strings
@@ -85,12 +83,15 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
                 # by a stabilizer
                 top = min(i, j)
                 bot = max(i, j)
+
                 # Get the indices of the corresponding auxiliary qubits
                 top_aux = expand_aux_index(top)
                 bot_aux = expand_aux_index(bot)
+
                 # Get the column that this edge is on
                 col, row = snake_index_to_coordinates(
-                        top, x_dimension, y_dimension)
+                    top, x_dimension, y_dimension)
+
                 # Multiply by a stabilizer. If the column is even, the
                 # stabilizer corresponds to an edge that points down;
                 # otherwise, the edge points up
@@ -98,6 +99,7 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
                     transformed_term *= stabilizer(top_aux, bot_aux)
                 else:
                     transformed_term *= stabilizer(bot_aux, top_aux)
+
                 # Update the auxiliary Hamiltonian coefficient
                 aux_ham_coefficient += abs(coefficient)
 
@@ -109,16 +111,20 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
     if add_auxiliary_hamiltonian:
         # Construct the auxiliary Hamiltonian graph
         aux_ham_graph = auxiliary_graph_2d_square(x_dimension, y_dimension)
+
         # Construct the auxiliary Hamiltonian
         aux_ham = FermionOperator()
         for i, j in aux_ham_graph.edges():
             aux_ham -= stabilizer_local_2d_square(
-                    i, j, x_dimension, y_dimension)
+                i, j, x_dimension, y_dimension)
+
         # Add an identity term to ensure that the auxiliary Hamiltonian
         # has ground energy equal to zero
         aux_ham += FermionOperator((), aux_ham_graph.size())
+
         # Scale the auxiliary Hamiltonian
         aux_ham *= aux_ham_coefficient
+
         # Add it to the operator
         transformed_operator += jordan_wigner(aux_ham)
 
@@ -157,9 +163,9 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
             # Term is right-closed
             if i_col < x_dimension - 1:
                 extra_term_top = expand_aux_index(coordinates_to_snake_index(
-                        i_col + 1, top_row, x_dimension, y_dimension))
+                    i_col + 1, top_row, x_dimension, y_dimension))
                 extra_term_bot = expand_aux_index(coordinates_to_snake_index(
-                        i_col + 1, top_row + 1, x_dimension, y_dimension))
+                    i_col + 1, top_row + 1, x_dimension, y_dimension))
                 if (i_col + 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
                 else:
@@ -168,9 +174,9 @@ def stabilizer_local_2d_square(i, j, x_dimension, y_dimension):
             # Term is left-closed
             if i_col > 0:
                 extra_term_top = expand_aux_index(coordinates_to_snake_index(
-                        i_col - 1, top_row, x_dimension, y_dimension))
+                    i_col - 1, top_row, x_dimension, y_dimension))
                 extra_term_bot = expand_aux_index(coordinates_to_snake_index(
-                        i_col - 1, top_row + 1, x_dimension, y_dimension))
+                    i_col - 1, top_row + 1, x_dimension, y_dimension))
                 if (i_col - 1) % 2 == 0:
                     stab *= stabilizer(extra_term_top, extra_term_bot)
                 else:
@@ -200,15 +206,15 @@ def auxiliary_graph_2d_square(x_dimension, y_dimension):
             # Add edges between rows l and l + 1
             # Add left edge
             graph.add_edge(
-                    coordinates_to_snake_index(k, l, x_dimension, y_dimension),
-                    coordinates_to_snake_index(k, l + 1,
-                                               x_dimension, y_dimension))
+                coordinates_to_snake_index(k, l, x_dimension, y_dimension),
+                coordinates_to_snake_index(k, l + 1,
+                                           x_dimension, y_dimension))
             # Add right edge
             graph.add_edge(
-                    coordinates_to_snake_index(k + 1, l + 1,
-                                               x_dimension, y_dimension),
-                    coordinates_to_snake_index(k + 1, l,
-                                               x_dimension, y_dimension))
+                coordinates_to_snake_index(k + 1, l + 1,
+                                           x_dimension, y_dimension),
+                coordinates_to_snake_index(k + 1, l,
+                                           x_dimension, y_dimension))
 
     return graph
 

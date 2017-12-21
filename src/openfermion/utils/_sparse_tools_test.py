@@ -27,7 +27,7 @@ from openfermion.utils import fourier_transform, Grid
 from openfermion.utils._jellium_hf_state import (
     lowest_single_particle_energy_states)
 from openfermion.utils._slater_determinants_test import (
-        random_quadratic_hamiltonian)
+    random_quadratic_hamiltonian)
 from openfermion.utils._sparse_tools import *
 
 
@@ -205,7 +205,6 @@ class JordanWignerSparseTest(unittest.TestCase):
 
 
 class JWSlaterDeterminantTest(unittest.TestCase):
-
     def test_jw_hartree_fock_state(self):
         hartree_fock_state = jw_hartree_fock_state(3, 7)
         dense_array = hartree_fock_state.toarray()
@@ -227,8 +226,7 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
         for particle_number in range(n_qubits):
             # Get the ground energy and ground states at this particle number
             energy, states = jw_get_ground_states_by_particle_number(
-                    sparse_operator,
-                    particle_number)
+                sparse_operator, particle_number)
             # For each vector returned, make sure that it is indeed an
             # eigenvector of the original operator with the returned eigenvalue
             for vec in states:
@@ -237,7 +235,6 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
                 if difference.nnz:
                     discrepancy = max(map(abs, difference.data))
                     self.assertAlmostEqual(0, discrepancy)
-        return
 
     def test_jw_get_ground_states_by_particle_number_herm_nonconserving(self):
         # Initialize a non-particle-number-conserving Hermitian operator
@@ -248,7 +245,6 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             jw_get_ground_states_by_particle_number(sparse_operator, 0)
-        return
 
     def test_get_ground_states_by_particle_number_nonhermitian(self):
         # Initialize a non-Hermitian operator
@@ -258,7 +254,6 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             jw_get_ground_states_by_particle_number(sparse_operator, 0)
-        return
 
 
 class JWGetGaussianStateTest(unittest.TestCase):
@@ -272,7 +267,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
         for n_qubits in self.n_qubits_range:
             # Initialize a particle-number-conserving Hamiltonian
             quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, True)
+                n_qubits, True)
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
@@ -280,7 +275,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
 
             # Compute the ground state using the circuit
             circuit_energy, circuit_state = jw_get_gaussian_state(
-                    quadratic_hamiltonian)
+                quadratic_hamiltonian)
 
             # Check that the energies match
             self.assertAlmostEqual(ground_energy, circuit_energy)
@@ -288,9 +283,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
             # Check that the state obtained using the circuit is a ground state
             difference = (sparse_operator * circuit_state -
                           ground_energy * circuit_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
+            discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
@@ -300,7 +293,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
         for n_qubits in self.n_qubits_range:
             # Initialize a non-particle-number-conserving Hamiltonian
             quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, False)
+                n_qubits, False)
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
@@ -308,8 +301,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
 
             # Compute the ground state using the circuit
             circuit_energy, circuit_state = (
-                    jw_get_gaussian_state(
-                        quadratic_hamiltonian))
+                jw_get_gaussian_state(quadratic_hamiltonian))
 
             # Check that the energies match
             self.assertAlmostEqual(ground_energy, circuit_energy)
@@ -317,9 +309,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
             # Check that the state obtained using the circuit is a ground state
             difference = (sparse_operator * circuit_state -
                           ground_energy * circuit_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
+            discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
@@ -329,20 +319,20 @@ class JWGetGaussianStateTest(unittest.TestCase):
         for n_qubits in self.n_qubits_range:
             # Initialize a particle-number-conserving Hamiltonian
             quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, True)
+                n_qubits, True)
 
             # Pick some orbitals to occupy
             num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
             occupied_orbitals = numpy.random.choice(
-                    range(n_qubits), num_occupied_orbitals, False)
+                range(n_qubits), num_occupied_orbitals, False)
 
             # Compute the Gaussian state
             circuit_energy, gaussian_state = jw_get_gaussian_state(
-                    quadratic_hamiltonian, occupied_orbitals)
+                quadratic_hamiltonian, occupied_orbitals)
 
             # Compute the true energy
             orbital_energies, constant = (
-                    quadratic_hamiltonian.orbital_energies())
+                quadratic_hamiltonian.orbital_energies())
             energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
 
             # Check that the energies match
@@ -353,9 +343,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
             difference = (sparse_operator * gaussian_state -
                           energy * gaussian_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
+            discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
@@ -365,20 +353,20 @@ class JWGetGaussianStateTest(unittest.TestCase):
         for n_qubits in self.n_qubits_range:
             # Initialize a non-particle-number-conserving Hamiltonian
             quadratic_hamiltonian = random_quadratic_hamiltonian(
-                    n_qubits, False)
+                n_qubits, False)
 
             # Pick some orbitals to occupy
             num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
             occupied_orbitals = numpy.random.choice(
-                    range(n_qubits), num_occupied_orbitals, False)
+                range(n_qubits), num_occupied_orbitals, False)
 
             # Compute the Gaussian state
             circuit_energy, gaussian_state = jw_get_gaussian_state(
-                    quadratic_hamiltonian, occupied_orbitals)
+                quadratic_hamiltonian, occupied_orbitals)
 
             # Compute the true energy
             orbital_energies, constant = (
-                    quadratic_hamiltonian.orbital_energies())
+                quadratic_hamiltonian.orbital_energies())
             energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
 
             # Check that the energies match
@@ -389,9 +377,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
             difference = (sparse_operator * gaussian_state -
                           energy * gaussian_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
+            discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
