@@ -31,6 +31,27 @@ def gaussian_state_preparation_circuit(
     just Slater determinants. See arXiv:1711.05395 for a detailed description
     of how this procedure works.
 
+    The circuit description is returned as a sequence of elementary
+    operations; operations that can be performed in parallel are grouped
+    together. Each elementary operation is either
+
+    - the string 'pht', indicating the operation
+
+      .. math::
+
+          a_N + a_N^\dagger,
+
+      the particle-hole transformation on the last fermionic mode, or
+
+    - a tuple :math:`(i, j, \\theta, \\varphi)`, indicating the operation
+
+      .. math::
+          \exp[i \\varphi a_q^\dagger a_q]
+          \exp[\\theta (a_p^\dagger a_q - a_q^\dagger a_p)],
+
+      a Givens rotation of modes :math:`i` and :math:`j` by angles
+      :math:`\\theta` and :math:`\\varphi`.
+
     Args:
         quadratic_hamiltonian(QuadraticHamiltonian):
             The Hamiltonian whose eigenstate is desired.
@@ -48,10 +69,10 @@ def gaussian_state_preparation_circuit(
             can be performed in parallel. Each elementary operation
             is either the string 'pht', indicating a particle-hole
             transformation on the last fermionic mode, or a tuple of
-            the form :math:`(i, j, \\theta, \\phi)`,
+            the form :math:`(i, j, \\theta, \\varphi)`,
             indicating a Givens rotation
             of modes :math:`i` and :math:`j` by angles :math:`\\theta`
-            and :math:`\\phi`.
+            and :math:`\\varphi`.
         start_orbitals (list):
             The occupied orbitals to start with. This describes the
             initial state that the circuit should be applied to: it should
@@ -71,7 +92,7 @@ def gaussian_state_preparation_circuit(
             # The ground state is desired, so we fill the orbitals that have
             # negative energy
             num_negative_energies = numpy.count_nonzero(
-                    energies < -EQ_TOLERANCE)
+                energies < -EQ_TOLERANCE)
             occupied_orbitals = range(num_negative_energies)
 
         # Get the unitary rows which represent the Slater determinant
@@ -79,22 +100,21 @@ def gaussian_state_preparation_circuit(
 
         # Get the circuit description
         circuit_description = slater_determinant_preparation_circuit(
-                slater_determinant_matrix)
+            slater_determinant_matrix)
         start_orbitals = range(len(occupied_orbitals))
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
         diagonalizing_unitary = (
-                quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
+            quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
 
         # Get the unitary rows which represent the Gaussian unitary
         gaussian_unitary_matrix = diagonalizing_unitary[
-                quadratic_hamiltonian.n_qubits:]
+            quadratic_hamiltonian.n_qubits:]
 
         # Get the circuit description
         decomposition, left_decomposition, diagonal, left_diagonal = (
-                fermionic_gaussian_decomposition(
-                    gaussian_unitary_matrix))
+            fermionic_gaussian_decomposition(gaussian_unitary_matrix))
         if occupied_orbitals is None:
             # The ground state is desired, so the circuit should be applied
             # to the vaccuum state
@@ -105,7 +125,7 @@ def gaussian_state_preparation_circuit(
             # The circuit won't be applied to the ground state, so we need to
             # use left_decomposition
             circuit_description = list(reversed(
-                                       decomposition + left_decomposition))
+                decomposition + left_decomposition))
 
     return circuit_description, start_orbitals
 
@@ -140,12 +160,12 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
             A list of operations describing the circuit. Each operation
             is a tuple of elementary operations that can be performed in
             parallel. Each elementary operation is a tuple of the form
-            :math:`(i, j, \\theta, \\phi)`, indicating a Givens rotation
+            :math:`(i, j, \\theta, \\varphi)`, indicating a Givens rotation
             of modes :math:`i` and :math:`j` by angles :math:`\\theta`
-            and :math:`\\phi`.
+            and :math:`\\varphi`.
     """
     decomposition, left_unitary, diagonal = givens_decomposition(
-            slater_determinant_matrix)
+        slater_determinant_matrix)
     circuit_description = list(reversed(decomposition))
     return circuit_description
 
@@ -195,9 +215,9 @@ def fermionic_gaussian_decomposition(unitary_rows):
     something like [('pht', ), (G_1, ), ('pht', G_2), ... ].
     The objects within a tuple are either the string 'pht', which indicates
     a particle-hole transformation on the last fermionic mode, or a tuple
-    of the form :math:`(i, j, \\theta, \\phi)`, which indicates a
+    of the form :math:`(i, j, \\theta, \\varphi)`, which indicates a
     Givens rotation of rows :math:`i` and :math:`j` by angles
-    :math:`\\theta` and :math:`\\phi`.
+    :math:`\\theta` and :math:`\\varphi`.
 
     The matrix :math:`V^T D^*` can also be decomposed as a sequence of
     Givens rotations. This decomposition is needed for a circuit that
@@ -251,7 +271,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
             # Zero out entry in row l if needed
             if abs(current_matrix[l, k]) > EQ_TOLERANCE:
                 givens_rotation = givens_matrix_elements(
-                        current_matrix[l, k], current_matrix[l + 1, k])
+                    current_matrix[l, k], current_matrix[l + 1, k])
                 # Apply Givens rotation
                 givens_rotate(current_matrix, givens_rotation, l, l + 1)
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
@@ -388,8 +408,8 @@ def givens_decomposition(unitary_rows):
     .. math::
 
         \\begin{pmatrix}
-            \\cos(\\theta) & -e^{i \\phi} \\sin(\\theta) \\\\
-            \\sin(\\theta) &     e^{i \\phi} \\cos(\\theta)
+            \\cos(\\theta) & -e^{i \\varphi} \\sin(\\theta) \\\\
+            \\sin(\\theta) &     e^{i \\varphi} \\cos(\\theta)
         \\end{pmatrix}.
 
     Args:
@@ -403,10 +423,10 @@ def givens_decomposition(unitary_rows):
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
-            form :math:`(i, j, \\theta, \\phi)`, which represents a
+            form :math:`(i, j, \\theta, \\varphi)`, which represents a
             Givens rotation of coordinates
             :math:`i` and :math:`j` by angles :math:`\\theta` and
-            :math:`\\phi`.
+            :math:`\\varphi`.
         left_unitary (ndarray):
             An :math:`m \\times m` numpy array representing the matrix
             :math:`V`.
@@ -428,7 +448,7 @@ def givens_decomposition(unitary_rows):
             # Zero out entry in row l if needed
             if abs(current_matrix[l, k]) > EQ_TOLERANCE:
                 givens_rotation = givens_matrix_elements(
-                        current_matrix[l, k], current_matrix[l + 1, k])
+                    current_matrix[l, k], current_matrix[l + 1, k])
                 # Apply Givens rotation
                 givens_rotate(current_matrix, givens_rotation, l, l + 1)
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
@@ -483,7 +503,7 @@ def givens_decomposition(unitary_rows):
                     # We actually need to perform a Givens rotation
                     left_element = current_matrix[i, j - 1].conj()
                     givens_rotation = givens_matrix_elements(
-                            left_element, right_element, which='right')
+                        left_element, right_element, which='right')
 
                     # Add the parameters to the list
                     theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))

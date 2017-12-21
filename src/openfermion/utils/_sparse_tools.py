@@ -69,7 +69,7 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
         n_qubits(int): Number qubits in the system Hilbert space.
 
     Returns:
-        The corresponding SparseOperator.
+        The corresponding Scipy sparse matrix.
     """
     parities = tensor_factor * [pauli_z_csc]
     identities = [scipy.sparse.identity(
@@ -82,7 +82,7 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
 
 
 def jordan_wigner_sparse(fermion_operator, n_qubits=None):
-    """Initialize a SparseOperator from a FermionOperator.
+    """Initialize a Scipy sparse matrix from a FermionOperator.
 
     Operators are mapped as follows:
     a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
@@ -94,7 +94,7 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
         n_qubits(int): Number of qubits.
 
     Returns:
-        The corresponding SparseOperator.
+        The corresponding Scipy sparse matrix.
     """
     if n_qubits is None:
         from openfermion.utils import count_qubits
@@ -110,7 +110,7 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
                                                       tensor_factor,
                                                       1))]
 
-    # Construct the SparseOperator.
+    # Construct the Scipy sparse matrix.
     n_hilbert = 2 ** n_qubits
     values_list = [[]]
     row_list = [[]]
@@ -142,14 +142,14 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
 
 
 def qubit_operator_sparse(qubit_operator, n_qubits=None):
-    """Initialize a SparseOperator from a QubitOperator.
+    """Initialize a Scipy sparse matrix from a QubitOperator.
 
     Args:
         qubit_operator(QubitOperator): instance of the QubitOperator class.
         n_qubits (int): Number of qubits.
 
     Returns:
-        The corresponding SparseOperator.
+        The corresponding Scipy sparse matrix.
     """
     from openfermion.utils import count_qubits
     if n_qubits is None:
@@ -157,7 +157,7 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     if n_qubits < count_qubits(qubit_operator):
         raise ValueError('Invalid number of qubits specified.')
 
-    # Construct the SparseOperator.
+    # Construct the Scipy sparse matrix.
     n_hilbert = 2 ** n_qubits
     values_list = [[]]
     row_list = [[]]
@@ -359,9 +359,9 @@ def jw_get_ground_states_by_particle_number(sparse_operator, particle_number,
         # Expand this ground state to the whole vector space
         number_indices = jw_number_indices(particle_number, n_qubits)
         expanded_ground_state = scipy.sparse.csc_matrix(
-                (restricted_ground_state.flatten(),
-                 (number_indices, [0] * len(number_indices))),
-                shape=(2 ** n_qubits, 1))
+            (restricted_ground_state.flatten(),
+             (number_indices, [0] * len(number_indices))),
+            shape=(2 ** n_qubits, 1))
         # Add the expanded ground state to the list
         ground_states.append(expanded_ground_state)
 
@@ -401,7 +401,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
         # The ground energy is desired
         if quadratic_hamiltonian.conserves_particle_number:
             num_negative_energies = numpy.count_nonzero(
-                    orbital_energies < -EQ_TOLERANCE)
+                orbital_energies < -EQ_TOLERANCE)
             occupied_orbitals = range(num_negative_energies)
         else:
             occupied_orbitals = []
@@ -409,7 +409,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
 
     # Obtain the circuit that prepares the Gaussian state
     circuit_description, start_orbitals = gaussian_state_preparation_circuit(
-            quadratic_hamiltonian, occupied_orbitals)
+        quadratic_hamiltonian, occupied_orbitals)
 
     # Initialize the starting state
     state = jw_slater_determinant(start_orbitals, n_qubits)
@@ -417,7 +417,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
     # Apply the circuit
     if not quadratic_hamiltonian.conserves_particle_number:
         particle_hole_transformation = (
-                jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+            jw_sparse_particle_hole_transformation_last_mode(n_qubits))
     for parallel_ops in circuit_description:
         for op in parallel_ops:
             if op == 'pht':
@@ -425,7 +425,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
             else:
                 i, j, theta, phi = op
                 state = jw_sparse_givens_rotation(
-                            i, j, theta, phi, n_qubits).dot(state)
+                    i, j, theta, phi, n_qubits).dot(state)
 
     return energy, state
 
@@ -444,9 +444,9 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
 
     # Create the two-qubit rotation matrix
     rotation_matrix = scipy.sparse.csc_matrix(
-            ([1., phase * cosine, -phase * sine, sine, cosine, phase],
-             ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
-            shape=(4, 4))
+        ([1., phase * cosine, -phase * sine, sine, cosine, phase],
+         ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
+        shape=(4, 4))
 
     # Initialize identity operators
     left_eye = scipy.sparse.eye(2 ** i, format='csc')

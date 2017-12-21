@@ -38,16 +38,14 @@ def get_sparse_operator(operator, n_qubits=None):
     """Map a FermionOperator, QubitOperator, or PolyomialTensor to a
     sparse matrix."""
     if isinstance(operator, PolynomialTensor):
-        return get_sparse_polynomial_tensor(operator)
+        return polynomial_tensor_sparse(operator)
     elif isinstance(operator, FermionOperator):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
-        if n_qubits is None:
-            n_qubits = count_qubits(operator)
         return qubit_operator_sparse(operator, n_qubits)
 
 
-def get_sparse_polynomial_tensor(polynomial_tensor):
+def polynomial_tensor_sparse(polynomial_tensor):
     fermion_operator = get_fermion_operator(polynomial_tensor)
     sparse_operator = jordan_wigner_sparse(fermion_operator)
     return sparse_operator
@@ -212,16 +210,16 @@ def get_quadratic_hamiltonian(fermion_operator,
                 conjugate_term = ((p, 0), (q, 0))
                 if conjugate_term not in fermion_operator.terms:
                     raise QuadraticHamiltonianError(
-                            'FermionOperator does not map '
-                            'to QuadraticHamiltonian (not Hermitian).')
+                        'FermionOperator does not map '
+                        'to QuadraticHamiltonian (not Hermitian).')
                 else:
                     matching_coefficient = -fermion_operator.terms[
-                            conjugate_term].conjugate()
+                        conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
                         raise QuadraticHamiltonianError(
-                                'FermionOperator does not map '
-                                'to QuadraticHamiltonian (not Hermitian).')
+                            'FermionOperator does not map '
+                            'to QuadraticHamiltonian (not Hermitian).')
                 antisymmetric_part[p, q] += .5 * coefficient
                 antisymmetric_part[q, p] -= .5 * coefficient
             else:
@@ -230,16 +228,16 @@ def get_quadratic_hamiltonian(fermion_operator,
                 conjugate_term = ((p, 1), (q, 1))
                 if conjugate_term not in fermion_operator.terms:
                     raise QuadraticHamiltonianError(
-                            'FermionOperator does not map '
-                            'to QuadraticHamiltonian (not Hermitian).')
+                        'FermionOperator does not map '
+                        'to QuadraticHamiltonian (not Hermitian).')
                 else:
                     matching_coefficient = -fermion_operator.terms[
-                            conjugate_term].conjugate()
+                        conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
                         raise QuadraticHamiltonianError(
-                                'FermionOperator does not map '
-                                'to QuadraticHamiltonian (not Hermitian).')
+                            'FermionOperator does not map '
+                            'to QuadraticHamiltonian (not Hermitian).')
                 antisymmetric_part[p, q] -= .5 * coefficient.conjugate()
                 antisymmetric_part[q, p] += .5 * coefficient.conjugate()
         else:
@@ -257,8 +255,8 @@ def get_quadratic_hamiltonian(fermion_operator,
     discrepancy = numpy.max(numpy.abs(difference))
     if discrepancy > EQ_TOLERANCE:
         raise QuadraticHamiltonianError(
-                'FermionOperator does not map '
-                'to QuadraticHamiltonian (not Hermitian).')
+            'FermionOperator does not map '
+            'to QuadraticHamiltonian (not Hermitian).')
 
     # Form QuadraticHamiltonian and return.
     discrepancy = numpy.max(numpy.abs(antisymmetric_part))
@@ -285,7 +283,7 @@ def get_fermion_operator(polynomial_tensor):
 
     for term in polynomial_tensor:
         fermion_operator += FermionOperator(
-                term, coefficient=polynomial_tensor[term])
+            term, coefficient=polynomial_tensor[term])
 
     return fermion_operator
 

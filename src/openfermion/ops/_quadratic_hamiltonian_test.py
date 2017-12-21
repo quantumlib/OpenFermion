@@ -27,7 +27,6 @@ from openfermion.utils._testing_utils import (random_antisymmetric_matrix,
 
 
 class QuadraticHamiltoniansTest(unittest.TestCase):
-
     def setUp(self):
         self.n_qubits = 5
         self.constant = 1.7
@@ -38,26 +37,26 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         self.antisymmetric_mat = random_antisymmetric_matrix(self.n_qubits)
 
         self.combined_hermitian = (
-                self.hermitian_mat -
-                self.chemical_potential * numpy.eye(self.n_qubits))
+            self.hermitian_mat -
+            self.chemical_potential * numpy.eye(self.n_qubits))
 
         # Initialize a particle-number-conserving Hamiltonian
         self.quad_ham_pc = QuadraticHamiltonian(
-                self.constant, self.hermitian_mat)
+            self.constant, self.hermitian_mat)
 
         # Initialize a non-particle-number-conserving Hamiltonian
         self.quad_ham_npc = QuadraticHamiltonian(
-                self.constant, self.hermitian_mat, self.antisymmetric_mat,
-                self.chemical_potential)
+            self.constant, self.hermitian_mat, self.antisymmetric_mat,
+            self.chemical_potential)
 
         # Initialize the sparse operators and get their ground energies
         self.quad_ham_pc_sparse = get_sparse_operator(self.quad_ham_pc)
         self.quad_ham_npc_sparse = get_sparse_operator(self.quad_ham_npc)
 
         self.pc_ground_energy, self.pc_ground_state = get_ground_state(
-                self.quad_ham_pc_sparse)
+            self.quad_ham_pc_sparse)
         self.npc_ground_energy, self.npc_ground_state = get_ground_state(
-                self.quad_ham_npc_sparse)
+            self.quad_ham_npc_sparse)
 
     def test_combined_hermitian_part(self):
         """Test getting the combined Hermitian part."""
@@ -124,7 +123,7 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         orbital_energies, constant = self.quad_ham_pc.orbital_energies()
         # Test the ground energy
         energy = numpy.sum(
-                orbital_energies[orbital_energies < -EQ_TOLERANCE]) + constant
+            orbital_energies[orbital_energies < -EQ_TOLERANCE]) + constant
         self.assertAlmostEqual(energy, self.pc_ground_energy)
 
         # Test the non-particle-number-conserving case
@@ -161,9 +160,9 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
                 majorana_op += .5j * left_op * right_op
         # Get FermionOperator for original Hamiltonian
         fermion_operator = normal_ordered(
-                get_fermion_operator(self.quad_ham_npc))
+            get_fermion_operator(self.quad_ham_npc))
         self.assertTrue(
-                normal_ordered(majorana_op).isclose(fermion_operator))
+            normal_ordered(majorana_op).isclose(fermion_operator))
 
     def test_diagonalizing_bogoliubov_transform(self):
         """Test getting the diagonalizing Bogoliubov transformation."""
@@ -175,7 +174,7 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         block_matrix[:self.n_qubits, self.n_qubits:] = hermitian_part
         block_matrix[self.n_qubits:, :self.n_qubits] = -hermitian_part.conj()
         block_matrix[self.n_qubits:, self.n_qubits:] = (
-                -antisymmetric_part.conj())
+            -antisymmetric_part.conj())
 
         ferm_unitary = self.quad_ham_npc.diagonalizing_bogoliubov_transform()
 
@@ -183,7 +182,7 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
         canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
         diagonalized = ferm_unitary.conj().dot(
-                block_matrix.dot(ferm_unitary.T.conj()))
+            block_matrix.dot(ferm_unitary.T.conj()))
         for i in numpy.ndindex((2 * self.n_qubits, 2 * self.n_qubits)):
             self.assertAlmostEqual(diagonalized[i], canonical[i])
 
@@ -230,7 +229,7 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
         rand_mat = numpy.random.randn(2 * n, 2 * n)
         antisymmetric_matrix = rand_mat - rand_mat.T
         canonical, orthogonal = antisymmetric_canonical_form(
-                antisymmetric_matrix)
+            antisymmetric_matrix)
         result_matrix = orthogonal.dot(antisymmetric_matrix.dot(orthogonal.T))
         for i in numpy.ndindex(result_matrix.shape):
             self.assertAlmostEqual(result_matrix[i], canonical[i])
@@ -242,7 +241,7 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
         rand_mat = numpy.random.randn(2 * n, 2 * n)
         antisymmetric_matrix = rand_mat - rand_mat.T
         canonical, orthogonal = antisymmetric_canonical_form(
-                antisymmetric_matrix)
+            antisymmetric_matrix)
         for i in range(2 * n):
             for j in range(2 * n):
                 if i < n and j == n + i:
