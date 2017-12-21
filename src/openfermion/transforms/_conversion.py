@@ -38,16 +38,14 @@ def get_sparse_operator(operator, n_qubits=None):
     """Map a FermionOperator, QubitOperator, or PolyomialTensor to a
     sparse matrix."""
     if isinstance(operator, PolynomialTensor):
-        return get_sparse_polynomial_tensor(operator)
+        return polynomial_tensor_sparse(operator)
     elif isinstance(operator, FermionOperator):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
-        if n_qubits is None:
-            n_qubits = count_qubits(operator)
         return qubit_operator_sparse(operator, n_qubits)
 
 
-def get_sparse_polynomial_tensor(polynomial_tensor):
+def polynomial_tensor_sparse(polynomial_tensor):
     fermion_operator = get_fermion_operator(polynomial_tensor)
     sparse_operator = jordan_wigner_sparse(fermion_operator)
     return sparse_operator
