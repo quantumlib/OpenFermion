@@ -124,6 +124,7 @@ Authors
 `E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
 `Craig Gidney <https://github.com/Strilanc>`__ (Google),
 `Thomas Häner <https://github.com/thomashaener>`__ (ETH Zurich),
+`Tarini Hardikar <https://github.com/TariniHardikar>`__ (Dartmouth),
 `Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
