@@ -26,8 +26,12 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
                                snake=False):
     """Apply the Verstraete-Cirac transform on a 2-d square lattice.
 
-    Currently only spinless models are supported. Furthermore, x_dimension
-    should be even.
+    Note that this transformation adds one auxiliary fermionic mode
+    for each mode already present, and hence it doubles the number of qubits
+    needed to represent the system.
+
+    Currently only supports even values of x_dimension and only works
+    for spinless models.
 
     Args:
         operator (FermionOperator): The operator to transform.

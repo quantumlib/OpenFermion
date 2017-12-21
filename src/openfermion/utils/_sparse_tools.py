@@ -69,7 +69,7 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
         n_qubits(int): Number qubits in the system Hilbert space.
 
     Returns:
-        The corresponding SparseOperator.
+        The corresponding Scipy sparse matrix.
     """
     parities = tensor_factor * [pauli_z_csc]
     identities = [scipy.sparse.identity(
@@ -82,7 +82,7 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
 
 
 def jordan_wigner_sparse(fermion_operator, n_qubits=None):
-    """Initialize a SparseOperator from a FermionOperator.
+    """Initialize a Scipy sparse matrix from a FermionOperator.
 
     Operators are mapped as follows:
     a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
@@ -94,7 +94,7 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
         n_qubits(int): Number of qubits.
 
     Returns:
-        The corresponding SparseOperator.
+        The corresponding Scipy sparse matrix.
     """
     if n_qubits is None:
         from openfermion.utils import count_qubits
@@ -110,7 +110,7 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
                                                       tensor_factor,
                                                       1))]
 
-    # Construct the SparseOperator.
+    # Construct the Scipy sparse matrix.
     n_hilbert = 2 ** n_qubits
     values_list = [[]]
     row_list = [[]]
@@ -142,14 +142,14 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
 
 
 def qubit_operator_sparse(qubit_operator, n_qubits=None):
-    """Initialize a SparseOperator from a QubitOperator.
+    """Initialize a Scipy sparse matrix from a QubitOperator.
 
     Args:
         qubit_operator(QubitOperator): instance of the QubitOperator class.
         n_qubits (int): Number of qubits.
 
     Returns:
-        The corresponding SparseOperator.
+        The corresponding Scipy sparse matrix.
     """
     from openfermion.utils import count_qubits
     if n_qubits is None:
@@ -157,7 +157,7 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     if n_qubits < count_qubits(qubit_operator):
         raise ValueError('Invalid number of qubits specified.')
 
-    # Construct the SparseOperator.
+    # Construct the Scipy sparse matrix.
     n_hilbert = 2 ** n_qubits
     values_list = [[]]
     row_list = [[]]
