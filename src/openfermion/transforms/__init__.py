@@ -17,8 +17,7 @@ from ._conversion import (get_fermion_operator,
                           get_interaction_operator,
                           get_quadratic_hamiltonian,
                           get_molecular_data,
-                          get_sparse_operator,
-                          get_sparse_polynomial_tensor)
+                          get_sparse_operator)
 from ._jordan_wigner import jordan_wigner
 from ._reverse_jordan_wigner import reverse_jordan_wigner
 from ._verstraete_cirac import verstraete_cirac_2d_square
