@@ -93,7 +93,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
         chemical_potential (float, optional): The chemical potential
             :math:`\mu` at each site. Default value is 0.
         magnetic_field (float, optional): The magnetic field :math:`h`
-            at each site. Default value is None.
+            at each site. Default value is None. Ignored for the spinless case.
         periodic (bool, optional): If True, add periodic boundary conditions.
             Default is True.
         spinless (bool, optional): If True, return a spinless Fermi-Hubbard
@@ -140,34 +140,22 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
     # Loop through sites and add terms.
     for site in range(n_sites):
-        # Add chemical potential and magnetic field terms.
-        if chemical_potential and spinless:
-            coefficient = -chemical_potential
+        # Add chemical potential to the spinless case. The magnetic field
+        # doesn't contribute.
+        if spinless:
             hubbard_model += number_operator(
-                n_spin_orbitals, site, coefficient)
+                n_spin_orbitals, site, -chemical_potential)
 
-        if magnetic_field and spinless:
-            sign = -1 ** site
-            coefficient = sign * magnetic_field
+        # Add the chemical potential and magnetic field terms.
+        else:
             hubbard_model += number_operator(
-                n_spin_orbitals, site, coefficient)
+                n_spin_orbitals, up_index(site),
+                -chemical_potential - magnetic_field)
+            hubbard_model += number_operator(
+                n_spin_orbitals, down_index(site),
+                -chemical_potential + magnetic_field)
 
-        if chemical_potential and not spinless:
-            coefficient = -chemical_potential
-            hubbard_model += number_operator(
-                n_spin_orbitals, up_index(site), coefficient)
-            hubbard_model += number_operator(
-                n_spin_orbitals, down_index(site), coefficient)
-
-        if magnetic_field and not spinless:
-            coefficient = magnetic_field
-            hubbard_model += number_operator(
-                n_spin_orbitals, up_index(site), -coefficient)
-            hubbard_model += number_operator(
-                n_spin_orbitals, down_index(site), coefficient)
-
-        # Add local pair interaction terms.
-        if not spinless:
+            # Add local pair interaction terms.
             operator_1 = number_operator(
                 n_spin_orbitals, up_index(site)) - coulomb_shift
             operator_2 = number_operator(
@@ -218,9 +206,9 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
             if spinless:
                 # Add Coulomb term.
                 operator_1 = number_operator(
-                    n_spin_orbitals, site, 1.0) - coulomb_shift
+                    n_spin_orbitals, site) - coulomb_shift
                 operator_2 = number_operator(
-                    n_spin_orbitals, bottom_neighbor, 1.0) - coulomb_shift
+                    n_spin_orbitals, bottom_neighbor) - coulomb_shift
                 hubbard_model += coulomb * operator_1 * operator_2
 
                 # Add hopping term.
