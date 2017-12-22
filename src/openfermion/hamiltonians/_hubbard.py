@@ -15,6 +15,7 @@ from __future__ import absolute_import
 
 from openfermion.ops import (FermionOperator,
                              hermitian_conjugated,
+                             normal_ordered,
                              number_operator)
 
 
@@ -29,7 +30,7 @@ def down_index(index):
 
 
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
-                  chemical_potential=None, magnetic_field=None,
+                  chemical_potential=0., magnetic_field=0.,
                   periodic=True, spinless=False,
                   particle_hole_symmetry=False):
     """Return symbolic representation of a Fermi-Hubbard Hamiltonian.
@@ -90,7 +91,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
         tunneling (float): The tunneling amplitude :math:`t`.
         coulomb (float): The attractive local interaction strength :math:`U`.
         chemical_potential (float, optional): The chemical potential
-            :math:`\mu` at each site. Default value is None.
+            :math:`\mu` at each site. Default value is 0.
         magnetic_field (float, optional): The magnetic field :math:`h`
             at each site. Default value is None.
         periodic (bool, optional): If True, add periodic boundary conditions.
@@ -117,36 +118,42 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
     Returns:
         hubbard_model: An instance of the FermionOperator class.
     """
+    tunneling = float(tunneling)
+    coulomb = float(coulomb)
+    chemical_potential = float(chemical_potential)
+    magnetic_field = float(magnetic_field)
+
     # Initialize fermion operator class.
     n_sites = x_dimension * y_dimension
-    if spinless:
-        n_spin_orbitals = n_sites
-    else:
-        n_spin_orbitals = 2 * n_sites
-    hubbard_model = FermionOperator((), 0.0)
-    # select particle-hole symmetry
+    n_spin_orbitals = n_sites
+
+    if not spinless:
+        n_spin_orbitals *= 2
+
+    hubbard_model = FermionOperator.zero()
+
+    # Select particle-hole symmetry
     if particle_hole_symmetry:
         coulomb_shift = FermionOperator((), 0.5)
     else:
-        coulomb_shift = FermionOperator((), 0.0)
+        coulomb_shift = FermionOperator.zero()
 
     # Loop through sites and add terms.
     for site in range(n_sites):
-
         # Add chemical potential and magnetic field terms.
         if chemical_potential and spinless:
-            coefficient = -1. * chemical_potential
+            coefficient = -chemical_potential
             hubbard_model += number_operator(
                 n_spin_orbitals, site, coefficient)
 
         if magnetic_field and spinless:
-            sign = (-1.) ** (site)
+            sign = -1 ** site
             coefficient = sign * magnetic_field
             hubbard_model += number_operator(
                 n_spin_orbitals, site, coefficient)
 
         if chemical_potential and not spinless:
-            coefficient = -1. * chemical_potential
+            coefficient = -chemical_potential
             hubbard_model += number_operator(
                 n_spin_orbitals, up_index(site), coefficient)
             hubbard_model += number_operator(
@@ -162,9 +169,9 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
         # Add local pair interaction terms.
         if not spinless:
             operator_1 = number_operator(
-                n_spin_orbitals, up_index(site), 1.0) - coulomb_shift
+                n_spin_orbitals, up_index(site)) - coulomb_shift
             operator_2 = number_operator(
-                n_spin_orbitals, down_index(site), 1.0) - coulomb_shift
+                n_spin_orbitals, down_index(site)) - coulomb_shift
             hubbard_model += coulomb * operator_1 * operator_2
 
         # Index coupled orbitals.
@@ -190,9 +197,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
                 # Add hopping term.
                 operators = ((site, 1), (right_neighbor, 0))
-                hopping_term = FermionOperator(operators, -tunneling)
-                hubbard_model += hopping_term
-                hubbard_model += hermitian_conjugated(hopping_term)
+
             else:
                 # Add hopping term.
                 operators = ((up_index(site), 1),
@@ -200,11 +205,13 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                 hopping_term = FermionOperator(operators, -tunneling)
                 hubbard_model += hopping_term
                 hubbard_model += hermitian_conjugated(hopping_term)
+
                 operators = ((down_index(site), 1),
                              (down_index(right_neighbor), 0))
-                hopping_term = FermionOperator(operators, -tunneling)
-                hubbard_model += hopping_term
-                hubbard_model += hermitian_conjugated(hopping_term)
+
+            hopping_term = FermionOperator(operators, -tunneling)
+            hubbard_model += hopping_term
+            hubbard_model += hermitian_conjugated(hopping_term)
 
         # Add transition to neighbor below.
         if site + x_dimension + 1 <= n_sites or (periodic and y_dimension > 2):
@@ -218,9 +225,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
                 # Add hopping term.
                 operators = ((site, 1), (bottom_neighbor, 0))
-                hopping_term = FermionOperator(operators, -tunneling)
-                hubbard_model += hopping_term
-                hubbard_model += hermitian_conjugated(hopping_term)
+
             else:
                 # Add hopping term.
                 operators = ((up_index(site), 1),
@@ -228,11 +233,12 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                 hopping_term = FermionOperator(operators, -tunneling)
                 hubbard_model += hopping_term
                 hubbard_model += hermitian_conjugated(hopping_term)
+
                 operators = ((down_index(site), 1),
                              (down_index(bottom_neighbor), 0))
-                hopping_term = FermionOperator(operators, -tunneling)
-                hubbard_model += hopping_term
-                hubbard_model += hermitian_conjugated(hopping_term)
 
-    # Return.
-    return hubbard_model
+            hopping_term = FermionOperator(operators, -tunneling)
+            hubbard_model += hopping_term
+            hubbard_model += hermitian_conjugated(hopping_term)
+
+    return normal_ordered(hubbard_model)
