@@ -15,7 +15,6 @@ from __future__ import absolute_import
 
 from openfermion.ops import (FermionOperator,
                              hermitian_conjugated,
-                             normal_ordered,
                              number_operator)
 
 
@@ -93,7 +92,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
         chemical_potential (float, optional): The chemical potential
             :math:`\mu` at each site. Default value is 0.
         magnetic_field (float, optional): The magnetic field :math:`h`
-            at each site. Default value is None. Ignored for the spinless case.
+            at each site. Default value is 0. Ignored for the spinless case.
         periodic (bool, optional): If True, add periodic boundary conditions.
             Default is True.
         spinless (bool, optional): If True, return a spinless Fermi-Hubbard
@@ -229,4 +228,4 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
             hubbard_model += hopping_term
             hubbard_model += hermitian_conjugated(hopping_term)
 
-    return normal_ordered(hubbard_model)
+    return hubbard_model
