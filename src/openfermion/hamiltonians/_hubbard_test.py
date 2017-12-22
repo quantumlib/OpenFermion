@@ -58,20 +58,20 @@ class FermiHubbardTest(unittest.TestCase):
 
         # Check left/right Coulomb terms.
         self.assertAlmostEqual(
-            hubbard_model.terms[((1, 1), (0, 1), (1, 0), (0, 0))], -1.)
+            hubbard_model.terms[((0, 1), (0, 0), (1, 1), (1, 0))], 1.)
         self.assertAlmostEqual(
-            hubbard_model.terms[((3, 1), (2, 1), (3, 0), (2, 0))], -1.)
+            hubbard_model.terms[((2, 1), (2, 0), (3, 1), (3, 0))], 1.)
 
         # Check top/bottom Coulomb terms.
         self.assertAlmostEqual(
-            hubbard_model.terms[((2, 1), (0, 1), (2, 0), (0, 0))], -1.)
+            hubbard_model.terms[((0, 1), (0, 0), (2, 1), (2, 0))], 1.)
         self.assertAlmostEqual(
-            hubbard_model.terms[((3, 1), (1, 1), (3, 0), (1, 0))], -1.)
+            hubbard_model.terms[((1, 1), (1, 0), (3, 1), (3, 0))], 1.)
 
         # Check that there are no other Coulomb terms.
-        self.assertNotIn(((3, 1), (0, 1), (3, 0), (0, 0)),
+        self.assertNotIn(((0, 1), (0, 0), (3, 1), (3, 0)),
                          hubbard_model.terms)
-        self.assertNotIn(((2, 1), (1, 1), (2, 0), (1, 0)),
+        self.assertNotIn(((1, 1), (1, 0), (2, 1), (2, 0)),
                          hubbard_model.terms)
 
     def test_two_by_two_spinful(self):
@@ -118,14 +118,14 @@ class FermiHubbardTest(unittest.TestCase):
         self.assertAlmostEqual(hubbard_model.terms[((7, 1), (3, 0))], -2.)
 
         # Check on site interaction term.
-        self.assertAlmostEqual(hubbard_model.terms[((1, 1), (0, 1),
-                                                    (1, 0), (0, 0))], -1.)
-        self.assertAlmostEqual(hubbard_model.terms[((3, 1), (2, 1),
-                                                    (3, 0), (2, 0))], -1.)
-        self.assertAlmostEqual(hubbard_model.terms[((5, 1), (4, 1),
-                                                    (5, 0), (4, 0))], -1.)
-        self.assertAlmostEqual(hubbard_model.terms[((7, 1), (6, 1),
-                                                    (7, 0), (6, 0))], -1.)
+        self.assertAlmostEqual(hubbard_model.terms[((0, 1), (0, 0),
+                                                    (1, 1), (1, 0))], 1.)
+        self.assertAlmostEqual(hubbard_model.terms[((2, 1), (2, 0),
+                                                    (3, 1), (3, 0))], 1.)
+        self.assertAlmostEqual(hubbard_model.terms[((4, 1), (4, 0),
+                                                    (5, 1), (5, 0))], 1.)
+        self.assertAlmostEqual(hubbard_model.terms[((6, 1), (6, 0),
+                                                    (7, 1), (7, 0))], 1.)
 
     def test_two_by_two_spinful_phs(self):
         hubbard_model = fermi_hubbard(
