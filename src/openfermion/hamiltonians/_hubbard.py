@@ -142,12 +142,12 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
     for site in range(n_sites):
         # Add chemical potential to the spinless case. The magnetic field
         # doesn't contribute.
-        if spinless:
+        if spinless and chemical_potential:
             hubbard_model += number_operator(
                 n_spin_orbitals, site, -chemical_potential)
 
-        # Add the chemical potential and magnetic field terms.
-        else:
+        # With spin, add the chemical potential and magnetic field terms.
+        elif not spinless:
             hubbard_model += number_operator(
                 n_spin_orbitals, up_index(site),
                 -chemical_potential - magnetic_field)
