@@ -30,9 +30,52 @@ class FermiHubbardTest(unittest.TestCase):
         self.periodic = 0
         self.spinless = 0
 
-    def test_two_by_two_spinful(self):
+    def test_two_by_two_spinless(self):
 
-        # Initialize the Hamiltonians.
+        # Initialize the Hamiltonian.
+        hubbard_model = fermi_hubbard(
+            self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
+            self.chemical_potential, self.magnetic_field,
+            self.periodic, spinless=True)
+
+        # Check on site terms and magnetic field.
+        self.assertAlmostEqual(hubbard_model.terms[((0, 1), (0, 0))], -0.25)
+        self.assertAlmostEqual(hubbard_model.terms[((1, 1), (1, 0))], -0.25)
+        self.assertAlmostEqual(hubbard_model.terms[((2, 1), (2, 0))], -0.25)
+        self.assertAlmostEqual(hubbard_model.terms[((3, 1), (3, 0))], -0.25)
+
+        # Check right/left hopping terms.
+        self.assertAlmostEqual(hubbard_model.terms[((0, 1), (1, 0))], -2.)
+        self.assertAlmostEqual(hubbard_model.terms[((1, 1), (0, 0))], -2.)
+        self.assertAlmostEqual(hubbard_model.terms[((3, 1), (2, 0))], -2.)
+        self.assertAlmostEqual(hubbard_model.terms[((2, 1), (3, 0))], -2.)
+
+        # Check top/bottom hopping terms.
+        self.assertAlmostEqual(hubbard_model.terms[((0, 1), (2, 0))], -2.)
+        self.assertAlmostEqual(hubbard_model.terms[((2, 1), (0, 0))], -2.)
+        self.assertAlmostEqual(hubbard_model.terms[((3, 1), (1, 0))], -2.)
+        self.assertAlmostEqual(hubbard_model.terms[((1, 1), (3, 0))], -2.)
+
+        # Check left/right Coulomb terms.
+        self.assertAlmostEqual(
+            hubbard_model.terms[((0, 1), (0, 0), (1, 1), (1, 0))], 1.)
+        self.assertAlmostEqual(
+            hubbard_model.terms[((2, 1), (2, 0), (3, 1), (3, 0))], 1.)
+
+        # Check top/bottom Coulomb terms.
+        self.assertAlmostEqual(
+            hubbard_model.terms[((0, 1), (0, 0), (2, 1), (2, 0))], 1.)
+        self.assertAlmostEqual(
+            hubbard_model.terms[((1, 1), (1, 0), (3, 1), (3, 0))], 1.)
+
+        # Check that there are no other Coulomb terms.
+        self.assertNotIn(((0, 1), (0, 0), (3, 1), (3, 0)),
+                         hubbard_model.terms)
+        self.assertNotIn(((1, 1), (1, 0), (2, 1), (2, 0)),
+                         hubbard_model.terms)
+
+    def test_two_by_two_spinful(self):
+        # Initialize the Hamiltonian.
         hubbard_model = fermi_hubbard(
             self.x_dimension, self.y_dimension, self.tunneling, self.coulomb,
             self.chemical_potential, self.magnetic_field,

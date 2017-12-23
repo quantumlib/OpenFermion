@@ -35,7 +35,7 @@ class VerstraeteCirac2dSquareGroundStateTest(unittest.TestCase):
 
         # Create a Hamiltonian with nearest-neighbor hopping terms
         self.ferm_op = fermi_hubbard(self.x_dimension, self.y_dimension,
-                                     1., 0., None, None, False, True)
+                                     1., 0., 0., 0., False, True)
 
         # Get the ground energy and ground state
         self.ferm_op_sparse = get_sparse_operator(self.ferm_op)
@@ -67,7 +67,7 @@ class VerstraeteCirac2dSquareOperatorLocalityTest(unittest.TestCase):
 
         # Create a Hubbard Hamiltonian
         self.ferm_op = fermi_hubbard(self.x_dimension, self.y_dimension,
-                                     1.0, 4.0, None, None, False, True)
+                                     1.0, 4.0, 0.0, 0.0, False, True)
 
         # Transform the FermionOperator to a QubitOperator without including
         # the auxiliary Hamiltonian
