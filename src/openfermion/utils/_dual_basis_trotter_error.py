@@ -149,7 +149,6 @@ def simulation_ordered_grouped_dual_basis_terms_with_info(
         order of simulation, the indices they act on, and whether they
         are hopping operators (both also in the same order).
     """
-    zero = FermionOperator.zero()
     hamiltonian = dual_basis_hamiltonian
     n_qubits = count_qubits(hamiltonian)
 
@@ -169,69 +168,107 @@ def simulation_ordered_grouped_dual_basis_terms_with_info(
     # qubits with the odd qubit to its right, and in the next step swap each
     # the odd qubits with the even qubit to its right. Do this until the input
     # ordering has been reversed.
-    odd = 0
+    parity = 0
     while input_ordering != final_ordering:
-        for i in range(odd, n_qubits - 1, 2):
-            # Always keep the max on the left to avoid having to normal order.
-            left = max(input_ordering[i], input_ordering[i + 1])
-            right = min(input_ordering[i], input_ordering[i + 1])
+        results = stagger_with_info(
+            hamiltonian, input_ordering, parity)
+        terms_in_step, indices_in_step, is_hopping_operator_in_step = results
 
-            # Calculate the hopping operators in the Hamiltonian.
-            left_hopping_operator = FermionOperator(
-                ((left, 1), (right, 0)), hamiltonian.terms.get(
-                    ((left, 1), (right, 0)), 0.0))
-            right_hopping_operator = FermionOperator(
-                ((right, 1), (left, 0)), hamiltonian.terms.get(
-                    ((right, 1), (left, 0)), 0.0))
-
-            # Calculate the two-number operator l^ r^ l r in the Hamiltonian.
-            two_number_operator = FermionOperator(
-                ((left, 1), (right, 1), (left, 0), (right, 0)),
-                hamiltonian.terms.get(
-                    ((left, 1), (right, 1), (left, 0), (right, 0)), 0.0))
-
-            # Calculate the left number operator, left^ left.
-            left_number_operator = FermionOperator(
-                ((left, 1), (left, 0)), hamiltonian.terms.get(
-                    ((left, 1), (left, 0)), 0.0))
-
-            # Calculate the right number operator, right^ right.
-            right_number_operator = FermionOperator(
-                ((right, 1), (right, 0)), hamiltonian.terms.get(
-                    ((right, 1), (right, 0)), 0.0))
-
-            # Divide single-number terms by n_qubits-1 to avoid over-counting.
-            # Each qubit is swapped n_qubits-1 times total.
-            left_number_operator /= (n_qubits - 1)
-            right_number_operator /= (n_qubits - 1)
-
-            # If the overall hopping operator isn't close to zero, append it.
-            # Include the indices it acts on and that it's a hopping operator.
-            if not (left_hopping_operator +
-                    right_hopping_operator).isclose(zero):
-                ordered_terms.append(left_hopping_operator +
-                                     right_hopping_operator)
-                ordered_indices.append(set((left, right)))
-                ordered_is_hopping_operator.append(True)
-
-            # If the overall number operator isn't close to zero, append it.
-            # Include the indices it acts on and that it's a number operator.
-            if not (two_number_operator + left_number_operator +
-                    right_number_operator).isclose(zero):
-                ordered_terms.append(two_number_operator +
-                                     left_number_operator +
-                                     right_number_operator)
-                ordered_indices.append(set((left, right)))
-                ordered_is_hopping_operator.append(False)
-
-            # Track the current Jordan-Wigner canonical ordering.
-            input_ordering[i], input_ordering[i + 1] = (input_ordering[i + 1],
-                                                        input_ordering[i])
+        ordered_terms.extend(terms_in_step)
+        ordered_indices.extend(indices_in_step)
+        ordered_is_hopping_operator.extend(is_hopping_operator_in_step)
 
         # Alternate even and odd steps of the reversal procedure.
-        odd = 1 - odd
+        parity = 1 - parity
 
     return (ordered_terms, ordered_indices, ordered_is_hopping_operator)
+
+
+def stagger_with_info(hamiltonian, input_ordering, parity):
+    """Give terms simulated in a single stagger of a Trotter step.
+
+    Groups terms into hopping (i^ j + j^ i) and number
+    (i^j^ i j + c_i i^ i + c_j j^ j) operators.
+    Pre-computes term information (indices each operator acts on, as
+    well as whether each operator is a hopping operator.
+
+    Args:
+        hamiltonian (FermionOperator): The Hamiltonian.
+        input_ordering (list): The initial Jordan-Wigner canonical order.
+        parity (boolean): Whether to determine the terms from the next even
+            (False = 0) or odd (True = 1) stagger.
+
+    Returns:
+        A 3-tuple of terms from the Hamiltonian that are simulated in the
+        stagger, the indices they act on, and whether they are hopping
+        operators (all in the same order).
+    """
+    terms_in_step = []
+    indices_in_step = []
+    is_hopping_operator_in_step = []
+
+    zero = FermionOperator.zero()
+    n_qubits = count_qubits(hamiltonian)
+
+    # A single round of odd-even transposition sort.
+    for i in range(parity, n_qubits - 1, 2):
+        # Always keep the max on the left to avoid having to normal order.
+        left = max(input_ordering[i], input_ordering[i + 1])
+        right = min(input_ordering[i], input_ordering[i + 1])
+
+        # Calculate the hopping operators in the Hamiltonian.
+        left_hopping_operator = FermionOperator(
+            ((left, 1), (right, 0)), hamiltonian.terms.get(
+                ((left, 1), (right, 0)), 0.0))
+        right_hopping_operator = FermionOperator(
+            ((right, 1), (left, 0)), hamiltonian.terms.get(
+                ((right, 1), (left, 0)), 0.0))
+
+        # Calculate the two-number operator l^ r^ l r in the Hamiltonian.
+        two_number_operator = FermionOperator(
+            ((left, 1), (right, 1), (left, 0), (right, 0)),
+            hamiltonian.terms.get(
+                ((left, 1), (right, 1), (left, 0), (right, 0)), 0.0))
+
+        # Calculate the left number operator, left^ left.
+        left_number_operator = FermionOperator(
+            ((left, 1), (left, 0)), hamiltonian.terms.get(
+                ((left, 1), (left, 0)), 0.0))
+
+        # Calculate the right number operator, right^ right.
+        right_number_operator = FermionOperator(
+            ((right, 1), (right, 0)), hamiltonian.terms.get(
+                ((right, 1), (right, 0)), 0.0))
+
+        # Divide single-number terms by n_qubits-1 to avoid over-counting.
+        # Each qubit is swapped n_qubits-1 times total.
+        left_number_operator /= (n_qubits - 1)
+        right_number_operator /= (n_qubits - 1)
+
+        # If the overall hopping operator isn't close to zero, append it.
+        # Include the indices it acts on and that it's a hopping operator.
+        if not (left_hopping_operator +
+                right_hopping_operator).isclose(zero):
+            terms_in_step.append(left_hopping_operator +
+                                 right_hopping_operator)
+            indices_in_step.append(set((left, right)))
+            is_hopping_operator_in_step.append(True)
+
+        # If the overall number operator isn't close to zero, append it.
+        # Include the indices it acts on and that it's a number operator.
+        if not (two_number_operator + left_number_operator +
+                right_number_operator).isclose(zero):
+            terms_in_step.append(two_number_operator +
+                                 left_number_operator +
+                                 right_number_operator)
+            indices_in_step.append(set((left, right)))
+            is_hopping_operator_in_step.append(False)
+
+        # Modify the current Jordan-Wigner canonical ordering in-place.
+        input_ordering[i], input_ordering[i + 1] = (input_ordering[i + 1],
+                                                    input_ordering[i])
+
+    return terms_in_step, indices_in_step, is_hopping_operator_in_step
 
 
 def ordered_dual_basis_terms_no_info(dual_basis_hamiltonian):
