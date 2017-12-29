@@ -192,7 +192,7 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
     Groups terms into hopping (i^ j + j^ i) and number
     (i^j^ i j + c_i i^ i + c_j j^ j) operators.
     Pre-computes term information (indices each operator acts on, as
-    well as whether each operator is a hopping operator.
+    well as whether each operator is a hopping operator).
 
     Args:
         hamiltonian (FermionOperator): The Hamiltonian.
@@ -204,6 +204,12 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
         A 3-tuple of terms from the Hamiltonian that are simulated in the
         stagger, the indices they act on, and whether they are hopping
         operators (all in the same order).
+
+    Notes:
+        The "staggers" used here are the left (parity=False) and right
+        (parity=True) staggers detailed in Kivlichan et al., "Quantum
+        Simulation of Electronic Structure with Linear Depth and
+        Connectivity", arxiv:1711.04789.
     """
     terms_in_step = []
     indices_in_step = []

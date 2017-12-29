@@ -12,67 +12,13 @@
 
 """Module to compute Trotter errors in the plane-wave dual basis."""
 from __future__ import absolute_import
-from future.utils import iteritems, itervalues
 
 import numpy
 
 from openfermion.config import *
-from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.utils import count_qubits
-from openfermion.utils._dual_basis_trotter_error import (
-    dual_basis_error_bound, dual_basis_error_operator, stagger_with_info)
-
-
-def fermi_hubbard_error_operator(terms, indices=None, is_hopping_operator=None,
-                                 verbose=False):
-    """Determine the difference between the exact generator of unitary
-    evolution and the approximate generator given by the second-order
-    Trotter-Suzuki expansion for the Hubbard model.
-
-    Args:
-        terms: a list of FermionOperators in the Hamiltonian in the
-               order in which they will be simulated.
-        indices: a set of indices the terms act on in the same order as terms.
-        is_hopping_operator: a list of whether each term is a hopping operator.
-        verbose: Whether to print percentage progress.
-
-    Returns:
-        The difference between the true and effective generators of time
-            evolution for a single Trotter step.
-
-    Notes: follows Equation 9 of Poulin et al.'s work in "The Trotter Step
-        Size Required for Accurate Quantum Simulation of Quantum Chemistry".
-    """
-    return dual_basis_error_operator(
-        terms, indices=indices, is_hopping_operator=is_hopping_operator,
-        verbose=verbose)
-
-
-def fermi_hubbard_error_bound(terms, indices=None, is_hopping_operator=None,
-                              verbose=False):
-    """Numerically upper bound the error in the ground state energy
-    for the second-order Trotter-Suzuki expansion.
-
-    Args:
-        terms: a list of single-term FermionOperators in the Hamiltonian
-            to be simulated.
-        indices: a set of indices the terms act on in the same order as terms.
-        is_hopping_operator: a list of whether each term is a hopping operator.
-        verbose: Whether to print percentage progress.
-
-    Returns:
-        A float upper bound on norm of error in the ground state energy.
-
-    Notes:
-        Follows Equation 9 of Poulin et al.'s work in "The Trotter Step
-        Size Required for Accurate Quantum Simulation of Quantum
-        Chemistry" to calculate the error operator.
-    """
-    # Return the 1-norm of the error operator (upper bound on error).
-    return dual_basis_error_bound(
-        terms, indices=indices, is_hopping_operator=is_hopping_operator,
-        verbose=verbose)
+from openfermion.utils._dual_basis_trotter_error import stagger_with_info
 
 
 def simulation_ordered_grouped_hubbard_terms_with_info(
@@ -80,9 +26,9 @@ def simulation_ordered_grouped_hubbard_terms_with_info(
     """Give terms from the Fermi-Hubbard Hamiltonian in simulated order.
 
     Uses the simulation ordering, grouping terms into hopping
-    (i^ j + j^ i) and number (i^j^ i j + c_i i^ i + c_j j^ j) operators.
+    (i^ j + j^ i) and on-site potential (i^j^ i j) operators.
     Pre-computes term information (indices each operator acts on, as
-    well as whether each operator is a hopping operator.
+    well as whether each operator is a hopping operator).
 
     Args:
         hubbard_hamiltonian (FermionOperator): The Hamiltonian.
@@ -95,7 +41,10 @@ def simulation_ordered_grouped_hubbard_terms_with_info(
 
     Notes:
         Assumes that the Hubbard model has spin and is on a 2D square
-        aperiodic lattice.
+        aperiodic lattice. Uses the "stagger"-based Trotter step for the
+        Hubbard model detailed in Kivlichan et al., "Quantum Simulation
+        of Electronic Structure with Linear Depth and Connectivity",
+        arxiv:1711.04789.
     """
     hamiltonian = normal_ordered(hubbard_hamiltonian)
     n_qubits = count_qubits(hamiltonian)
