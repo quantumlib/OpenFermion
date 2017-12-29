@@ -26,8 +26,9 @@ from openfermion.utils._commutators import (
     trivially_double_commutes_dual_basis_using_term_info)
 
 
-def dual_basis_error_operator(terms, indices=None, is_hopping_operator=None,
-                              jellium_only=False, verbose=False):
+def low_depth_second_order_trotter_error_operator(
+        terms, indices=None, is_hopping_operator=None, jellium_only=False,
+        verbose=False):
     """Determine the difference between the exact generator of unitary
     evolution and the approximate generator given by the second-order
     Trotter-Suzuki expansion.
@@ -48,7 +49,10 @@ def dual_basis_error_operator(terms, indices=None, is_hopping_operator=None,
             evolution for a single Trotter step.
 
     Notes: follows Equation 9 of Poulin et al.'s work in "The Trotter Step
-        Size Required for Accurate Quantum Simulation of Quantum Chemistry".
+        Size Required for Accurate Quantum Simulation of Quantum Chemistry",
+        applied to the "stagger"-based Trotter step for detailed in
+        Kivlichan et al., "Quantum Simulation of Electronic Structure with
+        Linear Depth and Connectivity", arxiv:1711.04789.
     """
     more_info = bool(indices)
     n_terms = len(terms)
@@ -101,8 +105,9 @@ def dual_basis_error_operator(terms, indices=None, is_hopping_operator=None,
     return error_operator
 
 
-def dual_basis_error_bound(terms, indices=None, is_hopping_operator=None,
-                           jellium_only=False, verbose=False):
+def low_depth_second_order_trotter_error_bound(
+        terms, indices=None, is_hopping_operator=None,
+        jellium_only=False, verbose=False):
     """Numerically upper bound the error in the ground state energy
     for the second-order Trotter-Suzuki expansion.
 
@@ -123,16 +128,20 @@ def dual_basis_error_bound(terms, indices=None, is_hopping_operator=None,
     Notes:
         Follows Equation 9 of Poulin et al.'s work in "The Trotter Step
         Size Required for Accurate Quantum Simulation of Quantum
-        Chemistry" to calculate the error operator.
+        Chemistry" to calculate the error operator, for the "stagger"-based
+        Trotter step for detailed in Kivlichan et al., "Quantum Simulation
+        of Electronic Structure with Linear Depth and Connectivity",
+        arxiv:1711.04789.
     """
     # Return the 1-norm of the error operator (upper bound on error).
-    return numpy.sum(numpy.absolute(list(dual_basis_error_operator(
-        terms, indices, is_hopping_operator,
-        jellium_only, verbose).terms.values())))
+    return numpy.sum(numpy.absolute(list(
+        low_depth_second_order_trotter_error_operator(
+            terms, indices, is_hopping_operator,
+            jellium_only, verbose).terms.values())))
 
 
-def simulation_ordered_grouped_dual_basis_terms_with_info(
-        dual_basis_hamiltonian, input_ordering=None):
+def simulation_ordered_grouped_low_depth_terms_with_info(
+        hamiltonian, input_ordering=None):
     """Give terms from the dual basis Hamiltonian in simulated order.
 
     Uses the simulation ordering, grouping terms into hopping
@@ -141,23 +150,32 @@ def simulation_ordered_grouped_dual_basis_terms_with_info(
     well as whether each operator is a hopping operator.
 
     Args:
-        dual_basis_hamiltonian (FermionOperator): The Hamiltonian.
+        hamiltonian (FermionOperator): The Hamiltonian.
         input_ordering (list): The initial Jordan-Wigner canonical order.
 
     Returns:
-        A 3-tuple of terms from the plane-wave dual basis Hamiltonian in
-        order of simulation, the indices they act on, and whether they
-        are hopping operators (both also in the same order).
+        A 3-tuple of terms from the Hamiltonian in order of simulation,
+        the indices they act on, and whether they are hopping operators
+        (both also in the same order).
+
+    Notes:
+        Follows the "stagger"-based simulation order discussed in Kivlichan
+        et al., "Quantum Simulation of Electronic Structure with Linear
+        Depth and Connectivity", arxiv:1711.04789; as such, the only
+        permitted types of terms are hopping (i^ j + j^ i) and potential
+        terms which are products of at most two number operators.
     """
-    hamiltonian = dual_basis_hamiltonian
     n_qubits = count_qubits(hamiltonian)
+    hamiltonian = normal_ordered(hamiltonian)
 
     ordered_terms = []
     ordered_indices = []
     ordered_is_hopping_operator = []
 
     # If no input mode ordering is specified, default to range(n_qubits).
-    if not input_ordering:
+    try:
+        input_ordering = list(input_ordering)
+    except TypeError:
         input_ordering = list(range(n_qubits))
 
     # Half a second-order Trotter step reverses the input ordering: this tells
@@ -190,7 +208,7 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
     Groups terms into hopping (i^ j + j^ i) and number
     (i^j^ i j + c_i i^ i + c_j j^ j) operators.
     Pre-computes term information (indices each operator acts on, as
-    well as whether each operator is a hopping operator.
+    well as whether each operator is a hopping operator).
 
     Args:
         hamiltonian (FermionOperator): The Hamiltonian.
@@ -202,6 +220,15 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
         A 3-tuple of terms from the Hamiltonian that are simulated in the
         stagger, the indices they act on, and whether they are hopping
         operators (all in the same order).
+
+    Notes:
+        The "staggers" used here are the left (parity=False) and right
+        (parity=True) staggers detailed in Kivlichan et al., "Quantum
+        Simulation of Electronic Structure with Linear Depth and
+        Connectivity", arxiv:1711.04789. As such, the Hamiltonian must be
+        in the form discussed in that paper. This constrains it to have
+        only hopping terms (i^ j + j^ i) and potential terms which are
+        products of at most two number operators (n_i or n_i n_j).
     """
     terms_in_step = []
     indices_in_step = []
@@ -271,19 +298,28 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
     return terms_in_step, indices_in_step, is_hopping_operator_in_step
 
 
-def ordered_dual_basis_terms_no_info(dual_basis_hamiltonian):
-    """Give terms from the dual basis Hamiltonian in dictionary output order.
+def ordered_low_depth_terms_no_info(hamiltonian):
+    """Give terms from Hamiltonian in dictionary output order.
 
     Args:
-        dual_basis_hamiltonian (FermionOperator): The Hamiltonian.
+        hamiltonian (FermionOperator): The Hamiltonian.
 
     Returns:
-        A list of terms from the dual basis Hamiltonian in simulated order.
+        A list of terms from the Hamiltonian in simulated order.
+
+    Notes:
+        Assumes the Hamiltonian is in the form discussed in Kivlichan
+        et al., "Quantum Simulation of Electronic Structure with Linear
+        Depth and Connectivity", arxiv:1711.04789. This constrains the
+        Hamiltonian to have only hopping terms (i^ j + j^ i) and potential
+        terms which are products of at most two number operators (n_i or
+        n_i n_j).
     """
-    n_qubits = count_qubits(dual_basis_hamiltonian)
+    n_qubits = count_qubits(hamiltonian)
+    hamiltonian = normal_ordered(hamiltonian)
     terms = []
 
-    for operators, coefficient in iteritems(dual_basis_hamiltonian.terms):
+    for operators, coefficient in iteritems(hamiltonian.terms):
         terms += [FermionOperator(operators, coefficient)]
 
     return terms
