@@ -18,7 +18,7 @@ import numpy
 from openfermion.config import *
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.utils import count_qubits
-from openfermion.utils._dual_basis_trotter_error import stagger_with_info
+from openfermion.utils._low_depth_trotter_error import stagger_with_info
 
 
 def simulation_ordered_grouped_hubbard_terms_with_info(

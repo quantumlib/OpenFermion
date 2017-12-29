@@ -15,7 +15,7 @@ import unittest
 
 from openfermion.ops import FermionOperator
 from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
-from openfermion.utils._dual_basis_trotter_error import *
+from openfermion.utils._low_depth_trotter_error import *
 from openfermion.utils import Grid
 
 
@@ -39,8 +39,9 @@ class ErrorOperatorTest(unittest.TestCase):
                        22.2816920329)))
 
         self.assertAlmostEqual(
-            dual_basis_error_operator(terms, jellium_only=True).terms[
-                ((3, 1), (2, 1), (1, 1), (2, 0), (1, 0), (0, 0))],
+            low_depth_second_order_trotter_error_operator(
+                terms, jellium_only=True).terms[
+                    ((3, 1), (2, 1), (1, 1), (2, 0), (1, 0), (0, 0))],
             -0.562500000003)
 
 
@@ -64,7 +65,7 @@ class ErrorBoundTest(unittest.TestCase):
                        22.2816920329)))
 
     def test_error_bound(self):
-        self.assertAlmostEqual(dual_basis_error_bound(
+        self.assertAlmostEqual(low_depth_second_order_trotter_error_bound(
             self.terms, jellium_only=True), 6.92941899358)
 
     def test_error_bound_using_info_1d(self):
@@ -74,10 +75,10 @@ class ErrorBoundTest(unittest.TestCase):
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
-        result = simulation_ordered_grouped_dual_basis_terms_with_info(
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)
         terms, indices, is_hopping = result
-        self.assertAlmostEqual(dual_basis_error_bound(
+        self.assertAlmostEqual(low_depth_second_order_trotter_error_bound(
             terms, indices, is_hopping), 7.4239378440953283)
 
     def test_error_bound_using_info_1d_with_input_ordering(self):
@@ -87,10 +88,10 @@ class ErrorBoundTest(unittest.TestCase):
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
-        result = simulation_ordered_grouped_dual_basis_terms_with_info(
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian, input_ordering=[0, 1, 2, 3])
         terms, indices, is_hopping = result
-        self.assertAlmostEqual(dual_basis_error_bound(
+        self.assertAlmostEqual(low_depth_second_order_trotter_error_bound(
             terms, indices, is_hopping), 7.4239378440953283)
 
     def test_error_bound_using_info_2d_verbose(self):
@@ -100,11 +101,13 @@ class ErrorBoundTest(unittest.TestCase):
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
-        result = simulation_ordered_grouped_dual_basis_terms_with_info(
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)
         terms, indices, is_hopping = result
-        self.assertAlmostEqual(0.052213321121580794, dual_basis_error_bound(
-            terms, indices, is_hopping, jellium_only=True, verbose=True))
+        self.assertAlmostEqual(
+            low_depth_second_order_trotter_error_bound(
+                terms, indices, is_hopping, jellium_only=True, verbose=True),
+            0.052213321121580794)
 
 
 class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
@@ -123,7 +126,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         hamiltonian = dual_basis_jellium_hamiltonian(
             grid_length, dimension, wigner_seitz_radius, n_particles)
 
-        terms = simulation_ordered_grouped_dual_basis_terms_with_info(
+        terms = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)[0]
         terms_total = sum(terms, FermionOperator.zero())
 
@@ -151,7 +154,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
-        result = simulation_ordered_grouped_dual_basis_terms_with_info(
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)
         terms, indices, is_hopping = result
 
@@ -178,7 +181,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
-        result = simulation_ordered_grouped_dual_basis_terms_with_info(
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)
         terms, indices, is_hopping = result
 
@@ -203,7 +206,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
-        result = simulation_ordered_grouped_dual_basis_terms_with_info(
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)
         terms, indices, is_hopping = result
 
@@ -219,7 +222,7 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
         # Generate the Hamiltonian.
         hamiltonian = dual_basis_jellium_hamiltonian(grid_length, dimension)
 
-        terms = ordered_dual_basis_terms_no_info(hamiltonian)
+        terms = ordered_low_depth_terms_no_info(hamiltonian)
         FO = FermionOperator
 
         expected_terms = []
@@ -268,7 +271,7 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
             wigner_seitz_radius, n_particles, dimension)
 
         hamiltonian = dual_basis_jellium_hamiltonian(grid_length, dimension)
-        terms = ordered_dual_basis_terms_no_info(hamiltonian)
+        terms = ordered_low_depth_terms_no_info(hamiltonian)
         terms_total = sum(terms, FermionOperator.zero())
 
         grid = Grid(dimension, grid_length, length_scale)

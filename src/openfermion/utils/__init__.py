@@ -53,7 +53,8 @@ from ._unitary_cc import (uccsd_convert_amplitude_format,
                           uccsd_singlet_paramsize)
 
 # Imports out of alphabetical order to avoid circular dependancy.
-from ._dual_basis_trotter_error import (dual_basis_error_bound,
-                                        dual_basis_error_operator)
+from ._low_depth_trotter_error import (
+    low_depth_second_order_trotter_error_bound,
+    low_depth_second_order_trotter_error_operator)
 
 from ._jellium_hf_state import hartree_fock_state_jellium

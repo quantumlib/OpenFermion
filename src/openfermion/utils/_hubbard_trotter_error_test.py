@@ -16,8 +16,9 @@ import unittest
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.utils._hubbard_trotter_error import *
-from openfermion.utils._dual_basis_trotter_error import (
-    dual_basis_error_bound, dual_basis_error_operator)
+from openfermion.utils._low_depth_trotter_error import (
+    low_depth_second_order_trotter_error_bound,
+    low_depth_second_order_trotter_error_operator)
 
 
 class ErrorOperatorTest(unittest.TestCase):
@@ -39,7 +40,7 @@ class ErrorOperatorTest(unittest.TestCase):
                        22.2816920329)))
 
         self.assertAlmostEqual(
-            dual_basis_error_operator(terms).terms[
+            low_depth_second_order_trotter_error_operator(terms).terms[
                 ((3, 1), (2, 1), (1, 1), (2, 0), (1, 0), (0, 0))], 0.75)
 
 
@@ -62,7 +63,7 @@ class ErrorBoundTest(unittest.TestCase):
                    set([1, 3]), set([1, 3])]
         is_hopping_operator = [True, True, True, False, True, False]
 
-        self.assertAlmostEqual(dual_basis_error_bound(
+        self.assertAlmostEqual(low_depth_second_order_trotter_error_bound(
             terms, indices, is_hopping_operator), 0.0608)
 
     def test_error_bound_using_info_even_side_length(self):
@@ -77,7 +78,7 @@ class ErrorBoundTest(unittest.TestCase):
             hamiltonian)
         terms, indices, is_hopping = result
 
-        self.assertAlmostEqual(dual_basis_error_bound(
+        self.assertAlmostEqual(low_depth_second_order_trotter_error_bound(
             terms, indices, is_hopping), 13.59)
 
     def test_error_bound_using_info_odd_side_length_verbose(self):
@@ -92,8 +93,9 @@ class ErrorBoundTest(unittest.TestCase):
             hamiltonian)
         terms, indices, is_hopping = result
 
-        self.assertAlmostEqual(32.025, dual_basis_error_bound(
-            terms, indices, is_hopping, verbose=True))
+        self.assertAlmostEqual(32.025,
+                               low_depth_second_order_trotter_error_bound(
+                                   terms, indices, is_hopping, verbose=True))
 
 
 class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
