@@ -80,6 +80,19 @@ class ErrorBoundTest(unittest.TestCase):
         self.assertAlmostEqual(dual_basis_error_bound(
             terms, indices, is_hopping), 7.4239378440953283)
 
+    def test_error_bound_using_info_1d_with_input_ordering(self):
+        # Generate the Hamiltonian.
+        hamiltonian = dual_basis_jellium_hamiltonian(grid_length=4,
+                                                     dimension=1)
+
+        # Unpack result into terms, indices they act on, and whether they're
+        # hopping operators.
+        result = simulation_ordered_grouped_dual_basis_terms_with_info(
+            hamiltonian, input_ordering=[0, 1, 2, 3])
+        terms, indices, is_hopping = result
+        self.assertAlmostEqual(dual_basis_error_bound(
+            terms, indices, is_hopping), 7.4239378440953283)
+
     def test_error_bound_using_info_2d_verbose(self):
         # Generate the Hamiltonian.
         hamiltonian = dual_basis_jellium_hamiltonian(grid_length=3,
