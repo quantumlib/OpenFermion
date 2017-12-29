@@ -156,9 +156,12 @@ def simulation_ordered_grouped_dual_basis_terms_with_info(
     ordered_indices = []
     ordered_is_hopping_operator = []
 
-    # If no input mode ordering is specified, default to range(n_qubits).
     if not input_ordering:
+        # If no input mode ordering is specified, default to range(n_qubits).
         input_ordering = list(range(n_qubits))
+    else:
+        # Else, avoid making changes to the original ordering.
+        input_ordering = list(input_ordering)
 
     # Half a second-order Trotter step reverses the input ordering: this tells
     # us how much we need to include in the ordered list of terms.

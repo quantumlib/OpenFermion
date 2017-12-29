@@ -173,7 +173,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                 bottom_neighbor -= x_dimension * y_dimension
 
         # Add transition to neighbor on right.
-        if (site + 1) % x_dimension or (periodic and x_dimension > 2):
+        if (right_neighbor) % x_dimension or (periodic and x_dimension > 2):
             if spinless:
                 # Add Coulomb term.
                 operator_1 = number_operator(
