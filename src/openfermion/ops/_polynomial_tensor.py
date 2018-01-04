@@ -29,7 +29,8 @@ def general_basis_change(general_tensor, rotation_matrix, key):
     """Change the basis of an general interaction tensor.
 
     M'^{p_1p_2...p_n} = R^{p_1}_{a_1} R^{p_2}_{a_2} ...
-                        R^{p_n}_{a_n} M^{a_1a_2...a_n}
+                        R^{p_n}_{a_n} M^{a_1a_2...a_n} R^{p_n}_{a_n}^T ...
+                        R^{p_2}_{a_2}^T R_{p_1}_{a_1}^T
 
     where R is the rotation matrix, M is the general tensor, M' is the
     transformed general tensor, and a_k and p_k are indices. The formula uses
@@ -66,8 +67,8 @@ def general_basis_change(general_tensor, rotation_matrix, key):
     # for the (1, 1, 0, 0) tensor, the call is:
     #     numpy.einsum('abcd,aA,bB,cC,dD',
     #                  general_tensor,
-    #                  rotation_matrix
-    #                  rotation_matrix
+    #                  rotation_matrix.conj()
+    #                  rotation_matrix.conj()
     #                  rotation_matrix,
     #                  rotation_matrix)
 
@@ -80,8 +81,11 @@ def general_basis_change(general_tensor, rotation_matrix, key):
 
     subscripts = subscripts_first + ',' + subscripts_rest
 
-    # "optimize = True" does greedy optimization, which will be enough here
-    matrices_list = order * [rotation_matrix.conj()]
+    # Rotation matrices conjugated as necessary.
+    matrices_list = [rotation_matrix.conj() if x == 1 else
+                     rotation_matrix for x in key]
+
+    # "optimize = True" does greedy optimization, which will be enough here.
     transformed_general_tensor = numpy.einsum(subscripts,
                                               general_tensor,
                                               *matrices_list,
