@@ -64,10 +64,10 @@ def general_basis_change(general_tensor, rotation_matrix, key):
 
     # Do the basis change through a single call of numpy.einsum. For example,
     # for the (1, 1, 0, 0) tensor, the call is:
-    #     numpy.einsum('abcd,Aa,Bb,Cc,Dd',
+    #     numpy.einsum('abcd,aA,bB,cC,dD',
     #                  general_tensor,
-    #                  rotation_matrix.conj(),
-    #                  rotation_matrix.conj(),
+    #                  rotation_matrix
+    #                  rotation_matrix
     #                  rotation_matrix,
     #                  rotation_matrix)
 
@@ -75,19 +75,16 @@ def general_basis_change(general_tensor, rotation_matrix, key):
     subscripts_first = ''.join(chr(ord('a') + i) for i in range(order))
 
     # The 'Aa,Bb,Cc,Dd' part of the subscripts
-    subscripts_rest = ','.join(chr(ord('A') + i) +
-                               chr(ord('a') + i) for i in range(order))
+    subscripts_rest = ','.join(chr(ord('a') + i) +
+                               chr(ord('A') + i) for i in range(order))
 
     subscripts = subscripts_first + ',' + subscripts_rest
 
-    # The list of rotation matrices, conjugated as necessary
-    rotation_matrices = [rotation_matrix.conj() if x == 1 else
-                         rotation_matrix for x in key]
-
     # "optimize = True" does greedy optimization, which will be enough here
+    matrices_list = order * [rotation_matrix.conj()]
     transformed_general_tensor = numpy.einsum(subscripts,
                                               general_tensor,
-                                              *rotation_matrices,
+                                              *matrices_list,
                                               optimize=True)
     return transformed_general_tensor
 
