@@ -236,7 +236,7 @@ class MolecularData(object):
             for this system annotated by the key.
     """
     def __init__(self, geometry=None, basis=None, multiplicity=None,
-                 charge=0, description="", filename="", data_directory=None):
+                 charge=0, description="none", filename="", data_directory=None):
         """Initialize molecular metadata which defines class.
 
         Args:
