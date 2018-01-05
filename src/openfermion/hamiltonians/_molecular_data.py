@@ -236,7 +236,7 @@ class MolecularData(object):
             for this system annotated by the key.
     """
     def __init__(self, geometry=None, basis=None, multiplicity=None,
-                 charge=0, description="none", filename="", data_directory=None):
+                 charge=0, description="", filename="", data_directory=None):
         """Initialize molecular metadata which defines class.
 
         Args:
@@ -662,7 +662,7 @@ class MolecularData(object):
             # Load charge:
             self.charge = int(f["charge"][...])
             # Load description:
-            self.description = f["description"][...].tobytes().decode('utf-8')
+            self.description = f["description"][...].tobytes().decode('utf-8').rstrip(u'\x00')
             # Load name:
             self.name = f["name"][...].tobytes().decode('utf-8')
             # Load n_atoms:
