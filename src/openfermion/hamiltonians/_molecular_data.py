@@ -662,7 +662,7 @@ class MolecularData(object):
             # Load charge:
             self.charge = int(f["charge"][...])
             # Load description:
-            self.description = f["description"][...].tobytes().decode('utf-8')
+            self.description = f["description"][...].tobytes().decode('utf-8').rstrip(u'\x00')
             # Load name:
             self.name = f["name"][...].tobytes().decode('utf-8')
             # Load n_atoms:
