@@ -57,8 +57,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
              + U \sum_{i} a^\dagger_{i, \\uparrow} a_{i, \\uparrow}
                          a^\dagger_{j, \downarrow} a_{j, \downarrow}
             \\\\
-            &- \mu \sum_i (a^\dagger_{i, \\uparrow} a_{i, \\uparrow} +
-                         a^\dagger_{i, \downarrow} a_{i, \downarrow})
+            &- \mu \sum_i \sum_{\sigma} a^\dagger_{i, \sigma} a_{i, \sigma}
              - h \sum_i (a^\dagger_{i, \\uparrow} a_{i, \\uparrow} -
                        a^\dagger_{i, \downarrow} a_{i, \downarrow})
         \\end{align}
@@ -81,7 +80,6 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
         H = - t \sum_{k=1}^{N-1} (a_k^\dagger a_{k + 1} + a_{k+1}^\dagger a_k)
             + U \sum_{k=1}^{N-1} a_k^\dagger a_k a_{k+1}^\dagger a_{k+1}
-            + h \sum_{k=1}^N (-1)^k a_k^\dagger a_k
             - \mu \sum_{k=1}^N a_k^\dagger a_k.
 
     Args:

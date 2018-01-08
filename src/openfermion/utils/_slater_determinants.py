@@ -46,8 +46,8 @@ def gaussian_state_preparation_circuit(
     - a tuple :math:`(i, j, \\theta, \\varphi)`, indicating the operation
 
       .. math::
-          \exp[i \\varphi a_q^\dagger a_q]
-          \exp[\\theta (a_p^\dagger a_q - a_q^\dagger a_p)],
+          \exp[i \\varphi a_j^\dagger a_j]
+          \exp[\\theta (a_i^\dagger a_j - a_j^\dagger a_i)],
 
       a Givens rotation of modes :math:`i` and :math:`j` by angles
       :math:`\\theta` and :math:`\\varphi`.
