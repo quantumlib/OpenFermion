@@ -262,7 +262,7 @@ class FermionOperator(object):
             with a scalar as calls an out-of-place multiplication.
 
         Args:
-            term (tuple of tuples, a string, or optional):
+            term (tuple or list of tuples, a string, or optional):
                 1) A tuple of tuples. The first element of each tuple is
                    an integer indicating the mode on which a fermion
                    ladder operator acts, starting from zero. The second
@@ -294,6 +294,10 @@ class FermionOperator(object):
         elif isinstance(term, tuple):
             self.terms[term] = coefficient
 
+        # List input.
+        elif isinstance(term, list):
+            self.terms[tuple(term)] = coefficient
+
         # Invalid input.
         else:
             raise ValueError('Operators specified incorrectly.')
@@ -304,7 +308,7 @@ class FermionOperator(object):
                 orbital, action = ladder_operator
                 if not (isinstance(orbital, int) and orbital >= 0):
                     raise FermionOperatorError(
-                        'Invalid tensor factor in FermionOperator:'
+                        'Invalid tensor factor in FermionOperator: '
                         'must be a non-negative int.')
                 if action not in (0, 1):
                     raise ValueError(
