@@ -293,6 +293,3 @@ class MolecularDataTest(unittest.TestCase):
         correct_name = "Jellium_PlaneWave22_singlet"
         self.assertEqual(jellium_molecule.name, correct_name)
         os.remove("{}.hdf5".format(jellium_filename))
-
-if __name__ == '__main__':
-    unittest.main()
