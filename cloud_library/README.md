@@ -1,4 +1,4 @@
-# OpenFermion Cloud Library (Alpha Release)
+# OpenFermion Cloud Library (Alpha)
 
 The OpenFermion team provides an open source data repository where users can
 create and share molecular data files created in OpenFermion. The idea is that
@@ -8,17 +8,13 @@ electronic structure package plugins. Eventually, this library might grow to
 include other types of data such as measurements from a relevant experiment.
 
 
-## What datasets are currently available?
+## How do I download these data files?
 
 The text files in this folder are manifests for currently available datasets on
 the cloud. Each manifest contains a short description of the data and makes it
 clear how files are named. The remainer of the manifest lists the name of
-available data files.
-
-
-## How do I download these data files?
-
-Downloading the files is easy! For now, you need only to prepend
+available data files. Downloading the files is easy! For now, you need only to
+prepend
 
 ```
 https://storage.googleapis.com/open-fermion-molecule-production/
@@ -30,7 +26,6 @@ H3_sto3g_doublet_ring_0.7414 from the H_ring_sto3g_0.7414 dataset,
 wget https://storage.googleapis.com/open-fermion-molecule-production/H_rings_sto-3g_0.7414/H3_sto-3g_doublet_ring_0.7414.hdf5
 ```
 
-This is not the most beautiful solution, so we are working a better system.
 In the near-future we will put up a static site that contains these links,
 hosted on GitHub Pages.
 
