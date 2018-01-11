@@ -48,8 +48,7 @@ following steps:
    expanding an existing dataset). The file should be named after the dataset.
    The first line of the file should describe the dataset and subsequent lines
    should contain the names of the files in the dataset. See existing files in
-   the folder for an example. To open this pull request you should have signed
-   the CLA for our project, which also covers the data.
+   the folder for an example. Be sure to have signed the CLA!
 
 3. Either give your email in the pull request or email
    [help@openfermion.org](help@openfermion.org) so that our team can privately
