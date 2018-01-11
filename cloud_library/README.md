@@ -30,7 +30,7 @@ In the near-future we will put up a static site that contains these links,
 hosted on GitHub Pages.
 
 
-## How do I upload data files to share with other OpenFermion users.
+## How do I upload data files to share with other OpenFermion users?
 
 For security reasons there is a somewhat elaborate protocol to contributing to
 the database. We hope to simplify things in the future but the solution we have
@@ -41,7 +41,8 @@ following steps:
 
 1. To create a new dataset (or contribute to an existing dataset), first
    generate the files you intend to upload and compress them into a single
-   zip file.
+   file. If you use something other than .zip, say what you used in your pull
+   request.
 
 2. Open a pull request on OpenFermion which creates a new file in this folder
    (if creating a new dataset) or edits an existing file in this folder (if
