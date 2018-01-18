@@ -13,21 +13,9 @@ include other types of data such as measurements from a relevant experiment.
 The text files in this folder are manifests for currently available datasets on
 the cloud. Each manifest contains a short description of the data and makes it
 clear how files are named. The remainer of the manifest lists the name of
-available data files. Downloading the files is easy! For now, you need only to
-prepend
-
-```
-https://storage.googleapis.com/open-fermion-molecule-production/
-```
-
-to the file you wish to download. For instance, to download the file
-H3_sto3g_doublet_ring_0.7414 from the H_ring_sto3g_0.7414 dataset,
-```
-wget https://storage.googleapis.com/open-fermion-molecule-production/H_rings_sto-3g_0.7414/H3_sto-3g_doublet_ring_0.7414.hdf5
-```
-
-In the near-future we will put up a static site that contains these links,
-hosted on GitHub Pages.
+available data files. You can easily find and download the files you want by
+clicking on them in our [molecule cloud
+website](https://quantumlib.github.io/openfermioncloud/).
 
 
 ## How do I upload data files to share with other OpenFermion users?
@@ -51,8 +39,7 @@ following steps:
    should contain the names of the files in the dataset. See existing files in
    the folder for an example. Be sure to have signed the CLA!
 
-3. Either give your email in the pull request or email
-   [help@openfermion.org](help@openfermion.org) so that our team can privately
+3. Either give your email in the pull request or email us so that our team can privately
    send you a signed URL for the upload.
 
 4. You will recieve an email with a signed URL which you should use to upload
