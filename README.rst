@@ -42,6 +42,11 @@ and usage instructions in the
 The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
 The Docker installation should run on any operating system.
 
+You might also want to explore the alpha release of the
+`OpenFermion Cloud Library <https://github.com/quantumlib/OpenFermion/tree/master/cloud_library>`__
+where users can share and download precomputed molecular benchmark files.
+
+
 Developer install
 -----------------
 
