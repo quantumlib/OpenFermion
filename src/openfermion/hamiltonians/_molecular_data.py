@@ -200,7 +200,7 @@ class MolecularData(object):
     Attributes:
         geometry: A list of tuples giving the coordinates of each atom. An
             example is [('H', (0, 0, 0)), ('H', (0, 0, 0.7414))]. Distances
-            in atomic units. Use atomic symbols to specify atoms.
+            in angstrom. Use atomic symbols to specify atoms.
         basis: A string giving the basis set. An example is 'cc-pvtz'.
         charge: An integer giving the total molecular charge. Defaults to 0.
         multiplicity: An integer giving the spin multiplicity.
