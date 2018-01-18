@@ -826,8 +826,6 @@ class MolecularData(object):
         """Output arrays of the second quantized Hamiltonian coefficients.
 
         Args:
-            rotation_matrix: A square numpy array or matrix having dimensions
-                of n_orbitals by n_orbitals. Assumed real and invertible.
             occupied_indices(list): A list of spatial orbital indices
                 indicating which orbitals should be considered doubly occupied.
             active_indices(list): A list of spatial orbital indices indicating
