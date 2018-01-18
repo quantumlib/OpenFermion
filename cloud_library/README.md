@@ -48,6 +48,7 @@ following steps:
    curl -X PUT --upload-file <your_files.zip> <signed_url>
    ```
 
-5. Wait OpenFermion administrators to perform a security review of your data
+5. Wait for OpenFermion administrators to perform a security review of your data
    and then transfer your data to the public facing producting bucket from where
-   it can be downloaded. We will complete the process by merging your pull request.
+   it can be downloaded. We will signal that your files have been exposed to
+   the public facing cloud library by merging your pull request.
