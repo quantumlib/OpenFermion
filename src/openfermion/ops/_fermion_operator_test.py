@@ -19,7 +19,11 @@ from openfermion.ops._fermion_operator import (FermionOperator,
                                                FermionOperatorError,
                                                hermitian_conjugated,
                                                normal_ordered,
-                                               number_operator)
+                                               number_operator,
+                                               sz_operator,
+                                               s_plus_operator,
+                                               s_minus_operator,
+                                               s_squared_operator)
 
 
 class FermionOperatorTest(unittest.TestCase):
@@ -165,6 +169,56 @@ class FermionOperatorTest(unittest.TestCase):
                     FermionOperator(((2, 1), (2, 0))) +
                     FermionOperator(((3, 1), (3, 0))))
         self.assertTrue(op.isclose(expected))
+
+    def test_sz_operator(self):
+        op = sz_operator(2)
+        expected = (FermionOperator(((0, 1), (0, 0)), 0.5) -
+                    FermionOperator(((1, 1), (1, 0)), 0.5) +
+                    FermionOperator(((2, 1), (2, 0)), 0.5) -
+                    FermionOperator(((3, 1), (3, 0)), 0.5))
+        self.assertTrue(op.isclose(expected))
+
+    def test_sz_operator_invalid_input(self):
+        with self.assertRaises(TypeError):
+            sz_operator('A')
+
+    def test_s_plus_operator(self):
+        op = s_plus_operator(2)
+        expected = (FermionOperator(((0, 1), (1, 0))) +
+                    FermionOperator(((2, 1), (3, 0))))
+        self.assertTrue(op.isclose(expected))
+
+    def test_s_plus_operator_invalid_input(self):
+        with self.assertRaises(TypeError):
+            s_plus_operator('a')
+
+    def test_s_minus_operator(self):
+        op = s_minus_operator(3)
+        expected = (FermionOperator(((1, 1), (0, 0))) +
+                    FermionOperator(((3, 1), (2, 0))) +
+                    FermionOperator(((5, 1), (4, 0))))
+        self.assertTrue(op.isclose(expected))
+
+    def test_s_minus_operator_invalid_input(self):
+        with self.assertRaises(TypeError):
+            s_minus_operator('a')
+
+    def test_s_squared_operator(self):
+        op = s_squared_operator(2)
+        s_minus = (FermionOperator(((1, 1), (0, 0))) +
+                   FermionOperator(((3, 1), (2, 0))))
+        s_plus = (FermionOperator(((0, 1), (1, 0))) +
+                  FermionOperator(((2, 1), (3, 0))))
+        s_z = (FermionOperator(((0, 1), (0, 0)), 0.5) -
+               FermionOperator(((1, 1), (1, 0)), 0.5) +
+               FermionOperator(((2, 1), (2, 0)), 0.5) -
+               FermionOperator(((3, 1), (3, 0)), 0.5))
+        expected = s_minus * s_plus + s_z * s_z + s_z
+        self.assertTrue(op.isclose(expected))
+
+    def test_s_squared_operator_invalid_input(self):
+        with self.assertRaises(TypeError):
+            s_squared_operator('a')
 
     def test_isclose_abs_tol(self):
         a = FermionOperator('0^', -1.)

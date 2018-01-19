@@ -99,6 +99,117 @@ def number_operator(n_orbitals, orbital=None, coefficient=1.):
     return operator
 
 
+def sz_operator(n_spatial_orbitals):
+    """Return the sz operator.
+
+    SZ = 0.5 * \sum_{i = 1}^{n} n_{i \alpha} - n_{i, \beta}
+
+    Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the sz operator over
+        n_spatial_orbitals.
+
+    Warnings:
+        assumes a number occupation vector representation with even spin-less
+        fermions corresponding to spin-up (alpha) and odd spin-less fermions
+        corresponding to spin-down (beta).
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    operator = FermionOperator()
+    for ni in range(n_spatial_orbitals):
+        operator += number_operator(2 * n_spatial_orbitals, 2 * ni, 0.5) + \
+                    number_operator(2 * n_spatial_orbitals, 2 * ni + 1, -0.5)
+
+    return operator
+
+
+def s_plus_operator(n_spatial_orbitals):
+    """Return the s+ operator.
+
+    S+ = \sum_{i=1}^{n} a_{n, \alpha}^{\dagger}a_{n, \beta}
+
+     Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the s+ operator over
+        n_spatial_orbitals.
+
+    Warnings:
+        assumes a number occupation vector representation with even spin-less
+        fermions corresponding to spin-up (alpha) and odd spin-less fermions
+        corresponding to spin-down (beta).
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    operator = FermionOperator()
+    for ni in range(n_spatial_orbitals):
+        operator += FermionOperator(((2 * ni, 1), (2 * ni + 1, 0)))
+
+    return operator
+
+
+def s_minus_operator(n_spatial_orbitals):
+    """Return the s+ operator.
+
+    S- = \sum_{i=1}^{n} a_{n, \beta}^{\dagger}a_{n, \alpha}
+
+     Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the s+ operator over
+        n_spatial_orbitals.
+
+    Warnings:
+        assumes a number occupation vector representation with even spin-less
+        fermions corresponding to spin-up (alpha) and odd spin-less fermions
+        corresponding to spin-down (beta).
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    operator = FermionOperator()
+    for ni in range(n_spatial_orbitals):
+        operator += FermionOperator(((2 * ni + 1, 1), (2 * ni, 0)))
+
+    return operator
+
+
+def s_squared_operator(n_spatial_orbitals):
+    """Return the s^{2} operator.
+
+    S^{2} = S- S+ + Sz( SZ + 1)
+
+     Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the s+ operator over
+        n_spatial_orbitals.
+
+    Warnings:
+        assumes a number occupation vector representation with even spin-less
+        fermions corresponding to spin-up (alpha) and odd spin-less fermions
+        corresponding to spin-down (beta).
+
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    fermion_identity = FermionOperator(())
+    operator = (s_minus_operator(n_spatial_orbitals) *
+                s_plus_operator(n_spatial_orbitals))
+    operator += (sz_operator(n_spatial_orbitals) *
+                 (sz_operator(n_spatial_orbitals) + fermion_identity))
+    return operator
+
+
 def normal_ordered_term(term, coefficient):
     """Return a normal ordered FermionOperator corresponding to single term.
 
