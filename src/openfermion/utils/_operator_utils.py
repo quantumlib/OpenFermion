@@ -255,7 +255,8 @@ def load_operator(file_name=None, data_directory=None):
     return operator
 
 
-def save_operator(operator, file_name=None, data_directory=None):
+def save_operator(operator, file_name=None, data_directory=None,
+                  allow_overwrite=False):
     """Save FermionOperator or QubitOperator to file.
 
     Args:
@@ -263,6 +264,7 @@ def save_operator(operator, file_name=None, data_directory=None):
         file_name: The name of the saved file.
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
+        allow_overwrite: Whether to allow files to be overwritten.
 
     Raises:
         OperatorUtilsError: Not saved, file already exists.
@@ -270,7 +272,7 @@ def save_operator(operator, file_name=None, data_directory=None):
     """
     file_path = get_file_path(file_name, data_directory)
 
-    if os.path.isfile(file_path):
+    if os.path.isfile(file_path) and not allow_overwrite:
         raise OperatorUtilsError("Not saved, file already exists.")
 
     if isinstance(operator, FermionOperator):

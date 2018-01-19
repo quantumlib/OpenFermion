@@ -147,6 +147,14 @@ class SaveLoadOperatorTest(unittest.TestCase):
         with self.assertRaises(OperatorUtilsError):
             save_operator(self.fermion_operator, self.file_name)
 
+    def test_overwrite_flag_save_on_top_of_existing_operator(self):
+        save_operator(self.fermion_operator, self.file_name)
+        save_operator(self.fermion_operator, self.file_name,
+                      allow_overwrite=True)
+        fermion_operator = load_operator(self.file_name)
+
+        self.assertTrue(fermion_operator.isclose(self.fermion_operator))
+
     def test_load_bad_type(self):
         with self.assertRaises(TypeError):
             load_operator('bad_type_operator')
