@@ -147,6 +147,12 @@ class SaveLoadOperatorTest(unittest.TestCase):
         with self.assertRaises(OperatorUtilsError):
             save_operator(self.fermion_operator, self.file_name)
 
+    def test_save_on_top_of_existing_operator_error_with_explicit_flag(self):
+        save_operator(self.fermion_operator, self.file_name)
+        with self.assertRaises(OperatorUtilsError):
+            save_operator(self.fermion_operator, self.file_name,
+                          allow_overwrite=False)
+
     def test_overwrite_flag_save_on_top_of_existing_operator(self):
         save_operator(self.fermion_operator, self.file_name)
         save_operator(self.fermion_operator, self.file_name,
