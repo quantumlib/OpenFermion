@@ -21,6 +21,24 @@ class FermionOperatorError(Exception):
     pass
 
 
+def up_index(index):
+    """Function to return up-orbital index given a spatial orbital index.
+
+    Args:
+        index (Int): spatial orbital index
+    """
+    return 2 * index
+
+
+def down_index(index):
+    """Function to return down-orbital index given a spatial orbital index.
+
+    Args:
+        index (Int): spatial orbital index
+    """
+    return 2 * index + 1
+
+
 def hermitian_conjugated(fermion_operator):
     """Return Hermitian conjugate of fermionic operator."""
     conjugate_operator = FermionOperator()
@@ -99,84 +117,106 @@ def number_operator(n_orbitals, orbital=None, coefficient=1.):
     return operator
 
 
-def sz_operator(n_spatial_orbitals):
+def sz_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
     """Return the sz operator.
 
     SZ = 0.5 * \sum_{i = 1}^{n} n_{i \alpha} - n_{i, \beta}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+        up_map: function mapping a spatial index to a spin-orbital index.
+                Default is the canonical spin-up corresponds to even
+                spin-orbitals and spin-down corresponds to odd spin-orbitals
+        down_map: function mapping spatial index to spin-orbital index.
+                  Default is canonical spin-up corresponds to even
+                  spin-orbitals and spin-down corresponds to odd
+                  spin-orbitals.
 
     Returns:
         operator (FermionOperator): corresponding to the sz operator over
         n_spatial_orbitals.
 
     Warnings:
-        assumes a number occupation vector representation with even spin-less
-        fermions corresponding to spin-up (alpha) and odd spin-less fermions
-        corresponding to spin-down (beta).
+        Default assumes a number occupation vector representation with even
+        spin-less fermions corresponding to spin-up (alpha) and odd spin-less
+        fermions corresponding to spin-down (beta).
     """
     if not isinstance(n_spatial_orbitals, int):
         raise TypeError("n_orbitals must be specified as an integer")
 
     operator = FermionOperator()
+    n_spinless_orbitals = 2 * n_spatial_orbitals
     for ni in range(n_spatial_orbitals):
-        operator += number_operator(2 * n_spatial_orbitals, 2 * ni, 0.5) + \
-                    number_operator(2 * n_spatial_orbitals, 2 * ni + 1, -0.5)
+        operator += number_operator(n_spinless_orbitals, up_map(ni), 0.5) + \
+                    number_operator(n_spinless_orbitals, down_map(ni), -0.5)
 
     return operator
 
 
-def s_plus_operator(n_spatial_orbitals):
+def s_plus_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
     """Return the s+ operator.
 
     S+ = \sum_{i=1}^{n} a_{n, \alpha}^{\dagger}a_{n, \beta}
 
      Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+        up_map: function mapping a spatial index to a spin-orbital index.
+                Default is the canonical spin-up corresponds to even
+                spin-orbitals and spin-down corresponds to odd spin-orbitals
+        down_map: function mapping spatial index to spin-orbital index.
+                  Default is canonical spin-up corresponds to even
+                  spin-orbitals and spin-down corresponds to odd
+                  spin-orbitals.
 
     Returns:
         operator (FermionOperator): corresponding to the s+ operator over
         n_spatial_orbitals.
 
     Warnings:
-        assumes a number occupation vector representation with even spin-less
-        fermions corresponding to spin-up (alpha) and odd spin-less fermions
-        corresponding to spin-down (beta).
+        Default assumes a number occupation vector representation with even
+        spin-less fermions corresponding to spin-up (alpha) and odd spin-less
+        fermions corresponding to spin-down (beta).
     """
     if not isinstance(n_spatial_orbitals, int):
         raise TypeError("n_orbitals must be specified as an integer")
 
     operator = FermionOperator()
     for ni in range(n_spatial_orbitals):
-        operator += FermionOperator(((2 * ni, 1), (2 * ni + 1, 0)))
+        operator += FermionOperator(((up_map(ni), 1), (down_map(ni), 0)))
 
     return operator
 
 
-def s_minus_operator(n_spatial_orbitals):
+def s_minus_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
     """Return the s+ operator.
 
     S- = \sum_{i=1}^{n} a_{n, \beta}^{\dagger}a_{n, \alpha}
 
      Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+        up_map: function mapping a spatial index to a spin-orbital index.
+                Default is the canonical spin-up corresponds to even
+                spin-orbitals and spin-down corresponds to odd spin-orbitals
+        down_map: function mapping spatial index to spin-orbital index.
+                  Default is canonical spin-up corresponds to even
+                  spin-orbitals and spin-down corresponds to odd
+                  spin-orbitals.
 
     Returns:
         operator (FermionOperator): corresponding to the s+ operator over
         n_spatial_orbitals.
 
     Warnings:
-        assumes a number occupation vector representation with even spin-less
-        fermions corresponding to spin-up (alpha) and odd spin-less fermions
-        corresponding to spin-down (beta).
+        Default assumes a number occupation vector representation with even
+        spin-less fermions corresponding to spin-up (alpha) and odd spin-less
+        fermions corresponding to spin-down (beta).
     """
     if not isinstance(n_spatial_orbitals, int):
         raise TypeError("n_orbitals must be specified as an integer")
 
     operator = FermionOperator()
     for ni in range(n_spatial_orbitals):
-        operator += FermionOperator(((2 * ni + 1, 1), (2 * ni, 0)))
+        operator += FermionOperator(((down_map(ni), 1), (up_map(ni), 0)))
 
     return operator
 

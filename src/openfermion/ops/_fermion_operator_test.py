@@ -23,7 +23,9 @@ from openfermion.ops._fermion_operator import (FermionOperator,
                                                sz_operator,
                                                s_plus_operator,
                                                s_minus_operator,
-                                               s_squared_operator)
+                                               s_squared_operator,
+                                               up_index,
+                                               down_index)
 
 
 class FermionOperatorTest(unittest.TestCase):
@@ -169,6 +171,14 @@ class FermionOperatorTest(unittest.TestCase):
                     FermionOperator(((2, 1), (2, 0))) +
                     FermionOperator(((3, 1), (3, 0))))
         self.assertTrue(op.isclose(expected))
+
+    def test_up_index(self):
+        self.assertTrue(numpy.isclose(up_index(2), 4))
+        self.assertTrue(numpy.isclose(up_index(5), 10))
+
+    def test_up_down(self):
+        self.assertTrue(numpy.isclose(down_index(2), 5))
+        self.assertTrue(numpy.isclose(down_index(5), 11))
 
     def test_sz_operator(self):
         op = sz_operator(2)
