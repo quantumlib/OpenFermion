@@ -15,11 +15,12 @@ from __future__ import absolute_import
 
 from openfermion.hamiltonians._hubbard import up_index, down_index
 from openfermion.ops import (FermionOperator,
-                             hermitian_conjugated)
+                             hermitian_conjugated,
+                             number_operator)
 
 
 def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
-                     periodic=True):
+                     chemical_potential=0., periodic=True):
     """Return symbolic representation of a BCS mean-field d-wave Hamiltonian.
 
     The Hamiltonians of this model live on a grid of dimensions
@@ -33,14 +34,18 @@ def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
 
     .. math::
 
-        H = - t \sum_{\langle i,j \\rangle} \sum_\sigma
+        \\begin{align}
+        H = &- t \sum_{\langle i,j \\rangle} \sum_\sigma
                 (a^\dagger_{i, \sigma} a_{j, \sigma} +
                  a^\dagger_{j, \sigma} a_{i, \sigma})
-            - \sum_{\langle i,j \\rangle} \Delta_{ij}
+            - \mu \sum_i \sum_{\sigma} a^\dagger_{i, \sigma} a_{i, \sigma}
+            \\\\
+            &- \sum_{\langle i,j \\rangle} \Delta_{ij}
               (a^\dagger_{i, \\uparrow} a^\dagger_{j, \downarrow} -
                a^\dagger_{i, \downarrow} a^\dagger_{j, \\uparrow} +
                a_{j, \downarrow} a_{i, \\uparrow} -
                a_{j, \\uparrow} a_{i, \downarrow})
+        \\end{align}
 
     where
 
@@ -52,12 +57,15 @@ def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
         - :math:`\Delta_{ij}` is equal to :math:`+\Delta/2` for
           horizontal edges and :math:`-\Delta/2` for vertical edges,
           where :math:`\Delta` is the superconducting gap.
+        - :math:`\mu` is the chemical potential
 
     Args:
         x_dimension (int): The width of the grid.
         y_dimension (int): The height of the grid.
         tunneling (float): The tunneling amplitude :math:`t`.
         sc_gap (float): The superconducting gap :math:`\Delta`
+        chemical_potential (float, optional): The chemical potential
+            :math:`\mu` at each site. Default value is 0.
         periodic (bool, optional): If True, add periodic boundary conditions.
             Default is True.
 
@@ -71,6 +79,12 @@ def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
 
     # Loop through sites and add terms.
     for site in range(n_sites):
+        # Add chemical potential
+        mean_field_dwave_model += number_operator(
+            n_spin_orbitals, up_index(site), -chemical_potential)
+        mean_field_dwave_model += number_operator(
+            n_spin_orbitals, down_index(site), -chemical_potential)
+
         # Index coupled orbitals.
         right_neighbor = site + 1
         bottom_neighbor = site + x_dimension
