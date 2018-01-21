@@ -61,7 +61,7 @@ def test_init_list(coefficient):
     loc_op = [(0, 'X'), (5, 'Y'), (6, 'Z')]
     qubit_op = QubitOperator(loc_op, coefficient)
     assert len(qubit_op.terms) == 1
-    assert qubit_op.terms[loc_op] == coefficient
+    assert qubit_op.terms[tuple(loc_op)] == coefficient
 
 
 def test_init_str():
