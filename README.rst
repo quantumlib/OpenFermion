@@ -1,20 +1,5 @@
-.. image:: https://github.com/quantumlib/openfermion/blob/master/docs/logo.png
-   :align: left
-
-.. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=master
-    :target: https://travis-ci.org/quantumlib/OpenFermion
-
-.. image:: https://coveralls.io/repos/github/quantumlib/OpenFermion/badge.svg?branch=master
-    :target: https://coveralls.io/github/quantumlib/OpenFermion
-
-.. image:: https://readthedocs.org/projects/openfermion/badge/?version=latest
-    :target: http://openfermion.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
-
-.. image:: https://badge.fury.io/py/openfermion.svg
-    :target: https://badge.fury.io/py/openfermion
-
-.. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
+.. image:: https://github.com/quantumlib/openfermion/blob/master/docs/logo.svg
+    :align: left
 
 OpenFermion is an open source effort for compiling and analyzing quantum
 algorithms to simulate fermionic systems, including quantum chemistry. Among
@@ -22,6 +7,21 @@ other functionalities, the current version features data structures and tools
 for obtaining and manipulating representations of fermionic and qubit
 Hamiltonians. For more information, see our
 `release paper <https://arxiv.org/abs/1710.07629>`__.
+
+.. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=master
+    :target: https://travis-ci.org/quantumlib/OpenFermion
+
+.. image:: https://readthedocs.org/projects/openfermion/badge/?version=latest
+    :target: http://openfermion.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+.. image:: https://coveralls.io/repos/github/quantumlib/OpenFermion/badge.svg?branch=master
+    :target: https://coveralls.io/github/quantumlib/OpenFermion
+
+.. image:: https://badge.fury.io/py/openfermion.svg
+    :target: https://badge.fury.io/py/openfermion
+
+.. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
 
 Getting started
