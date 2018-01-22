@@ -18,10 +18,10 @@ Hamiltonians. For more information, see our
 .. image:: https://coveralls.io/repos/github/quantumlib/OpenFermion/badge.svg?branch=master
     :target: https://coveralls.io/github/quantumlib/OpenFermion
 
+.. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
+
 .. image:: https://badge.fury.io/py/openfermion.svg
     :target: https://badge.fury.io/py/openfermion
-
-.. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
 
 Getting started
