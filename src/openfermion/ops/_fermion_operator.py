@@ -262,13 +262,13 @@ class FermionOperator(object):
             with a scalar as calls an out-of-place multiplication.
 
         Args:
-            term (tuple or list of tuples, a string, or optional):
-                1) A tuple of tuples. The first element of each tuple is
-                   an integer indicating the mode on which a fermion
-                   ladder operator acts, starting from zero. The second
-                   element of each tuple is an integer, either 1 or 0,
-                   indicating whether creation or annihilation acts on
-                   that mode.
+            term (optional, empty tuple, tuple or list of tuples, or string):
+                1) A list or tuple of tuples. The first element of each
+                   tuple is an integer indicating the mode on which a
+                   fermion ladder operator acts, starting from zero. The
+                   second element of each tuple is an integer, either 1
+                   or 0, indicating whether creation or annihilation acts
+                   on that mode.
                 2) A string of the form '0^ 2', indicating creation in
                    mode 0 and annihilation in mode 2.
                 3) default will result in the zero operator.
@@ -279,7 +279,7 @@ class FermionOperator(object):
             FermionOperatorError: Invalid term provided to FermionOperator.
         """
         if not isinstance(coefficient, (int, float, complex)):
-            raise ValueError('Coefficient must be scalar.')
+            raise ValueError('Coefficient must be a numeric type.')
         self.terms = {}
         if term is None:
             return
