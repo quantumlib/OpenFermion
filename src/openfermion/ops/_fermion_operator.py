@@ -211,7 +211,7 @@ def _parse_ladder_operator(ladder_operator_text):
 class FermionOperator(object):
     """FermionOperator stores a sum of products of fermionic ladder operators.
 
-    In FermiLib, we describe fermionic ladder operators using the shorthand:
+    In OpenFermion, we describe fermionic ladder operators using the shorthand:
     'q^' = a^\dagger_q
     'q' = a_q
     where {'p^', 'q'} = delta_pq
