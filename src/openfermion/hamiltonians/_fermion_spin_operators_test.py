@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""testing angular momentum generators. _spin_operators.py"""
+"""testing angular momentum generators. _fermion_spin_operators.py"""
 import numpy
 import unittest
 from openfermion.hamiltonians import (up_index, down_index, s_minus_operator,
@@ -19,7 +19,7 @@ from openfermion.hamiltonians import (up_index, down_index, s_minus_operator,
 from openfermion.ops import FermionOperator
 
 
-class SpinOperatorsTest(unittest.TestCase):
+class FermionSpinOperatorsTest(unittest.TestCase):
 
     def test_up_index(self):
         self.assertTrue(numpy.isclose(up_index(2), 4))
