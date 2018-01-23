@@ -14,13 +14,7 @@ from ._fermion_operator import (FermionOperator,
                                 hermitian_conjugated,
                                 majorana_operator,
                                 normal_ordered,
-                                number_operator,
-                                sz_operator,
-                                s_plus_operator,
-                                s_minus_operator,
-                                s_squared_operator,
-                                up_index,
-                                down_index)
+                                number_operator)
 from ._qubit_operator import QubitOperator
 from ._polynomial_tensor import general_basis_change, PolynomialTensor
 from ._interaction_operator import InteractionOperator

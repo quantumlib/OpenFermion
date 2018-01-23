@@ -10,6 +10,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from ._angular_momentum_generators import (up_index, down_index,
+                                           s_squared_operator, s_plus_operator,
+                                           s_minus_operator, sz_operator)
+
 from ._chemical_series import (make_atomic_ring,
                                make_atomic_lattice,
                                make_atom)
