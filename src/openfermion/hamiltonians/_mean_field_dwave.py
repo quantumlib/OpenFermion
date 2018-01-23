@@ -13,7 +13,7 @@
 """This module constructs Hamiltonians for the BCS mean-field d-wave model."""
 from __future__ import absolute_import
 
-from openfermion.hamiltonians._hubbard import up_index, down_index
+from openfermion.hamiltonians import up_index, down_index
 from openfermion.ops import (FermionOperator,
                              hermitian_conjugated,
                              number_operator)
