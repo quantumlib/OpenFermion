@@ -194,6 +194,7 @@ class FermionOperatorTest(unittest.TestCase):
                     FermionOperator(((3, 1), (3, 0))))
         self.assertTrue(op.isclose(expected))
 
+
     def test_isclose_abs_tol(self):
         a = FermionOperator('0^', -1.)
         b = FermionOperator('0^', -1.05)
