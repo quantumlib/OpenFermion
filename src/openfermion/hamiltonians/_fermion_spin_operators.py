@@ -35,7 +35,10 @@ def down_index(index):
 def sz_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
     """Return the sz operator.
 
-    SZ = 0.5 * \sum_{i = 1}^{n} n_{i, \alpha} - n_{i, \beta}
+    .. math::
+        \\begin{align}
+        S^{z} = \\frac{1}{2}\sum_{i = 1}^{n}(n_{i, \\alpha} - n_{i, \\beta})
+        \\end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
@@ -71,7 +74,10 @@ def sz_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
 def s_plus_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
     """Return the s+ operator.
 
-    S+ = \sum_{i=1}^{n} a_{i, \alpha}^{\dagger}a_{i, \beta}
+    .. math::
+        \\begin{align}
+        S^{+} = \sum_{i=1}^{n} a_{i, \\alpha}^{\dagger}a_{i, \\beta}
+        \\end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
@@ -105,7 +111,10 @@ def s_plus_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
 def s_minus_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
     """Return the s+ operator.
 
-    S- = \sum_{i=1}^{n} a_{i, \beta}^{\dagger}a_{i, \alpha}
+    .. math::
+        \\begin{align}
+        S^{-} = \sum_{i=1}^{n} a_{i, \\beta}^{\dagger}a_{i, \\alpha}
+        \\end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
@@ -118,7 +127,7 @@ def s_minus_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
                   spin-orbitals.
 
     Returns:
-        operator (FermionOperator): corresponding to the s+ operator over
+        operator (FermionOperator): corresponding to the s- operator over
         n_spatial_orbitals.
 
     Warnings:
@@ -139,7 +148,10 @@ def s_minus_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
 def s_squared_operator(n_spatial_orbitals):
     """Return the s^{2} operator.
 
-    S^{2} = S- S+ + Sz( SZ + 1)
+    .. math::
+        \\begin{align}
+        S^{2} = S^{-} S^{+} + S^{z}( S^{z} + 1)
+        \\end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
