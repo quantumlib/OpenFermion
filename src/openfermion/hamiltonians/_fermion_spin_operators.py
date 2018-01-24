@@ -73,7 +73,7 @@ def s_plus_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
 
     S+ = \sum_{i=1}^{n} a_{i, \alpha}^{\dagger}a_{i, \beta}
 
-     Args:
+    Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
         up_map: function mapping a spatial index to a spin-orbital index.
                 Default is the canonical spin-up corresponds to even
@@ -107,7 +107,7 @@ def s_minus_operator(n_spatial_orbitals, up_map=up_index, down_map=down_index):
 
     S- = \sum_{i=1}^{n} a_{i, \beta}^{\dagger}a_{i, \alpha}
 
-     Args:
+    Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
         up_map: function mapping a spatial index to a spin-orbital index.
                 Default is the canonical spin-up corresponds to even
@@ -141,7 +141,7 @@ def s_squared_operator(n_spatial_orbitals):
 
     S^{2} = S- S+ + Sz( SZ + 1)
 
-     Args:
+    Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
 
     Returns:
