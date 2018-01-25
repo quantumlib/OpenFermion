@@ -33,28 +33,56 @@ class FermionOperatorTest(unittest.TestCase):
         coefficient = 0.5
         fermion_op = FermionOperator(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
-        self.assertEqual(fermion_op.terms[loc_op], coefficient)
+        self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_tuple_complex_coefficient(self):
         loc_op = ((0, 1), (5, 0), (6, 1))
         coefficient = 0.6j
         fermion_op = FermionOperator(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
-        self.assertEqual(fermion_op.terms[loc_op], coefficient)
+        self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_tuple_npfloat64_coefficient(self):
         loc_op = ((0, 1), (5, 0), (6, 1))
         coefficient = numpy.float64(2.303)
         fermion_op = FermionOperator(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
-        self.assertEqual(fermion_op.terms[loc_op], coefficient)
+        self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_tuple_npcomplex128_coefficient(self):
         loc_op = ((0, 1), (5, 0), (6, 1))
         coefficient = numpy.complex128(-1.123j + 43.7)
         fermion_op = FermionOperator(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
-        self.assertEqual(fermion_op.terms[loc_op], coefficient)
+        self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
+
+    def test_init_list_real_coefficient(self):
+        loc_op = [(0, 1), (5, 0), (6, 1)]
+        coefficient = 1. / 3
+        fermion_op = FermionOperator(loc_op, coefficient)
+        self.assertEqual(len(fermion_op.terms), 1)
+        self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
+
+    def test_init_list_complex_coefficient(self):
+        loc_op = [(0, 1), (5, 0), (6, 1)]
+        coefficient = 2j / 3.
+        fermion_op = FermionOperator(loc_op, coefficient)
+        self.assertEqual(len(fermion_op.terms), 1)
+        self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
+
+    def test_init_list_npfloat64_coefficient(self):
+        loc_op = [(0, 1), (5, 0), (6, 1)]
+        coefficient = numpy.float64(2.3037)
+        fermion_op = FermionOperator(loc_op, coefficient)
+        self.assertEqual(len(fermion_op.terms), 1)
+        self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
+
+    def test_init_list_npcomplex128_coefficient(self):
+        loc_op = [(0, 1), (5, 0), (6, 1)]
+        coefficient = numpy.complex128(-1.1237j + 43.37)
+        fermion_op = FermionOperator(loc_op, coefficient)
+        self.assertEqual(len(fermion_op.terms), 1)
+        self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_identity_is_multiplicative_identity(self):
         u = FermionOperator.identity()
@@ -120,15 +148,15 @@ class FermionOperatorTest(unittest.TestCase):
 
     def test_init_bad_term(self):
         with self.assertRaises(ValueError):
-            _ = FermionOperator(list())
+            FermionOperator(2)
 
     def test_init_bad_coefficient(self):
         with self.assertRaises(ValueError):
-            _ = FermionOperator('0^', "0.5")
+            FermionOperator('0^', "0.5")
 
     def test_init_bad_action_str(self):
         with self.assertRaises(FermionOperatorError):
-            _ = FermionOperator('0-')
+            FermionOperator('0-')
 
     def test_init_bad_action_tuple(self):
         with self.assertRaises(ValueError):
@@ -136,19 +164,19 @@ class FermionOperatorTest(unittest.TestCase):
 
     def test_init_bad_tuple(self):
         with self.assertRaises(ValueError):
-            _ = FermionOperator(((0, 1, 1),))
+            FermionOperator(((0, 1, 1),))
 
     def test_init_bad_str(self):
         with self.assertRaises(FermionOperatorError):
-            _ = FermionOperator('^')
+            FermionOperator('^')
 
     def test_init_bad_mode_num(self):
         with self.assertRaises(FermionOperatorError):
-            _ = FermionOperator('-1^')
+            FermionOperator('-1^')
 
     def test_init_invalid_tensor_factor(self):
         with self.assertRaises(FermionOperatorError):
-            _ = FermionOperator(((-2, 1), (1, 0)))
+            FermionOperator(((-2, 1), (1, 0)))
 
     def test_FermionOperator(self):
         op = FermionOperator((), 3.)
@@ -165,6 +193,7 @@ class FermionOperatorTest(unittest.TestCase):
                     FermionOperator(((2, 1), (2, 0))) +
                     FermionOperator(((3, 1), (3, 0))))
         self.assertTrue(op.isclose(expected))
+
 
     def test_isclose_abs_tol(self):
         a = FermionOperator('0^', -1.)

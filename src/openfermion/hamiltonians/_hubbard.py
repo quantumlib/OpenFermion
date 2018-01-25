@@ -16,16 +16,7 @@ from __future__ import absolute_import
 from openfermion.ops import (FermionOperator,
                              hermitian_conjugated,
                              number_operator)
-
-
-# Function to return up-orbital index given orbital index.
-def up_index(index):
-    return 2 * index
-
-
-# Function to return down-orbital index given orbital index.
-def down_index(index):
-    return 2 * index + 1
+from openfermion.hamiltonians import up_index, down_index
 
 
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
