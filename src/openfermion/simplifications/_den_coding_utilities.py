@@ -1,5 +1,7 @@
 import numpy as np
 
+# TODO: modify to use the decoder object
+
 def _global_decoder_rule(decode,runner):
     decode_shifted = []
     for entry in decode:

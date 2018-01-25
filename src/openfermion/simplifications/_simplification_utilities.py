@@ -1,5 +1,18 @@
-def extractor(ham):
+def extractor(term):
+    # if term.isinstance(str):
+    #     elements = term.split(' ')
+    #     extracted = 1
+    #     if len(elements)>1: # take care of summation
+    #         for element in elements:
+    #             extracted*=extractor(element)
+    #     else:
+    #         element = elements[0]
+    #         if element.count('w')>1:
+    #             extracted*=dissolve(element)
+    #         if element.count('w')==1:
+    #             extracted*=
     raise NotImplementedError()
+
 
 
 

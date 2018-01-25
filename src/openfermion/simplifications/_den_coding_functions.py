@@ -1,5 +1,6 @@
 import numpy as np
 
+# TODO: modify to use the decoder object
 
 def encoder_bk(d):
     reps = np.ceil(np.log2(d))
