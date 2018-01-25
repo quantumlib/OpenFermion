@@ -32,6 +32,7 @@ def decoder_checksum(sites,odd):
     for a in range(sites-1):
         all_in += ('w'+str(a)+' ')
 
+    all_in = all_in.rstrip()
     djw = decoder_jw(sites-1)
     djw.append(all_in)
     return djw
