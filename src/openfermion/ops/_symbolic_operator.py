@@ -16,9 +16,7 @@ import itertools
 
 import numpy
 from abc import abstractmethod
-
-
-EQ_TOLERANCE = 1e-12
+from openfermion.config import EQ_TOLERANCE
 
 
 class SymbolicOperatorError(Exception):
@@ -28,25 +26,28 @@ class SymbolicOperatorError(Exception):
 class SymbolicOperator(object):
     """
     The base class for QubitOperator and FermionOperator. All methods defined
-    here can be accessed from FermionOperator or QubitOperator objects.
-    This is an abstract class and objects of this type cannot be created,
-    only those of subclasses.
-
-    Subclasses are sums of terms of operators for a particular category of
-    particle. Subclasses support addition and multiplication with objects of
-    the same type.
+    here can be accessed from FermionOperator or QubitOperator objects. This
+    class and subclasses are sums of terms of operators for a particular 
+    category of particle. Subclasses support addition and multiplication with
+    objects of the same type.
 
     Attributes:
         terms (dict):
-            **key** (tuple of tuples): Each tuple represents a fermion term,
-            i.e. a tensor product of fermion ladder operators with a
-            coefficient. The first element is an integer indicating the
-            mode on which a ladder operator acts and the second element is
-            a bool, either '0' indicating annihilation, or '1' indicating
-            creation in that mode; for example, '2^ 5' is ((2, 1), (5, 0)).
+            **key** (tuple of tuples): Each tuple represents a term,
+            i.e. an (action, index) pair. The action can be any from a 
+            specified tuple of base operators that can be obtained in the
+            from the class method `actions()`.
             **value** (complex float): The coefficient of term represented by
             key.
     """
+
+    # Class attribute, I set it at random for testing right now
+    _actions = ("I", "A", "B", "C")
+
+    @classmethod
+    def actions(cls):
+        # _actions  should not be changed so only provide a getter
+        return _actions
 
     @abstractmethod
     def __init__(self):
@@ -72,8 +73,6 @@ class SymbolicOperator(object):
                 A symbolic operator o with the property that o+x = x+o = x for
                 all fermion operators x.
         """
-        # Maybe throw a TypeError if called using SymbolicOperator? Or maybe
-        # just don't expose SymbolicOperator to users
 
         return cls(term=None)
 
@@ -81,7 +80,7 @@ class SymbolicOperator(object):
     def identity(cls):
         """
         Returns:
-            multiplicative_identity (FermionOperator):
+            multiplicative_identity (SymbolicOperator):
                 A symbolic operator u with the property that u*x = x*u = x for
                 all fermion operators x.
         """
