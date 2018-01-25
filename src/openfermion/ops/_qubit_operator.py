@@ -15,10 +15,8 @@ import copy
 import itertools
 
 import numpy
-from _symbolic_operator import *
-
-
-EQ_TOLERANCE = 1e-12
+from ._symbolic_operator import SymbolicOperator, SymbolicOperatorError
+from openfermion.config import EQ_TOLERANCE
 
 
 # Define products of all Pauli operators for symbolic multiplication.

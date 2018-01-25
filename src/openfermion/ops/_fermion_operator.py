@@ -15,7 +15,7 @@ import copy
 from openfermion.config import *
 from future.utils import iteritems
 import numpy
-from _symbolic_operator import *
+from ._symbolic_operator import SymbolicOperator, SymbolicOperatorError
 
 
 class FermionOperatorError(SymbolicOperatorError):
