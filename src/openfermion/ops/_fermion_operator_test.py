@@ -291,6 +291,17 @@ class FermionOperatorTest(unittest.TestCase):
         self.assertEqual(op3.terms[((1, 1), (0, 0), (1, 0), (0, 1), (2, 1))],
                          1.5j)
 
+    def test_imul_fermion_op_duplicate_term(self):
+        op1 = FermionOperator('1 2 3')
+        op1 += FermionOperator('1 2')
+        op1 += FermionOperator('1')
+
+        op2 = FermionOperator('3')
+        op2 += FermionOperator('2 3')
+
+        op1 *= op2
+        self.assertAlmostEqual(op1.terms[((1, 0), (2, 0), (3, 0))], 2.)
+
     def test_imul_bidir(self):
         op_a = FermionOperator(((1, 1), (0, 0)), -1j)
         op_b = FermionOperator(((1, 1), (0, 1), (2, 1)), -1.5)
