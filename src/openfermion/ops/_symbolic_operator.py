@@ -15,7 +15,7 @@ import copy
 import itertools
 
 import numpy
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from openfermion.config import EQ_TOLERANCE
 
 
@@ -23,35 +23,113 @@ class SymbolicOperatorError(Exception):
     pass
 
 
-class SymbolicOperator(object):
-    """
-    The base class for QubitOperator and FermionOperator. All methods defined
-    here can be accessed from FermionOperator or QubitOperator objects. This
-    class and subclasses are sums of terms of operators for a particular 
-    category of particle. Subclasses support addition and multiplication with
+class SymbolicOperator(object, metaclass=ABCMeta):
+    """Base class for FermionOperator and QubitOperator.
+    
+    A SymbolicOperator stores an object which represents a weighted
+    sum of terms, where each term is a product of individual terms
+    of the form (`action`, `index`),
+    where `index` is a nonnegative integer and the possible values
+    for `action` are determined by the subclass. For instance, for
+    FermionOperator, `action` can be 1 or 0, indicating raising or lowering,
+    and for QubitOperator, `action` is from the set {'X', 'Y', 'Z'}.
+    The coefficients of the terms are stored in a dictionary whose
+    keys are the terms.
+    Subclasses should support addition and multiplication with
     objects of the same type.
 
     Attributes:
+        actions (set): A set of objects representing the possible actions.
+            This should be defined in the subclass
         terms (dict):
-            **key** (tuple of tuples): Each tuple represents a term,
-            i.e. an (action, index) pair. The action can be any from a 
-            specified tuple of base operators that can be obtained in the
-            from the class method `actions()`.
-            **value** (complex float): The coefficient of term represented by
-            key.
+            **key** (tuple of tuples): Each key is a term which
+            is a product of individual terms; each individual
+            term has the form (`action`, `index`), and the invidual terms of
+            the product are collected into a tuple which forms the key.
+            The values stored in the dictionary are the coefficients of
+            the terms.
     """
+    actions = set()
 
-    # Class attribute, I set it at random for testing right now
-    _actions = ("I", "A", "B", "C")
+    def __init__(self, term=None, coefficient=1.):
+        if not isinstance(coefficient, (int, float, complex)):
+            raise ValueError('Coefficient must be a numeric type.')
+
+        # Detect if the input is the string representation of a sum of terms;
+        # if so, initialization needs to be handled differently
+        if isinstance(term, str) and '+' in term:
+            self._long_string_init(term, coefficient)
+            return
+
+        self.terms = {}
+        subclass = self.__class__
+
+        # Zero operator
+        if term is None:
+            pass
+
+        # Sequence input
+        elif isinstance(term, tuple) or isinstance(term, list):
+            term = subclass.parse_sequence(term)
+
+        # String input
+        elif isinstance(term, str):
+            term = subclass.parse_string(term)
+
+        # Invalid input type
+        else:
+            raise ValueError('term specified incorrectly.')
+
+        self.terms[term] = coefficient
+
+    def _long_string_init(self, term, coefficient):
+        """
+        Initialization from a long string representation, i.e., term
+        is a string such as '1.5 [2^ 3] + 2.4 [3^ 0]'.
+        This needs to be implemented by the subclass.
+        """
+        raise NotImplementedError('This SymbolicOperator subclass does '
+                                  'not support initialization from a '
+                                  'long string.')
+
+    @staticmethod
+    @abstractmethod
+    def parse_sequence(term):
+        """Parse a term given as a sequence type.
+
+        i.e. For QubitOperator:
+            [('X', 2), ('Y', 0), ('Z', 3)] -> (('Y', 0), ('X', 2), ('Z', 3))
+        """
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def parse_string(term)
+        """Parse a term given as a string.
+
+        i.e. "2^ 3" -> ((2, 1), (3, 0))
+        """
+        pass
 
     @classmethod
-    def actions(cls):
-        # _actions  should not be changed so only provide a getter
-        return _actions
+    def zero(cls):
+        """
+        Returns:
+            additive_identity (SymbolicOperator):
+                A symbolic operator o with the property that o+x = x+o = x for
+                all operators x of the same class.
+        """
+        return cls(term=None)
 
-    @abstractmethod
-    def __init__(self):
-        pass
+    @classmethod
+    def identity(cls):
+        """
+        Returns:
+            multiplicative_identity (SymbolicOperator):
+                A symbolic operator u with the property that u*x = x*u = x for
+                all operators x of the same class.
+        """
+        return cls(term=())
 
     @abstractmethod
     def __imul__(self):
@@ -65,43 +143,28 @@ class SymbolicOperator(object):
     def __repr__(self):
         pass
 
-    @classmethod
-    def zero(cls):
-        """
-        Returns:
-            additive_identity (SymbolicOperator):
-                A symbolic operator o with the property that o+x = x+o = x for
-                all fermion operators x.
-        """
-
-        return cls(term=None)
-
-    @classmethod
-    def identity(cls):
-        """
-        Returns:
-            multiplicative_identity (SymbolicOperator):
-                A symbolic operator u with the property that u*x = x*u = x for
-                all fermion operators x.
-        """
-        return cls(term=())
-
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
         Eliminates all terms with coefficients close to zero and removes
-        imaginary parts of coefficients that are close to zero.
+        small imaginary and real parts.
 
         Args:
             abs_tol(float): Absolute tolerance, must be at least 0.0
         """
-        new_terms = {}
         for term in self.terms:
             coeff = self.terms[term]
+
+            # Remove small imaginary and real parts
             if abs(coeff.imag) <= abs_tol:
                 coeff = coeff.real
+            if abs(coeff.real) <= abs_tol:
+                coeff = 1.j * coeff.imag
+
+            # Update the coefficient or remove the term
             if abs(coeff) > abs_tol:
-                new_terms[term] = coeff
-        self.terms = new_terms
+                self.terms[term] = coeff
+            else:
+                del self.terms[term]
 
     def isclose(self, other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE):
         """
