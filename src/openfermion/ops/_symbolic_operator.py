@@ -132,10 +132,6 @@ class SymbolicOperator(object, metaclass=ABCMeta):
         return cls(term=())
 
     @abstractmethod
-    def __imul__(self):
-        pass
-
-    @abstractmethod
     def __str__(self):
         pass
 
@@ -196,6 +192,46 @@ class SymbolicOperator(object, metaclass=ABCMeta):
             elif not abs(other.terms[term]) <= abs_tol:
                 return False
         return True
+
+    def __imul__(self, multiplier):
+        """In-place multiply (*=) with scalar or operator of the same type.
+
+        Default implementation is to multiply coefficients and
+        concatenate terms.
+
+        Args:
+            multiplier(complex float, or SymbolicOperator): multiplier
+        Returns:
+            product (SymbolicOperator): Mutated self.
+        """
+        # Handle scalars.
+        if isinstance(multiplier, (int, float, complex)):
+            for term in self.terms:
+                self.terms[term] *= multiplier
+            return self
+
+        # Handle operator of the same type
+        elif isinstance(multiplier, self.__class__):
+            result_terms = dict()
+            for left_term in self.terms:
+                for right_term in multiplier.terms:
+                    new_coefficient = (self.terms[left_term] *
+                                       multiplier.terms[right_term])
+                    product_operators = left_term + right_term
+
+                    # Update result dict.
+                    product_operators = tuple(product_operators)
+                    if product_operators in result_terms:
+                        result_terms[product_operators] += new_coefficient
+                    else:
+                        result_terms[product_operators] = new_coefficient
+            self.terms = result_terms
+            return self
+
+        # Invalid multiplier type
+        else:
+            raise TypeError('Cannot multiply {} with {}'.format(
+                self.__class__.__name__, multiplier.__class__.__name))
 
     def __mul__(self, multiplier):
         """Return self * multiplier for a scalar, or a SymbolicOperator.
