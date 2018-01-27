@@ -28,7 +28,7 @@ class SymbolicOperator(object, metaclass=ABCMeta):
     
     A SymbolicOperator stores an object which represents a weighted
     sum of terms, where each term is a product of individual terms
-    of the form (`action`, `index`),
+    of the form (`index`, `action`),
     where `index` is a nonnegative integer and the possible values
     for `action` are determined by the subclass. For instance, for
     FermionOperator, `action` can be 1 or 0, indicating raising or lowering,
@@ -41,6 +41,10 @@ class SymbolicOperator(object, metaclass=ABCMeta):
     Attributes:
         actions (set): A set of objects representing the possible actions.
             This should be defined in the subclass
+        action_strings (dict): A dictionary that maps an action to its
+            string representation.
+        action_before_index(bool): A boolean indicating whether in string
+            representations, the action should come before the index.
         terms (dict):
             **key** (tuple of tuples): Each key is a term which
             is a product of individual terms; each individual
@@ -50,6 +54,8 @@ class SymbolicOperator(object, metaclass=ABCMeta):
             the terms.
     """
     actions = set()
+    action_strings = {}
+    action_before_index = False
 
     def __init__(self, term=None, coefficient=1.):
         if not isinstance(coefficient, (int, float, complex)):
@@ -111,6 +117,14 @@ class SymbolicOperator(object, metaclass=ABCMeta):
         """
         pass
 
+    @abstractmethod
+    def __str__(self):
+        pass
+
+    @abstractmethod
+    def __repr__(self):
+        pass
+
     @classmethod
     def zero(cls):
         """
@@ -130,14 +144,6 @@ class SymbolicOperator(object, metaclass=ABCMeta):
                 all operators x of the same class.
         """
         return cls(term=())
-
-    @abstractmethod
-    def __str__(self):
-        pass
-
-    @abstractmethod
-    def __repr__(self):
-        pass
 
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
