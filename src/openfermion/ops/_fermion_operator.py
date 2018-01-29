@@ -399,7 +399,11 @@ class FermionOperator(SymbolicOperator):
                     product_operators = left_term + right_term
 
                     # Add to result dict.
-                    result_terms[tuple(product_operators)] = new_coefficient
+                    product_operators = tuple(product_operators)
+                    if product_operators in result_terms:
+                        result_terms[product_operators] += new_coefficient
+                    else:
+                        result_terms[product_operators] = new_coefficient
             self.terms = result_terms
             return self
         else:
