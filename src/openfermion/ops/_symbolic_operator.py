@@ -15,7 +15,6 @@ import copy
 import itertools
 
 import numpy
-from abc import ABCMeta, abstractmethod
 from openfermion.config import EQ_TOLERANCE
 
 
@@ -23,11 +22,11 @@ class SymbolicOperatorError(Exception):
     pass
 
 
-class SymbolicOperator(object, metaclass=ABCMeta):
+class SymbolicOperator(object):
     """Base class for FermionOperator and QubitOperator.
     
     A SymbolicOperator stores an object which represents a weighted
-    sum of terms, where each term is a product of individual terms
+    sum of terms, where each term is a product of individual factors
     of the form (`index`, `action`),
     where `index` is a nonnegative integer and the possible values
     for `action` are determined by the subclass. For instance, for
@@ -39,23 +38,29 @@ class SymbolicOperator(object, metaclass=ABCMeta):
     objects of the same type.
 
     Attributes:
-        actions (set): A set of objects representing the possible actions.
-            This should be defined in the subclass
-        action_strings (dict): A dictionary that maps an action to its
-            string representation.
-        action_before_index(bool): A boolean indicating whether in string
+        actions (tuple): A tuple of objects representing the possible actions.
+            This should be defined in the subclass.
+            e.g. for FermionOperator, this is (1, 0)
+        action_strings (tuple): A tuple of string representations of actions.
+            These should be in one-to-one correspondence with actions and
+            listed in the same order.
+            e.g. for FermionOperator, this is ('^', '')
+        action_before_index (bool): A boolean indicating whether in string
             representations, the action should come before the index.
+        different_indices_commute (bool): A boolean indicating whether
+            factors acting on different indices commute.
         terms (dict):
             **key** (tuple of tuples): Each key is a term which
-            is a product of individual terms; each individual
-            term has the form (`action`, `index`), and the invidual terms of
-            the product are collected into a tuple which forms the key.
+            is a product of individual factors; each factor
+            has the form (`action`, `index`), and the factors of
+            the product are collected into a tuple representing the term.
             The values stored in the dictionary are the coefficients of
             the terms.
     """
-    actions = set()
-    action_strings = {}
+    actions = ()
+    action_strings = ()
     action_before_index = False
+    different_indices_commute = False
 
     def __init__(self, term=None, coefficient=1.):
         if not isinstance(coefficient, (int, float, complex)):
@@ -68,7 +73,6 @@ class SymbolicOperator(object, metaclass=ABCMeta):
             return
 
         self.terms = {}
-        subclass = self.__class__
 
         # Zero operator
         if term is None:
@@ -76,11 +80,11 @@ class SymbolicOperator(object, metaclass=ABCMeta):
 
         # Sequence input
         elif isinstance(term, tuple) or isinstance(term, list):
-            term = subclass.parse_sequence(term)
+            term = self._parse_sequence(term)
 
         # String input
         elif isinstance(term, str):
-            term = subclass.parse_string(term)
+            term = self._parse_string(term)
 
         # Invalid input type
         else:
@@ -92,38 +96,75 @@ class SymbolicOperator(object, metaclass=ABCMeta):
         """
         Initialization from a long string representation, i.e., term
         is a string such as '1.5 [2^ 3] + 2.4 [3^ 0]'.
-        This needs to be implemented by the subclass.
         """
-        raise NotImplementedError('This SymbolicOperator subclass does '
-                                  'not support initialization from a '
-                                  'long string.')
+        raise NotImplementedError('Initializing a SymbolicOperator from a '
+                                  'long string is not yet supported.')
 
-    @staticmethod
-    @abstractmethod
-    def parse_sequence(term):
-        """Parse a term given as a sequence type.
+    def _parse_sequence(self, term):
+        """Parse a term given as a sequence type (i.e., list, tuple, etc.).
 
         i.e. For QubitOperator:
             [('X', 2), ('Y', 0), ('Z', 3)] -> (('Y', 0), ('X', 2), ('Z', 3))
         """
-        pass
+        if not term:
+            # Empty sequence
+            return ()
+        else:
+            # Check that all factors in the term are valid
+            for factor in term:
+                if len(factor) != 2:
+                    raise ValueError('Invalid factor {}.'.format(factor))
 
-    @staticmethod
-    @abstractmethod
-    def parse_string(term)
+                index, action = factor
+
+                if action not in self.actions:
+                    raise ValueError('Invalid action in factor {}. '
+                                     'Valid actions are: {}'.format(
+                                         factor, self.actions))
+
+                if not isinstance(index, int) and index >= 0:
+                    raise ValueError('Invalid index in factor {}. '
+                                     'The index should be a non-negative '
+                                     'integer.'.format(factor))
+
+            # If factors with different indices commute, sort the factors
+            # by index
+            if self.different_indices_commute:
+                term = sorted(term, key = lambda factor: factor[0])
+
+            # Return a tuple
+            return tuple(term)
+
+    def _parse_string(term)
         """Parse a term given as a string.
 
-        i.e. "2^ 3" -> ((2, 1), (3, 0))
+        i.e. For FermionOperator:
+            "2^ 3" -> ((2, 1), (3, 0))
         """
-        pass
+        factors = term.split()
+        processed_term = []
 
-    @abstractmethod
-    def __str__(self):
-        pass
+        for factor in factors:
+            if self.action_before_index:
+                # TODO: need to take into account multiple-digit indices
+                index = int(factor[-1])
+                action_string = factor[:-1]
+            else:
+                index = int(factor[0])
+                action_string = factor[1:]
 
-    @abstractmethod
-    def __repr__(self):
-        pass
+            # Convert the action string to an action
+            if action_string in action_strings:
+                action = actions[action_strings.index(action_string)]
+            else:
+                raise ValueError('Invalid action in factor {}. '
+                                 'Valid actions are: {}'.format(
+                                     factor, self.action_strings))
+
+            processed_term.append((index, action))
+
+        processed_term = self._parse_sequence(processed_term)
+        return processed_term
 
     @classmethod
     def zero(cls):
@@ -145,59 +186,25 @@ class SymbolicOperator(object, metaclass=ABCMeta):
         """
         return cls(term=())
 
-    def compress(self, abs_tol=EQ_TOLERANCE):
-        """
-        Eliminates all terms with coefficients close to zero and removes
-        small imaginary and real parts.
-
-        Args:
-            abs_tol(float): Absolute tolerance, must be at least 0.0
-        """
+    def __str__(self):
+        """Return an easy-to-read string representation."""
+        if not self.terms:
+            return '0'
+        string_rep = ''
         for term in self.terms:
-            coeff = self.terms[term]
+            tmp_string = '{} ['.format(self.terms[term])
+            for factor in term:
+                index, action = factor
+                action_string = self.action_strings[action]
+                if self.action_before_index:
+                    tmp_string += '{}{} '.format(action_string, index)
+                else:
+                    tmp_string += '{}{} '.format(index, action_string)
+            string_rep += '{}] +\n'.format(tmp_string.strip())
+        return string_rep[:-3]
 
-            # Remove small imaginary and real parts
-            if abs(coeff.imag) <= abs_tol:
-                coeff = coeff.real
-            if abs(coeff.real) <= abs_tol:
-                coeff = 1.j * coeff.imag
-
-            # Update the coefficient or remove the term
-            if abs(coeff) > abs_tol:
-                self.terms[term] = coeff
-            else:
-                del self.terms[term]
-
-    def isclose(self, other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE):
-        """
-        Returns True if other (SymbolicOperator) is close to self.
-
-        Comparison is done for each term individually. Return True
-        if the difference between each term in self and other is
-        less than the relative tolerance w.r.t. either other or self
-        (symmetric test) or if the difference is less than the absolute
-        tolerance.
-
-        Args:
-            other(SymbolicOperator): SymbolicOperator to compare against.
-            rel_tol(float): Relative tolerance, must be greater than 0.0
-            abs_tol(float): Absolute tolerance, must be at least 0.0
-        """
-        # terms which are in both:
-        for term in set(self.terms).intersection(set(other.terms)):
-            a = self.terms[term]
-            b = other.terms[term]
-            # math.isclose does this in Python >=3.5
-            if not abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol):
-                return False
-        # terms only in one (compare to 0.0 so only abs_tol)
-        for term in set(self.terms).symmetric_difference(set(other.terms)):
-            if term in self.terms:
-                if not abs(self.terms[term]) <= abs_tol:
-                    return False
-            elif not abs(other.terms[term]) <= abs_tol:
-                return False
-        return True
+    def __repr__(self):
+        return str(self)
 
     def __imul__(self, multiplier):
         """In-place multiply (*=) with scalar or operator of the same type.
@@ -403,3 +410,57 @@ class SymbolicOperator(object, metaclass=ABCMeta):
             negation (SymbolicOperator)
         """
         return -1 * self
+
+    def compress(self, abs_tol=EQ_TOLERANCE):
+        """
+        Eliminates all terms with coefficients close to zero and removes
+        small imaginary and real parts.
+
+        Args:
+            abs_tol(float): Absolute tolerance, must be at least 0.0
+        """
+        for term in self.terms:
+            coeff = self.terms[term]
+
+            # Remove small imaginary and real parts
+            if abs(coeff.imag) <= abs_tol:
+                coeff = coeff.real
+            if abs(coeff.real) <= abs_tol:
+                coeff = 1.j * coeff.imag
+
+            # Update the coefficient or remove the term
+            if abs(coeff) > abs_tol:
+                self.terms[term] = coeff
+            else:
+                del self.terms[term]
+
+    def isclose(self, other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE):
+        """
+        Returns True if other (SymbolicOperator) is close to self.
+
+        Comparison is done for each term individually. Return True
+        if the difference between each term in self and other is
+        less than the relative tolerance w.r.t. either other or self
+        (symmetric test) or if the difference is less than the absolute
+        tolerance.
+
+        Args:
+            other(SymbolicOperator): SymbolicOperator to compare against.
+            rel_tol(float): Relative tolerance, must be greater than 0.0
+            abs_tol(float): Absolute tolerance, must be at least 0.0
+        """
+        # terms which are in both:
+        for term in set(self.terms).intersection(set(other.terms)):
+            a = self.terms[term]
+            b = other.terms[term]
+            # math.isclose does this in Python >=3.5
+            if not abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol):
+                return False
+        # terms only in one (compare to 0.0 so only abs_tol)
+        for term in set(self.terms).symmetric_difference(set(other.terms)):
+            if term in self.terms:
+                if not abs(self.terms[term]) <= abs_tol:
+                    return False
+            elif not abs(other.terms[term]) <= abs_tol:
+                return False
+        return True
