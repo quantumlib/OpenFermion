@@ -1,6 +1,5 @@
 import numpy as np
-
-# TODO: modify to use the decoder object
+from _decoder import Decoder
 
 def encoder_bk(d):
     reps = np.ceil(np.log2(d))
@@ -20,7 +19,7 @@ def decoder_bk(d):
     return mtx[0:d,0:d]
 
 def decoder_jw(d):
-    return ['w'+str(i) for i in range(d)]
+    return [Decoder('w'+str(i),1.0) for i in range(d)]
 
 def encoder_checksum(sites):
     enc = np.zeros(shape=(sites-1,sites))
@@ -28,17 +27,17 @@ def encoder_checksum(sites):
     return enc
 
 def decoder_checksum(sites,odd):
-    if odd==1: all_in = '1 '
-    else: all_in = ''
-    for a in range(sites-1):
-        all_in += ('w'+str(a)+' ')
+    if odd==1: all_in = Decoder((),1.0)
+    else: all_in = Decoder((),0.0)
 
-    all_in = all_in.rstrip()
+    for a in range(sites-1):
+        all_in += Decoder('w'+str(a),1.0)
+
     djw = decoder_jw(sites-1)
     djw.append(all_in)
     return djw
 
 if __name__=='__main__':
-    print decoder_checksum(4,1)
+    print [x.to_str() for x in decoder_checksum(4,1)]
 
 

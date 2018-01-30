@@ -1,19 +1,22 @@
 import numpy as np
-
-# TODO: modify to use the decoder object
+from _decoder import Decoder
 
 def _global_decoder_rule(decode,runner):
     decode_shifted = []
     for entry in decode:
-        entry_elements = entry.split(' ')
-        tmp_entry = ''
-        for element in entry_elements:
-            if element.startswith('w'):
-                qubit_mapping = int(element[1:])+runner
-                tmp_entry+='w'+str(qubit_mapping)+' '
-            else:
-                tmp_entry+=element+' '
-        decode_shifted.append(tmp_entry.rstrip())
+        if isinstance(entry,str):
+            entry = Decoder(entry)
+        if isinstance(entry,Decoder):
+            list_ops = {}
+            for element,coeff in entry.terms.items():
+                tmp_element = []
+                for var in element:
+                    qidx, op_name = var
+                    qubit_mapping = qidx + runner
+                    tmp_element.append((qubit_mapping,op_name))
+                list_ops[tuple(tmp_element)] = coeff
+            decode_shifted.append(Decoder(list_ops))
+
     return decode_shifted
 
 def global_decoders(decoder_list,qubits):
@@ -24,8 +27,8 @@ def global_decoders(decoder_list,qubits):
     global_decoder = []
     runner = 0
     for qubit_idx,qubit in enumerate(qubits):
-        runner+=qubit
         [global_decoder.append(term) for term in _global_decoder_rule(decoder_list[qubit_idx],runner)]
+        runner+=qubit
 
     return global_decoder
 
@@ -46,19 +49,22 @@ def global_encoders(encoder_list):
 def f_linear_decoder(mtx):
     mtx = np.array(map(np.array,mtx))
     system_dim,code_dim = np.shape(mtx)
-    res = ['']*system_dim
+    res = []*system_dim
     for a in range(system_dim):
+        dec_str = ''
         for b in range(code_dim):
             if mtx[a,b]==1:
-                res[a]+='w'+str(b)+' '
-        res[a] = res[a].rstrip()
+                dec_str+='w'+str(b)+' + '
+        dec_str = dec_str.rstrip(' + ')
+        res.append(Decoder(dec_str,1.0))
     return res
 
 
 if __name__ == '__main__':
     enclist = [[[1,1],[1,1]],[[1,1,0,0],[1,0,0,1]]]
     print global_encoders(enclist)
-    decoder_list = [['w1', 'w2', '1 w1 w2'], ['w1', 'w1 w2'], ['w1']]
-    qubits = [0, 3, 4]
-    print global_decoders(decoder_list,qubits)
-    print f_linear_decoder([[0,0,0,1],[1,0,1,0]])
+    decoder_list = [[Decoder('w1'), Decoder('w2'), Decoder('1 + w1 + w2')], [Decoder('w1'), Decoder('w1 w2')], [Decoder('w1')]]
+    qubits = [1, 3, 4]
+    print [x.to_str() for x in global_decoders(decoder_list,qubits)]
+    linear_decoded = f_linear_decoder([[0,0,0,1],[1,0,1,0]])
+    print [x.to_str() for x in linear_decoded]
