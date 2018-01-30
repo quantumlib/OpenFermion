@@ -76,7 +76,7 @@ class SymbolicOperator(object):
 
         # Zero operator
         if term is None:
-            pass
+            return
 
         # Sequence input
         elif isinstance(term, tuple) or isinstance(term, list):
@@ -122,7 +122,7 @@ class SymbolicOperator(object):
                                      'Valid actions are: {}'.format(
                                          factor, self.actions))
 
-                if not isinstance(index, int) and index >= 0:
+                if not isinstance(index, int) or index < 0:
                     raise ValueError('Invalid index in factor {}. '
                                      'The index should be a non-negative '
                                      'integer.'.format(factor))
@@ -135,35 +135,55 @@ class SymbolicOperator(object):
             # Return a tuple
             return tuple(term)
 
-    def _parse_string(term)
+    def _parse_string(self, term):
         """Parse a term given as a string.
 
         i.e. For FermionOperator:
             "2^ 3" -> ((2, 1), (3, 0))
         """
         factors = term.split()
+
+        # Convert the string representations of the factors to tuples
         processed_term = []
 
         for factor in factors:
             if self.action_before_index:
-                # TODO: need to take into account multiple-digit indices
-                index = int(factor[-1])
-                action_string = factor[:-1]
+                # The index is at the end of the string; find where it starts.
+                if not factor[-1].isdigit():
+                    raise ValueError('Invalid factor {}.'.format(factor))
+                index_start = len(factor) - 1
+                while index_start > 0 and factor[index_start - 1].isdigit():
+                    index_start -= 1
+
+                index = int(factor[index_start:])
+                action_string = factor[:index_start]
             else:
-                index = int(factor[0])
-                action_string = factor[1:]
+                # The index is at the beginning of the string; find where
+                # it ends
+                if not factor[0].isdigit():
+                    raise ValueError('Invalid factor {}.'.format(factor))
+                index_end = 1
+                while (index_end <= len(factor) - 1 and
+                        factor[index_end].isdigit()):
+                    index_end += 1
+
+                index = int(factor[:index_end])
+                action_string = factor[index_end:]
 
             # Convert the action string to an action
-            if action_string in action_strings:
-                action = actions[action_strings.index(action_string)]
+            if action_string in self.action_strings:
+                action = self.actions[self.action_strings.index(action_string)]
             else:
                 raise ValueError('Invalid action in factor {}. '
                                  'Valid actions are: {}'.format(
                                      factor, self.action_strings))
 
+            # Add the factor to the list as a tuple
             processed_term.append((index, action))
 
+        # Process the factors
         processed_term = self._parse_sequence(processed_term)
+
         return processed_term
 
     @classmethod
@@ -195,7 +215,7 @@ class SymbolicOperator(object):
             tmp_string = '{} ['.format(self.terms[term])
             for factor in term:
                 index, action = factor
-                action_string = self.action_strings[action]
+                action_string = self.action_strings[self.actions.index(action)]
                 if self.action_before_index:
                     tmp_string += '{}{} '.format(action_string, index)
                 else:
@@ -244,7 +264,7 @@ class SymbolicOperator(object):
         # Invalid multiplier type
         else:
             raise TypeError('Cannot multiply {} with {}'.format(
-                self.__class__.__name__, multiplier.__class__.__name))
+                self.__class__.__name__, multiplier.__class__.__name__))
 
     def __mul__(self, multiplier):
         """Return self * multiplier for a scalar, or a SymbolicOperator.
@@ -411,6 +431,33 @@ class SymbolicOperator(object):
         """
         return -1 * self
 
+    def __pow__(self, exponent):
+        """Exponentiate the SymbolicOperator.
+
+        Args:
+            exponent (int): The exponent with which to raise the operator.
+
+        Returns:
+            exponentiated (SymbolicOperator)
+
+        Raises:
+            ValueError: Can only raise SymbolicOperator to non-negative
+                integer powers.
+        """
+        # Handle invalid exponents.
+        if not isinstance(exponent, int) or exponent < 0:
+            raise ValueError(
+                'exponent must be a non-negative int, but was {} {}'.format(
+                    type(exponent), repr(exponent)))
+
+        # Initialized identity.
+        exponentiated = self.__class__(())
+
+        # Handle non-zero exponents.
+        for i in range(exponent):
+            exponentiated *= self
+        return exponentiated
+
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
         Eliminates all terms with coefficients close to zero and removes
@@ -419,6 +466,7 @@ class SymbolicOperator(object):
         Args:
             abs_tol(float): Absolute tolerance, must be at least 0.0
         """
+        new_terms = {}
         for term in self.terms:
             coeff = self.terms[term]
 
@@ -428,11 +476,11 @@ class SymbolicOperator(object):
             if abs(coeff.real) <= abs_tol:
                 coeff = 1.j * coeff.imag
 
-            # Update the coefficient or remove the term
+            # Add the term if the coefficient is large enough
             if abs(coeff) > abs_tol:
-                self.terms[term] = coeff
-            else:
-                del self.terms[term]
+                new_terms[term] = coeff
+
+        self.terms = new_terms
 
     def isclose(self, other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE):
         """
