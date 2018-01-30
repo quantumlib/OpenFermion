@@ -168,6 +168,8 @@ def pauli_exp_to_qasm(qubit_operator_list,
             QubitOperators to be exponentiated
         evolution_time (float): evolution time of the operators in
             the list
+        qubit_list: a list of names for qubits (otherwise they will be labeled
+            with their index).
         ancilla (string or None): if any, an ancilla qubit to perform
             the rotation conditional on (for quantum phase estimation)
 
@@ -270,6 +272,8 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
         term_ordering (list of (tuples of tuples)): list of tuples
             (QubitOperator terms dictionary keys) that specifies
             order of terms when trotterizing
+        qubit_list: a list of names for qubits (otherwise they will be labeled
+            with their index).
         k_exp (float): optional exponential factor to all
             terms when trotterizing
 
