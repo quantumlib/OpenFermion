@@ -461,3 +461,20 @@ class QubitOperator(object):
 
     def __repr__(self):
         return str(self)
+
+    def tracenorm(self):
+        """Calculate the trace norm (sqrt(Tr[O^O])) of the operator"""
+        if not self.terms:
+            return 0
+        norm2 = 0
+        for coeff in self.terms.values():
+            norm2 += numpy.abs(coeff)**2
+        return numpy.sqrt(norm2)
+
+    def renormalize(self):
+        """Fix the trace norm of an operator to 1"""
+        if not self.terms:
+            raise ZeroDivisionError
+        norm = self.tracenorm()
+        for term in self.terms:
+            self.terms[term] /= norm
