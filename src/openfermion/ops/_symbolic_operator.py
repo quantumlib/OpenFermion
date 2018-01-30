@@ -169,6 +169,11 @@ class SymbolicOperator(object):
 
                 index = int(factor[:index_end])
                 action_string = factor[index_end:]
+            # Check that the index is valid
+            if index < 0:
+                raise ValueError('Invalid index in factor {}. '
+                                 'The index should be a non-negative '
+                                 'integer.'.format(factor))
             # Convert the action string to an action
             if action_string in self.action_strings:
                 action = self.actions[self.action_strings.index(action_string)]
@@ -180,10 +185,14 @@ class SymbolicOperator(object):
             # Add the factor to the list as a tuple
             processed_term.append((index, action))
 
-        # Process the factors
-        processed_term = self._parse_sequence(processed_term)
+        # If factors with different indices commute, sort the factors
+        # by index
+        if self.different_indices_commute:
+            processed_term = sorted(processed_term,
+                                    key=lambda factor: factor[0])
 
-        return processed_term
+        # Return a tuple
+        return tuple(processed_term)
 
     @classmethod
     def zero(cls):
