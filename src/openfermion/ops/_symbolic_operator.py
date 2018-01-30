@@ -145,8 +145,8 @@ class SymbolicOperator(object):
 
         # Convert the string representations of the factors to tuples
         processed_term = []
-
         for factor in factors:
+            # Get the index and action string
             if self.action_before_index:
                 # The index is at the end of the string; find where it starts.
                 if not factor[-1].isdigit():
@@ -169,7 +169,6 @@ class SymbolicOperator(object):
 
                 index = int(factor[:index_end])
                 action_string = factor[index_end:]
-
             # Convert the action string to an action
             if action_string in self.action_strings:
                 action = self.actions[self.action_strings.index(action_string)]
