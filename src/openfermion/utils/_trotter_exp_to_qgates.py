@@ -114,7 +114,6 @@ def trotter_operator_grouping(hamiltonian,
     # Enforce float
     k_exp = float(k_exp)
 
-    ret_val = []
     # First order trotter
     if trotter_order == 1:
         for step in range(trotter_number):
@@ -157,6 +156,7 @@ def trotter_operator_grouping(hamiltonian,
 
 def pauli_exp_to_qasm(qubit_operator_list,
                       evolution_time=1.0,
+                      qubit_list=None,
                       ancilla=None):
     """Exponentiate a list of QubitOperators to a QASM string generator.
 
@@ -188,7 +188,10 @@ def pauli_exp_to_qasm(qubit_operator_list,
             string_basis_2 = []  # Basis rotations 2
 
             for p in term:  # p = single pauli term
-                qid = p[0]  # Qubit index
+                if qubit_list is None:
+                    qid = p[0]  # Qubit index
+                else:
+                    qid = qubit_list[p[0]]
                 pop = p[1]  # Pauli op
 
                 qids.append(qid)  # Qubit index
@@ -224,11 +227,16 @@ def pauli_exp_to_qasm(qubit_operator_list,
 
             # 3. Rotation (Note kexp & Ntrot)
             if ancilla is not None:
-                ret_list = ret_list + ["C-Phase {} {} {}".format(
-                    term_coeff * evolution_time, qids[-1], ancilla)]
+                if len(qids) > 0:
+                    ret_list = ret_list + ["C-Phase {} {} {}".format(
+                        term_coeff * evolution_time, qids[-1], ancilla)]
+                else:
+                    ret_list = ret_list + ["Rz {} {}".format(
+                        term_coeff*evolution_time, ancilla)]
             else:
-                ret_list = ret_list + ["Rz {} {}".format(
-                    term_coeff * evolution_time, qids[-1])]
+                if len(qids) > 0:
+                    ret_list = ret_list + ["Rz {} {}".format(
+                        term_coeff * evolution_time, qids[-1])]
 
             # 4. Second set of CNOTs
             ret_list = ret_list + cnots2
@@ -245,6 +253,7 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
                                  trotter_order=1,
                                  term_ordering=None,
                                  k_exp=1.0,
+                                 qubit_list=None,
                                  ancilla=None):
     """Trotterize a Qubit hamiltonian and write it to QASM format.
 
@@ -274,6 +283,6 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
                                                     trotter_order,
                                                     term_ordering,
                                                     k_exp):
-        for exponentiated_qasm_string in pauli_exp_to_qasm([trotterized_op],
-                                                           ancilla=ancilla):
+        for exponentiated_qasm_string in pauli_exp_to_qasm(
+                [trotterized_op], qubit_list=qubit_list, ancilla=ancilla):
             yield exponentiated_qasm_string
