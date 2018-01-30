@@ -55,6 +55,15 @@ def test_init_tuple(coefficient):
     assert qubit_op.terms[loc_op] == coefficient
 
 
+@pytest.mark.parametrize("coefficient", [0.5, 0.6j, numpy.float64(2.303),
+                                         numpy.complex128(-1j)])
+def test_init_list(coefficient):
+    loc_op = [(0, 'X'), (5, 'Y'), (6, 'Z')]
+    qubit_op = QubitOperator(loc_op, coefficient)
+    assert len(qubit_op.terms) == 1
+    assert qubit_op.terms[tuple(loc_op)] == coefficient
+
+
 def test_init_str():
     qubit_op = QubitOperator('X0 Y5 Z12', -1.)
     correct = ((0, 'X'), (5, 'Y'), (12, 'Z'))
@@ -71,7 +80,7 @@ def test_init_str_identity():
 
 def test_init_bad_term():
     with pytest.raises(ValueError):
-        qubit_op = QubitOperator(list())
+        qubit_op = QubitOperator(2)
 
 
 def test_init_bad_coefficient():

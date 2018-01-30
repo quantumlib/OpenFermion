@@ -108,17 +108,18 @@ class QubitOperator(object):
         Args:
             coefficient (complex float, optional): The coefficient of the
                 first term of this QubitOperator. Default is 1.0.
-            term (optional, empy tuple, a tuple of tuples, or a string):
+            term (optional, empty tuple, tuple or list of tuples, or string):
                 1) Default is None which means there are no terms in the
                    QubitOperator hence it is the "zero" Operator
                 2) An empty tuple means there are no non-trivial Pauli
                    operators acting on the qubits hence only identities
                    with a coefficient (which by default is 1.0).
-                3) A sorted tuple of tuples. The first element of each tuple
-                   is an integer indicating the qubit on which a non-trivial
-                   local operator acts, starting from zero. The second element
-                   of each tuple is a string, either 'X', 'Y' or 'Z',
-                   indicating which local operator acts on that qubit.
+                3) A sorted list or tuple of tuples. The first element of
+                   each tuple is an integer indicating the qubit on which
+                   a non-trivial local operator acts, starting from zero.
+                   The second element of each tuple is a string, either 'X',
+                   'Y' or 'Z', indicating which local operator acts on that
+                   qubit.
                 4) A string of the form 'X0 Z2 Y5', indicating an X on
                    qubit 0, Z on qubit 2, and Y on qubit 5. The string should
                    be sorted by the qubit number. '' is the identity.
@@ -131,7 +132,9 @@ class QubitOperator(object):
         self.terms = {}
         if term is None:
             return
-        elif isinstance(term, tuple):
+        elif isinstance(term, (tuple, list)):
+            if isinstance(term, list):
+                term = tuple(term)
             if term is ():
                 self.terms[()] = coefficient
             else:
