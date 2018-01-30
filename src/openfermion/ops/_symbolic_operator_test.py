@@ -15,8 +15,7 @@ import copy
 import numpy
 import unittest
 
-from openfermion.ops._symbolic_operator import (SymbolicOperator,
-                                                SymbolicOperatorError)
+from openfermion.ops._symbolic_operator import SymbolicOperator
  
 
 class DummyOperator1(SymbolicOperator):
