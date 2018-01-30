@@ -156,7 +156,8 @@ def trotter_operator_grouping(hamiltonian,
 
 
 def pauli_exp_to_qasm(qubit_operator_list,
-                      evolution_time=1.0):
+                      evolution_time=1.0,
+                      ancilla=None):
     """Exponentiate a list of QubitOperators to a QASM string generator.
 
     Exponentiates a list of QubitOperators, and yields string generators in
@@ -167,6 +168,8 @@ def pauli_exp_to_qasm(qubit_operator_list,
             QubitOperators to be exponentiated
         evolution_time (float): evolution time of the operators in
             the list
+        ancilla (string or None): if any, an ancilla qubit to perform
+            the rotation conditional on (for quantum phase estimation)
 
     Yields:
         string
@@ -220,8 +223,12 @@ def pauli_exp_to_qasm(qubit_operator_list,
             ret_list = ret_list + cnots1
 
             # 3. Rotation (Note kexp & Ntrot)
-            ret_list = ret_list + ["Rz {} {}".format(
-                term_coeff * evolution_time, qids[-1])]
+            if ancilla is not None:
+                ret_list = ret_list + ["C-Phase {} {} {}".format(
+                    term_coeff * evolution_time, qids[-1], ancilla)]
+            else:
+                ret_list = ret_list + ["Rz {} {}".format(
+                    term_coeff * evolution_time, qids[-1])]
 
             # 4. Second set of CNOTs
             ret_list = ret_list + cnots2
@@ -237,7 +244,8 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
                                  trotter_number=1,
                                  trotter_order=1,
                                  term_ordering=None,
-                                 k_exp=1.0):
+                                 k_exp=1.0,
+                                 ancilla=None):
     """Trotterize a Qubit hamiltonian and write it to QASM format.
 
     Assumes input hamiltonian is still hermitian and -1.0j has not yet been
@@ -266,5 +274,6 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
                                                     trotter_order,
                                                     term_ordering,
                                                     k_exp):
-        for exponentiated_qasm_string in pauli_exp_to_qasm([trotterized_op]):
+        for exponentiated_qasm_string in pauli_exp_to_qasm([trotterized_op],
+                                                           ancilla=ancilla):
             yield exponentiated_qasm_string
