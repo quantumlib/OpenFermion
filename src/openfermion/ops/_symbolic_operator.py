@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""SymbolicOperator is a base class for QubitOperator and FermionOperator"""
+"""SymbolicOperator is the base class for FermionOperator and QubitOperator"""
 import copy
 import itertools
 
@@ -26,36 +26,35 @@ class SymbolicOperator(object):
     """Base class for FermionOperator and QubitOperator.
     
     A SymbolicOperator stores an object which represents a weighted
-    sum of terms, where each term is a product of individual factors
-    of the form (`index`, `action`),
-    where `index` is a nonnegative integer and the possible values
-    for `action` are determined by the subclass. For instance, for
-    FermionOperator, `action` can be 1 or 0, indicating raising or lowering,
-    and for QubitOperator, `action` is from the set {'X', 'Y', 'Z'}.
+    sum of terms; each term is a product of individual factors
+    of the form (`index`, `action`), where `index` is a nonnegative integer
+    and the possible values for `action` are determined by the subclass.
+    For instance, for the subclass FermionOperator, `action` can be 1 or 0,
+    indicating raising or lowering, and for QubitOperator, `action` is from
+    the set {'X', 'Y', 'Z'}.
     The coefficients of the terms are stored in a dictionary whose
     keys are the terms.
-    Subclasses should support addition and multiplication with
-    objects of the same type.
+    SymbolicOperators of the same type can be added or multiplied together.
 
     Attributes:
         actions (tuple): A tuple of objects representing the possible actions.
             This should be defined in the subclass.
-            e.g. for FermionOperator, this is (1, 0)
+            e.g. for FermionOperator, this is (1, 0).
         action_strings (tuple): A tuple of string representations of actions.
             These should be in one-to-one correspondence with actions and
             listed in the same order.
-            e.g. for FermionOperator, this is ('^', '')
+            e.g. for FermionOperator, this is ('^', '').
         action_before_index (bool): A boolean indicating whether in string
             representations, the action should come before the index.
         different_indices_commute (bool): A boolean indicating whether
             factors acting on different indices commute.
         terms (dict):
-            **key** (tuple of tuples): Each key is a term which
-            is a product of individual factors; each factor
-            has the form (`action`, `index`), and the factors of
-            the product are collected into a tuple representing the term.
-            The values stored in the dictionary are the coefficients of
-            the terms.
+            **key** (tuple of tuples): A dictionary storing the coefficients
+            of the terms in the operator. The keys are the terms.
+            A term is a product of individual factors; each factor is
+            represented by a tuple of the form (`index`, `action`), and
+            these tuples are collected into a larger tuple which represents
+            the term as the product of its factors.
     """
     actions = ()
     action_strings = ()
@@ -72,24 +71,25 @@ class SymbolicOperator(object):
             self._long_string_init(term, coefficient)
             return
 
+        # Initialize the terms dictionary
         self.terms = {}
 
-        # Zero operator
+        # Zero operator: leave the terms dictionary empty
         if term is None:
             return
 
+        # Parse the term
         # Sequence input
         elif isinstance(term, tuple) or isinstance(term, list):
             term = self._parse_sequence(term)
-
         # String input
         elif isinstance(term, str):
             term = self._parse_string(term)
-
         # Invalid input type
         else:
             raise ValueError('term specified incorrectly.')
 
+        # Add the term to the dictionary
         self.terms[term] = coefficient
 
     def _long_string_init(self, term, coefficient):
