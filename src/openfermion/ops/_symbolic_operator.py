@@ -24,7 +24,7 @@ class SymbolicOperatorError(Exception):
 
 class SymbolicOperator(object):
     """Base class for FermionOperator and QubitOperator.
-    
+
     A SymbolicOperator stores an object which represents a weighted
     sum of terms; each term is a product of individual factors
     of the form (`index`, `action`), where `index` is a nonnegative integer
@@ -130,7 +130,7 @@ class SymbolicOperator(object):
             # If factors with different indices commute, sort the factors
             # by index
             if self.different_indices_commute:
-                term = sorted(term, key = lambda factor: factor[0])
+                term = sorted(term, key=lambda factor: factor[0])
 
             # Return a tuple
             return tuple(term)
