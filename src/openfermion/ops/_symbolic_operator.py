@@ -12,9 +12,7 @@
 
 """SymbolicOperator is the base class for FermionOperator and QubitOperator"""
 import copy
-import itertools
 
-import numpy
 from openfermion.config import EQ_TOLERANCE
 
 
