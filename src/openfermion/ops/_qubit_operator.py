@@ -11,12 +11,8 @@
 #   limitations under the License.
 
 """QubitOperator stores a sum of Pauli operators acting on qubits."""
-import copy
-import itertools
 
-import numpy
-from ._symbolic_operator import SymbolicOperator
-from openfermion.config import EQ_TOLERANCE
+from openfermion.ops import SymbolicOperator
 
 
 # Define products of all Pauli operators for symbolic multiplication.
