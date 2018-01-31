@@ -232,9 +232,10 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
             for vec in states:
                 op_vec_product = sparse_operator.dot(vec)
                 difference = op_vec_product - energy * vec
+                discrepancy = 0.
                 if difference.nnz:
                     discrepancy = max(map(abs, difference.data))
-                    self.assertAlmostEqual(0, discrepancy)
+                self.assertAlmostEqual(0., discrepancy)
 
     def test_jw_get_ground_states_by_particle_number_herm_nonconserving(self):
         # Initialize a non-particle-number-conserving Hermitian operator
@@ -283,7 +284,9 @@ class JWGetGaussianStateTest(unittest.TestCase):
             # Check that the state obtained using the circuit is a ground state
             difference = (sparse_operator * circuit_state -
                           ground_energy * circuit_state)
-            discrepancy = max(abs(difference.data))
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
@@ -309,7 +312,9 @@ class JWGetGaussianStateTest(unittest.TestCase):
             # Check that the state obtained using the circuit is a ground state
             difference = (sparse_operator * circuit_state -
                           ground_energy * circuit_state)
-            discrepancy = max(abs(difference.data))
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
@@ -343,7 +348,9 @@ class JWGetGaussianStateTest(unittest.TestCase):
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
             difference = (sparse_operator * gaussian_state -
                           energy * gaussian_state)
-            discrepancy = max(abs(difference.data))
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
@@ -377,7 +384,9 @@ class JWGetGaussianStateTest(unittest.TestCase):
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
             difference = (sparse_operator * gaussian_state -
                           energy * gaussian_state)
-            discrepancy = max(abs(difference.data))
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
