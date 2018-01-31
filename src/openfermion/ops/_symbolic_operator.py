@@ -309,7 +309,7 @@ class SymbolicOperator(object):
             for term in addend.terms:
                 if term in self.terms:
                     if abs(addend.terms[term] +
-                           self.terms[term]) < EQ_TOLERANCE ** 2:
+                           self.terms[term]) < EQ_TOLERANCE:
                         del self.terms[term]
                     else:
                         self.terms[term] += addend.terms[term]
