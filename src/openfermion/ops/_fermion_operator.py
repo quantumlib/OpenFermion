@@ -202,6 +202,16 @@ class FermionOperator(SymbolicOperator):
     3.17 2^ 1 - 66.2 * 8^ 7 6^ 2
     The Fermion Operator class overloads operations for manipulation of
     these objects by the user.
+
+    FermionOperator is a subclass of SymbolicOperator. Importantly, it has
+    attributes set as follows::
+
+        actions = (1, 0)
+        action_strings = ('^', '')
+        action_before_index = False
+        different_indices_commute = False
+
+    See the documentation of SymbolicOperator for more details.
     """
     actions = (1, 0)
     action_strings = ('^', '')

@@ -60,6 +60,16 @@ class QubitOperator(SymbolicOperator):
     .. code-block:: python
 
         hamiltonian = 0.5 * QubitOperator('X0 X5') + 0.3 * QubitOperator('Z0')
+
+    QubitOperator is a subclass of SymbolicOperator. Importantly, it has
+    attributes set as follows::
+
+        actions = ('X', 'Y', 'Z')
+        action_strings = ('X', 'Y', 'Z')
+        action_before_index = True
+        different_indices_commute = True
+
+    See the documentation of SymbolicOperator for more details.
     """
     actions = ('X', 'Y', 'Z')
     action_strings = ('X', 'Y', 'Z')
@@ -68,7 +78,7 @@ class QubitOperator(SymbolicOperator):
 
     def __imul__(self, multiplier):
         """
-        In-place multiply (*=) terms with scalar or QubitOperator.
+        Override in-place mutiply of SymbolicOperator
 
         Args:
           multiplier(complex float, or QubitOperator): multiplier
