@@ -309,14 +309,15 @@ class SymbolicOperator(object):
             for term in addend.terms:
                 if term in self.terms:
                     if abs(addend.terms[term] +
-                           self.terms[term]) > 0:
-                        self.terms[term] += addend.terms[term]
-                    else:
+                           self.terms[term]) < EQ_TOLERANCE:
                         del self.terms[term]
+                    else:
+                        self.terms[term] += addend.terms[term]
                 else:
                     self.terms[term] = addend.terms[term]
         else:
-            raise TypeError('Cannot add invalid type to ' + type(self) + '.')
+            raise TypeError('Cannot add invalid type to '
+                            '{}.'.format(type(self)))
         return self
 
     def __add__(self, addend):
