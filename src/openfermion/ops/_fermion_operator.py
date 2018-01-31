@@ -15,7 +15,7 @@ import copy
 from openfermion.config import *
 from future.utils import iteritems
 import numpy
-from ._symbolic_operator import SymbolicOperator, SymbolicOperatorError
+from ._symbolic_operator import SymbolicOperator
 
 
 class FermionOperatorError(SymbolicOperatorError):
@@ -227,17 +227,6 @@ class FermionOperator(SymbolicOperator):
     3.17 2^ 1 - 66.2 * 8^ 7 6^ 2
     The Fermion Operator class overloads operations for manipulation of
     these objects by the user.
-
-    Attributes:
-        terms (dict):
-            **key** (tuple of tuples): Each tuple represents a fermion term,
-            i.e. a tensor product of fermion ladder operators with a
-            coefficient. The first element is an integer indicating the
-            mode on which a ladder operator acts and the second element is
-            a bool, either '0' indicating annihilation, or '1' indicating
-            creation in that mode; for example, '2^ 5' is ((2, 1), (5, 0)).
-            **value** (complex float): The coefficient of term represented by
-            key.
     """
     def __init__(self, term=None, coefficient=1.):
         """Initializes a FermionOperator.
@@ -275,9 +264,6 @@ class FermionOperator(SymbolicOperator):
                 3) default will result in the zero operator.
             coefficient (complex float, optional): The coefficient of the term.
                 Default value is 1.0.
-
-        Raises:
-            FermionOperatorError: Invalid term provided to FermionOperator.
         """
         if not isinstance(coefficient, (int, float, complex)):
             raise ValueError('Coefficient must be a numeric type.')
