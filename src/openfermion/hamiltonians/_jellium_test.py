@@ -255,6 +255,7 @@ class JelliumTest(unittest.TestCase):
         for indices_a in grid.all_points_indices():
             for indices_b in grid.all_points_indices():
 
+                potential_coefficient=0.
                 paper_kinetic_coefficient = 0.
                 paper_potential_coefficient = 0.
 
