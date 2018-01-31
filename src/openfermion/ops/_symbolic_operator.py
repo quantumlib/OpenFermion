@@ -34,6 +34,12 @@ class SymbolicOperator(object):
     keys are the terms.
     SymbolicOperators of the same type can be added or multiplied together.
 
+    Note:
+        Adding SymbolicOperators is faster using += (as this
+        is done by in-place addition). Specifying the coefficient
+        during initialization is faster than multiplying a SymbolicOperator
+        with a scalar.
+
     Attributes:
         actions (tuple): A tuple of objects representing the possible actions.
             This should be defined in the subclass.

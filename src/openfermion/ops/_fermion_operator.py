@@ -212,6 +212,21 @@ class FermionOperator(SymbolicOperator):
         different_indices_commute = False
 
     See the documentation of SymbolicOperator for more details.
+
+    Example:
+        .. code-block:: python
+
+            ham = (FermionOperator('0^ 3', .5)
+                   + .5 * FermionOperator('3^ 0'))
+            # Equivalently
+            ham2 = FermionOperator('0^ 3', 0.5)
+            ham2 += FermionOperator('3^ 0', 0.5)
+
+    Note:
+        Adding FermionOperators is faster using += (as this
+        is done by in-place addition). Specifying the coefficient
+        during initialization is faster than multiplying a FermionOperator
+        with a scalar.
     """
     actions = (1, 0)
     action_strings = ('^', '')

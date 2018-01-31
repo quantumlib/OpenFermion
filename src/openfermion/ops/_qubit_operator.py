@@ -70,6 +70,21 @@ class QubitOperator(SymbolicOperator):
         different_indices_commute = True
 
     See the documentation of SymbolicOperator for more details.
+
+    Example:
+        .. code-block:: python
+
+            ham = ((QubitOperator('X0 Y3', 0.5)
+                    + 0.6 * QubitOperator('X0 Y3')))
+            # Equivalently
+            ham2 = QubitOperator('X0 Y3', 0.5)
+            ham2 += 0.6 * QubitOperator('X0 Y3')
+
+    Note:
+        Adding QubitOperators is faster using += (as this
+        is done by in-place addition). Specifying the coefficient
+        during initialization is faster than multiplying a QubitOperator
+        with a scalar.
     """
     actions = ('X', 'Y', 'Z')
     action_strings = ('X', 'Y', 'Z')
