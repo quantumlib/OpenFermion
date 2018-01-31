@@ -70,7 +70,7 @@ def count_qubits(operator):
         raise TypeError('Operator of invalid type.')
 
 
-def eigenspectrum(operator):
+def eigenspectrum(operator, n_qubits=None):
     """Compute the eigenspectrum of an operator.
 
     WARNING: This function has cubic runtime in dimension of
@@ -85,7 +85,7 @@ def eigenspectrum(operator):
     """
     from openfermion.transforms import get_sparse_operator
     from openfermion.utils import sparse_eigenspectrum
-    sparse_operator = get_sparse_operator(operator)
+    sparse_operator = get_sparse_operator(operator, n_qubits)
     eigenspectrum = sparse_eigenspectrum(sparse_operator)
     return eigenspectrum
 
