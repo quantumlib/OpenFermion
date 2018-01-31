@@ -25,6 +25,7 @@ class TrottQasmTest(unittest.TestCase):
         # First qubit operator example
         self.opA = QubitOperator('X0 Z1 Y3', 0.5)
         self.opB = 0.6 * QubitOperator('Z3 Z4')
+        self.op_id = QubitOperator('', 1.0)
         self.qo1 = self.opA + self.opB
 
     def test_exceptions(self):
@@ -229,3 +230,124 @@ H 0
 Rx -1.5707963267948966 3'''
 
         self.assertEqual(qasmstr, strcorrect)
+
+    def test_qasm_string_Controlled_XYZ(self):
+        # Testing for correct QASM string output w/ Pauli-{X,Y,Z}
+        # QubitOperator('X0 Z1 Y3', 0.5) and a controlled ancilla
+
+        # Number of qubits
+        qasmstr = str(count_qubits(self.opA)+1) + "\n"
+
+        # Write each QASM operation
+        qasmstr += "\n".join(
+            trotterize_exp_qubop_to_qasm(self.opA, ancilla='ancilla'))
+
+        # Correct string
+        strcorrect = '''5
+H 0
+Rx 1.5707963267948966 3
+CNOT 0 1
+CNOT 1 3
+C-Phase 0.5 ancilla 3
+CNOT 1 3
+CNOT 0 1
+H 0
+Rx -1.5707963267948966 3'''
+
+        self.assertEqual(qasmstr, strcorrect)
+
+    def test_qasm_string_Controlled_XYZ_ancilla_list(self):
+                # Testing for correct QASM string output w/ Pauli-{X,Y,Z}
+        # QubitOperator('X0 Z1 Y3', 0.5) and a controlled ancilla
+
+        # Number of qubits
+        qasmstr = str(count_qubits(self.opA)+1) + "\n"
+
+        qubit_list = ['q0', 'q1', 'q2', 'q3']
+
+        # Write each QASM operation
+        qasmstr += "\n".join(
+            trotterize_exp_qubop_to_qasm(self.opA, ancilla='ancilla',
+                                         qubit_list=qubit_list))
+
+        # Correct string
+        strcorrect = '''5
+H q0
+Rx 1.5707963267948966 q3
+CNOT q0 q1
+CNOT q1 q3
+C-Phase 0.5 ancilla q3
+CNOT q1 q3
+CNOT q0 q1
+H q0
+Rx -1.5707963267948966 q3'''
+
+        self.assertEqual(qasmstr, strcorrect)
+
+    def test_qasm_string_controlled_identity(self):
+        qasmstr = str(count_qubits(self.op_id)+1) + "\n"
+
+        # Write each QASM operation
+        qasmstr += "\n".join(
+            trotterize_exp_qubop_to_qasm(self.op_id, ancilla='ancilla'))
+
+        strcorrect = '''1
+Rz 1.0 ancilla'''
+
+        self.assertEqual(qasmstr, strcorrect)
+
+    def test_qasm_string_identity(self):
+        qasmstr = str(count_qubits(self.op_id)+1) + "\n"
+
+        # Write each QASM operation
+        qasmstr += "\n".join(
+            trotterize_exp_qubop_to_qasm(self.op_id))
+
+        strcorrect = '''1\n'''
+
+        self.assertEqual(qasmstr, strcorrect)
+
+    def test_qasm_string_multiple_operator(self):
+        # Testing for correct QASM string output 
+        # w/ sum of Pauli-{X,Y,Z} and Pauli-{Z}
+        # QubitOperator('X0 Z1 Y3', 0.5) + QubitOperator('Z3 Z4', 0.6)
+
+        # Number of qubits
+        qasmstr = str(count_qubits(self.qo1)) + "\n"
+
+        # Write each QASM operation
+        qasmstr += "\n".join(trotterize_exp_qubop_to_qasm(self.qo1))
+
+        # Two possibilities for the correct string depending on
+        # the order in which the operators loop.
+        strcorrect1 = '''5
+CNOT 3 4
+Rz 0.6 4
+CNOT 3 4
+H 0
+Rx 1.5707963267948966 3
+CNOT 0 1
+CNOT 1 3
+Rz 0.5 3
+CNOT 1 3
+CNOT 0 1
+H 0
+Rx -1.5707963267948966 3'''
+
+        strcorrect2 = '''5
+H 0
+Rx 1.5707963267948966 3
+CNOT 0 1
+CNOT 1 3
+Rz 0.5 3
+CNOT 1 3
+CNOT 0 1
+H 0
+Rx -1.5707963267948966 3
+CNOT 3 4
+Rz 0.6 4
+CNOT 3 4'''
+        try:
+            self.assertEqual(qasmstr, strcorrect1)
+        except:
+            self.assertEqual(qasmstr, strcorrect2)
