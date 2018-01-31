@@ -132,3 +132,29 @@ def test_mul_multiple_terms():
     correct += QubitOperator(((1, 'Y'), (3, 'Z')),
                              2j * 1j * 0.5 * 1.2)
     assert res.isclose(correct)
+
+
+def test_tracenorm():
+    op = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+    op += QubitOperator(((2, 'Z'), (3, 'Y')), 1)
+    assert op.tracenorm() == pytest.approx(numpy.sqrt(2.))
+
+
+def test_tracenorm_zero():
+    op = QubitOperator()
+    assert op.tracenorm() == 0
+
+
+def test_renormalize_error():
+    op = QubitOperator()
+    with pytest.raises(ZeroDivisionError):
+        op.renormalize()
+
+
+def test_renormalize():
+    op = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+    op += QubitOperator(((2, 'Z'), (3, 'Y')), 1)
+    op.renormalize()
+    for term in op.terms:
+        assert op.terms[term] == pytest.approx(1/numpy.sqrt(2.))
+    assert op.tracenorm() == pytest.approx(1.)
