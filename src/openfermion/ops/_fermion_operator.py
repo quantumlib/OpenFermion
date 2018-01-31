@@ -580,14 +580,10 @@ class FermionOperator(object):
         """
         if isinstance(addend, FermionOperator):
             for term in addend.terms:
-                if term in self.terms:
-                    if abs(addend.terms[term] +
-                           self.terms[term]) < EQ_TOLERANCE:
-                        del self.terms[term]
-                    else:
-                        self.terms[term] += addend.terms[term]
-                else:
-                    self.terms[term] = addend.terms[term]
+                self.terms[term] = (self.terms.get(term, 0.0) +
+                                    addend.terms[term])
+                if not abs(self.terms[term]):
+                    del self.terms[term]
         else:
             raise TypeError('Cannot add invalid type to FermionOperator.')
         return self
@@ -618,14 +614,10 @@ class FermionOperator(object):
         """
         if isinstance(subtrahend, FermionOperator):
             for term in subtrahend.terms:
-                if term in self.terms:
-                    if abs(self.terms[term] -
-                           subtrahend.terms[term]) < EQ_TOLERANCE:
-                        del self.terms[term]
-                    else:
-                        self.terms[term] -= subtrahend.terms[term]
-                else:
-                    self.terms[term] = -subtrahend.terms[term]
+                self.terms[term] = (self.terms.get(term, 0.0) -
+                                    subtrahend.terms[term])
+                if not abs(self.terms[term]):
+                    del self.terms[term]
         else:
             raise TypeError('Cannot subtract invalid type.')
         return self
