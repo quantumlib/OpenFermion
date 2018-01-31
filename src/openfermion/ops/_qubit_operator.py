@@ -466,7 +466,7 @@ class QubitOperator(object):
         return str(self)
 
     def tracenorm(self):
-        """Calculate the trace norm (sqrt(Tr[O^O])) of the operator"""
+        """Calculate the trace norm (sqrt(Tr[O^\dagger O])) of the operator"""
         if not self.terms:
             return 0
         norm2 = 0
@@ -476,8 +476,8 @@ class QubitOperator(object):
 
     def renormalize(self):
         """Fix the trace norm of an operator to 1"""
-        if not self.terms:
-            raise ZeroDivisionError
         norm = self.tracenorm()
+        if norm < EQ_TOLERANCE:
+            raise ZeroDivisionError('Cannot renormalize empty or zero operator')
         for term in self.terms:
             self.terms[term] /= norm
