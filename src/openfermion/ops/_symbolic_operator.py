@@ -101,7 +101,7 @@ class SymbolicOperator(object):
     def _parse_sequence(self, term):
         """Parse a term given as a sequence type (i.e., list, tuple, etc.).
 
-        i.e. For QubitOperator:
+        e.g. For QubitOperator:
             [('X', 2), ('Y', 0), ('Z', 3)] -> (('Y', 0), ('X', 2), ('Z', 3))
         """
         if not term:
@@ -136,7 +136,7 @@ class SymbolicOperator(object):
     def _parse_string(self, term):
         """Parse a term given as a string.
 
-        i.e. For FermionOperator:
+        e.g. For FermionOperator:
             "2^ 3" -> ((2, 1), (3, 0))
         """
         factors = term.split()
