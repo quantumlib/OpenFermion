@@ -25,6 +25,7 @@ def dissolve(term):
 
 
 def pauli_action(ham):
+    # no need to implement. QubitOperator class already takes care of this
     raise NotImplementedError()
 
 
@@ -43,6 +44,7 @@ def theta_fn(a,b):
 def delta_fn(a,b):
     if a==b: return -1
     else: return 1
+
 
 if __name__ == '__main__':
     d = Decoder('1 + w1 + w1 w2',1.0)
