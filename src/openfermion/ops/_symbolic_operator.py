@@ -318,7 +318,7 @@ class SymbolicOperator(object):
                 if not abs(self.terms[term]):
                     del self.terms[term]
         else:
-            raise TypeError('Cannot add invalid type to SymbolicOperator.')
+            raise TypeError('Cannot add invalid type to {}.'.format(type(self))
         return self
 
     def __add__(self, addend):
@@ -352,7 +352,8 @@ class SymbolicOperator(object):
                 if not abs(self.terms[term]):
                     del self.terms[term]
         else:
-            raise TypeError('Cannot subtract invalid type.')
+            raise TypeError('Cannot subtract invalid type from {}.'.format(
+                            type(self))
         return self
 
     def __sub__(self, subtrahend):
