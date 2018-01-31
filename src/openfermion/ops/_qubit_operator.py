@@ -64,21 +64,6 @@ class QubitOperator(SymbolicOperator):
     .. code-block:: python
 
         hamiltonian = 0.5 * QubitOperator('X0 X5') + 0.3 * QubitOperator('Z0')
-
-    Attributes:
-        terms (dict): **key**: A term represented by a tuple containing all
-                      non-trivial local Pauli operators ('X', 'Y', or 'Z').
-                      A non-trivial local Pauli operator is specified by a
-                      tuple with the first element being an integer
-                      indicating the qubit on which a non-trivial local
-                      operator acts and the second element being a string,
-                      either 'X', 'Y', or 'Z', indicating which non-trivial
-                      Pauli operator acts on that qubit. Examples:
-                      ((1, 'X'),) or ((1, 'X'), (4,'Z')) or the identity ().
-                      The tuples representing the non-trivial local terms
-                      are sorted according to the qubit number they act on,
-                      starting from 0.
-                      **value**: Coefficient of this term as a (complex) float
     """
 
     def __init__(self, term=None, coefficient=1.):
