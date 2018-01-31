@@ -65,103 +65,10 @@ class QubitOperator(SymbolicOperator):
 
         hamiltonian = 0.5 * QubitOperator('X0 X5') + 0.3 * QubitOperator('Z0')
     """
-
-    def __init__(self, term=None, coefficient=1.):
-        """
-        Inits a QubitOperator.
-
-        The init function only allows to initialize one term. Additional terms
-        have to be added using += (which is fast) or using + of two
-        QubitOperator objects:
-
-        Example:
-            .. code-block:: python
-
-                ham = ((QubitOperator('X0 Y3', 0.5)
-                        + 0.6 * QubitOperator('X0 Y3')))
-                # Equivalently
-                ham2 = QubitOperator('X0 Y3', 0.5)
-                ham2 += 0.6 * QubitOperator('X0 Y3')
-
-        Note:
-            Adding terms to QubitOperator is faster using += (as this is done
-            by in-place addition). Specifying the coefficient in the __init__
-            is faster than by multiplying a QubitOperator with a scalar as
-            calls an out-of-place multiplication.
-
-        Args:
-            coefficient (complex float, optional): The coefficient of the
-                first term of this QubitOperator. Default is 1.0.
-            term (optional, empty tuple, tuple or list of tuples, or string):
-                1) Default is None which means there are no terms in the
-                   QubitOperator hence it is the "zero" Operator
-                2) An empty tuple means there are no non-trivial Pauli
-                   operators acting on the qubits hence only identities
-                   with a coefficient (which by default is 1.0).
-                3) A sorted list or tuple of tuples. The first element of
-                   each tuple is an integer indicating the qubit on which
-                   a non-trivial local operator acts, starting from zero.
-                   The second element of each tuple is a string, either 'X',
-                   'Y' or 'Z', indicating which local operator acts on that
-                   qubit.
-                4) A string of the form 'X0 Z2 Y5', indicating an X on
-                   qubit 0, Z on qubit 2, and Y on qubit 5. The string should
-                   be sorted by the qubit number. '' is the identity.
-
-        Raises:
-          QubitOperatorError: Invalid operators provided to QubitOperator.
-        """
-        if not isinstance(coefficient, (int, float, complex)):
-            raise ValueError('Coefficient must be a numeric type.')
-        self.terms = {}
-        if term is None:
-            return
-        elif isinstance(term, (tuple, list)):
-            if isinstance(term, list):
-                term = tuple(term)
-            if term is ():
-                self.terms[()] = coefficient
-            else:
-                # Test that input is a tuple of tuples and correct action
-                for local_operator in term:
-                    if (not isinstance(local_operator, tuple) or
-                            len(local_operator) != 2):
-                        raise ValueError("term specified incorrectly.")
-                    qubit_num, action = local_operator
-                    if not isinstance(action, str) or action not in 'XYZ':
-                        raise ValueError("Invalid action provided: must be "
-                                         "string 'X', 'Y', or 'Z'.")
-                    if not (isinstance(qubit_num, int) and qubit_num >= 0):
-                        raise QubitOperatorError("Invalid qubit number "
-                                                 "provided to QubitTerm: "
-                                                 "must be a non-negative "
-                                                 "int.")
-                # Sort and add to self.terms:
-                term = list(term)
-                term.sort(key=lambda loc_operator: loc_operator[0])
-                self.terms[tuple(term)] = coefficient
-        elif isinstance(term, str):
-            list_ops = []
-            for el in term.split():
-                if len(el) < 2:
-                    raise ValueError('term specified incorrectly.')
-                list_ops.append((int(el[1:]), el[0]))
-            # Test that list_ops has correct format of tuples
-            for local_operator in list_ops:
-                qubit_num, action = local_operator
-                if not isinstance(action, str) or action not in 'XYZ':
-                    raise ValueError("Invalid action provided: must be "
-                                     "string 'X', 'Y', or 'Z'.")
-                if not (isinstance(qubit_num, int) and qubit_num >= 0):
-                    raise QubitOperatorError("Invalid qubit number "
-                                             "provided to QubitTerm: "
-                                             "must be a non-negative "
-                                             "int.")
-            # Sort and add to self.terms:
-            list_ops.sort(key=lambda loc_operator: loc_operator[0])
-            self.terms[tuple(list_ops)] = coefficient
-        else:
-            raise ValueError('term specified incorrectly.')
+    actions = ('X', 'Y', 'Z')
+    action_strings = ('X', 'Y', 'Z')
+    action_before_index = True
+    different_indices_commute = True
 
     def __imul__(self, multiplier):
         """
@@ -238,26 +145,3 @@ class QubitOperator(SymbolicOperator):
         else:
             raise TypeError('Cannot in-place multiply term of invalid type ' +
                             'to QubitTerm.')
-
-    def __str__(self):
-        """Return an easy-to-read string representation."""
-        if not self.terms:
-            return '0'
-        string_rep = ''
-        for term in self.terms:
-            tmp_string = '{}'.format(self.terms[term])
-            if term == ():
-                tmp_string += ' I'
-            for operator in term:
-                if operator[1] == 'X':
-                    tmp_string += ' X{}'.format(operator[0])
-                elif operator[1] == 'Y':
-                    tmp_string += ' Y{}'.format(operator[0])
-                else:
-                    assert operator[1] == 'Z'
-                    tmp_string += ' Z{}'.format(operator[0])
-            string_rep += '{} +\n'.format(tmp_string)
-        return string_rep[:-3]
-
-    def __repr__(self):
-        return str(self)
