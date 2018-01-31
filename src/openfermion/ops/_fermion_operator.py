@@ -18,7 +18,7 @@ import numpy
 from ._symbolic_operator import SymbolicOperator
 
 
-class FermionOperatorError(SymbolicOperatorError):
+class FermionOperatorError(Exception):
     pass
 
 

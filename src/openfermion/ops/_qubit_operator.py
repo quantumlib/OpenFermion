@@ -15,7 +15,7 @@ import copy
 import itertools
 
 import numpy
-from ._symbolic_operator import SymbolicOperator, SymbolicOperatorError
+from ._symbolic_operator import SymbolicOperator
 from openfermion.config import EQ_TOLERANCE
 
 
@@ -38,7 +38,7 @@ _PAULI_OPERATOR_PRODUCTS = {('I', 'I'): (1., 'I'),
                             ('Z', 'Y'): (-1.j, 'X')}
 
 
-class QubitOperatorError(SymbolicOperatorError):
+class QubitOperatorError(Exception):
     pass
 
 
