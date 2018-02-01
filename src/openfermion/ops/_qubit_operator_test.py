@@ -146,4 +146,4 @@ def test_renormalize():
     op.renormalize()
     for term in op.terms:
         assert op.terms[term] == pytest.approx(1/numpy.sqrt(2.))
-    assert op.tracenorm() == pytest.approx(1.)
+    assert op.induced_norm() == pytest.approx(1.)
