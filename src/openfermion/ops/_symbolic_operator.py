@@ -34,6 +34,12 @@ class SymbolicOperator(object):
     keys are the terms.
     SymbolicOperators of the same type can be added or multiplied together.
 
+    Note:
+        Adding SymbolicOperators is faster using += (as this
+        is done by in-place addition). Specifying the coefficient
+        during initialization is faster than multiplying a SymbolicOperator
+        with a scalar.
+
     Attributes:
         actions (tuple): A tuple of objects representing the possible actions.
             This should be defined in the subclass.
@@ -307,17 +313,14 @@ class SymbolicOperator(object):
         """
         if isinstance(addend, type(self)):
             for term in addend.terms:
-                if term in self.terms:
-                    if abs(addend.terms[term] +
-                           self.terms[term]) < EQ_TOLERANCE:
-                        del self.terms[term]
-                    else:
-                        self.terms[term] += addend.terms[term]
-                else:
-                    self.terms[term] = addend.terms[term]
+                self.terms[term] = (self.terms.get(term, 0.0) +
+                                    addend.terms[term])
+                if abs(self.terms[term]) < EQ_TOLERANCE:
+                    del self.terms[term]
         else:
-            raise TypeError('Cannot add invalid type to '
-                            '{}.'.format(type(self)))
+            raise TypeError('Cannot add invalid type to {}.'.format(
+                            type(self)))
+
         return self
 
     def __add__(self, addend):
@@ -346,17 +349,13 @@ class SymbolicOperator(object):
         """
         if isinstance(subtrahend, type(self)):
             for term in subtrahend.terms:
-                if term in self.terms:
-                    if abs(self.terms[term] -
-                           subtrahend.terms[term]) < EQ_TOLERANCE:
-                        del self.terms[term]
-                    else:
-                        self.terms[term] -= subtrahend.terms[term]
-                else:
-                    self.terms[term] = -subtrahend.terms[term]
+                self.terms[term] = (self.terms.get(term, 0.0) -
+                                    subtrahend.terms[term])
+                if abs(self.terms[term]) < EQ_TOLERANCE:
+                    del self.terms[term]
         else:
-            raise TypeError('Cannot subtract invalid type from ' +
-                            type(self) + '.')
+            raise TypeError('Cannot subtract invalid type from {}.'.format(
+                            type(self)))
         return self
 
     def __sub__(self, subtrahend):
