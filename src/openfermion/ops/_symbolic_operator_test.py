@@ -929,3 +929,12 @@ class SymbolicOperatorTest2(unittest.TestCase):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         # Not necessary, repr could do something in addition
         self.assertEqual(repr(op), str(op))
+
+    def test_norm(self):
+        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+        op += DummyOperator2(((2, 'Z'), (3, 'Y')), 1)
+        self.assertAlmostEqual(op.induced_norm(2), numpy.sqrt(2.))
+
+    def test_tracenorm_zero():
+        op = SymbolicOperator()
+        self.assertFalse(op.induced_norm())

@@ -469,16 +469,6 @@ def test_rep():
     # Not necessary, repr could do something in addition
     assert repr(op) == str(op)
 
-
-def test_tracenorm():
-    op = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
-    op += QubitOperator(((2, 'Z'), (3, 'Y')), 1)
-    assert op.tracenorm() == pytest.approx(numpy.sqrt(2.))
-
-def test_tracenorm_zero():
-    op = QubitOperator()
-    assert op.tracenorm() == 0
-
 def test_renormalize_error():
     op = QubitOperator()
     with pytest.raises(ZeroDivisionError):
