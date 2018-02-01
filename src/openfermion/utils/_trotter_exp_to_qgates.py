@@ -12,6 +12,7 @@
 """Module to perform Trotter-Suzuki decompositions to output as circuits."""
 
 from openfermion.ops import QubitOperator
+from openfermion.utils import count_qubits
 import numpy
 import copy
 import collections
@@ -114,7 +115,6 @@ def trotter_operator_grouping(hamiltonian,
     # Enforce float
     k_exp = float(k_exp)
 
-    ret_val = []
     # First order trotter
     if trotter_order == 1:
         for step in range(trotter_number):
@@ -156,7 +156,9 @@ def trotter_operator_grouping(hamiltonian,
 
 
 def pauli_exp_to_qasm(qubit_operator_list,
-                      evolution_time=1.0):
+                      evolution_time=1.0,
+                      qubit_list=None,
+                      ancilla=None):
     """Exponentiate a list of QubitOperators to a QASM string generator.
 
     Exponentiates a list of QubitOperators, and yields string generators in
@@ -167,10 +169,29 @@ def pauli_exp_to_qasm(qubit_operator_list,
             QubitOperators to be exponentiated
         evolution_time (float): evolution time of the operators in
             the list
+        qubit_list: (list/tuple or None)Specifies the labels for the qubits
+            to be output in qasm.
+            If a list/tuple, must have length greater than or equal to the
+            number of qubits in the QubitOperator. Entries in the
+            list must be castable to string.
+            If None, qubits are labeled by index (i.e. an integer).
+        ancilla (string or None): if any, an ancilla qubit to perform
+            the rotation conditional on (for quantum phase estimation)
 
     Yields:
         string
     """
+
+    num_qubits = max([count_qubits(qubit_operator)
+                      for qubit_operator in qubit_operator_list])
+    if qubit_list is None:
+        qubit_list = list(range(num_qubits))
+    else:
+        if type(qubit_list) is not tuple and type(qubit_list) is not list:
+            raise TypeError('qubit_list must be one of None, tuple, or list.')
+        if len(qubit_list) < num_qubits:
+            raise TypeError('qubit_list must have an entry for every qubit')
+
     for qubit_operator in qubit_operator_list:
         # ret_val = ""
         ret_list = []
@@ -185,7 +206,7 @@ def pauli_exp_to_qasm(qubit_operator_list,
             string_basis_2 = []  # Basis rotations 2
 
             for p in term:  # p = single pauli term
-                qid = p[0]  # Qubit index
+                qid = qubit_list[p[0]]
                 pop = p[1]  # Pauli op
 
                 qids.append(qid)  # Qubit index
@@ -220,8 +241,17 @@ def pauli_exp_to_qasm(qubit_operator_list,
             ret_list = ret_list + cnots1
 
             # 3. Rotation (Note kexp & Ntrot)
-            ret_list = ret_list + ["Rz {} {}".format(
-                term_coeff * evolution_time, qids[-1])]
+            if ancilla is not None:
+                if len(qids) > 0:
+                    ret_list = ret_list + ["C-Phase {} {} {}".format(
+                        term_coeff * evolution_time, ancilla, qids[-1])]
+                else:
+                    ret_list = ret_list + ["Rz {} {}".format(
+                        term_coeff*evolution_time, ancilla)]
+            else:
+                if len(qids) > 0:
+                    ret_list = ret_list + ["Rz {} {}".format(
+                        term_coeff * evolution_time, qids[-1])]
 
             # 4. Second set of CNOTs
             ret_list = ret_list + cnots2
@@ -237,7 +267,9 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
                                  trotter_number=1,
                                  trotter_order=1,
                                  term_ordering=None,
-                                 k_exp=1.0):
+                                 k_exp=1.0,
+                                 qubit_list=None,
+                                 ancilla=None):
     """Trotterize a Qubit hamiltonian and write it to QASM format.
 
     Assumes input hamiltonian is still hermitian and -1.0j has not yet been
@@ -253,6 +285,12 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
         term_ordering (list of (tuples of tuples)): list of tuples
             (QubitOperator terms dictionary keys) that specifies
             order of terms when trotterizing
+        qubit_list: (list/tuple or None)Specifies the labels for the qubits
+            to be output in qasm.
+            If a list/tuple, must have length greater than or equal to the
+            number of qubits in the QubitOperator. Entries in the
+            list must be castable to string.
+            If None, qubits are labeled by index (i.e. an integer).
         k_exp (float): optional exponential factor to all
             terms when trotterizing
 
@@ -266,5 +304,6 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
                                                     trotter_order,
                                                     term_ordering,
                                                     k_exp):
-        for exponentiated_qasm_string in pauli_exp_to_qasm([trotterized_op]):
+        for exponentiated_qasm_string in pauli_exp_to_qasm(
+                [trotterized_op], qubit_list=qubit_list, ancilla=ancilla):
             yield exponentiated_qasm_string
