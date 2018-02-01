@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 """QubitOperator stores a sum of Pauli operators acting on qubits."""
-
+from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import SymbolicOperator
 
 
@@ -173,8 +173,8 @@ class QubitOperator(SymbolicOperator):
             return 0
         norm2 = 0
         for coeff in self.terms.values():
-            norm2 += numpy.abs(coeff)**2
-        return numpy.sqrt(norm2)
+            norm2 += abs(coeff) ** 2.
+        return norm2 ** 0.5
 
     def renormalize(self):
         """Fix the trace norm of an operator to 1"""
