@@ -166,20 +166,11 @@ class QubitOperator(SymbolicOperator):
         else:
             raise TypeError('Cannot in-place multiply term of invalid type ' +
                             'to QubitTerm.')
-
-    def tracenorm(self):
-        """Calculate the trace norm (sqrt(Tr[O^\dagger O])) of the operator"""
-        if not self.terms:
-            return 0
-        norm2 = 0
-        for coeff in self.terms.values():
-            norm2 += abs(coeff) ** 2.
-        return norm2 ** 0.5
-
+    
     def renormalize(self):
         """Fix the trace norm of an operator to 1"""
-        norm = self.tracenorm()
+        norm = self.induced_norm(2)
         if norm < EQ_TOLERANCE:
             raise ZeroDivisionError('Cannot renormalize empty or zero operator')
-        for term in self.terms:
-            self.terms[term] /= norm
+        else:
+            self /= norm

@@ -518,3 +518,21 @@ class SymbolicOperator(object):
             elif not abs(other.terms[term]) <= abs_tol:
                 return False
         return True
+
+    def induced_norm(self, order=1):
+        """
+        Compute the induced p-norm of the operator.
+
+        If we represent an operator as
+        :math: `\sum_{j} w_j H_j`
+        where :math: `w_j` are scalar coefficients then this norm is
+        :math: `\left(\sum_{j} \| w_j \|^p \\right)^{\\frac{1}{p}}
+        where :math: `p` is the order of the induced norm
+
+        Args:
+            order(int): the order of the induced norm.
+        """
+        norm = 0.
+        for coefficient in self.terms.values():
+            norm += abs(coefficient) ** order
+        return norm ** (1. / order)
