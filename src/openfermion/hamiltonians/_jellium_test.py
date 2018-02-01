@@ -108,14 +108,13 @@ class JelliumTest(unittest.TestCase):
         grid = Grid(dimensions=2, length=2, scale=3.)
         spinless = False
         momentum_kinetic = plane_wave_kinetic(grid, spinless)
-        momentum_kinetic.terms[((7, 1), (7, 0))] = 0.        
         position_kinetic = dual_basis_kinetic(grid, spinless)
 
         # Diagonalize and confirm the same energy.
         jw_momentum = jordan_wigner(momentum_kinetic)
         jw_position = jordan_wigner(position_kinetic)
-        momentum_spectrum = eigenspectrum(jw_momentum)
-        position_spectrum = eigenspectrum(jw_position)
+        momentum_spectrum = eigenspectrum(jw_momentum, 8)
+        position_spectrum = eigenspectrum(jw_position, 8)
 
         # Confirm spectra are the same.
         difference = numpy.amax(
