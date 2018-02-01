@@ -69,14 +69,14 @@ class SymbolicOperator(object):
         if not isinstance(coefficient, (int, float, complex)):
             raise ValueError('Coefficient must be a numeric type.')
 
-        # Detect if the input is the string representation of a sum of terms;
-        # if so, initialization needs to be handled differently
-        if isinstance(term, str) and '+' in term:
-            self._long_string_init(term, coefficient)
-            return
-
         # Initialize the terms dictionary
         self.terms = {}
+
+        # Detect if the input is the string representation of a sum of terms;
+        # if so, initialization needs to be handled differently
+        if isinstance(term, str) and '[' in term:
+            self._long_string_init(term, coefficient)
+            return
 
         # Zero operator: leave the terms dictionary empty
         if term is None:
@@ -96,13 +96,64 @@ class SymbolicOperator(object):
         # Add the term to the dictionary
         self.terms[term] = coefficient
 
-    def _long_string_init(self, term, coefficient):
+    def _long_string_init(self, long_string, coefficient):
         """
-        Initialization from a long string representation, i.e., term
-        is a string such as '1.5 [2^ 3] + 2.4 [3^ 0]'.
+        Initialization from a long string representation.
+
+        e.g. For FermionOperator:
+            '1.5 [2^ 3] + 1.4 [3^ 0]'
         """
-        raise NotImplementedError('Initializing a SymbolicOperator from a '
-                                  'long string is not yet supported.')
+
+        index = 0  # Index of current character in long_string
+        subtraction = False  # Whether this term is being subtracted
+        while index < len(long_string):
+
+            # Find the start and end indices of the next coefficient
+            while long_string[index].isspace():
+                index += 1
+            coefficient_start = index
+            while long_string[index] is not '[':
+                index += 1
+            coefficient_end = index
+
+            # Find the start and end indices of the term
+            factor_start = index + 1
+            while long_string[index] is not ']':
+                index += 1
+            factor_end = index
+
+            # Determine the coefficient for this term
+            if coefficient_start == coefficient_end:
+                coef = 1.0
+            else:
+                try:
+                    coef = float(
+                            long_string[coefficient_start:coefficient_end])
+                except ValueError:
+                    raise ValueError('Invalid coefficient {}.'.format(
+                            long_string[coefficient_start:coefficient_end]))
+            coef *= coefficient
+            if subtraction:
+                coef = -coef
+
+            # Parse the term and add it to the dict
+            term = self._parse_string(long_string[factor_start:factor_end])
+            if term not in self.terms:
+                self.terms[term] = coef
+            else:
+                self.terms[term] += coef
+
+            # If there is another term after this one, check if it is being
+            # added or subtracted
+            while index < (len(long_string) - 1):
+                index += 1
+                if not long_string[index].isspace():
+                    break
+            if long_string[index] is '-':
+                subtraction = True
+            else:
+                subtraction = False
+            index += 1
 
     def _parse_sequence(self, term):
         """Parse a term given as a sequence type (i.e., list, tuple, etc.).
