@@ -133,7 +133,7 @@ Authors
 `Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
-`Thomas O'Brien <https://github.com/obriente>`__ (QuTech),
+`Thomas O'Brien <https://github.com/obriente>`__ (Leiden University),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
 `Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
