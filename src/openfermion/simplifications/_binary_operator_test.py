@@ -32,3 +32,7 @@ class SymbolicBinaryTest(unittest.TestCase):
         loc_op = SymbolicBinary('1 + w1 w2 + w3 w4')
         pow_loc = loc_op**2
         self.assertEqual(pow_loc.terms,[((1, '1'),), ((1, 'W'), (2, 'W')), ((3, 'W'), (4, 'W'))])
+
+    def test_init_binary_rule(self):
+        loc_op = SymbolicBinary('1 + w2 w2 + w2')
+        self.assertEqual(loc_op.terms,[((1, '1'),)])

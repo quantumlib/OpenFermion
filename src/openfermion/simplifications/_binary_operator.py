@@ -2,6 +2,7 @@
 # TODO: This corresponds to a single element of a decoder. Maybe we can implement a decoder class or just keep using it as a list of these?
 
 import copy
+import numpy as np
 
 class SymbolicBinaryError(Exception):
     pass
@@ -166,6 +167,22 @@ class SymbolicBinary(object):
         # Return a tuple
         return tuple(processed_term)
 
+    def count_qubits(self):
+        term_array = np.array(map(np.array,self.terms)) # this way we make sure we map it to sum of products
+        qubits = []
+        for summand in term_array:
+            for factor in summand:
+                if factor[1]!='1':
+                   qubits.append(int(factor[0]))
+
+        qubits = list(set(qubits))
+
+        # DO WE WANT THIS CHECK?
+        if max(qubits) >= len(qubits):
+            raise SymbolicBinaryError('There are unused qubits, shift qubit indexing\n Qubit indices provided: {}'.format(qubits))
+
+        return qubits
+
     @classmethod
     def zero(cls):
         """
@@ -304,40 +321,6 @@ class SymbolicBinary(object):
         summand += addend
         return summand
 
-    def __isub__(self, subtrahend):
-        """In-place method for -= subtraction of SymbolicBinary.
-
-        Args:
-            subtrahend (A SymbolicBinary): The operator to subtract.
-
-        Returns:
-            difference (SymbolicBinary): Mutated self.
-
-        Raises:
-            TypeError: Cannot subtract invalid type.
-        """
-        if isinstance(subtrahend, type(self)):
-            for term in subtrahend.terms:
-                if term in self.terms:
-                    self.terms.remove(term)
-                else:
-                    raise ValueError('{} is not in {}'.format(term,self.terms))
-        else:
-            raise TypeError('Cannot subtract invalid type from {}.'.format(
-                            type(self)))
-        return self
-
-    def __sub__(self, subtrahend):
-        """
-        Args:
-            subtrahend (SymbolicBinary): The operator to subtract.
-
-        Returns:
-            difference (SymbolicBinary)
-        """
-        minuend = copy.deepcopy(self)
-        minuend -= subtrahend
-        return minuend
 
     def __rmul__(self, multiplier):
         """
@@ -392,7 +375,7 @@ class SymbolicBinary(object):
 
 
 if __name__ == '__main__':
-    b1 = SymbolicBinary('1 + w1 w2')
+    b1 = SymbolicBinary('1 + w0 w2')
     print 'b1:',b1.terms
     b2 = SymbolicBinary(((1,'1'),))
     print 'b2:',b2.terms
@@ -413,5 +396,8 @@ if __name__ == '__main__':
     b4 = b5*b1
     print 'b5*b1:',b4.terms
     print 'b4*b1:',(b4*b1).terms
-    print '(b1+b3)^2:',((b1+b3)**2).terms
+    b5 = (b1+b3)**2
+    print '(b1+b3)^2:',b5.terms
+    print b5.count_qubits()
     print SymbolicBinary('w1').terms
+

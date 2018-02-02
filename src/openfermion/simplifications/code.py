@@ -1,53 +1,48 @@
 from _binary_operator import SymbolicBinary
 import numpy as np
 
-class BinaryCode(Exception):
+class BinaryCodeError(Exception):
     pass
 
 class BinaryCode(object):
 
-    __init__(self, encoding, decoding):
+    def __init__(self, encoding, decoding):
 
-        if not isinstace(encoding, (np.array,list,tuple)):
+        if not isinstance(encoding, (np.array,list,tuple)):
             raise TypeError('encoding must be a list, array or tuple .')
 
-        if not isinstace(decoding, (np.array,list,tuple)):
+        if not isinstance(decoding, (np.array,list,tuple)):
             raise TypeError('decoding must be a list, array or tuple .') 
         
         #transform the encoding into a numpy array extracting the total number qubits and orbits
-        self.orbits=len(encoding)
-        self.enc=encoding
-        self.qubits=len(np.array(self.enc[0]))
-        np.reshape(self.enc,(self.qubits,self.orbits))
+        self.enc=np.array(map(np.array,encoding))
+        self.dec=np.array(decoding)
+        self.qubits,self.orbitals = np.shape(np.array(encoding))
+        # np.reshape(self.enc,(self.qubits,self.orbits)) casting it to np.array should be enough assuming its a 2D array
+        # since we extract the number of orbitals/qubits from this. Also shouldn't we enforce that the user gives
+        # qubits x orbitals shaped encoder?
         
         #cast decoding into array form
         
-        self.dec=array(decoding)
-        if(self.orbits!=len(self.dec)):
+        if(self.orbitals!=len(self.dec)):
+            raise BinaryCodeError('size mismatch, decoder and encoder should have the same first dimension')
             # some error that tells you about the dimensional mismatch in the orbit number
         
-        for component in np.arange(self.orbits):
+        for component in np.arange(self.orbitals):
             
-            #Case 1: component is an array or a list  --- ok there is an issue : do we want to allow for the stuff to be given as [((1,'W'),(2,'W'), ....] or not ?
+            #Case 1: component is an array or a list  ---
+
+            # ok there is an issue : do we want to allow for the stuff to be given as [((1,'W'),(2,'W'), ....] or not ?
+
+            # how about this: we only allow components that are acceptable for SymbolicBinary. that way if the user
+            # gives a list/text as a component, first we convert to symbolicBinary and do operations later :
             if isinstance(self.dec[component], (np.array, tuple, list)):
-                if(len(component)!=self.qubits):
-                     # some error that tells you about the dimensional mismatch in the qubit number
-                else:
-                    
-                    orbitaldecoding=[]
-                    for col in self.dec[components]:
-                        if(np.array(self.dec[component])[col]): orbitaldecoding+=[((component,'W'))]
-                    self.dec[component]=SymbolicBinary(orbitaldecoding)
-            #Case 2: component is already SymbolicBinary
-            elif(isinstance(self.dec[component], SymbolicBinary)):
-                    # do we have a tool to measure to how many qubits it infers ?
-            
-            #Case 3: component is str       
-            elif(isinstance(self.dec[component], str)):
-                self.dec[component]=SymbolicBinary(self.dec[component])
-                
-                # to be continiued ... 
-                    
+                self.dec[component] = SymbolicBinary(self.dec[component])
+
+            component_qubits = self.dec[component].count_qubits() # do we enforce that the user gives qubit numbers starting
+            # from 0. if they didn't, then our decoder will have an all zero-column.
+            number_of_qubits = max(component_qubits)+1
+
                     
         
                     
