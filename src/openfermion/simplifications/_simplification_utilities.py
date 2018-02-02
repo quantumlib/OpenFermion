@@ -1,25 +1,55 @@
 from openfermion.ops._qubit_operator import QubitOperator as QO
-from _decoder import Decoder
+from _binary_operator import SymbolicBinary
 
-def _extract(term,coeff):
-    if len(term) == 0: #constant
-        return QO((),(-1)**(coeff%2))
+def _extract(term):
+    """
+    extractor superoperator helper function
+
+    Args:
+        term: a single summand of th SymbolicBinary object
+
+    Returns: a QubitOperator object or a constant
+
+    """
     if len(term) == 1:
         term = term[0]
-        if term[1] not in ['w','W']: raise ValueError('the decoder function type unknown must be w/W')
-        return QO('Z'+str(term[0]),coeff)
+        if term[1]=='W':
+            return QO('Z'+str(term[0]))
+        elif term[1]=='1':
+            return -1   # we only have 1/0s in SymbolicBinaries and zeros are not represented
     if len(term) >1:
         return dissolve(term)
 
+
 def extractor(decode):
+    """
+    applies the extraction superoperator
+
+    Args:
+        decode: a SymbolicBinary object
+
+    Returns: a QubitOperator object
+
+    """
     return_fn = 1
-    for term,coeff in decode.terms.items():
-        return_fn*=_extract(term,coeff)
+    for term in decode.terms:
+        return_fn*=_extract(term)
     return return_fn
 
+
 def dissolve(term):
-    prod = QO((),2.)
+    """
+    decomposition helper
+    Args:
+        term: a multi factor term
+
+    Returns: QubitOperator
+
+    """
+    prod = 2.0
     for var in term:
+        if var[1]!='W':
+            raise ValueError('dissolve works on symbols W')
         prod*=(QO((),0.5) - QO('Z'+str(var[0]),0.5))
     return QO((),1.) - prod
 
@@ -29,10 +59,9 @@ def pauli_action(ham):
     raise NotImplementedError()
 
 
-
 def bin_rules(ham):
+    # no need to implement. BinarySymbolic class already takes care of this
     raise NotImplementedError()
-
 
 
 def theta_fn(a,b):
@@ -46,8 +75,12 @@ def delta_fn(a,b):
     else: return 1
 
 
+def transform(fermion_op,decoder,encoder):
+    raise NotImplementedError()
+
+
 if __name__ == '__main__':
-    d = Decoder('1 + w1 + w1 w2',1.0)
-    print d.to_str()
+    d = SymbolicBinary('1 + w1 + w1 w2')
+    print d.terms
     qq = extractor(d)
     print qq.terms
