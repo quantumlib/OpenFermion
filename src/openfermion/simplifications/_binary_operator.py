@@ -43,7 +43,7 @@ def binary_sum_rule(terms,additive):
 class SymbolicBinary(object):
 
     actions = ('1','W')
-    action_strings = ('1','W')
+    action_strings = ('','W')
     action_before_index = True
     different_indices_commute = True
 
@@ -176,10 +176,6 @@ class SymbolicBinary(object):
                    qubits.append(int(factor[0]))
 
         qubits = list(set(qubits))
-
-        # DO WE WANT THIS CHECK?
-        if max(qubits) >= len(qubits):
-            raise SymbolicBinaryError('There are unused qubits, shift qubit indexing\n Qubit indices provided: {}'.format(qubits))
 
         return qubits
 
