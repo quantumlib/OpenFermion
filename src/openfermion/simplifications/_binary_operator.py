@@ -73,7 +73,10 @@ class SymbolicBinary(object):
         # Invalid input type
         else:
             raise ValueError('term specified incorrectly.')
-
+        correctedinput=[]
+        for item in self.terms:
+            binary_sum_rule(correctedinput,tuple(set(item)))
+        self.terms=correctedinput
 
     def _long_string_init(self, term):
         """
@@ -88,6 +91,10 @@ class SymbolicBinary(object):
                                         key=lambda factor: factor[0])
 
             self.terms.append(parsed_summand)
+        correctedinput=[]
+        for item in self.terms:
+            binary_sum_rule(correctedinput,tuple(set(item)))
+            self.terms=correctedinput
 
     def _check_factor(self,term, factor):
         if len(factor) != 2:
@@ -177,7 +184,7 @@ class SymbolicBinary(object):
                 A symbolic operator u with the property that u*x = x*u = x for
                 all operators x of the same class.
         """
-        return cls(term=(1,'1'))
+        return cls(term=((1,'1'),))
 
     def __str__(self):
         """Return an easy-to-read string representation."""
@@ -212,11 +219,12 @@ class SymbolicBinary(object):
         """
         # Handle scalars.
         if isinstance(multiplier, (int, float, complex)):
-            for term in self.terms:
-                mod_mul = multiplier%2
-                if not mod_mul:
-                    self.terms.remove(term)
-            return self
+            mod_mul = int(multiplier%2)
+            if not mod_mul:
+                return self.zero()
+            else:
+                return self
+            
 
         # Handle operator of the same type
         elif isinstance(multiplier, self.__class__):
@@ -369,19 +377,17 @@ class SymbolicBinary(object):
                 integer powers.
         """
         # Handle invalid exponents.
-        if not isinstance(exponent, int) or exponent < 0:
+        if not isinstance(exponent, int):
             raise ValueError(
-                'exponent must be a non-negative int, but was {} {}'.format(
+                'exponent must be int, but was {} {}'.format(
                     type(exponent), repr(exponent)))
 
-        # Initialized identity.
-        exponentiated = self.__class__(())
+        # Check if exponent is zero - if yes rturn self, if not return zero.
+        if(exponent==0):
+            return self.identity()
+        else:
+            return self
 
-        # Handle non-zero exponents.
-        for i in range(exponent):
-            exponentiated *= self
-
-        return self
 
 
 
