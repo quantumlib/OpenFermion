@@ -293,6 +293,28 @@ class SymbolicBinary(object):
         else:
             self.terms.append(((1, '1'),))
 
+    def __radd__(self, addend):
+        """In-place method for += addition of SymbolicBinary.
+
+        Args:
+            addend (SymbolicBinary): The operator to add.
+
+        Returns:
+            sum (SymbolicBinary): Mutated self.
+
+        Raises:
+            TypeError: Cannot add invalid type.
+        """
+        if isinstance(addend, type(self)):
+            for term in addend.terms:
+                self.terms = binary_sum_rule(self.terms,term)
+        if isinstance(addend,int):
+            mod_add = addend % 2
+            if mod_add:
+                self._add_one()
+
+        return self
+
     def __iadd__(self, addend):
         """In-place method for += addition of SymbolicBinary.
 
@@ -327,14 +349,9 @@ class SymbolicBinary(object):
         summand += addend
         return summand
 
-
-    def __rmul__(self, multiplier):
+    def __imul__(self, multiplier):
         """
         Return multiplier * self for a scalar.
-
-        We only define __rmul__ for scalars because the left multiply
-        exist for  SymbolicBinary and left multiply
-        is also queried as the default behavior.
 
         Args:
           multiplier: A scalar to multiply by.
@@ -351,6 +368,25 @@ class SymbolicBinary(object):
                 type(self) + '.')
         return self * multiplier
 
+
+    def __rmul__(self, multiplier):
+        """
+        Return multiplier * self for a scalar.
+
+        Args:
+          multiplier: A scalar to multiply by.
+
+        Returns:
+          product: A new instance of SymbolicBinary.
+
+        Raises:
+          TypeError: Object of invalid type cannot multiply SymbolicBinary.
+        """
+        if not isinstance(multiplier, (int, float, complex)):
+            raise TypeError(
+                'Object of invalid type cannot multiply with ' +
+                type(self) + '.')
+        return self * multiplier
 
     def __pow__(self, exponent):
         """Exponentiate the SymbolicBinary.
