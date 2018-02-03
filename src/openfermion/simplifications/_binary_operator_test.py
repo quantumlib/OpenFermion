@@ -13,12 +13,12 @@ class SymbolicBinaryTest(unittest.TestCase):
         self.assertEqual(loc_op.terms,[((1, 'W'),)])
 
     def test_init_list(self):
-        loc_op = SymbolicBinary(((3, 'W'), (4, 'W'), (1, '1')))
+        loc_op = SymbolicBinary([((3, 'W'), (4, 'W'), (1, '1'))])
         self.assertEqual(loc_op.terms,[((3, 'W'), (4, 'W'))])
 
     def test_multiplication(self):
         loc_op1 = SymbolicBinary('1 + w1 w2')
-        loc_op2 = SymbolicBinary(((3, 'W'), (4, 'W'), (1, '1')))
+        loc_op2 = SymbolicBinary([((3, 'W'), (4, 'W'), (1, '1'))])
         mult_op = loc_op1*loc_op2
         self.assertEqual(mult_op.terms,[((3, 'W'), (4, 'W')), ((1, 'W'), (2, 'W'), (3, 'W'), (4, 'W'))])
 

@@ -15,18 +15,9 @@ def _shift_decoder(decode,runner): # this function was a bit hacky - please test
     """
     decode_shifted = []
     for entry in decode:
-        tmp_string=''
-        for element in np.arange(len(entry.terms)):
-            for var in entry.terms[element]:
-                qidx, op_name = var
-                qubit_mapping = qidx + runner
-                if(op_name=='W'): 
-                    tmp_string+= ' w'+str(qubit_mapping) 
-                else: 
-                    tmp_string +='  1 '
-            if(element<len(entry.terms)-1): tmp_string+= ' +'
-        decode_shifted += [SymbolicBinary(tmp_string)]
-        #decode_shifted += [SymbolicBinary(list_ops)]
+        tmp_entry = copy.deepcopy(entry)
+        tmp_entry._shift(runner)
+        decode_shifted.append(tmp_entry)
     return np.array(decode_shifted)
 
 def _double_decoding(dec1, dec2):
@@ -45,7 +36,7 @@ def _double_decoding(dec1, dec2):
             tmp_term=SymbolicBinary('1')
             for factor in summand:
                 if(factor[1]=='W'):
-                    tmp_term*=dec2[factor[0]-1]
+                    tmp_term*=dec2[factor[0]-1]  # are we going to count qubits from 0 or 1? - I think openfermion convention is 0, we should check!
             tmp_sum = tmp_term + tmp_sum
         doubled_decoder +=[tmp_sum]
     return np.array(doubled_decoder)
@@ -54,11 +45,31 @@ def _double_decoding(dec1, dec2):
 class BinaryCodeError(Exception):
     pass
 
+def linearize_decoder(mtx):
+    """
+    outputs a linear decoding function when given a matrix
+    Args:
+        mtx: matrix to derive the decoding function from
 
+    Returns: a list of symbolicBinaries
+
+    """
+    mtx = np.array(map(np.array,mtx))
+    system_dim,code_dim = np.shape(mtx)
+    res = []*system_dim
+    for a in range(system_dim):
+        dec_str = ''
+        for b in range(code_dim):
+            if mtx[a,b]==1:
+                dec_str+='W'+str(b)+' + '
+        dec_str = dec_str.rstrip(' + ')
+        res.append(SymbolicBinary(dec_str))
+    return res
 
 class BinaryCode(object):
 
     def __init__(self, encoding, decoding):
+        # only accepts linear decoders?
 
         if not isinstance(encoding, (list,tuple)):
             raise TypeError('encoding must be a list, array or tuple .')
@@ -69,9 +80,6 @@ class BinaryCode(object):
         #transform the encoding into a numpy array extracting the total number qubits and orbitals
         self.enc=np.array(map(np.array,encoding))
         self.qubits,self.orbitals = np.shape(np.array(encoding))
-        # np.reshape(self.enc,(self.qubits,self.orbitals)) casting it to np.array should be enough assuming its a 2D array
-        # since we extract the number of orbitals/qubits from this. Also shouldn't we enforce that the user gives
-        # qubits x orbitals shaped encoder?
 
         if(self.orbitals!=len(decoding)):
             raise BinaryCodeError('size mismatch, decoder and encoder should have the same first dimension')
@@ -80,11 +88,9 @@ class BinaryCode(object):
         self.dec = []
         
         # build the decoder - question: what if its given as a matrix... we should be able to handle that
-        for symbolic_binary in np.array(decoding):
-            # ok there is an issue : do we want to allow for the stuff to be given as [((1,'W'),(2,'W'), ....] or not ?
 
-            # how about this: we only allow components that are acceptable for SymbolicBinary. that way if the user
-            # gives a list/text as a component, first we convert to symbolicBinary and do operations later :
+        for symbolic_binary in np.array(decoding):
+
             if isinstance(symbolic_binary, (tuple, list, str)):
                 symbolic_binary = SymbolicBinary(symbolic_binary)
             if isinstance(symbolic_binary,SymbolicBinary):
@@ -92,7 +98,6 @@ class BinaryCode(object):
                 decoder_qubits = decoder_qubits | set(symbolic_binary.count_qubits())
             else:
                 raise TypeError('decoder component provided is not a suitable for SymbolicBinary',symbolic_binary)
-        self.decoder_qubits = decoder_qubits
 
     def __iadd__(self, appendix):
         """
@@ -156,6 +161,9 @@ class BinaryCode(object):
 
 if __name__ == '__main__':
     a=BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w2 + w1 '),SymbolicBinary('w1 + 1')])
+    d = BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w0 '),SymbolicBinary('w3 w4')])
+    sum = a+d
+    print sum.dec
     b=a*a
     c=a+a
     #print b.enc
