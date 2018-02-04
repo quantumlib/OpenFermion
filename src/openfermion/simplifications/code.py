@@ -71,10 +71,10 @@ class BinaryCode(object):
     def __init__(self, encoding, decoding):
         # only accepts linear decoders?
 
-        if not isinstance(encoding, (list,tuple)):
+        if not isinstance(encoding, (np.ndarray,list,tuple)):
             raise TypeError('encoding must be a list, array or tuple .')
 
-        if not isinstance(decoding, (list,tuple)):
+        if not isinstance(decoding, (np.ndarray,list,tuple)):
             raise TypeError('decoding must be a list, array or tuple .') 
         
         #transform the encoding into a numpy array extracting the total number qubits and orbitals
@@ -95,7 +95,7 @@ class BinaryCode(object):
                 symbolic_binary = SymbolicBinary(symbolic_binary)
             if isinstance(symbolic_binary,SymbolicBinary):
                 self.dec.append(symbolic_binary)
-                decoder_qubits = decoder_qubits | set(symbolic_binary.count_qubits())
+                #decoder_qubits = decoder_qubits | set(symbolic_binary.count_qubits())
             else:
                 raise TypeError('decoder component provided is not a suitable for SymbolicBinary',symbolic_binary)
 
