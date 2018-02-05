@@ -95,9 +95,16 @@ class BinaryCode(object):
                 symbolic_binary = SymbolicBinary(symbolic_binary)
             if isinstance(symbolic_binary,SymbolicBinary):
                 self.dec.append(symbolic_binary)
-                #decoder_qubits = decoder_qubits | set(symbolic_binary.count_qubits())
+                decoder_qubits = decoder_qubits | set(symbolic_binary.count_qubits())
             else:
                 raise TypeError('decoder component provided is not a suitable for SymbolicBinary',symbolic_binary)
+
+        if len(decoder_qubits)!=max(decoder_qubits)+1:
+            Warning('the number of qubits and the max qubit value of the decoder does not match.\n, you '
+                          'have an all zero decoder column')
+
+        if len(decoder_qubits)!=self.qubits:
+            raise ValueError('decoder and encoder provided has different number of qubits')
 
     def __iadd__(self, appendix):
         """
@@ -160,18 +167,21 @@ class BinaryCode(object):
         return twin
 
 if __name__ == '__main__':
-    a=BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w2 + w1 '),SymbolicBinary('w1 + 1')])
-    d = BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w0 '),SymbolicBinary('w3 w4')])
+    a=BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w1 + w0 '),SymbolicBinary('w0 + 1')])
+    d = BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w0 '),SymbolicBinary('w0 w1')])
     sum = a+d
-    print sum.dec
+    print '\n',sum.dec
     b=a*a
     c=a+a
     #print b.enc
     #print b.dec
-    print b.dec[0].terms
-    print b.dec[0]
+    print '\n',b.dec
     #print c.enc
-    #print c.dec
+    print '\n',c.dec
+    a = SymbolicBinary('w1')
+    b = SymbolicBinary('w2')
+    print a*b
+    print SymbolicBinary('w1')*SymbolicBinary('w2')
 
                     
         

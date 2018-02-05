@@ -266,6 +266,25 @@ class SymbolicBinary(object):
         self.terms = shifted_terms
 
 
+    def __rmul__(self, multiplier):
+        """
+        Return multiplier * self for a scalar.
+
+        Args:
+          multiplier: A scalar to multiply by.
+
+        Returns:
+          product: A new instance of SymbolicBinary.
+
+        Raises:
+          TypeError: Object of invalid type cannot multiply SymbolicBinary.
+        """
+        if not isinstance(multiplier, (int, float, complex,type(self))):
+            raise TypeError(
+                'Object of invalid type cannot multiply with ' +
+                type(self) + '.')
+        return self * multiplier
+
     def __mul__(self, multiplier):
         """Return self * multiplier for a scalar, or a SymbolicBinary.
 
@@ -349,44 +368,7 @@ class SymbolicBinary(object):
         summand += addend
         return summand
 
-    def __imul__(self, multiplier):
-        """
-        Return multiplier * self for a scalar.
 
-        Args:
-          multiplier: A scalar to multiply by.
-
-        Returns:
-          product: A new instance of SymbolicBinary.
-
-        Raises:
-          TypeError: Object of invalid type cannot multiply SymbolicBinary.
-        """
-        if not isinstance(multiplier, (int, float, complex)):
-            raise TypeError(
-                'Object of invalid type cannot multiply with ' +
-                type(self) + '.')
-        return self * multiplier
-
-
-    def __rmul__(self, multiplier):
-        """
-        Return multiplier * self for a scalar.
-
-        Args:
-          multiplier: A scalar to multiply by.
-
-        Returns:
-          product: A new instance of SymbolicBinary.
-
-        Raises:
-          TypeError: Object of invalid type cannot multiply SymbolicBinary.
-        """
-        if not isinstance(multiplier, (int, float, complex)):
-            raise TypeError(
-                'Object of invalid type cannot multiply with ' +
-                type(self) + '.')
-        return self * multiplier
 
     def __pow__(self, exponent):
         """Exponentiate the SymbolicBinary.

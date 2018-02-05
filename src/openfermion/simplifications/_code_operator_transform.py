@@ -1,8 +1,9 @@
 from openfermion.ops._fermion_operator import FermionOperator as FO
 from openfermion.ops._qubit_operator import QubitOperator as QO
 from _binary_operator import SymbolicBinary
-from  code import BinaryCode
+from _code_operator import BinaryCode
 import numpy as np
+from copy import deepcopy
 
 def _extract(term):
     """
@@ -24,18 +25,18 @@ def _extract(term):
         return dissolve(term)
 
 
-def extractor(decode):
+def extractor(decoder):
     """
     applies the extraction superoperator
 
     Args:
-        decode: a SymbolicBinary object
+        decoder: a SymbolicBinary object
 
     Returns: a QubitOperator object
 
     """
     return_fn = 1
-    for term in decode.terms:
+    for term in decoder.terms:
         return_fn*=_extract(term)
     return return_fn
 
@@ -58,13 +59,19 @@ def dissolve(term):
 
 
 def make_parity_list(code):
+    """
+    Create the parity list from the decoder of the code
+    Args:
+        code: (BinaryCode)
+
+    Returns: the parity list (list of SymbolicBinaries)
+
+    """
     if not isinstance(code, BinaryCode):
         raise TypeError('argument is not BinaryCode')
     parity_binaries=[SymbolicBinary()]
-    tmp_term=[SymbolicBinary()]
     for index in np.arange(code.orbitals-1):
-        tmp_term += code.dec[index]
-        parity_binaries+=[tmp_term]
+        parity_binaries+=[parity_binaries[-1]+code.dec[index]]
     return parity_binaries
         
         
@@ -81,33 +88,29 @@ def code_transform(hamiltonian, code):
     
     """
     new_hamiltonian=QO()
-    for term in hamiltonian.terms:
-        weight=len(term)
+    parity_list = make_parity_list(code)
 
-            
+    for term in hamiltonian.terms:
+        num_operators=len(term)
+
         #the updated parity and occupation account for sign changes due to changed occupations mid-way in the term
         updated_parity=0
-        updated_occupation=np.ones(weight,dtype=int)
-            
-            
-            
-            
-        for main_index in np.arange(1,weight+1):
+        updated_occupation=np.ones(num_operators,dtype=int)
+        for main_index in np.arange(0,num_operators):
             tmp_occupation=0
-            for runner_index in np.arange(1,main_index-1):
-                if term[- runner_index][0]==term[- main_index][0]: tmp_occupation+=1
-                if term[- runner_index][0]<term[- main_index][0]: updated_parity+=1
-            updated_occupation[- main_index] = (-1)**(tmp_occupation)
+            for runner_index in np.arange(main_index+1,num_operators):
+                if term[runner_index][0]==term[main_index][0]: tmp_occupation+=1 # delta
+                if term[runner_index][0]<term[main_index][0]: updated_parity+=1 # theta
+            updated_occupation[main_index] = (-1)**(tmp_occupation)
                 
-        #making the parity and projection operator(s)
-        transformed_term= QO(())*(-1)**(updated_parity)
-        parity_list=make_parity_list(code)
+        # making the parity and projection operator(s)
+        transformed_term= QO((),(-1)**(updated_parity))
         parity_term=SymbolicBinary()
             
-        for index in np.arange(weight):
+        for index in np.arange(num_operators):
 
-            transformed_term *= .5* (QO(())- updated_occupation[index]*(-1)**(term[index][1])*extractor(code.dec[term[index][0]]))
-            parity_term += parity_list[term[index][0]]
+            transformed_term *= .5* (QO(())+ updated_occupation[index]*(-1)**(term[index][1])*extractor(code.dec[term[index][0]]))
+            parity_term += parity_list[term[index][0]] # update
         transformed_term *= extractor(parity_term)
             
         #making the update operator
@@ -125,9 +128,13 @@ def code_transform(hamiltonian, code):
     return new_hamiltonian
             
 if __name__=='__main__':
-    code1=BinaryCode(np.array([[1,0],[0,1]]),[SymbolicBinary('w0'),SymbolicBinary('w1')])
-    hamil1=FO('1')
-    print code_transform(hamil1,code1)
+    from decoder_encoder_functions import JW_code
+    code1=BinaryCode(np.array([[1,0,0],[0,1,0]]),[SymbolicBinary('w0'),SymbolicBinary('w1'),SymbolicBinary('1 + w0 + w1')])
+    hamil1=FO('0^ 2',0.5) + FO('2^ 0',0.5)
+    print code_transform(hamil1,code1), '\n'
+
+    hamil1=FO('7^',1.0)
+    print code_transform(hamil1,JW_code(10))
 
 
             

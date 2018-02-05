@@ -1,6 +1,6 @@
 import numpy as np
 from _binary_operator import SymbolicBinary
-from code import BinaryCode, linearize_decoder as linear
+from _code_operator import BinaryCode, linearize_decoder as linear
 
 # TODO: BK, JW these are already implemented. ideally we would not have additional implementations here.
 
