@@ -127,7 +127,7 @@ class SymbolicOperator(object):
                 coef = 1.0
             else:
                 try:
-                    coef = float(
+                    coef = complex(
                             long_string[coefficient_start:coefficient_end])
                 except ValueError:
                     raise ValueError('Invalid coefficient {}.'.format(

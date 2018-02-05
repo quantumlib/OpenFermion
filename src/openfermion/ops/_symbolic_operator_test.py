@@ -153,9 +153,9 @@ class SymbolicOperatorTest1(unittest.TestCase):
 
     def test_init_long_str(self):
         fermion_op = DummyOperator1(
-                '-2.0 [0^ 1] +\n\n -1.0[ 2^ 3 ] - []', -1.)
+                '(-2.0+3.0j) [0^ 1] +\n\n -1.0[ 2^ 3 ] - []', -1.)
         correct = \
-            DummyOperator1('0^ 1', 2.) + \
+            DummyOperator1('0^ 1', complex(2., -3.)) + \
             DummyOperator1('2^ 3', 1.) + \
             DummyOperator1('', 1.)
         self.assertEqual(len((fermion_op-correct).terms), 0)
@@ -668,9 +668,9 @@ class SymbolicOperatorTest2(unittest.TestCase):
 
     def test_init_long_str(self):
         qubit_op = DummyOperator2(
-                '-2.0 [X0 Y1] +\n\n -1.0[ X2 Y3 ] - []', -1.)
+                '(-2.0+3.0j) [X0 Y1] +\n\n -1.0[ X2 Y3 ] - []', -1.)
         correct = \
-            DummyOperator2('X0 Y1', 2.) + \
+            DummyOperator2('X0 Y1', complex(2., -3.)) + \
             DummyOperator2('X2 Y3', 1.) + \
             DummyOperator2('', 1.)
         self.assertEqual(len((qubit_op-correct).terms), 0)
