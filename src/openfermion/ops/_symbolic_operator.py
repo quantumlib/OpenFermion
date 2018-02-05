@@ -12,6 +12,7 @@
 
 """SymbolicOperator is the base class for FermionOperator and QubitOperator"""
 import copy
+import re
 
 from openfermion.config import EQ_TOLERANCE
 
@@ -69,14 +70,14 @@ class SymbolicOperator(object):
         if not isinstance(coefficient, (int, float, complex)):
             raise ValueError('Coefficient must be a numeric type.')
 
-        # Detect if the input is the string representation of a sum of terms;
-        # if so, initialization needs to be handled differently
-        if isinstance(term, str) and '+' in term:
-            self._long_string_init(term, coefficient)
-            return
-
         # Initialize the terms dictionary
         self.terms = {}
+
+        # Detect if the input is the string representation of a sum of terms;
+        # if so, initialization needs to be handled differently
+        if isinstance(term, str) and '[' in term:
+            self._long_string_init(term, coefficient)
+            return
 
         # Zero operator: leave the terms dictionary empty
         if term is None:
@@ -96,13 +97,39 @@ class SymbolicOperator(object):
         # Add the term to the dictionary
         self.terms[term] = coefficient
 
-    def _long_string_init(self, term, coefficient):
+    def _long_string_init(self, long_string, coefficient):
         """
-        Initialization from a long string representation, i.e., term
-        is a string such as '1.5 [2^ 3] + 2.4 [3^ 0]'.
+        Initialization from a long string representation.
+
+        e.g. For FermionOperator:
+            '1.5 [2^ 3] + 1.4 [3^ 0]'
         """
-        raise NotImplementedError('Initializing a SymbolicOperator from a '
-                                  'long string is not yet supported.')
+
+        pattern = '(.*?)\[(.*?)\]'  # regex for a term
+        for match in re.findall(pattern, long_string, flags=re.DOTALL):
+
+            # Determine the coefficient for this term
+            coef_string = match[0].strip()
+            if coef_string[0] is '+':
+                coef_string = coef_string[1:].strip()
+            if coef_string is '':
+                coef = 1.0
+            elif coef_string is '-':
+                coef = -1.0
+            else:
+                try:
+                    coef = complex(coef_string)
+                except ValueError:
+                    raise ValueError(
+                            'Invalid coefficient {}.'.format(coef_string))
+            coef *= coefficient
+
+            # Parse the term and add it to the dict
+            term = self._parse_string(match[1])
+            if term not in self.terms:
+                self.terms[term] = coef
+            else:
+                self.terms[term] += coef
 
     def _parse_sequence(self, term):
         """Parse a term given as a sequence type (i.e., list, tuple, etc.).
