@@ -36,7 +36,7 @@ def _double_decoding(dec1, dec2):
             tmp_term=SymbolicBinary('1')
             for factor in summand:
                 if(factor[1]=='W'):
-                    tmp_term*=dec2[factor[0]-1]  # are we going to count qubits from 0 or 1? - I think openfermion convention is 0, we should check!
+                    tmp_term*=dec2[factor[0]]  # here I made the qubits (and orbitals) start from index 0 instead of 1
             tmp_sum = tmp_term + tmp_sum
         doubled_decoder +=[tmp_sum]
     return np.array(doubled_decoder)
@@ -57,9 +57,9 @@ def linearize_decoder(mtx):
     mtx = np.array(map(np.array,mtx))
     system_dim,code_dim = np.shape(mtx)
     res = []*system_dim
-    for a in range(system_dim):
+    for a in np.arange(system_dim):
         dec_str = ''
-        for b in range(code_dim):
+        for b in np.arange(code_dim):
             if mtx[a,b]==1:
                 dec_str+='W'+str(b)+' + '
         dec_str = dec_str.rstrip(' + ')
@@ -119,7 +119,7 @@ class BinaryCode(object):
         if not isinstance(appendix,BinaryCode):
             raise TypeError('argument must be a BinaryCode.')
         
-        self.dec=np.append(self.dec, _shift_decoder(appendix.dec,self.qubits))
+        self.dec=np.append(self.dec, _shift_decoder(appendix.dec,self.qubits-1)) # the -1 is added because you start counting qubits from 0
         
         tmp_mtx=np.zeros((self.qubits+appendix.qubits,self.orbitals+appendix.orbitals),int)
         tmp_mtx[:self.qubits,:self.orbitals]=self.enc

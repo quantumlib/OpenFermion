@@ -96,20 +96,22 @@ def code_transform(hamiltonian, code):
         #the updated parity and occupation account for sign changes due to changed occupations mid-way in the term
         updated_parity=0
         updated_occupation=np.ones(num_operators,dtype=int)
-        for main_index in np.arange(0,num_operators):
+        for main_index in np.arange(1,num_operators+1):
+
             tmp_occupation=0
-            for runner_index in np.arange(main_index+1,num_operators):
-                if term[runner_index][0]==term[main_index][0]: tmp_occupation+=1 # delta
-                if term[runner_index][0]<term[main_index][0]: updated_parity+=1 # theta
-            updated_occupation[main_index] = (-1)**(tmp_occupation)
-                
+            for runner_index in np.arange(1,main_index):
+                if term[-runner_index][0]==term[-main_index][0]:
+                    tmp_occupation+=1 # delta
+
+                if term[-runner_index][0]<term[-main_index][0]: updated_parity+=1 # theta
+            updated_occupation[-main_index] = (-1)**(tmp_occupation)
         # making the parity and projection operator(s)
         transformed_term= QO((),(-1)**(updated_parity))
         parity_term=SymbolicBinary()
-            
-        for index in np.arange(num_operators):
+        
 
-            transformed_term *= .5* (QO(())+ updated_occupation[index]*(-1)**(term[index][1])*extractor(code.dec[term[index][0]]))
+        for index in np.arange(num_operators):
+            transformed_term *= .5* (QO(())- updated_occupation[index]*(-1)**(term[index][1])*extractor(code.dec[term[index][0]]))
             parity_term += parity_list[term[index][0]] # update
         transformed_term *= extractor(parity_term)
             
@@ -128,13 +130,16 @@ def code_transform(hamiltonian, code):
     return new_hamiltonian
             
 if __name__=='__main__':
-    from decoder_encoder_functions import JW_code
-    code1=BinaryCode(np.array([[1,0,0],[0,1,0]]),[SymbolicBinary('w0'),SymbolicBinary('w1'),SymbolicBinary('1 + w0 + w1')])
-    hamil1=FO('0^ 2',0.5) + FO('2^ 0',0.5)
-    print code_transform(hamil1,code1), '\n'
-
-    hamil1=FO('7^',1.0)
-    print code_transform(hamil1,JW_code(10))
+    from decoder_encoder_functions import JW_code, BK_code
+    code1=BinaryCode(np.array([[0,1,0],[1,0,0],[1,1,1]]),[SymbolicBinary('w0'),SymbolicBinary('w0 + w1 + 1'),SymbolicBinary('w0 w1 w2')])
+    #hamil1=FO('0^ 2',0.5) + FO('2^ 0',0.5)
+    #print code_transform(hamil1,code1), '\n'
+    print BK_code(10).enc
+    hamil1=FO(' 1 2^',1.0)
+    print code_transform(hamil1,code1)
+    print '______________'
+    print  code_transform(FO(' 5^ 5'),BK_code(10))
+    
 
 
             
