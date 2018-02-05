@@ -135,7 +135,7 @@ Authors
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Thomas O'Brien <https://github.com/obriente>`__ (Leiden University),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
-`Max Radin <https://github.com/max-radin>`__ (University of California Santa Barbara),
+`Max Radin <https://github.com/max-radin>`__ (UC Santa Barbara),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
 `Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
