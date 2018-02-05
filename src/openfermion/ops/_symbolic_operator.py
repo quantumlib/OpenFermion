@@ -12,6 +12,7 @@
 
 """SymbolicOperator is the base class for FermionOperator and QubitOperator"""
 import copy
+import re
 
 from openfermion.config import EQ_TOLERANCE
 
@@ -104,56 +105,31 @@ class SymbolicOperator(object):
             '1.5 [2^ 3] + 1.4 [3^ 0]'
         """
 
-        index = 0  # Index of current character in long_string
-        subtraction = False  # Whether this term is being subtracted
-        while index < len(long_string):
-
-            # Find the start and end indices of the next coefficient
-            while long_string[index].isspace():
-                index += 1
-            coefficient_start = index
-            while long_string[index] is not '[':
-                index += 1
-            coefficient_end = index
-
-            # Find the start and end indices of the term
-            factor_start = index + 1
-            while long_string[index] is not ']':
-                index += 1
-            factor_end = index
+        pattern = '(.*?)\[(.*?)\]'  # regex for a term
+        for match in re.findall(pattern, long_string, flags=re.DOTALL):
 
             # Determine the coefficient for this term
-            if coefficient_start == coefficient_end:
+            coef_string = match[0].strip()
+            if coef_string[0] is '+':
+                coef_string = coef_string[1:].strip()
+            if coef_string is '':
                 coef = 1.0
+            elif coef_string is '-':
+                coef = -1.0
             else:
                 try:
-                    coef = complex(
-                            long_string[coefficient_start:coefficient_end])
+                    coef = complex(coef_string)
                 except ValueError:
-                    raise ValueError('Invalid coefficient {}.'.format(
-                            long_string[coefficient_start:coefficient_end]))
+                    raise ValueError(
+                            'Invalid coefficient {}.'.format(coef_string))
             coef *= coefficient
-            if subtraction:
-                coef = -coef
 
             # Parse the term and add it to the dict
-            term = self._parse_string(long_string[factor_start:factor_end])
+            term = self._parse_string(match[1])
             if term not in self.terms:
                 self.terms[term] = coef
             else:
                 self.terms[term] += coef
-
-            # If there is another term after this one, check if it is being
-            # added or subtracted
-            while index < (len(long_string) - 1):
-                index += 1
-                if not long_string[index].isspace():
-                    break
-            if long_string[index] is '-':
-                subtraction = True
-            else:
-                subtraction = False
-            index += 1
 
     def _parse_sequence(self, term):
         """Parse a term given as a sequence type (i.e., list, tuple, etc.).
