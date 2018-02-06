@@ -2,8 +2,9 @@ from _binary_operator import SymbolicBinary
 import numpy as np
 import copy
 
+# TODO: sparse encoders, tests, dissolve toggle: may get too big
 
-def _shift_decoder(decode,runner): # this function was a bit hacky - please test it to death
+def _shift_decoder(decode,runner):
     """
     Shifts the indices of a decoder by a constant.
     
@@ -27,7 +28,7 @@ def _double_decoding(dec1, dec2):
         dec1 (numpy array of SymbolicBinary) decoding of the outer code layer 
         dec2 (numpy array of SymbolicBinary) decoding of the inner code layer 
     
-    Returns: the decoding difined by  w -> dec1 ( dec2 (w) )
+    Returns: the decoding defined by  w -> dec1 ( dec2 (w) )
     """
     doubled_decoder=[]
     for entry in dec1:
@@ -69,7 +70,8 @@ def linearize_decoder(mtx):
 class BinaryCode(object):
 
     def __init__(self, encoding, decoding):
-        # only accepts linear decoders?
+
+        # TODO: decoding accepts a matrix?
 
         if not isinstance(encoding, (np.ndarray,list,tuple)):
             raise TypeError('encoding must be a list, array or tuple .')
@@ -77,7 +79,6 @@ class BinaryCode(object):
         if not isinstance(decoding, (np.ndarray,list,tuple)):
             raise TypeError('decoding must be a list, array or tuple .') 
         
-        #transform the encoding into a numpy array extracting the total number qubits and orbitals
         self.enc=np.array(map(np.array,encoding))
         self.qubits,self.orbitals = np.shape(np.array(encoding))
 
@@ -86,8 +87,6 @@ class BinaryCode(object):
 
         decoder_qubits = set()
         self.dec = []
-        
-        # build the decoder - question: what if its given as a matrix... we should be able to handle that
 
         for symbolic_binary in np.array(decoding):
 

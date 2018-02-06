@@ -2,7 +2,7 @@ import numpy as np
 from _binary_operator import SymbolicBinary
 from _code_operator import BinaryCode, linearize_decoder as linear
 
-# TODO: BK, JW these are already implemented. ideally we would not have additional implementations here.
+# TODO: BK, JW these are already implemented. ideally we would not have additional implementations here.?
 
 def encoder_bk(d):
     """
@@ -23,8 +23,7 @@ def encoder_bk(d):
 
 def decoder_bk(d):
     """
-    outputs the inverse of the binary tree matrix utilized for the \
-    decoding
+    outputs the inverse of the binary tree matrix utilized for decoding
     Args:
         d: dimension
 
@@ -108,8 +107,7 @@ def BK_code(sites):
 
 
 
-if __name__=='__main__':
-    a=constant_code([1,0,1,0,1,1,1])
-    print a.enc, a.dec, a.orbitals, a.qubits
+# if __name__=='__main__':
+
 
 

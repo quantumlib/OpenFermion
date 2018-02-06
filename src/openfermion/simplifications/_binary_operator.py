@@ -1,5 +1,4 @@
 # symbolic binary class -
-# TODO: This corresponds to a single element of a decoder. Maybe we can implement a decoder class or just keep using it as a list of these?
 
 import copy
 import numpy as np
@@ -76,7 +75,7 @@ class SymbolicBinary(object):
             raise ValueError('term specified incorrectly.')
         correctedinput=[]
         for item in self.terms:
-            binary_sum_rule(correctedinput,tuple(set(item)))
+            binary_sum_rule(correctedinput,tuple(sorted(set(item))))
         self.terms=correctedinput
 
     def _long_string_init(self, term):
@@ -94,7 +93,7 @@ class SymbolicBinary(object):
             self.terms.append(parsed_summand)
         correctedinput=[]
         for item in self.terms:
-            binary_sum_rule(correctedinput,tuple(set(item)))
+            binary_sum_rule(correctedinput,tuple(sorted(set(item))))
             self.terms=correctedinput
 
     def _check_factor(self,term, factor):
@@ -241,7 +240,7 @@ class SymbolicBinary(object):
                         continue
 
                     indices = left_indices | right_indices # binary rule - 2 w^2 = w
-                    product_term = [(qidx, 'W') for qidx in list(indices)]
+                    product_term = [(qidx, 'W') for qidx in sorted(list(indices))]
                     result_terms = binary_sum_rule(result_terms, tuple(product_term))
 
             self.terms = result_terms
@@ -262,7 +261,8 @@ class SymbolicBinary(object):
                     shifted_summand.append((qubit + const, 'W'))
                 else:
                     shifted_summand.append(factor)
-            shifted_terms.append(tuple(shifted_summand))
+            shifted_terms.append(tuple(sorted(shifted_summand)))
+
         self.terms = shifted_terms
 
 
@@ -399,6 +399,7 @@ class SymbolicBinary(object):
 
 
 if __name__ == '__main__':
+
     b1 = SymbolicBinary('1 + w0 w2')
     print 'b1:',b1.terms
     b2 = SymbolicBinary([((1,'1'),)])
