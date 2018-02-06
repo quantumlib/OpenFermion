@@ -9,7 +9,7 @@ def _shift_decoder(decode,runner):
     Shifts the indices of a decoder by a constant.
     
     Args:
-        decode: a symbolicBinary object
+        decode: a SymbolicBinary object
         runner: the qubit index that corresponds to the offset
 
     Returns: a shifted decoder
@@ -104,6 +104,8 @@ class BinaryCode(object):
 
         if len(decoder_qubits)!=self.qubits:
             raise ValueError('decoder and encoder provided has different number of qubits')
+        
+        self.dec=np.array(self.dec)
 
     def __iadd__(self, appendix):
         """
@@ -118,7 +120,7 @@ class BinaryCode(object):
         if not isinstance(appendix,BinaryCode):
             raise TypeError('argument must be a BinaryCode.')
         
-        self.dec=np.append(self.dec, _shift_decoder(appendix.dec,self.qubits-1)) # the -1 is added because you start counting qubits from 0
+        self.dec=np.append(self.dec, _shift_decoder(appendix.dec,self.qubits)) 
         
         tmp_mtx=np.zeros((self.qubits+appendix.qubits,self.orbitals+appendix.orbitals),int)
         tmp_mtx[:self.qubits,:self.orbitals]=self.enc
@@ -143,44 +145,70 @@ class BinaryCode(object):
         twin += appendix
         return twin
     
-    def __imul__(self,inner_code):
+    def __imul__(self,factor):
+        """
+        Multiplier *= with BinaryCode yields code concatenation. If the factor is integer, it appends the code multiple times.  
         """
         
-        """
+        if not isinstance(factor,(BinaryCode,int)):
+            raise TypeError('argument must be a BinaryCode or integer')
+        if isinstance(factor, BinaryCode):
+            if(self.qubits != factor.orbitals or self.orbitals != factor.qubits):
+                raise BinaryCodeError('size mismatch between inner and outer code layer')
+            
+            self.dec= _double_decoding(self.dec,factor.dec)
+            self.enc= np.dot(factor.enc,self.enc)
+            self.qubits=factor.qubits
+            return self
+        elif isinstance(factor, int):
+            if factor<1:
+                raise ValueError('integer factor has to be positive, non-zero ')
+            self.enc=np.kron(np.identity(factor, dtype=int),self.enc)
+            tmp_dec=self.dec
+            for index in np.arange(1,factor):
+                self.dec=np.append( self.dec, _shift_decoder(tmp_dec,index*self.qubits)) 
+            self.qubits *= factor
+            return self
+            
+            
         
-        if not isinstance(inner_code,BinaryCode):
-            raise TypeError('argument must be a BinaryCode')
-        if(self.qubits != inner_code.orbitals or self.orbitals != inner_code.qubits):
-            raise BinaryCodeError('size mismatch between inner and outer code layer')
-        
-        self.dec= _double_decoding(self.dec,inner_code.dec)
-        self.enc= np.dot(inner_code.enc,self.enc)
-        self.qubits=inner_code.qubits
-        return self 
     
-    def __mul__(self,inner_code):
+    def __mul__(self,factor):
         """
+        
         """
         twin=copy.deepcopy(self)
-        twin *= inner_code
+        twin *= factor
         return twin
 
+    def __rmul__(self,right_factor):
+        """
+        
+        """
+        if isinstance(right_factor,int):
+            return self * right_factor
+            
+            
+        
 if __name__ == '__main__':
+    from decoder_encoder_functions import * 
     a=BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w1 + w0 '),SymbolicBinary('w0 + 1')])
     d = BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w0 '),SymbolicBinary('w0 w1')])
     sum = a+d
-    print '\n',sum.dec
+    #print '\n',sum.dec
     b=a*a
     c=a+a
     #print b.enc
     #print b.dec
-    print '\n',b.dec
+    #print '\n',b.dec
     #print c.enc
-    print '\n',c.dec
-    a = SymbolicBinary('w1')
-    b = SymbolicBinary('w2')
-    print a*b
-    print SymbolicBinary('w1')*SymbolicBinary('w2')
+    #print '\n',c.dec
+    #a = SymbolicBinary('w1')
+    #b = SymbolicBinary('w2')
+    #print a*b
+    #print SymbolicBinary('w1')*SymbolicBinary('w2')
+    print type(_shift_decoder((JW_code(2)).dec,1)) 
+    print (JW_code(3)*3).dec
 
                     
         
