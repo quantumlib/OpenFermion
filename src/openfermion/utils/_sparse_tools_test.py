@@ -864,3 +864,12 @@ class GetGapTest(unittest.TestCase):
                     QubitOperator('Z0 Z1', 1j) + QubitOperator((), 2 + 1j))
         with self.assertRaises(ValueError):
             get_gap(get_sparse_operator(operator))
+
+
+class InnerProductTest(unittest.TestCase):
+    def test_inner_product(self):
+        state_1 = csc_matrix(([1., 1.j], ([0, 1], [0, 0])), shape=(2, 1))
+        state_2 = csc_matrix(([1., -1.j], ([0, 1], [0, 0])), shape=(2, 1))
+
+        self.assertAlmostEqual(inner_product(state_1, state_1), 2.)
+        self.assertAlmostEqual(inner_product(state_1, state_2), 0.)

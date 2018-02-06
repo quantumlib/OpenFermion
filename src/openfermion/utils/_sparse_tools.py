@@ -914,3 +914,12 @@ def get_gap(sparse_operator):
 
     gap = abs(values[1] - values[0])
     return gap
+
+
+def inner_product(state_1, state_2):
+    """Compute inner product of two states."""
+    product = state_1.getH().dot(state_2)
+    if product.nnz:
+        return product.data[0]
+    else:
+        return 0.
