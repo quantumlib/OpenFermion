@@ -137,6 +137,6 @@ if __name__ == '__main__':
 
     code1 = BinaryCode(np.array([[0, 1, 0], [1, 0, 0], [1, 1, 1]]),
                        [SymbolicBinary('w0'), SymbolicBinary('w0 + w1 + 1'), SymbolicBinary('w0 w1 w2')])
-    print BK_code(10).enc
+    print (BK_code(10).enc)
     hamil1 = FO(' 1 2^', 1.0)
-    print code_transform(hamil1, code1)
+    print (code_transform(hamil1, code1))

@@ -55,7 +55,7 @@ def linearize_decoder(mtx):
     Returns: a list of symbolicBinaries
 
     """
-    mtx = np.array(map(np.array,mtx))
+    mtx = np.array(list(map(np.array,mtx)))
     system_dim,code_dim = np.shape(mtx)
     res = []*system_dim
     for a in np.arange(system_dim):
@@ -79,7 +79,7 @@ class BinaryCode(object):
         if not isinstance(decoding, (np.ndarray,list,tuple)):
             raise TypeError('decoding must be a list, array or tuple .') 
         
-        self.enc=np.array(map(np.array,encoding))
+        self.enc=np.array(list(map(np.array,encoding)))
         self.qubits,self.orbitals = np.shape(np.array(encoding))
 
         if(self.orbitals!=len(decoding)):
@@ -193,6 +193,8 @@ class BinaryCode(object):
 if __name__ == '__main__':
     from decoder_encoder_functions import * 
     a=BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w1 + w0 '),SymbolicBinary('w0 + 1')])
+    print (a.enc)
+    print (a.dec[1].terms)
     d = BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w0 '),SymbolicBinary('w0 w1')])
     sum = a+d
     #print '\n',sum.dec
@@ -207,8 +209,8 @@ if __name__ == '__main__':
     #b = SymbolicBinary('w2')
     #print a*b
     #print SymbolicBinary('w1')*SymbolicBinary('w2')
-    print type(_shift_decoder((JW_code(2)).dec,1)) 
-    print (JW_code(3)*3).dec
+    print (type(_shift_decoder((JW_code(2)).dec,1)) )
+    print ((JW_code(3)*3).dec)
 
                     
         

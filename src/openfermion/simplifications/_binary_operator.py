@@ -11,9 +11,12 @@ def parse_string(summand):
     add_one = False
     for factor in summand.split():
         if add_one:
-            raise SymbolicBinaryError('Invalid multiplication',summand)
+            term_list.remove((1, '1'))
+            add_one = False
         factor = factor.capitalize()
         if factor == '1':
+            if len(term_list)>0:
+                continue
             term_list.append((1, '1'))
             add_one = True
         elif 'W' in factor:
@@ -26,6 +29,8 @@ def parse_string(summand):
                                           'it should be a non-negative '
                                           'integer.'.format(q_idx))
             term_list.append((q_idx, 'W'))
+        elif factor == '0':
+            return []
         else:
             raise ValueError('term specified incorrectly. {}'.format(factor))
 
@@ -70,13 +75,18 @@ class SymbolicBinary(object):
         # String input
         elif isinstance(term, str):
             self.terms.append(self._parse_string(term))
+
         # Invalid input type
         else:
             raise ValueError('term specified incorrectly.')
-        correctedinput=[]
+
+        # check all terms for binary_sum_rule
+        corrected_input=[]
         for item in self.terms:
-            binary_sum_rule(correctedinput,tuple(sorted(set(item))))
-        self.terms=correctedinput
+            if len(item)==0:
+                continue
+            binary_sum_rule(corrected_input,tuple(sorted(set(item))))
+        self.terms=corrected_input
 
     def _long_string_init(self, term):
         """
@@ -89,12 +99,14 @@ class SymbolicBinary(object):
             if self.different_indices_commute:
                 processed_term = sorted(parsed_summand,
                                         key=lambda factor: factor[0])
+            else:
+                processed_term = parsed_summand
+            self.terms.append(processed_term)
 
-            self.terms.append(parsed_summand)
-        correctedinput=[]
+        corrected_input=[]
         for item in self.terms:
-            binary_sum_rule(correctedinput,tuple(sorted(set(item))))
-            self.terms=correctedinput
+            binary_sum_rule(corrected_input,tuple(sorted(set(item))))
+            self.terms=corrected_input
 
     def _check_factor(self,term, factor):
         if len(factor) != 2:
@@ -134,7 +146,6 @@ class SymbolicBinary(object):
                     summand = sorted(summand, key=lambda real_factor: real_factor[0])
                 self.terms.append(summand)
 
-
     def _parse_string(self, term):
         """Parse a term given as a string.
 
@@ -154,7 +165,7 @@ class SymbolicBinary(object):
         return tuple(processed_term)
 
     def count_qubits(self):
-        term_array = np.array(map(np.array,self.terms)) # this way we make sure we map it to sum of products
+        term_array = map(np.array,self.terms) # this way we make sure we map it to sum of products
         qubits = []
         for summand in term_array:
             for factor in summand:
@@ -173,7 +184,7 @@ class SymbolicBinary(object):
                 A symbolic operator o with the property that o+x = x+o = x for
                 all operators x of the same class.
         """
-        return cls(term=None)
+        return cls(term=[])
 
     @classmethod
     def identity(cls):
@@ -397,49 +408,28 @@ class SymbolicBinary(object):
 
 
 
-
 if __name__ == '__main__':
 
     b1 = SymbolicBinary('1 + w0 w2')
-    print 'b1:',b1.terms
+    print ('b1:',b1.terms)
     b2 = SymbolicBinary([((1,'1'),)])
-    for term in list(b2.terms):
-        print '\t', term
-        for t in term:
-            print '\t\t', t
-    print 'b2:',b2.terms, 'shape:', len(b2.terms)
-    b2p = b2+1
-    b2pp = b2p+1
-    print 'b2 +1 :', b2p.terms,'shape:', len(b2p.terms)
-    print 'b2 +2 :', b2pp.terms
     b3 = SymbolicBinary([((3,'W'),(4,'W'),(1,'1'))])
-    print 'b3:',b3.terms,'shape:', np.shape(b3.terms)
-    b4 = b3*b2
-    print 'b3*b2:',b4.terms
-    b4 = b3*b1
-    print 'b3*b1:',b4.terms
-    b4 = b1*b2
-    print 'b1*b2:',b4.terms,'shape:', len(b4.terms)
-    b4 = b1 * b2
-    print 'b1*b2:', b4.terms
-    b5 = SymbolicBinary([((1,'W'),(2,'W'))])
-    print 'b5:',b5.terms
-    b4 = b5+b1
-    print 'b5+b1:',b4.terms
-    for term in list(b4.terms):
-        print '\t',term
-        for t in term:
-            print '\t\t',t
-    b4 = b5*b1
-    print 'b5*b1:',b4.terms
-    print 'b4*b1:',(b4*b1).terms
-    print (b1+b3).terms
-    b5 = (b1+b3)**2
-    print '(b1+b3)^2:',b5.terms
-    print b5.count_qubits()
-    print SymbolicBinary('w1').terms
 
-    print '\n\n', b5.terms
-    b5._shift(4)
-    print b5.terms
+    print ((b1+b3).terms)
+    b5 = (b1+b3)**2
+    print ('(b1+b3)^2:',b5.terms)
+    print (b5.count_qubits())
+    print (b5.terms)
+
+    print (SymbolicBinary('w3 w2 w1 w4').terms)
+    print (SymbolicBinary('1 w1 w3'))
+    print (SymbolicBinary('1 + w1 w2 + w2 w1').terms)
+    loc_op = SymbolicBinary('1 + w1 w2')
+    loc_op *= SymbolicBinary('w1 w2')
+    loc_op = SymbolicBinary('1 + w0 w2 w5')
+    print (loc_op.count_qubits())
+
+
+
+
 
