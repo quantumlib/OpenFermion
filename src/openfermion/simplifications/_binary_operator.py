@@ -165,7 +165,7 @@ class SymbolicBinary(object):
         return tuple(processed_term)
 
     def count_qubits(self):
-        term_array = map(np.array,self.terms) # this way we make sure we map it to sum of products
+        term_array = list(map(np.array,self.terms)) # this way we make sure we map it to sum of products
         qubits = []
         for summand in term_array:
             for factor in summand:
@@ -210,7 +210,7 @@ class SymbolicBinary(object):
                     tmp_string += '{}{} '.format(action_string, index)
                 else:
                     tmp_string += '{}{} '.format(index, action_string)
-            string_rep += '{}] +\n'.format(tmp_string.strip())
+            string_rep += '{}] + '.format(tmp_string.strip()) 
         return string_rep[:-3]
 
     def __repr__(self):

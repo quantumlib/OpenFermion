@@ -23,12 +23,13 @@ def _shift_decoder(decode,runner):
 
 def _double_decoding(dec1, dec2):
     """
+    Concatenates two decodings     
     
     Args:
         dec1 (numpy array of SymbolicBinary) decoding of the outer code layer 
         dec2 (numpy array of SymbolicBinary) decoding of the inner code layer 
     
-    Returns: the decoding defined by  w -> dec1 ( dec2 (w) )
+    Returns: the decoding (numpy array of SymbolicBinary) defined by  w -> dec1 ( dec2 (w) )
     """
     doubled_decoder=[]
     for entry in dec1:
@@ -48,11 +49,12 @@ class BinaryCodeError(Exception):
 
 def linearize_decoder(mtx):
     """
-    outputs a linear decoding function when given a matrix
+    Outputs a linear decoding function from a matrix
+    
     Args:
-        mtx: matrix to derive the decoding function from
+        mtx: array/tuple  or list to derive the decoding function from
 
-    Returns: a list of symbolicBinaries
+    Returns: array of SymbolicBinary
 
     """
     mtx = np.array(list(map(np.array,mtx)))
@@ -65,7 +67,7 @@ def linearize_decoder(mtx):
                 dec_str+='W'+str(b)+' + '
         dec_str = dec_str.rstrip(' + ')
         res.append(SymbolicBinary(dec_str))
-    return res
+    return np.array(res)
 
 class BinaryCode(object):
 
@@ -102,6 +104,9 @@ class BinaryCode(object):
             Warning('the number of qubits and the max qubit value of the decoder does not match.\n, you '
                           'have an all zero decoder column')
 
+        if max(decoder_qubits)+1>self.qubits:
+            raise ValueError('decoder is indexing more qubits than encoder')
+        
         if len(decoder_qubits)!=self.qubits:
             raise ValueError('decoder and encoder provided has different number of qubits')
         
@@ -109,7 +114,7 @@ class BinaryCode(object):
 
     def __iadd__(self, appendix):
         """
-        Appends a binary code to the present code via += . 
+        Appends a binary code via += . 
         
         Args:
             appendix (BinaryCode): The code to append to the present one. 
@@ -148,12 +153,17 @@ class BinaryCode(object):
     def __imul__(self,factor):
         """
         Multiplier *= with BinaryCode yields code concatenation. If the factor is integer, it appends the code multiple times.  
+        
+        Args:
+            factor: int or array of SymbolicBinary
+            
+        Returns: BinaryCode
         """
         
         if not isinstance(factor,(BinaryCode,int)):
             raise TypeError('argument must be a BinaryCode or integer')
         if isinstance(factor, BinaryCode):
-            if(self.qubits != factor.orbitals or self.orbitals != factor.qubits):
+            if self.qubits != factor.orbitals:
                 raise BinaryCodeError('size mismatch between inner and outer code layer')
             
             self.dec= _double_decoding(self.dec,factor.dec)
@@ -175,6 +185,12 @@ class BinaryCode(object):
     
     def __mul__(self,factor):
         """
+        Appending multiplesof a code  or code concatenation via multiplication sign * .
+        
+        Args:
+            factor: either int or array of SymbolicBinary
+        
+        Returns: global code (BinaryCode)
         
         """
         twin=copy.deepcopy(self)

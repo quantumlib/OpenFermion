@@ -56,7 +56,7 @@ def decoder_checksum(sites,odd):
     decoding function for checksum codes
     Args:
         sites:N, number of orbitals
-        odd: either 1 or 0, if 1 we encode all states with odd Hamming - weight
+        odd: either 1 or 0, if 1 we encode all states with odd Hamming weight
 
     Returns: a SymbolicBinary list
 
@@ -68,7 +68,7 @@ def decoder_checksum(sites,odd):
         all_in += SymbolicBinary('w'+str(a))
 
     djw = linear(np.identity(sites-1,dtype=int))
-    djw += [all_in]
+    djw = np.append( djw,[all_in])
     return djw
 
 def checksum_code(sites,odd):
