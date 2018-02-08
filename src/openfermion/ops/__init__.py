@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from ._binary_operator import SymbolicBinary
 from ._symbolic_operator import SymbolicOperator
 from ._fermion_operator import (FermionOperator,
                                 hermitian_conjugated,
@@ -21,4 +22,3 @@ from ._polynomial_tensor import general_basis_change, PolynomialTensor
 from ._interaction_operator import InteractionOperator
 from ._interaction_rdm import InteractionRDM
 from ._quadratic_hamiltonian import QuadraticHamiltonian
-from ._binary_operator import SymbolicBinary
