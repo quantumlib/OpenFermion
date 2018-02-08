@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from ._binary_operator import SymbolicBinary
 from ._symbolic_operator import SymbolicOperator
 from ._fermion_operator import (FermionOperator,
                                 hermitian_conjugated,
