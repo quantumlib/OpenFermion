@@ -1,16 +1,36 @@
+"""Tests  _symbolic_operator.py."""
+
 import unittest
-from _binary_operator import SymbolicBinary
+from openfermion.ops._binary_operator import SymbolicBinary, SymbolicBinaryError
 
 
 class SymbolicBinaryTest(unittest.TestCase):
 
     def test_init_long_string(self):
-        operator1 = SymbolicBinary('1 + w1 w2')
-        self.assertEqual(operator1.terms, [((1, '1'),), ((1, 'W'), (2, 'W'))])
+        operator1 = SymbolicBinary('w1 w2 + 1')
+        self.assertEqual(operator1.terms, [((1, 'W'), (2, 'W')), ((1, '1'),)])
+        with self.assertRaises(ValueError):
+            SymbolicBinary('1 + x1 z2')
+        with self.assertRaises(ValueError):
+            SymbolicBinary('1 + wx')
 
     def test_init_string(self):
         operator1 = SymbolicBinary('w1')
         self.assertEqual(operator1.terms, [((1, 'W'),)])
+
+    def test_none_init(self):
+        operator1 = SymbolicBinary()
+        self.assertEqual(operator1.terms, [])
+        operator1 = SymbolicBinary([])
+        self.assertEqual(operator1.terms, [])
+
+    def test_wrong_init(self):
+        with self.assertRaises(ValueError):
+            SymbolicBinary(3)
+
+    def test_invalid_factor(self):
+        with self.assertRaises(ValueError):
+            SymbolicBinary([((1, 'Q'),)])
 
     def test_init_list(self):
         operator1 = SymbolicBinary([((3, 'W'), (4, 'W'), (1, '1'))])
@@ -21,17 +41,41 @@ class SymbolicBinaryTest(unittest.TestCase):
         operator2 = SymbolicBinary([((3, 'W'), (4, 'W'), (1, '1'))])
         multiplication = operator1 * operator2
         self.assertEqual(multiplication.terms, [((3, 'W'), (4, 'W')), ((1, 'W'), (2, 'W'), (3, 'W'), (4, 'W'))])
+        operator1 = SymbolicBinary([((1, '1'),)])
+        operator1 *= operator1
+        self.assertEqual(str(operator1), '[1]')
+        operator1 = 1 * operator1
+        self.assertEqual(str(operator1), '[1]')
+
+        with self.assertRaises(TypeError):
+            operator1 *= 4.3
+        with self.assertRaises(TypeError):
+            tmp = 4.3 * operator1
+        with self.assertRaises(TypeError):
+            tmp = operator1 * 4.3
 
     def test_addition(self):
         operator1 = SymbolicBinary('w1 w2')
         operator2 = SymbolicBinary('1 + w1 w2')
         addition = operator1 + operator2
         self.assertEqual(addition.terms, [((1, '1'),)])
+        addition = addition + 1
+        self.assertEqual(addition.terms, [])
+        with self.assertRaises(TypeError):
+            tmp = 4.3 + operator1
+
+    def test_string_output(self):
+        operator1 = SymbolicBinary('w15')
+        self.assertEqual(str(operator1), '[W15]')
 
     def test_power(self):
         operator1 = SymbolicBinary('1 + w1 w2 + w3 w4')
         pow_loc = operator1 ** 2
         self.assertEqual(pow_loc.terms, [((1, '1'),), ((1, 'W'), (2, 'W')), ((3, 'W'), (4, 'W'))])
+        with self.assertRaises(TypeError):
+            tmp = operator1 ** 4.3
+        with self.assertRaises(TypeError):
+            tmp = operator1 ** (-1)
 
     def test_init_binary_rule(self):
         operator1 = SymbolicBinary('1 + w2 w2 + w2')
@@ -43,6 +87,9 @@ class SymbolicBinaryTest(unittest.TestCase):
 
     def test_multiply_by_zero(self):
         operator1 = SymbolicBinary('w1 w3 0')
+        self.assertEqual(operator1.terms, [])
+        operator1 = SymbolicBinary('w1 w3')
+        operator1 *= 4
         self.assertEqual(operator1.terms, [])
 
     def test_ordering(self):
@@ -86,10 +133,17 @@ class SymbolicBinaryTest(unittest.TestCase):
         self.assertEqual(a, 0.0)
         a = operator1.evaluate([1, 1, 1])
         self.assertEqual(a, 0.0)
+        with self.assertRaises(SymbolicBinaryError):
+            operator1.evaluate([1, 1])
 
     def test_init_binary_rule2(self):
         operator1 = SymbolicBinary('w1 w1 + 1')
         self.assertEqual(operator1.terms, [((1, 'W'),), ((1, '1'),)])
+
+    def test_power_null(self):
+        operator1 = SymbolicBinary('w1 w1 + 1')
+        is_one = operator1 ** 0
+        self.assertEqual(is_one.terms, [((1, '1'),), ])
 
     def test_addition_evaluations(self):
         operator1 = SymbolicBinary('w1 w1 + 1')

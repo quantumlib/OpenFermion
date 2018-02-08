@@ -159,7 +159,6 @@ class SymbolicBinary(object):
 
         Raises:
           ValueError: Incorrect terms
-          SymbolicBinaryError: negative qubit index
 
         """
         term_list = []
@@ -179,10 +178,6 @@ class SymbolicBinary(object):
                 if not q_idx.isdigit():
                     raise ValueError('Invalid index {}.'.format(q_idx))
                 q_idx = int(q_idx)
-                if q_idx < 0:
-                    raise SymbolicBinaryError('Invalid qubit index {}. '
-                                              'it should be a non-negative '
-                                              'integer.'.format(q_idx))
                 term_list.append((q_idx, 'W'))
             elif factor == '0':
                 return []
@@ -288,7 +283,7 @@ class SymbolicBinary(object):
                 A symbolic operator u with the property that u*x = x*u = x for
                 all operators x of the same class.
         """
-        return cls(term=((1, '1'),))
+        return cls(term=[((1, '1'),)])
 
     def __str__(self):
         """
@@ -464,14 +459,17 @@ class SymbolicBinary(object):
             exponentiated (SymbolicBinary)
 
         Raises:
-            ValueError: Can only raise SymbolicBinary to non-negative
+            TypeError: Can only raise SymbolicBinary to non-negative
                 integer powers.
         """
         # Handle invalid exponents.
         if not isinstance(exponent, int):
-            raise ValueError(
+            raise TypeError(
                 'exponent must be int, but was {} {}'.format(
                     type(exponent), repr(exponent)))
+        else:
+            if exponent<0:
+                raise TypeError('exponent must be non-negative, but was {}'.format(exponent))
 
         # Check if exponent is zero - if yes return self, if not return zero.
         if exponent == 0:
@@ -492,3 +490,10 @@ def binary_sum_rule(terms, summand):
         terms.append(summand)
     else:
         terms.remove(summand)
+
+if __name__ == '__main__':
+    operator1 = SymbolicBinary([((1,'1'),)])
+    operator1 ** (-1)
+    operator2 = SymbolicBinary([((1,'1'),)])
+    operator1*=operator2
+    print operator1
