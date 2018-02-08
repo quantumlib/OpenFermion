@@ -1,3 +1,14 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 """Tests  _symbolic_operator.py."""
 
 import unittest
@@ -7,7 +18,7 @@ from openfermion.ops._binary_operator import SymbolicBinary, SymbolicBinaryError
 class SymbolicBinaryTest(unittest.TestCase):
 
     def test_init_long_string(self):
-        operator1 = SymbolicBinary('w1 w2 + 1')
+        operator1 = SymbolicBinary('w1 w2 1 + 1')
         self.assertEqual(operator1.terms, [((1, 'W'), (2, 'W')), ((1, '1'),)])
         with self.assertRaises(ValueError):
             SymbolicBinary('1 + x1 z2')
@@ -31,6 +42,10 @@ class SymbolicBinaryTest(unittest.TestCase):
     def test_invalid_factor(self):
         with self.assertRaises(ValueError):
             SymbolicBinary([((1, 'Q'),)])
+        with self.assertRaises(ValueError):
+            SymbolicBinary([((1, 'Q', 'W'),)])
+        with self.assertRaises(ValueError):
+            SymbolicBinary([((1.0, 'Q', 'W'),)])
 
     def test_init_list(self):
         operator1 = SymbolicBinary([((3, 'W'), (4, 'W'), (1, '1'))])
@@ -61,12 +76,16 @@ class SymbolicBinaryTest(unittest.TestCase):
         self.assertEqual(addition.terms, [((1, '1'),)])
         addition = addition + 1
         self.assertEqual(addition.terms, [])
+        addition = addition + 1
+        self.assertEqual(addition.terms, [((1, '1'),)])
         with self.assertRaises(TypeError):
             tmp = 4.3 + operator1
 
     def test_string_output(self):
         operator1 = SymbolicBinary('w15')
         self.assertEqual(str(operator1), '[W15]')
+        operator1 = SymbolicBinary()
+        self.assertEqual(operator1.__repr__(), '0')
 
     def test_power(self):
         operator1 = SymbolicBinary('1 + w1 w2 + w3 w4')

@@ -1,7 +1,19 @@
-# symbolic binary class for decoder definitions (arxiv 1712.07067)
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+"""symbolic binary class for decoder definitions (arxiv 1712.07067) """
 
 import copy
-import numpy 
+import numpy
 
 
 class SymbolicBinaryError(Exception):
@@ -21,7 +33,7 @@ class SymbolicBinary(object):
     and power rule w3 ^ 0  = 1, where raising to every other
     integer power than zero reproduces w3.
     
-    Of course, we can also add a non-trivial conatant, which is 1.
+    Of course, we can also add a non-trivial constant, which is 1.
     Due to these binary rules, every function available will be a 
     multinomial like e.g.
     
@@ -38,7 +50,7 @@ class SymbolicBinary(object):
     a whitespace, or in its native form of nested tuples, 
     where there are two data types:
     1) a variable on qubit n:  (n, 'W')
-    2) a costant term (1,'1') .
+    2) a constant term (1,'1') .
     
     A multinomial is a tuple (containing the sumamnds) of tuples 
     (containing the factors) of the above. After initialization,
@@ -51,11 +63,14 @@ class SymbolicBinary(object):
 
                 bin_fun = SymbolicBinary('1 + w1 w2 + w0 w1')
                 # Equivalently
-                bin_fun = SymbolicBinary([((1,'1'),)] + SymbolicBinary([((1,'W'),(2,'W')),((0,'W'),(1,'W'))])
+                bin_fun = SymbolicBinary([((1,'1'),)] +
+                SymbolicBinary([((1,'W'),(2,'W')),((0,'W'),(1,'W'))])
 
     """
     actions = ('1', 'W')
     action_strings = ('', 'W')
+
+    # these are just informative for this class - not used
     action_before_index = True
     different_indices_commute = True
 
@@ -65,6 +80,9 @@ class SymbolicBinary(object):
 
         Args:
             term: (str, list, tuple) used for initializing a SymbolicBinary
+
+        Raises:
+            ValueError: when term is not a string,list or tuple
         """
 
         self.terms = []
@@ -93,27 +111,20 @@ class SymbolicBinary(object):
         self._check_terms()
 
     def _check_terms(self):
-        """
-        Ensures all terms obey binary rules
-        Updates terms in place.
-
-        """
+        """ Ensures all terms obey binary rules, updates terms in place."""
         sorted_input = []
         for item in self.terms:
-            if len(item) == 0:
-                continue
-            binary_sum_rule(sorted_input, tuple(sorted(set(item))))
+            if len(item):
+                binary_sum_rule(sorted_input, tuple(sorted(set(item))))
 
         self.terms = sorted_input
 
     def _long_string_init(self, term):
-        """
-        Initialization from a long string representation i.e.:
+        """Initialization from a long string representation i.e.:
         1 + w1 w2 + w3 w4'. Updates terms in place.
 
         Args:
             term: (str) a string representation of a symbolicBinary that involves summation
-
         """
         for summand in term.split(' + '):
             # for each sum term
@@ -123,9 +134,8 @@ class SymbolicBinary(object):
         self._check_terms()
 
     def _check_factor(self, term, factor):
-        """
-        Checks types and values of all factors in a term, removes
-        multiplications with 1.
+        """Checks types and values of all factors in a term, removes multiplications with 1.
+
         Args:
             term: (list-like) a single term for SymbolicBinary
             factor: a factor in term
@@ -134,7 +144,6 @@ class SymbolicBinary(object):
 
         Raises:
             ValueError: invalid action/negative or non-integer qubit index
-
         """
         if len(factor) != 2:
             raise ValueError('Invalid factor {}.'.format(factor))
@@ -157,18 +166,15 @@ class SymbolicBinary(object):
         return term
 
     def _parse_sequence(self, term):
-        """
-        Parse a term given as a sequence type (i.e., list, tuple, etc.).
+        """ Parse a term given as a sequence type (i.e., list, tuple, etc.).
         e.g. [((1,'W'),(2,'W')),...].
 
         Args:
             term: (list) of tuples of tuples.
-        Returns: summand: (list)
 
+        Returns: summand: (list)
         """
-        if not term:
-            return []
-        else:
+        if term:
             for summand in term:
                 for factor in summand:
                     summand = self._check_factor(summand, factor)
@@ -176,11 +182,12 @@ class SymbolicBinary(object):
                 if self.different_indices_commute:
                     summand = sorted(summand, key=lambda real_factor: real_factor[0])
                 self.terms.append(summand)
+        else:
+            return []
 
     @staticmethod
     def _parse_string(term):
-        """
-        Parse a string term like 'w1 w2 w0'
+        """ Parse a string term like 'w1 w2 w0'
         Args:
             term: (str) string representation of symbolicBinary term.
 
@@ -188,7 +195,6 @@ class SymbolicBinary(object):
 
         Raises:
           ValueError: Incorrect terms
-
         """
         term_list = []
         add_one = False
@@ -218,8 +224,8 @@ class SymbolicBinary(object):
         return parsed_term
 
     def enumerate_qubits(self):
-        """
-        enumerates all qubits indexed in a given symbolicBinary
+        """ enumerates all qubits indexed in a given symbolicBinary
+
         Returns: a list of qubits
 
         """
@@ -235,12 +241,10 @@ class SymbolicBinary(object):
         return qubits
 
     def _shift(self, const):
-        """
-        Shift all qubit indices by a given constant.
+        """ Shift all qubit indices by a given constant.
+
         Args:
             const: the constant to shift the indices by
-        
-
         """
         shifted_terms = []
         for summand in self.terms:
@@ -256,14 +260,14 @@ class SymbolicBinary(object):
         self.terms = shifted_terms
 
     def evaluate(self, binary_list):
-        """
-        Evaluates a SymbolicBinary
+        """Evaluates a SymbolicBinary
+
         Args:
             binary_list: (list) a list of binary values corresponding each (n,'W').
 
         Returns: (int, 0 or 1) result of the evaluation
 
-         Raises:
+        Raises:
           SymbolicBinaryError: Length of list provided must match the number of qubits indexed in symbolicBinary
         """
         all_qubits = self.enumerate_qubits()
@@ -285,10 +289,7 @@ class SymbolicBinary(object):
         return evaluation % 2
 
     def _add_one(self):
-        """
-        Adds constant 1 to a SymbolicBinary
-
-        """
+        """ Adds constant 1 to a SymbolicBinary """
         if ((1, '1'),) in self.terms:  # ((1,'1'),) can only exist as a loner in SymbolicBinary
             self.terms.remove(((1, '1'),))
         else:
@@ -315,10 +316,7 @@ class SymbolicBinary(object):
         return cls(term=[((1, '1'),)])
 
     def __str__(self):
-        """
-        Return an easy-to-read string representation.
-
-        """
+        """ Return an easy-to-read string representation."""
         if not self.terms:
             return '0'
         string_rep = ''
@@ -327,10 +325,7 @@ class SymbolicBinary(object):
             for factor in term:
                 index, action = factor
                 action_string = self.action_strings[self.actions.index(action)]
-                if self.action_before_index:
-                    tmp_string += '{}{} '.format(action_string, index)
-                else:
-                    tmp_string += '{}{} '.format(index, action_string)
+                tmp_string += '{}{} '.format(action_string, index)
             string_rep += '{}] + '.format(tmp_string.strip())
         return string_rep[:-3]
 
@@ -338,8 +333,7 @@ class SymbolicBinary(object):
         return str(self)
 
     def __imul__(self, multiplier):
-        """
-        In-place multiply (*=) with a scalar or operator of the same type.
+        """ In-place multiply (*=) with a scalar or operator of the same type.
 
         Args:
             multiplier(int or SymbolicBinary): multiplier
@@ -354,10 +348,10 @@ class SymbolicBinary(object):
         # Handle integers.
         if isinstance(multiplier, int):
             mod_mul = int(multiplier % 2)
-            if not mod_mul:
-                return self.zero()
-            else:
+            if mod_mul:
                 return self
+            else:
+                return self.zero()
 
         # Handle operator of the same type
         elif isinstance(multiplier, self.__class__):
@@ -386,8 +380,7 @@ class SymbolicBinary(object):
                 self.__class__.__name__, multiplier.__class__.__name__))
 
     def __rmul__(self, multiplier):
-        """
-        Return multiplier * self for a scalar.
+        """ Return multiplier * self for a scalar.
 
         Args:
           multiplier: A scalar to multiply by.
@@ -444,11 +437,14 @@ class SymbolicBinary(object):
             mod_add = addend % 2
             if mod_add:
                 self._add_one()
-
+        if not isinstance(addend, (int, type(self))):
+            raise TypeError(
+                'Object of invalid type cannot add with ' +
+                type(self) + '.')
         return self
 
     def __radd__(self, addend):
-        """In-place method for += addition of SymbolicBinary.
+        """In-place method for right addition to SymbolicBinary.
 
         Args:
             addend (int or SymbolicBinary): The operator to add.
@@ -478,7 +474,6 @@ class SymbolicBinary(object):
         return summand
 
     def __pow__(self, exponent):
-
         """Exponentiate the SymbolicBinary.
 
         Args:
@@ -497,7 +492,7 @@ class SymbolicBinary(object):
                 'exponent must be int, but was {} {}'.format(
                     type(exponent), repr(exponent)))
         else:
-            if exponent<0:
+            if exponent < 0:
                 raise TypeError('exponent must be non-negative, but was {}'.format(exponent))
 
         # Check if exponent is zero - if yes return self, if not return zero.
@@ -508,21 +503,12 @@ class SymbolicBinary(object):
 
 
 def binary_sum_rule(terms, summand):
-    """
-    Updates terms in place based on binary_sum_rule, the rules for binary addition.  
+    """ Updates terms in place based on binary rules.
     Args:
         terms: symbolicBinary terms
         summand: new potential addition to term
-
     """
     if summand not in terms:
         terms.append(summand)
     else:
         terms.remove(summand)
-
-if __name__ == '__main__':
-    operator1 = SymbolicBinary([((1,'1'),)])
-    operator1 ** (-1)
-    operator2 = SymbolicBinary([((1,'1'),)])
-    operator1*=operator2
-    print operator1
