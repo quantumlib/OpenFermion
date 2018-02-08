@@ -43,9 +43,9 @@ class SymbolicBinaryTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             SymbolicBinary([((1, 'Q'),)])
         with self.assertRaises(ValueError):
-            SymbolicBinary([((1,'Q','W'),)])
+            SymbolicBinary([((1, 'Q', 'W'),)])
         with self.assertRaises(ValueError):
-            SymbolicBinary([((1.0,'Q','W'),)])
+            SymbolicBinary([((1.0, 'Q', 'W'),)])
 
     def test_init_list(self):
         operator1 = SymbolicBinary([((3, 'W'), (4, 'W'), (1, '1'))])
@@ -55,7 +55,9 @@ class SymbolicBinaryTest(unittest.TestCase):
         operator1 = SymbolicBinary('1 + w1 w2')
         operator2 = SymbolicBinary([((3, 'W'), (4, 'W'), (1, '1'))])
         multiplication = operator1 * operator2
-        self.assertEqual(multiplication.terms, [((3, 'W'), (4, 'W')), ((1, 'W'), (2, 'W'), (3, 'W'), (4, 'W'))])
+        self.assertEqual(multiplication.terms, [((3, 'W'), (4, 'W')),
+                                                ((1, 'W'), (2, 'W'),
+                                                 (3, 'W'), (4, 'W'))])
         operator1 = SymbolicBinary([((1, '1'),)])
         operator1 *= operator1
         self.assertEqual(str(operator1), '[1]')
@@ -90,7 +92,8 @@ class SymbolicBinaryTest(unittest.TestCase):
     def test_power(self):
         operator1 = SymbolicBinary('1 + w1 w2 + w3 w4')
         pow_loc = operator1 ** 2
-        self.assertEqual(pow_loc.terms, [((1, '1'),), ((1, 'W'), (2, 'W')), ((3, 'W'), (4, 'W'))])
+        self.assertEqual(pow_loc.terms, [((1, '1'),), ((1, 'W'), (2, 'W')),
+                                         ((3, 'W'), (4, 'W'))])
         with self.assertRaises(TypeError):
             tmp = operator1 ** 4.3
         with self.assertRaises(TypeError):
@@ -113,7 +116,8 @@ class SymbolicBinaryTest(unittest.TestCase):
 
     def test_ordering(self):
         operator1 = SymbolicBinary('w3 w2 w1 w4')
-        self.assertEqual(operator1.terms, [((1, 'W'), (2, 'W'), (3, 'W'), (4, 'W'))])
+        self.assertEqual(operator1.terms, [((1, 'W'), (2, 'W'),
+                                            (3, 'W'), (4, 'W'))])
 
     def test_order(self):
         operator1 = SymbolicBinary('1 + w1 w2 + w2 w1')
@@ -138,6 +142,9 @@ class SymbolicBinaryTest(unittest.TestCase):
         operator1 = SymbolicBinary('1 + w1 w2')
         operator1._shift(3)
         self.assertEqual(operator1.terms, [((1, '1'),), ((4, 'W'), (5, 'W'))])
+        with self.assertRaises(TypeError):
+            operator1._shift(3.5)
+
 
     def test_count_qubits(self):
         operator1 = SymbolicBinary('1 + w0 w2 w5')
