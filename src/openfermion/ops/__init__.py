@@ -21,3 +21,4 @@ from ._polynomial_tensor import general_basis_change, PolynomialTensor
 from ._interaction_operator import InteractionOperator
 from ._interaction_rdm import InteractionRDM
 from ._quadratic_hamiltonian import QuadraticHamiltonian
+from ._binary_operator import SymbolicBinary
