@@ -69,6 +69,8 @@ class SymbolicBinary(object):
     """
     actions = ('1', 'W')
     action_strings = ('', 'W')
+
+    # these are just informative for this class - not used
     action_before_index = True
     different_indices_commute = True
 
@@ -323,10 +325,7 @@ class SymbolicBinary(object):
             for factor in term:
                 index, action = factor
                 action_string = self.action_strings[self.actions.index(action)]
-                if self.action_before_index:
-                    tmp_string += '{}{} '.format(action_string, index)
-                else:
-                    tmp_string += '{}{} '.format(index, action_string)
+                tmp_string += '{}{} '.format(action_string, index)
             string_rep += '{}] + '.format(tmp_string.strip())
         return string_rep[:-3]
 
@@ -438,11 +437,14 @@ class SymbolicBinary(object):
             mod_add = addend % 2
             if mod_add:
                 self._add_one()
-
+        if not isinstance(addend, (int, type(self))):
+            raise TypeError(
+                'Object of invalid type cannot add with ' +
+                type(self) + '.')
         return self
 
     def __radd__(self, addend):
-        """In-place method for += addition of SymbolicBinary.
+        """In-place method for right addition to SymbolicBinary.
 
         Args:
             addend (int or SymbolicBinary): The operator to add.
