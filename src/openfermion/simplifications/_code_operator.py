@@ -1,6 +1,7 @@
 from _binary_operator import SymbolicBinary
 import numpy as np
 import copy
+import warnings
 
 # TODO: sparse encoders, tests, dissolve toggle: may get too big
 
@@ -96,13 +97,9 @@ class BinaryCode(object):
                 symbolic_binary = SymbolicBinary(symbolic_binary)
             if isinstance(symbolic_binary,SymbolicBinary):
                 self.dec.append(symbolic_binary)
-                decoder_qubits = decoder_qubits | set(symbolic_binary.count_qubits())
+                decoder_qubits = decoder_qubits | set(symbolic_binary.enumerate_qubits())
             else:
                 raise TypeError('decoder component provided is not a suitable for SymbolicBinary',symbolic_binary)
-
-        if len(decoder_qubits)!=max(decoder_qubits)+1:
-            Warning('the number of qubits and the max qubit value of the decoder does not match.\n, you '
-                          'have an all zero decoder column')
 
         if max(decoder_qubits)+1>self.qubits:
             raise ValueError('decoder is indexing more qubits than encoder')
@@ -211,7 +208,7 @@ if __name__ == '__main__':
     a=BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w1 + w0 '),SymbolicBinary('w0 + 1')])
     print (a.enc)
     print (a.dec[1].terms)
-    d = BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w0 '),SymbolicBinary('w0 w1')])
+    d = BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w0 '),SymbolicBinary('w0 w2')])
     sum = a+d
     #print '\n',sum.dec
     b=a*a
