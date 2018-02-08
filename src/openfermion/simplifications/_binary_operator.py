@@ -1,7 +1,7 @@
 # symbolic binary class for decoder definitions (arxiv 1712.07067)
 
 import copy
-import numpy as np
+import numpy 
 
 
 class SymbolicBinaryError(Exception):
@@ -10,14 +10,41 @@ class SymbolicBinaryError(Exception):
 
 class SymbolicBinary(object):
     """
-        SymbolicBinaries are non-linear binary functions that are expressed analytically, they are
-        components of decoders that are used to rotate terms in qubit basis to fermionic basis. 
-        
-        A SymbolicBinary represents a sum of terms. Each term can consist of two types of binary variables:
-        (n,'W') where n stands for the qubit index, or (1,'1') for constant 1.
-         
-        The SymbolicBinary class overloads operations for manipulation of binary functions obeying binary rules.
-        1 + 1 = 0
+    The SymbolicBinary class provides an analytic representation of non-linear
+    binary functions. An instance of this class describes a term of binary
+    variables (variables of the values {0,1}, indexed by integers like 
+    w0, w1, w2 and so on) that is considered to be evaluated modulo 2. 
+    This implies a certain set of rules like 
+    
+    the binary addition  w1 + w1 = 0, 
+    binary multiplication w2 * w2 = w2 
+    and power rule w3 ^ 0  = 1, where raising to every other
+    integer power than zero reproduces w3.
+    
+    Of course, we can also add a non-trivial conatant, which is 1.
+    Due to these binary rules, every function available will be a 
+    multinomial like e.g.
+    
+    1 + w1 w2 + w0 w1 .
+    
+    These binary functions are used for non-linear binary codes in order
+    to decompress qubit bases back into fermion bases.  
+    In that instance, one SymbolicBinary object characterizes the occupation 
+    of single orbital given a multi-qubit state in configuration 
+    |w0> |w1> |w2> ... . 
+    
+    For initialization, the preferred data types is either a string of the 
+    multinomial, where each variable and constant is to be well separated by
+    a whitespace, or in its native form of nested tuples, 
+    where there are two data types:
+    1) a variable on qubit n:  (n, 'W')
+    2) a costant term (1,'1') .
+    
+    A multinomial is a tuple (containing the sumamnds) of tuples 
+    (containing the factors) of the above. After initialization,
+    SymbolicBinary terms can be manipulated with the overloaded signs 
+    +, * and ^, according to the binary rules mentioned.  
+    
 
         Example:
             .. code-block:: python
@@ -26,7 +53,7 @@ class SymbolicBinary(object):
                 # Equivalently
                 bin_fun = SymbolicBinary([((1,'1'),)] + SymbolicBinary([((1,'W'),(2,'W')),((0,'W'),(1,'W'))])
 
-        """
+    """
     actions = ('1', 'W')
     action_strings = ('', 'W')
     action_before_index = True
@@ -81,8 +108,8 @@ class SymbolicBinary(object):
 
     def _long_string_init(self, term):
         """
-        Initialization from a long string representation i.e.: 1 + w1 w2 + w3 w4'.
-        updates terms in place.
+        Initialization from a long string representation i.e.:
+        1 + w1 w2 + w3 w4'. Updates terms in place.
 
         Args:
             term: (str) a string representation of a symbolicBinary that involves summation
@@ -97,12 +124,13 @@ class SymbolicBinary(object):
 
     def _check_factor(self, term, factor):
         """
-        makes sure all factor in a term makes sense, cleans it up if there is multiplication with 1.
+        Checks types and values of all factors in a term, removes
+        multiplications with 1.
         Args:
-            term: a single term of symbolicBinary
+            term: (list-like) a single term for SymbolicBinary
             factor: a factor in term
 
-        Returns: updated term
+        Returns: (list) updated term
 
         Raises:
             ValueError: invalid action/negative or non-integer qubit index
@@ -131,10 +159,11 @@ class SymbolicBinary(object):
     def _parse_sequence(self, term):
         """
         Parse a term given as a sequence type (i.e., list, tuple, etc.).
-        e.g. [((1,'W'),(2,'W')),...]
+        e.g. [((1,'W'),(2,'W')),...].
 
         Args:
             term: (list) of tuples of tuples.
+        Returns: summand: (list)
 
         """
         if not term:
@@ -151,7 +180,7 @@ class SymbolicBinary(object):
     @staticmethod
     def _parse_string(term):
         """
-        parse a string term 'w1 w2 w0'
+        Parse a string term like 'w1 w2 w0'
         Args:
             term: (str) string representation of symbolicBinary term.
 
@@ -199,7 +228,7 @@ class SymbolicBinary(object):
         Returns: a list of qubits
 
         """
-        term_array = list(map(np.array, self.terms))
+        term_array = list(map(numpy.array, self.terms))
         qubits = []
         for summand in term_array:
             for factor in summand:
@@ -212,10 +241,10 @@ class SymbolicBinary(object):
 
     def _shift(self, const):
         """
-        shift all qubit indices by a given constant
+        Shift all qubit indices by a given constant.
         Args:
-            const: the constant shift the indices by
-
+            const: the constant to shift the indices by
+        
 
         """
         shifted_terms = []
@@ -237,7 +266,7 @@ class SymbolicBinary(object):
         Args:
             binary_list: (list) a list of binary values corresponding each (n,'W').
 
-        Returns: result of the evaluation 0/1
+        Returns: (int, 0 or 1) result of the evaluation
 
          Raises:
           SymbolicBinaryError: Length of list provided must match the number of qubits indexed in symbolicBinary
@@ -262,7 +291,7 @@ class SymbolicBinary(object):
 
     def _add_one(self):
         """
-        adds 1 to a SymbolicBinary
+        Adds constant 1 to a SymbolicBinary
 
         """
         if ((1, '1'),) in self.terms:  # ((1,'1'),) can only exist as a loner in SymbolicBinary
@@ -442,7 +471,7 @@ class SymbolicBinary(object):
         return self + addend
 
     def __add__(self, addend):
-        """
+        """ 
         Args:
             addend (SymbolicBinary): The operator to add.
 
@@ -482,7 +511,7 @@ class SymbolicBinary(object):
 
 def binary_sum_rule(terms, summand):
     """
-    updates terms in place based on binary_sum_rule
+    Updates terms in place based on binary_sum_rule, the rules for binary addition.  
     Args:
         terms: symbolicBinary terms
         summand: new potential addition to term
