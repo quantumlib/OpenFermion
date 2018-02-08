@@ -134,6 +134,7 @@ Authors
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Thomas O'Brien <https://github.com/obriente>`__ (Leiden University),
+`Isil Ozfidan <https://github.com/conta877>`__ (D-Wave Systems),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Max Radin <https://github.com/max-radin>`__ (UC Santa Barbara),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
@@ -142,6 +143,7 @@ Authors
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
 `Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
+`Mark Steudtner <https://github.com/msteudtner>`__  (Leiden University),
 `Wei Sun <https://github.com/Spaceenter>`__ (Google) and
 `Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan).
 
