@@ -92,6 +92,30 @@ class CommutatorTest(unittest.TestCase):
             commutator(self.fermion_operator, self.qubit_operator)
 
 
+class AnticommutatorTest(unittest.TestCase):
+
+    def test_canonical_anticommutation_relations(self):
+        op_1 = FermionOperator('3')
+        op_1_dag = FermionOperator('3^')
+        op_2 = FermionOperator('4')
+        op_2_dag = FermionOperator('4^')
+        zero = FermionOperator()
+        one = FermionOperator('')
+
+        self.assertTrue(one.isclose(
+            normal_ordered(anticommutator(op_1, op_1_dag))))
+        self.assertTrue(zero.isclose(
+            normal_ordered(anticommutator(op_1, op_2))))
+        self.assertTrue(zero.isclose(
+            normal_ordered(anticommutator(op_1, op_2_dag))))
+        self.assertTrue(zero.isclose(
+            normal_ordered(anticommutator(op_1_dag, op_2))))
+        self.assertTrue(zero.isclose(
+            normal_ordered(anticommutator(op_1_dag, op_2_dag))))
+        self.assertTrue(one.isclose(
+            normal_ordered(anticommutator(op_2, op_2_dag))))
+
+
 class DoubleCommutatorTest(unittest.TestCase):
 
     def test_double_commutator_no_intersection_with_union_of_second_two(self):
