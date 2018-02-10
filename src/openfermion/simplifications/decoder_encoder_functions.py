@@ -1,5 +1,5 @@
 import numpy
-from _binary_operator import SymbolicBinary
+from openfermion.ops import SymbolicBinary
 from _code_operator import BinaryCode, linearize_decoder 
 
 # TODO: BK, JW these are already implemented. ideally we would not have additional implementations here.?
@@ -13,11 +13,11 @@ def encoder_bk(d):
     Returns:
 
     """
-    reps = int(np.ceil(np.log2(d)))
-    mtx = np.array([[1,0],[1,1]])
-    for a in np.arange(1,reps+1):
-        mtx = np.kron(np.eye(2,dtype=int),mtx)
-        for b in np.arange(0,2**a+1):
+    reps = int(numpy.ceil(numpy.log2(d)))
+    mtx = numpy.array([[1,0],[1,1]])
+    for a in numpy.arange(1,reps+1):
+        mtx = numpy.kron(numpy.eye(2,dtype=int),mtx)
+        for b in numpy.arange(0,2**a+1):
             mtx[2**a,b]=1
     return mtx[0:d,0:d]
 
@@ -30,10 +30,10 @@ def decoder_bk(d):
     Returns: decoder matrix of Bravyi Kitaev
 
     """
-    reps = int(np.ceil(np.log2(d)))
-    mtx = np.array([[1, 0], [1, 1]])
-    for a in np.arange(1,reps+1):
-        mtx = np.kron(np.eye(2),mtx)
+    reps = int(numpy.ceil(numpy.log2(d)))
+    mtx = numpy.array([[1, 0], [1, 1]])
+    for a in numpy.arange(1,reps+1):
+        mtx = numpy.kron(numpy.eye(2),mtx)
         mtx[2**a,2**(a-1)]=1
     return mtx[0:d,0:d]
 
@@ -47,7 +47,7 @@ def encoder_checksum(sites):
     Returns: encoder matrix
 
     """
-    enc = np.zeros(shape=(sites-1,sites),dtype=int)
+    enc = numpy.zeros(shape=(sites-1,sites),dtype=int)
     for i in range(sites - 1): enc[i,i] = 1
     return enc
 
@@ -67,8 +67,8 @@ def decoder_checksum(sites,odd):
     for a in range(sites-1):
         all_in += SymbolicBinary('w'+str(a))
 
-    djw = linearize_decoder(np.identity(sites-1,dtype=int))
-    djw = np.append( djw,[all_in])
+    djw = linearize_decoder(numpy.identity(sites-1,dtype=int))
+    djw = numpy.append( djw,[all_in])
     return djw
 
 def checksum_code(sites,odd):
@@ -92,7 +92,7 @@ def JW_code(sites):
 
         Returns: (BinaryCode)
     """
-    return BinaryCode(np.identity(sites,dtype=int),linearize_decoder(np.identity(sites,dtype=int)))
+    return BinaryCode(numpy.identity(sites,dtype=int),linearize_decoder(numpy.identity(sites,dtype=int)))
 
 def BK_code(sites):
     """

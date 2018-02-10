@@ -1,9 +1,10 @@
-from _binary_operator import SymbolicBinary
-import numpy 
+from openfermion.ops._binary_operator import SymbolicBinary
+import numpy
 import copy
-import warnings
+import scipy
+import scipy.sparse
 
-# TODO: sparse encoders, tests, dissolve toggle: may get too big
+# TODO: fix function descriptions: types, raises. tests
 
 def _shift_decoder(decode,runner):
     """
@@ -40,12 +41,12 @@ def _double_decoding(dec1, dec2):
             tmp_term=SymbolicBinary('1')
             for factor in summand:
                 if(factor[1]=='W'):
-                    tmp_term*=dec2[factor[0]]  
+                    tmp_term*=dec2[factor[0]]
             tmp_sum = tmp_term + tmp_sum
         doubled_decoder +=[tmp_sum]
     return numpy.array(doubled_decoder)
-            
-            
+
+
 class BinaryCodeError(Exception):
     pass
 
@@ -101,7 +102,7 @@ class BinaryCode(object):
     where the addition is to be understood as appending two vectors together,
     so N" = N' + N and n" = n + n'.
     
-    Appending codes is particularily useful when considering segment codes or
+    Appending codes is particularly useful when considering segment codes or
     segmented transforms. 
     
     A BinaryCode-instance is initialized by BinaryCode(A,d),
@@ -110,7 +111,7 @@ class BinaryCode(object):
     input of length N, which has entries either of type SymbolicBinary, or of 
     valid type for an input of the SymbolicBinary-constructor. 
     
-    The signs + and *, += and *= are overloaded to implement concatination
+    The signs + and *, += and *= are overloaded to implement concatenation
     and appendage on BinaryCode-objects.  Note that multiplication of a 
     BinaryCode with an integer yields a multiple appending of the same 
     code, the multiplication with another BinaryCode their concatenation. 
@@ -135,10 +136,10 @@ class BinaryCode(object):
             raise TypeError('encoding must be a list, array or tuple .')
 
         if not isinstance(decoding, (numpy.ndarray,list,tuple)):
-            raise TypeError('decoding must be a list, array or tuple .') 
-        
-        self.enc=numpy.array(list(map(numpy.array,encoding)))
-        self.qubits,self.orbitals = numpy.shape(numpy.array(encoding))
+            raise TypeError('decoding must be a list, array or tuple .')
+
+        self.enc=scipy.sparse.csc_matrix(encoding)
+        self.qubits,self.orbitals = numpy.shape(encoding)
 
         if(self.orbitals!=len(decoding)):
             raise BinaryCodeError('size mismatch, decoder and encoder should have the same first dimension')
@@ -158,10 +159,10 @@ class BinaryCode(object):
 
         if max(decoder_qubits)+1>self.qubits:
             raise ValueError('decoder is indexing more qubits than encoder')
-        
+
         if len(decoder_qubits)!=self.qubits:
             raise ValueError('decoder and encoder provided has different number of qubits')
-        
+
         self.dec=numpy.array(self.dec)
 
     def __iadd__(self, appendix):
@@ -176,18 +177,14 @@ class BinaryCode(object):
         """
         if not isinstance(appendix,BinaryCode):
             raise TypeError('argument must be a BinaryCode.')
-        
-        self.dec=numpy.append(self.dec, _shift_decoder(appendix.dec,self.qubits)) 
-        
-        tmp_mtx=numpy.zeros((self.qubits+appendix.qubits,self.orbitals+appendix.orbitals),int)
-        tmp_mtx[:self.qubits,:self.orbitals]=self.enc
-        tmp_mtx[self.qubits:,self.orbitals:]=appendix.enc
-        
-        self.enc=tmp_mtx
-        self.qubits+=appendix.qubits
-        self.orbitals+=appendix.orbitals
+
+        self.dec=numpy.append(self.dec, _shift_decoder(appendix.dec,self.qubits))
+        self.enc = scipy.sparse.bmat([[self.enc,None],[None,appendix.enc]])
+        self.qubits,self.orbitals = numpy.shape(self.enc)
+
+
         return self
-    
+
     def __add__(self, appendix):
         """
         Appends two binary codes via addition + . 
@@ -201,7 +198,7 @@ class BinaryCode(object):
         twin = copy.deepcopy(self)
         twin += appendix
         return twin
-    
+
     def __imul__(self,factor):
         """
         In-place code concatenation or appendage via *= . 
@@ -213,30 +210,31 @@ class BinaryCode(object):
             
         Returns: segmented or concatenated code (BinaryCode) 
         """
-        
+
         if not isinstance(factor,(BinaryCode,int)):
             raise TypeError('argument must be a BinaryCode or integer')
+
         if isinstance(factor, BinaryCode):
             if self.qubits != factor.orbitals:
                 raise BinaryCodeError('size mismatch between inner and outer code layer')
-            
+
             self.dec= _double_decoding(self.dec,factor.dec)
-            self.enc= numpy.dot(factor.enc,self.enc)
-            self.qubits=factor.qubits
+            self.enc= factor.enc.dot(self.enc)
+            self.qubits, self.orbitals = numpy.shape(self.enc)
             return self
+
         elif isinstance(factor, int):
             if factor<1:
                 raise ValueError('integer factor has to be positive, non-zero ')
-            self.enc=numpy.kron(numpy.identity(factor, dtype=int),self.enc)
+
+            self.enc=scipy.sparse.kron(scipy.sparse.identity(factor, format='csc', dtype=int),self.enc,'csc')
             tmp_dec=self.dec
             for index in numpy.arange(1,factor):
-                self.dec=numpy.append( self.dec, _shift_decoder(tmp_dec,index*self.qubits)) 
+                self.dec=numpy.append( self.dec, _shift_decoder(tmp_dec,index*self.qubits))
             self.qubits *= factor
             return self
-            
-            
-        
-    
+
+
     def __mul__(self,factor):
         """
         Concatenation of two codes or appendage of the same code over and over,  
@@ -264,36 +262,27 @@ class BinaryCode(object):
         """
         if isinstance(right_factor,int):
             return self * right_factor
-            
-            
-        
+
+
+
 if __name__ == '__main__':
-    from decoder_encoder_functions import * 
-    a=BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w1 + w0 '),SymbolicBinary('w0 + 1')])
+    a=BinaryCode([[0,1,0],[1,0,1]],[SymbolicBinary(' w1 + w0 '),SymbolicBinary('w0 + 1'), SymbolicBinary('w1')])
     print (a.enc)
     print (a.dec[1].terms)
-    d = BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w0 '),SymbolicBinary('w0 w2')])
+    d = BinaryCode([[0,1],[1,0]],[SymbolicBinary(' w0 '),SymbolicBinary('w0 w1')])
     sum = a+d
-    #print '\n',sum.dec
-    b=a*a
+    print a.orbitals, a.qubits
+    print d.orbitals, d.qubits
+    print sum.orbitals, sum.qubits
+    print '\n',sum.dec
+    b=a*d
     c=a+a
-    #print b.enc
-    #print b.dec
-    #print '\n',b.dec
-    #print c.enc
-    #print '\n',c.dec
-    #a = SymbolicBinary('w1')
-    #b = SymbolicBinary('w2')
-    #print a*b
-    #print SymbolicBinary('w1')*SymbolicBinary('w2')
-    print (type(_shift_decoder((JW_code(2)).dec,1)) )
-    print ((JW_code(3)*3).dec)
+    print 'encoding:',b.enc, type(b.enc), b.enc.toarray()
 
-                    
-        
-                    
-                       
-            
-                
-        
-        
+
+
+
+
+
+
+
