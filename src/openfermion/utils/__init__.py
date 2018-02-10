@@ -15,7 +15,7 @@ from ._bch_expansion import bch_expand
 from ._channel_state import (amplitude_damping_channel, dephasing_channel,
                              depolarizing_channel)
 
-from ._commutators import commutator, double_commutator
+from ._commutators import anticommutator, commutator, double_commutator
 
 from ._grid import Grid
 
