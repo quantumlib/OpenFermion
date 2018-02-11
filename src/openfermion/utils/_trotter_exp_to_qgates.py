@@ -248,12 +248,12 @@ def pauli_exp_to_qasm(qubit_operator_list,
             if ancilla is not None:
                 if len(qids) > 0:
                     ret_list = ret_list + ["C-Phase {} {} {}".format(
-                        term_coeff * evolution_time * 2, ancilla, qids[-1])]
+                        -2 * term_coeff * evolution_time, ancilla, qids[-1])]
                     ret_list = ret_list + ["Rz {} {}".format(
-                        - term_coeff * evolution_time, ancilla)]
+                        1 * term_coeff * evolution_time, ancilla)]
                 else:
                     ret_list = ret_list + ["Rz {} {}".format(
-                        -1 * term_coeff*evolution_time, ancilla)]
+                        1 * term_coeff*evolution_time, ancilla)]
             else:
                 if len(qids) > 0:
                     ret_list = ret_list + ["Rz {} {}".format(
