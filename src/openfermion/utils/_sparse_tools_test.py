@@ -227,15 +227,22 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
             # Get the ground energy and ground states at this particle number
             energy, states = jw_get_ground_states_by_particle_number(
                 sparse_operator, particle_number)
+            # Construct particle number operator
+            num_op = get_sparse_operator(number_operator(n_qubits))
             # For each vector returned, make sure that it is indeed an
             # eigenvector of the original operator with the returned eigenvalue
+            # and that it has the correct particle number
             for vec in states:
+                # Check that it's an eigenvector with the correct eigenvalue
                 op_vec_product = sparse_operator.dot(vec)
                 difference = op_vec_product - energy * vec
                 discrepancy = 0.
                 if difference.nnz:
                     discrepancy = max(map(abs, difference.data))
                 self.assertAlmostEqual(0., discrepancy)
+                # Check that it has the correct particle number
+                num = expectation(num_op, vec)
+                self.assertAlmostEqual(num, particle_number)
 
     def test_jw_get_ground_states_by_particle_number_herm_nonconserving(self):
         # Initialize a non-particle-number-conserving Hermitian operator
