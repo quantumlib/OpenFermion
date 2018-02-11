@@ -37,6 +37,7 @@ from ._sparse_tools import (expectation,
                             jw_get_gaussian_state,
                             jw_get_ground_states_by_particle_number,
                             jw_number_restrict_operator,
+                            jw_number_restrict_state,
                             jw_slater_determinant,
                             qubit_operator_sparse,
                             sparse_eigenspectrum)
