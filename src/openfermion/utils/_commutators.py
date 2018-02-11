@@ -42,6 +42,29 @@ def commutator(operator_a, operator_b):
     return result
 
 
+def anticommutator(operator_a, operator_b):
+    """Compute the anticommutator of two operators.
+
+    Args:
+        operator_a, operator_b: Operators in anticommutator. Any operators
+            are accepted so long as implicit addition and multiplication are
+            supported; e.g. QubitOperators, FermionOperators or Scipy sparse
+            matrices. 2D Numpy arrays are also supported.
+
+    Raises:
+        TypeError: operator_a and operator_b are not of the same type.
+    """
+    if type(operator_a) != type(operator_b):
+        raise TypeError('operator_a and operator_b are not of the same type.')
+    if isinstance(operator_a, numpy.ndarray):
+        result = operator_a.dot(operator_b)
+        result += operator_b.dot(operator_a)
+    else:
+        result = operator_a * operator_b
+        result += operator_b * operator_a
+    return result
+
+
 def double_commutator(op1, op2, op3, indices2=None, indices3=None,
                       is_hopping_operator2=None, is_hopping_operator3=None):
     """Return the double commutator [op1, [op2, op3]].
