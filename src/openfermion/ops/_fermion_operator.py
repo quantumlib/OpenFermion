@@ -11,10 +11,10 @@
 #   limitations under the License.
 
 """FermionOperator stores a sum of products of fermionic ladder operators."""
-import copy
-from openfermion.config import *
-from future.utils import iteritems
 import numpy
+
+from future.utils import iteritems
+from openfermion.ops import SymbolicOperator
 
 
 class FermionOperatorError(Exception):
@@ -184,31 +184,7 @@ def normal_ordered(fermion_operator):
     return ordered_operator
 
 
-def _parse_ladder_operator(ladder_operator_text):
-    """
-    Args:
-        ladder_operator_text (str):
-            A ladder operator term like '4' or '5^', or an invalid string.
-    Returns:
-        tuple[int, int]: The mode then raise-vs-lower.
-    Raises:
-        FermionOperatorError: Given invalid text that doesn't match /\d+^?/ .
-    """
-    inverted = 1 if ladder_operator_text.endswith('^') else 0
-    mode_text = ladder_operator_text[:-1] if inverted else ladder_operator_text
-
-    try:
-        mode = int(mode_text)
-        if mode < 0:
-            raise ValueError()  # Merge with not-an-int failure case.
-    except ValueError:
-        raise FermionOperatorError(
-            "Invalid ladder operator term '{}'.".format(ladder_operator_text))
-
-    return mode, inverted
-
-
-class FermionOperator(object):
+class FermionOperator(SymbolicOperator):
     """FermionOperator stores a sum of products of fermionic ladder operators.
 
     In OpenFermion, we describe fermionic ladder operators using the shorthand:
@@ -227,130 +203,35 @@ class FermionOperator(object):
     The Fermion Operator class overloads operations for manipulation of
     these objects by the user.
 
-    Attributes:
-        terms (dict):
-            **key** (tuple of tuples): Each tuple represents a fermion term,
-            i.e. a tensor product of fermion ladder operators with a
-            coefficient. The first element is an integer indicating the
-            mode on which a ladder operator acts and the second element is
-            a bool, either '0' indicating annihilation, or '1' indicating
-            creation in that mode; for example, '2^ 5' is ((2, 1), (5, 0)).
-            **value** (complex float): The coefficient of term represented by
-            key.
+    FermionOperator is a subclass of SymbolicOperator. Importantly, it has
+    attributes set as follows::
+
+        actions = (1, 0)
+        action_strings = ('^', '')
+        action_before_index = False
+        different_indices_commute = False
+
+    See the documentation of SymbolicOperator for more details.
+
+    Example:
+        .. code-block:: python
+
+            ham = (FermionOperator('0^ 3', .5)
+                   + .5 * FermionOperator('3^ 0'))
+            # Equivalently
+            ham2 = FermionOperator('0^ 3', 0.5)
+            ham2 += FermionOperator('3^ 0', 0.5)
+
+    Note:
+        Adding FermionOperators is faster using += (as this
+        is done by in-place addition). Specifying the coefficient
+        during initialization is faster than multiplying a FermionOperator
+        with a scalar.
     """
-    def __init__(self, term=None, coefficient=1.):
-        """Initializes a FermionOperator.
-
-        The init function only allows to initialize a FermionOperator
-        consisting of a single term. If one desires to initialize a
-        FermionOperator consisting of many terms, one must add those terms
-        together by using either += (which is fast) or using +.
-
-        Example:
-            .. code-block:: python
-
-                ham = (FermionOperator('0^ 3', .5)
-                       + .5 * FermionOperator('3^ 0'))
-                # Equivalently
-                ham2 = FermionOperator('0^ 3', 0.5)
-                ham2 += FermionOperator('3^ 0', 0.5)
-
-        Note:
-            Adding terms to FermionOperator is faster using += (as this
-            is done by in-place addition). Specifying the coefficient in
-            the __init__ is faster than by multiplying a QubitOperator
-            with a scalar as calls an out-of-place multiplication.
-
-        Args:
-            term (optional, empty tuple, tuple or list of tuples, or string):
-                1) A list or tuple of tuples. The first element of each
-                   tuple is an integer indicating the mode on which a
-                   fermion ladder operator acts, starting from zero. The
-                   second element of each tuple is an integer, either 1
-                   or 0, indicating whether creation or annihilation acts
-                   on that mode.
-                2) A string of the form '0^ 2', indicating creation in
-                   mode 0 and annihilation in mode 2.
-                3) default will result in the zero operator.
-            coefficient (complex float, optional): The coefficient of the term.
-                Default value is 1.0.
-
-        Raises:
-            FermionOperatorError: Invalid term provided to FermionOperator.
-        """
-        if not isinstance(coefficient, (int, float, complex)):
-            raise ValueError('Coefficient must be a numeric type.')
-        self.terms = {}
-        if term is None:
-            return
-
-        # String input.
-        if isinstance(term, str):
-            ladder_operators = tuple(_parse_ladder_operator(e)
-                                     for e in term.split())
-            self.terms[tuple(ladder_operators)] = coefficient
-
-        # Tuple input.
-        elif isinstance(term, tuple):
-            self.terms[term] = coefficient
-
-        # List input.
-        elif isinstance(term, list):
-            self.terms[tuple(term)] = coefficient
-
-        # Invalid input.
-        else:
-            raise ValueError('Operators specified incorrectly.')
-
-        # Check type.
-        for stored_term in self.terms:
-            for ladder_operator in stored_term:
-                orbital, action = ladder_operator
-                if not (isinstance(orbital, int) and orbital >= 0):
-                    raise FermionOperatorError(
-                        'Invalid tensor factor in FermionOperator: '
-                        'must be a non-negative int.')
-                if action not in (0, 1):
-                    raise ValueError(
-                        'Invalid action in FermionOperator: '
-                        'Must be 0 (lowering) or 1 (raising).')
-
-    @staticmethod
-    def zero():
-        """
-        Returns:
-            additive_identity (FermionOperator):
-                A fermion operator o with the property that o+x = x+o = x for
-                all fermion operators x.
-        """
-        return FermionOperator(term=None)
-
-    @staticmethod
-    def identity():
-        """
-        Returns:
-            multiplicative_identity (FermionOperator):
-                A fermion operator u with the property that u*x = x*u = x for
-                all fermion operators x.
-        """
-        return FermionOperator(term=())
-
-    def compress(self, abs_tol=EQ_TOLERANCE):
-        """
-        Eliminates all terms with coefficients close to zero and removes
-        imaginary parts of coefficients that are close to zero.
-
-        Args:
-            abs_tol (float): Absolute tolerance, must be at least 0.0
-        """
-        new_terms = {}
-        for term in self.terms:
-            coeff = self.terms[term]
-            if abs(coeff.imag) <= abs_tol:
-                coeff = coeff.real
-            if abs(coeff) > abs_tol:
-                new_terms[term] = coeff
-        self.terms = new_terms
+    actions = (1, 0)
+    action_strings = ('^', '')
+    action_before_index = False
+    different_indices_commute = False
 
     def is_normal_ordered(self):
         """Return whether or not term is in normal order.
@@ -392,282 +273,3 @@ class FermionOperator(object):
             if not (particles == spin == 0):
                 return False
         return True
-
-    def __str__(self):
-        """Return an easy-to-read string representation."""
-        if not self.terms:
-            return '0'
-        string_rep = ''
-        for term in self.terms:
-            tmp_string = '{} ['.format(self.terms[term])
-            for operator in term:
-                if operator[1] == 1:
-                    tmp_string += '{}^ '.format(operator[0])
-                elif operator[1] == 0:
-                    tmp_string += '{} '.format(operator[0])
-            string_rep += '{}] +\n'.format(tmp_string.strip())
-        return string_rep[:-3]
-
-    def __repr__(self):
-        return str(self)
-
-    def isclose(self, other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE):
-        """Returns True if other (FermionOperator) is close to self.
-
-        Comparison is done for each term individually. Return True
-        if the difference between each terms in self and other is
-        less than the relative tolerance w.r.t. either other or self
-        (symmetric test) or if the difference is less than the absolute
-        tolerance.
-
-        Args:
-            other (FermionOperator): FermionOperator to compare against.
-            rel_tol (float): Relative tolerance, must be greater than 0.0
-            abs_tol (float): Absolute tolerance, must be at least 0.0
-        """
-        # terms which are in both:
-        for term in set(self.terms).intersection(set(other.terms)):
-            a = self.terms[term]
-            b = other.terms[term]
-            # math.isclose does this in Python >=3.5
-            if not abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol):
-                return False
-
-        # terms only in one (compare to 0.0 so only abs_tol)
-        for term in set(self.terms).symmetric_difference(set(other.terms)):
-            if term in self.terms:
-                if not abs(self.terms[term]) <= abs_tol:
-                    return False
-            elif not abs(other.terms[term]) <= abs_tol:
-                return False
-        return True
-
-    def __imul__(self, multiplier):
-        """In-place multiply (*=) terms with scalar or FermionOperator.
-
-        Args:
-          multiplier(complex float, or FermionOperator): multiplier
-        Returns:
-            product (FermionOperator): Mutated self.
-        """
-        # Handle scalars.
-        if isinstance(multiplier, (int, float, complex)):
-            for term in self.terms:
-                self.terms[term] *= multiplier
-            return self
-
-        # Handle FermionOperator.
-        elif isinstance(multiplier, FermionOperator):
-            result_terms = dict()
-            for left_term in self.terms:
-                for right_term in multiplier.terms:
-                    new_coefficient = (self.terms[left_term] *
-                                       multiplier.terms[right_term])
-                    product_operators = left_term + right_term
-
-                    # Add to result dict.
-                    result_terms[tuple(product_operators)] = new_coefficient
-            self.terms = result_terms
-            return self
-        else:
-            raise TypeError('Cannot in-place multiply term of invalid type '
-                            'to FermionOperator.')
-
-    def __mul__(self, multiplier):
-        """Return self * multiplier for a scalar, or a FermionOperator.
-
-        Args:
-            multiplier: A scalar, or a FermionOperator.
-
-        Returns:
-            product (FermionOperator)
-
-        Raises:
-            TypeError: Invalid type cannot be multiply with FermionOperator.
-        """
-        if isinstance(multiplier, (int, float, complex, FermionOperator)):
-            product = copy.deepcopy(self)
-            product *= multiplier
-            return product
-        else:
-            raise TypeError(
-                'Object of invalid type cannot multiply with FermionOperator.')
-
-    def __rmul__(self, multiplier):
-        """Return multiplier * self for a scalar.
-
-        We only define __rmul__ for scalars because the left multiply
-        exist for FermionOperator and left multiply
-        is also queried as the default behavior.
-
-        Args:
-            multiplier: A scalar to multiply by.
-
-        Returns:
-            product (FermionOperator)
-
-        Raises:
-            TypeError: Object of invalid type cannot multiply FermionOperator.
-        """
-        if not isinstance(multiplier, (int, float, complex)):
-            raise TypeError(
-                'Object of invalid type cannot multiply with FermionOperator.')
-        return self * multiplier
-
-    def __truediv__(self, divisor):
-        """Return self / divisor for a scalar.
-
-        Note that this is always floating point division.
-
-        Args:
-            divisor (int|float|complex): A scalar to divide by.
-
-        Returns:
-            quotient (FermionOperator)
-
-        Raises:
-            TypeError: Cannot divide local operator by non-scalar type.
-        """
-        if not isinstance(divisor, (int, float, complex)):
-            raise TypeError('Cannot divide QubitOperator by non-scalar type.')
-        return self * (1.0 / divisor)
-
-    def __div__(self, divisor):
-        """For compatibility with Python 2.
-        Args:
-            divisor (int|float|complex): A scalar to divide by.
-        Returns:
-            quotient (FermionOperator)
-        """
-        return self.__truediv__(divisor)
-
-    def __itruediv__(self, divisor):
-        """
-        Args:
-            divisor (int|float|complex): A scalar to divide by.
-        Returns:
-            quotient (FermionOperator): Mutated self.
-        """
-        if not isinstance(divisor, (int, float, complex)):
-            raise TypeError('Cannot divide QubitOperator by non-scalar type.')
-        self *= (1.0 / divisor)
-        return self
-
-    def __idiv__(self, divisor):
-        """For compatibility with Python 2.
-        Args:
-            divisor (int|float|complex): A scalar to divide by.
-        Returns:
-            quotient (FermionOperator): Mutated self.
-        """
-        return self.__itruediv__(divisor)
-
-    def __iadd__(self, addend):
-        """In-place method for += addition of FermionOperator.
-
-        Args:
-            addend (FermionOperator): The operator to add.
-
-        Returns:
-            sum (FermionOperator): Mutated self.
-
-        Raises:
-            TypeError: Cannot add invalid type.
-        """
-        if isinstance(addend, FermionOperator):
-            for term in addend.terms:
-                if term in self.terms:
-                    if abs(addend.terms[term] +
-                           self.terms[term]) < EQ_TOLERANCE:
-                        del self.terms[term]
-                    else:
-                        self.terms[term] += addend.terms[term]
-                else:
-                    self.terms[term] = addend.terms[term]
-        else:
-            raise TypeError('Cannot add invalid type to FermionOperator.')
-        return self
-
-    def __add__(self, addend):
-        """
-        Args:
-            addend (FermionOperator): The operator to add.
-
-        Returns:
-            sum (FermionOperator)
-        """
-        summand = copy.deepcopy(self)
-        summand += addend
-        return summand
-
-    def __isub__(self, subtrahend):
-        """In-place method for -= subtraction of FermionOperator.
-
-        Args:
-            subtrahend (A FermionOperator): The operator to subtract.
-
-        Returns:
-            difference (FermionOperator): Mutated self.
-
-        Raises:
-            TypeError: Cannot subtract invalid type.
-        """
-        if isinstance(subtrahend, FermionOperator):
-            for term in subtrahend.terms:
-                if term in self.terms:
-                    if abs(self.terms[term] -
-                           subtrahend.terms[term]) < EQ_TOLERANCE:
-                        del self.terms[term]
-                    else:
-                        self.terms[term] -= subtrahend.terms[term]
-                else:
-                    self.terms[term] = -subtrahend.terms[term]
-        else:
-            raise TypeError('Cannot subtract invalid type.')
-        return self
-
-    def __sub__(self, subtrahend):
-        """
-        Args:
-            subtrahend (FermionOperator): The operator to subtract.
-
-        Returns:
-            difference (FermionOperator)
-        """
-        minuend = copy.deepcopy(self)
-        minuend -= subtrahend
-        return minuend
-
-    def __neg__(self):
-        """
-        Returns:
-            negation (FermionOperator)
-        """
-        return -1 * self
-
-    def __pow__(self, exponent):
-        """Exponentiate the FermionOperator.
-
-        Args:
-            exponent (int): The exponent with which to raise the operator.
-
-        Returns:
-            exponentiated (FermionOperator)
-
-        Raises:
-            ValueError: Can only raise FermionOperator to non-negative
-                integer powers.
-        """
-        # Handle invalid exponents.
-        if not isinstance(exponent, int) or exponent < 0:
-            raise ValueError(
-                'exponent must be a non-negative int, but was {} {}'.format(
-                    type(exponent), repr(exponent)))
-
-        # Initialized identity.
-        exponentiated = FermionOperator(())
-
-        # Handle non-zero exponents.
-        for i in range(exponent):
-            exponentiated *= self
-        return exponentiated

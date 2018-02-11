@@ -113,8 +113,8 @@ class JelliumTest(unittest.TestCase):
         # Diagonalize and confirm the same energy.
         jw_momentum = jordan_wigner(momentum_kinetic)
         jw_position = jordan_wigner(position_kinetic)
-        momentum_spectrum = eigenspectrum(jw_momentum)
-        position_spectrum = eigenspectrum(jw_position)
+        momentum_spectrum = eigenspectrum(jw_momentum, 8)
+        position_spectrum = eigenspectrum(jw_position, 8)
 
         # Confirm spectra are the same.
         difference = numpy.amax(
@@ -255,6 +255,7 @@ class JelliumTest(unittest.TestCase):
         for indices_a in grid.all_points_indices():
             for indices_b in grid.all_points_indices():
 
+                potential_coefficient = 0.
                 paper_kinetic_coefficient = 0.
                 paper_potential_coefficient = 0.
 
