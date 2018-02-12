@@ -256,20 +256,23 @@ def jw_number_indices(n_electrons, n_qubits):
 
 
 def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index,
-                  particle_number=None):
+                  n_electrons=None):
     """Return the indices of basis vectors with fixed sz under JW encoding
 
     Args:
         sz_value(float): Desired sz value. Should be an integer or
             half-integer.
         n_qubits(int): Number of qubits defining the total state
-        up_map(function): function mapping a spatial index to a spin-orbital
-                index. Default is the canonical spin-up corresponds to even
-                spin-orbitals and spin-down corresponds to odd spin-orbitals
-        down_map(function): function mapping spatial index to spin-orbital
-                  index. Default is canonical spin-up corresponds to even
-                  spin-orbitals and spin-down corresponds to odd
-                  spin-orbitals.
+        n_electrons(int, optional): Number of particles to restrict the
+            operator to, if such a restriction is desired
+        up_map(function, optional): function mapping a spatial index to a
+                spin-orbital index. Default is the canonical spin-up
+                corresponds to even spin-orbitals and spin-down corresponds
+                to odd spin-orbitals
+        down_map(function, optional): function mapping spatial index to a
+                spin-orbital index. Default is the canonical spin-up
+                corresponds to even spin-orbitals and spin-down corresponds
+                to odd spin-orbitals.
 
     Returns:
         indices(list): The list of indices
@@ -284,14 +287,14 @@ def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index,
     sz_integer = int(2. * sz_value)
     indices = []
 
-    if particle_number is not None:
+    if n_electrons is not None:
         # Particle number is fixed, so the number of spin-up electrons
         # (as well as the number of spin-down electrons) is fixed
-        if (particle_number + sz_integer) % 2 != 0:
+        if (n_electrons + sz_integer) % 2 != 0:
             raise ValueError('The specified particle number and sz value are '
                              'incompatible.')
-        num_up = (particle_number + sz_integer) // 2
-        num_down = particle_number - num_up
+        num_up = (n_electrons + sz_integer) // 2
+        num_down = n_electrons - num_up
         up_occupations = itertools.combinations(range(n_sites), num_up)
         down_occupations = list(
                 itertools.combinations(range(n_sites), num_down))
@@ -354,6 +357,30 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
         n_qubits = int(numpy.log2(operator.shape[0]))
 
     select_indices = jw_number_indices(n_electrons, n_qubits)
+    return operator[numpy.ix_(select_indices, select_indices)]
+
+
+def jw_sz_restrict_operator(operator, sz_value, n_electrons=None,
+                            n_qubits=None):
+    """Restrict a Jordan-Wigner encoded operator to a given sz value
+
+    Args:
+        operator(ndarray or sparse): Numpy operator acting on
+            the space of n_qubits.
+        sz_value(float): Desired sz value. Should be an integer or
+            half-integer.
+        n_electrons(int, optional): Number of particles to restrict the
+            operator to, if such a restriction is desired.
+        n_qubits(int, optional): Number of qubits defining the total state
+
+    Returns:
+        new_operator(ndarray or sparse): Numpy operator restricted to
+            acting on states with the desired sz value.
+    """
+    if n_qubits is None:
+        n_qubits = int(numpy.log2(operator.shape[0]))
+
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
     return operator[numpy.ix_(select_indices, select_indices)]
 
 
