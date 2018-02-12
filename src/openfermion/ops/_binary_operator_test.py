@@ -12,11 +12,11 @@
 """Tests  _symbolic_operator.py."""
 
 import unittest
+
 from openfermion.ops._binary_operator import SymbolicBinary, SymbolicBinaryError
 
 
 class SymbolicBinaryTest(unittest.TestCase):
-
     def test_init_long_string(self):
         operator1 = SymbolicBinary('w1 w2 1 + 1')
         self.assertEqual(operator1.terms, [((1, 'W'), (2, 'W')), ((1, '1'),)])
@@ -28,6 +28,8 @@ class SymbolicBinaryTest(unittest.TestCase):
     def test_init_string(self):
         operator1 = SymbolicBinary('w1')
         self.assertEqual(operator1.terms, [((1, 'W'),)])
+        operator1 = SymbolicBinary('9 w1 w2 + 5')
+        self.assertEqual(str(operator1), '[W1 W2] + [1]')
 
     def test_none_init(self):
         operator1 = SymbolicBinary()
@@ -140,11 +142,10 @@ class SymbolicBinaryTest(unittest.TestCase):
 
     def test_shift(self):
         operator1 = SymbolicBinary('1 + w1 w2')
-        operator1._shift(3)
+        operator1.shift(3)
         self.assertEqual(operator1.terms, [((1, '1'),), ((4, 'W'), (5, 'W'))])
         with self.assertRaises(TypeError):
-            operator1._shift(3.5)
-
+            operator1.shift(3.5)
 
     def test_count_qubits(self):
         operator1 = SymbolicBinary('1 + w0 w2 w5')
