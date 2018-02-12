@@ -22,7 +22,8 @@ from openfermion.hamiltonians import up_index, down_index
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                   chemical_potential=0., magnetic_field=0.,
                   periodic=True, spinless=False,
-                  particle_hole_symmetry=False):
+                  particle_hole_symmetry=False,
+                  up_map=up_index, down_map=down_index):
     """Return symbolic representation of a Fermi-Hubbard Hamiltonian.
 
     The idea of this model is that some fermions move around on a grid and the

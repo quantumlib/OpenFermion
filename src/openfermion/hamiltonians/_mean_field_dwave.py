@@ -20,7 +20,8 @@ from openfermion.ops import (FermionOperator,
 
 
 def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
-                     chemical_potential=0., periodic=True):
+                     chemical_potential=0., periodic=True,
+                     up_map=up_index, down_map=down_index):
     """Return symbolic representation of a BCS mean-field d-wave Hamiltonian.
 
     The Hamiltonians of this model live on a grid of dimensions
