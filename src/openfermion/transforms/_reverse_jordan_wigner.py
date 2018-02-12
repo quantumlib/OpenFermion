@@ -15,8 +15,8 @@ from __future__ import absolute_import
 
 import copy
 
+from openfermion.hamiltonians import number_operator
 from openfermion.ops import (FermionOperator,
-                             number_operator,
                              QubitOperator)
 from openfermion.utils import count_qubits
 

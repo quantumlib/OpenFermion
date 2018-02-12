@@ -19,8 +19,9 @@ import unittest
 from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix
 
-from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
-from openfermion.ops import FermionOperator, normal_ordered, number_operator
+from openfermion.hamiltonians import (jellium_model, number_operator,
+                                      wigner_seitz_length_scale)
+from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
                                     jordan_wigner)
 from openfermion.utils import fourier_transform, Grid
