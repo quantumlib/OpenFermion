@@ -368,7 +368,7 @@ class SymbolicBinary(object):
         """
 
         # Handle integers.
-        if isinstance(multiplier, int):
+        if isinstance(multiplier, (numpy.int64, numpy.int32, int)):
             mod_mul = int(multiplier % 2)
             if mod_mul:
                 return self
@@ -418,7 +418,8 @@ class SymbolicBinary(object):
         Raises:
           TypeError: Object of invalid type cannot multiply SymbolicBinary.
         """
-        if not isinstance(multiplier, (int, type(self))):
+        if not isinstance(multiplier, (numpy.int64, numpy.int32, int,
+                                       type(self))):
             raise TypeError(
                 'Object of invalid type cannot multiply with ' +
                 str(type(self)) + '.')
@@ -437,7 +438,8 @@ class SymbolicBinary(object):
         Raises:
             TypeError: Invalid type cannot be multiply with SymbolicBinary.
         """
-        if isinstance(multiplier, (int, type(self))):
+        if isinstance(multiplier, (numpy.int64, numpy.int32, int,
+                                   type(self))):
             product = copy.deepcopy(self)
             product *= multiplier
             return product
@@ -465,7 +467,8 @@ class SymbolicBinary(object):
             mod_add = addend % 2
             if mod_add:
                 self._add_one()
-        if not isinstance(addend, (int, type(self))):
+        if not isinstance(addend, (numpy.int64, numpy.int32, int,
+                                   type(self))):
             raise TypeError(
                 'Object of invalid type cannot add with ' +
                 str(type(self)) + '.')
@@ -483,7 +486,8 @@ class SymbolicBinary(object):
         Raises:
             TypeError: Cannot add invalid type.
         """
-        if not isinstance(addend, (int, type(self))):
+        if not isinstance(addend, (numpy.int64, numpy.int32, int,
+                                   type(self))):
             raise TypeError(
                 'Object of invalid type cannot add with ' +
                 str(type(self)) + '.')
@@ -516,7 +520,7 @@ class SymbolicBinary(object):
                 integer powers.
         """
         # Handle invalid exponents.
-        if not isinstance(exponent, int):
+        if not isinstance(exponent, (numpy.int64, numpy.int32, int)):
             raise TypeError(
                 'exponent must be int, but was {} {}'.format(
                     type(exponent), repr(exponent)))
