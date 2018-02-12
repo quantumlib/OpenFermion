@@ -10,7 +10,7 @@ def encoder_bk(d):
     Args:
         d: dimension
 
-    Returns:
+    Returns: 
 
     """
     reps = int(numpy.ceil(numpy.log2(d)))
@@ -133,7 +133,7 @@ def binary_address(digits, address):
     address=bin(address)[2:]
     address=('0'*(digits-len(address)))+address   
     for index in numpy.arange(digits):
-        _binary_expression *= SymbolicBinary('w'+str(index)+' + 1')+SymbolicBinary(address[index])
+        _binary_expression *= SymbolicBinary('w'+str(index)+' + 1 '+address[index])
     
     return list(map(int, list(address))), _binary_expression 
     

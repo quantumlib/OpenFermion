@@ -1,7 +1,21 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+
 import unittest
 
 from openfermion.ops import SymbolicBinary
-from openfermion.ops._code_operator import BinaryCodeError, BinaryCode, linearize_decoder
+from openfermion.ops._code_operator import (BinaryCodeError, BinaryCode,
+                                            linearize_decoder)
 
 
 class BinaryCodeTest(unittest.TestCase):
@@ -49,7 +63,8 @@ class BinaryCodeTest(unittest.TestCase):
 
         b = a * d
         self.assertEqual(b.__repr__(), "[[[1, 0, 1], [0, 1, 0]],"
-                                       " '[[W0] + [W0 W1],[1] + [W0],[W0 W1]]']")
+                                       " '[[W0] + [W0 W1],[1] +"
+                                       " [W0],[W0 W1]]']")
 
         with self.assertRaises(BinaryCodeError):
             d * a

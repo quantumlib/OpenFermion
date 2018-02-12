@@ -16,6 +16,23 @@ import copy
 import numpy
 
 
+def is_integer(input_string):
+    """
+    Checks whether a string is an integer or not.
+    
+    Args: 
+        input_string: (str) input string
+    Returns: (Boolean) True/False statement
+    
+    """
+    try: 
+        int(input_string)
+        return True
+    except ValueError:
+        return False
+
+
+
 class SymbolicBinaryError(Exception):
     pass
 
@@ -191,7 +208,7 @@ class SymbolicBinary(object):
     def _parse_string(term):
         """ Parse a string term like 'w1 w2 w0'
         Args:
-            term (str): string representation of symbolicBinary term.
+            term (str): string representation of SymbolicBinary term.
 
         Returns (tuple): parsed string term
 
@@ -205,19 +222,22 @@ class SymbolicBinary(object):
                 term_list.remove((1, '1'))  # if 1
                 add_one = False
             factor = factor.capitalize()
-            if factor == '1':
-                if len(term_list) > 0:
-                    continue
-                term_list.append((1, '1'))
-                add_one = True
+            if is_integer(factor):
+                factor = int(factor) % 2
+                if factor == 1:
+                    if len(term_list) > 0:
+                        continue
+                    term_list.append((1, '1'))
+                    add_one = True
+                elif factor == 0:
+                    return []
             elif 'W' in factor:
                 q_idx = factor.strip('W')
                 if not q_idx.isdigit():
                     raise ValueError('Invalid index {}.'.format(q_idx))
                 q_idx = int(q_idx)
                 term_list.append((q_idx, 'W'))
-            elif factor == '0':
-                return []
+
             else:
                 raise ValueError(
                     'term specified incorrectly. {}'.format(factor))
@@ -227,7 +247,7 @@ class SymbolicBinary(object):
         return parsed_term
 
     def enumerate_qubits(self):
-        """ enumerates all qubits indexed in a given symbolicBinary
+        """ Enumerates all qubits indexed in a given SymbolicBinary.
 
         Returns (list): a list of qubits
 
@@ -243,7 +263,7 @@ class SymbolicBinary(object):
 
         return qubits
 
-    def _shift(self, const):
+    def shift(self, const):
         """ Shift all qubit indices by a given constant.
 
         Args:
@@ -302,7 +322,7 @@ class SymbolicBinary(object):
         return evaluation % 2
 
     def _add_one(self):
-        """ Adds constant 1 to a SymbolicBinary """
+        """ Adds constant 1 to a SymbolicBinary. """
 
         # ((1,'1'),) can only exist as a loner in SymbolicBinary
         if ((1,'1'),) in self.terms:
@@ -465,7 +485,7 @@ class SymbolicBinary(object):
         return self
 
     def __radd__(self, addend):
-        """method for right addition to SymbolicBinary.
+        """Method for right addition to SymbolicBinary.
 
         Args:
             addend (int or SymbolicBinary): The operator to add.
@@ -484,6 +504,7 @@ class SymbolicBinary(object):
 
     def __add__(self, addend):
         """ 
+        Left addition of SymbolicBinary.
         Args:
             addend (int or SymbolicBinary): The operator or int to add.
 

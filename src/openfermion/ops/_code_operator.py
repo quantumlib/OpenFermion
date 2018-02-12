@@ -1,5 +1,18 @@
-import copy
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 
+""" Binary code class for Fermion-qubit mappings (arXiv:1712.07067) """
+
+import copy
 import numpy
 import scipy
 import scipy.sparse
@@ -7,62 +20,59 @@ import scipy.sparse
 from openfermion.ops import SymbolicBinary
 
 
-def _shift_decoder(decode, shift_constant):
+def shift_decoder(decode, shift_constant):
     """ Shifts the indices of a decoder by a constant.
-    
     Args:
-        decode (list of SymbolicBinary): a decoder
+        decode (array of SymbolicBinary): a decoder
         shift_constant (int): the qubit index that corresponds to the offset.
 
-    Returns (list of SymbolicBinary):  shifted decoder
+    Returns (array of SymbolicBinary):  shifted decoder
     """
     decode_shifted = []
     for entry in decode:
         tmp_entry = copy.deepcopy(entry)
-        tmp_entry._shift(shift_constant)
+        tmp_entry.shift(shift_constant)
         decode_shifted.append(tmp_entry)
     return numpy.array(decode_shifted)
 
 
-def _double_decoding(dec1, dec2):
+def double_decoding(decoder_1, decoder2):
     """ Concatenates two decodings
-    
     Args:
-        dec1 (list of SymbolicBinary): decoding of the outer code layer
-        dec2 (list of SymbolicBinary): decoding of the inner code layer
-    
+        decoder_1 (list of SymbolicBinary): decoding of the outer code layer
+        decoder_2 (list of SymbolicBinary): decoding of the inner code layer
     Returns (list of SymbolicBinary): the decoding defined by
-    w -> dec1(dec2(w))
+    w -> decoder_1( decoder_2(w) )
     """
     doubled_decoder = []
-    for entry in dec1:
+    for entry in decoder_1:
         tmp_sum = 0
         for summand in entry.terms:
             tmp_term = SymbolicBinary('1')
             for factor in summand:
                 if factor[1] == 'W':
-                    tmp_term *= dec2[factor[0]]
+                    tmp_term *= decoder_2[factor[0]]
             tmp_sum = tmp_term + tmp_sum
         doubled_decoder += [tmp_sum]
     return numpy.array(doubled_decoder)
 
 
-def linearize_decoder(mtx):
-    """ Outputs row_idx linear decoding function from row_idx matrix
+def linearize_decoder(matrix):
+    """ Outputs  linear decoding function from input matrix
 
     Args:
-        mtx (array or list): row_idx 2D list of lists or row_idx numpy array
+        matrix (array or list):   list of lists or 2D numpy array
          to derive the decoding function from
 
     Returns: list of SymbolicBinary
     """
-    mtx = numpy.array(list(map(numpy.array, mtx)))
-    system_dim, code_dim = numpy.shape(mtx)
+    matrix = numpy.array(list(map(numpy.array, matrix)))
+    system_dim, code_dim = numpy.shape(matrix)
     res = [] * system_dim
     for row_idx in numpy.arange(system_dim):
         dec_str = ''
         for col_idx in numpy.arange(code_dim):
-            if mtx[row_idx, col_idx] == 1:
+            if matrix[row_idx, col_idx] == 1:
                 dec_str += 'W' + str(col_idx) + ' + '
         dec_str = dec_str.rstrip(' + ')
         res.append(SymbolicBinary(dec_str))
@@ -78,10 +88,9 @@ class BinaryCode(object):
     The BinaryCode class provides a representation of an encoding-decoding pair
     for binary vectors of different lengths, where the decoding is allowed to 
     be non-linear. 
-    
-    As the occupation number of fermionic orbital is effectively binary,
+    As the occupation number of fermionic mode is effectively binary,
     a length-N vector (v) of binary number can be utilized to describe 
-    a configuration of a many-body fermionic state on N orbitals. 
+    a configuration of a many-body fermionic state on N modes. 
     An n-qubit product state configuration |w0> |w1> |w2> ... |wn-1>,
     on the other hand is described by a length-n binary vector 
     w=(w0, w1, ..., wn-1). To map a subset of N-Orbital Fermion states 
@@ -116,8 +125,16 @@ class BinaryCode(object):
     and appendage on BinaryCode-objects.
 
     NOTE: that multiplication of a BinaryCode with an integer yields a
-    multiple appending of the same code, the multiplication with another
-    BinaryCode their concatenation.
+        multiple appending of the same code, the multiplication with another
+        BinaryCode their concatenation.
+    
+    Attributes:
+        decoder (array of SymbolicBinary): Outputs the decoding functions
+            as components.
+        encoder (scipy.sparse.csc_matrix): Outputs A, the linear matrix that 
+            implements the encoding function.
+        modes (int): Outputs the number of modes. 
+        qubits (int): Outputs the number of qubits.
     """
 
     def __init__(self, encoding, decoding):
@@ -129,9 +146,9 @@ class BinaryCode(object):
 
         Raises: 
             TypeError: non-list, array like encoding or decoding, unsuitable
-            symbolicBinary generators,
+                SymbolicBinary generators,
             BinaryCodeError: in case of decoder/encoder size mismatch or decoder
-            size, qubits indexed mismatch
+                size, qubits indexed mismatch
         """
 
         if not isinstance(encoding, (numpy.ndarray, list, tuple)):
@@ -140,23 +157,23 @@ class BinaryCode(object):
         if not isinstance(decoding, (numpy.ndarray, list, tuple)):
             raise TypeError('decoding must be a list, array or tuple .')
 
-        self.enc = scipy.sparse.csc_matrix(encoding)
-        self.qubits, self.orbitals = numpy.shape(encoding)
+        self.encoder = scipy.sparse.csc_matrix(encoding)
+        self.qubits, self.modes = numpy.shape(encoding)
 
-        if (self.orbitals != len(decoding)):
+        if (self.modes != len(decoding)):
             raise BinaryCodeError(
                 'size mismatch, decoder and encoder should have the same'
                 ' first dimension')
 
         decoder_qubits = set()
-        self.dec = []
+        self.decoder = []
 
-        for symbolic_binary in numpy.array(decoding):
+        for symbolic_binary in decoding:
 
             if isinstance(symbolic_binary, (tuple, list, str)):
                 symbolic_binary = SymbolicBinary(symbolic_binary)
             if isinstance(symbolic_binary, SymbolicBinary):
-                self.dec.append(symbolic_binary)
+                self.decoder.append(symbolic_binary)
                 decoder_qubits = decoder_qubits | set(
                     symbolic_binary.enumerate_qubits())
             else:
@@ -173,7 +190,7 @@ class BinaryCode(object):
             raise BinaryCodeError('decoder is not indexing some qubits. Qubits'
                                   'indexed are: {}'.format(decoder_qubits))
 
-        self.dec = numpy.array(self.dec)
+        self.decoder = numpy.array(self.decoder)
 
     def __iadd__(self, appendix):
         """ In-place appending a binary code with +=.
@@ -181,18 +198,20 @@ class BinaryCode(object):
         Args:
             appendix (BinaryCode): The code to append to the present one. 
 
-        Returns (BinaryCode): a global binary code with size n1+n2, N1+N2
+        Returns (BinaryCode): A global binary code with size n1+n2, N1+N2
 
         Raises:
-            TypeError: appendix must be a BinaryCode
+            TypeError: Appendix must be a BinaryCode.
         """
         if not isinstance(appendix, BinaryCode):
             raise TypeError('argument must be a BinaryCode.')
 
-        self.dec = numpy.append(self.dec,
-                                _shift_decoder(appendix.dec, self.qubits))
-        self.enc = scipy.sparse.bmat([[self.enc, None], [None, appendix.enc]])
-        self.qubits, self.orbitals = numpy.shape(self.enc)
+        self.decoder = numpy.append(self.decoder,
+                                    shift_decoder(appendix.decoder, 
+                                                  self.qubits))
+        self.encoder = scipy.sparse.bmat([[self.encoder, None], 
+                                          [None, appendix.encoder]])
+        self.qubits, self.modes = numpy.shape(self.encoder)
         return self
 
     def __add__(self, appendix):
@@ -228,27 +247,27 @@ class BinaryCode(object):
             raise TypeError('argument must be a BinaryCode or integer')
 
         if isinstance(factor, BinaryCode):
-            if self.qubits != factor.orbitals:
+            if self.qubits != factor.modes:
                 raise BinaryCodeError(
                     'size mismatch between inner and outer code layer')
 
-            self.dec = _double_decoding(self.dec, factor.dec)
-            self.enc = factor.enc.dot(self.enc)
-            self.qubits, self.orbitals = numpy.shape(self.enc)
+            self.decoder = double_decoding(self.decoder, factor.decoder)
+            self.encoder = factor.encoder.dot(self.encoder)
+            self.qubits, self.modes = numpy.shape(self.encoder)
             return self
 
         elif isinstance(factor, int):
             if factor < 1:
                 raise ValueError('integer factor has to be positive, non-zero ')
 
-            self.enc = scipy.sparse.kron(
+            self.encoder = scipy.sparse.kron(
                 scipy.sparse.identity(factor, format='csc', dtype=int),
-                self.enc, 'csc')
-            tmp_dec = self.dec
+                self.encoder, 'csc')
+            tmp_dec = self.decoder
             for index in numpy.arange(1, factor):
-                self.dec = numpy.append(self.dec,
-                                        _shift_decoder(tmp_dec,
-                                                       index * self.qubits))
+                self.decoder = numpy.append(self.decoder,
+                                            shift_decoder(tmp_dec,
+                                                          index * self.qubits))
             self.qubits *= factor
             return self
 
@@ -257,8 +276,8 @@ class BinaryCode(object):
         in case of integer factor.
         
         Args:
-            factor (int or BinaryCode): the BinaryCode to concatenate. In case
-             of int, it will append the code to itself factor times.
+        factor (int or BinaryCode): the BinaryCode to concatenate. In case
+        of int, it will append the code to itself factor times.
 
         Returns (BinaryCode): segmented or concatenated code
         """
@@ -271,10 +290,10 @@ class BinaryCode(object):
         Args:
             factor (int): integer defining number of appendages.
             
-        Returns (BinaryCode): segmented code
+        Returns (BinaryCode): Segmented code.
 
         Raises:
-            TypeError: right_factor must be an integer
+            TypeError: factor must be an integer
         """
         if isinstance(factor, int):
             return self * factor
@@ -285,10 +304,10 @@ class BinaryCode(object):
 
     def __str__(self):
         """ Return an easy-to-read string representation."""
-        string_return = [list(map(list, self.enc.toarray()))]
+        string_return = [list(map(list, self.encoder.toarray()))]
 
         dec_str = '['
-        for term in self.dec:
+        for term in self.decoder:
             dec_str += term.__str__() + ','
         dec_str = dec_str[:-1]
         string_return.append(dec_str + ']')
