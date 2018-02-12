@@ -1,7 +1,8 @@
 import unittest
 
 from openfermion.ops import SymbolicBinary
-from openfermion.ops._code_operator import BinaryCodeError, BinaryCode, linearize_decoder
+from openfermion.ops._code_operator import BinaryCodeError, \
+    BinaryCode, linearize_decoder
 
 
 class BinaryCodeTest(unittest.TestCase):
