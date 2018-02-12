@@ -1,0 +1,63 @@
+import unittest
+
+from openfermion.ops import SymbolicBinary
+from openfermion.ops._code_operator import BinaryCodeError, BinaryCode, linearize_decoder
+
+
+class BinaryCodeTest(unittest.TestCase):
+    def test_init_errors(self):
+        with self.assertRaises(TypeError):
+            BinaryCode(1,
+                       [SymbolicBinary(' w1 + w0 '), SymbolicBinary('w0 + 1')])
+        with self.assertRaises(TypeError):
+            BinaryCode([[0, 1], [1, 0]], '1+w1')
+        with self.assertRaises(BinaryCodeError):
+            BinaryCode([[0, 1], [1, 0]], [SymbolicBinary(' w1 + w0 ')])
+        with self.assertRaises(TypeError):
+            BinaryCode([[0, 1, 1], [1, 0, 0]], ['1 + w1',
+                                                SymbolicBinary('1 + w0'),
+                                                2])
+        with self.assertRaises(BinaryCodeError):
+            BinaryCode([[0, 1], [1, 0]], [SymbolicBinary(' w0 '),
+                                          SymbolicBinary('w0 + 1')])
+        with self.assertRaises(BinaryCodeError):
+            BinaryCode([[0, 1], [1, 0]], [SymbolicBinary(' w5 '),
+                                          SymbolicBinary('w0 + 1')])
+
+    def test_addition(self):
+        a = BinaryCode([[0, 1, 0], [1, 0, 1]],
+                       [SymbolicBinary(' w1 + w0 '), SymbolicBinary('w0 + 1'),
+                        SymbolicBinary('w1')])
+        d = BinaryCode([[0, 1], [1, 0]],
+                       [SymbolicBinary(' w0 '), SymbolicBinary('w0 w1')])
+        sum = a + d
+        self.assertEqual(str(sum), "[[[0, 1, 0, 0, 0],"
+                                   " [1, 0, 1, 0, 0],"
+                                   " [0, 0, 0, 0, 1],"
+                                   " [0, 0, 0, 1, 0]],"
+                                   " '[[W1] + [W0],[W0] + [1],"
+                                   "[W1],[W2],[W2 W3]]']")
+        with self.assertRaises(TypeError):
+            sum += 5
+
+    def test_multiplication(self):
+        a = BinaryCode([[0, 1, 0], [1, 0, 1]],
+                       [SymbolicBinary(' w1 + w0 '), SymbolicBinary('w0 + 1'),
+                        SymbolicBinary('w1')])
+        d = BinaryCode([[0, 1], [1, 0]],
+                       [SymbolicBinary(' w0 '), SymbolicBinary('w0 w1')])
+
+        b = a * d
+        self.assertEqual(b.__repr__(), "[[[1, 0, 1], [0, 1, 0]],"
+                                       " '[[W0] + [W0 W1],[1] + [W0],[W0 W1]]']")
+
+        with self.assertRaises(BinaryCodeError):
+            d * a
+        with self.assertRaises(TypeError):
+            2.0 * a
+        with self.assertRaises(TypeError):
+            a *= 2.0
+
+    def test_linearize(self):
+        a = linearize_decoder([[0, 1, 1], [1, 0, 0]])
+        self.assertListEqual([str(a[0]), str(a[1])], ['[W1] + [W2]', '[W0]'])

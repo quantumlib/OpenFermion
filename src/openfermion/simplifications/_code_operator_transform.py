@@ -1,8 +1,10 @@
 import numpy
+
 from _binary_operator import SymbolicBinary
-from _code_operator import BinaryCode
+from openfermion.ops._code_operator import BinaryCode
 from openfermion.ops._fermion_operator import FermionOperator as FO
 from openfermion.ops._qubit_operator import QubitOperator as QO
+
 
 # TODO: tests & dissolve toggle
 
