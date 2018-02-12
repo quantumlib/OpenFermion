@@ -14,7 +14,8 @@
 import unittest
 
 from openfermion.ops import SymbolicBinary
-from openfermion.ops._code_operator import (BinaryCodeError, BinaryCode,
+from openfermion.ops._code_operator import (BinaryCode,
+                                            BinaryCodeError,
                                             linearize_decoder)
 
 
@@ -44,15 +45,15 @@ class BinaryCodeTest(unittest.TestCase):
                         SymbolicBinary('w1')])
         d = BinaryCode([[0, 1], [1, 0]],
                        [SymbolicBinary(' w0 '), SymbolicBinary('w0 w1')])
-        sum = a + d
-        self.assertEqual(str(sum), "[[[0, 1, 0, 0, 0],"
-                                   " [1, 0, 1, 0, 0],"
-                                   " [0, 0, 0, 0, 1],"
-                                   " [0, 0, 0, 1, 0]],"
-                                   " '[[W1] + [W0],[W0] + [1],"
-                                   "[W1],[W2],[W2 W3]]']")
+        summation = a + d
+        self.assertEqual(str(summation), "[[[0, 1, 0, 0, 0],"
+                                         " [1, 0, 1, 0, 0],"
+                                         " [0, 0, 0, 0, 1],"
+                                         " [0, 0, 0, 1, 0]],"
+                                         " '[[W1] + [W0],[W0] + [1],"
+                                         "[W1],[W2],[W2 W3]]']")
         with self.assertRaises(TypeError):
-            sum += 5
+            summation += 5
 
     def test_multiplication(self):
         a = BinaryCode([[0, 1, 0], [1, 0, 1]],
@@ -65,13 +66,18 @@ class BinaryCodeTest(unittest.TestCase):
         self.assertEqual(b.__repr__(), "[[[1, 0, 1], [0, 1, 0]],"
                                        " '[[W0] + [W0 W1],[1] +"
                                        " [W0],[W0 W1]]']")
-
+        b = 2 * d
+        self.assertEqual(str(b), "[[[0, 1, 0, 0], [1, 0, 0, 0], "
+                                 "[0, 0, 0, 1], [0, 0, 1, 0]], "
+                                 "'[[W0],[W0 W1],[W2],[W2 W3]]']")
         with self.assertRaises(BinaryCodeError):
             d * a
         with self.assertRaises(TypeError):
             2.0 * a
         with self.assertRaises(TypeError):
             a *= 2.0
+        with self.assertRaises(ValueError):
+            b = 0 * a
 
     def test_linearize(self):
         a = linearize_decoder([[0, 1, 1], [1, 0, 0]])
