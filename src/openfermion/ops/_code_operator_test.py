@@ -16,7 +16,8 @@ import unittest
 from openfermion.ops import SymbolicBinary
 from openfermion.ops._code_operator import (BinaryCode,
                                             BinaryCodeError,
-                                            linearize_decoder)
+                                            linearize_decoder,
+                                            shift_decoder)
 
 
 class BinaryCodeTest(unittest.TestCase):
@@ -82,3 +83,8 @@ class BinaryCodeTest(unittest.TestCase):
     def test_linearize(self):
         a = linearize_decoder([[0, 1, 1], [1, 0, 0]])
         self.assertListEqual([str(a[0]), str(a[1])], ['[W1] + [W2]', '[W0]'])
+
+    def test_shift(self):
+        decoder = [SymbolicBinary('1'), SymbolicBinary('1 + w1 w0')]
+        with self.assertRaises(TypeError):
+            shift_decoder(decoder, 2.5)

@@ -31,6 +31,10 @@ def shift_decoder(decoder, shift_constant):
     Returns (list): list of SymbolicBinary shifted decoder
     """
     decode_shifted = []
+    if not isinstance(shift_constant, (numpy.int64, numpy.int32, int)):
+        raise TypeError('the shift to the decoder must be integer. got {}'
+                        'of type {}'.format(shift_constant,
+                                            type(shift_constant)))
     for entry in decoder:
         tmp_entry = copy.deepcopy(entry)
         tmp_entry.shift(shift_constant)
