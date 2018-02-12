@@ -255,7 +255,8 @@ def jw_number_indices(n_electrons, n_qubits):
     return indices
 
 
-def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index):
+def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index,
+                  particle_number=None):
     """Return the indices of basis vectors with fixed sz under JW encoding
 
     Args:
@@ -281,32 +282,57 @@ def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index):
 
     n_sites = n_qubits // 2
     sz_integer = int(2. * sz_value)
-
-    if sz_integer < 0:
-        # More down spins than up spins
-        more_map = down_map
-        less_map = up_map
-    else:
-        # More up spins than down spins
-        more_map = up_map
-        less_map = down_map
-
     indices = []
-    for n in range(abs(sz_integer), n_sites + 1):
-        # Choose n of the 'more' spin and n-abs(sz_integer) of the 'less' spin
-        more_occupations = itertools.combinations(range(n_sites), n)
-        less_occupations = list(itertools.combinations(range(n_sites),
-                                                       n - abs(sz_integer)))
-        # Each arrangement of the 'more' spins can be paired with an
-        # arrangement of the 'less' spin
-        for more_occupation in more_occupations:
-            more_occupation = [more_map(index) for index in more_occupation]
-            for less_occupation in less_occupations:
-                less_occupation = [less_map(index)
-                                   for index in less_occupation]
-                occupation = more_occupation + less_occupation
+
+    if particle_number is not None:
+        # Particle number is fixed, so the number of spin-up electrons
+        # (as well as the number of spin-down electrons) is fixed
+        if (particle_number + sz_integer) % 2 != 0:
+            raise ValueError('The specified particle number and sz value are '
+                             'incompatible.')
+        num_up = (particle_number + sz_integer) // 2
+        num_down = particle_number - num_up
+        up_occupations = itertools.combinations(range(n_sites), num_up)
+        down_occupations = list(
+                itertools.combinations(range(n_sites), num_down))
+        # Each arrangement of up spins can be paired with an arrangement
+        # of down spins
+        for up_occupation in up_occupations:
+            up_occupation = [up_map(index) for index in up_occupation]
+            for down_occupation in down_occupations:
+                down_occupation = [down_map(index)
+                                   for index in down_occupation]
+                occupation = up_occupation + down_occupation
                 indices.append(sum(2 ** (n_qubits - 1 - k)
                                for k in occupation))
+    else:
+        # Particle number is not fixed
+        if sz_integer < 0:
+            # More down spins than up spins
+            more_map = down_map
+            less_map = up_map
+        else:
+            # More up spins than down spins
+            more_map = up_map
+            less_map = down_map
+        for n in range(abs(sz_integer), n_sites + 1):
+            # Choose n of the 'more' spin and n - abs(sz_integer) of the
+            # 'less' spin
+            more_occupations = itertools.combinations(range(n_sites), n)
+            less_occupations = list(
+                    itertools.combinations(
+                        range(n_sites), n - abs(sz_integer)))
+            # Each arrangement of the 'more' spins can be paired with an
+            # arrangement of the 'less' spin
+            for more_occupation in more_occupations:
+                more_occupation = [more_map(index)
+                                   for index in more_occupation]
+                for less_occupation in less_occupations:
+                    less_occupation = [less_map(index)
+                                       for index in less_occupation]
+                    occupation = more_occupation + less_occupation
+                    indices.append(sum(2 ** (n_qubits - 1 - k)
+                                   for k in occupation))
     
     return indices
 
