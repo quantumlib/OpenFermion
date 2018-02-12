@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Implementing angular momentum generators."""
+"""Commonly used operators (mainly instances of SymbolicOperator)."""
 import numpy
 from openfermion.ops import FermionOperator
 
