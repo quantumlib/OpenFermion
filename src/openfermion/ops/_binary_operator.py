@@ -260,7 +260,7 @@ class SymbolicBinary(object):
         Raises:
             TypeError: const must be integer
         """
-        if not isinstance(const, int):
+        if not isinstance(const, (numpy.int64, numpy.int32, int)):
             raise TypeError('can only shift qubit indices by an integer'
                             'received {}'.format(const))
         shifted_terms = []
