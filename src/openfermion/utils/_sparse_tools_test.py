@@ -67,6 +67,45 @@ class SparseOperatorTest(unittest.TestCase):
         calculated_indices = jw_number_indices(2, 2)
         self.assertEqual(expected, calculated_indices)
 
+    def test_jw_sz_indices(self):
+        """Test the indexing scheme for selecting specific sz value"""
+        # Write a function to compute the indices by brute force
+        def jw_sz_indices_brute_force(sz_value, n_qubits):
+            n_sites = n_qubits // 2
+            def sz_integer(bitstring):
+                n_up = len([site for site in range(n_sites)
+                            if bitstring[up_index(site)] == '1'])
+                n_down = len([site for site in range(n_sites)
+                              if bitstring[down_index(site)] == '1'])
+                return n_up - n_down
+            indices = []
+            for bitstring in itertools.product(['0', '1'], repeat=n_qubits):
+                if sz_integer(bitstring) == int(2 * sz_value):
+                    indices.append(int(''.join(bitstring), 2))
+            return indices
+
+        expected = jw_sz_indices_brute_force(0, 4)
+        calculated = jw_sz_indices(0, 4)
+        self.assertEqual(set(expected), set(calculated))
+        
+        expected = jw_sz_indices_brute_force(-.5, 4)
+        calculated = jw_sz_indices(-.5, 4)
+        self.assertEqual(set(expected), set(calculated))
+
+        expected = jw_sz_indices_brute_force(1.5, 6)
+        calculated = jw_sz_indices(1.5, 6)
+        self.assertEqual(set(expected), set(calculated))
+
+        expected = jw_sz_indices_brute_force(.5, 8)
+        calculated = jw_sz_indices(.5, 8)
+        self.assertEqual(set(expected), set(calculated))
+
+        with self.assertRaises(ValueError):
+            indices = jw_sz_indices(3, 3)
+
+        with self.assertRaises(ValueError):
+            indices = jw_sz_indices(3.1, 4)
+
     def test_jw_restrict_operator(self):
         """Test the scheme for restricting JW encoded operators to number"""
         # Make a Hamiltonian that cares mostly about number of electrons

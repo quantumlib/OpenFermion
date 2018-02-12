@@ -297,7 +297,8 @@ def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index):
                 less_occupation = [less_map(index)
                                    for index in less_occupation]
                 occupation = more_occupation + less_occupation
-                indices.append(sum(2 ** k for k in occupation))
+                indices.append(sum(2 ** (n_qubits - 1 - k)
+                               for k in occupation))
     
     return indices
 
