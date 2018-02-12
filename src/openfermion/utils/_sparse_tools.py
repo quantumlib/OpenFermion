@@ -259,8 +259,16 @@ def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index):
     """Return the indices of basis vectors with fixed sz under JW encoding
 
     Args:
-        sz_value(float): Desired sz value. Should be a half-integer.
+        sz_value(float): Desired sz value. Should be an integer or
+            half-integer.
         n_qubits(int): Number of qubits defining the total state
+        up_map(function): function mapping a spatial index to a spin-orbital
+                index. Default is the canonical spin-up corresponds to even
+                spin-orbitals and spin-down corresponds to odd spin-orbitals
+        down_map(function): function mapping spatial index to spin-orbital
+                  index. Default is canonical spin-up corresponds to even
+                  spin-orbitals and spin-down corresponds to odd
+                  spin-orbitals.
 
     Returns:
         indices(list): The list of indices
@@ -269,7 +277,7 @@ def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index):
         raise ValueError('Number of qubits must be even')
 
     if not (2. * sz_value).is_integer():
-        raise ValueError('sz value must be a half integer')
+        raise ValueError('sz value must be an integer or half-integer')
 
     n_sites = n_qubits // 2
     sz_integer = int(2. * sz_value)
