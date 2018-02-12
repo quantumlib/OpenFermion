@@ -25,6 +25,7 @@ import scipy.sparse.linalg
 import warnings
 
 from openfermion.config import *
+from openfermion.hamiltonians import up_index, down_index
 from openfermion.ops import (FermionOperator, hermitian_conjugated,
                              normal_ordered, number_operator,
                              QuadraticHamiltonian, QubitOperator)
@@ -247,11 +248,57 @@ def jw_number_indices(n_electrons, n_qubits):
         indices(list): List of indices in a 2^n length array that indicate
             the indices of constant particle number within n_qubits
             in a Jordan-Wigner encoding.
-
     """
     occupations = itertools.combinations(range(n_qubits), n_electrons)
     indices = [sum([2**n for n in occupation])
                for occupation in occupations]
+    return indices
+
+
+def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index):
+    """Return the indices of basis vectors with fixed sz under JW encoding
+
+    Args:
+        sz_value(float): Desired sz value. Should be a half-integer.
+        n_qubits(int): Number of qubits defining the total state
+
+    Returns:
+        indices(list): The list of indices
+    """
+    if n_qubits % 2 != 0:
+        raise ValueError('Number of qubits must be even')
+
+    if not (2. * sz_value).is_integer():
+        raise ValueError('sz value must be a half integer')
+
+    n_sites = n_qubits // 2
+    sz_integer = int(2. * sz_value)
+
+    if sz_integer < 0:
+        # More down spins than up spins
+        more_map = down_map
+        less_map = up_map
+    else:
+        # More up spins than down spins
+        more_map = up_map
+        less_map = down_map
+
+    indices = []
+    for n in range(abs(sz_integer), n_sites + 1):
+        # Choose n of the 'more' spin and n-abs(sz_integer) of the 'less' spin
+        more_occupations = itertools.combinations(range(n_sites), n)
+        less_occupations = list(itertools.combinations(range(n_sites),
+                                                       n - abs(sz_integer)))
+        # Each arrangement of the 'more' spins can be paired with an
+        # arrangement of the 'less' spin
+        for more_occupation in more_occupations:
+            more_occupation = [more_map(index) for index in more_occupation]
+            for less_occupation in less_occupations:
+                less_occupation = [less_map(index)
+                                   for index in less_occupation]
+                occupation = more_occupation + less_occupation
+                indices.append(sum(2 ** k for k in occupation))
+    
     return indices
 
 
