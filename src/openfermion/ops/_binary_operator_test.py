@@ -48,6 +48,8 @@ class SymbolicBinaryTest(unittest.TestCase):
             SymbolicBinary([((1, 'Q', 'W'),)])
         with self.assertRaises(ValueError):
             SymbolicBinary([((1.0, 'Q', 'W'),)])
+        with self.assertRaises(ValueError):
+            SymbolicBinary([((1.5, 'W'),)])
 
     def test_init_list(self):
         operator1 = SymbolicBinary([((3, 'W'), (4, 'W'), (1, '1'))])
@@ -84,6 +86,8 @@ class SymbolicBinaryTest(unittest.TestCase):
         self.assertEqual(addition.terms, [((1, '1'),)])
         with self.assertRaises(TypeError):
             tmp = 4.3 + operator1
+        with self.assertRaises(TypeError):
+            operator1+=4.3
 
     def test_string_output(self):
         operator1 = SymbolicBinary('w15')
