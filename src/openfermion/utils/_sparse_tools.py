@@ -384,6 +384,49 @@ def jw_sz_restrict_operator(operator, sz_value, n_electrons=None,
     return operator[numpy.ix_(select_indices, select_indices)]
 
 
+def jw_number_restrict_state(state, n_electrons, n_qubits=None):
+    """Restrict a Jordan-Wigner encoded state to a given particle number
+
+    Args:
+        state(ndarray or sparse): Numpy vector in
+            the space of n_qubits.
+        n_electrons(int): Number of particles to restrict the state to
+        n_qubits(int): Number of qubits defining the total state
+
+    Returns:
+        new_operator(ndarray or sparse): Numpy vector restricted to
+            states with the same particle number. May not be normalized.
+    """
+    if n_qubits is None:
+        n_qubits = int(numpy.log2(state.shape[0]))
+
+    select_indices = jw_number_indices(n_electrons, n_qubits)
+    return state[select_indices]
+
+
+def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None):
+    """Restrict a Jordan-Wigner encoded state to a given sz value
+
+    Args:
+        state(ndarray or sparse): Numpy vector in
+            the space of n_qubits.
+        sz_value(float): Desired sz value. Should be an integer or
+            half-integer.
+        n_electrons(int, optional): Number of particles to restrict the
+            operator to, if such a restriction is desired.
+        n_qubits(int, optional): Number of qubits defining the total state
+
+    Returns:
+        new_operator(ndarray or sparse): Numpy vector restricted to
+            states with the desired sz_value. May not be normalized.
+    """
+    if n_qubits is None:
+        n_qubits = int(numpy.log2(state.shape[0]))
+
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
+    return state[select_indices]
+
+
 def jw_get_ground_states_by_particle_number(sparse_operator, particle_number,
                                             sparse=True, num_eigs=3):
     """For a Jordan-Wigner encoded Hermitian operator, compute the lowest

@@ -106,21 +106,21 @@ class SparseOperatorTest(unittest.TestCase):
         particle_num_indices = jw_number_indices(2, 8)
         expected = [index for index in particle_num_indices
                     if index in sz_indices]
-        calculated = jw_sz_indices(0, 8, particle_number=2)
+        calculated = jw_sz_indices(0, 8, n_electrons=2)
         self.assertEqual(set(expected), set(calculated))
 
         sz_indices = jw_sz_indices_brute_force(.5, 8)
         particle_num_indices = jw_number_indices(3, 8)
         expected = [index for index in particle_num_indices
                     if index in sz_indices]
-        calculated = jw_sz_indices(.5, 8, particle_number=3)
+        calculated = jw_sz_indices(.5, 8, n_electrons=3)
         self.assertEqual(set(expected), set(calculated))
 
         sz_indices = jw_sz_indices_brute_force(2, 12)
         particle_num_indices = jw_number_indices(6, 12)
         expected = [index for index in particle_num_indices
                     if index in sz_indices]
-        calculated = jw_sz_indices(2, 12, particle_number=6)
+        calculated = jw_sz_indices(2, 12, n_electrons=6)
         self.assertEqual(set(expected), set(calculated))
 
         # Test exceptions
@@ -131,7 +131,7 @@ class SparseOperatorTest(unittest.TestCase):
             indices = jw_sz_indices(3.1, 4)
 
         with self.assertRaises(ValueError):
-            indices = jw_sz_indices(1.5, 8, particle_number=6)
+            indices = jw_sz_indices(1.5, 8, n_electrons=6)
 
     def test_jw_restrict_operator(self):
         """Test the scheme for restricting JW encoded operators to number"""
