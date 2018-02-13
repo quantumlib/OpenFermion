@@ -26,7 +26,8 @@ from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
 from ._slater_determinants import (gaussian_state_preparation_circuit,
                                    slater_determinant_preparation_circuit)
 
-from ._sparse_tools import (expectation,
+from ._sparse_tools import (computational_basis_vector,
+                            expectation,
                             expectation_computational_basis_state,
                             get_density_matrix,
                             get_gap,
@@ -38,7 +39,6 @@ from ._sparse_tools import (expectation,
                             jw_get_gaussian_state,
                             jw_get_ground_states_by_particle_number,
                             jw_number_restrict_operator,
-                            jw_slater_determinant,
                             qubit_operator_sparse,
                             sparse_eigenspectrum)
 
