@@ -28,8 +28,9 @@ from openfermion.config import *
 from openfermion.ops import (FermionOperator, hermitian_conjugated,
                              normal_ordered, number_operator,
                              QuadraticHamiltonian, QubitOperator)
-from openfermion.utils import (commutator, fourier_transform,
-                               gaussian_state_preparation_circuit, Grid)
+from openfermion.utils import (commutator, fourier_transform, Grid,
+                               gaussian_state_preparation_circuit,
+                               slater_determinant_preparation_circuit)
 from openfermion.hamiltonians._jellium import (momentum_vector,
                                                position_vector,
                                                grid_indices)
@@ -427,6 +428,45 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
                     i, j, theta, phi, n_qubits).dot(state)
 
     return energy, state
+
+
+def jw_slater_determinant(slater_determinant_matrix):
+    """Obtain a Slater determinant.
+
+    The input is an :math:`N_f \\times N` matrix :math:`Q` with orthonormal
+    rows. Such a matrix describes the Slater determinant
+
+    .. math::
+
+        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \\text{vac} \\rangle,
+
+    where
+
+    .. math::
+
+        b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
+
+    Args:
+        slater_determinant_matrix: The matrix :math:`Q` which describes the
+            Slater determinant to be prepared.
+    Returns:
+        The Slater determinant as a sparse matrix.
+    """
+    circuit_description = slater_determinant_preparation_circuit(
+            slater_determinant_matrix)
+    start_orbitals = len(slater_determinant_matrix)
+
+    # Initialize the starting state
+    state = computational_basis_vector(start_orbitals, n_qubits)
+
+    # Apply the circuit
+    for parallel_ops in circuit_description:
+        for op in parallel_ops:
+            i, j, theta, phi = op
+            state = jw_sparse_givens_rotation(
+                i, j, theta, phi, n_qubits).dot(state)
+
+    return state
 
 
 def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
