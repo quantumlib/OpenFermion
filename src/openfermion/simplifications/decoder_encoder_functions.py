@@ -1,6 +1,6 @@
 import numpy
-from openfermion.ops import SymbolicBinary
-from _code_operator import BinaryCode, linearize_decoder 
+from openfermion.ops import SymbolicBinary,BinaryCode
+from openfermion.ops._code_operator import linearize_decoder
 
 # TODO: BK, JW these are already implemented. ideally we would not have additional implementations here.?
 

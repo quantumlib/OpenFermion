@@ -152,7 +152,7 @@ class BinaryCode(object):
         """ Initialization of a binary code.
 
         Args:
-            encoding (array or list): nested lists or binary 2D-array
+            encoding (np.ndarray or list): nested lists or binary 2D-array
             decoding (array or list): list of SymbolicBinary(list-like or str)
 
         Raises:
