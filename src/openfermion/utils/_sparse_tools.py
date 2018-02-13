@@ -455,6 +455,7 @@ def jw_slater_determinant(slater_determinant_matrix):
     circuit_description = slater_determinant_preparation_circuit(
             slater_determinant_matrix)
     start_orbitals = len(slater_determinant_matrix)
+    n_qubits = slater_determinant_matrix.shape[1]
 
     # Initialize the starting state
     state = computational_basis_vector(start_orbitals, n_qubits)
