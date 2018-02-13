@@ -11,6 +11,7 @@
 #   limitations under the License.
 
 from ._binary_operator import SymbolicBinary
+from ._code_operator import BinaryCode
 from ._symbolic_operator import SymbolicOperator
 from ._fermion_operator import (FermionOperator,
                                 hermitian_conjugated,
