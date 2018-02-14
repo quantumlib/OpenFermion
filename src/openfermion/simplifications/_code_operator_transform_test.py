@@ -1,7 +1,42 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
 import unittest
+
+from _code_operator_transform import code_transform, dissolve
+from openfermion.ops import BinaryCode, FermionOperator
 
 
 class CodeTransformTest(unittest.TestCase):
+    def test_transform(self):
+        code = BinaryCode([[1, 0, 0], [0, 1, 0]], ['W0', 'W1', '1 + W0 + W1'])
+        hamiltonian = FermionOperator('0^ 2', 0.5) + FermionOperator('2^ 0',
+                                                                     0.5)
+        transform = code_transform(hamiltonian, code)
+        self.assertEqual(str(transform), '0.25 [X0 Z1] +\n0.25 [X0]')
 
-    def test_basic_init(self):
-        raise NotImplementedError()
+        with self.assertRaises(TypeError):
+            code_transform('0^ 2', code)
+        with self.assertRaises(TypeError):
+            code_transform(hamiltonian,
+                           ([[1, 0], [0, 1]], ['w0', 'w1']))
+
+    def test_dissolve(self):
+        code = BinaryCode([[1, 0, 0], [0, 1, 0]], ['W0', 'W1', '1 + W0 W1'])
+        hamiltonian = FermionOperator('0^ 2', 0.5) + FermionOperator('2^ 0',
+                                                                     0.5)
+        transform = code_transform(hamiltonian, code)
+        self.assertEqual(str(transform), '0.375 [X0 Z1] +\n-0.125 [X0] +\n'
+                                         '0.125j [Y0] +\n'
+                                         '0.125j [Y0 Z1]')
+        with self.assertRaises(ValueError):
+            dissolve(((1, '1'),))
