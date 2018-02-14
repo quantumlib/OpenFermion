@@ -1,188 +1,234 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+""" Pre-existing codes for Fermion-qubit mappings
+    based on (arXiv:1712.07067) """
+
 import numpy
-from openfermion.ops import SymbolicBinary,BinaryCode
+from openfermion.ops import SymbolicBinary, BinaryCode
 from openfermion.ops._code_operator import linearize_decoder
 
-# TODO: BK, JW these are already implemented. ideally we would not have additional implementations here.?
 
-def encoder_bk(d):
+def encoder_bk(dimension):
     """
-    outputs the binary tree matrix used for the encoding
+    Outputs the binary-tree (dimension x dimension)-matrix 
+    used for the encoder in the Bravyi-Kitaev transform.  
     Args:
-        d: dimension
+        dimension (int): length of the matrix, the dimension x dimension
 
-    Returns: 
+    Returns: (array) encoder matrix
+    
 
     """
-    reps = int(numpy.ceil(numpy.log2(d)))
-    mtx = numpy.array([[1,0],[1,1]])
-    for a in numpy.arange(1,reps+1):
-        mtx = numpy.kron(numpy.eye(2,dtype=int),mtx)
-        for b in numpy.arange(0,2**a):
-            mtx[2**(a+1)-1,b]=1
-    return mtx[0:d,0:d]
+    reps = int(numpy.ceil(numpy.log2(dimension)))
+    mtx = numpy.array([[1, 0], [1, 1]])
+    for a in numpy.arange(1, reps+1):
+        mtx = numpy.kron(numpy.eye(2, dtype=int), mtx)
+        for b in numpy.arange(0, 2**a):
+            mtx[2**(a + 1) - 1, b] = 1
+    return mtx[0:dimension, 0:dimension]
 
-def decoder_bk(d):
+
+def decoder_bk(modes):
     """
-    outputs the inverse of the binary tree matrix utilized for decoding
+    Outputs the inverse of the binary tree matrix utilized for decoder
+    in the Bravyi-Kitaev transform. 
     Args:
-        d: dimension
+        modes (int): size of the matrix is modes x modes
 
-    Returns: decoder matrix of Bravyi Kitaev
+    Returns: (array) decoder matrix
 
     """
     reps = int(numpy.ceil(numpy.log2(d)))
     mtx = numpy.array([[1, 0], [1, 1]])
-    for a in numpy.arange(1,reps+1):
-        mtx = numpy.kron(numpy.eye(2),mtx)
-        mtx[2**(a+1)-1,2**(a)-1]=1
-    return mtx[0:d,0:d]
+    for a in numpy.arange(1, reps+1):
+        mtx = numpy.kron(numpy.eye(2, dtype=int), mtx)
+        mtx[2**(a + 1) - 1, 2**(a) - 1] = 1
+    return mtx[0:d, 0:d]
 
 
-def encoder_checksum(sites):
+def encoder_checksum(modes):
     """
-    matrix for checksum codes
+    Outputs the encoder matrix for checksum codes.
     Args:
-        sites: matrix dimension is sites - 1 x sites
+        modes (int):  matrix size is (modes - 1) x modes
 
-    Returns: encoder matrix
+    Returns: (array) encoder matrix
 
     """
-    enc = numpy.zeros(shape=(sites-1,sites),dtype=int)
-    for i in range(sites - 1): enc[i,i] = 1
+    enc = numpy.zeros(shape=(modes - 1, modes), dtype=int)
+    for i in range(modes - 1): 
+        enc[i, i] = 1
     return enc
 
-def decoder_checksum(sites,odd):
+
+def decoder_checksum(modes, odd):
     """
-    Decoding function for checksum codes.
+    Outputs the decoder for checksum codes.
     Args:
-        sites:N, number of orbitals
-        odd: either 1 or 0, if 1 we encode all states with odd Hamming weight
+        modes (int):  number of modes
+        odd: either 1 or 0, if odd=1,
+            we encode all states with odd Hamming weight
 
-    Returns: a SymbolicBinary list
+    Returns:  (list) list of SymbolicBinary 
 
     """
-    if odd==1: all_in = SymbolicBinary('1')
-    else: all_in = SymbolicBinary()
+    if odd == 1:
+        all_in = SymbolicBinary('1')
+    else: 
+        all_in = SymbolicBinary()
 
-    for a in range(sites-1):
-        all_in += SymbolicBinary('w'+str(a))
+    for a in range(modes-1):
+        all_in += SymbolicBinary('w' + str(a))
 
-    djw = linearize_decoder(numpy.identity(sites-1,dtype=int))
-    djw = numpy.append( djw,[all_in])
+    djw = linearize_decoder(numpy.identity(modes-1, dtype=int))
+    djw = numpy.append(djw, [all_in])
     return djw
 
-def checksum_code(sites,odd):
+
+def checksum_code(modes, odd):
     """
         Checksum code for either even or odd Hamming-weight
         
         Args:
-            sites:N, number of orbitals
-            odd: either 1 or 0, if 1 we encode all states with odd Hamming - weight
+            modes: number of modes
+            odd: either 1 or 0, if 1 we encode all states with 
+                odd Hamming weight
 
         Returns: (BinaryCode)
     """
-    return BinaryCode(encoder_checksum(sites),decoder_checksum(sites, odd))
+    return BinaryCode(encoder_checksum(modes), decoder_checksum(modes, odd))
 
-def JW_code(sites):
+
+def JW_code(modes):
     """
         The Jordan-Wigner transform as binary code. 
         
         Args:
-            sites: (int) N, number of orbitals
+            modes (int): number of modes
 
         Returns: (BinaryCode)
     """
-    return BinaryCode(numpy.identity(sites,dtype=int),linearize_decoder(numpy.identity(sites,dtype=int)))
+    return BinaryCode(numpy.identity(modes, dtype=int), linearize_decoder(
+        numpy.identity(modes, dtype=int)))
 
-def BK_code(sites):
+
+def BK_code(modes):
     """
         The Bravyi-Kitaev transform as binary code. 
         
         Args:
-            sites: (int) N, number of orbitals
+            modes (int): number of modes
 
         Returns: (BinaryCode)
     """
-    return BinaryCode(encoder_bk(sites),linearize_decoder(decoder_bk(sites)))
+    return BinaryCode(encoder_bk(modes), linearize_decoder(decoder_bk(modes)))
 
-def parity_code(sites):
+
+def parity_code(modes):
     """
         The parity transform as binary code. 
         
         Args:
-            sites: (int) N, number of orbitals
+            modes (int): number of modes
 
         Returns: (BinaryCode)
     """
-    dec_mtx=numpy.reshape(([1]+[0]*(sites-1))+([1,1]+(sites-1)*[0])*(sites-2)+[1,1],(sites,sites))
-    enc_mtx=numpy.tril(numpy.ones((sites,sites),dtype=int))
+    dec_mtx = numpy.reshape(([1] + [0] * (modes-1)) +
+                            ([1, 1] + (modes-1) * [0]) * (modes-2)+[1, 1],
+                            (modes, modes))
+    enc_mtx = numpy.tril(numpy.ones((modes, modes), dtype=int))
     
-    return BinaryCode(enc_mtx,linearize_decoder(dec_mtx))
+    return BinaryCode(enc_mtx, linearize_decoder(dec_mtx))
+
 
 def binary_address(digits, address):
     """
-    Helper function to fill in an encoding column /  decoding component of a certain number.
+    Helper function to fill in an encoder column /  decoder component of a
+    certain number.
     Args:
-        digits: (int) number of digits, which is the qubit number
-        address: column index, decoding component
-    Returns: (tuple) encoding column, 
+        digits (int): number of digits, which is the qubit number
+        address (int) : column index, decoder component
+    Returns: (tuple) encoder column, decoder component
     """
-    _binary_expression=SymbolicBinary('1')
+    binary_expression = SymbolicBinary('1')
     
-    #isolate the binary number and fill up the mismatching digits
-    address=bin(address)[2:]
-    address=('0'*(digits-len(address)))+address   
+    # isolate the binary number and fill up the mismatching digits
+    address = bin(address)[2:]
+    address = ('0' * (digits - len(address))) + address   
     for index in numpy.arange(digits):
-        _binary_expression *= SymbolicBinary('w'+str(index)+' + 1 '+address[index])
+        binary_expression *= SymbolicBinary(
+            'w' + str(index) + ' + 1 ' + address[index])
     
-    return list(map(int, list(address))), _binary_expression 
-    
+    return list(map(int, list(address))), binary_expression 
     
 
 def weight_one_binary_addressing_code(exponent):
     """
-        Weight-1 binary addressing code. 
-        (Use with care !)
+        Weight-1 binary addressing code.
         
         
         Args: 
-            exp: (int) exponent for the number of orbitals N = 2 ^ exponent
+            exp: (int) exponent for the number of modes N = 2 ^ exponent
             
         Returns: (BinaryCode)
+        
+        Warning: This code is highly non-linear and
+            might produce alot of terms.
 
     """
-    enc, dec = numpy.zeros((exponent,2**exponent),dtype=int), numpy.zeros(2**exponent,dtype=SymbolicBinary)
+    enc, dec = numpy.zeros((exponent, 2**exponent), dtype=int), numpy.zeros(
+        2**exponent, dtype=SymbolicBinary)
     for counter in numpy.arange(2**exponent):
-        enc[:,counter], dec[counter] = binary_address(exponent, counter)
-        #print(binary_address(exponent, counter))
-    return BinaryCode(enc,dec)
+        enc[:, counter], dec[counter] = binary_address(exponent, counter)
+    return BinaryCode(enc, dec)
+
 
 def weight_one_segment_code():
     """
     Weight-1 segment code.
-    (Use with care!)
+
     Returns: (BinaryCode)
+    Warning: This code is highly non-linear and
+        might produce alot of terms.
+
     """
     
-    return BinaryCode( [[1,0,1],[0,1,1]], ['w0 w1 + w1', 'w0 w1 + w0',' w0 w1'])
+    return BinaryCode([[1, 0, 1], [0, 1, 1]], 
+                      ['w0 w1 + w1', 'w0 w1 + w0', ' w0 w1'])
+
 
 def weight_two_segment_code():
     """
     Weight-2 segment code.
-    (Use with care!)
     Returns: (BinaryCode)
+    Warning: This code is highly non-linear and
+        might produce alot of terms.
     """
-    switch='w0 w1 w2 + w0 w1 w3 + w0 w2 w3 + w1 w2 w3 + w0 w1 w2 + w0 w1 w2 w3'
+    switch = ('w0 w1 w2 + w0 w1 w3 + w0 w2 w3 + w1 w2 w3 + w0 w1 w2 +'
+              ' w0 w1 w2 w3')
     
-    return BinaryCode( [[1,0,0,0,1],[0,1,0,0,1],[0,0,1,0,1],[0,0,0,1,1]],['w0 + '+switch,'w1 + '+switch,'w2 + '+switch,'w3 + '+switch, switch ])
+    return BinaryCode([[1, 0, 0, 0, 1], [0, 1, 0, 0, 1], [0, 0, 1, 0, 1], 
+                       [0, 0, 0, 1, 1]], ['w0 + ' + switch, 'w1 + ' + switch,
+                                          'w2 + ' + switch, 'w3 + ' + switch,
+                                          switch])
 
 
-
-if __name__=='__main__':
+if __name__ == '__main__':
     from numpy.linalg import inv
     m = decoder_bk(8)
     n = encoder_bk(8)
-    if (m == inv(n)%2).all(): print('good')
+    if (m == inv(n) % 2).all(): 
+        print('good')
 
 if __name__ == '__main__':
     from decoder_encoder_functions import BK_code, JW_code
@@ -190,7 +236,6 @@ if __name__ == '__main__':
     from openfermion.ops._fermion_operator import FermionOperator
     from openfermion.utils import eigenspectrum
     import time
-
 
     # code1 = BinaryCode(numpy.array([[0, 1, 0], [1, 0, 0], [1, 1, 1]]),
     #                    [SymbolicBinary('w0'), SymbolicBinary('w0 + w1 + 1'),
@@ -205,7 +250,8 @@ if __name__ == '__main__':
     # multiplicity = 1
     # active_space_start = 1
     # active_space_stop = 3
-    # molecule = MolecularData(geometry, basis, multiplicity, description="1.45")
+    # molecule = MolecularData(geometry, basis, multiplicity, 
+    #                            description="1.45")
     # molecule.load()
     # molecular_hamiltonian = molecule.get_molecular_hamiltonian(
     #     occupied_indices=range(active_space_start),
@@ -235,5 +281,3 @@ if __name__ == '__main__':
     #
     # print 'transform:', eigenspectrum(a)
     # print '\n'
-
-

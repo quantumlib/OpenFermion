@@ -117,7 +117,8 @@ def code_transform(hamiltonian, code):
     N>n, when the Fermion basis is smaller than the fermionic Fock space.
     In this way, the code_transform function can transform Fermion operators
     to qubit operators for customized and qubit-saving mappings.
-    NOTE: Logic multi-qubit operators are decomposed
+    
+    Warning: Logic multi-qubit operators are decomposed into Pauli-strings
     (e.g. CPhase(1,2) = 0.5 * (1 + Z1 + Z2 - Z1 Z2 ) ), which might increase
     the number of Hamiltonian terms drastically.
 
