@@ -135,8 +135,9 @@ class BinaryCode(object):
     The signs + and *, += and *= are overloaded to implement concatenation
     and appendage on BinaryCode-objects.
 
-    NOTE: multiplication of a BinaryCode with an integer yields a
-        multiple appending of the same code, the multiplication with another
+    Note:
+        Multiplication of a BinaryCode with an integer yields a multiple
+        appending of the same code, the multiplication with another
         BinaryCode their concatenation.
 
     Attributes:

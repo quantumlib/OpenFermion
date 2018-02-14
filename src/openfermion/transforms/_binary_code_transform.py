@@ -48,7 +48,7 @@ def extractor(binary_op):
         binary_op (SymbolicBinary): the binary term
 
     Returns (QubitOperator): the qubit operator corresponding to the
-    binary terms
+        binary terms
     """
     return_fn = 1
     for term in binary_op.terms:
@@ -85,7 +85,7 @@ def make_parity_list(code):
     Args:
         code (BinaryCode): the code to extract the parity list from.
 
-    Returns (list): list of SymbolicBinary the parity list
+    Returns (list): list of SymbolicBinary, the parity list
 
     Raises:
         TypeError: argument is not BinaryCode
@@ -98,29 +98,24 @@ def make_parity_list(code):
     return parity_binaries
 
 
-def code_transform(hamiltonian, code):
-    """Transforms a Hamiltonian of Fermions into a Hamiltonian of qubits,
-    via a binary code.
-    The role of the binary code is to relate the
-    occupation vectors (v0 v1 v2 ... vN-1) that span the fermionic
-    basis, where e.g. the vector (1,0,1,1,0,0) yields the state
+def binary_code_transform(hamiltonian, code):
+    """ Transforms a Hamiltonian written in fermionic basis into a Hamiltonian
+    written in qubit basis, via a binary code.
 
-    a_0^\dagger  a_2^\dagger  a_3^\dagger |vac>,
+    The role of the binary code is to relate the occupation vectors (v0 v1 v2
+    ... vN-1) that span the fermionic basis, to the qubit basis, spanned by
+    binary vectors (w0, w1, w2, ..., wn-1).
 
-    to the qubit basis, spanned by binary vectors
-    (w0, w1, w2, ..., wn-1) determining a product state
-    |w0> |w1> |w2> ... |wn-1>.
-
-    The binary code has to provide an analytic relation between
-    between the binary vectors (v0, v1, ..., vN-1) and
-    (w0, w1, ..., wn-1), and possibly has the property
-    N>n, when the Fermion basis is smaller than the fermionic Fock space.
-    In this way, the code_transform function can transform Fermion operators
-    to qubit operators for customized and qubit-saving mappings.
+    The binary code has to provide an analytic relation between the binary
+    vectors (v0, v1, ..., vN-1) and (w0, w1, ..., wn-1), and possibly has the
+    property N>n, when the Fermion basis is smaller than the fermionic Fock
+    space. The binary_code_transform function can transform Fermion operators
+    to qubit operators for custom- and qubit-saving mappings.
     
-    Warning: Logic multi-qubit operators are decomposed into Pauli-strings
-    (e.g. CPhase(1,2) = 0.5 * (1 + Z1 + Z2 - Z1 Z2 ) ), which might increase
-    the number of Hamiltonian terms drastically.
+    Note:
+        Logic multi-qubit operators are decomposed into Pauli-strings (e.g.
+        CPhase(1,2) = 0.5 * (1 + Z1 + Z2 - Z1 Z2 ) ), which might increase
+        the number of Hamiltonian terms drastically.
 
     Args:
         hamiltonian (FermionOperator): the fermionic Hamiltonian
@@ -129,8 +124,8 @@ def code_transform(hamiltonian, code):
     Returns (QubitOperator): the transformed Hamiltonian
 
     Raises:
-        TypeError: if the hamiltonian is not a FermionOperator or code is
-            not a BinaryCode
+        TypeError: if the hamiltonian is not a FermionOperator or code is not
+        a BinaryCode
     """
     if not isinstance(hamiltonian, FermionOperator):
         raise TypeError('hamiltonian provided must be a FermionOperator'

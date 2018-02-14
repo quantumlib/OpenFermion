@@ -245,7 +245,7 @@ if __name__ == '__main__':
     # print 'fermionic',eigenspectrum(hamil1)
     # print 'openfermion bk',eigenspectrum(bravyi_kitaev(hamil1))
     # st = time.time()
-    # a = code_transform(hamil1, code1)
+    # a = binary_code_transform(hamil1, code1)
     # print 'original:', time.time() - st
     #
     # st = time.time()
@@ -256,7 +256,7 @@ if __name__ == '__main__':
     #
     # print ('\n______________\n')
     # st = time.time()
-    # a = code_transform(hamil1, JW_code(4))
+    # a = binary_code_transform(hamil1, JW_code(4))
     # print 'original:', time.time() - st
     #
     # st = time.time()

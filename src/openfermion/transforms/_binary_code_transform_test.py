@@ -13,7 +13,7 @@
 import unittest
 
 from openfermion.ops import BinaryCode, FermionOperator
-from openfermion.transforms import code_transform
+from openfermion.transforms import binary_code_transform
 from openfermion.transforms import dissolve
 
 
@@ -22,21 +22,21 @@ class CodeTransformTest(unittest.TestCase):
         code = BinaryCode([[1, 0, 0], [0, 1, 0]], ['W0', 'W1', '1 + W0 + W1'])
         hamiltonian = FermionOperator('0^ 2', 0.5) + FermionOperator('2^ 0',
                                                                      0.5)
-        transform = code_transform(hamiltonian, code)
+        transform = binary_code_transform(hamiltonian, code)
         self.assertDictEqual(transform.terms,
                              {((0, 'X'), (1, 'Z')): 0.25, ((0, 'X'),): 0.25})
 
         with self.assertRaises(TypeError):
-            code_transform('0^ 2', code)
+            binary_code_transform('0^ 2', code)
         with self.assertRaises(TypeError):
-            code_transform(hamiltonian,
-                           ([[1, 0], [0, 1]], ['w0', 'w1']))
+            binary_code_transform(hamiltonian,
+                                  ([[1, 0], [0, 1]], ['w0', 'w1']))
 
     def test_dissolve(self):
         code = BinaryCode([[1, 0, 0], [0, 1, 0]], ['W0', 'W1', '1 + W0 W1'])
         hamiltonian = FermionOperator('0^ 2', 0.5) + FermionOperator('2^ 0',
                                                                      0.5)
-        transform = code_transform(hamiltonian, code)
+        transform = binary_code_transform(hamiltonian, code)
         self.assertDictEqual(transform.terms, {((0, 'X'), (1, 'Z')): 0.375,
                                                ((0, 'X'),): -0.125,
                                                ((0, 'Y'),): 0.125j,
