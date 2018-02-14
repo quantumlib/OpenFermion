@@ -43,3 +43,28 @@ class CodeTransformTest(unittest.TestCase):
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
 
+    def test_jordan_wigner(self):
+        hamiltonian, gs_energy = lih_hamiltonian()
+        code = jordan_wigner_code(4)
+        qubit_hamiltonian = binary_code_transform(hamiltonian, code)
+        self.assertAlmostEqual(gs_energy,
+                               eigenspectrum(qubit_hamiltonian)[0])
+
+    def test_parity_code(self):
+        hamiltonian, gs_energy = lih_hamiltonian()
+        code = parity_code(4)
+        qubit_hamiltonian = binary_code_transform(hamiltonian, code)
+        self.assertAlmostEqual(gs_energy,
+                               eigenspectrum(qubit_hamiltonian)[0])
+
+    def test_checksum_code(self):
+        hamiltonian, gs_energy = lih_hamiltonian()
+        code = checksum_code(4,0)
+        qubit_hamiltonian = binary_code_transform(hamiltonian, code)
+        self.assertAlmostEqual(gs_energy,
+                               eigenspectrum(qubit_hamiltonian)[0])
+
+        code = checksum_code(4,1)
+        qubit_hamiltonian = binary_code_transform(hamiltonian, code)
+        self.assertAlmostEqual(eigenspectrum(hamiltonian)[1],
+                               eigenspectrum(qubit_hamiltonian)[0])

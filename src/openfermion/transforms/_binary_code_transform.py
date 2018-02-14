@@ -58,11 +58,11 @@ def extractor(binary_op):
 
 def dissolve(term):
     """Decomposition helper. Takes a product of binary variables
-    and outputs the Pauli-string sum that corresponds to the 
+    and outputs the Pauli-string sum that corresponds to the
     decomposed multi-qubit operator.
 
-.    Args:
-        term (SymbolicBinary): product of binary variables, i.e.: 'w0 w2 w3'
+    Args:
+        term (tuple): product of binary variables, i.e.: 'w0 w2 w3'
 
     Returns (QubitOperator): superposition of Pauli-strings
 
@@ -141,8 +141,8 @@ def binary_code_transform(hamiltonian, code):
     # for each term in hamiltonian
     for term, term_coefficient in hamiltonian.terms.items():
 
-        # the updated parity and occupation account for sign changes due
-        # changed occupations mid-way in the term
+        """ the updated parity and occupation account for sign changes due
+        changed occupations mid-way in the term """
         updated_parity = 0  # parity sign exponent
         parity_term = SymbolicBinary()
         changed_occupation_vector = [0] * code.n_modes

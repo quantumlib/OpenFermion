@@ -142,7 +142,7 @@ def parity_code(modes):
     return BinaryCode(enc_mtx, linearize_decoder(dec_mtx))
 
 
-def binary_address(digits, address):
+def _binary_address(digits, address):
     """ Helper function to fill in an encoder column/decoder component of a
     certain number.
 
@@ -159,7 +159,7 @@ def binary_address(digits, address):
     address = ('0' * (digits - len(address))) + address
     for index in numpy.arange(digits):
         binary_expression *= SymbolicBinary(
-            'w' + str(index) + ' + 1 ' + address[index])
+            'w' + str(index) + ' + 1 + ' + address[index])
 
     return list(map(int, list(address))), binary_expression
 
@@ -179,7 +179,7 @@ def weight_one_binary_addressing_code(exponent):
     decoder = [0] * (2 ** exponent)
     for counter in numpy.arange(2 ** exponent):
         encoder[:, counter], decoder[counter] = \
-            binary_address(exponent, counter)
+            _binary_address(exponent, counter)
     return BinaryCode(encoder, decoder)
 
 
@@ -210,57 +210,3 @@ def weight_two_segment_code():
                        [0, 0, 0, 1, 1]], ['w0 + ' + switch, 'w1 + ' + switch,
                                           'w2 + ' + switch, 'w3 + ' + switch,
                                           switch])
-
-
-if __name__ == '__main__':
-    from numpy.linalg import inv
-
-    a = _decoder_checksum(5, 1)
-    print type(a), a
-    a = _decoder_checksum(5, True)
-    print type(a), a
-
-    # code1 = BinaryCode(numpy.array([[0, 1, 0], [1, 0, 0], [1, 1, 1]]),
-    #                    [SymbolicBinary('w0'), SymbolicBinary('w0 + w1 + 1'),
-    #                     SymbolicBinary('w0 w1 w2')])
-    #
-    # from openfermion.hamiltonians import MolecularData
-    # from openfermion.transforms import get_fermion_operator
-    #
-    # diatomic_bond_length = 1.45
-    # geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., diatomic_bond_length))]
-    # basis = 'sto-3g'
-    # multiplicity = 1
-    # active_space_start = 1
-    # active_space_stop = 3
-    # molecule = MolecularData(geometry, basis, multiplicity, 
-    #                            description="1.45")
-    # molecule.load()
-    # molecular_hamiltonian = molecule.get_molecular_hamiltonian(
-    #     occupied_indices=range(active_space_start),
-    #     active_indices=range(active_space_start, active_space_stop))
-    # hamil1 = get_fermion_operator(molecular_hamiltonian)
-    #
-    # code1 = BK_code(10)
-    # print 'fermionic',eigenspectrum(hamil1)
-    # print 'openfermion bk',eigenspectrum(bravyi_kitaev(hamil1))
-    # st = time.time()
-    # a = binary_code_transform(hamil1, code1)
-    # print 'original:', time.time() - st
-    #
-    # st = time.time()
-    # print 'code2', time.time() - st
-    #
-    # print 'transform:', eigenspectrum(a)
-    # print '\n'
-    #
-    # print ('\n______________\n')
-    # st = time.time()
-    # a = binary_code_transform(hamil1, JW_code(4))
-    # print 'original:', time.time() - st
-    #
-    # st = time.time()
-    # print 'code2', time.time() - st
-    #
-    # print 'transform:', eigenspectrum(a)
-    # print '\n'

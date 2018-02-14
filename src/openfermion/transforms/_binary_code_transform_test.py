@@ -13,8 +13,7 @@
 import unittest
 
 from openfermion.ops import BinaryCode, FermionOperator
-from openfermion.transforms import binary_code_transform
-from openfermion.transforms import dissolve
+from openfermion.transforms import binary_code_transform, dissolve
 
 
 class CodeTransformTest(unittest.TestCase):
