@@ -123,10 +123,10 @@ def code_transform(hamiltonian, code):
     the number of Hamiltonian terms drastically.
 
     Args:
-        hamiltonian: (FermionOperator) the fermionic Hamiltonian
-        code: (BinaryCode) the binary code to transform the Hamiltonian
+        hamiltonian (FermionOperator): the fermionic Hamiltonian
+        code (BinaryCode): the binary code to transform the Hamiltonian
 
-    Returns: (QubitOperator) the transformed Hamiltonian
+    Returns (QubitOperator): the transformed Hamiltonian
 
     Raises:
         TypeError: if the hamiltonian is not a FermionOperator or code is

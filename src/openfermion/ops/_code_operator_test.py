@@ -20,7 +20,7 @@ from openfermion.ops._code_operator import (BinaryCode,
                                             shift_decoder)
 
 
-class BinaryCodeTest(unittest.TestCase):
+class CodeOperatorTest(unittest.TestCase):
     def test_init_errors(self):
         with self.assertRaises(TypeError):
             BinaryCode(1,

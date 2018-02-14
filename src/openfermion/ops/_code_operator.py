@@ -71,7 +71,7 @@ def linearize_decoder(matrix):
     """ Outputs  linear decoding function from input matrix
 
     Args:
-        matrix (array or list): list of lists or 2D numpy array
+        matrix (numpy.ndarray or list): list of lists or 2D numpy array
             to derive the decoding function from
 
     Returns (list): list of SymbolicBinary
