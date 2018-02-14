@@ -278,13 +278,14 @@ def code_transform2(hamiltonian, code):
 
         # append new term to new hamiltonian
         new_hamiltonian += term_coeff * transformed_term
-        
+
     new_hamiltonian.compress()
     return new_hamiltonian
 
 
 if __name__ == '__main__':
     from decoder_encoder_functions import BK_code, JW_code
+    from openfermion.transforms import bravyi_kitaev
     from openfermion.ops._fermion_operator import FermionOperator
     from openfermion.utils import eigenspectrum
     import time
@@ -310,8 +311,8 @@ if __name__ == '__main__':
     hamil1 = get_fermion_operator(molecular_hamiltonian)
 
     code1 = BK_code(10)
-    print eigenspectrum(hamil1)
-
+    print 'fermionic',eigenspectrum(hamil1)
+    print 'openfermion bk',eigenspectrum(bravyi_kitaev(hamil1))
     st = time.time()
     a = code_transform(hamil1, code1)
     print 'original:', time.time() - st

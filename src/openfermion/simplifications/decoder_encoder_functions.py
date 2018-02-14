@@ -17,8 +17,8 @@ def encoder_bk(d):
     mtx = numpy.array([[1,0],[1,1]])
     for a in numpy.arange(1,reps+1):
         mtx = numpy.kron(numpy.eye(2,dtype=int),mtx)
-        for b in numpy.arange(0,2**a+1):
-            mtx[2**a,b]=1
+        for b in numpy.arange(0,2**a):
+            mtx[2**(a+1)-1,b]=1
     return mtx[0:d,0:d]
 
 def decoder_bk(d):
@@ -34,7 +34,7 @@ def decoder_bk(d):
     mtx = numpy.array([[1, 0], [1, 1]])
     for a in numpy.arange(1,reps+1):
         mtx = numpy.kron(numpy.eye(2),mtx)
-        mtx[2**a,2**(a-1)]=1
+        mtx[2**(a+1)-1,2**(a)-1]=1
     return mtx[0:d,0:d]
 
 
@@ -178,7 +178,10 @@ def weight_two_segment_code():
 
 
 
-# if __name__=='__main__':
-
+if __name__=='__main__':
+    from numpy.linalg import inv
+    m = decoder_bk(8)
+    n = encoder_bk(8)
+    if (m == inv(n)%2).all(): print('good')
 
 
