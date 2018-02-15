@@ -16,11 +16,11 @@ import numpy
 
 import unittest
 
+from openfermion.hamiltonians import number_operator
 from openfermion.ops import (FermionOperator,
                              hermitian_conjugated,
                              InteractionOperator,
                              normal_ordered,
-                             number_operator,
                              QubitOperator)
 from openfermion.transforms import (get_interaction_operator,
                                     reverse_jordan_wigner)

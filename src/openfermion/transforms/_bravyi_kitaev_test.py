@@ -16,7 +16,8 @@ from __future__ import absolute_import
 import numpy
 import unittest
 
-from openfermion.ops import (FermionOperator, number_operator,
+from openfermion.hamiltonians import number_operator
+from openfermion.ops import (FermionOperator,
                              QubitOperator)
 from openfermion.transforms import (bravyi_kitaev,
                                     get_sparse_operator,

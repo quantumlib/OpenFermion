@@ -25,9 +25,9 @@ import scipy.sparse.linalg
 import warnings
 
 from openfermion.config import *
-from openfermion.hamiltonians import up_index, down_index
+from openfermion.hamiltonians import up_index, down_index, number_operator
 from openfermion.ops import (FermionOperator, hermitian_conjugated,
-                             normal_ordered, number_operator,
+                             normal_ordered,
                              QuadraticHamiltonian, QubitOperator)
 from openfermion.utils import (commutator, fourier_transform,
                                gaussian_state_preparation_circuit, Grid)

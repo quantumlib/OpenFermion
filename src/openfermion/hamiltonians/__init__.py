@@ -14,9 +14,10 @@ from ._chemical_series import (make_atomic_ring,
                                make_atomic_lattice,
                                make_atom)
 
-from ._fermion_spin_operators import (up_index, down_index,
-                                      s_squared_operator, s_plus_operator,
-                                      s_minus_operator, sz_operator)
+from ._special_operators import (up_index, down_index,
+                                 majorana_operator, number_operator,
+                                 s_squared_operator, s_plus_operator,
+                                 s_minus_operator, sz_operator)
 
 from ._hubbard import fermi_hubbard
 
