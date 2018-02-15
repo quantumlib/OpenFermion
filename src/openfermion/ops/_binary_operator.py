@@ -146,7 +146,7 @@ class SymbolicBinary(object):
         Returns (list): updated term
 
         Raises:
-            ValueError: invalid _action/negative or non-integer qubit index
+            ValueError: invalid action/negative or non-integer qubit index
         """
 
         term = list(term)
@@ -268,7 +268,7 @@ class SymbolicBinary(object):
 
         Args:
             binary_list (list): a list of binary values corresponding
-                each (n,'W').
+                each qubit index .
 
         Returns (int, 0 or 1): result of the evaluation
 
@@ -295,7 +295,7 @@ class SymbolicBinary(object):
     def _add_one(self):
         """ Adds constant 1 to a SymbolicBinary. """
 
-        # ((1,'1'),) can only exist as a loner in SymbolicBinary
+        # (_SYMBOLIC_ONE,) can only exist as a loner in SymbolicBinary
         if (_SYMBOLIC_ONE,) in self.terms:
             self.terms.remove((_SYMBOLIC_ONE,))
         else:
@@ -377,7 +377,7 @@ class SymbolicBinary(object):
                         binary_sum_rule(result_terms, product_term)
                         continue
 
-                    # binary rule - 2 w^2 = w
+                    # binary rule - 2: w^2 = w
                     indices = left_indices | right_indices
                     product_term = sorted(list(indices))
                     binary_sum_rule(result_terms, tuple(product_term))

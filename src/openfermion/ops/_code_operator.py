@@ -71,7 +71,7 @@ def linearize_decoder(matrix):
     """ Outputs  linear decoding function from input matrix
 
     Args:
-        matrix (array or list): list of lists or 2D numpy array
+        matrix (np.ndarray or list): list of lists or 2D numpy array
             to derive the decoding function from
 
     Returns (list): list of SymbolicBinary
@@ -152,7 +152,7 @@ class BinaryCode(object):
         """ Initialization of a binary code.
 
         Args:
-            encoding (array or list): nested lists or binary 2D-array
+            encoding (np.ndarray or list): nested lists or binary 2D-array
             decoding (array or list): list of SymbolicBinary(list-like or str)
 
         Raises:
@@ -180,7 +180,7 @@ class BinaryCode(object):
 
         for symbolic_binary in decoding:
 
-            if isinstance(symbolic_binary, (tuple, list, str)):
+            if isinstance(symbolic_binary, (tuple, list, str, int)):
                 symbolic_binary = SymbolicBinary(symbolic_binary)
             if isinstance(symbolic_binary, SymbolicBinary):
                 self.decoder.append(symbolic_binary)
