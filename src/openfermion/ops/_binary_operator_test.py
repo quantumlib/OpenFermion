@@ -12,11 +12,12 @@
 """Tests  _symbolic_operator.py."""
 
 import unittest
+import numpy
+
 from openfermion.ops._binary_operator import SymbolicBinary, SymbolicBinaryError
 
 
 class SymbolicBinaryTest(unittest.TestCase):
-
     def test_init_long_string(self):
         operator1 = SymbolicBinary('w1 w2 1 + 1')
         self.assertEqual(operator1.terms, [((1, 'W'), (2, 'W')), ((1, '1'),)])
@@ -28,6 +29,8 @@ class SymbolicBinaryTest(unittest.TestCase):
     def test_init_string(self):
         operator1 = SymbolicBinary('w1')
         self.assertEqual(operator1.terms, [((1, 'W'),)])
+        operator1 = SymbolicBinary('9 w1 w2 + 5')
+        self.assertEqual(str(operator1), '[W1 W2] + [1]')
 
     def test_none_init(self):
         operator1 = SymbolicBinary()
@@ -46,6 +49,8 @@ class SymbolicBinaryTest(unittest.TestCase):
             SymbolicBinary([((1, 'Q', 'W'),)])
         with self.assertRaises(ValueError):
             SymbolicBinary([((1.0, 'Q', 'W'),)])
+        with self.assertRaises(ValueError):
+            SymbolicBinary([((1.5, 'W'),)])
 
     def test_init_list(self):
         operator1 = SymbolicBinary([((3, 'W'), (4, 'W'), (1, '1'))])
@@ -63,7 +68,8 @@ class SymbolicBinaryTest(unittest.TestCase):
         self.assertEqual(str(operator1), '[1]')
         operator1 = 1 * operator1
         self.assertEqual(str(operator1), '[1]')
-
+        for idx in numpy.arange(3):
+            operator1 = idx * operator1
         with self.assertRaises(TypeError):
             operator1 *= 4.3
         with self.assertRaises(TypeError):
@@ -82,6 +88,8 @@ class SymbolicBinaryTest(unittest.TestCase):
         self.assertEqual(addition.terms, [((1, '1'),)])
         with self.assertRaises(TypeError):
             tmp = 4.3 + operator1
+        with self.assertRaises(TypeError):
+            operator1+=4.3
 
     def test_string_output(self):
         operator1 = SymbolicBinary('w15')
@@ -140,11 +148,10 @@ class SymbolicBinaryTest(unittest.TestCase):
 
     def test_shift(self):
         operator1 = SymbolicBinary('1 + w1 w2')
-        operator1._shift(3)
+        operator1.shift(3)
         self.assertEqual(operator1.terms, [((1, '1'),), ((4, 'W'), (5, 'W'))])
         with self.assertRaises(TypeError):
-            operator1._shift(3.5)
-
+            operator1.shift(3.5)
 
     def test_count_qubits(self):
         operator1 = SymbolicBinary('1 + w0 w2 w5')
