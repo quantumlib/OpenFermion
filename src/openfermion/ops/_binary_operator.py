@@ -207,11 +207,7 @@ class SymbolicBinary(object):
                 term_list.remove(_SYMBOLIC_ONE)  # if 1
                 add_one = False
 
-            if factor[1:].isdigit():
-                q_idx = int(factor[1:])
-                term_list.append(q_idx)
-
-            elif factor.isdigit():  # its a constant
+            if factor.isdigit():  # its a constant
                 factor = int(factor) % 2
                 if factor == 1:
                     # if there are other terms, no need to add another 1
@@ -222,6 +218,12 @@ class SymbolicBinary(object):
                 # multiply by zero
                 elif factor == 0:
                     return []
+
+            elif factor[1:].isdigit():
+                q_idx = int(factor[1:])
+                term_list.append(q_idx)
+
+
             else:
                 raise ValueError('Invalid factor {}.'.format(factor))
 

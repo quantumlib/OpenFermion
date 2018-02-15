@@ -63,7 +63,7 @@ def dissolve(term):
     prod = 2.0
     for var in term:
         if not isinstance(var, (numpy.int32, numpy.int64, int)):
-            raise ValueError('dissolve only works on _action W')
+            raise ValueError('dissolve only works on integers')
         prod *= (QubitOperator((), 0.5) - QubitOperator(
             'Z' + str(var), 0.5))
     return QubitOperator((), 1.0) - prod
