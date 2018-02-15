@@ -211,3 +211,14 @@ class FermionOperatorTest(unittest.TestCase):
     def test_is_molecular_term_out_of_order(self):
         op = FermionOperator(((0, 1), (2, 0), (1, 1), (3, 0)))
         self.assertTrue(op.is_molecular_term())
+
+    def test_freeze_orbitals_nonvanishing(self):
+        op1 = FermionOperator(((1, 1), (1, 0), (0, 1), (2, 0)))
+        op1.freeze_orbitals([1])
+        expected1 = FermionOperator(((0, 1), (1, 0)), -1)
+        self.assertTrue(op1.isclose(expected1))
+
+    def test_freeze_orbitals_vanishing(self):
+        op2 = FermionOperator(((1, 1), (2, 0)))
+        op2.freeze_orbitals([], [2])
+        self.assertEquals(len(op2.terms), 0)
