@@ -216,10 +216,10 @@ class GivensDecompositionTest(unittest.TestCase):
         givens_rotations, V, diagonal = givens_decomposition(Q)
 
         # V should be the identity
-        I = numpy.eye(n, dtype=complex)
+        identity = numpy.eye(n, dtype=complex)
         for i in range(n):
             for j in range(n):
-                self.assertAlmostEqual(V[i, j], I[i, j])
+                self.assertAlmostEqual(V[i, j], identity[i, j])
 
         # There should be no Givens rotations
         self.assertEqual(givens_rotations, list())
