@@ -450,6 +450,24 @@ class ExpectationTest(unittest.TestCase):
             expectation(operator, vector)
 
 
+class VarianceTest(unittest.TestCase):
+    def test_variance(self):
+        X = pauli_matrix_map['X']
+        Z = pauli_matrix_map['Z']
+        zero = csc_matrix(numpy.array([[1.], [0.]]))
+        plus = csc_matrix(numpy.array([[1.], [1.]]) / numpy.sqrt(2))
+        minus = csc_matrix(numpy.array([[1.], [-1.]]) / numpy.sqrt(2))
+
+        self.assertAlmostEqual(variance(Z, zero), 0.)
+        self.assertAlmostEqual(variance(X, zero), 1.)
+
+        self.assertAlmostEqual(variance(Z, plus), 1.)
+        self.assertAlmostEqual(variance(X, plus), 0.)
+
+        self.assertAlmostEqual(variance(Z, minus), 1.)
+        self.assertAlmostEqual(variance(X, minus), 0.)
+
+
 class ExpectationComputationalBasisStateTest(unittest.TestCase):
     def test_expectation_fermion_operator_single_number_terms(self):
         operator = FermionOperator('3^ 3', 1.9) + FermionOperator('2^ 1')
