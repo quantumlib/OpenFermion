@@ -60,8 +60,8 @@ def double_decoding(decoder_1, decoder_2):
         for summand in entry.terms:
             tmp_term = SymbolicBinary('1')
             for factor in summand:
-                if factor[1] == 'W':
-                    tmp_term *= decoder_2[factor[0]]
+                if isinstance(factor, (numpy.int32, numpy.int64, int)):
+                    tmp_term *= decoder_2[factor]
             tmp_sum = tmp_term + tmp_sum
         doubled_decoder += [tmp_sum]
     return doubled_decoder
@@ -71,7 +71,7 @@ def linearize_decoder(matrix):
     """ Outputs  linear decoding function from input matrix
 
     Args:
-        matrix (numpy.ndarray or list): list of lists or 2D numpy array
+        matrix (array or list): list of lists or 2D numpy array
             to derive the decoding function from
 
     Returns (list): list of SymbolicBinary
@@ -135,9 +135,8 @@ class BinaryCode(object):
     The signs + and *, += and *= are overloaded to implement concatenation
     and appendage on BinaryCode-objects.
 
-    Note:
-        Multiplication of a BinaryCode with an integer yields a multiple
-        appending of the same code, the multiplication with another
+    NOTE: multiplication of a BinaryCode with an integer yields a
+        multiple appending of the same code, the multiplication with another
         BinaryCode their concatenation.
 
     Attributes:
@@ -153,7 +152,7 @@ class BinaryCode(object):
         """ Initialization of a binary code.
 
         Args:
-            encoding (np.ndarray or list): nested lists or binary 2D-array
+            encoding (array or list): nested lists or binary 2D-array
             decoding (array or list): list of SymbolicBinary(list-like or str)
 
         Raises:

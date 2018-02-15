@@ -21,25 +21,6 @@ from openfermion.ops import (BinaryCode,
                              SymbolicBinary)
 
 
-def _extract(term):
-    """Extractor superoperator helper function.
-
-    Args:
-        term (tuple): a single summand from a binary expression
-
-    Returns (QubitOperator or int): the qubit operator that corresponds
-        to the binary expression or -1
-    """
-    if len(term) == 1:
-        term = term[0]
-        if term[1] == 'W':
-            return QubitOperator('Z' + str(term[0]))
-        elif term[1] == '1':
-            return -1
-    if len(term) > 1:
-        return dissolve(term)
-
-
 def extractor(binary_op):
     """ Applies the extraction superoperator to a binary expression
      to obtain the corresponding qubit operators.
@@ -52,7 +33,17 @@ def extractor(binary_op):
     """
     return_fn = 1
     for term in binary_op.terms:
-        return_fn *= _extract(term)
+        multiplier = 1
+        if len(term) == 1:
+            term = term[0]
+            if isinstance(term, (numpy.int32, numpy.int64, int)):
+                multiplier = QubitOperator('Z' + str(term))
+            else:
+                multiplier = -1
+        elif len(term) > 1:
+            multiplier = dissolve(term)
+
+        return_fn *= multiplier
     return return_fn
 
 
@@ -67,14 +58,14 @@ def dissolve(term):
     Returns (QubitOperator): superposition of Pauli-strings
 
     Raises:
-        ValueError: if the action is not 'W'
+        ValueError: if the _action is not 'W'
     """
     prod = 2.0
     for var in term:
-        if var[1] != 'W':
-            raise ValueError('dissolve only works on action W')
+        if not isinstance(var, (numpy.int32, numpy.int64, int)):
+            raise ValueError('dissolve only works on _action W')
         prod *= (QubitOperator((), 0.5) - QubitOperator(
-            'Z' + str(var[0]), 0.5))
+            'Z' + str(var), 0.5))
     return QubitOperator((), 1.0) - prod
 
 
