@@ -207,7 +207,7 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     return sparse_operator
 
 
-def computational_basis_vector(one_qubits, n_qubits):
+def computational_basis_state(one_qubits, n_qubits):
     """Function to produce a computational basis vector.
 
     Args:
@@ -227,7 +227,8 @@ def computational_basis_vector(one_qubits, n_qubits):
 
 def jw_hartree_fock_state(n_electrons, n_orbitals):
     """Function to produce Hartree-Fock state in JW representation."""
-    hartree_fock_state = computational_basis_vector(range(n_electrons), n_orbitals)
+    hartree_fock_state = computational_basis_state(range(n_electrons),
+                                                   n_orbitals)
     return hartree_fock_state
 
 
@@ -412,7 +413,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
         quadratic_hamiltonian, occupied_orbitals)
 
     # Initialize the starting state
-    state = computational_basis_vector(start_orbitals, n_qubits)
+    state = computational_basis_state(start_orbitals, n_qubits)
 
     # Apply the circuit
     if not quadratic_hamiltonian.conserves_particle_number:
@@ -458,7 +459,7 @@ def jw_slater_determinant(slater_determinant_matrix):
     n_qubits = slater_determinant_matrix.shape[1]
 
     # Initialize the starting state
-    state = computational_basis_vector(start_orbitals, n_qubits)
+    state = computational_basis_state(start_orbitals, n_qubits)
 
     # Apply the circuit
     for parallel_ops in circuit_description:

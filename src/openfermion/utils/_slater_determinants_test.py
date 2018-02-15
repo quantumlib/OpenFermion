@@ -21,7 +21,7 @@ from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import swap_rows
 from openfermion.transforms import get_sparse_operator
-from openfermion.utils import (computational_basis_vector,
+from openfermion.utils import (computational_basis_state,
                                gaussian_state_preparation_circuit,
                                get_ground_state,
                                jw_get_gaussian_state)
@@ -58,7 +58,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
                 gaussian_state_preparation_circuit(quadratic_hamiltonian))
 
             # Initialize the starting state
-            state = computational_basis_vector(start_orbitals, n_qubits)
+            state = computational_basis_state(start_orbitals, n_qubits)
 
             # Apply the circuit
             particle_hole_transformation = (
@@ -97,7 +97,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
                 gaussian_state_preparation_circuit(quadratic_hamiltonian))
 
             # Initialize the starting state
-            state = computational_basis_vector(start_orbitals, n_qubits)
+            state = computational_basis_state(start_orbitals, n_qubits)
 
             # Apply the circuit
             particle_hole_transformation = (

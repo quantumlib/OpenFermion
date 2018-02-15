@@ -204,7 +204,15 @@ class JordanWignerSparseTest(unittest.TestCase):
             expected.A))
 
 
-class JWSlaterDeterminantTest(unittest.TestCase):
+class ComputationalBasisStateTest(unittest.TestCase):
+    def test_computational_basis_state(self):
+        comp_basis_state = computational_basis_state([0, 2, 5], 7)
+        dense_array = comp_basis_state.toarray()
+        self.assertAlmostEqual(dense_array[82, 0], 1.)
+        self.assertAlmostEqual(sum(dense_array), 1.)
+
+
+class JWHartreeFockStateTest(unittest.TestCase):
     def test_jw_hartree_fock_state(self):
         hartree_fock_state = jw_hartree_fock_state(3, 7)
         dense_array = hartree_fock_state.toarray()

@@ -26,7 +26,7 @@ from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
 from ._slater_determinants import (gaussian_state_preparation_circuit,
                                    slater_determinant_preparation_circuit)
 
-from ._sparse_tools import (computational_basis_vector,
+from ._sparse_tools import (computational_basis_state,
                             expectation,
                             expectation_computational_basis_state,
                             get_density_matrix,
