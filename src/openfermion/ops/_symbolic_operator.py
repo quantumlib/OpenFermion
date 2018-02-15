@@ -563,3 +563,34 @@ class SymbolicOperator(object):
         for coefficient in self.terms.values():
             norm += abs(coefficient) ** order
         return norm ** (1. / order)
+
+    def prune(self):
+        """
+        Remove indices that do not appear in any terms.
+
+        Indices will be renumbered such that if an index i does not appear in
+        any terms, then the next largest index that appears in at least one
+        term will be renumbered to i.
+        """
+
+        # Determine which indices appear in at least one term
+        indices = []
+        for term in self.terms:
+            for op in term:
+                if op[0] not in indices:
+                    indices.append(op[0])
+        indices.sort()
+
+        # Construct a dict that maps the old indices to new ones
+        index_map = {}
+        for index in enumerate(indices):
+            index_map[index[1]] = index[0]
+
+        # Replace the indices in the terms with the new indices
+        new_terms = {}
+        for term in self.terms:
+            new_term = [(index_map[op[0]], op[1]) for op in term]
+            new_terms[tuple(new_term)] = self.terms[term]
+        self.terms = new_terms
+
+        return

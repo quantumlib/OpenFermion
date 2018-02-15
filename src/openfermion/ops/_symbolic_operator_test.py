@@ -965,3 +965,9 @@ class SymbolicOperatorTest2(unittest.TestCase):
     def test_tracenorm_zero(self):
         op = SymbolicOperator()
         self.assertFalse(op.induced_norm())
+
+    def test_prune(self):
+        op = DummyOperator1(((1, 1), (8, 1), (3, 0)), 0.5)
+        op.prune()
+        expected = DummyOperator1(((0, 1), (2, 1), (1, 0)), 0.5)
+        self.assertTrue(expected.isclose(op))
