@@ -229,7 +229,7 @@ def jw_configuration_state(occupied_orbitals, n_qubits):
 def jw_hartree_fock_state(n_electrons, n_orbitals):
     """Function to produce Hartree-Fock state in JW representation."""
     hartree_fock_state = jw_configuration_state(range(n_electrons),
-                                                   n_orbitals)
+                                                n_orbitals)
     return hartree_fock_state
 
 
