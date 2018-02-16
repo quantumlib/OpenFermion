@@ -424,13 +424,24 @@ class JWSparseGivensRotationTest(unittest.TestCase):
 class JWSlaterDeterminantTest(unittest.TestCase):
 
     def test_hadamard_transform(self):
-        """Test creating the state
-        1 / sqrt(2) (a^\dagger_0 + a^\dagger_1) |vac>.
+        """Test creating the states
+        1 / sqrt(2) (a^\dagger_0 + a^\dagger_1) |vac>
+        and
+        1 / sqrt(2) (a^\dagger_0 - a^\dagger_1) |vac>.
         """
         slater_determinant_matrix = numpy.array([[1., 1.]]) / numpy.sqrt(2.)
         slater_determinant = jw_slater_determinant(slater_determinant_matrix)
         self.assertAlmostEqual(slater_determinant[1, 0],
                                slater_determinant[2, 0])
+        self.assertAlmostEqual(abs(slater_determinant[1, 0]),
+                               1. / numpy.sqrt(2.))
+        self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[3, 0]), 0.)
+
+        slater_determinant_matrix = numpy.array([[1., -1.]]) / numpy.sqrt(2.)
+        slater_determinant = jw_slater_determinant(slater_determinant_matrix)
+        self.assertAlmostEqual(slater_determinant[1, 0],
+                               -slater_determinant[2, 0])
         self.assertAlmostEqual(abs(slater_determinant[1, 0]),
                                1. / numpy.sqrt(2.))
         self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
