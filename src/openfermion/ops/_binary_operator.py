@@ -276,10 +276,12 @@ class SymbolicBinary(object):
           SymbolicBinaryError: Length of list provided must match the number
                 of qubits indexed in SymbolicBinary
         """
-        binary_list = list(map(int, list(binary_list)))
+        if isinstance(binary_list,str):
+            binary_list = list(map(int, list(binary_list)))
+
         all_qubits = self.enumerate_qubits()
         if all_qubits:
-            if max(all_qubits) + 1 > len(binary_list):
+            if max(all_qubits) >= len(binary_list):
                 raise SymbolicBinaryError(
                     'the length of the binary list provided does not match'
                     ' the number of variables in the SymbolicBinary')
@@ -291,8 +293,8 @@ class SymbolicBinary(object):
                     if factor != _SYMBOLIC_ONE:
                         ev_tmp *= binary_list[factor]
                 evaluation += ev_tmp
-
             return evaluation % 2
+
         elif self.terms:
             return 1
         else:

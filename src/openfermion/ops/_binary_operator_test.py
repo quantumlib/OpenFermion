@@ -22,7 +22,7 @@ from openfermion.ops._binary_operator import (SymbolicBinary,
 
 class SymbolicBinaryTest(unittest.TestCase):
     def test_init_long_string(self):
-        operator1 = SymbolicBinary('w1 w2 1 + 1')
+        operator1 = SymbolicBinary('w1 w2 1 + 11')
         self.assertEqual(operator1.terms, [(1, 2), (_SYMBOLIC_ONE,)])
         operator1 = SymbolicBinary('a1 b2 1 + 1')
         self.assertEqual(operator1.terms, [(1, 2), (_SYMBOLIC_ONE,)])
@@ -155,6 +155,8 @@ class SymbolicBinaryTest(unittest.TestCase):
         a = operator1.evaluate([1, 0, 1])
         self.assertEqual(a, 0.0)
         a = operator1.evaluate([1, 1, 1])
+        self.assertEqual(a, 0.0)
+        a = operator1.evaluate('1111')
         self.assertEqual(a, 0.0)
         with self.assertRaises(SymbolicBinaryError):
             operator1.evaluate([1, 1])
