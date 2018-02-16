@@ -218,12 +218,9 @@ class SymbolicBinary(object):
                 # multiply by zero
                 elif factor == 0:
                     return []
-
             elif factor[1:].isdigit():
                 q_idx = int(factor[1:])
                 term_list.append(q_idx)
-
-
             else:
                 raise ValueError('Invalid factor {}.'.format(factor))
 
@@ -269,30 +266,37 @@ class SymbolicBinary(object):
         """Evaluates a SymbolicBinary
 
         Args:
-            binary_list (list): a list of binary values corresponding
-                each qubit index .
+            binary_list (list, array, str): a list of binary values
+                corresponding  each binary variable 
+                (in order of their indices) in the expression 
 
         Returns (int, 0 or 1): result of the evaluation
 
         Raises:
           SymbolicBinaryError: Length of list provided must match the number
-                of qubits indexed in symbolicBinary
+                of qubits indexed in SymbolicBinary
         """
+        binary_list = list(map(int, list(binary_list)))
         all_qubits = self.enumerate_qubits()
-        if max(all_qubits) + 1 != len(binary_list):
-            raise SymbolicBinaryError(
-                'the length of the binary list provided does not match'
-                ' the number of qubits in the decoder')
+        if all_qubits:
+            if max(all_qubits) + 1 > len(binary_list):
+                raise SymbolicBinaryError(
+                    'the length of the binary list provided does not match'
+                    ' the number of variables in the SymbolicBinary')
 
-        evaluation = 0
-        for summand in self.terms:
-            ev_tmp = 1.0
-            for factor in summand:
-                if factor != _SYMBOLIC_ONE:
-                    ev_tmp *= binary_list[factor]
-            evaluation += ev_tmp
+            evaluation = 0
+            for summand in self.terms:
+                ev_tmp = 1
+                for factor in summand:
+                    if factor != _SYMBOLIC_ONE:
+                        ev_tmp *= binary_list[factor]
+                evaluation += ev_tmp
 
-        return evaluation % 2
+            return evaluation % 2
+        elif self.terms:
+            return 1
+        else:
+            return 0
 
     def _add_one(self):
         """ Adds constant 1 to a SymbolicBinary. """
