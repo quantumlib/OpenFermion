@@ -207,7 +207,7 @@ class JordanWignerSparseTest(unittest.TestCase):
 
 class ComputationalBasisStateTest(unittest.TestCase):
     def test_computational_basis_state(self):
-        comp_basis_state = computational_basis_state([0, 2, 5], 7)
+        comp_basis_state = jw_configuration_state([0, 2, 5], 7)
         dense_array = comp_basis_state.toarray()
         self.assertAlmostEqual(dense_array[82, 0], 1.)
         self.assertAlmostEqual(sum(dense_array), 1.)
