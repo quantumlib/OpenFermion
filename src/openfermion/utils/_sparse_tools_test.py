@@ -271,7 +271,15 @@ class JordanWignerSparseTest(unittest.TestCase):
             expected.A))
 
 
-class JWSlaterDeterminantTest(unittest.TestCase):
+class ComputationalBasisStateTest(unittest.TestCase):
+    def test_computational_basis_state(self):
+        comp_basis_state = jw_configuration_state([0, 2, 5], 7)
+        dense_array = comp_basis_state.toarray()
+        self.assertAlmostEqual(dense_array[82, 0], 1.)
+        self.assertAlmostEqual(sum(dense_array), 1.)
+
+
+class JWHartreeFockStateTest(unittest.TestCase):
     def test_jw_hartree_fock_state(self):
         hartree_fock_state = jw_hartree_fock_state(3, 7)
         dense_array = hartree_fock_state.toarray()
@@ -479,6 +487,33 @@ class JWSparseGivensRotationTest(unittest.TestCase):
             givens_matrix = jw_sparse_givens_rotation(4, 5, 1., 1., 5)
 
 
+class JWSlaterDeterminantTest(unittest.TestCase):
+
+    def test_hadamard_transform(self):
+        """Test creating the states
+        1 / sqrt(2) (a^\dagger_0 + a^\dagger_1) |vac>
+        and
+        1 / sqrt(2) (a^\dagger_0 - a^\dagger_1) |vac>.
+        """
+        slater_determinant_matrix = numpy.array([[1., 1.]]) / numpy.sqrt(2.)
+        slater_determinant = jw_slater_determinant(slater_determinant_matrix)
+        self.assertAlmostEqual(slater_determinant[1, 0],
+                               slater_determinant[2, 0])
+        self.assertAlmostEqual(abs(slater_determinant[1, 0]),
+                               1. / numpy.sqrt(2.))
+        self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[3, 0]), 0.)
+
+        slater_determinant_matrix = numpy.array([[1., -1.]]) / numpy.sqrt(2.)
+        slater_determinant = jw_slater_determinant(slater_determinant_matrix)
+        self.assertAlmostEqual(slater_determinant[1, 0],
+                               -slater_determinant[2, 0])
+        self.assertAlmostEqual(abs(slater_determinant[1, 0]),
+                               1. / numpy.sqrt(2.))
+        self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[3, 0]), 0.)
+
+
 class GroundStateTest(unittest.TestCase):
     def test_get_ground_state_hermitian(self):
         ground = get_ground_state(get_sparse_operator(
@@ -515,6 +550,24 @@ class ExpectationTest(unittest.TestCase):
                              ([0, 1, 2], [0, 0, 0])), shape=(3, 1))
         with self.assertRaises(ValueError):
             expectation(operator, vector)
+
+
+class VarianceTest(unittest.TestCase):
+    def test_variance(self):
+        X = pauli_matrix_map['X']
+        Z = pauli_matrix_map['Z']
+        zero = csc_matrix(numpy.array([[1.], [0.]]))
+        plus = csc_matrix(numpy.array([[1.], [1.]]) / numpy.sqrt(2))
+        minus = csc_matrix(numpy.array([[1.], [-1.]]) / numpy.sqrt(2))
+
+        self.assertAlmostEqual(variance(Z, zero), 0.)
+        self.assertAlmostEqual(variance(X, zero), 1.)
+
+        self.assertAlmostEqual(variance(Z, plus), 1.)
+        self.assertAlmostEqual(variance(X, plus), 0.)
+
+        self.assertAlmostEqual(variance(Z, minus), 1.)
+        self.assertAlmostEqual(variance(X, minus), 0.)
 
 
 class ExpectationComputationalBasisStateTest(unittest.TestCase):

@@ -34,6 +34,7 @@ from ._sparse_tools import (expectation,
                             inner_product,
                             is_hermitian,
                             jordan_wigner_sparse,
+                            jw_configuration_state,
                             jw_hartree_fock_state,
                             jw_get_gaussian_state,
                             jw_get_ground_states_by_particle_number,
@@ -43,7 +44,8 @@ from ._sparse_tools import (expectation,
                             jw_sz_restrict_operator,
                             jw_sz_restrict_state,
                             qubit_operator_sparse,
-                            sparse_eigenspectrum)
+                            sparse_eigenspectrum,
+                            variance)
 
 from ._trotter_error import error_bound, error_operator
 
