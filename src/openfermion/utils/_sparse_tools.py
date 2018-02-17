@@ -312,20 +312,19 @@ def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index,
     else:
         # Particle number is not fixed
         if sz_integer < 0:
-            # More down spins than up spins
+            # There are more down spins than up spins
             more_map = down_map
             less_map = up_map
         else:
-            # More up spins than down spins
+            # There are at least as many up spins as down spins
             more_map = up_map
             less_map = down_map
         for n in range(abs(sz_integer), n_sites + 1):
             # Choose n of the 'more' spin and n - abs(sz_integer) of the
             # 'less' spin
             more_occupations = itertools.combinations(range(n_sites), n)
-            less_occupations = list(
-                    itertools.combinations(
-                        range(n_sites), n - abs(sz_integer)))
+            less_occupations = list(itertools.combinations(
+                                    range(n_sites), n - abs(sz_integer)))
             # Each arrangement of the 'more' spins can be paired with an
             # arrangement of the 'less' spin
             for more_occupation in more_occupations:
@@ -337,7 +336,7 @@ def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index,
                     occupation = more_occupation + less_occupation
                     indices.append(sum(2 ** (n_qubits - 1 - k)
                                    for k in occupation))
-    
+
     return indices
 
 
