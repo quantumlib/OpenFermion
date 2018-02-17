@@ -110,7 +110,7 @@ class SymbolicOperator(object):
 
             # Determine the coefficient for this term
             coef_string = match[0].strip()
-            if coef_string[0] is '+':
+            if coef_string and coef_string[0] is '+':
                 coef_string = coef_string[1:].strip()
             if coef_string is '':
                 coef = 1.0
