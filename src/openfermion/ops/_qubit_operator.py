@@ -44,7 +44,7 @@ class QubitOperator(SymbolicOperator):
 
     A term is an operator acting on n qubits and can be represented as:
 
-    coefficent * local_operator[0] x ... x local_operator[n-1]
+    coefficient * local_operator[0] x ... x local_operator[n-1]
 
     where x is the tensor product. A local operator is a Pauli operator
     ('I', 'X', 'Y', or 'Z') which acts on one qubit. In math notation a term
@@ -93,7 +93,7 @@ class QubitOperator(SymbolicOperator):
 
     def __imul__(self, multiplier):
         """
-        Override in-place mutiply of SymbolicOperator
+        Override in-place multiply of SymbolicOperator
 
         Args:
           multiplier(complex float, or QubitOperator): multiplier
@@ -148,7 +148,7 @@ class QubitOperator(SymbolicOperator):
                             product_operators += [(left_qubit, left_loc_op)]
                             left_operator_index += 1
 
-                    # Finish the remainding operators:
+                    # Finish the remaining operators:
                     if left_operator_index == n_operators_left:
                         product_operators += right_term[
                             right_operator_index::]

@@ -19,8 +19,9 @@ import unittest
 from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix
 
-from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
-from openfermion.ops import FermionOperator, normal_ordered, number_operator
+from openfermion.hamiltonians import (jellium_model, number_operator,
+                                      wigner_seitz_length_scale)
+from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
                                     jordan_wigner)
 from openfermion.utils import fourier_transform, Grid
@@ -227,15 +228,22 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
             # Get the ground energy and ground states at this particle number
             energy, states = jw_get_ground_states_by_particle_number(
                 sparse_operator, particle_number)
+            # Construct particle number operator
+            num_op = get_sparse_operator(number_operator(n_qubits))
             # For each vector returned, make sure that it is indeed an
             # eigenvector of the original operator with the returned eigenvalue
+            # and that it has the correct particle number
             for vec in states:
+                # Check that it's an eigenvector with the correct eigenvalue
                 op_vec_product = sparse_operator.dot(vec)
                 difference = op_vec_product - energy * vec
                 discrepancy = 0.
                 if difference.nnz:
                     discrepancy = max(map(abs, difference.data))
                 self.assertAlmostEqual(0., discrepancy)
+                # Check that it has the correct particle number
+                num = expectation(num_op, vec)
+                self.assertAlmostEqual(num, particle_number)
 
     def test_jw_get_ground_states_by_particle_number_herm_nonconserving(self):
         # Initialize a non-particle-number-conserving Hermitian operator
@@ -441,6 +449,24 @@ class ExpectationTest(unittest.TestCase):
                              ([0, 1, 2], [0, 0, 0])), shape=(3, 1))
         with self.assertRaises(ValueError):
             expectation(operator, vector)
+
+
+class VarianceTest(unittest.TestCase):
+    def test_variance(self):
+        X = pauli_matrix_map['X']
+        Z = pauli_matrix_map['Z']
+        zero = csc_matrix(numpy.array([[1.], [0.]]))
+        plus = csc_matrix(numpy.array([[1.], [1.]]) / numpy.sqrt(2))
+        minus = csc_matrix(numpy.array([[1.], [-1.]]) / numpy.sqrt(2))
+
+        self.assertAlmostEqual(variance(Z, zero), 0.)
+        self.assertAlmostEqual(variance(X, zero), 1.)
+
+        self.assertAlmostEqual(variance(Z, plus), 1.)
+        self.assertAlmostEqual(variance(X, plus), 0.)
+
+        self.assertAlmostEqual(variance(Z, minus), 1.)
+        self.assertAlmostEqual(variance(X, minus), 0.)
 
 
 class ExpectationComputationalBasisStateTest(unittest.TestCase):
@@ -864,3 +890,12 @@ class GetGapTest(unittest.TestCase):
                     QubitOperator('Z0 Z1', 1j) + QubitOperator((), 2 + 1j))
         with self.assertRaises(ValueError):
             get_gap(get_sparse_operator(operator))
+
+
+class InnerProductTest(unittest.TestCase):
+    def test_inner_product(self):
+        state_1 = csc_matrix(([1., 1.j], ([0, 1], [0, 0])), shape=(2, 1))
+        state_2 = csc_matrix(([1., -1.j], ([0, 1], [0, 0])), shape=(2, 1))
+
+        self.assertAlmostEqual(inner_product(state_1, state_1), 2.)
+        self.assertAlmostEqual(inner_product(state_1, state_2), 0.)
