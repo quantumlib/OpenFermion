@@ -25,8 +25,9 @@ import scipy.sparse.linalg
 import warnings
 
 from openfermion.config import *
+from openfermion.hamiltonians import number_operator
 from openfermion.ops import (FermionOperator, hermitian_conjugated,
-                             normal_ordered, number_operator,
+                             normal_ordered,
                              QuadraticHamiltonian, QubitOperator)
 from openfermion.utils import (commutator, fourier_transform,
                                gaussian_state_preparation_circuit, Grid)
@@ -553,6 +554,23 @@ def expectation(sparse_operator, state):
 
     # Return.
     return expectation
+
+
+def variance(sparse_operator, state):
+    """Compute variance of operator with a state.
+
+    Args:
+        state: scipy.sparse.csc vector representing a pure state,
+            or, a scipy.sparse.csc matrix representing a density matrix.
+
+    Returns:
+        A real float giving the variance.
+
+    Raises:
+        ValueError: Input state has invalid format.
+    """
+    return (expectation(sparse_operator ** 2, state) -
+            expectation(sparse_operator, state) ** 2)
 
 
 def expectation_computational_basis_state(operator, computational_basis_state):

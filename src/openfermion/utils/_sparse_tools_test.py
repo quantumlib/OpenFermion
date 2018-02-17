@@ -19,8 +19,9 @@ import unittest
 from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix
 
-from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
-from openfermion.ops import FermionOperator, normal_ordered, number_operator
+from openfermion.hamiltonians import (jellium_model, number_operator,
+                                      wigner_seitz_length_scale)
+from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
                                     jordan_wigner)
 from openfermion.utils import fourier_transform, Grid
@@ -448,6 +449,24 @@ class ExpectationTest(unittest.TestCase):
                              ([0, 1, 2], [0, 0, 0])), shape=(3, 1))
         with self.assertRaises(ValueError):
             expectation(operator, vector)
+
+
+class VarianceTest(unittest.TestCase):
+    def test_variance(self):
+        X = pauli_matrix_map['X']
+        Z = pauli_matrix_map['Z']
+        zero = csc_matrix(numpy.array([[1.], [0.]]))
+        plus = csc_matrix(numpy.array([[1.], [1.]]) / numpy.sqrt(2))
+        minus = csc_matrix(numpy.array([[1.], [-1.]]) / numpy.sqrt(2))
+
+        self.assertAlmostEqual(variance(Z, zero), 0.)
+        self.assertAlmostEqual(variance(X, zero), 1.)
+
+        self.assertAlmostEqual(variance(Z, plus), 1.)
+        self.assertAlmostEqual(variance(X, plus), 0.)
+
+        self.assertAlmostEqual(variance(Z, minus), 1.)
+        self.assertAlmostEqual(variance(X, minus), 0.)
 
 
 class ExpectationComputationalBasisStateTest(unittest.TestCase):

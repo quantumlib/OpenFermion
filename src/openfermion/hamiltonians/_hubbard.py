@@ -14,9 +14,8 @@
 from __future__ import absolute_import
 
 from openfermion.ops import (FermionOperator,
-                             hermitian_conjugated,
-                             number_operator)
-from openfermion.hamiltonians import up_index, down_index
+                             hermitian_conjugated)
+from openfermion.hamiltonians import up_index, down_index, number_operator
 
 
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,

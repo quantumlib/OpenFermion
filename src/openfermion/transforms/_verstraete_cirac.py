@@ -17,7 +17,8 @@ import itertools
 import networkx
 import numpy
 
-from openfermion.ops import majorana_operator, FermionOperator, QubitOperator
+from openfermion.hamiltonians import majorana_operator 
+from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import jordan_wigner
 
 
