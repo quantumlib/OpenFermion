@@ -205,7 +205,15 @@ class JordanWignerSparseTest(unittest.TestCase):
             expected.A))
 
 
-class JWSlaterDeterminantTest(unittest.TestCase):
+class ComputationalBasisStateTest(unittest.TestCase):
+    def test_computational_basis_state(self):
+        comp_basis_state = jw_configuration_state([0, 2, 5], 7)
+        dense_array = comp_basis_state.toarray()
+        self.assertAlmostEqual(dense_array[82, 0], 1.)
+        self.assertAlmostEqual(sum(dense_array), 1.)
+
+
+class JWHartreeFockStateTest(unittest.TestCase):
     def test_jw_hartree_fock_state(self):
         hartree_fock_state = jw_hartree_fock_state(3, 7)
         dense_array = hartree_fock_state.toarray()
@@ -411,6 +419,33 @@ class JWSparseGivensRotationTest(unittest.TestCase):
             givens_matrix = jw_sparse_givens_rotation(0, 2, 1., 1., 5)
         with self.assertRaises(ValueError):
             givens_matrix = jw_sparse_givens_rotation(4, 5, 1., 1., 5)
+
+
+class JWSlaterDeterminantTest(unittest.TestCase):
+
+    def test_hadamard_transform(self):
+        """Test creating the states
+        1 / sqrt(2) (a^\dagger_0 + a^\dagger_1) |vac>
+        and
+        1 / sqrt(2) (a^\dagger_0 - a^\dagger_1) |vac>.
+        """
+        slater_determinant_matrix = numpy.array([[1., 1.]]) / numpy.sqrt(2.)
+        slater_determinant = jw_slater_determinant(slater_determinant_matrix)
+        self.assertAlmostEqual(slater_determinant[1, 0],
+                               slater_determinant[2, 0])
+        self.assertAlmostEqual(abs(slater_determinant[1, 0]),
+                               1. / numpy.sqrt(2.))
+        self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[3, 0]), 0.)
+
+        slater_determinant_matrix = numpy.array([[1., -1.]]) / numpy.sqrt(2.)
+        slater_determinant = jw_slater_determinant(slater_determinant_matrix)
+        self.assertAlmostEqual(slater_determinant[1, 0],
+                               -slater_determinant[2, 0])
+        self.assertAlmostEqual(abs(slater_determinant[1, 0]),
+                               1. / numpy.sqrt(2.))
+        self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[3, 0]), 0.)
 
 
 class GroundStateTest(unittest.TestCase):
