@@ -123,7 +123,7 @@ class JWHartreeFockStateTest(unittest.TestCase):
         self.assertAlmostEqual(sum(dense_array), 1.)
 
 
-class JWNumberIndices(unittest.TestCase):
+class JWNumberIndicesTest(unittest.TestCase):
 
     def test_jw_sparse_index(self):
         """Test the indexing scheme for selecting specific particle numbers"""
@@ -136,7 +136,7 @@ class JWNumberIndices(unittest.TestCase):
         self.assertEqual(expected, calculated_indices)
 
 
-class JWSzIndices(unittest.TestCase):
+class JWSzIndicesTest(unittest.TestCase):
 
     def test_jw_sz_indices(self):
         """Test the indexing scheme for selecting specific sz value"""
@@ -150,6 +150,7 @@ class JWSzIndices(unittest.TestCase):
                 n_down = len([site for site in range(n_sites)
                               if bitstring[down_index(site)] == '1'])
                 return n_up - n_down
+
             indices = []
             for bitstring in itertools.product(['0', '1'], repeat=n_qubits):
                 if sz_integer(bitstring) == int(2 * sz_value):

@@ -258,10 +258,18 @@ def jw_number_indices(n_electrons, n_qubits):
 
 def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index,
                   n_electrons=None):
-    """Return the indices of basis vectors with fixed sz under JW encoding
+    """Return the indices of basis vectors with fixed Sz under JW encoding.
+
+    The returned indices label computational basis vectors which lie within
+    the corresponding eigenspace of the Sz operator,
+
+    .. math::
+        \\begin{align}
+        S^{z} = \\frac{1}{2}\sum_{i = 1}^{n}(n_{i, \\alpha} - n_{i, \\beta})
+        \\end{align}
 
     Args:
-        sz_value(float): Desired sz value. Should be an integer or
+        sz_value(float): Desired Sz value. Should be an integer or
             half-integer.
         n_qubits(int): Number of qubits defining the total state
         n_electrons(int, optional): Number of particles to restrict the
@@ -282,7 +290,7 @@ def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index,
         raise ValueError('Number of qubits must be even')
 
     if not (2. * sz_value).is_integer():
-        raise ValueError('sz value must be an integer or half-integer')
+        raise ValueError('Sz value must be an integer or half-integer')
 
     n_sites = n_qubits // 2
     sz_integer = int(2. * sz_value)
@@ -362,12 +370,12 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
 
 def jw_sz_restrict_operator(operator, sz_value, n_electrons=None,
                             n_qubits=None):
-    """Restrict a Jordan-Wigner encoded operator to a given sz value
+    """Restrict a Jordan-Wigner encoded operator to a given Sz value
 
     Args:
         operator(ndarray or sparse): Numpy operator acting on
             the space of n_qubits.
-        sz_value(float): Desired sz value. Should be an integer or
+        sz_value(float): Desired Sz value. Should be an integer or
             half-integer.
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired.
@@ -375,7 +383,7 @@ def jw_sz_restrict_operator(operator, sz_value, n_electrons=None,
 
     Returns:
         new_operator(ndarray or sparse): Numpy operator restricted to
-            acting on states with the desired sz value.
+            acting on states with the desired Sz value.
     """
     if n_qubits is None:
         n_qubits = int(numpy.log2(operator.shape[0]))
@@ -405,12 +413,12 @@ def jw_number_restrict_state(state, n_electrons, n_qubits=None):
 
 
 def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None):
-    """Restrict a Jordan-Wigner encoded state to a given sz value
+    """Restrict a Jordan-Wigner encoded state to a given Sz value
 
     Args:
         state(ndarray or sparse): Numpy vector in
             the space of n_qubits.
-        sz_value(float): Desired sz value. Should be an integer or
+        sz_value(float): Desired Sz value. Should be an integer or
             half-integer.
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired.
@@ -418,7 +426,7 @@ def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None):
 
     Returns:
         new_operator(ndarray or sparse): Numpy vector restricted to
-            states with the desired sz_value. May not be normalized.
+            states with the desired Sz value. May not be normalized.
     """
     if n_qubits is None:
         n_qubits = int(numpy.log2(state.shape[0]))
