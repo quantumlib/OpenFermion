@@ -261,7 +261,10 @@ class FermionOperator(SymbolicOperator):
                 if n_swaps % 2 is 1:
                     new_coef *= -1
                 if new_coef is not 0 and current_occupancy is item[1]:
-                    new_terms[tuple(new_term)] = new_coef
+                    if tuple(new_term) in new_terms:
+                        new_terms[tuple(new_term)] += new_coef
+                    else:
+                        new_terms[tuple(new_term)] = new_coef
             self.terms = new_terms
 
         # Determine sign flips arising from Jordan-Wigner strings
