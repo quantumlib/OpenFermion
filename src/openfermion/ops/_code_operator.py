@@ -180,7 +180,8 @@ class BinaryCode(object):
 
         for symbolic_binary in decoding:
 
-            if isinstance(symbolic_binary, (tuple, list, str, int)):
+            if isinstance(symbolic_binary, (tuple, list, str, int,
+                                            numpy.int32, numpy.int64)):
                 symbolic_binary = SymbolicBinary(symbolic_binary)
             if isinstance(symbolic_binary, SymbolicBinary):
                 self.decoder.append(symbolic_binary)
