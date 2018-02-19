@@ -18,9 +18,11 @@ import unittest
 
 from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix
+from scipy.special import comb
 
 from openfermion.hamiltonians import (jellium_model, number_operator,
-                                      wigner_seitz_length_scale)
+                                      wigner_seitz_length_scale,
+                                      up_index, down_index)
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
                                     jordan_wigner)
@@ -135,66 +137,87 @@ class JWNumberIndicesTest(unittest.TestCase):
         calculated_indices = jw_number_indices(2, 2)
         self.assertEqual(expected, calculated_indices)
 
+    def test_jw_number_indices(self):
+        n_qubits = numpy.random.randint(1, 12)
+        n_particles = numpy.random.randint(n_qubits + 1)
+
+        number_indices = jw_number_indices(n_particles, n_qubits)
+        subspace_dimension = len(number_indices)
+
+        self.assertEqual(subspace_dimension, comb(n_qubits, n_particles))
+
+        for index in number_indices:
+            binary_string = bin(index)[2:].zfill(n_qubits)
+            n_ones = binary_string.count('1')
+            self.assertEqual(n_ones, n_particles)
+
 
 class JWSzIndicesTest(unittest.TestCase):
 
     def test_jw_sz_indices(self):
         """Test the indexing scheme for selecting specific sz value"""
-        # Write a function to compute the indices by brute force
-        def jw_sz_indices_brute_force(sz_value, n_qubits):
-            n_sites = n_qubits // 2
 
-            def sz_integer(bitstring):
-                n_up = len([site for site in range(n_sites)
-                            if bitstring[up_index(site)] == '1'])
-                n_down = len([site for site in range(n_sites)
-                              if bitstring[down_index(site)] == '1'])
-                return n_up - n_down
+        def sz_integer(bitstring, up_map=up_index, down_map=down_index):
+            """Computes the total number of occupied up sites
+            minus the total number of occupied down sites."""
+            n_sites = len(bitstring) // 2
 
+            n_up = len([site for site in range(n_sites)
+                        if bitstring[up_map(site)] == '1'])
+            n_down = len([site for site in range(n_sites)
+                          if bitstring[down_map(site)] == '1'])
+
+            return n_up - n_down
+
+        def jw_sz_indices_brute_force(sz_value, n_qubits,
+                                      up_map=up_index, down_map=down_index):
+            """Computes the correct indices by brute force."""
             indices = []
             for bitstring in itertools.product(['0', '1'], repeat=n_qubits):
-                if sz_integer(bitstring) == int(2 * sz_value):
+                if sz_integer(bitstring, up_map, down_map) == int(2 * sz_value):
                     indices.append(int(''.join(bitstring), 2))
+
             return indices
 
         # General test
-        expected = jw_sz_indices_brute_force(0, 4)
-        calculated = jw_sz_indices(0, 4)
-        self.assertEqual(set(expected), set(calculated))
+        n_sites = numpy.random.randint(1, 10)
+        n_qubits = 2 * n_sites
+        sz_int = ((-1) ** numpy.random.randint(2) *
+                  numpy.random.randint(n_sites + 1))
+        sz_value = sz_int / 2
 
-        expected = jw_sz_indices_brute_force(-.5, 4)
-        calculated = jw_sz_indices(-.5, 4)
-        self.assertEqual(set(expected), set(calculated))
+        correct_indices = jw_sz_indices_brute_force(sz_value, n_qubits)
+        subspace_dimension = len(correct_indices)
 
-        expected = jw_sz_indices_brute_force(1.5, 6)
-        calculated = jw_sz_indices(1.5, 6)
-        self.assertEqual(set(expected), set(calculated))
+        calculated_indices = jw_sz_indices(sz_value, n_qubits)
 
-        expected = jw_sz_indices_brute_force(.5, 8)
-        calculated = jw_sz_indices(.5, 8)
-        self.assertEqual(set(expected), set(calculated))
+        self.assertEqual(len(calculated_indices), subspace_dimension)
+
+        for index in calculated_indices:
+            binary_string = bin(index)[2:].zfill(n_qubits)
+            self.assertEqual(sz_integer(binary_string), sz_int)
 
         # Test fixing particle number
-        sz_indices = jw_sz_indices_brute_force(0, 8)
-        particle_num_indices = jw_number_indices(2, 8)
-        expected = [index for index in particle_num_indices
-                    if index in sz_indices]
-        calculated = jw_sz_indices(0, 8, n_electrons=2)
-        self.assertEqual(set(expected), set(calculated))
+        n_particles = 2 * numpy.random.randint(n_sites + 1)
+        if sz_int % 2 != 0:
+            if n_particles > 0:
+                n_particles -= 1
+            else:
+                n_particles = 1
 
-        sz_indices = jw_sz_indices_brute_force(.5, 8)
-        particle_num_indices = jw_number_indices(3, 8)
-        expected = [index for index in particle_num_indices
-                    if index in sz_indices]
-        calculated = jw_sz_indices(.5, 8, n_electrons=3)
-        self.assertEqual(set(expected), set(calculated))
+        correct_indices = [index for index in correct_indices
+                           if bin(index)[2:].count('1') == n_particles]
+        subspace_dimension = len(correct_indices)
 
-        sz_indices = jw_sz_indices_brute_force(2, 12)
-        particle_num_indices = jw_number_indices(6, 12)
-        expected = [index for index in particle_num_indices
-                    if index in sz_indices]
-        calculated = jw_sz_indices(2, 12, n_electrons=6)
-        self.assertEqual(set(expected), set(calculated))
+        calculated_indices = jw_sz_indices(sz_value, n_qubits,
+                                           n_electrons=n_particles)
+
+        self.assertEqual(len(calculated_indices), subspace_dimension)
+
+        for index in calculated_indices:
+            binary_string = bin(index)[2:].zfill(n_qubits)
+            self.assertEqual(sz_integer(binary_string), sz_int)
+            self.assertEqual(binary_string.count('1'), n_particles)
 
         # Test exceptions
         with self.assertRaises(ValueError):
@@ -301,7 +324,30 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
 class JWNumberRestrictStateTest(unittest.TestCase):
 
     def test_jw_number_restrict_state(self):
-        pass
+        n_qubits = numpy.random.randint(1, 12)
+        n_particles = numpy.random.randint(0, n_qubits)
+
+        number_indices = jw_number_indices(n_particles, n_qubits)
+        subspace_dimension = len(number_indices)
+
+        # Create a vector that has entry 1 for every coordinate with
+        # the specified particle number, and 0 everywhere else
+        vector = csc_matrix(
+                    ([1.] * subspace_dimension,
+                     number_indices,
+                     [0, 1]),
+                    shape=(2 ** n_qubits, 1))
+
+        # Restrict the vector
+        restricted_vector = jw_number_restrict_state(vector, n_particles)
+
+        # Check that it has the correct shape
+        self.assertEqual(restricted_vector.shape[0], subspace_dimension)
+
+        #Check that it has the same norm as the original vector
+        self.assertAlmostEqual(inner_product(vector, vector),
+                               inner_product(restricted_vector,
+                                             restricted_vector))
 
 
 class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
