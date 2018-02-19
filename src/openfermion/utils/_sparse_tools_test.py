@@ -174,7 +174,8 @@ class JWSzIndicesTest(unittest.TestCase):
             """Computes the correct indices by brute force."""
             indices = []
             for bitstring in itertools.product(['0', '1'], repeat=n_qubits):
-                if sz_integer(bitstring, up_map, down_map) == int(2 * sz_value):
+                if (sz_integer(bitstring, up_map, down_map) ==
+                        int(2 * sz_value)):
                     indices.append(int(''.join(bitstring), 2))
 
             return indices
@@ -344,7 +345,39 @@ class JWNumberRestrictStateTest(unittest.TestCase):
         # Check that it has the correct shape
         self.assertEqual(restricted_vector.shape[0], subspace_dimension)
 
-        #Check that it has the same norm as the original vector
+        # Check that it has the same norm as the original vector
+        self.assertAlmostEqual(inner_product(vector, vector),
+                               inner_product(restricted_vector,
+                                             restricted_vector))
+
+
+class JWSzRestrictStateTest(unittest.TestCase):
+
+    def test_jw_sz_restrict_state(self):
+        n_sites = numpy.random.randint(1, 10)
+        n_qubits = 2 * n_sites
+        sz_int = ((-1) ** numpy.random.randint(2) *
+                  numpy.random.randint(n_sites + 1))
+        sz_value = sz_int / 2
+
+        sz_indices = jw_sz_indices(sz_value, n_qubits)
+        subspace_dimension = len(sz_indices)
+
+        # Create a vector that has entry 1 for every coordinate in
+        # the specified subspace, and 0 everywhere else
+        vector = csc_matrix(
+                    ([1.] * subspace_dimension,
+                     sz_indices,
+                     [0, 1]),
+                    shape=(2 ** n_qubits, 1))
+
+        # Restrict the vector
+        restricted_vector = jw_sz_restrict_state(vector, sz_value)
+
+        # Check that it has the correct shape
+        self.assertEqual(restricted_vector.shape[0], subspace_dimension)
+
+        # Check that it has the same norm as the original vector
         self.assertAlmostEqual(inner_product(vector, vector),
                                inner_product(restricted_vector,
                                              restricted_vector))
