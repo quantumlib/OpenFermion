@@ -60,8 +60,8 @@ def double_decoding(decoder_1, decoder_2):
         for summand in entry.terms:
             tmp_term = SymbolicBinary('1')
             for factor in summand:
-                if factor[1] == 'W':
-                    tmp_term *= decoder_2[factor[0]]
+                if isinstance(factor, (numpy.int32, numpy.int64, int)):
+                    tmp_term *= decoder_2[factor]
             tmp_sum = tmp_term + tmp_sum
         doubled_decoder += [tmp_sum]
     return doubled_decoder
@@ -71,7 +71,7 @@ def linearize_decoder(matrix):
     """ Outputs  linear decoding function from input matrix
 
     Args:
-        matrix (array or list): list of lists or 2D numpy array
+        matrix (np.ndarray or list): list of lists or 2D numpy array
             to derive the decoding function from
 
     Returns (list): list of SymbolicBinary
@@ -152,7 +152,7 @@ class BinaryCode(object):
         """ Initialization of a binary code.
 
         Args:
-            encoding (array or list): nested lists or binary 2D-array
+            encoding (np.ndarray or list): nested lists or binary 2D-array
             decoding (array or list): list of SymbolicBinary(list-like or str)
 
         Raises:
@@ -180,7 +180,8 @@ class BinaryCode(object):
 
         for symbolic_binary in decoding:
 
-            if isinstance(symbolic_binary, (tuple, list, str)):
+            if isinstance(symbolic_binary, (tuple, list, str, int,
+                                            numpy.int32, numpy.int64)):
                 symbolic_binary = SymbolicBinary(symbolic_binary)
             if isinstance(symbolic_binary, SymbolicBinary):
                 self.decoder.append(symbolic_binary)
