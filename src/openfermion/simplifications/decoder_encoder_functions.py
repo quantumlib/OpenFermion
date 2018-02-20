@@ -229,7 +229,9 @@ def half_up_jordan_wigner_code(modes):
         raise ValueError('number of modes must be even')
     else:
         mtx = numpy.zeros((modes, modes), dtype=int)
-        for index in numpy.arange(modes/2):
-            (mtx[index, index], mtx[modes/2 + index, index+1]) = (1, 1)
+        for index in numpy.arange(modes//2, dtype=int):
+            mtx[index, 2*index] = 1
+            mtx[modes//2+index, 2*index+1] = 1
         return BinaryCode(mtx, linearize_decoder(mtx))
+    
     
