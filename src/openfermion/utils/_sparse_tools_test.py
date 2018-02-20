@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 """Tests for sparse_tools.py."""
-from __future__ import absolute_import, division
+from __future__ import absolute_import
 
 import numpy
 import unittest
@@ -186,7 +186,7 @@ class JWSzIndicesTest(unittest.TestCase):
         n_qubits = 2 * n_sites
         sz_int = ((-1) ** numpy.random.randint(2) *
                   numpy.random.randint(n_sites + 1))
-        sz_value = sz_int / 2
+        sz_value = sz_int / 2.
 
         correct_indices = jw_sz_indices_brute_force(sz_value, n_qubits)
         subspace_dimension = len(correct_indices)
