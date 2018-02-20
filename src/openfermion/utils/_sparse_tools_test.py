@@ -20,7 +20,8 @@ from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix
 from scipy.special import comb
 
-from openfermion.hamiltonians import (jellium_model, number_operator,
+from openfermion.hamiltonians import (fermi_hubbard, jellium_model,
+                                      number_operator,
                                       wigner_seitz_length_scale,
                                       up_index, down_index)
 from openfermion.ops import FermionOperator, normal_ordered
@@ -320,6 +321,26 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
 
         number_expectation = expectation(restricted_number, ground_state)
         self.assertAlmostEqual(number_expectation, 2)
+
+
+class JWSzRestrictOperatorTest(unittest.TestCase):
+
+    def test_restrict_interaction_hamiltonian(self):
+        """Test restricting a coulomb repulsion Hamiltonian to a specified
+        Sz manifold."""
+        x_dim = 3
+        y_dim = 2
+
+        interaction_term = fermi_hubbard(x_dim, y_dim, 0., 1.)
+        interaction_sparse = get_sparse_operator(interaction_term)
+        sz_value = 2
+        interaction_restricted = jw_sz_restrict_operator(interaction_sparse,
+                                                         sz_value)
+        restricted_interaction_values = set([
+            int(value.real) for value in interaction_restricted.diagonal()])
+        # Originally the eigenvalues run from 0 to 6 but after restricting,
+        # they should run from 0 to 2
+        self.assertEqual(restricted_interaction_values, {0, 1, 2})
 
 
 class JWNumberRestrictStateTest(unittest.TestCase):
