@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 """Tests for sparse_tools.py."""
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import numpy
 import unittest
@@ -200,12 +200,7 @@ class JWSzIndicesTest(unittest.TestCase):
             self.assertEqual(sz_integer(binary_string), sz_int)
 
         # Test fixing particle number
-        n_particles = 2 * numpy.random.randint(n_sites + 1)
-        if sz_int % 2 != 0:
-            if n_particles > 0:
-                n_particles -= 1
-            else:
-                n_particles = 1
+        n_particles = abs(sz_int)
 
         correct_indices = [index for index in correct_indices
                            if bin(index)[2:].count('1') == n_particles]
@@ -230,6 +225,9 @@ class JWSzIndicesTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             indices = jw_sz_indices(1.5, 8, n_electrons=6)
+
+        with self.assertRaises(ValueError):
+            indices = jw_sz_indices(1.5, 8, n_electrons=1)
 
 
 class JWNumberRestrictOperatorTest(unittest.TestCase):

@@ -299,7 +299,8 @@ def jw_sz_indices(sz_value, n_qubits, up_map=up_index, down_map=down_index,
     if n_electrons is not None:
         # Particle number is fixed, so the number of spin-up electrons
         # (as well as the number of spin-down electrons) is fixed
-        if (n_electrons + sz_integer) % 2 != 0:
+        if ((n_electrons + sz_integer) % 2 != 0 or
+                n_electrons < abs(sz_integer)):
             raise ValueError('The specified particle number and sz value are '
                              'incompatible.')
         num_up = (n_electrons + sz_integer) // 2
