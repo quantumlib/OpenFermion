@@ -84,10 +84,10 @@ def dual_basis_external_potential(grid, geometry, spinless):
                 if momenta_squared == 0:
                     continue
 
-                exp_index = 1.0j * momenta.dot(coordinate_j - coordinate_p)
+                cosine_arg = momenta.dot(coordinate_j - coordinate_p)
                 coefficient = (prefactor / momenta_squared *
                                periodic_hash_table[nuclear_term[0]] *
-                               numpy.exp(exp_index))
+                               numpy.cos(cosine_arg))
 
                 for spin_p in spins:
                     orbital_p = orbital_id(grid, pos_indices, spin_p)
