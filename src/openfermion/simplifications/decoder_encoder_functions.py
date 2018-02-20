@@ -123,7 +123,8 @@ def bravyi_kitaev_code(modes):
 
     Returns (BinaryCode): The Bravyi-Kitaev BinaryCode
     """
-    return BinaryCode(_encoder_bk(modes), linearize_decoder(_decoder_bk(modes)))
+    return BinaryCode(_encoder_bk(modes), 
+                      linearize_decoder(_decoder_bk(modes)))
 
 
 def parity_code(modes):
@@ -135,8 +136,8 @@ def parity_code(modes):
     Returns (BinaryCode): The parity transform BinaryCode
     """
     dec_mtx = numpy.reshape(([1] + [0] * (modes - 1)) +
-                            ([1, 1] + (modes - 1) * [0]) * (modes - 2) + [1, 1],
-                            (modes, modes))
+                            ([1, 1] + (modes - 1) * [0]) * (modes - 2) +
+                            [1, 1], (modes, modes))
     enc_mtx = numpy.tril(numpy.ones((modes, modes), dtype=int))
 
     return BinaryCode(enc_mtx, linearize_decoder(dec_mtx))
@@ -210,3 +211,25 @@ def weight_two_segment_code():
                        [0, 0, 0, 1, 1]], ['w0 + ' + switch, 'w1 + ' + switch,
                                           'w2 + ' + switch, 'w3 + ' + switch,
                                           switch])
+
+
+def half_up_jordan_wigner_code(modes):
+    """ Code for a Jordan-Wigner transform, with a reordering of modes that
+    corresponds to switching from the conventional order of OpenFermion to the 
+    'half up' order (or back), as it is referred to in arXiv:1403.1539.
+    Here the first half of the modes corresponds to spin-up orbitals,
+    which is a derivation from the convention in OpenFermion, where spin-up
+    and -down modes of the same spatial orbital are consecutive.  
+    
+    Args: modes (int): number of modes, must be even 
+    
+    Returns (BinaryCode): half-up-ordered Jordan-Wigner transform
+    """
+    if modes % 2 == 1:
+        raise ValueError('number of modes must be even')
+    else:
+        mtx = numpy.zeros((modes, modes), dtype=int)
+        for index in numpy.arange(modes/2):
+            (mtx[index, index], mtx[modes/2 + index, index+1]) = (1, 1)
+        return BinaryCode(mtx, linearize_decoder(mtx))
+    
