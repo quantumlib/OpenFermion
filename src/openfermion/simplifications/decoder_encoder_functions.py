@@ -193,7 +193,7 @@ def weight_one_segment_code():
     Returns (BinaryCode): weight one segment code
     """
     return BinaryCode([[1, 0, 1], [0, 1, 1]],
-                      ['w0 w1 + w1', 'w0 w1 + w0', ' w0 w1'])
+                      ['w0 w1 + w0', 'w0 w1 + w1', ' w0 w1'])
 
 
 def weight_two_segment_code():
@@ -213,17 +213,24 @@ def weight_two_segment_code():
                                           switch])
 
 
-def half_up_jordan_wigner_code(modes):
-    """ Code for a Jordan-Wigner transform, with a reordering of modes that
-    corresponds to switching from the conventional order of OpenFermion to the 
-    'half up' order (or back), as it is referred to in arXiv:1403.1539.
-    Here the first half of the modes corresponds to spin-up orbitals,
-    which is a derivation from the convention in OpenFermion, where spin-up
-    and -down modes of the same spatial orbital are consecutive.  
+def interleaved_code(modes):
+    """ Linear code that reorders orbitals to deal with an order of the modes 
+    that is not 'half up', as it is referred to in arXiv:1403.1539.
+    In 'half up', the first half of the modes corresponds to spin-up orbitals, 
+    the second to spin-down which is a derivation from the convention in 
+    OpenFermion, where spin-up and -down modes of the same spatial orbital are
+    consecutive. In 'half up', one can append two instances of the same 
+    code 'c' in order to have two symmetric subcodes that are symmetric for 
+    spin-up and -down modes: ' c + c '.
+    In the OpenFermion standard ordering, this requires the concatenation with
+    the interleaved_code to have the same result:' interleaved_code * (c + c)'.
+    This code changes the order of modes from (0, 1 , 2, ... , modes-1 )
+    to (0, modes/2, 1 modes/2+1, ... , modes-1, modes/2 - 1).
+    
     
     Args: modes (int): number of modes, must be even 
     
-    Returns (BinaryCode): half-up-ordered Jordan-Wigner transform
+    Returns (BinaryCode): code that interleaves orbitals
     """
     if modes % 2 == 1:
         raise ValueError('number of modes must be even')
@@ -232,6 +239,6 @@ def half_up_jordan_wigner_code(modes):
         for index in numpy.arange(modes//2, dtype=int):
             mtx[index, 2*index] = 1
             mtx[modes//2+index, 2*index+1] = 1
-        return BinaryCode(mtx, linearize_decoder(mtx))
+        return BinaryCode(mtx, linearize_decoder(mtx.transpose()))   
     
     
