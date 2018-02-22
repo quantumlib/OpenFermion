@@ -32,7 +32,7 @@ class CodeOperatorTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             BinaryCode([[0, 1, 1], [1, 0, 0]], ['1 + w1',
                                                 SymbolicBinary('1 + w0'),
-                                                2])
+                                                2.0])
         with self.assertRaises(BinaryCodeError):
             BinaryCode([[0, 1], [1, 0]], [SymbolicBinary(' w0 '),
                                           SymbolicBinary('w0 + 1')])

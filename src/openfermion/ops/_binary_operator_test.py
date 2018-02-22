@@ -40,6 +40,8 @@ class SymbolicBinaryTest(unittest.TestCase):
         self.assertEqual(operator1.terms, [])
         operator1 = SymbolicBinary([])
         self.assertEqual(operator1.terms, [])
+        with self.assertRaises(ValueError):
+            operator1 = SymbolicBinary(12.0)
 
     def test_int_init(self):
         operator1 = SymbolicBinary(3)
@@ -50,6 +52,12 @@ class SymbolicBinaryTest(unittest.TestCase):
         self.assertEqual(operator1.terms, [(3, 4)])
         operator1 = SymbolicBinary([(4, 3, _SYMBOLIC_ONE)])
         self.assertEqual(operator1.terms, [(3, 4)])
+        operator1 = SymbolicBinary(((1,2),(1,2)))
+        self.assertEqual(operator1.terms, [])
+        with self.assertRaises(ValueError):
+            operator1 = SymbolicBinary(((1, -2),))
+        with self.assertRaises(ValueError):
+            operator1 = SymbolicBinary(((1, -2.0),))
 
     def test_multiplication(self):
         operator1 = SymbolicBinary('1 + w1 w2')
@@ -149,6 +157,10 @@ class SymbolicBinaryTest(unittest.TestCase):
         self.assertEqual(qubits, [0, 2, 5])
 
     def test_evaluate(self):
+        operator1 = SymbolicBinary()
+        self.assertEqual(operator1.evaluate('1111'),0)
+        operator1 = SymbolicBinary(1)
+        self.assertEqual(operator1.evaluate('1111'),1)
         operator1 = SymbolicBinary('1 + w0 w2 w1 + w0 w1 + w0 w2')
         a = operator1.evaluate([0, 0, 1])
         self.assertEqual(a, 1.0)

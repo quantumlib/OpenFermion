@@ -58,7 +58,11 @@ def dissolve(term):
     Returns (QubitOperator): superposition of Pauli-strings
 
     Raises:
+<<<<<<< HEAD
         ValueError: if the _action is not 'W'
+=======
+        ValueError: if the variable in term is not integer
+>>>>>>> upstream/master
     """
     prod = 2.0
     for var in term:
