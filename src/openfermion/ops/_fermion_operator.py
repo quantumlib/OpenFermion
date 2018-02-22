@@ -15,7 +15,7 @@ import numpy
 
 from future.utils import iteritems
 from openfermion.ops import SymbolicOperator
-
+from openfermion.utils import count_qubits
 
 class FermionOperatorError(Exception):
     pass
@@ -30,6 +30,26 @@ def hermitian_conjugated(fermion_operator):
         conjugate_operator.terms[conjugate_term] = numpy.conjugate(coefficient)
     return conjugate_operator
 
+
+def half_up_order(fermion_operator):
+    """ changes the fermionic order of the Hamiltonian from 0,1,2,...N to
+    0,2,4,...,1,3,5,...
+
+    Args:
+        fermion_operator: The fermion_operator that is to be re-ordered
+
+    Returns: Fermion operator with all-even all-odd ordering
+    """
+    num_qubits = count_qubits(fermion_operator) / 2
+    qubit_map = {2 * qidx + odd: qidx + odd * num_qubits for qidx in
+                 range(num_qubits) for odd in [0, 1]}
+
+    rotated_hamiltonian = FermionOperator()
+    for term, value in fermion_operator.terms.items():
+        new_term = tuple([(qubit_map[op[0]], op[1]) for op in term])
+        rotated_hamiltonian += FermionOperator(new_term, value)
+    rotated_hamiltonian = normal_ordered(rotated_hamiltonian)
+    return rotated_hamiltonian
 
 def normal_ordered_term(term, coefficient):
     """Return a normal ordered FermionOperator corresponding to single term.
