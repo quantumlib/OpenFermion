@@ -25,15 +25,16 @@ import scipy.sparse.linalg
 import warnings
 
 from openfermion.config import *
-from openfermion.hamiltonians import number_operator
-from openfermion.ops import (FermionOperator, hermitian_conjugated,
-                             normal_ordered,
-                             QuadraticHamiltonian, QubitOperator)
-from openfermion.utils import (commutator, fourier_transform,
-                               gaussian_state_preparation_circuit, Grid)
-from openfermion.hamiltonians._jellium import (momentum_vector,
-                                               position_vector,
-                                               grid_indices)
+from openfermion.hamiltonians import number_operator, up_index, down_index
+from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
+                             QubitOperator, hermitian_conjugated,
+                             normal_ordered)
+from openfermion.utils import (Grid, commutator, fourier_transform,
+                               gaussian_state_preparation_circuit,
+                               slater_determinant_preparation_circuit)
+from openfermion.hamiltonians._jellium import (grid_indices,
+                                               momentum_vector,
+                                               position_vector)
 
 
 # Make global definitions.
@@ -207,28 +208,28 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     return sparse_operator
 
 
-def jw_slater_determinant(occupied_orbitals, n_orbitals):
-    """Function to produce a Slater determinant in JW representation.
+def jw_configuration_state(occupied_orbitals, n_qubits):
+    """Function to produce a basis state in the occupation number basis.
 
     Args:
         occupied_orbitals(list): A list of integers representing the indices
-            of the occupied orbitals in the desired Slater determinant
-        n_orbitals(int): The total number of orbitals
+            of the occupied orbitals in the desired basis state
+        n_qubits(int): The total number of qubits
 
     Returns:
-        slater_determinant(sparse): The JW-encoded Slater determinant as a
-            sparse matrix
+        basis_vector(sparse): The basis state as a sparse matrix
     """
-    one_index = sum([2 ** (n_orbitals - 1 - i) for i in occupied_orbitals])
-    slater_determinant = scipy.sparse.csc_matrix(([1.], ([one_index], [0])),
-                                                 shape=(2 ** n_orbitals, 1),
-                                                 dtype=float)
-    return slater_determinant
+    one_index = sum([2 ** (n_qubits - 1 - i) for i in occupied_orbitals])
+    basis_vector = scipy.sparse.csc_matrix(([1.], ([one_index], [0])),
+                                           shape=(2 ** n_qubits, 1),
+                                           dtype=float)
+    return basis_vector
 
 
 def jw_hartree_fock_state(n_electrons, n_orbitals):
     """Function to produce Hartree-Fock state in JW representation."""
-    hartree_fock_state = jw_slater_determinant(range(n_electrons), n_orbitals)
+    hartree_fock_state = jw_configuration_state(range(n_electrons),
+                                                n_orbitals)
     return hartree_fock_state
 
 
@@ -248,11 +249,103 @@ def jw_number_indices(n_electrons, n_qubits):
         indices(list): List of indices in a 2^n length array that indicate
             the indices of constant particle number within n_qubits
             in a Jordan-Wigner encoding.
-
     """
     occupations = itertools.combinations(range(n_qubits), n_electrons)
     indices = [sum([2**n for n in occupation])
                for occupation in occupations]
+    return indices
+
+
+def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
+                  up_map=up_index, down_map=down_index):
+    """Return the indices of basis vectors with fixed Sz under JW encoding.
+
+    The returned indices label computational basis vectors which lie within
+    the corresponding eigenspace of the Sz operator,
+
+    .. math::
+        \\begin{align}
+        S^{z} = \\frac{1}{2}\sum_{i = 1}^{n}(n_{i, \\alpha} - n_{i, \\beta})
+        \\end{align}
+
+    Args:
+        sz_value(float): Desired Sz value. Should be an integer or
+            half-integer.
+        n_qubits(int): Number of qubits defining the total state
+        n_electrons(int, optional): Number of particles to restrict the
+            operator to, if such a restriction is desired
+        up_map(function, optional): function mapping a spatial index to a
+            spin-orbital index. Default is the canonical spin-up
+            corresponds to even spin-orbitals and spin-down corresponds
+            to odd spin-orbitals
+        down_map(function, optional): function mapping spatial index to a
+            spin-orbital index. Default is the canonical spin-up
+            corresponds to even spin-orbitals and spin-down corresponds
+            to odd spin-orbitals.
+
+    Returns:
+        indices(list): The list of indices
+    """
+    if n_qubits % 2 != 0:
+        raise ValueError('Number of qubits must be even')
+
+    if not (2. * sz_value).is_integer():
+        raise ValueError('Sz value must be an integer or half-integer')
+
+    n_sites = n_qubits // 2
+    sz_integer = int(2. * sz_value)
+    indices = []
+
+    if n_electrons is not None:
+        # Particle number is fixed, so the number of spin-up electrons
+        # (as well as the number of spin-down electrons) is fixed
+        if ((n_electrons + sz_integer) % 2 != 0 or
+                n_electrons < abs(sz_integer)):
+            raise ValueError('The specified particle number and sz value are '
+                             'incompatible.')
+        num_up = (n_electrons + sz_integer) // 2
+        num_down = n_electrons - num_up
+        up_occupations = itertools.combinations(range(n_sites), num_up)
+        down_occupations = list(
+                itertools.combinations(range(n_sites), num_down))
+        # Each arrangement of up spins can be paired with an arrangement
+        # of down spins
+        for up_occupation in up_occupations:
+            up_occupation = [up_map(index) for index in up_occupation]
+            for down_occupation in down_occupations:
+                down_occupation = [down_map(index)
+                                   for index in down_occupation]
+                occupation = up_occupation + down_occupation
+                indices.append(sum(2 ** (n_qubits - 1 - k)
+                               for k in occupation))
+    else:
+        # Particle number is not fixed
+        if sz_integer < 0:
+            # There are more down spins than up spins
+            more_map = down_map
+            less_map = up_map
+        else:
+            # There are at least as many up spins as down spins
+            more_map = up_map
+            less_map = down_map
+        for n in range(abs(sz_integer), n_sites + 1):
+            # Choose n of the 'more' spin and n - abs(sz_integer) of the
+            # 'less' spin
+            more_occupations = itertools.combinations(range(n_sites), n)
+            less_occupations = list(itertools.combinations(
+                                    range(n_sites), n - abs(sz_integer)))
+            # Each arrangement of the 'more' spins can be paired with an
+            # arrangement of the 'less' spin
+            for more_occupation in more_occupations:
+                more_occupation = [more_map(index)
+                                   for index in more_occupation]
+                for less_occupation in less_occupations:
+                    less_occupation = [less_map(index)
+                                       for index in less_occupation]
+                    occupation = more_occupation + less_occupation
+                    indices.append(sum(2 ** (n_qubits - 1 - k)
+                                   for k in occupation))
+
     return indices
 
 
@@ -274,6 +367,93 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
 
     select_indices = jw_number_indices(n_electrons, n_qubits)
     return operator[numpy.ix_(select_indices, select_indices)]
+
+
+def jw_sz_restrict_operator(operator, sz_value,
+                            n_electrons=None, n_qubits=None,
+                            up_map=up_index, down_map=down_index):
+    """Restrict a Jordan-Wigner encoded operator to a given Sz value
+
+    Args:
+        operator(ndarray or sparse): Numpy operator acting on
+            the space of n_qubits.
+        sz_value(float): Desired Sz value. Should be an integer or
+            half-integer.
+        n_electrons(int, optional): Number of particles to restrict the
+            operator to, if such a restriction is desired.
+        n_qubits(int, optional): Number of qubits defining the total state
+        up_map(function, optional): function mapping a spatial index to a
+            spin-orbital index. Default is the canonical spin-up
+            corresponds to even spin-orbitals and spin-down corresponds
+            to odd spin-orbitals
+        down_map(function, optional): function mapping spatial index to a
+            spin-orbital index. Default is the canonical spin-up
+            corresponds to even spin-orbitals and spin-down corresponds
+            to odd spin-orbitals.
+
+    Returns:
+        new_operator(ndarray or sparse): Numpy operator restricted to
+            acting on states with the desired Sz value.
+    """
+    if n_qubits is None:
+        n_qubits = int(numpy.log2(operator.shape[0]))
+
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons,
+                                   up_map=up_map, down_map=down_map)
+    return operator[numpy.ix_(select_indices, select_indices)]
+
+
+def jw_number_restrict_state(state, n_electrons, n_qubits=None):
+    """Restrict a Jordan-Wigner encoded state to a given particle number
+
+    Args:
+        state(ndarray or sparse): Numpy vector in
+            the space of n_qubits.
+        n_electrons(int): Number of particles to restrict the state to
+        n_qubits(int): Number of qubits defining the total state
+
+    Returns:
+        new_operator(ndarray or sparse): Numpy vector restricted to
+            states with the same particle number. May not be normalized.
+    """
+    if n_qubits is None:
+        n_qubits = int(numpy.log2(state.shape[0]))
+
+    select_indices = jw_number_indices(n_electrons, n_qubits)
+    return state[select_indices]
+
+
+def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None,
+                         up_map=up_index, down_map=down_index):
+    """Restrict a Jordan-Wigner encoded state to a given Sz value
+
+    Args:
+        state(ndarray or sparse): Numpy vector in
+            the space of n_qubits.
+        sz_value(float): Desired Sz value. Should be an integer or
+            half-integer.
+        n_electrons(int, optional): Number of particles to restrict the
+            operator to, if such a restriction is desired.
+        n_qubits(int, optional): Number of qubits defining the total state
+        up_map(function, optional): function mapping a spatial index to a
+            spin-orbital index. Default is the canonical spin-up
+            corresponds to even spin-orbitals and spin-down corresponds
+            to odd spin-orbitals
+        down_map(function, optional): function mapping spatial index to a
+            spin-orbital index. Default is the canonical spin-up
+            corresponds to even spin-orbitals and spin-down corresponds
+            to odd spin-orbitals.
+
+    Returns:
+        new_operator(ndarray or sparse): Numpy vector restricted to
+            states with the desired Sz value. May not be normalized.
+    """
+    if n_qubits is None:
+        n_qubits = int(numpy.log2(state.shape[0]))
+
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons,
+                                   up_map=up_map, down_map=down_map)
+    return state[select_indices]
 
 
 def jw_get_ground_states_by_particle_number(sparse_operator, particle_number,
@@ -413,7 +593,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
         quadratic_hamiltonian, occupied_orbitals)
 
     # Initialize the starting state
-    state = jw_slater_determinant(start_orbitals, n_qubits)
+    state = jw_configuration_state(start_orbitals, n_qubits)
 
     # Apply the circuit
     if not quadratic_hamiltonian.conserves_particle_number:
@@ -429,6 +609,46 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
                     i, j, theta, phi, n_qubits).dot(state)
 
     return energy, state
+
+
+def jw_slater_determinant(slater_determinant_matrix):
+    """Obtain a Slater determinant.
+
+    The input is an :math:`N_f \\times N` matrix :math:`Q` with orthonormal
+    rows. Such a matrix describes the Slater determinant
+
+    .. math::
+
+        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \\text{vac} \\rangle,
+
+    where
+
+    .. math::
+
+        b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
+
+    Args:
+        slater_determinant_matrix: The matrix :math:`Q` which describes the
+            Slater determinant to be prepared.
+    Returns:
+        The Slater determinant as a sparse matrix.
+    """
+    circuit_description = slater_determinant_preparation_circuit(
+            slater_determinant_matrix)
+    start_orbitals = range(slater_determinant_matrix.shape[0])
+    n_qubits = slater_determinant_matrix.shape[1]
+
+    # Initialize the starting state
+    state = jw_configuration_state(start_orbitals, n_qubits)
+
+    # Apply the circuit
+    for parallel_ops in circuit_description:
+        for op in parallel_ops:
+            i, j, theta, phi = op
+            state = jw_sparse_givens_rotation(
+                i, j, theta, phi, n_qubits).dot(state)
+
+    return state
 
 
 def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
