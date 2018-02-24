@@ -14,7 +14,7 @@
 import numpy
 
 from future.utils import iteritems
-from openfermion.ops import SymbolicOperator
+from openfermion.ops import SymbolicOperator, prune_unused_indices
 
 
 class FermionOperatorError(Exception):
@@ -115,6 +115,79 @@ def normal_ordered(fermion_operator):
         ordered_operator += normal_ordered_term(term, coefficient)
     return ordered_operator
 
+def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
+    """Fix some orbitals to be occupied and others unoccupied.
+
+    Removes all operators acting on the specified orbitals, and flips the
+    sign of each term as appropriate. Terms whose expectation value
+    between states with the specified occupancy is zero are removed.
+    Additionally, the indices are renumbered such that the frozen orbitals
+    are eliminated.
+
+    Note that the sign change accounts for both the reordering of operators
+    needed to group the operators acting on the frozen orbitals, as well
+    as the impact of pruning frozen orbitals on the Jordan-Wigner strings
+    of operators acting on unfrozen orbitals.
+
+    Args:
+    occupied: A list containing the indices of the orbitals that are to be
+        assumed to be occupied.
+    unoccupied: A list containing the indices of the orbitals that are to
+        be assumed to be unoccupied.
+    """
+
+    new_operator = fermion_operator
+
+    frozen = [(index, 1) for index in occupied]
+    if unoccupied is not None:
+        frozen += [(index, 0) for index in unoccupied]
+
+    # Loop over each orbital to be frozen. Within each term, move all
+    # ops acting on that orbital to the right side of the term, keeping
+    # track of sign flips that come from swapping operators.
+    for item in frozen:
+        tmp_operator = FermionOperator()
+        for term in new_operator.terms:
+            new_term = []
+            new_coef = new_operator.terms[term]
+            current_occupancy = item[1]
+            n_ops = 0  # Number of operations on index that have been moved
+            n_swaps = 0  # Number of swaps that have been done
+
+            for op in enumerate(reversed(term)):
+                if op[1][0] is item[0]:
+                    n_ops += 1
+
+                    # Determine number of swaps needed to bring the op in
+                    # front of all ops acting on other indices
+                    n_swaps += op[0] - n_ops
+
+                    # Check if the op annihilates the current state
+                    if current_occupancy == op[1][1]:
+                        new_coef = 0
+
+                    # Update current state
+                    current_occupancy = (current_occupancy + 1) % 2
+                else:
+                    new_term.insert(0, op[1])
+            if n_swaps % 2 is 1:
+                new_coef *= -1
+            if new_coef is not 0 and current_occupancy is item[1]:
+                tmp_operator += FermionOperator(tuple(new_term), new_coef)
+        new_operator = tmp_operator
+
+    # Determine sign flips arising from Jordan-Wigner strings
+    for term in new_operator.terms:
+        for index in occupied:
+            for op in term:
+                if op[0] > index:
+                    new_operator.terms[term] *= -1
+
+    # Renumber indices to remove frozen orbitals
+    new_operator = prune_unused_indices(new_operator)
+
+    return new_operator
+
 
 class FermionOperator(SymbolicOperator):
     """FermionOperator stores a sum of products of fermionic ladder operators.
@@ -205,75 +278,3 @@ class FermionOperator(SymbolicOperator):
             if not (particles == spin == 0):
                 return False
         return True
-
-    def freeze_orbitals(self, occupied, unoccupied=[], prune=True):
-        """Fix some orbitals to be occupied and others unoccupied.
-
-        Removes all operators acting on the specified orbitals, and flips the
-        sign of each term as appropriate. Terms whose expectation value
-        between states with the specified occupancy is zero are removed.
-        Additionally, the indices are renumbered such that the frozen orbitals
-        are eliminated.
-
-        Note that the sign change accounts for both the reordering of operators
-        needed to group the operators acting on the frozen orbitals, as well
-        as the impact of pruning frozen orbitals on the Jordan-Wigner strings
-        of operators acting on unfrozen orbitals.
-
-        Args:
-        occupied: A list containing the indices of the orbitals that are to be
-            assumed to be occupied.
-        unoccupied: A list containing the indices of the orbitals that are to
-            be assumed to be unoccupied.
-        """
-
-        frozen = [(index, 1) for index in occupied] + \
-                 [(index, 0) for index in unoccupied]
-
-        # Loop over each orbital to be frozen. Within each term, move all
-        # ops acting on that orbital to the right side of the term, keeping
-        # track of sign flips that come from swapping operators.
-        for item in frozen:
-            new_terms = {}
-            for term in self.terms:
-                new_term = []
-                new_coef = self.terms[term]
-                current_occupancy = item[1]
-                n_ops = 0  # Number of operations on index that have been moved
-                n_swaps = 0  # Number of swaps that have been done
-
-                for op in enumerate(reversed(term)):
-                    if op[1][0] is item[0]:
-                        n_ops += 1
-
-                        # Determine number of swaps needed to bring the op in
-                        # front of all ops acting on other indices
-                        n_swaps += op[0] - n_ops
-
-                        # Check if the op annihilates the current state
-                        if current_occupancy == op[1][1]:
-                            new_coef = 0
-
-                        # Update current state
-                        current_occupancy = (current_occupancy + 1) % 2
-                    else:
-                        new_term.insert(0, op[1])
-                if n_swaps % 2 is 1:
-                    new_coef *= -1
-                if new_coef is not 0 and current_occupancy is item[1]:
-                    if tuple(new_term) in new_terms:
-                        new_terms[tuple(new_term)] += new_coef
-                    else:
-                        new_terms[tuple(new_term)] = new_coef
-            self.terms = new_terms
-
-        # Determine sign flips arising from Jordan-Wigner strings
-        for term in self.terms:
-            for index in occupied:
-                for op in term:
-                    if op[0] > index:
-                        self.terms[term] *= -1
-
-        # Renumber indices to remove frozen orbitals
-        self.prune()
-        return

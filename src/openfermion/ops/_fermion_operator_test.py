@@ -19,7 +19,8 @@ from openfermion.hamiltonians import number_operator
 from openfermion.ops._fermion_operator import (FermionOperator,
                                                FermionOperatorError,
                                                hermitian_conjugated,
-                                               normal_ordered)
+                                               normal_ordered,
+                                               freeze_orbitals)
 
 
 class FermionOperatorTest(unittest.TestCase):
@@ -213,12 +214,12 @@ class FermionOperatorTest(unittest.TestCase):
         self.assertTrue(op.is_molecular_term())
 
     def test_freeze_orbitals_nonvanishing(self):
-        op1 = FermionOperator(((1, 1), (1, 0), (0, 1), (2, 0)))
-        op1.freeze_orbitals([1])
-        expected1 = FermionOperator(((0, 1), (1, 0)), -1)
-        self.assertTrue(op1.isclose(expected1))
+        op = FermionOperator(((1, 1), (1, 0), (0, 1), (2, 0)))
+        op_frozen = freeze_orbitals(op,[1])
+        expected = FermionOperator(((0, 1), (1, 0)), -1)
+        self.assertTrue(op_frozen.isclose(expected))
 
     def test_freeze_orbitals_vanishing(self):
-        op2 = FermionOperator(((1, 1), (2, 0)))
-        op2.freeze_orbitals([], [2])
-        self.assertEquals(len(op2.terms), 0)
+        op = FermionOperator(((1, 1), (2, 0)))
+        op_frozen = freeze_orbitals(op, [], [2])
+        self.assertEquals(len(op_frozen.terms), 0)
