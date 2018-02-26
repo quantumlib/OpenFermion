@@ -24,7 +24,7 @@ Transforms
 
 * Verstraete-Cirac transform: maps a FermionOperator on a d-dimensional lattice to a
   QubitOperator on a d-dimensional lattice with twice as many degrees of freedom.
-  Implementation from arXiv:cond-mat/050835.
+  Implementation from arXiv:cond-mat/0508353.
 
 * Fermion transforms from binary codes: generalized machinery for implementing an
   arbitrary (possibly non-linear) fermion transform (and decoding). Can be used to reduce
