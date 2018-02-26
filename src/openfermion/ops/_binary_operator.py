@@ -93,7 +93,7 @@ class SymbolicBinary(object):
 
         # Sequence input: list of tuples of tuples
         elif isinstance(term, tuple) or isinstance(term, list):
-            self._parse_sequence(term)
+            self._parse_sequence(list(term))
 
         # String input
         elif isinstance(term, str):
