@@ -240,5 +240,34 @@ def interleaved_code(modes):
             mtx[index, 2*index] = 1
             mtx[modes//2+index, 2*index+1] = 1
         return BinaryCode(mtx, linearize_decoder(mtx.transpose()))   
-    
+
+
+def half_up_order(fermion_operator, num_qubits=None, reverse=False):
+    from openfermion.ops import FermionOperator, normal_ordered
+
+    """ changes the fermionic order of the Hamiltonian from 0,1,2,...N to
+    0,2,4,...,1,3,5,...
+    Args:
+        fermion_operator: The fermion_operator that is to be re-ordered
+    Returns: Fermion operator with all-even all-odd ordering
+    """
+    if num_qubits is None:
+        max_qubit = 0
+        for term in fermion_operator.terms:
+            for operator in term:
+                if operator[0] > max_qubit:
+                    max_qubit = operator[0]
+
+        num_qubits = max_qubit + 1
+    qubit_map = {2 * qidx + odd: qidx + odd * num_qubits for qidx in
+                 range(num_qubits) for odd in [0, 1]}
+    if reverse:
+        qubit_map = {val: key for key, val in qubit_map.items()}
+
+    rotated_hamiltonian = FermionOperator()
+    for term, value in fermion_operator.terms.items():
+        new_term = tuple([(qubit_map[op[0]], op[1]) for op in term])
+        rotated_hamiltonian += FermionOperator(new_term, value)
+    rotated_hamiltonian = normal_ordered(rotated_hamiltonian)
+    return rotated_hamiltonian
     
