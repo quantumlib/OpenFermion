@@ -205,3 +205,35 @@ class FermionOperator(SymbolicOperator):
             if not (particles == spin == 0):
                 return False
         return True
+
+    def reorder(self, num_modes=None, reverse=False, order_function = None):
+
+        """ changes the fermionic order of the Hamiltonian from 0,1,2,...N to
+        0,2,4,...,1,3,5,...
+        Args:
+            fermion_operator: The fermion_operator that is to be re-ordered
+        Returns: Fermion operator with all-even all-odd ordering
+        """
+        if order_function is None:
+            return self
+
+        if num_modes is None:
+            max_qubit = 0
+            for term in self.terms:
+                for operator in term:
+                    if operator[0] > max_qubit:
+                        max_qubit = operator[0]
+
+            num_modes = (max_qubit + 1)
+
+        qubit_map = {qidx: order_function(qidx,num_modes) for qidx in
+                     range(num_modes)}
+
+        if reverse:
+            qubit_map = {val: key for key, val in qubit_map.items()}
+
+        rotated_hamiltonian = FermionOperator()
+        for term, value in self.terms.items():
+            new_term = tuple([(qubit_map[op[0]], op[1]) for op in term])
+            rotated_hamiltonian += FermionOperator(new_term, value)
+        return rotated_hamiltonian

@@ -23,5 +23,6 @@ from ._conversion import (get_fermion_operator,
                           get_molecular_data,
                           get_sparse_operator)
 from ._jordan_wigner import jordan_wigner
+from ._order_functions import up_then_down
 from ._reverse_jordan_wigner import reverse_jordan_wigner
 from ._verstraete_cirac import verstraete_cirac_2d_square
