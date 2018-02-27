@@ -290,3 +290,29 @@ def save_operator(operator, file_name=None, data_directory=None,
     with open(file_path, 'wb') as f:
         marshal.dump((operator_type, dict(zip(tm.keys(),
                                           map(complex, tm.values())))), f)
+
+def reorder(Operator, num_modes=None, reverse=False, order_function = None):
+
+    """ changes the fermionic order of the Hamiltonian from 0,1,2,...N to
+    0,2,4,...,1,3,5,...
+    Args:
+        fermion_operator: The fermion_operator that is to be re-ordered
+    Returns: Fermion operator with all-even all-odd ordering
+    """
+    if order_function is None:
+        return Operator
+
+    if num_modes is None:
+        num_modes = count_qubits(Operator)
+
+    qubit_map = {qidx: order_function(qidx,num_modes) for qidx in
+                 range(num_modes)}
+
+    if reverse:
+        qubit_map = {val: key for key, val in qubit_map.items()}
+
+    rotated_hamiltonian = Operator.__class__(())
+    for term, value in Operator.terms.items():
+        new_term = tuple([(qubit_map[op[0]], op[1]) for op in term])
+        rotated_hamiltonian += Operator.__class__(new_term, value)
+    return rotated_hamiltonian
