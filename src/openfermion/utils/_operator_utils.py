@@ -311,7 +311,7 @@ def reorder(Operator, num_modes=None, reverse=False, order_function = None):
     if reverse:
         qubit_map = {val: key for key, val in qubit_map.items()}
 
-    rotated_hamiltonian = Operator.__class__(())
+    rotated_hamiltonian = Operator.__class__()
     for term, value in Operator.terms.items():
         new_term = tuple([(qubit_map[op[0]], op[1]) for op in term])
         rotated_hamiltonian += Operator.__class__(new_term, value)
