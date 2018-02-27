@@ -28,7 +28,8 @@ def lih_hamiltonian():
     molecule.load()
     molecular_hamiltonian = molecule.get_molecular_hamiltonian(
         occupied_indices=range(active_space_start),
-        active_indices=range(active_space_start, active_space_stop))
+        active_indices=range(active_space_start, active_space_stop),
+        spin_indexing = 'up-then-down')
     hamiltonian = get_fermion_operator(molecular_hamiltonian)
     ground_state_energy = eigenspectrum(hamiltonian)[0]
     return hamiltonian, ground_state_energy
@@ -84,14 +85,14 @@ class CodeTransformTest(unittest.TestCase):
         
     def test_weight_one_segment_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()
-        code = interleaved_code(6)*(2*weight_one_segment_code())
+        code = 2*weight_one_segment_code()
         qubit_hamiltonian = binary_code_transform(hamiltonian, code)
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
         
     def test_weight_two_segment_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()
-        code = interleaved_code(8)*(2*weight_two_binary_addressing_code())
+        code = 2*weight_two_binary_addressing_code()
         qubit_hamiltonian = binary_code_transform(hamiltonian, code)
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
