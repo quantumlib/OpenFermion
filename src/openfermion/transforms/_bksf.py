@@ -68,7 +68,8 @@ def bravyi_kitaev_fast_interaction_op(iop):
     For the sake of brevity the reader is encouraged to look up the
     expressions of other terms from the code below. The variables for edge
     operators are chosen according to the nomenclature defined above
-    (B_i and A_ij).
+    (B_i and A_ij). A detailed description of these operators and the terms 
+    of the electronic Hamiltonian are provided in (arXiv 1712.00446).
 
     Args:
         iop (Interaction Operator):
@@ -188,18 +189,6 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
                                 iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
                         elif q == s:
                             a, b = sorted([p, r])
-                            edge_matrix[b, a] = bool(complex(
-                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
-
-                    # Handle case of two unique indices.
-                    elif len(set([p, q, r, s])) == 2:
-                        if p == s:
-                            a, b = sorted([p, q])
-                            edge_matrix[b, a] = bool(complex(
-                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
-
-                        else:
-                            a, b = sorted([p, q])
                             edge_matrix[b, a] = bool(complex(
                                 iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
 
