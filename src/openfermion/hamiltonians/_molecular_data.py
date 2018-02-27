@@ -828,6 +828,7 @@ class MolecularData(object):
                 indicating which orbitals should be considered doubly occupied.
             active_indices(list): A list of spatial orbital indices indicating
                 which orbitals should be considered active.
+                
         Returns:
             molecular_hamiltonian: An instance of the MolecularOperator class.
         """
@@ -849,17 +850,16 @@ class MolecularData(object):
         # Loop through integrals.
         for p in range(n_qubits // 2):
             for q in range(n_qubits // 2):
-
+        
                 # Populate 1-body coefficients. Require p and q have same spin.
                 one_body_coefficients[2 * p, 2 * q] = one_body_integrals[
                     p, q]
                 one_body_coefficients[2 * p + 1, 2 *
                                       q + 1] = one_body_integrals[p, q]
-
                 # Continue looping to prepare 2-body coefficients.
                 for r in range(n_qubits // 2):
                     for s in range(n_qubits // 2):
-
+                        
                         # Require p,s and q,r to have same spin. Handle mixed
                         # spins.
                         two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1,
