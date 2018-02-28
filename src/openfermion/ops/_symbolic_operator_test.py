@@ -162,6 +162,14 @@ class SymbolicOperatorTest1(unittest.TestCase):
         reparsed_op = DummyOperator1(str(fermion_op))
         self.assertEqual(len((fermion_op-reparsed_op).terms), 0)
 
+        fermion_op = DummyOperator1('1.7 [3^ 2] - 8 [4^]')
+        correct = DummyOperator1('3^ 2', 1.7) + DummyOperator1('4^', -8.)
+        self.assertEqual(len((fermion_op-correct).terms), 0)
+
+        fermion_op = DummyOperator1('-(2.3 + 1.7j) [3^ 2]')
+        correct = DummyOperator1('3^ 2', complex(-2.3, -1.7))
+        self.assertEqual(len((fermion_op-correct).terms), 0)
+
     def test_merges_multiple_whitespace(self):
         fermion_op = DummyOperator1('        \n ')
         self.assertEqual(fermion_op.terms, {(): 1})
