@@ -35,11 +35,10 @@ def hermitian_conjugated(operator):
     """Return Hermitian conjugate of operator."""
     if isinstance(operator, FermionOperator):
         conjugate_operator = FermionOperator()
-        for term, coefficient in iteritems(operator.terms):
+        for term, coefficient in operator.terms.items():
             conjugate_term = tuple([(tensor_factor, 1 - action) for
                                     (tensor_factor, action) in reversed(term)])
-            conjugate_operator.terms[conjugate_term] = numpy.conjugate(
-                    coefficient)
+            conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
     elif isinstance(operator, QubitOperator):
         conjugate_operator = QubitOperator()
         for term, coefficient in operator.terms.items():
