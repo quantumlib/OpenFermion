@@ -95,6 +95,68 @@ class OperatorUtilsTest(unittest.TestCase):
             is_identity('eleven')
 
 
+class HermitianConjugatedTest(unittest.TestCase):
+
+    def test_hermitian_conjugate_empty(self):
+        op = FermionOperator()
+        op = hermitian_conjugated(op)
+        self.assertTrue(op.isclose(FermionOperator()))
+
+    def test_hermitian_conjugate_simple(self):
+        op = FermionOperator('1^')
+        op_hc = FermionOperator('1')
+        op = hermitian_conjugated(op)
+        self.assertTrue(op.isclose(op_hc))
+
+    def test_hermitian_conjugate_complex_const(self):
+        op = FermionOperator('1^ 3', 3j)
+        op_hc = -3j * FermionOperator('3^ 1')
+        op = hermitian_conjugated(op)
+        self.assertTrue(op.isclose(op_hc))
+
+    def test_hermitian_conjugate_notordered(self):
+        op = FermionOperator('1 3^ 3 3^', 3j)
+        op_hc = -3j * FermionOperator('3 3^ 3 1^')
+        op = hermitian_conjugated(op)
+        self.assertTrue(op.isclose(op_hc))
+
+    def test_hermitian_conjugate_semihermitian(self):
+        op = (FermionOperator() + 2j * FermionOperator('1^ 3') +
+              FermionOperator('3^ 1') * -2j + FermionOperator('2^ 2', 0.1j))
+        op_hc = (FermionOperator() + FermionOperator('1^ 3', 2j) +
+                 FermionOperator('3^ 1', -2j) +
+                 FermionOperator('2^ 2', -0.1j))
+        op = hermitian_conjugated(op)
+        self.assertTrue(op.isclose(op_hc))
+
+    def test_hermitian_conjugated_empty(self):
+        op = FermionOperator()
+        self.assertTrue(op.isclose(hermitian_conjugated(op)))
+
+    def test_hermitian_conjugated_simple(self):
+        op = FermionOperator('0')
+        op_hc = FermionOperator('0^')
+        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
+
+    def test_hermitian_conjugated_complex_const(self):
+        op = FermionOperator('2^ 2', 3j)
+        op_hc = FermionOperator('2^ 2', -3j)
+        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
+
+    def test_hermitian_conjugated_multiterm(self):
+        op = FermionOperator('1^ 2') + FermionOperator('2 3 4')
+        op_hc = FermionOperator('2^ 1') + FermionOperator('4^ 3^ 2^')
+        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
+
+    def test_hermitian_conjugated_semihermitian(self):
+        op = (FermionOperator() + 2j * FermionOperator('1^ 3') +
+              FermionOperator('3^ 1') * -2j + FermionOperator('2^ 2', 0.1j))
+        op_hc = (FermionOperator() + FermionOperator('1^ 3', 2j) +
+                 FermionOperator('3^ 1', -2j) +
+                 FermionOperator('2^ 2', -0.1j))
+        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
+
+
 class SaveLoadOperatorTest(unittest.TestCase):
     def setUp(self):
         self.n_qubits = 5

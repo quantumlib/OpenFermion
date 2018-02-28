@@ -27,10 +27,10 @@ import warnings
 from openfermion.config import *
 from openfermion.hamiltonians import number_operator, up_index, down_index
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
-                             QubitOperator, hermitian_conjugated,
-                             normal_ordered)
+                             QubitOperator, normal_ordered)
 from openfermion.utils import (Grid, commutator, fourier_transform,
                                gaussian_state_preparation_circuit,
+                               hermitian_conjugated,
                                slater_determinant_preparation_circuit)
 from openfermion.hamiltonians._jellium import (grid_indices,
                                                momentum_vector,
