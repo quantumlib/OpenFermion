@@ -109,16 +109,22 @@ class SymbolicOperator(object):
         for match in re.findall(pattern, long_string, flags=re.DOTALL):
 
             # Determine the coefficient for this term
-            coef_string = match[0].strip()
+            coef_string = re.sub(r"\s+", "", match[0])
             if coef_string and coef_string[0] is '+':
                 coef_string = coef_string[1:].strip()
-            if coef_string is '':
+            if coef_string == '':
                 coef = 1.0
-            elif coef_string is '-':
+            elif coef_string == '-':
                 coef = -1.0
             else:
                 try:
-                    coef = complex(coef_string)
+                    if 'j' in coef_string:
+                        if coef_string[0] == '-':
+                            coef = -complex(coef_string[1:])
+                        else:
+                            coef = complex(coef_string)
+                    else:
+                        coef = float(coef_string)
                 except ValueError:
                     raise ValueError(
                             'Invalid coefficient {}.'.format(coef_string))

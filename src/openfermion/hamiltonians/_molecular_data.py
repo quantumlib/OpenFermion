@@ -822,7 +822,8 @@ class MolecularData(object):
 
     def get_molecular_hamiltonian(self,
                                   occupied_indices=None,
-                                  active_indices=None):
+                                  active_indices=None,
+                                  spin_indexing="even-odd"):
         """Output arrays of the second quantized Hamiltonian coefficients.
 
         Args:
@@ -830,9 +831,15 @@ class MolecularData(object):
                 indicating which orbitals should be considered doubly occupied.
             active_indices(list): A list of spatial orbital indices indicating
                 which orbitals should be considered active.
+            spin_indexing(str): A string indicating what type of indexing the
+                spin-orbitals should follow. Available options are
+                'up-then-down' and 'even-odd'. Default is 'even-odd'
 
         Returns:
             molecular_hamiltonian: An instance of the MolecularOperator class.
+
+        Raises:
+            ValueError: if spin indexing is unknown
         """
         # Get active space integrals.
         if occupied_indices is None and active_indices is None:
@@ -845,6 +852,15 @@ class MolecularData(object):
 
         n_qubits = 2 * one_body_integrals.shape[0]
 
+        if spin_indexing not in ['even-odd', 'up-then-down']:
+            raise ValueError("spin indexing can be 'even-odd' or 'up-then-down'"
+                             "received {}".format(spin_indexing))
+
+        if spin_indexing == "even-odd":
+            shift = 1
+        elif spin_indexing == "up-then-down":
+            shift = one_body_integrals.shape[0]
+
         # Initialize Hamiltonian coefficients.
         one_body_coefficients = numpy.zeros((n_qubits, n_qubits))
         two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
@@ -852,33 +868,45 @@ class MolecularData(object):
         # Loop through integrals.
         for p in range(n_qubits // 2):
             for q in range(n_qubits // 2):
-
+                if spin_indexing == "even-odd":
+                    p_idx = 2 * p
+                    q_idx = 2 * q
+                elif spin_indexing == "up-then-down":
+                    p_idx = p
+                    q_idx = q
                 # Populate 1-body coefficients. Require p and q have same spin.
-                one_body_coefficients[2 * p, 2 * q] = one_body_integrals[p, q]
-                one_body_coefficients[2 * p + 1, 2 *
-                                      q + 1] = one_body_integrals[p, q]
+                one_body_coefficients[p_idx, q_idx] = one_body_integrals[p, q]
+                one_body_coefficients[p_idx + shift,
+                                      q_idx + shift] = one_body_integrals[p, q]
 
                 # Continue looping to prepare 2-body coefficients.
                 for r in range(n_qubits // 2):
                     for s in range(n_qubits // 2):
-
+                        if spin_indexing == "even-odd":
+                            r_idx = 2 * r
+                            s_idx = 2 * s
+                        elif spin_indexing == "up-then-down":
+                            r_idx = r
+                            s_idx = s
                         # Require p,s and q,r to have same spin. Handle mixed
                         # spins.
-                        two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1,
-                                              2 * s] = (
+                        two_body_coefficients[
+                            p_idx, q_idx + shift, r_idx + shift,
+                            s_idx] = (
                             two_body_integrals[p, q, r, s] / 2.)
-                        two_body_coefficients[2 * p + 1, 2 * q, 2 * r,
-                                              2 * s + 1] = (
+                        two_body_coefficients[p_idx + shift, q_idx, r_idx,
+                                              s_idx + shift] = (
                             two_body_integrals[p, q, r, s] / 2.)
 
                         # Avoid having two electrons in same orbital. Handle
                         # same spins.
                         if p != q and r != s:
-                            two_body_coefficients[2 * p, 2 * q, 2 * r,
-                                                  2 * s] = (
+                            two_body_coefficients[p_idx, q_idx, r_idx,
+                                                  s_idx] = (
                                 two_body_integrals[p, q, r, s] / 2.)
-                            two_body_coefficients[2 * p + 1, 2 * q + 1,
-                                                  2 * r + 1, 2 * s + 1] = (
+                            two_body_coefficients[p_idx + shift, q_idx + shift,
+                                                  r_idx + shift, s_idx +
+                                                  shift] = (
                                 two_body_integrals[p, q, r, s] / 2.)
 
         # Truncate.

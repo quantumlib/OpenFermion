@@ -179,7 +179,6 @@ class BinaryCode(object):
         self.decoder = []
 
         for symbolic_binary in decoding:
-
             if isinstance(symbolic_binary, (tuple, list, str, int,
                                             numpy.int32, numpy.int64)):
                 symbolic_binary = SymbolicBinary(symbolic_binary)
@@ -252,7 +251,7 @@ class BinaryCode(object):
             BinaryCodeError: size mismatch between self and factor
             ValueError: in case of an integer factor that is < 1
         """
-        if not isinstance(factor, (BinaryCode, int)):
+        if not isinstance(factor, (BinaryCode, numpy.int32, numpy.int64, int)):
             raise TypeError('argument must be a BinaryCode or integer')
 
         if isinstance(factor, BinaryCode):
@@ -265,7 +264,7 @@ class BinaryCode(object):
             self.n_qubits, self.n_modes = numpy.shape(self.encoder)
             return self
 
-        elif isinstance(factor, int):
+        elif isinstance(factor, (numpy.int32, numpy.int64, int)):
             if factor < 1:
                 raise ValueError('integer factor has to be positive, '
                                  'non-zero ')
@@ -280,6 +279,7 @@ class BinaryCode(object):
                                                           index *
                                                           self.n_qubits))
             self.n_qubits *= factor
+            self.n_modes *= factor
             return self
 
     def __mul__(self, factor):
@@ -307,7 +307,7 @@ class BinaryCode(object):
         Raises:
             TypeError: factor must be an integer
         """
-        if isinstance(factor, int):
+        if isinstance(factor, (numpy.int32, numpy.int64, int)):
             return self * factor
         else:
             raise TypeError('the left multiplier must be an integer to a'
