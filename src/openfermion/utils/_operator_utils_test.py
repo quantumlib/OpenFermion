@@ -20,9 +20,12 @@ import unittest
 from openfermion.config import *
 from openfermion.hamiltonians import plane_wave_hamiltonian
 from openfermion.ops import *
-from openfermion.transforms import jordan_wigner, get_interaction_operator
+from openfermion.transforms import (bravyi_kitaev, jordan_wigner,
+                                    get_fermion_operator,
+                                    get_interaction_operator)
 from openfermion.utils import Grid
 from openfermion.utils._operator_utils import *
+from openfermion.utils._testing_utils import random_interaction_operator
 
 
 class OperatorUtilsTest(unittest.TestCase):
@@ -96,6 +99,40 @@ class OperatorUtilsTest(unittest.TestCase):
 
 
 class HermitianConjugatedTest(unittest.TestCase):
+
+    def test_hermitian_conjugated_qubit_op(self):
+        """Test conjugating QubitOperators."""
+        op = QubitOperator()
+        op_hc = hermitian_conjugated(op)
+        correct_op = op
+        self.assertTrue(op_hc.isclose(correct_op))
+
+        op = QubitOperator('X0 Y1', 2.)
+        op_hc = hermitian_conjugated(op)
+        correct_op = op
+        self.assertTrue(op_hc.isclose(correct_op))
+
+        op = QubitOperator('X0 Y1', 2.j)
+        op_hc = hermitian_conjugated(op)
+        correct_op = QubitOperator('X0 Y1', -2.j)
+        self.assertTrue(op_hc.isclose(correct_op))
+        
+        op = QubitOperator('X0 Y1', 2.) + QubitOperator('Z4 X5 Y7', 3.j)
+        op_hc = hermitian_conjugated(op)
+        correct_op = (QubitOperator('X0 Y1', 2.) +
+                      QubitOperator('Z4 X5 Y7', -3.j))
+        self.assertTrue(op_hc.isclose(correct_op))
+
+    def test_hermitian_conjugated_qubit_op_consistency(self):
+        """Some consistency checks for conjugating QubitOperators."""
+        ferm_op = (FermionOperator('1^ 2') + FermionOperator('2 3 4') +
+                   FermionOperator('2^ 7 9 11^'))
+
+        # Check that hermitian conjugation commutes with transforms
+        self.assertTrue(jordan_wigner(hermitian_conjugated(ferm_op)).isclose(
+                        hermitian_conjugated(jordan_wigner(ferm_op))))
+        self.assertTrue(bravyi_kitaev(hermitian_conjugated(ferm_op)).isclose(
+                        hermitian_conjugated(bravyi_kitaev(ferm_op))))
 
     def test_hermitian_conjugate_empty(self):
         op = FermionOperator()
