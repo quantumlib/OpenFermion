@@ -100,6 +100,9 @@ class OperatorUtilsTest(unittest.TestCase):
         reordered = reorder(operator,shift_by_one)
         self.assertEqual(reordered.terms,
                          {((2, 1), (3, 1), (4, 0), (0, 0)): -3.17})
+        reordered = reorder(operator,shift_by_one,reverse=True)
+        self.assertEqual(reordered.terms,
+                         {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
 
 
 class SaveLoadOperatorTest(unittest.TestCase):
