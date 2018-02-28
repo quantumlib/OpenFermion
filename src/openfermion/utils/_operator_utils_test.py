@@ -94,6 +94,13 @@ class OperatorUtilsTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             is_identity('eleven')
 
+    def test_reorder(self):
+        shift_by_one = lambda x,y: (x+1)%y
+        operator = FermionOperator('1^ 2^ 3 4', -3.17)
+        reordered = reorder(operator,shift_by_one)
+        self.assertEqual(reordered.terms,
+                         {((2, 1), (3, 1), (4, 0), (0, 0)): -3.17})
+
 
 class SaveLoadOperatorTest(unittest.TestCase):
     def setUp(self):
