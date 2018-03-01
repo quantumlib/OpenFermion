@@ -820,17 +820,15 @@ class MolecularData(object):
                                              active_indices,
                                              active_indices)])
 
-    def get_molecular_hamiltonian(self,
-                                  occupied_indices=None,
-                                  active_indices=None):
+    def get_molecular_hamiltonian(self,occupied_indices=None,
+                                      active_indices=None):
         """Output arrays of the second quantized Hamiltonian coefficients.
-
         Args:
             occupied_indices(list): A list of spatial orbital indices
                 indicating which orbitals should be considered doubly occupied.
             active_indices(list): A list of spatial orbital indices indicating
                 which orbitals should be considered active.
-
+                
         Returns:
             molecular_hamiltonian: An instance of the MolecularOperator class.
         """
@@ -839,7 +837,7 @@ class MolecularData(object):
             one_body_integrals, two_body_integrals = self.get_integrals()
             constant = self.nuclear_repulsion
         else:
-            core_adjustment, one_body_integrals, two_body_integrals = self.\
+            core_adjustment, one_body_integrals, two_body_integrals = self. \
                 get_active_space_integrals(occupied_indices, active_indices)
             constant = self.nuclear_repulsion + core_adjustment
 
@@ -852,34 +850,34 @@ class MolecularData(object):
         # Loop through integrals.
         for p in range(n_qubits // 2):
             for q in range(n_qubits // 2):
-
+        
                 # Populate 1-body coefficients. Require p and q have same spin.
-                one_body_coefficients[2 * p, 2 * q] = one_body_integrals[p, q]
+                one_body_coefficients[2 * p, 2 * q] = one_body_integrals[
+                    p, q]
                 one_body_coefficients[2 * p + 1, 2 *
                                       q + 1] = one_body_integrals[p, q]
-
                 # Continue looping to prepare 2-body coefficients.
                 for r in range(n_qubits // 2):
                     for s in range(n_qubits // 2):
-
+                        
                         # Require p,s and q,r to have same spin. Handle mixed
                         # spins.
                         two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1,
                                               2 * s] = (
-                            two_body_integrals[p, q, r, s] / 2.)
+                                two_body_integrals[p, q, r, s] / 2.)
                         two_body_coefficients[2 * p + 1, 2 * q, 2 * r,
                                               2 * s + 1] = (
-                            two_body_integrals[p, q, r, s] / 2.)
+                                two_body_integrals[p, q, r, s] / 2.)
 
                         # Avoid having two electrons in same orbital. Handle
                         # same spins.
                         if p != q and r != s:
                             two_body_coefficients[2 * p, 2 * q, 2 * r,
                                                   2 * s] = (
-                                two_body_integrals[p, q, r, s] / 2.)
+                                    two_body_integrals[p, q, r, s] / 2.)
                             two_body_coefficients[2 * p + 1, 2 * q + 1,
                                                   2 * r + 1, 2 * s + 1] = (
-                                two_body_integrals[p, q, r, s] / 2.)
+                                    two_body_integrals[p, q, r, s] / 2.)
 
         # Truncate.
         one_body_coefficients[
@@ -890,6 +888,7 @@ class MolecularData(object):
         # Cast to InteractionOperator class and return.
         molecular_hamiltonian = InteractionOperator(
             constant, one_body_coefficients, two_body_coefficients)
+
         return molecular_hamiltonian
 
     def get_molecular_rdm(self, use_fci=False):

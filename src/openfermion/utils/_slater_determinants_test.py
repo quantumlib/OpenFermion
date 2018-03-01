@@ -21,10 +21,10 @@ from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._quadratic_hamiltonian import swap_rows
 from openfermion.transforms import get_sparse_operator
-from openfermion.utils import (gaussian_state_preparation_circuit,
+from openfermion.utils import (jw_configuration_state,
+                               gaussian_state_preparation_circuit,
                                get_ground_state,
-                               jw_get_gaussian_state,
-                               jw_slater_determinant)
+                               jw_get_gaussian_state)
 from openfermion.utils._slater_determinants import (
     double_givens_rotate, fermionic_gaussian_decomposition,
     givens_decomposition, givens_matrix_elements, givens_rotate)
@@ -58,7 +58,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
                 gaussian_state_preparation_circuit(quadratic_hamiltonian))
 
             # Initialize the starting state
-            state = jw_slater_determinant(start_orbitals, n_qubits)
+            state = jw_configuration_state(start_orbitals, n_qubits)
 
             # Apply the circuit
             particle_hole_transformation = (
@@ -97,7 +97,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
                 gaussian_state_preparation_circuit(quadratic_hamiltonian))
 
             # Initialize the starting state
-            state = jw_slater_determinant(start_orbitals, n_qubits)
+            state = jw_configuration_state(start_orbitals, n_qubits)
 
             # Apply the circuit
             particle_hole_transformation = (
@@ -216,10 +216,10 @@ class GivensDecompositionTest(unittest.TestCase):
         givens_rotations, V, diagonal = givens_decomposition(Q)
 
         # V should be the identity
-        I = numpy.eye(n, dtype=complex)
+        identity = numpy.eye(n, dtype=complex)
         for i in range(n):
             for j in range(n):
-                self.assertAlmostEqual(V[i, j], I[i, j])
+                self.assertAlmostEqual(V[i, j], identity[i, j])
 
         # There should be no Givens rotations
         self.assertEqual(givens_rotations, list())

@@ -13,16 +13,16 @@
 """This module constructs Hamiltonians for the Fermi-Hubbard model."""
 from __future__ import absolute_import
 
-from openfermion.ops import (FermionOperator,
-                             hermitian_conjugated,
-                             number_operator)
-from openfermion.hamiltonians import up_index, down_index
+from openfermion.ops import FermionOperator
+from openfermion.hamiltonians import up_index, down_index, number_operator
+from openfermion.utils import hermitian_conjugated
 
 
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                   chemical_potential=0., magnetic_field=0.,
                   periodic=True, spinless=False,
-                  particle_hole_symmetry=False):
+                  particle_hole_symmetry=False,
+                  up_map=up_index, down_map=down_index):
     """Return symbolic representation of a Fermi-Hubbard Hamiltonian.
 
     The idea of this model is that some fermions move around on a grid and the
@@ -137,17 +137,17 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
         # With spin, add the chemical potential and magnetic field terms.
         elif not spinless:
             hubbard_model += number_operator(
-                n_spin_orbitals, up_index(site),
+                n_spin_orbitals, up_map(site),
                 -chemical_potential - magnetic_field)
             hubbard_model += number_operator(
-                n_spin_orbitals, down_index(site),
+                n_spin_orbitals, down_map(site),
                 -chemical_potential + magnetic_field)
 
             # Add local pair interaction terms.
             operator_1 = number_operator(
-                n_spin_orbitals, up_index(site)) - coulomb_shift
+                n_spin_orbitals, up_map(site)) - coulomb_shift
             operator_2 = number_operator(
-                n_spin_orbitals, down_index(site)) - coulomb_shift
+                n_spin_orbitals, down_map(site)) - coulomb_shift
             hubbard_model += coulomb * operator_1 * operator_2
 
         # Index coupled orbitals.
@@ -176,14 +176,14 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
             else:
                 # Add hopping term.
-                operators = ((up_index(site), 1),
-                             (up_index(right_neighbor), 0))
+                operators = ((up_map(site), 1),
+                             (up_map(right_neighbor), 0))
                 hopping_term = FermionOperator(operators, -tunneling)
                 hubbard_model += hopping_term
                 hubbard_model += hermitian_conjugated(hopping_term)
 
-                operators = ((down_index(site), 1),
-                             (down_index(right_neighbor), 0))
+                operators = ((down_map(site), 1),
+                             (down_map(right_neighbor), 0))
 
             hopping_term = FermionOperator(operators, -tunneling)
             hubbard_model += hopping_term
@@ -204,14 +204,14 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
             else:
                 # Add hopping term.
-                operators = ((up_index(site), 1),
-                             (up_index(bottom_neighbor), 0))
+                operators = ((up_map(site), 1),
+                             (up_map(bottom_neighbor), 0))
                 hopping_term = FermionOperator(operators, -tunneling)
                 hubbard_model += hopping_term
                 hubbard_model += hermitian_conjugated(hopping_term)
 
-                operators = ((down_index(site), 1),
-                             (down_index(bottom_neighbor), 0))
+                operators = ((down_map(site), 1),
+                             (down_map(bottom_neighbor), 0))
 
             hopping_term = FermionOperator(operators, -tunneling)
             hubbard_model += hopping_term

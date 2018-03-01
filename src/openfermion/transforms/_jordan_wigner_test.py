@@ -16,17 +16,18 @@ import numpy
 
 import unittest
 
+from openfermion.hamiltonians import number_operator
 from openfermion.ops import (FermionOperator,
-                             hermitian_conjugated,
                              InteractionOperator,
                              normal_ordered,
-                             number_operator,
                              QubitOperator)
 from openfermion.transforms import (get_interaction_operator,
                                     reverse_jordan_wigner)
 from openfermion.transforms._jordan_wigner import (
     jordan_wigner, jordan_wigner_one_body, jordan_wigner_two_body,
     jordan_wigner_interaction_op)
+
+from openfermion.utils import hermitian_conjugated
 
 
 class JordanWignerTransformTest(unittest.TestCase):

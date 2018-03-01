@@ -10,8 +10,12 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from ._binary_code_transform import (binary_code_transform,
+                                     dissolve)
 from ._bksf import bravyi_kitaev_fast
 from ._bravyi_kitaev import bravyi_kitaev
+from ._binary_code_transform import (binary_code_transform,
+                                     dissolve)
 from ._conversion import (get_fermion_operator,
                           get_interaction_rdm,
                           get_interaction_operator,
