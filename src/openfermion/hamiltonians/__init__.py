@@ -14,13 +14,6 @@ from ._chemical_series import (make_atomic_ring,
                                make_atomic_lattice,
                                make_atom)
 
-from ._special_operators import (up_index, down_index,
-                                 majorana_operator, number_operator,
-                                 s_squared_operator, s_plus_operator,
-                                 s_minus_operator, sz_operator)
-
-from ._hubbard import fermi_hubbard
-
 from ._jellium import (dual_basis_kinetic,
                        dual_basis_potential,
                        dual_basis_jellium_model,
@@ -29,8 +22,6 @@ from ._jellium import (dual_basis_kinetic,
                        plane_wave_kinetic,
                        plane_wave_potential)
 
-from ._mean_field_dwave import mean_field_dwave
-
 from ._molecular_data import MolecularData, periodic_table
 
 from ._plane_wave_hamiltonian import (dual_basis_external_potential,
@@ -38,3 +29,14 @@ from ._plane_wave_hamiltonian import (dual_basis_external_potential,
                                       plane_wave_hamiltonian,
                                       jordan_wigner_dual_basis_hamiltonian,
                                       wigner_seitz_length_scale)
+
+from ._special_operators import (up_index, down_index,
+                                 majorana_operator, number_operator,
+                                 s_squared_operator, s_plus_operator,
+                                 s_minus_operator, sz_operator)
+
+# Imports out of alphabetical order to avoid circular dependancy.
+
+from ._hubbard import fermi_hubbard
+
+from ._mean_field_dwave import mean_field_dwave
