@@ -194,6 +194,10 @@ class HermitianConjugatedTest(unittest.TestCase):
                  FermionOperator('2^ 2', -0.1j))
         self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
 
+    def test_exceptions(self):
+        with self.assertRaises(TypeError):
+            _ = is_hermitian('a')
+
 
 class IsHermitianTest(unittest.TestCase):
     
@@ -257,6 +261,10 @@ class IsHermitianTest(unittest.TestCase):
         self.assertTrue(is_hermitian(op))
         op = csc_matrix(op)
         self.assertTrue(is_hermitian(op))
+
+    def test_exceptions(self):
+        with self.assertRaises(TypeError):
+            _ = is_hermitian('a')
 
 
 class SaveLoadOperatorTest(unittest.TestCase):

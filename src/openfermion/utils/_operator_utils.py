@@ -66,7 +66,6 @@ def hermitian_conjugated(operator):
 
 def is_hermitian(operator):
     """Test if operator is Hermitian."""
-
     # Handle FermionOperator or QubitOperator
     if isinstance(operator, (FermionOperator, QubitOperator)):
         return operator.isclose(hermitian_conjugated(operator))
