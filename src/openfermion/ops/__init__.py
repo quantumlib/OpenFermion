@@ -16,7 +16,6 @@ from ._code_operator import (BinaryCode,
 from ._symbolic_operator import (SymbolicOperator,
                                  prune_unused_indices)
 from ._fermion_operator import (FermionOperator,
-                                hermitian_conjugated,
                                 normal_ordered,
                                 freeze_orbitals)
 from ._qubit_operator import QubitOperator

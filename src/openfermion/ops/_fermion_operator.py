@@ -21,16 +21,6 @@ class FermionOperatorError(Exception):
     pass
 
 
-def hermitian_conjugated(fermion_operator):
-    """Return Hermitian conjugate of fermionic operator."""
-    conjugate_operator = FermionOperator()
-    for term, coefficient in iteritems(fermion_operator.terms):
-        conjugate_term = tuple([(tensor_factor, 1 - action) for
-                                (tensor_factor, action) in reversed(term)])
-        conjugate_operator.terms[conjugate_term] = numpy.conjugate(coefficient)
-    return conjugate_operator
-
-
 def normal_ordered_term(term, coefficient):
     """Return a normal ordered FermionOperator corresponding to single term.
 
