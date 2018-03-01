@@ -12,19 +12,20 @@
 
 """This module provides generic tools for classes in ops/"""
 from __future__ import absolute_import
+from builtins import map, max, zip
 
 import marshal
 import numpy
 import os
 import time
 
-from openfermion.config import *
+from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 from openfermion.hamiltonians._jellium import (grid_indices,
                                                momentum_vector,
                                                orbital_id,
                                                position_vector)
-from openfermion.ops import *
-from future.builtins.iterators import map, zip
+from openfermion.ops import (FermionOperator, InteractionOperator,
+                             InteractionRDM, PolynomialTensor, QubitOperator)
 from scipy.sparse import spmatrix
 
 
