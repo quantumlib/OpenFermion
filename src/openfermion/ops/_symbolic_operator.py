@@ -21,6 +21,39 @@ class SymbolicOperatorError(Exception):
     pass
 
 
+def prune_unused_indices(symbolic_operator):
+    """
+    Remove indices that do not appear in any terms.
+
+    Indices will be renumbered such that if an index i does not appear in
+    any terms, then the next largest index that appears in at least one
+    term will be renumbered to i.
+    """
+
+    # Determine which indices appear in at least one term
+    indices = []
+    for term in symbolic_operator.terms:
+        for op in term:
+            if op[0] not in indices:
+                indices.append(op[0])
+    indices.sort()
+
+    # Construct a dict that maps the old indices to new ones
+    index_map = {}
+    for index in enumerate(indices):
+        index_map[index[1]] = index[0]
+
+    new_operator = copy.deepcopy(symbolic_operator)
+    new_operator.terms.clear()
+
+    # Replace the indices in the terms with the new indices
+    for term in symbolic_operator.terms:
+        new_term = [(index_map[op[0]], op[1]) for op in term]
+        new_operator.terms[tuple(new_term)] = symbolic_operator.terms[term]
+
+    return new_operator
+
+
 class SymbolicOperator(object):
     """Base class for FermionOperator and QubitOperator.
 
