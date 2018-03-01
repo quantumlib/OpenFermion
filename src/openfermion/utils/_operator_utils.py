@@ -25,6 +25,7 @@ from openfermion.hamiltonians._jellium import (grid_indices,
                                                position_vector)
 from openfermion.ops import *
 from future.builtins.iterators import map, zip
+from scipy.sparse import spmatrix
 
 
 class OperatorUtilsError(Exception):
@@ -33,18 +34,59 @@ class OperatorUtilsError(Exception):
 
 def hermitian_conjugated(operator):
     """Return Hermitian conjugate of operator."""
+    # Handle FermionOperator
     if isinstance(operator, FermionOperator):
         conjugate_operator = FermionOperator()
         for term, coefficient in operator.terms.items():
             conjugate_term = tuple([(tensor_factor, 1 - action) for
                                     (tensor_factor, action) in reversed(term)])
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
+
+    # Handle QubitOperator
     elif isinstance(operator, QubitOperator):
         conjugate_operator = QubitOperator()
         for term, coefficient in operator.terms.items():
             conjugate_operator.terms[term] = coefficient.conjugate()
 
+    # Handle sparse matrix
+    elif isinstance(operator, spmatrix):
+        conjugate_operator = operator.getH()
+
+    # Handle numpy array
+    elif isinstance(operator, numpy.ndarray):
+        conjugate_operator = operator.T.conj()
+
+    # Unsupported type
+    else:
+        raise TypeError('Taking the hermitian conjugate of a {} is not '
+                        'supported.'.format(type(operator)))
+
     return conjugate_operator
+
+
+def is_hermitian(operator):
+    """Test if operator is Hermitian."""
+
+    # Handle FermionOperator or QubitOperator
+    if isinstance(operator, (FermionOperator, QubitOperator)):
+        return operator.isclose(hermitian_conjugated(operator))
+
+    # Handle sparse matrix
+    elif isinstance(operator, spmatrix):
+        difference = operator - hermitian_conjugated(operator)
+        discrepancy = max(abs(difference.data), default=0.)
+        return discrepancy < EQ_TOLERANCE
+
+    # Handle numpy array
+    elif isinstance(operator, numpy.ndarray):
+        difference = operator - hermitian_conjugated(operator)
+        discrepancy = numpy.amax(abs(difference))
+        return discrepancy < EQ_TOLERANCE
+
+    # Unsupported type
+    else:
+        raise TypeError('Checking whether a {} is hermitian is not '
+                        'supported.'.format(type(operator)))
 
 
 def count_qubits(operator):

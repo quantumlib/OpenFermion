@@ -26,6 +26,7 @@ from openfermion.transforms import (bravyi_kitaev, jordan_wigner,
 from openfermion.utils import Grid
 from openfermion.utils._operator_utils import *
 from openfermion.utils._testing_utils import random_interaction_operator
+from scipy.sparse import csc_matrix
 
 
 class OperatorUtilsTest(unittest.TestCase):
@@ -192,6 +193,70 @@ class HermitianConjugatedTest(unittest.TestCase):
                  FermionOperator('3^ 1', -2j) +
                  FermionOperator('2^ 2', -0.1j))
         self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
+
+
+class IsHermitianTest(unittest.TestCase):
+    
+    def test_fermion_operator(self):
+        # Zero
+        op = FermionOperator()
+        self.assertTrue(is_hermitian(op))
+
+        # Identity
+        op = FermionOperator(())
+        self.assertTrue(is_hermitian(op))
+
+        # Not hermitian
+        op = FermionOperator('0^ 1 2^ 3')
+        self.assertFalse(is_hermitian(op))
+
+        # Hermitian
+        op += FermionOperator('3^ 2 1^ 0')
+        self.assertTrue(is_hermitian(op))
+
+    def test_qubit_operator(self):
+        # Zero
+        op = QubitOperator()
+        self.assertTrue(is_hermitian(op))
+
+        # Identity
+        op = QubitOperator(())
+        self.assertTrue(is_hermitian(op))
+
+        # Not hermitian
+        op = QubitOperator('X0 Y2 Z5', 1.+2.j)
+        self.assertFalse(is_hermitian(op))
+
+        # Hermitian
+        op += QubitOperator('X0 Y2 Z5', 1.-2.j)
+        self.assertTrue(is_hermitian(op))
+
+    def test_sparse_matrix_and_numpy_array(self):
+        # Zero
+        op = numpy.zeros((4, 4))
+        self.assertTrue(is_hermitian(op))
+        op = csc_matrix(op)
+        self.assertTrue(is_hermitian(op))
+
+        # Identity
+        op = numpy.eye(4)
+        self.assertTrue(is_hermitian(op))
+        op = csc_matrix(op)
+        self.assertTrue(is_hermitian(op))
+
+        # Not hermitian
+        op = numpy.arange(16).reshape((4, 4))
+        self.assertFalse(is_hermitian(op))
+        op = csc_matrix(op)
+        self.assertFalse(is_hermitian(op))
+
+        # Hermitian
+        op = numpy.arange(16, dtype=complex).reshape((4, 4))
+        op += 1.j * op
+        op += op.T.conj()
+        self.assertTrue(is_hermitian(op))
+        op = csc_matrix(op)
+        self.assertTrue(is_hermitian(op))
 
 
 class SaveLoadOperatorTest(unittest.TestCase):
