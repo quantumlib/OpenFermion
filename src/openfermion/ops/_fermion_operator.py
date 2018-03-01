@@ -115,19 +115,14 @@ def normal_ordered(fermion_operator):
         ordered_operator += normal_ordered_term(term, coefficient)
     return ordered_operator
 
+
 def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
     """Fix some orbitals to be occupied and others unoccupied.
 
-    Removes all operators acting on the specified orbitals, and flips the
-    sign of each term as appropriate. Terms whose expectation value
-    between states with the specified occupancy is zero are removed.
-    Additionally, the indices are renumbered such that the frozen orbitals
-    are eliminated.
-
-    Note that the sign change accounts for both the reordering of operators
-    needed to group the operators acting on the frozen orbitals, as well
-    as the impact of pruning frozen orbitals on the Jordan-Wigner strings
-    of operators acting on unfrozen orbitals.
+    Removes all operators acting on the specified orbitals, and renumbers the
+    remaining orbitals to eliminate unused indices. The sign of each term
+    is modified according to the ladder uperator anti-commutation relations in
+    order to preserve the expectation value of the operator.
 
     Args:
     occupied: A list containing the indices of the orbitals that are to be
@@ -135,9 +130,7 @@ def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
     unoccupied: A list containing the indices of the orbitals that are to
         be assumed to be unoccupied.
     """
-
     new_operator = fermion_operator
-
     frozen = [(index, 1) for index in occupied]
     if unoccupied is not None:
         frozen += [(index, 0) for index in unoccupied]
@@ -176,7 +169,10 @@ def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
                 tmp_operator += FermionOperator(tuple(new_term), new_coef)
         new_operator = tmp_operator
 
-    # Determine sign flips arising from Jordan-Wigner strings
+    # For occupied frozen orbitals, we must also bring together the creation
+    # operator from the ket and the annihilation operator from the bra when
+    # evaluating expectation values. This can result in an additional minus
+    # sign.
     for term in new_operator.terms:
         for index in occupied:
             for op in term:
