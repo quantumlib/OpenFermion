@@ -214,6 +214,7 @@ class IsHermitianTest(unittest.TestCase):
         self.assertFalse(is_hermitian(op))
 
     def test_fermion_operator_hermitian(self):
+        op = FermionOperator('0^ 1 2^ 3')
         op += FermionOperator('3^ 2 1^ 0')
         self.assertTrue(is_hermitian(op))
 
@@ -230,6 +231,7 @@ class IsHermitianTest(unittest.TestCase):
         self.assertFalse(is_hermitian(op))
 
     def test_qubit_operator_hermitian(self):
+        op = QubitOperator('X0 Y2 Z5', 1.+2.j)
         op += QubitOperator('X0 Y2 Z5', 1.-2.j)
         self.assertTrue(is_hermitian(op))
 
