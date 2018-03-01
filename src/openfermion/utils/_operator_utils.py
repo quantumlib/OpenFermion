@@ -15,6 +15,7 @@ from __future__ import absolute_import
 
 import marshal
 import numpy
+import os
 
 from openfermion.config import *
 from openfermion.hamiltonians._jellium import (grid_indices,
