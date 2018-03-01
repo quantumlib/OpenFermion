@@ -14,8 +14,8 @@
 from __future__ import absolute_import
 
 from openfermion.hamiltonians import up_index, down_index, number_operator
-from openfermion.ops import (FermionOperator,
-                             hermitian_conjugated)
+from openfermion.ops import FermionOperator
+from openfermion.utils import hermitian_conjugated
 
 
 def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
