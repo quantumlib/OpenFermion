@@ -17,7 +17,6 @@ from builtins import map, zip
 import marshal
 import numpy
 import os
-import time
 
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 from openfermion.hamiltonians._jellium import (grid_indices,
@@ -139,15 +138,17 @@ def eigenspectrum(operator, n_qubits=None):
     Args:
         operator: QubitOperator, InteractionOperator, FermionOperator,
             PolynomialTensor, or InteractionRDM.
+        n_qubits (int): number of qubits/modes in operator. if None, will
+            be counted.
 
     Returns:
-        eigenspectrum: dense numpy array of floats giving eigenspectrum.
+        spectrum: dense numpy array of floats giving eigenspectrum.
     """
     from openfermion.transforms import get_sparse_operator
     from openfermion.utils import sparse_eigenspectrum
     sparse_operator = get_sparse_operator(operator, n_qubits)
-    eigenspectrum = sparse_eigenspectrum(sparse_operator)
-    return eigenspectrum
+    spectrum = sparse_eigenspectrum(sparse_operator)
+    return spectrum
 
 
 def is_identity(operator):
@@ -349,4 +350,64 @@ def save_operator(operator, file_name=None, data_directory=None,
     tm = operator.terms
     with open(file_path, 'wb') as f:
         marshal.dump((operator_type, dict(zip(tm.keys(),
-                                          map(complex, tm.values())))), f)
+                                              map(complex, tm.values())))), f)
+
+
+def reorder(operator, order_function, num_modes=None, reverse=False):
+    """ changes the fermionic order of the Hamiltonian based on the provided
+    order_function per mode index
+    Args:
+        operator (SymbolicOperator): the operator that will be reordered. must
+            be a SymbolicOperator or any type of operator that inherits from
+            SymbolicOperator.
+        order_function (func): a function per mode that is used to map the
+            indexing. must have arguments mode index and num_modes.
+        num_modes (int): default None. User can provide the number of modes
+            assumed for the system. if None, the number of modes will be
+            calculated based on the Operator.
+        reverse (bool): default False. if set to True, the mode mapping is
+            reversed. reverse = True will not revert back to original if
+            num_modes calculated differs from original and reverted.
+
+    Note: Every order function must take in a mode_idx and num_modes.
+    """
+
+    if num_modes is None:
+        num_modes = max(
+            [factor[0] for term in operator.terms for factor in term]) + 1
+
+    mode_map = {mode_idx: order_function(mode_idx, num_modes) for mode_idx in
+                range(num_modes)}
+
+    if reverse:
+        mode_map = {val: key for key, val in mode_map.items()}
+
+    rotated_hamiltonian = operator.__class__()
+    for term, value in operator.terms.items():
+        new_term = tuple([(mode_map[op[0]], op[1]) for op in term])
+        rotated_hamiltonian += operator.__class__(new_term, value)
+    return rotated_hamiltonian
+
+
+def up_then_down(mode_idx, num_modes):
+    """ up then down reordering, given the operator has the default even-odd
+     ordering. Otherwise this function will reorder indices where all even
+     indices now come before odd indices.
+
+     Example:
+         0,1,2,3,4,5 -> 0,2,4,1,3,5
+
+    The function takes in the index of the mode that will be relabeled and
+    the total number modes.
+
+    Args:
+        mode_idx (int): the mode index that is being reordered
+        num_modes (int): the total number of modes of the operator.
+
+    Returns (int): reordered index of the mode.
+    """
+    halfway = int(numpy.ceil(num_modes / 2.))
+    if mode_idx % 2 == 0:
+        return mode_idx // 2
+    else:
+        return mode_idx // 2 + halfway
