@@ -12,7 +12,7 @@
 
 """This module provides generic tools for classes in ops/"""
 from __future__ import absolute_import
-from builtins import map, max, zip
+from builtins import map, zip
 
 import marshal
 import numpy
@@ -74,7 +74,9 @@ def is_hermitian(operator):
     # Handle sparse matrix
     elif isinstance(operator, spmatrix):
         difference = operator - hermitian_conjugated(operator)
-        discrepancy = max(abs(difference.data), default=0.)
+        discrepancy = 0.
+        if difference.nnz:
+            discrepancy = max(abs(difference.data))
         return discrepancy < EQ_TOLERANCE
 
     # Handle numpy array
