@@ -46,7 +46,7 @@ class SymbolicBinary(object):
     to decompress qubit bases back into fermion bases.  
     In that instance, one SymbolicBinary object characterizes the occupation 
     of single orbital given a multi-qubit state in configuration 
-    |w0> |w1> |w2> ... . 
+    \|w0> \|w1> \|w2> ... . 
     
     For initialization, the preferred data types is either a string of the 
     multinomial, where each variable and constant is to be well separated by
