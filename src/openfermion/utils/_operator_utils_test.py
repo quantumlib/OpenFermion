@@ -104,6 +104,9 @@ class OperatorUtilsTest(unittest.TestCase):
         self.assertEqual(reordered.terms,
                          {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
 
+    def test_up_then_down(self):
+        self.assertEqual(up_then_down(6,8),3)
+        self.assertEqual(up_then_down(3,8),5)
 
 class SaveLoadOperatorTest(unittest.TestCase):
     def setUp(self):
