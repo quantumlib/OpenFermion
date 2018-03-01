@@ -98,18 +98,24 @@ class OperatorUtilsTest(unittest.TestCase):
             is_identity('eleven')
 
     def test_reorder(self):
-        shift_by_one = lambda x,y: (x+1)%y
+        shift_by_one = lambda x, y: (x + 1) % y
         operator = FermionOperator('1^ 2^ 3 4', -3.17)
-        reordered = reorder(operator,shift_by_one)
+        reordered = reorder(operator, shift_by_one)
         self.assertEqual(reordered.terms,
                          {((2, 1), (3, 1), (4, 0), (0, 0)): -3.17})
-        reordered = reorder(operator,shift_by_one,reverse=True)
+        reordered = reorder(operator, shift_by_one, reverse=True)
         self.assertEqual(reordered.terms,
                          {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
 
     def test_up_then_down(self):
-        self.assertEqual(up_then_down(6,8),3)
-        self.assertEqual(up_then_down(3,8),5)
+        operator = FermionOperator('1^ 2^ 3 4', -3.17)
+        reordered = reorder(operator, up_then_down)
+        reordered = reorder(reordered, up_then_down, reverse=True)
+
+        self.assertEqual(reordered.terms, operator.terms)
+        self.assertEqual(up_then_down(6, 8), 3)
+        self.assertEqual(up_then_down(3, 8), 5)
+
 
 class HermitianConjugatedTest(unittest.TestCase):
 
@@ -129,7 +135,7 @@ class HermitianConjugatedTest(unittest.TestCase):
         op_hc = hermitian_conjugated(op)
         correct_op = QubitOperator('X0 Y1', -2.j)
         self.assertTrue(op_hc.isclose(correct_op))
-        
+
         op = QubitOperator('X0 Y1', 2.) + QubitOperator('Z4 X5 Y7', 3.j)
         op_hc = hermitian_conjugated(op)
         correct_op = (QubitOperator('X0 Y1', 2.) +
@@ -143,9 +149,9 @@ class HermitianConjugatedTest(unittest.TestCase):
 
         # Check that hermitian conjugation commutes with transforms
         self.assertTrue(jordan_wigner(hermitian_conjugated(ferm_op)).isclose(
-                        hermitian_conjugated(jordan_wigner(ferm_op))))
+            hermitian_conjugated(jordan_wigner(ferm_op))))
         self.assertTrue(bravyi_kitaev(hermitian_conjugated(ferm_op)).isclose(
-                        hermitian_conjugated(bravyi_kitaev(ferm_op))))
+            hermitian_conjugated(bravyi_kitaev(ferm_op))))
 
     def test_hermitian_conjugate_empty(self):
         op = FermionOperator()

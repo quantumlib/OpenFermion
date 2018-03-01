@@ -23,7 +23,7 @@ from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               get_file_path, hermitian_conjugated,
                               inverse_fourier_transform, is_identity,
                               load_operator, save_operator,
-                              reorder,up_then_down)
+                              reorder, up_then_down)
 
 from ._slater_determinants import (gaussian_state_preparation_circuit,
                                    slater_determinant_preparation_circuit)
