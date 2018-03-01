@@ -13,9 +13,9 @@
 """This module constructs Hamiltonians for the Fermi-Hubbard model."""
 from __future__ import absolute_import
 
-from openfermion.ops import (FermionOperator,
-                             hermitian_conjugated)
+from openfermion.ops import FermionOperator
 from openfermion.hamiltonians import up_index, down_index, number_operator
+from openfermion.utils import hermitian_conjugated
 
 
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
