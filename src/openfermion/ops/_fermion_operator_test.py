@@ -18,8 +18,8 @@ import unittest
 from openfermion.hamiltonians import number_operator
 from openfermion.ops._fermion_operator import (FermionOperator,
                                                FermionOperatorError,
-                                               hermitian_conjugated,
-                                               normal_ordered)
+                                               normal_ordered,
+                                               freeze_orbitals)
 
 
 class FermionOperatorTest(unittest.TestCase):
@@ -35,65 +35,6 @@ class FermionOperatorTest(unittest.TestCase):
                     FermionOperator(((2, 1), (2, 0))) +
                     FermionOperator(((3, 1), (3, 0))))
         self.assertTrue(op.isclose(expected))
-
-    def test_hermitian_conjugate_empty(self):
-        op = FermionOperator()
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(FermionOperator()))
-
-    def test_hermitian_conjugate_simple(self):
-        op = FermionOperator('1^')
-        op_hc = FermionOperator('1')
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(op_hc))
-
-    def test_hermitian_conjugate_complex_const(self):
-        op = FermionOperator('1^ 3', 3j)
-        op_hc = -3j * FermionOperator('3^ 1')
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(op_hc))
-
-    def test_hermitian_conjugate_notordered(self):
-        op = FermionOperator('1 3^ 3 3^', 3j)
-        op_hc = -3j * FermionOperator('3 3^ 3 1^')
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(op_hc))
-
-    def test_hermitian_conjugate_semihermitian(self):
-        op = (FermionOperator() + 2j * FermionOperator('1^ 3') +
-              FermionOperator('3^ 1') * -2j + FermionOperator('2^ 2', 0.1j))
-        op_hc = (FermionOperator() + FermionOperator('1^ 3', 2j) +
-                 FermionOperator('3^ 1', -2j) +
-                 FermionOperator('2^ 2', -0.1j))
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(op_hc))
-
-    def test_hermitian_conjugated_empty(self):
-        op = FermionOperator()
-        self.assertTrue(op.isclose(hermitian_conjugated(op)))
-
-    def test_hermitian_conjugated_simple(self):
-        op = FermionOperator('0')
-        op_hc = FermionOperator('0^')
-        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
-
-    def test_hermitian_conjugated_complex_const(self):
-        op = FermionOperator('2^ 2', 3j)
-        op_hc = FermionOperator('2^ 2', -3j)
-        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
-
-    def test_hermitian_conjugated_multiterm(self):
-        op = FermionOperator('1^ 2') + FermionOperator('2 3 4')
-        op_hc = FermionOperator('2^ 1') + FermionOperator('4^ 3^ 2^')
-        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
-
-    def test_hermitian_conjugated_semihermitian(self):
-        op = (FermionOperator() + 2j * FermionOperator('1^ 3') +
-              FermionOperator('3^ 1') * -2j + FermionOperator('2^ 2', 0.1j))
-        op_hc = (FermionOperator() + FermionOperator('1^ 3', 2j) +
-                 FermionOperator('3^ 1', -2j) +
-                 FermionOperator('2^ 2', -0.1j))
-        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
 
     def test_is_normal_ordered_empty(self):
         op = FermionOperator() * 2
@@ -211,3 +152,14 @@ class FermionOperatorTest(unittest.TestCase):
     def test_is_molecular_term_out_of_order(self):
         op = FermionOperator(((0, 1), (2, 0), (1, 1), (3, 0)))
         self.assertTrue(op.is_molecular_term())
+
+    def test_freeze_orbitals_nonvanishing(self):
+        op = FermionOperator(((1, 1), (1, 0), (0, 1), (2, 0)))
+        op_frozen = freeze_orbitals(op,[1])
+        expected = FermionOperator(((0, 1), (1, 0)), -1)
+        self.assertTrue(op_frozen.isclose(expected))
+
+    def test_freeze_orbitals_vanishing(self):
+        op = FermionOperator(((1, 1), (2, 0)))
+        op_frozen = freeze_orbitals(op, [], [2])
+        self.assertEquals(len(op_frozen.terms), 0)

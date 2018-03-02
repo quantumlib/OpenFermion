@@ -13,10 +13,11 @@
 from ._binary_operator import SymbolicBinary
 from ._code_operator import (BinaryCode,
                              linearize_decoder)
-from ._symbolic_operator import SymbolicOperator
+from ._symbolic_operator import (SymbolicOperator,
+                                 prune_unused_indices)
 from ._fermion_operator import (FermionOperator,
-                                hermitian_conjugated,
-                                normal_ordered)
+                                normal_ordered,
+                                freeze_orbitals)
 from ._qubit_operator import QubitOperator
 from ._polynomial_tensor import general_basis_change, PolynomialTensor
 from ._interaction_operator import InteractionOperator

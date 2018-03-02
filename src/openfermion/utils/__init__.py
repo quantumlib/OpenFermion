@@ -20,8 +20,10 @@ from ._commutators import anticommutator, commutator, double_commutator
 from ._grid import Grid
 
 from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
-                              get_file_path, inverse_fourier_transform,
-                              is_identity, load_operator, save_operator)
+                              get_file_path, hermitian_conjugated,
+                              inverse_fourier_transform, is_hermitian,
+                              is_identity, reorder, up_then_down,
+                              load_operator, save_operator)
 
 from ._slater_determinants import (gaussian_state_preparation_circuit,
                                    slater_determinant_preparation_circuit)
@@ -32,7 +34,6 @@ from ._sparse_tools import (expectation,
                             get_gap,
                             get_ground_state,
                             inner_product,
-                            is_hermitian,
                             jordan_wigner_sparse,
                             jw_configuration_state,
                             jw_hartree_fock_state,

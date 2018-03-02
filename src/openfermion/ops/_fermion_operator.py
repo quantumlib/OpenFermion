@@ -14,21 +14,11 @@
 import numpy
 
 from future.utils import iteritems
-from openfermion.ops import SymbolicOperator
+from openfermion.ops import SymbolicOperator, prune_unused_indices
 
 
 class FermionOperatorError(Exception):
     pass
-
-
-def hermitian_conjugated(fermion_operator):
-    """Return Hermitian conjugate of fermionic operator."""
-    conjugate_operator = FermionOperator()
-    for term, coefficient in iteritems(fermion_operator.terms):
-        conjugate_term = tuple([(tensor_factor, 1 - action) for
-                                (tensor_factor, action) in reversed(term)])
-        conjugate_operator.terms[conjugate_term] = numpy.conjugate(coefficient)
-    return conjugate_operator
 
 
 def normal_ordered_term(term, coefficient):
@@ -114,6 +104,75 @@ def normal_ordered(fermion_operator):
     for term, coefficient in fermion_operator.terms.items():
         ordered_operator += normal_ordered_term(term, coefficient)
     return ordered_operator
+
+
+def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
+    """Fix some orbitals to be occupied and others unoccupied.
+
+    Removes all operators acting on the specified orbitals, and renumbers the
+    remaining orbitals to eliminate unused indices. The sign of each term
+    is modified according to the ladder uperator anti-commutation relations in
+    order to preserve the expectation value of the operator.
+
+    Args:
+    occupied: A list containing the indices of the orbitals that are to be
+        assumed to be occupied.
+    unoccupied: A list containing the indices of the orbitals that are to
+        be assumed to be unoccupied.
+    """
+    new_operator = fermion_operator
+    frozen = [(index, 1) for index in occupied]
+    if unoccupied is not None:
+        frozen += [(index, 0) for index in unoccupied]
+
+    # Loop over each orbital to be frozen. Within each term, move all
+    # ops acting on that orbital to the right side of the term, keeping
+    # track of sign flips that come from swapping operators.
+    for item in frozen:
+        tmp_operator = FermionOperator()
+        for term in new_operator.terms:
+            new_term = []
+            new_coef = new_operator.terms[term]
+            current_occupancy = item[1]
+            n_ops = 0  # Number of operations on index that have been moved
+            n_swaps = 0  # Number of swaps that have been done
+
+            for op in enumerate(reversed(term)):
+                if op[1][0] is item[0]:
+                    n_ops += 1
+
+                    # Determine number of swaps needed to bring the op in
+                    # front of all ops acting on other indices
+                    n_swaps += op[0] - n_ops
+
+                    # Check if the op annihilates the current state
+                    if current_occupancy == op[1][1]:
+                        new_coef = 0
+
+                    # Update current state
+                    current_occupancy = (current_occupancy + 1) % 2
+                else:
+                    new_term.insert(0, op[1])
+            if n_swaps % 2 is 1:
+                new_coef *= -1
+            if new_coef is not 0 and current_occupancy is item[1]:
+                tmp_operator += FermionOperator(tuple(new_term), new_coef)
+        new_operator = tmp_operator
+
+    # For occupied frozen orbitals, we must also bring together the creation
+    # operator from the ket and the annihilation operator from the bra when
+    # evaluating expectation values. This can result in an additional minus
+    # sign.
+    for term in new_operator.terms:
+        for index in occupied:
+            for op in term:
+                if op[0] > index:
+                    new_operator.terms[term] *= -1
+
+    # Renumber indices to remove frozen orbitals
+    new_operator = prune_unused_indices(new_operator)
+
+    return new_operator
 
 
 class FermionOperator(SymbolicOperator):

@@ -326,7 +326,7 @@ class JelliumTest(unittest.TestCase):
             grid, spinless, include_constant=True)
 
         difference = hamiltonian_with_constant - hamiltonian_without_constant
-        expected = FermionOperator.identity() * (2.8372 / length_scale)
+        expected = QubitOperator('') * (2.8372 / length_scale)
 
         self.assertTrue(expected.isclose(difference))
 

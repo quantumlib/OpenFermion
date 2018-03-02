@@ -13,9 +13,9 @@
 """Tests for _commutators.py."""
 import unittest
 
-from openfermion.ops import (FermionOperator, hermitian_conjugated,
-                             QubitOperator)
+from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import jordan_wigner
+from openfermion.utils import hermitian_conjugated
 from openfermion.utils._commutators import *
 from openfermion.utils._sparse_tools import pauli_matrix_map
 

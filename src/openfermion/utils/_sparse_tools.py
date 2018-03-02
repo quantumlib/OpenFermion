@@ -27,10 +27,11 @@ import warnings
 from openfermion.config import *
 from openfermion.hamiltonians import number_operator, up_index, down_index
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
-                             QubitOperator, hermitian_conjugated,
-                             normal_ordered)
+                             QubitOperator, normal_ordered)
 from openfermion.utils import (Grid, commutator, fourier_transform,
                                gaussian_state_preparation_circuit,
+                               hermitian_conjugated,
+                               is_hermitian,
                                slater_determinant_preparation_circuit)
 from openfermion.hamiltonians._jellium import (grid_indices,
                                                momentum_vector,
@@ -695,16 +696,6 @@ def get_density_matrix(states, probabilities):
     for state, probability in zip(states, probabilities):
         density_matrix = density_matrix + probability * state * state.getH()
     return density_matrix
-
-
-def is_hermitian(sparse_operator):
-    """Test if matrix is Hermitian."""
-    difference = sparse_operator - sparse_operator.getH()
-    if difference.nnz:
-        discrepancy = max(map(abs, difference.data))
-        if discrepancy > EQ_TOLERANCE:
-            return False
-    return True
 
 
 def get_ground_state(sparse_operator):
