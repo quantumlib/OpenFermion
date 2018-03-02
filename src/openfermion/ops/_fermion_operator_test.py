@@ -15,11 +15,11 @@ import copy
 import numpy
 import unittest
 
-from openfermion.hamiltonians import number_operator
 from openfermion.ops._fermion_operator import (FermionOperator,
                                                FermionOperatorError,
                                                normal_ordered,
                                                freeze_orbitals)
+from openfermion.utils import number_operator
 
 
 class FermionOperatorTest(unittest.TestCase):

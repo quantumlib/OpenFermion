@@ -15,10 +15,9 @@ from __future__ import absolute_import
 
 import copy
 
-from openfermion.hamiltonians import number_operator
 from openfermion.ops import (FermionOperator,
                              QubitOperator)
-from openfermion.utils import count_qubits
+from openfermion.utils import count_qubits, number_operator
 
 
 def reverse_jordan_wigner(qubit_operator, n_qubits=None):

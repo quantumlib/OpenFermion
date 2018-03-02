@@ -17,9 +17,9 @@ import itertools
 import networkx
 import numpy
 
-from openfermion.hamiltonians import majorana_operator 
 from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import jordan_wigner
+from openfermion.utils import majorana_operator 
 
 
 def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
