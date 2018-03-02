@@ -57,3 +57,29 @@ class GridTest(unittest.TestCase):
             (2, 1),
             (2, 2),
         ])
+
+    def test_repr(self):
+        self.assertEqual(
+            repr(Grid(dimensions=5, length=3, scale=0.5)),
+            'Grid(dimensions=5, length=3, scale=0.5)')
+
+    def test_str(self):
+        self.assertEqual(
+            str(Grid(dimensions=5, length=4, scale=0.5)),
+            '[-0.25, -0.125, 0.0, 0.125]**5')
+
+    def test_equality(self):
+        g = Grid(dimensions=5, length=3, scale=0.5)
+        g2 = Grid(dimensions=5, length=3, scale=0.5)
+
+        self.assertTrue(g == g2)
+        self.assertFalse(g != g2)
+        self.assertEqual(g, g2)
+        self.assertEqual(hash(g), hash(g2))
+
+        self.assertFalse(g == Grid(dimensions=4, length=3, scale=0.5))
+        self.assertFalse(g == Grid(dimensions=5, length=2, scale=0.5))
+        self.assertFalse(g == Grid(dimensions=5, length=3, scale=0.75))
+
+        self.assertTrue(g != '')
+        self.assertFalse(g == '')
