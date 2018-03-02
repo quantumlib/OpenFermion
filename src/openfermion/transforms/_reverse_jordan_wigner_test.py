@@ -85,6 +85,7 @@ class ReverseJWTest(unittest.TestCase):
         self.assertTrue(transmed_i.isclose(expected_i))
 
         retransmed_i = jordan_wigner(transmed_i)
+        expected_i = QubitOperator()
         self.assertTrue(expected_i.isclose(retransmed_i))
 
     def test_yzxz(self):

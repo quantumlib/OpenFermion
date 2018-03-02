@@ -59,7 +59,7 @@ def hermitian_conjugated(operator):
     # Unsupported type
     else:
         raise TypeError('Taking the hermitian conjugate of a {} is not '
-                        'supported.'.format(type(operator)))
+                        'supported.'.format(type(operator).__name__))
 
     return conjugate_operator
 
@@ -87,7 +87,7 @@ def is_hermitian(operator):
     # Unsupported type
     else:
         raise TypeError('Checking whether a {} is hermitian is not '
-                        'supported.'.format(type(operator)))
+                        'supported.'.format(type(operator).__name__))
 
 
 def count_qubits(operator):
