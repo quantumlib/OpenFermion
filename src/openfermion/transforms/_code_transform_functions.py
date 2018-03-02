@@ -123,7 +123,7 @@ def bravyi_kitaev_code(modes):
 
     Returns (BinaryCode): The Bravyi-Kitaev BinaryCode
     """
-    return BinaryCode(_encoder_bk(modes), 
+    return BinaryCode(_encoder_bk(modes),
                       linearize_decoder(_decoder_bk(modes)))
 
 
@@ -236,7 +236,7 @@ def interleaved_code(modes):
         raise ValueError('number of modes must be even')
     else:
         mtx = numpy.zeros((modes, modes), dtype=int)
-        for index in numpy.arange(modes//2, dtype=int):
-            mtx[index, 2*index] = 1
-            mtx[modes//2+index, 2*index+1] = 1
+        for index in numpy.arange(modes // 2, dtype=int):
+            mtx[index, 2 * index] = 1
+            mtx[modes // 2 + index, 2 * index + 1] = 1
         return BinaryCode(mtx, linearize_decoder(mtx.transpose()))
