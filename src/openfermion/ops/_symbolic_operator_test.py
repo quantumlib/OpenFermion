@@ -800,6 +800,12 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertTrue(not b.isclose(a, rel_tol=1e-12, abs_tol=0.05))
         self.assertTrue(not a.isclose(b, rel_tol=1e-12, abs_tol=0.05))
 
+    def test_isclose_invalid_type(self):
+        a = DummyOperator1()
+        b = DummyOperator2()
+        with self.assertRaises(TypeError):
+            a.isclose(b)
+
     def test_rmul_scalar(self):
         multiplier = 0.5
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)

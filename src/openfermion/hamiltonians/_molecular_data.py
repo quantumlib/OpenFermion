@@ -823,6 +823,7 @@ class MolecularData(object):
     def get_molecular_hamiltonian(self, occupied_indices=None,
                                       active_indices=None):
         """Output arrays of the second quantized Hamiltonian coefficients.
+
         Args:
             occupied_indices(list): A list of spatial orbital indices
                 indicating which orbitals should be considered doubly occupied.

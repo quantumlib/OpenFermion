@@ -59,7 +59,7 @@ def hermitian_conjugated(operator):
     # Unsupported type
     else:
         raise TypeError('Taking the hermitian conjugate of a {} is not '
-                        'supported.'.format(type(operator)))
+                        'supported.'.format(type(operator).__name__))
 
     return conjugate_operator
 
@@ -87,7 +87,7 @@ def is_hermitian(operator):
     # Unsupported type
     else:
         raise TypeError('Checking whether a {} is hermitian is not '
-                        'supported.'.format(type(operator)))
+                        'supported.'.format(type(operator).__name__))
 
 
 def count_qubits(operator):
@@ -354,8 +354,9 @@ def save_operator(operator, file_name=None, data_directory=None,
 
 
 def reorder(operator, order_function, num_modes=None, reverse=False):
-    """ changes the fermionic order of the Hamiltonian based on the provided
+    """Changes the fermionic order of the Hamiltonian based on the provided
     order_function per mode index
+
     Args:
         operator (SymbolicOperator): the operator that will be reordered. must
             be a SymbolicOperator or any type of operator that inherits from

@@ -101,7 +101,7 @@ class BinaryCode(object):
     As the occupation number of fermionic mode is effectively binary,
     a length-N vector (v) of binary number can be utilized to describe
     a configuration of a many-body fermionic state on N modes.
-    An n-qubit product state configuration |w0> |w1> |w2> ... |wn-1>,
+    An n-qubit product state configuration \|w0> \|w1> \|w2> ... \|wn-1>,
     on the other hand is described by a length-n binary vector
     w=(w0, w1, ..., wn-1). To map a subset of N-Orbital Fermion states
     to n-qubit states we define a binary code, which consists of a
@@ -132,7 +132,7 @@ class BinaryCode(object):
     input of length N, which has entries either of type SymbolicBinary, or of
     valid type for an input of the SymbolicBinary-constructor.
 
-    The signs + and *, += and *= are overloaded to implement concatenation
+    The signs + and \*, += and \*= are overloaded to implement concatenation
     and appendage on BinaryCode-objects.
 
     NOTE: multiplication of a BinaryCode with an integer yields a
