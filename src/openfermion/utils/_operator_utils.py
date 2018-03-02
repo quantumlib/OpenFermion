@@ -354,8 +354,9 @@ def save_operator(operator, file_name=None, data_directory=None,
 
 
 def reorder(operator, order_function, num_modes=None, reverse=False):
-    """ changes the fermionic order of the Hamiltonian based on the provided
+    """Changes the fermionic order of the Hamiltonian based on the provided
     order_function per mode index
+
     Args:
         operator (SymbolicOperator): the operator that will be reordered. must
             be a SymbolicOperator or any type of operator that inherits from
