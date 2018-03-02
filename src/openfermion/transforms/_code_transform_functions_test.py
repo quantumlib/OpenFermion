@@ -12,7 +12,7 @@
 
 import unittest
 
-from decoder_encoder_functions import *
+from openfermion.transforms._code_transform_functions import *
 from openfermion.hamiltonians import MolecularData
 from openfermion.transforms import binary_code_transform
 from openfermion.transforms import get_fermion_operator
@@ -35,9 +35,9 @@ def lih_hamiltonian():
 
 
 class CodeTransformTest(unittest.TestCase):
-    def test_bravyi_kitaev(self):
+    def test_checksum_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()
-        code = bravyi_kitaev_code(4)
+        code = checksum_code(4, 0)
         qubit_hamiltonian = binary_code_transform(hamiltonian, code)
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
@@ -49,6 +49,13 @@ class CodeTransformTest(unittest.TestCase):
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
 
+    def test_bravyi_kitaev(self):
+        hamiltonian, gs_energy = lih_hamiltonian()
+        code = bravyi_kitaev_code(4)
+        qubit_hamiltonian = binary_code_transform(hamiltonian, code)
+        self.assertAlmostEqual(gs_energy,
+                               eigenspectrum(qubit_hamiltonian)[0])
+
     def test_parity_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()
         code = parity_code(4)
@@ -56,9 +63,17 @@ class CodeTransformTest(unittest.TestCase):
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
 
-    def test_checksum_code(self):
+    def test_weight_one_binary_addressing_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()
-        code = checksum_code(4, 0)
+        code = interleaved_code(8)*(
+            2*weight_one_binary_addressing_code(2))
+        qubit_hamiltonian = binary_code_transform(hamiltonian, code)
+        self.assertAlmostEqual(gs_energy,
+                               eigenspectrum(qubit_hamiltonian)[0])
+
+    def test_weight_one_segment_code(self):
+        hamiltonian, gs_energy = lih_hamiltonian()
+        code = interleaved_code(6)*(2*weight_one_segment_code())
         qubit_hamiltonian = binary_code_transform(hamiltonian, code)
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
@@ -77,17 +92,4 @@ class CodeTransformTest(unittest.TestCase):
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
         
-    def test_weight_one_segment_code(self):
-        hamiltonian, gs_energy = lih_hamiltonian()
-        code = interleaved_code(6)*(2*weight_one_segment_code())
-        qubit_hamiltonian = binary_code_transform(hamiltonian, code)
-        self.assertAlmostEqual(gs_energy,
-                               eigenspectrum(qubit_hamiltonian)[0])
-        
-    def test_weight_one_binary_addressing_code(self):
-        hamiltonian, gs_energy = lih_hamiltonian()
-        code = interleaved_code(8)*(
-            2*weight_one_binary_addressing_code(2))
-        qubit_hamiltonian = binary_code_transform(hamiltonian, code)
-        self.assertAlmostEqual(gs_energy,
-                               eigenspectrum(qubit_hamiltonian)[0])
+
