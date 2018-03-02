@@ -571,7 +571,7 @@ class SymbolicOperator(object):
         """
         if not isinstance(other, type(self)):
             raise TypeError('Cannot compare a {} with a {}'.format(
-                type(self), type(other)))
+                type(self).__name__, type(other).__name__))
 
         # terms which are in both:
         for term in set(self.terms).intersection(set(other.terms)):
