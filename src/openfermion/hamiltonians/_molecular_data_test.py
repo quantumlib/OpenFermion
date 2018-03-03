@@ -262,7 +262,6 @@ class MolecularDataTest(unittest.TestCase):
         correct_alpha = [0, 1, 1, 2, 2, 3, 4, 5, 5, 5, 5]
         correct_beta = [0, 0, 1, 1, 2, 2, 2, 2, 3, 4, 5]
         for n_electrons in range(1, largest_atom  + 1):
-            print('N Electrons: {}'.format(n_electrons))
             # Make molecule.
             basis = 'sto-3g'
             atom_name = periodic_table[n_electrons]
