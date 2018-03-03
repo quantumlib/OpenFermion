@@ -16,7 +16,7 @@ Transforms
 * Reverse Jordan-Wigner transform: method for mapping QubitOperators to FermionOperators.
 
 * Bravyi-Kitaev transform: method for mapping FermionOperators to QubitOperators with
-  logarithmic many-body order. Implementation from arXiv:1208.5986.
+  logarithmic many-body order. Implementation from arXiv:1701.07072.
 
 * Bravyi-Kitaev Superfast transform: method for mapping FermionOperators to QubitOperators
   with constant many-body order. Number of qubits required scales as number of terms.
