@@ -27,7 +27,8 @@ import warnings
 from openfermion.config import *
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
                              QubitOperator, normal_ordered)
-from openfermion.utils import (Grid, commutator, fourier_transform,
+from openfermion.utils import (Grid, commutator, count_qubits,
+                               fourier_transform,
                                gaussian_state_preparation_circuit,
                                hermitian_conjugated, is_hermitian,
                                number_operator,
@@ -100,7 +101,6 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
         The corresponding Scipy sparse matrix.
     """
     if n_qubits is None:
-        from openfermion.utils import count_qubits
         n_qubits = count_qubits(fermion_operator)
 
     # Create a list of raising and lowering operators for each orbital.
@@ -154,7 +154,6 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     Returns:
         The corresponding Scipy sparse matrix.
     """
-    from openfermion.utils import count_qubits
     if n_qubits is None:
         n_qubits = count_qubits(qubit_operator)
     if n_qubits < count_qubits(qubit_operator):
