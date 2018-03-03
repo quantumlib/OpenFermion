@@ -25,14 +25,14 @@ import scipy.sparse.linalg
 import warnings
 
 from openfermion.config import *
-from openfermion.hamiltonians import number_operator, up_index, down_index
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
                              QubitOperator, normal_ordered)
 from openfermion.utils import (Grid, commutator, fourier_transform,
                                gaussian_state_preparation_circuit,
-                               hermitian_conjugated,
-                               is_hermitian,
-                               slater_determinant_preparation_circuit)
+                               hermitian_conjugated, is_hermitian,
+                               number_operator,
+                               slater_determinant_preparation_circuit,
+                               up_index, down_index)
 from openfermion.hamiltonians._jellium import (grid_indices,
                                                momentum_vector,
                                                position_vector)
