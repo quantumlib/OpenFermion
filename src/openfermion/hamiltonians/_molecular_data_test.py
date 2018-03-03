@@ -268,8 +268,8 @@ class MolecularDataTest(unittest.TestCase):
             # Get expected alpha and beta.
             spin = periodic_polarization[n_electrons] / 2.
             multiplicity = int(2 * spin + 1)
-            expected_alpha = n_electrons / 2 + (multiplicity - 1)
-            expected_beta = n_electrons / 2 - (multiplicity - 1)
+            expected_alpha = (n_electrons + (multiplicity - 1)) // 2
+            expected_beta = (n_electrons - (multiplicity - 1)) // 2
 
             # Test.
             self.assertAlmostEqual(molecule.get_n_alpha_electrons(),
