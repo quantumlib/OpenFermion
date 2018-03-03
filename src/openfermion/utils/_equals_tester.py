@@ -14,7 +14,7 @@ import collections
 import itertools
 
 
-class EqualsTester:
+class EqualsTester(object):
     """Tests equality against user-provided disjoint equivalence groups."""
 
     def __init__(self, test_case):
@@ -112,7 +112,7 @@ class EqualsTester:
         self.add_equality_group(factory(), factory())
 
 
-class _ClassUnknownToSubjects:
+class _ClassUnknownToSubjects(object):
     """Equality methods should be able to deal with the unexpected."""
 
     def __eq__(self, other):

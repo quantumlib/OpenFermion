@@ -67,7 +67,7 @@ class EqualsTesterTest(unittest.TestCase):
             eq.add_equality_group(1)
 
     def test_add_equality_group_bad_hash(self):
-        class KeyHash:
+        class KeyHash(object):
             def __init__(self, k, h):
                 self._k = k
                 self._h = h
@@ -88,7 +88,7 @@ class EqualsTesterTest(unittest.TestCase):
             eq.add_equality_group(KeyHash('c', 2), KeyHash('c', 3))
 
     def test_add_equality_group_exception_hash(self):
-        class FailHash:
+        class FailHash(object):
             def __hash__(self):
                 raise ValueError('injected failure')
     
@@ -99,7 +99,7 @@ class EqualsTesterTest(unittest.TestCase):
     def test_can_fail_when_forgot_type_check(self):
         eq = EqualsTester(self)
     
-        class NoTypeCheckEqualImplementation:
+        class NoTypeCheckEqualImplementation(object):
             def __init__(self):
                 self.x = 1
     
@@ -118,7 +118,7 @@ class EqualsTesterTest(unittest.TestCase):
     def test_fails_hash_is_default_and_inconsistent(self):
         eq = EqualsTester(self)
     
-        class DefaultHashImplementation:
+        class DefaultHashImplementation(object):
             __hash__ = object.__hash__
     
             def __init__(self):
@@ -138,7 +138,7 @@ class EqualsTesterTest(unittest.TestCase):
     def test_fails_when_ne_is_inconsistent(self):
         eq = EqualsTester(self)
     
-        class InconsistentNeImplementation:
+        class InconsistentNeImplementation(object):
             def __init__(self):
                 self.x = 1
     
@@ -159,7 +159,7 @@ class EqualsTesterTest(unittest.TestCase):
     def test_fails_when_not_reflexive(self):
         eq = EqualsTester(self)
     
-        class NotReflexiveImplementation:
+        class NotReflexiveImplementation(object):
             def __init__(self):
                 self.x = 1
     
@@ -177,7 +177,7 @@ class EqualsTesterTest(unittest.TestCase):
     def test_fails_when_not_commutative(self):
         eq = EqualsTester(self)
     
-        class NotCommutativeImplementation:
+        class NotCommutativeImplementation(object):
             def __init__(self, x):
                 self.x = x
     
