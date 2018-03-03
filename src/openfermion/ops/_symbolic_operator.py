@@ -569,6 +569,10 @@ class SymbolicOperator(object):
             rel_tol(float): Relative tolerance, must be greater than 0.0
             abs_tol(float): Absolute tolerance, must be at least 0.0
         """
+        if not isinstance(other, type(self)):
+            raise TypeError('Cannot compare a {} with a {}'.format(
+                type(self).__name__, type(other).__name__))
+
         # terms which are in both:
         for term in set(self.terms).intersection(set(other.terms)):
             a = self.terms[term]
