@@ -13,7 +13,7 @@
 from ._binary_operator import SymbolicBinary
 from ._code_operator import (BinaryCode,
                              linearize_decoder)
-from ._polynomial_tensor import general_basis_change, PolynomialTensor
+from ._polynomial_tensor import PolynomialTensor, general_basis_change
 from ._quadratic_hamiltonian import QuadraticHamiltonian
 from ._symbolic_operator import (SymbolicOperator,
                                  prune_unused_indices)
