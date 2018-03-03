@@ -44,7 +44,7 @@ from ._unitary_cc import (uccsd_convert_amplitude_format,
                           uccsd_singlet_operator,
                           uccsd_singlet_paramsize)
 
-# Imports out of alphabetical order to avoid circular dependancy.
+# Imports out of alphabetical order to avoid circular dependency.
 from ._jellium_hf_state import hartree_fock_state_jellium
 
 from ._low_depth_trotter_error import (
