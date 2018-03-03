@@ -20,7 +20,6 @@ www.openfermion.org
 
 from ._version import __version__
 
-from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import *
 from openfermion.measurements import *
 from openfermion.ops import *
