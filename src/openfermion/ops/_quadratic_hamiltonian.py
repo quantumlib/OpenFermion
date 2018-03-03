@@ -18,7 +18,7 @@ from scipy.linalg import schur
 import numpy
 
 from openfermion.config import EQ_TOLERANCE
-from openfermion.ops import FermionOperator, PolynomialTensor
+from openfermion.ops import PolynomialTensor
 
 
 class QuadraticHamiltonianError(Exception):
