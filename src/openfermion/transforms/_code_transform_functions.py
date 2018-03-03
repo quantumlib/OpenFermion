@@ -214,12 +214,8 @@ def weight_two_segment_code():
 
 
 def interleaved_code(modes):
-    """ Linear code that reorders orbitals to deal with an order of the modes 
-    that is not 'half up', as it is referred to in arXiv:1403.1539.
-    In 'half up', the first half of the modes corresponds to spin-up orbitals, 
-    the second to spin-down which is a derivation from the convention in 
-    OpenFermion, where spin-up and -down modes of the same spatial orbital are
-    consecutive. In 'half up', one can append two instances of the same 
+    """ Linear code that reorders orbitals from even-odd to up-then-down'
+    In up-then-down convention, one can append two instances of the same
     code 'c' in order to have two symmetric subcodes that are symmetric for 
     spin-up and -down modes: ' c + c '.
     In the OpenFermion standard ordering, this requires the concatenation with
