@@ -115,14 +115,12 @@ class AnticommutatorTest(unittest.TestCase):
         self.assertTrue(one.isclose(
             normal_ordered(anticommutator(op_2, op_2_dag))))
 
-
     def test_ndarray_input(self):
         """Test when the inputs are numpy arrays."""
         X = pauli_matrix_map['X'].toarray()
         Y = pauli_matrix_map['Y'].toarray()
         zero = numpy.zeros((2, 2))
         self.assertTrue(numpy.allclose(anticommutator(X, Y), zero))
-
 
     def test_anticommutator_not_same_type(self):
         with self.assertRaises(TypeError):

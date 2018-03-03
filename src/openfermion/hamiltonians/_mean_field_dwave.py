@@ -13,9 +13,9 @@
 """This module constructs Hamiltonians for the BCS mean-field d-wave model."""
 from __future__ import absolute_import
 
-from openfermion.hamiltonians import up_index, down_index, number_operator
 from openfermion.ops import FermionOperator
-from openfermion.utils import hermitian_conjugated
+from openfermion.utils import (hermitian_conjugated, number_operator,
+                               up_index, down_index)
 
 
 def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
