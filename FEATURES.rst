@@ -69,35 +69,45 @@ Hamiltonians
   for single atom calculations. Function chooses the correct spin assignment automatically.
   Can generate for first half of periodic table with any basis set.
 
-* Special fermion operators: helper functions generate Sz, S+, S-, S^2, majorana and number operators.
-
 
 Core Data Structures
 --------------------
 
-* SymbolicOperator:
+* SymbolicOperator: A weighted sum of terms, each of which is a product of factors specifying
+  an index (a non-negative integer) and an action on that index.
+  Parent class of FermionOperator and QubitOperator.
 
-* FermionOperator:
+* FermionOperator: A sum of products of fermionic ladder operators.
 
-* QubitOperator:
+* QubitOperator: A sum of products of Pauli operators.
 
 * MolecularData:
 
-* PolynomialTensor:
+* PolynomialTensor: Efficient tensor representation of an operator that corresponds
+  with a multilinear polynomial in the fermionic ladder operators.
+  Parent class of InteractionOperator, InteractionRDM, and QuadraticHamiltonian.
+
+* InteractionOperator:
+
+* InteractionRDM:
+
+* QuadraticHamiltonian: A Hamiltonian that is quadratic in the fermionic ladder operators.
 
 * CodeOperator:
 
 * BinaryOperator:
 
-* QuadraticHamiltonian:
-
-* InteractionRDM:
-
 
 Utilities
 ---------
 
-* Lots of stuff:
+* Special fermion operators: helper functions generate Sz, S+, S-, S^2, majorana and number operators.
+
+* Slater determinants: compile quantum circuits for preparing Slater determinants and
+  fermionic Gaussian states using Givens rotations
+
+* BCH expansion: compute the logarithm of a product of exponentials of operators
+  up to a specified order using the Baker-Campbell-Hausdorff formula
 
 
 Measurements
