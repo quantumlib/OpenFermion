@@ -745,6 +745,7 @@ def expectation(sparse_operator, state):
 
     Args:
         state: scipy.sparse.csc vector representing a pure state,
+            ndarray vector representing a pure state,
             or, a scipy.sparse.csc matrix representing a density matrix.
 
     Returns:
@@ -758,11 +759,16 @@ def expectation(sparse_operator, state):
         product = state * sparse_operator
         expectation = numpy.sum(product.diagonal())
 
-    elif state.shape == (sparse_operator.shape[0], 1):
+    elif (state.shape == (sparse_operator.shape[0], 1) or
+          state.shape == (sparse_operator.shape[0], )):
         # Handle state vector.
-        expectation = state.getH() * sparse_operator * state
-        expectation = expectation[0, 0]
-
+        if scipy.sparse.issparse(state):
+            expectation = (state.getH() * sparse_operator * state)
+        else:
+            expectation = numpy.dot(numpy.conj(state.T),
+                                    sparse_operator.dot(state))
+        if expectation.shape != ():
+            expectation = expectation[0, 0]
     else:
         # Handle exception.
         raise ValueError('Input state has invalid format.')
