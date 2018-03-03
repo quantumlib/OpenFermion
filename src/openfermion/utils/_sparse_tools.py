@@ -697,8 +697,13 @@ def get_density_matrix(states, probabilities):
     return density_matrix
 
 
-def get_ground_state(sparse_operator):
+def get_ground_state(sparse_operator, initial_guess=None):
     """Compute lowest eigenvalue and eigenstate.
+
+    Args:
+        sparse_operator (LinearOperator): Operator to find the ground state of.
+        initial_guess (ndarray): Initial guess for ground state.  A good
+            guess dramatically reduces the cost required to converge.
 
     Returns
     -------
@@ -711,13 +716,13 @@ def get_ground_state(sparse_operator):
         raise ValueError('sparse_operator must be Hermitian.')
 
     values, vectors = scipy.sparse.linalg.eigsh(
-        sparse_operator, 2, which='SA', maxiter=1e7)
+        sparse_operator, k=1, v0=initial_guess, which='SA', maxiter=1e7)
 
     order = numpy.argsort(values)
     values = values[order]
     vectors = vectors[:, order]
     eigenvalue = values[0]
-    eigenstate = scipy.sparse.csc_matrix(vectors[:, 0])
+    eigenstate = vectors[:, 0]
     return eigenvalue, eigenstate.T
 
 
@@ -1129,16 +1134,20 @@ def expectation_three_body_db_operator_computational_basis_state(
     return expectation_value
 
 
-def get_gap(sparse_operator):
+def get_gap(sparse_operator, initial_guess=None):
     """Compute gap between lowest eigenvalue and first excited state.
 
+    Args:
+        sparse_operator (LinearOperator): Operator to find the ground state of.
+        initial_guess (ndarray): Initial guess for eigenspace.  A good
+            guess dramatically reduces the cost required to converge.
     Returns: A real float giving eigenvalue gap.
     """
     if not is_hermitian(sparse_operator):
         raise ValueError('sparse_operator must be Hermitian.')
 
     values, _ = scipy.sparse.linalg.eigsh(
-        sparse_operator, 2, which='SA', maxiter=1e7)
+        sparse_operator, k=2, v0=initial_guess, which='SA', maxiter=1e7)
 
     gap = abs(values[1] - values[0])
     return gap
