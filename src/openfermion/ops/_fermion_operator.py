@@ -115,10 +115,10 @@ def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
     order to preserve the expectation value of the operator.
 
     Args:
-    occupied: A list containing the indices of the orbitals that are to be
-        assumed to be occupied.
-    unoccupied: A list containing the indices of the orbitals that are to
-        be assumed to be unoccupied.
+        occupied: A list containing the indices of the orbitals that are to be
+            assumed to be occupied.
+        unoccupied: A list containing the indices of the orbitals that are to
+            be assumed to be unoccupied.
     """
     new_operator = fermion_operator
     frozen = [(index, 1) for index in occupied]

@@ -257,25 +257,21 @@ class MolecularDataTest(unittest.TestCase):
         self.assertAlmostEqual(total_energy, self.molecule.cisd_energy)
 
     def test_get_up_down_electrons(self):
-        largest_atom = 20
-        for n_electrons in range(1, largest_atom):
-
+        largest_atom = 10
+        # Test first row
+        correct_alpha = [0, 1, 1, 2, 2, 3, 4, 5, 5, 5, 5]
+        correct_beta = [0, 0, 1, 1, 2, 2, 2, 2, 3, 4, 5]
+        for n_electrons in range(1, largest_atom  + 1):
             # Make molecule.
             basis = 'sto-3g'
             atom_name = periodic_table[n_electrons]
             molecule = make_atom(atom_name, basis)
 
-            # Get expected alpha and beta.
-            spin = periodic_polarization[n_electrons] / 2.
-            multiplicity = int(2 * spin + 1)
-            expected_alpha = n_electrons / 2 + (multiplicity - 1)
-            expected_beta = n_electrons / 2 - (multiplicity - 1)
-
             # Test.
             self.assertAlmostEqual(molecule.get_n_alpha_electrons(),
-                                   expected_alpha)
+                                   correct_alpha[n_electrons])
             self.assertAlmostEqual(molecule.get_n_beta_electrons(),
-                                   expected_beta)
+                                   correct_beta[n_electrons])
 
     def test_abstract_molecule(self):
         """Test an abstract molecule like jellium for saving and loading"""

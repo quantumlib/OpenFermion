@@ -28,6 +28,29 @@ from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
 from ._slater_determinants import (gaussian_state_preparation_circuit,
                                    slater_determinant_preparation_circuit)
 
+from ._special_operators import (majorana_operator, number_operator,
+                                 s_squared_operator, s_plus_operator,
+                                 s_minus_operator, sz_operator,
+                                 up_index, down_index)
+
+from ._trotter_error import error_bound, error_operator
+
+from ._trotter_exp_to_qgates import (pauli_exp_to_qasm,
+                                     trotterize_exp_qubop_to_qasm,
+                                     trotter_operator_grouping)
+
+from ._unitary_cc import (uccsd_convert_amplitude_format,
+                          uccsd_operator,
+                          uccsd_singlet_operator,
+                          uccsd_singlet_paramsize)
+
+# Imports out of alphabetical order to avoid circular dependency.
+from ._jellium_hf_state import hartree_fock_state_jellium
+
+from ._low_depth_trotter_error import (
+    low_depth_second_order_trotter_error_bound,
+    low_depth_second_order_trotter_error_operator)
+
 from ._sparse_tools import (expectation,
                             expectation_computational_basis_state,
                             get_density_matrix,
@@ -47,21 +70,3 @@ from ._sparse_tools import (expectation,
                             qubit_operator_sparse,
                             sparse_eigenspectrum,
                             variance)
-
-from ._trotter_error import error_bound, error_operator
-
-from ._trotter_exp_to_qgates import (pauli_exp_to_qasm,
-                                     trotterize_exp_qubop_to_qasm,
-                                     trotter_operator_grouping)
-
-from ._unitary_cc import (uccsd_convert_amplitude_format,
-                          uccsd_operator,
-                          uccsd_singlet_operator,
-                          uccsd_singlet_paramsize)
-
-# Imports out of alphabetical order to avoid circular dependancy.
-from ._low_depth_trotter_error import (
-    low_depth_second_order_trotter_error_bound,
-    low_depth_second_order_trotter_error_operator)
-
-from ._jellium_hf_state import hartree_fock_state_jellium
