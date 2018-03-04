@@ -639,7 +639,7 @@ class GroundStateTest(unittest.TestCase):
         self.assertAlmostEqual(ground[0], -2)
         self.assertAlmostEqual(
             numpy.absolute(
-                expected_state.T.conj().dot(ground[1].A))[0, 0], 1.0)
+                expected_state.T.conj().dot(ground[1]))[0], 1.)
 
     def test_get_ground_state_nonhermitian(self):
         with self.assertRaises(ValueError):
