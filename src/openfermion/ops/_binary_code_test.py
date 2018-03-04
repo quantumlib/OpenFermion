@@ -14,10 +14,10 @@
 import unittest
 
 from openfermion.ops import SymbolicBinary
-from openfermion.ops._code_operator import (BinaryCode,
-                                            BinaryCodeError,
-                                            linearize_decoder,
-                                            shift_decoder)
+from openfermion.ops._binary_code import (BinaryCode,
+                                          BinaryCodeError,
+                                          linearize_decoder,
+                                          shift_decoder)
 
 
 class CodeOperatorTest(unittest.TestCase):
