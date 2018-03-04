@@ -15,7 +15,7 @@ import unittest
 
 import numpy
 
-from openfermion.ops._binary_operator import (SymbolicBinary,
+from openfermion.ops._symbolic_binary import (SymbolicBinary,
                                               SymbolicBinaryError,
                                               _SYMBOLIC_ONE)
 
