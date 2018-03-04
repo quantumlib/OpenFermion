@@ -733,11 +733,11 @@ class MolecularData(object):
 
     def get_n_alpha_electrons(self):
         """Return number of alpha electrons."""
-        return self.n_electrons / 2 + (self.multiplicity - 1)
+        return int((self.n_electrons + (self.multiplicity - 1)) // 2)
 
     def get_n_beta_electrons(self):
         """Return number of beta electrons."""
-        return self.n_electrons / 2 - (self.multiplicity - 1)
+        return int((self.n_electrons - (self.multiplicity - 1)) // 2)
 
     def get_integrals(self):
         """Method to return 1-electron and 2-electron integrals in MO basis.
