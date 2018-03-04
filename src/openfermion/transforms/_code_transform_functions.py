@@ -90,8 +90,33 @@ def _decoder_checksum(modes, odd):
     return djw
 
 
+def _binary_address(digits, address):
+    """ Helper function to fill in an encoder column/decoder component of a
+    certain number.
+
+    Args:
+        digits (int): number of digits, which is the qubit number
+        address (int): column index, decoder component
+
+    Returns (tuple): encoder column, decoder component
+    """
+    binary_expression = SymbolicBinary('1')
+
+    # isolate the binary number and fill up the mismatching digits
+    address = bin(address)[2:]
+    address = ('0' * (digits - len(address))) + address
+    for index in numpy.arange(digits):
+        binary_expression *= SymbolicBinary(
+            'w' + str(index) + ' + 1 + ' + address[index])
+
+    return list(map(int, list(address))), binary_expression
+
+
 def checksum_code(modes, odd):
-    """ Checksum code for either even or odd Hamming-weight
+    """ Checksum code for either even or odd Hamming-weight. The Hamming-weight
+    is defined such that it yields the total occupation number for a given basis
+    states. A Checksum code with odd weight will encode all states with odd
+    occupation number.
         
     Args:
         modes (int): number of modes
@@ -116,7 +141,8 @@ def jordan_wigner_code(modes):
 
 
 def bravyi_kitaev_code(modes):
-    """ The Bravyi-Kitaev transform as binary code.
+    """ The Bravyi-Kitaev transform as binary code. The implementation
+    follows arxiv1208.5986.
         
     Args:
         modes (int): number of modes
@@ -141,28 +167,6 @@ def parity_code(modes):
     enc_mtx = numpy.tril(numpy.ones((modes, modes), dtype=int))
 
     return BinaryCode(enc_mtx, linearize_decoder(dec_mtx))
-
-
-def _binary_address(digits, address):
-    """ Helper function to fill in an encoder column/decoder component of a
-    certain number.
-
-    Args:
-        digits (int): number of digits, which is the qubit number
-        address (int): column index, decoder component
-
-    Returns (tuple): encoder column, decoder component
-    """
-    binary_expression = SymbolicBinary('1')
-
-    # isolate the binary number and fill up the mismatching digits
-    address = bin(address)[2:]
-    address = ('0' * (digits - len(address))) + address
-    for index in numpy.arange(digits):
-        binary_expression *= SymbolicBinary(
-            'w' + str(index) + ' + 1 + ' + address[index])
-
-    return list(map(int, list(address))), binary_expression
 
 
 def weight_one_binary_addressing_code(exponent):

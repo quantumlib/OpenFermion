@@ -17,6 +17,7 @@ from openfermion.hamiltonians import MolecularData
 from openfermion.transforms import binary_code_transform
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import eigenspectrum
+from openfermion.transforms import jordan_wigner,bravyi_kitaev
 
 
 def lih_hamiltonian():
@@ -48,6 +49,8 @@ class CodeTransformTest(unittest.TestCase):
         qubit_hamiltonian = binary_code_transform(hamiltonian, code)
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
+        self.assertDictEqual(qubit_hamiltonian.terms,
+                               jordan_wigner(hamiltonian).terms)
 
     def test_bravyi_kitaev(self):
         hamiltonian, gs_energy = lih_hamiltonian()
@@ -55,6 +58,10 @@ class CodeTransformTest(unittest.TestCase):
         qubit_hamiltonian = binary_code_transform(hamiltonian, code)
         self.assertAlmostEqual(gs_energy,
                                eigenspectrum(qubit_hamiltonian)[0])
+        qubit_spectrum = eigenspectrum(qubit_hamiltonian)
+        fenwick_spectrum = eigenspectrum(bravyi_kitaev(hamiltonian))
+        for eigen_idx, eigenvalue in enumerate(qubit_spectrum):
+            self.assertAlmostEqual(eigenvalue,fenwick_spectrum[eigen_idx])
 
     def test_parity_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()
