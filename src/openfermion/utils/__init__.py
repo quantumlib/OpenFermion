@@ -17,8 +17,6 @@ from ._channel_state import (amplitude_damping_channel, dephasing_channel,
 
 from ._commutators import anticommutator, commutator, double_commutator
 
-from ._equals_tester import EqualsTester
-
 from ._grid import Grid
 
 from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,

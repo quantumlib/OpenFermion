@@ -14,7 +14,8 @@ from __future__ import absolute_import
 
 import unittest
 
-from openfermion.utils import Grid, EqualsTester
+from openfermion.utils import Grid
+from openfermion.utils._testing_utils import EqualsTester
 
 
 class GridTest(unittest.TestCase):

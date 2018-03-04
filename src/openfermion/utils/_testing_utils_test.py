@@ -13,7 +13,7 @@
 import fractions
 import unittest
 
-from openfermion.utils import EqualsTester
+from openfermion.utils._testing_utils import EqualsTester
 
 
 class EqualsTesterTest(unittest.TestCase):
