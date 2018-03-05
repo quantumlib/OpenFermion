@@ -116,9 +116,8 @@ def _binary_address(digits, address):
 def checksum_code(modes, odd):
     """ Checksum code for either even or odd Hamming weight. The Hamming weight
     is defined such that it yields the total occupation number for a given basis
-    states. A Checksum code with odd weight will encode all states with odd
-    occupation number. This code saves one qubit:
-    n_qubits = n_modes - 1.
+    state. A Checksum code with odd weight will encode all states with odd
+    occupation number. This code saves one qubit: n_qubits = n_modes - 1.
         
     Args:
         modes (int): number of modes
@@ -156,10 +155,9 @@ def bravyi_kitaev_code(modes):
 
 
 def parity_code(modes):
-    """ The parity transform (arXiv:1208.5986) as binary code.
-    This code is very similar to the Jordan-Wigner transform,
-    but with long update strings instead of parity strings. 
-    It does not save qubits: n_qubits = n_modes.
+    """ The parity transform (arXiv:1208.5986) as binary code. This code is
+    very similar to the Jordan-Wigner transform, but with long update strings
+    instead of parity strings. It does not save qubits: n_qubits = n_modes.
         
     Args:
         modes (int): number of modes
@@ -178,10 +176,9 @@ def weight_one_binary_addressing_code(exponent):
     """ Weight-1 binary addressing code (arXiv:1712.07067). This highly
     non-linear code works for a number of modes that is an integer power
     of two. It encodes all possible vectors with Hamming weight 1, which
-    corresponds to all states with total occupation  one.  The amount of
-    qubits saved here is maximal: for the parameter 'exponent', we find
+    corresponds to all states with total occupation one. The amount of
+    qubits saved here is maximal: for a given argument 'exponent', we find
     n_modes = 2 ^ exponent, n_qubits = exponent. 
-    
 
     Note:
         This code is highly non-linear and might produce a lot of terms.
@@ -202,7 +199,7 @@ def weight_one_binary_addressing_code(exponent):
 def weight_one_segment_code():
     """ Weight-1 segment code (arXiv:1712.07067). Outputs a 3-mode, 2-qubit
     code, which encodes all the vectors (states) with Hamming weight
-    (occupation) 0 and 1.  n_qubits = 2, n_modes = 3.
+    (occupation) 0 and 1. n_qubits = 2, n_modes = 3.
 
     Note:
         This code is highly non-linear and might produce a lot of terms.
@@ -216,7 +213,8 @@ def weight_one_segment_code():
 def weight_two_segment_code():
     """ Weight-2 segment code (arXiv:1712.07067). Outputs a 5-mode, 4-qubit
     code, which encodes all the vectors (states) with Hamming weight
-    (occupation) 2 and 1.  n_qubits = 4,  n_modes = 5.
+    (occupation) 2 and 1. n_qubits = 4, n_modes = 5.
+
     Note:
         This code is highly non-linear and might produce a lot of terms.
 
