@@ -9,7 +9,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """ Pre-existing codes for Fermion-qubit mappings
     based on (arXiv:1712.07067) """
 
@@ -18,40 +17,40 @@ import numpy
 from openfermion.ops import BinaryCode, SymbolicBinary, linearize_decoder
 
 
-def _encoder_bk(dimension):
+def _encoder_bk(n_modes):
     """  Helper function for bravyi_kitaev_code that outputs the binary-tree
     (dimension x dimension)-matrix used for the encoder in the
     Bravyi-Kitaev transform.
 
     Args:
-        dimension (int): length of the matrix, the dimension x dimension
+        n_modes (int): length of the matrix, the dimension x dimension
 
     Returns (numpy.ndarray): encoder matrix
     """
-    reps = int(numpy.ceil(numpy.log2(dimension)))
+    reps = int(numpy.ceil(numpy.log2(n_modes)))
     mtx = numpy.array([[1, 0], [1, 1]])
     for repetition in numpy.arange(1, reps + 1):
         mtx = numpy.kron(numpy.eye(2, dtype=int), mtx)
         for column in numpy.arange(0, 2 ** repetition):
             mtx[2 ** (repetition + 1) - 1, column] = 1
-    return mtx[0:dimension, 0:dimension]
+    return mtx[0:n_modes, 0:n_modes]
 
 
-def _decoder_bk(modes):
+def _decoder_bk(n_modes):
     """ Helper function for bravyi_kitaev_code that outputs the inverse of the
     binary tree matrix utilized for decoder in the Bravyi-Kitaev transform.
 
     Args:
-        modes (int): size of the matrix is modes x modes
+        n_modes (int): size of the matrix is modes x modes
 
     Returns (numpy.ndarray): decoder matrix
     """
-    reps = int(numpy.ceil(numpy.log2(modes)))
+    reps = int(numpy.ceil(numpy.log2(n_modes)))
     mtx = numpy.array([[1, 0], [1, 1]])
     for repetition in numpy.arange(1, reps + 1):
         mtx = numpy.kron(numpy.eye(2, dtype=int), mtx)
         mtx[2 ** (repetition + 1) - 1, 2 ** repetition - 1] = 1
-    return mtx[0:modes, 0:modes]
+    return mtx[0:n_modes, 0:n_modes]
 
 
 def _encoder_checksum(modes):
@@ -113,61 +112,62 @@ def _binary_address(digits, address):
     return list(map(int, list(address))), binary_expression
 
 
-def checksum_code(modes, odd):
+def checksum_code(n_modes, odd):
     """ Checksum code for either even or odd Hamming weight. The Hamming weight
     is defined such that it yields the total occupation number for a given basis
     state. A Checksum code with odd weight will encode all states with odd
     occupation number. This code saves one qubit: n_qubits = n_modes - 1.
         
     Args:
-        modes (int): number of modes
+        n_modes (int): number of modes
         odd (int or bool): 1 (True) or 0 (False), if odd,
             we encode all states with odd Hamming weight
 
     Returns (BinaryCode): The checksum BinaryCode
     """
-    return BinaryCode(_encoder_checksum(modes), _decoder_checksum(modes, odd))
+    return BinaryCode(_encoder_checksum(n_modes),
+                      _decoder_checksum(n_modes, odd))
 
 
-def jordan_wigner_code(modes):
+def jordan_wigner_code(n_modes):
     """ The Jordan-Wigner transform as binary code.
         
     Args:
-        modes (int): number of modes
+        n_modes (int): number of modes
 
     Returns (BinaryCode): The Jordan-Wigner BinaryCode
     """
-    return BinaryCode(numpy.identity(modes, dtype=int), linearize_decoder(
-        numpy.identity(modes, dtype=int)))
+    return BinaryCode(numpy.identity(n_modes, dtype=int), linearize_decoder(
+        numpy.identity(n_modes, dtype=int)))
 
 
-def bravyi_kitaev_code(modes):
+def bravyi_kitaev_code(n_modes):
     """ The Bravyi-Kitaev transform as binary code. The implementation
     follows arXiv:1208.5986.
         
     Args:
-        modes (int): number of modes
+        n_modes (int): number of modes
 
     Returns (BinaryCode): The Bravyi-Kitaev BinaryCode
     """
-    return BinaryCode(_encoder_bk(modes),
-                      linearize_decoder(_decoder_bk(modes)))
+    return BinaryCode(_encoder_bk(n_modes),
+                      linearize_decoder(_decoder_bk(n_modes)))
 
 
-def parity_code(modes):
+def parity_code(n_modes):
     """ The parity transform (arXiv:1208.5986) as binary code. This code is
     very similar to the Jordan-Wigner transform, but with long update strings
     instead of parity strings. It does not save qubits: n_qubits = n_modes.
         
     Args:
-        modes (int): number of modes
+        n_modes (int): number of modes
 
     Returns (BinaryCode): The parity transform BinaryCode
     """
-    dec_mtx = numpy.reshape(([1] + [0] * (modes - 1)) +
-                            ([1, 1] + (modes - 1) * [0]) * (modes - 2) +
-                            [1, 1], (modes, modes))
-    enc_mtx = numpy.tril(numpy.ones((modes, modes), dtype=int))
+    dec_mtx = numpy.reshape(([1] + [0] * (n_modes - 1)) +
+                            ([1, 1] + (n_modes - 1) * [0]) * (n_modes - 2) +
+                            [1, 1], (n_modes, n_modes))
+    enc_mtx = numpy.tril(numpy.ones((n_modes, n_modes), dtype=int))
 
     return BinaryCode(enc_mtx, linearize_decoder(dec_mtx))
 
