@@ -200,6 +200,8 @@ def weight_one_segment_code():
     """ Weight-1 segment code (arXiv:1712.07067). Outputs a 3-mode, 2-qubit
     code, which encodes all the vectors (states) with Hamming weight
     (occupation) 0 and 1. n_qubits = 2, n_modes = 3.
+    A linear amount of qubits can be saved  appending several instances of this
+    code.
 
     Note:
         This code is highly non-linear and might produce a lot of terms.
@@ -214,6 +216,8 @@ def weight_two_segment_code():
     """ Weight-2 segment code (arXiv:1712.07067). Outputs a 5-mode, 4-qubit
     code, which encodes all the vectors (states) with Hamming weight
     (occupation) 2 and 1. n_qubits = 4, n_modes = 5.
+    A linear amount of qubits can be saved  appending several instances of this
+    code.
 
     Note:
         This code is highly non-linear and might produce a lot of terms.
