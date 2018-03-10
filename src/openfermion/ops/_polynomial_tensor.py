@@ -137,7 +137,7 @@ class PolynomialTensor(object):
     @property
     def constant(self):
         """Get the value of the constant term."""
-        return self.n_body_tensors[()]
+        return self.n_body_tensors.get((), 0.)
 
     @constant.setter
     def constant(self, value):
