@@ -13,10 +13,10 @@
 """testing angular momentum generators. _fermion_spin_operators.py"""
 import numpy
 import unittest
-from openfermion.hamiltonians import (up_index, down_index, s_minus_operator,
-                                      s_plus_operator, sz_operator,
-                                      s_squared_operator)
 from openfermion.ops import FermionOperator
+from openfermion.utils import (up_index, down_index, s_minus_operator,
+                               s_plus_operator, sz_operator,
+                               s_squared_operator)
 
 
 class FermionSpinOperatorsTest(unittest.TestCase):

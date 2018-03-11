@@ -21,13 +21,12 @@ from scipy.sparse import csc_matrix
 from scipy.special import comb
 
 from openfermion.hamiltonians import (fermi_hubbard, jellium_model,
-                                      number_operator,
-                                      wigner_seitz_length_scale,
-                                      up_index, down_index)
+                                      wigner_seitz_length_scale)
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
                                     jordan_wigner)
-from openfermion.utils import fourier_transform, Grid
+from openfermion.utils import (Grid, fourier_transform, number_operator,
+                               up_index, down_index) 
 from openfermion.utils._jellium_hf_state import (
     lowest_single_particle_energy_states)
 from openfermion.utils._slater_determinants_test import (
@@ -640,7 +639,7 @@ class GroundStateTest(unittest.TestCase):
         self.assertAlmostEqual(ground[0], -2)
         self.assertAlmostEqual(
             numpy.absolute(
-                expected_state.T.conj().dot(ground[1].A))[0, 0], 1.0)
+                expected_state.T.conj().dot(ground[1]))[0], 1.)
 
     def test_get_ground_state_nonhermitian(self):
         with self.assertRaises(ValueError):

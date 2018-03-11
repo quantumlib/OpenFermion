@@ -733,11 +733,11 @@ class MolecularData(object):
 
     def get_n_alpha_electrons(self):
         """Return number of alpha electrons."""
-        return self.n_electrons / 2 + (self.multiplicity - 1)
+        return int((self.n_electrons + (self.multiplicity - 1)) // 2)
 
     def get_n_beta_electrons(self):
         """Return number of beta electrons."""
-        return self.n_electrons / 2 - (self.multiplicity - 1)
+        return int((self.n_electrons - (self.multiplicity - 1)) // 2)
 
     def get_integrals(self):
         """Method to return 1-electron and 2-electron integrals in MO basis.
@@ -820,7 +820,7 @@ class MolecularData(object):
                                              active_indices,
                                              active_indices)])
 
-    def get_molecular_hamiltonian(self,occupied_indices=None,
+    def get_molecular_hamiltonian(self, occupied_indices=None,
                                   active_indices=None):
         """Output arrays of the second quantized Hamiltonian coefficients.
 
@@ -829,7 +829,7 @@ class MolecularData(object):
                 indicating which orbitals should be considered doubly occupied.
             active_indices(list): A list of spatial orbital indices indicating
                 which orbitals should be considered active.
-                
+
         Returns:
             molecular_hamiltonian: An instance of the MolecularOperator class.
         """
@@ -851,7 +851,7 @@ class MolecularData(object):
         # Loop through integrals.
         for p in range(n_qubits // 2):
             for q in range(n_qubits // 2):
-        
+
                 # Populate 1-body coefficients. Require p and q have same spin.
                 one_body_coefficients[2 * p, 2 * q] = one_body_integrals[
                     p, q]
