@@ -75,9 +75,9 @@ def _preprocess_for_efficient_roulette_selection(discretized_probabilities):
     sampling process is guaranteed to be equivalent to simply picking index i
     with probability weights[i] / sum(weights):
 
-        1. Pick a number i from 0 (inclusive) to len(weights) (exclusive)
-        2. With probability keep_weights[i] / sum(weights), return 1
-        3. Otherwise return alternates[i]
+        1. Pick a number i in [0, len(weights) - 1] uniformly at random.
+        2. With probability keep_weights[i] / sum(weights), return i.
+        3. Otherwise return alternates[i].
 
     In other words, the output makes it possible to perform roulette selection
     while generating only two random numbers, doing a single lookup of the
@@ -166,8 +166,13 @@ def preprocess_lcu_coefficients_for_reversible_sampling(
             [2]: A python int indicating the denominator to divide the
                 numerators in [1] by in order to get a probability.
 
-            It is guaranteed keep_numers[i] / keep_denom will be within epsilon
-            of lcu_coefficients[i] / sum(lcu_coefficients).
+        It is guaranteed that following the following sampling process will
+        sample each index k with a probability within epsilon of
+        lcu_coefficients[k] / sum(lcu_coefficients):
+
+        1. Uniformly sample an index i from [0, len(lcu_coefficients) - 1].
+        2. With probability keep_numers[i] / keep_denom, return i.
+        3. Otherwise return alternates[i].
     """
     numers, denom = _discretize_probability_distribution(
         lcu_coefficients, epsilon)
