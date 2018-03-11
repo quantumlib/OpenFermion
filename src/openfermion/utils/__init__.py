@@ -65,3 +65,5 @@ from ._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_operator)
 
 from ._jellium_hf_state import hartree_fock_state_jellium
+
+from ._lcu_util import preprocess_lcu_coefficients_for_reversible_sampling
