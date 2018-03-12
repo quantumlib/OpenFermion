@@ -152,11 +152,12 @@ How to cite
 ===========
 When using OpenFermion for research projects, please cite:
 
-    Jarrod R. McClean, Ian D. Kivlichan, Damian S. Steiger, Kevin J. Sung,
-    Yudong Cao, Chengyu Dai, E. Schuyler Fried, Craig Gidney, Thomas Häner,
-    Vojtĕch Havlíček, Cupjin Huang, Zhang Jiang, Matthew Neeley, Jhonathan Romero,
-    Nicholas Rubin, Nicolas P. D. Sawaya, Kanav Setia, Sukin Sim, Wei Sun,
-    Fang Zhang and Ryan Babbush.
+    Jarrod R. McClean, Ian D. Kivlichan, Kevin J. Sung, Damian S. Steiger,
+    Yudong Cao, Chengyu Dai, E. Schuyler Fried, Craig Gidney, Brendan Gimby,
+    Thomas Häner, Tarini Hardikar, Vojtĕch Havlíček, Cupjin Huang, Zhang Jiang,
+    Matthew Neeley, Thomas O'Brien, Isil Ozfidan, Maxwell D. Radin, Jhonathan Romero,
+    Nicholas Rubin, Nicolas P. D. Sawaya, Kanav Setia, Sukin Sim, Mark Steudtner,
+    Wei Sun, Fang Zhang and Ryan Babbush.
     *OpenFermion: The Electronic Structure Package for Quantum Computers*.
     `arXiv:1710.07629 <https://arxiv.org/abs/1710.07629>`__. 2017.
 
