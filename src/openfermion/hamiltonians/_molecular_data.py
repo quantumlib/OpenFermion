@@ -832,6 +832,11 @@ class MolecularData(object):
 
         Returns:
             molecular_hamiltonian: An instance of the MolecularOperator class.
+
+        Note:
+            The indexing convention used is that even indices correspond to
+            spin-up (alpha) modes and odd indices correspond to spin-down
+            (beta) modes.
         """
         # Get active space integrals.
         if occupied_indices is None and active_indices is None:
