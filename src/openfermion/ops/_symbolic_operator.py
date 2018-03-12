@@ -530,6 +530,11 @@ class SymbolicOperator(object):
             exponentiated *= self
         return exponentiated
 
+    def __eq__(self, other):
+        return self.isclose(other)
+
+    __hash__ = None
+
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
         Eliminates all terms with coefficients close to zero and removes
