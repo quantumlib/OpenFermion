@@ -256,8 +256,7 @@ def jw_number_indices(n_electrons, n_qubits):
     return indices
 
 
-def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
-                  up_map=up_index, down_map=down_index):
+def jw_sz_indices(sz_value, n_qubits, n_electrons=None):
     """Return the indices of basis vectors with fixed Sz under JW encoding.
 
     The returned indices label computational basis vectors which lie within
@@ -274,14 +273,6 @@ def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
         n_qubits(int): Number of qubits defining the total state
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired
-        up_map(function, optional): function mapping a spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals
-        down_map(function, optional): function mapping spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals.
 
     Returns:
         indices(list): The list of indices
@@ -311,9 +302,9 @@ def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
         # Each arrangement of up spins can be paired with an arrangement
         # of down spins
         for up_occupation in up_occupations:
-            up_occupation = [up_map(index) for index in up_occupation]
+            up_occupation = [up_index(index) for index in up_occupation]
             for down_occupation in down_occupations:
-                down_occupation = [down_map(index)
+                down_occupation = [down_index(index)
                                    for index in down_occupation]
                 occupation = up_occupation + down_occupation
                 indices.append(sum(2 ** (n_qubits - 1 - k)
@@ -322,12 +313,12 @@ def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
         # Particle number is not fixed
         if sz_integer < 0:
             # There are more down spins than up spins
-            more_map = down_map
-            less_map = up_map
+            more_map = down_index
+            less_map = up_index
         else:
             # There are at least as many up spins as down spins
-            more_map = up_map
-            less_map = down_map
+            more_map = up_index
+            less_map = down_index
         for n in range(abs(sz_integer), n_sites + 1):
             # Choose n of the 'more' spin and n - abs(sz_integer) of the
             # 'less' spin
@@ -370,8 +361,7 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
 
 
 def jw_sz_restrict_operator(operator, sz_value,
-                            n_electrons=None, n_qubits=None,
-                            up_map=up_index, down_map=down_index):
+                            n_electrons=None, n_qubits=None):
     """Restrict a Jordan-Wigner encoded operator to a given Sz value
 
     Args:
@@ -382,14 +372,6 @@ def jw_sz_restrict_operator(operator, sz_value,
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired.
         n_qubits(int, optional): Number of qubits defining the total state
-        up_map(function, optional): function mapping a spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals
-        down_map(function, optional): function mapping spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals.
 
     Returns:
         new_operator(ndarray or sparse): Numpy operator restricted to
@@ -398,8 +380,7 @@ def jw_sz_restrict_operator(operator, sz_value,
     if n_qubits is None:
         n_qubits = int(numpy.log2(operator.shape[0]))
 
-    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons,
-                                   up_map=up_map, down_map=down_map)
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
     return operator[numpy.ix_(select_indices, select_indices)]
 
 
@@ -423,8 +404,7 @@ def jw_number_restrict_state(state, n_electrons, n_qubits=None):
     return state[select_indices]
 
 
-def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None,
-                         up_map=up_index, down_map=down_index):
+def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None):
     """Restrict a Jordan-Wigner encoded state to a given Sz value
 
     Args:
@@ -435,14 +415,6 @@ def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None,
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired.
         n_qubits(int, optional): Number of qubits defining the total state
-        up_map(function, optional): function mapping a spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals
-        down_map(function, optional): function mapping spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals.
 
     Returns:
         new_operator(ndarray or sparse): Numpy vector restricted to
@@ -451,8 +423,7 @@ def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None,
     if n_qubits is None:
         n_qubits = int(numpy.log2(state.shape[0]))
 
-    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons,
-                                   up_map=up_map, down_map=down_map)
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
     return state[select_indices]
 
 
