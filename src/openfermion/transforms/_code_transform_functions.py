@@ -164,10 +164,8 @@ def parity_code(n_modes):
 
     Returns (BinaryCode): The parity transform BinaryCode
     """
-    dec_mtx = numpy.reshape(([1] + [0] * (n_modes - 1)) +
-                            ([1, 1] + (n_modes - 1) * [0]) * (n_modes - 2) +
-                            [1, 1], (n_modes, n_modes))
     enc_mtx = numpy.tril(numpy.ones((n_modes, n_modes), dtype=int))
+    dec_mtx = numpy.linalg.inv(enc_mtx)
 
     return BinaryCode(enc_mtx, linearize_decoder(dec_mtx))
 
