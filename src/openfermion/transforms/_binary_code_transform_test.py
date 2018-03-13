@@ -38,7 +38,7 @@ class CodeTransformTest(unittest.TestCase):
         transform = binary_code_transform(hamiltonian, code)
         self.assertDictEqual(transform.terms, {((0, 'X'), (1, 'Z')): 0.375,
                                                ((0, 'X'),): -0.125,
-                                               ((0, 'Y'),): 0.125j,
-                                               ((0, 'Y'), (1, 'Z')): 0.125j})
+                                               ((0, 'Y'),): -0.125j,
+                                               ((0, 'Y'), (1, 'Z')): -0.125j})
         with self.assertRaises(ValueError):
             dissolve(((1, '1'),))
