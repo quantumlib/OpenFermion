@@ -82,7 +82,9 @@ def linearize_decoder(matrix):
     for row_idx in numpy.arange(system_dim):
         dec_str = ''
         for col_idx in numpy.arange(code_dim):
-            if matrix[row_idx, col_idx] == 1:
+            if matrix[row_idx, col_idx]%2 == 1:
+                if numpy.sign(matrix[row_idx, col_idx])<0:
+                    dec_str += '1 + '
                 dec_str += 'W' + str(col_idx) + ' + '
         dec_str = dec_str.rstrip(' + ')
         decoder.append(SymbolicBinary(dec_str))
