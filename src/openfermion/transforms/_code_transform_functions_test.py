@@ -13,6 +13,8 @@
 import unittest
 
 from openfermion.transforms._code_transform_functions import *
+from openfermion.transforms import jordan_wigner
+from openfermion.ops import FermionOperator
 from openfermion.hamiltonians import MolecularData
 from openfermion.transforms import binary_code_transform
 from openfermion.transforms import get_fermion_operator
@@ -36,6 +38,25 @@ def lih_hamiltonian():
 
 
 class CodeTransformTest(unittest.TestCase):
+    def test_tranform_function(self):
+        ferm_op = FermionOperator('2')
+        n_modes = 5
+        qubit_op = binary_code_transform(ferm_op, parity_code(n_modes))
+        self.assertEqual(qubit_op.terms,
+                         {((1, 'Z'), (2, 'X'),(3, 'X'),(4, 'X')): 0.5,
+                          ((2, 'Y'),(3, 'X'), (4, 'X')): 0.5j})
+        ferm_op = FermionOperator('2^')
+        n_modes = 5
+        qubit_op = binary_code_transform(ferm_op, parity_code(n_modes))
+        self.assertEqual(qubit_op.terms,
+                         {((1, 'Z'), (2, 'X'), (3, 'X'), (4, 'X')): 0.5,
+                          ((2, 'Y'), (3, 'X'), (4, 'X')): -0.5j})
+
+        ferm_op = FermionOperator('5^')
+        op1 = jordan_wigner(ferm_op)
+        op2 = binary_code_transform(ferm_op, jordan_wigner_code(6))
+        self.assertEqual(op1.terms,op2.terms)
+
     def test_checksum_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()
         code = checksum_code(4, 0)
