@@ -12,8 +12,7 @@
 
 """Tests for _lcu_util.py."""
 
-from __future__ import absolute_import
-from __future__ import division
+from __future__ import absolute_import, division
 
 import random
 import unittest

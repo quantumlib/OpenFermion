@@ -12,13 +12,13 @@
 
 """Utility methods for LCU circuits."""
 
-from __future__ import absolute_import
-from __future__ import division
+from __future__ import absolute_import, division
 
 import math
 
 
 def _partial_sums(vals):
+    """Adds up the items in the input, yielding partial sums along the way."""
     total = 0
     for v in vals:
         yield total
@@ -27,28 +27,28 @@ def _partial_sums(vals):
 
 
 def _differences(weights):
-    p = None
-    have_p = False
+    """Iterates over the input yielding differences between adjacent items."""
+    previous_weight = None
+    have_previous_weight = False
     for w in weights:
-        if have_p:
-            yield w - p
-        p = w
-        have_p = True
+        if have_previous_weight:
+            yield w - previous_weight
+        previous_weight = w
+        have_previous_weight = True
 
 
 def _discretize_probability_distribution(unnormalized_probabilities, epsilon):
     """Approximates probabilities with integers over a common denominator.
 
     Args:
-        unnormalized_probabilities: A list of non-negative numbers proportional
+        unnormalized_probabilities: A list of non-negative floats proportional
             to probabilities from a probability distribution. The numbers may
             not be normalized (they do not have to add up to 1).
         epsilon: The absolute error tolerance.
 
     Returns:
-        A tuple containing:
-            [0]: A list of numerators.
-            [1]: A common denominator.
+        numerators (list[int]): A list of numerators for each probability.
+        denominator (int): A common denominator.
 
         It is guaranteed that numerators[i] / denominator is within epsilon of
         the i'th input probability (after normalization).
@@ -57,11 +57,11 @@ def _discretize_probability_distribution(unnormalized_probabilities, epsilon):
         number of probabilities in the distribution.
     """
     n = len(unnormalized_probabilities)
-    bin_count = math.ceil(1.0 / (epsilon * n)) * n
+    bin_count = math.ceil(1 / (epsilon * n)) * n
 
     cumulative = list(_partial_sums(unnormalized_probabilities))
     total = cumulative[-1]
-    discretized_cumulative = [int(math.floor(c/total*bin_count + 0.5))
+    discretized_cumulative = [int(math.floor(c / total * bin_count + 0.5))
                               for c in cumulative]
     discretized = list(_differences(discretized_cumulative))
     return discretized, bin_count
@@ -93,10 +93,11 @@ def _preprocess_for_efficient_roulette_selection(discretized_probabilities):
             sum of this list is a multiple of the number of items in the list.
 
     Returns:
-        A tuple containing:
-            [0]: An alternate item for each index from 0 to len(weights) - 1
-            [1]: A list of "donated weight", indicating how often one should
-                stay at index i instead of switching to alternate[i].
+        alternates (list[int]): An alternate index for each index from 0 to
+            len(weights) - 1
+        keep_weight (list[int]): Indicates how often one should stay at index i
+            instead of switching to alternates[i]. Divide by the sum of the
+            given discretized_probabilities to get normalized probabilities.
     """
     weights = list(discretized_probabilities)  # Need a copy we can mutate.
     if not weights:
@@ -156,15 +157,15 @@ def preprocess_lcu_coefficients_for_reversible_sampling(
         epsilon: Absolute error tolerance.
 
     Returns:
-        An (alternates, keep_numers, keep_denom) tuple containing:
-            [0]: A python list of ints indicating alternative indices that may
-                be switched to after generating a uniform index. The int at
-                offset k is the alternate to use when the initial index is k.
-            [1]: A python list of ints indicating the numerators of the
-                probability that the alternative index should be used instead
-                of the initial index.
-            [2]: A python int indicating the denominator to divide the
-                numerators in [1] by in order to get a probability.
+        alternates (list[int]): A python list of ints indicating alternative
+            indices that may be switched to after generating a uniform index.
+            The int at offset k is the alternate to use when the initial index
+            is k.
+        keep_numers (list[int]): A python list of ints indicating the
+            numerators of the probability that the alternative index should be
+            used instead of the initial index.
+        keep_denom (int): A python int indicating the denominator to divide the
+            items in keep_numers by in order to get a probability.
 
         It is guaranteed that following the following sampling process will
         sample each index k with a probability within epsilon of
