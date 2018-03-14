@@ -157,24 +157,23 @@ class JWSzIndicesTest(unittest.TestCase):
     def test_jw_sz_indices(self):
         """Test the indexing scheme for selecting specific sz value"""
 
-        def sz_integer(bitstring, up_map=up_index, down_map=down_index):
+        def sz_integer(bitstring):
             """Computes the total number of occupied up sites
             minus the total number of occupied down sites."""
             n_sites = len(bitstring) // 2
 
             n_up = len([site for site in range(n_sites)
-                        if bitstring[up_map(site)] == '1'])
+                        if bitstring[up_index(site)] == '1'])
             n_down = len([site for site in range(n_sites)
-                          if bitstring[down_map(site)] == '1'])
+                          if bitstring[down_index(site)] == '1'])
 
             return n_up - n_down
 
-        def jw_sz_indices_brute_force(sz_value, n_qubits,
-                                      up_map=up_index, down_map=down_index):
+        def jw_sz_indices_brute_force(sz_value, n_qubits):
             """Computes the correct indices by brute force."""
             indices = []
             for bitstring in itertools.product(['0', '1'], repeat=n_qubits):
-                if (sz_integer(bitstring, up_map, down_map) ==
+                if (sz_integer(bitstring) ==
                         int(2 * sz_value)):
                     indices.append(int(''.join(bitstring), 2))
 
