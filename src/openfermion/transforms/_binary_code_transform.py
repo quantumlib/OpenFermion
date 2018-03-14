@@ -167,12 +167,15 @@ def binary_code_transform(hamiltonian, code):
         # the update operator
         changed_qubit_vector = numpy.mod(code.encoder.dot(
             changed_occupation_vector), 2)
+
+        update_operator = QubitOperator(())
         for index, q_vec in enumerate(changed_qubit_vector):
             if q_vec:
-                transformed_term *= QubitOperator('X' + str(index))
+                update_operator *= QubitOperator('X' + str(index))
 
         # append new term to new hamiltonian
-        new_hamiltonian += term_coefficient * transformed_term
+        new_hamiltonian += term_coefficient * update_operator * \
+                           transformed_term
 
     new_hamiltonian.compress()
     return new_hamiltonian
