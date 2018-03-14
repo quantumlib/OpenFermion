@@ -17,7 +17,6 @@ from __future__ import division
 import itertools
 
 import numpy
-from scipy.special import comb
 from openfermion.ops import FermionOperator, QubitOperator
 
 
@@ -122,18 +121,16 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
         raise ValueError('A singlet state must have an even number of '
                          'electrons.')
 
+    # Since the total spin S^2 is conserved, we work with spatial orbitals
     n_spatial_orbitals = n_qubits // 2
-    n_occupied_spatial = n_electrons // 2
-    n_virtual_spatial = n_spatial_orbitals - n_occupied_spatial
+    n_occupied = n_electrons // 2
+    n_virtual = n_spatial_orbitals - n_occupied
 
-    n_single_amplitudes_per_spin = n_occupied_spatial * n_virtual_spatial
-    n_single_amplitudes = 2 * n_single_amplitudes_per_spin
+    n_single_amplitudes = n_occupied * n_virtual
 
-    n_double_amplitudes_different_spin = n_single_amplitudes_per_spin ** 2
-    n_double_amplitudes_same_spin = 2 * (int(comb(n_occupied_spatial, 2)) *
-                                         int(comb(n_virtual_spatial, 2)))
-    n_double_amplitudes = (n_double_amplitudes_different_spin +
-                           n_double_amplitudes_same_spin)
+    # Below is equivalent to
+    #     n_single_amplitudes + (n_single_amplitudes choose 2)
+    n_double_amplitudes = n_single_amplitudes * (n_single_amplitudes + 1) // 2
 
     return n_single_amplitudes + n_double_amplitudes
 
