@@ -17,6 +17,7 @@ from __future__ import division
 import itertools
 
 import numpy
+from scipy.special import comb
 from openfermion.ops import FermionOperator, QubitOperator
 
 
@@ -117,12 +118,24 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
         Number of independent parameters for singlet UCCSD with a single
         reference.
     """
-    n_occupied = int(numpy.ceil(n_electrons / 2.))
-    n_virtual = n_qubits // 2 - n_occupied
+    if n_electrons % 2 != 0:
+        raise ValueError('A singlet state must have an even number of '
+                         'electrons.')
 
-    n_single_amplitudes = n_occupied * n_virtual
-    n_double_amplitudes = n_single_amplitudes ** 2
-    return (n_single_amplitudes + n_double_amplitudes)
+    n_spatial_orbitals = n_qubits // 2
+    n_occupied_spatial = n_electrons // 2
+    n_virtual_spatial = n_spatial_orbitals - n_occupied_spatial
+
+    n_single_amplitudes_per_spin = n_occupied_spatial * n_virtual_spatial
+    n_single_amplitudes = 2 * n_single_amplitudes_per_spin
+
+    n_double_amplitudes_different_spin = n_single_amplitudes_per_spin ** 2
+    n_double_amplitudes_same_spin = 2 * int(comb(n_single_amplitudes_per_spin,
+                                                 2))
+    n_double_amplitudes = (n_double_amplitudes_different_spin +
+                           n_double_amplitudes_same_spin)
+
+    return n_single_amplitudes + n_double_amplitudes
 
 
 def uccsd_singlet_operator(packed_amplitudes,
