@@ -12,9 +12,11 @@
 
 """Module to create and manipulate unitary coupled cluster operators."""
 
-import itertools
-import numpy
+from __future__ import division
 
+import itertools
+
+import numpy
 from openfermion.ops import FermionOperator, QubitOperator
 
 
@@ -116,7 +118,7 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
         reference.
     """
     n_occupied = int(numpy.ceil(n_electrons / 2.))
-    n_virtual = n_qubits / 2 - n_occupied
+    n_virtual = n_qubits // 2 - n_occupied
 
     n_single_amplitudes = n_occupied * n_virtual
     n_double_amplitudes = n_single_amplitudes ** 2
