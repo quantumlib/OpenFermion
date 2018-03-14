@@ -130,8 +130,8 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
     n_single_amplitudes = 2 * n_single_amplitudes_per_spin
 
     n_double_amplitudes_different_spin = n_single_amplitudes_per_spin ** 2
-    n_double_amplitudes_same_spin = 2 * int(comb(n_single_amplitudes_per_spin,
-                                                 2))
+    n_double_amplitudes_same_spin = 2 * (int(comb(n_occupied_spatial, 2)) *
+                                         int(comb(n_virtual_spatial, 2)))
     n_double_amplitudes = (n_double_amplitudes_different_spin +
                            n_double_amplitudes_same_spin)
 
