@@ -56,7 +56,7 @@ def update_set(index, n_qubits):
     while index <= n_qubits:
         indices.add(index - 1)
         # Add least significant one to index
-        index += index & (-index)
+        index += index & -index
     return indices
 
 
@@ -69,7 +69,7 @@ def occupation_set(index):
     index -= 1
     while index != parent:
         indices.add(index - 1)
-        index = index & (index - 1)
+        index &= index - 1
     return indices
 
 
@@ -80,7 +80,7 @@ def parity_set(index):
     while index > 0:
         indices.add(index - 1)
         # Remove least significant one from index
-        index = index & (index - 1)
+        index &= index - 1
     return indices
 
 
@@ -125,7 +125,8 @@ def _transform_ladder_operator(ladder_operator, n_qubits):
     # The transformed (a_p^\dagger - a_p) / 2
     transformed_majorana_difference = (
             QubitOperator([(index, 'X') for index in update_set_], .5) *
-            QubitOperator([(index, 'Z') for index in occupation_set_]))
+            QubitOperator([(index, 'Z') for index in
+                           parity_set_ ^ occupation_set_]))
 
     # raising
     if action == 1:

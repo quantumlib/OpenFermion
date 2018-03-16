@@ -59,8 +59,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         correct_operators_d = ((7, 'Z'), (9, 'Y'), (11, 'X'), (15, 'X'))
 
         self.assertEqual(lowering.terms[correct_operators_c], 0.5)
-        self.assertEqual(lowering.terms[correct_operators_d], 0.5)
-        self.assertEqual(raising.terms[correct_operators_d], -0.5)
+        self.assertEqual(lowering.terms[correct_operators_d], 0.5j)
+        self.assertEqual(raising.terms[correct_operators_d], -0.5j)
         self.assertEqual(raising.terms[correct_operators_c], 0.5)
 
     def test_bk_identity(self):
