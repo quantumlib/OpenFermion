@@ -50,6 +50,8 @@ def bravyi_kitaev(operator, n_qubits=None):
 
 
 def update_set(index, n_qubits):
+    """The bits that need to be updated upon flipping the occupancy
+    of a mode."""
     indices = set()
     index += 1
 
@@ -61,6 +63,7 @@ def update_set(index, n_qubits):
 
 
 def occupation_set(index):
+    """The bits whose parity stores the occupation of mode `index`."""
     indices = set()
     index += 1
 
@@ -69,11 +72,13 @@ def occupation_set(index):
     index -= 1
     while index != parent:
         indices.add(index - 1)
+        # Remove least significant one from index
         index &= index - 1
     return indices
 
 
 def parity_set(index):
+    """The bits whose parity stores the parity of the bits 0 .. `index`."""
     indices = set()
     index += 1
 
@@ -128,10 +133,10 @@ def _transform_ladder_operator(ladder_operator, n_qubits):
             QubitOperator([(index, 'Z') for index in
                            parity_set_ ^ occupation_set_]))
 
-    # raising
+    # Raising
     if action == 1:
         return transformed_majorana_sum + transformed_majorana_difference
-    # lowering
+    # Lowering
     else:
         return transformed_majorana_sum - transformed_majorana_difference
 
