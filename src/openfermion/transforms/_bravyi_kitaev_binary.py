@@ -124,14 +124,17 @@ def _transform_ladder_operator(ladder_operator, n_qubits):
     parity_set_ = parity_set(index - 1)
 
     # The transformed (a_p^\dagger + a_p) / 2
-    transformed_majorana_sum = (
-            QubitOperator([(index, 'X') for index in update_set_], .5) *
-            QubitOperator([(index, 'Z') for index in parity_set_]))
+    transformed_majorana_sum = QubitOperator(
+            [(i, 'X') for i in update_set_] +
+            [(i, 'Z') for i in parity_set_],
+            .5)
     # The transformed (a_p^\dagger - a_p) / 2
-    transformed_majorana_difference = (
-            QubitOperator([(index, 'X') for index in update_set_], .5) *
-            QubitOperator([(index, 'Z') for index in
-                           parity_set_ ^ occupation_set_]))
+    # Below is equivalent to X(update_set) * Z(parity_set ^ occupation_set)
+    transformed_majorana_difference = QubitOperator(
+            [(index, 'Y')] +
+            [(i, 'X') for i in update_set_ - {index}] +
+            [(i, 'Z') for i in (parity_set_ ^ occupation_set_) - {index}],
+            -.5j)
 
     # Raising
     if action == 1:
