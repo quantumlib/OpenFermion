@@ -18,6 +18,7 @@ import itertools
 
 import numpy
 from openfermion.ops import FermionOperator, QubitOperator
+from openfermion.utils import up_index, down_index
 
 
 def uccsd_operator(single_amplitudes, double_amplitudes, anti_hermitian=True):
@@ -135,9 +136,7 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
     return n_single_amplitudes + n_double_amplitudes
 
 
-def uccsd_singlet_operator(packed_amplitudes,
-                           n_qubits,
-                           n_electrons):
+def uccsd_singlet_operator(packed_amplitudes, n_qubits, n_electrons):
     """Create a singlet UCCSD generator for a system with n_electrons
 
     This function generates a FermionOperator for a UCCSD generator designed
@@ -158,15 +157,33 @@ def uccsd_singlet_operator(packed_amplitudes,
         uccsd_generator(FermionOperator): Generator of the UCCSD operator that
             builds the UCCSD wavefunction.
     """
-    n_occupied = int(numpy.ceil(n_electrons / 2.))
-    n_virtual = int(n_qubits / 2 - n_occupied)  # Virtual Spatial Orbitals
-    n_t1 = int(n_occupied * n_virtual)
+    if n_electrons % 2 != 0:
+        raise ValueError('A singlet state must have an even number of '
+                         'electrons.')
 
-    t1 = packed_amplitudes[:n_t1]
-    t2 = packed_amplitudes[n_t1:]
+    # Since the total spin S^2 is conserved, we work with spatial orbitals
+    n_spatial_orbitals = n_qubits // 2
+    n_occupied = n_electrons // 2
+    n_virtual = n_spatial_orbitals - n_occupied
+
+    n_single_amplitudes = n_occupied * n_virtual
+
+    t1 = packed_amplitudes[:n_single_amplitudes]
+    t2 = packed_amplitudes[n_single_amplitudes:]
 
     def t1_ind(i, j):
+        """i indexes a virtual spatial orbital and j indexes an
+        occupied spatial orbital."""
         return i * n_occupied + j
+
+    def t2_ind_1(i, j):
+        """i indexes a virtual spatial orbital and j indexes an
+        occupied spatial orbital."""
+        return n_single_amplitudes + t1_ind(i, j)
+
+    def t2_ind_2(p, q):
+        """p and q index spatial occupied-virtual pairs."""
+        pass
 
     def t2_ind(i, j, k, l):
         return (i * n_occupied * n_virtual * n_occupied +
@@ -180,17 +197,36 @@ def uccsd_singlet_operator(packed_amplitudes,
     # the spin component assumes alpha spins are even, beta spins are odd
     spaces = range(n_virtual), range(n_occupied), range(2)
 
-    # Generate all spin-conserving single excitations between occupied-virtual
-    for i, j, s in itertools.product(*spaces):
+    # Generate all spin-conserving single and double excitations derived
+    # from one spatial occupied-virtual pair
+    for i, j in itertools.product(range(n_virtual), range(n_occupied)):
+        # Get indices of spatial orbitals
+        virtual_spatial = i + n_occupied
+        occupied_spatial = j
+        
+        # Generate single excitations 
+        coeff = t1[t1_ind(i, j)]
+        # Spin up excitations
         uccsd_generator += FermionOperator((
-            (2 * (i + n_occupied) + s, 1),
-            (2 * j + s, 0)),
-            t1[t1_ind(i, j)])
+            (up_index(virtual_spatial), 1),
+            (up_index(occupied_spatial), 0)),
+            coeff)
+        uccsd_generator += FermionOperator((
+            (up_index(occupied_spatial), 1),
+            (up_index(virtual_spatial, 0)),
+            -coeff)
+        # Spin down excitations
+        uccsd_generator += FermionOperator((
+            (down_index(virtual_spatial), 1),
+            (down_index(occupied_spatial), 0)),
+            coeff)
+        uccsd_generator += FermionOperator((
+            (down_index(occupied_spatial), 1),
+            (down_index(virtual_spatial, 0)),
+            -coeff)
 
-        uccsd_generator += FermionOperator((
-            (2 * j + s, 1),
-            (2 * (i + n_occupied) + s, 0)),
-            -t1[t1_ind(i, j)])
+        # Generate double excitations
+        coeff = t2[t1_ind(i, j)]
 
     # Generate all spin-conserving double excitations between occupied-virtual
     for i, j, s, i2, j2, s2 in itertools.product(*spaces, repeat=2):
