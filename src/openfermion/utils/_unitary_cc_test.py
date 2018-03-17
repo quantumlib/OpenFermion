@@ -37,7 +37,7 @@ class UnitaryCC(unittest.TestCase):
         single_amplitudes = randn(*(test_orbitals,) * 2)
         double_amplitudes = randn(*(test_orbitals,) * 4)
 
-        generator = uccsd_operator(single_amplitudes, double_amplitudes)
+        generator = uccsd_generator(single_amplitudes, double_amplitudes)
         conj_generator = hermitian_conjugated(generator)
 
         self.assertTrue(generator.isclose(-1. * conj_generator))
@@ -52,7 +52,7 @@ class UnitaryCC(unittest.TestCase):
 
         packed_amplitudes = randn(int(packed_amplitude_size))
 
-        generator = uccsd_singlet_operator(packed_amplitudes,
+        generator = uccsd_singlet_generator(packed_amplitudes,
                                            test_orbitals,
                                            test_electrons)
 
@@ -66,7 +66,7 @@ class UnitaryCC(unittest.TestCase):
         n_orbitals = 4
         n_electrons = 2
 
-        generator = uccsd_singlet_operator(initial_amplitudes,
+        generator = uccsd_singlet_generator(initial_amplitudes,
                                            n_orbitals,
                                            n_electrons)
 
@@ -84,8 +84,8 @@ class UnitaryCC(unittest.TestCase):
                           (-0.0565340614) * FermionOperator("0^ 2 1^ 3"))
         self.assertTrue(test_generator.isclose(generator))
 
-    def test_sparse_uccsd_operator_numpy_inputs(self):
-        """Test numpy ndarray inputs to uccsd_operator that are sparse"""
+    def test_sparse_uccsd_generator_numpy_inputs(self):
+        """Test numpy ndarray inputs to uccsd_generator that are sparse"""
         test_orbitals = 30
         sparse_single_amplitudes = numpy.zeros((test_orbitals, test_orbitals))
         sparse_double_amplitudes = numpy.zeros((test_orbitals, test_orbitals,
@@ -97,7 +97,7 @@ class UnitaryCC(unittest.TestCase):
         sparse_double_amplitudes[0, 12, 6, 2] = 0.3434
         sparse_double_amplitudes[1, 4, 6, 13] = -0.23423
 
-        generator = uccsd_operator(sparse_single_amplitudes,
+        generator = uccsd_generator(sparse_single_amplitudes,
                                    sparse_double_amplitudes)
 
         test_generator = (0.12345 * FermionOperator("3^ 5") +
@@ -110,14 +110,14 @@ class UnitaryCC(unittest.TestCase):
                           0.23423 * FermionOperator("13^ 6 4^ 1"))
         self.assertTrue(test_generator.isclose(generator))
 
-    def test_sparse_uccsd_operator_list_inputs(self):
-        """Test list inputs to uccsd_operator that are sparse"""
+    def test_sparse_uccsd_generator_list_inputs(self):
+        """Test list inputs to uccsd_generator that are sparse"""
         sparse_single_amplitudes = [[[3, 5], 0.12345],
                                     [[12, 4], 0.44313]]
         sparse_double_amplitudes = [[[0, 12, 6, 2], 0.3434],
                                     [[1, 4, 6, 13], -0.23423]]
 
-        generator = uccsd_operator(sparse_single_amplitudes,
+        generator = uccsd_generator(sparse_single_amplitudes,
                                    sparse_double_amplitudes)
 
         test_generator = (0.12345 * FermionOperator("3^ 5") +
@@ -162,7 +162,7 @@ class UnitaryCC(unittest.TestCase):
         self.hamiltonian_matrix = get_sparse_operator(
             self.molecular_hamiltonian)
         # Test UCCSD for accuracy against FCI using loaded t amplitudes.
-        ucc_operator = uccsd_operator(
+        ucc_operator = uccsd_generator(
             self.molecule.ccsd_single_amps,
             self.molecule.ccsd_double_amps)
 
@@ -178,7 +178,7 @@ class UnitaryCC(unittest.TestCase):
         print("UCCSD ENERGY: {}".format(expected_uccsd_energy))
 
         # Test CCSD for precise match against FCI using loaded t amplitudes.
-        ccsd_operator = uccsd_operator(
+        ccsd_operator = uccsd_generator(
             self.molecule.ccsd_single_amps,
             self.molecule.ccsd_double_amps,
             anti_hermitian=False)
@@ -188,7 +188,7 @@ class UnitaryCC(unittest.TestCase):
             -hermitian_conjugated(ccsd_operator))
 
         # Test CCSD for precise match against FCI using loaded t amplitudes
-        ccsd_operator = uccsd_operator(
+        ccsd_operator = uccsd_generator(
             self.molecule.ccsd_single_amps,
             self.molecule.ccsd_double_amps,
             anti_hermitian=False)

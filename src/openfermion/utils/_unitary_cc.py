@@ -21,7 +21,7 @@ from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.utils import up_index, down_index
 
 
-def uccsd_operator(single_amplitudes, double_amplitudes, anti_hermitian=True):
+def uccsd_generator(single_amplitudes, double_amplitudes, anti_hermitian=True):
     """Create a fermionic operator that is the generator of uccsd.
 
     This a the most straight-forward method to generate UCCSD operators,
@@ -51,7 +51,7 @@ def uccsd_operator(single_amplitudes, double_amplitudes, anti_hermitian=True):
         is the generator for the uccsd wavefunction.
     """
 
-    uccsd_generator = FermionOperator()
+    generator = FermionOperator()
 
     # Re-format inputs (ndarrays to lists) if necessary
     if (isinstance(single_amplitudes, numpy.ndarray) or
@@ -63,19 +63,19 @@ def uccsd_operator(single_amplitudes, double_amplitudes, anti_hermitian=True):
     # Add single excitations
     for (i, j), t_ij in single_amplitudes:
         i, j = int(i), int(j)
-        uccsd_generator += FermionOperator(((i, 1), (j, 0)), t_ij)
+        generator += FermionOperator(((i, 1), (j, 0)), t_ij)
         if anti_hermitian:
-            uccsd_generator += FermionOperator(((j, 1), (i, 0)), -t_ij)
+            generator += FermionOperator(((j, 1), (i, 0)), -t_ij)
 
     # Add double excitations
     for (i, j, k, l), t_ijkl in double_amplitudes:
         i, j, k, l = int(i), int(j), int(k), int(l)
-        uccsd_generator += FermionOperator(
+        generator += FermionOperator(
             ((i, 1), (j, 0), (k, 1), (l, 0)), t_ijkl)
         if anti_hermitian:
-            uccsd_generator += FermionOperator(
+            generator += FermionOperator(
                 ((l, 1), (k, 0), (j, 1), (i, 0)), -t_ijkl)
-    return uccsd_generator
+    return generator
 
 
 def uccsd_convert_amplitude_format(single_amplitudes, double_amplitudes):
@@ -136,7 +136,7 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
     return n_single_amplitudes + n_double_amplitudes
 
 
-def uccsd_singlet_operator(packed_amplitudes, n_qubits, n_electrons):
+def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
     """Create a singlet UCCSD generator for a system with n_electrons
 
     This function generates a FermionOperator for a UCCSD generator designed
@@ -154,7 +154,7 @@ def uccsd_singlet_operator(packed_amplitudes, n_qubits, n_electrons):
         n_electrons(int): Number of electrons in the physical system.
 
     Returns:
-        uccsd_generator(FermionOperator): Generator of the UCCSD operator that
+        generator(FermionOperator): Generator of the UCCSD operator that
             builds the UCCSD wavefunction.
     """
     if n_electrons % 2 != 0:
@@ -175,7 +175,7 @@ def uccsd_singlet_operator(packed_amplitudes, n_qubits, n_electrons):
     t2_2 = packed_amplitudes[2 * n_single_amplitudes:]
 
     # Initialize operator
-    uccsd_generator = FermionOperator()
+    generator = FermionOperator()
 
     # Generate all spin-conserving single and double excitations derived
     # from one spatial occupied-virtual pair
@@ -194,33 +194,33 @@ def uccsd_singlet_operator(packed_amplitudes, n_qubits, n_electrons):
         # Generate single excitations 
         coeff = t1[i]
         # Spin up excitation
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (virtual_up, 1),
             (occupied_up, 0)),
             coeff)
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (occupied_up, 1),
             (virtual_up, 0)),
             -coeff)
         # Spin down excitation
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (virtual_down, 1),
             (occupied_down, 0)),
             coeff)
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (occupied_down, 1),
             (virtual_down, 0)),
             -coeff)
 
         # Generate double excitation
         coeff = t2_1[i]
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (virtual_up, 1),
             (occupied_up, 0),
             (virtual_down, 1),
             (occupied_down, 0)),
             coeff)
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (occupied_down, 1),
             (virtual_down, 0),
             (occupied_up, 1),
@@ -243,30 +243,30 @@ def uccsd_singlet_operator(packed_amplitudes, n_qubits, n_electrons):
         # Generate double excitations
         coeff = t2_2[i]
         # p -> q is spin up and s -> r is spin down
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (up_index(virtual_spatial_1), 1),
             (up_index(occupied_spatial_1), 0),
             (down_index(virtual_spatial_2), 1),
             (down_index(occupied_spatial_2), 0)),
             coeff)
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (down_index(occupied_spatial_2), 1),
             (down_index(virtual_spatial_2), 0),
             (up_index(occupied_spatial_1), 1),
             (up_index(virtual_spatial_1), 0)),
             -coeff)
         # p -> q is spin down and s -> r is spin up
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (up_index(virtual_spatial_2), 1),
             (up_index(occupied_spatial_2), 0),
             (down_index(virtual_spatial_1), 1),
             (down_index(occupied_spatial_1), 0)),
             coeff)
-        uccsd_generator += FermionOperator((
+        generator += FermionOperator((
             (down_index(occupied_spatial_1), 1),
             (down_index(virtual_spatial_1), 0),
             (up_index(occupied_spatial_2), 1),
             (up_index(virtual_spatial_2), 0)),
             -coeff)
 
-    return uccsd_generator
+    return generator
