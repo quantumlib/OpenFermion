@@ -13,6 +13,7 @@
 """Bravyi-Kitaev transform on fermionic operators."""
 
 from openfermion.ops import QubitOperator
+from openfermion.utils import count_qubits
 
 
 def bravyi_kitaev(operator, n_qubits=None):
@@ -32,12 +33,10 @@ def bravyi_kitaev(operator, n_qubits=None):
         ValueError: Invalid number of qubits specified.
     """
     # Compute the number of qubits.
-    from openfermion.utils import count_qubits
     if n_qubits is None:
         n_qubits = count_qubits(operator)
     if n_qubits < count_qubits(operator):
         raise ValueError('Invalid number of qubits specified.')
-
 
     # Compute transformed operator.
     transformed_terms = (
@@ -53,11 +52,14 @@ def update_set(index, n_qubits):
     """The bits that need to be updated upon flipping the occupancy
     of a mode."""
     indices = set()
+
+    # For bit manipulation we need to count from 1 rather than 0
     index += 1
 
     while index <= n_qubits:
         indices.add(index - 1)
         # Add least significant one to index
+        # E.g. 00010100 -> 00011000
         index += index & -index
     return indices
 
@@ -65,6 +67,8 @@ def update_set(index, n_qubits):
 def occupation_set(index):
     """The bits whose parity stores the occupation of mode `index`."""
     indices = set()
+
+    # For bit manipulation we need to count from 1 rather than 0
     index += 1
 
     indices.add(index - 1)
@@ -73,6 +77,7 @@ def occupation_set(index):
     while index != parent:
         indices.add(index - 1)
         # Remove least significant one from index
+        # E.g. 00010100 -> 00010000
         index &= index - 1
     return indices
 
@@ -80,11 +85,14 @@ def occupation_set(index):
 def parity_set(index):
     """The bits whose parity stores the parity of the bits 0 .. `index`."""
     indices = set()
+
+    # For bit manipulation we need to count from 1 rather than 0
     index += 1
 
     while index > 0:
         indices.add(index - 1)
         # Remove least significant one from index
+        # E.g. 00010100 -> 00010000
         index &= index - 1
     return indices
 
