@@ -12,14 +12,13 @@
 
 import unittest
 
-from openfermion.transforms._code_transform_functions import *
-from openfermion.transforms import jordan_wigner
-from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.hamiltonians import MolecularData
-from openfermion.transforms import binary_code_transform
-from openfermion.transforms import get_fermion_operator
+from openfermion.ops import FermionOperator, QubitOperator
+from openfermion.transforms import (binary_code_transform, bravyi_kitaev,
+                                    get_fermion_operator, jordan_wigner)
 from openfermion.utils import eigenspectrum
-from openfermion.transforms import jordan_wigner, bravyi_kitaev
+
+from openfermion.transforms._binary_codes import *
 
 
 def lih_hamiltonian():
