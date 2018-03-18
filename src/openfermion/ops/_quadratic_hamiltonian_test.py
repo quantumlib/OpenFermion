@@ -149,16 +149,16 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         normalization = 1. / numpy.sqrt(2.)
         for i in range(2 * self.n_qubits):
             if i < self.n_qubits:
-                left_op = majorana_operator((i, 'c'), normalization)
+                left_op = majorana_operator((i, 0), normalization)
             else:
-                left_op = majorana_operator((i - self.n_qubits, 'd'),
+                left_op = majorana_operator((i - self.n_qubits, 1),
                                             normalization)
             for j in range(2 * self.n_qubits):
                 if j < self.n_qubits:
-                    right_op = majorana_operator((j, 'c'),
+                    right_op = majorana_operator((j, 0),
                             majorana_matrix[i, j] * normalization)
                 else:
-                    right_op = majorana_operator((j - self.n_qubits, 'd'),
+                    right_op = majorana_operator((j - self.n_qubits, 1),
                             majorana_matrix[i, j] * normalization)
                 majorana_op += .5j * left_op * right_op
         # Get FermionOperator for original Hamiltonian

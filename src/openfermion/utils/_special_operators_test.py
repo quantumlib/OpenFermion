@@ -84,14 +84,14 @@ class MajoranaOperatorTest(unittest.TestCase):
 
     def test_init(self):
         # Test 'c' operator
-        op1 = majorana_operator((2, 'c'))
+        op1 = majorana_operator((2, 0))
         op2 = majorana_operator('c2')
         correct = FermionOperator('2^') + FermionOperator('2')
         self.assertTrue(op1.isclose(op2))
         self.assertTrue(op1.isclose(correct))
 
         # Test 'd' operator
-        op1 = majorana_operator((3, 'd'))
+        op1 = majorana_operator((3, 1))
         op2 = majorana_operator('d3')
         correct = FermionOperator('3^', 1.j) - FermionOperator('3', 1.j)
         self.assertTrue(op1.isclose(op2))
