@@ -146,17 +146,20 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
         # Convert the Majorana form to a FermionOperator
         majorana_op = FermionOperator((), majorana_constant)
+        normalization = 1. / numpy.sqrt(2.)
         for i in range(2 * self.n_qubits):
             if i < self.n_qubits:
-                left_op = majorana_operator((i, 1))
+                left_op = majorana_operator((i, 'c'), normalization)
             else:
-                left_op = majorana_operator((i - self.n_qubits, 0))
+                left_op = majorana_operator((i - self.n_qubits, 'd'),
+                                            normalization)
             for j in range(2 * self.n_qubits):
                 if j < self.n_qubits:
-                    right_op = majorana_operator((j, 1), majorana_matrix[i, j])
+                    right_op = majorana_operator((j, 'c'),
+                            majorana_matrix[i, j] * normalization)
                 else:
-                    right_op = majorana_operator((j - self.n_qubits, 0),
-                                                 majorana_matrix[i, j])
+                    right_op = majorana_operator((j - self.n_qubits, 'd'),
+                            majorana_matrix[i, j] * normalization)
                 majorana_op += .5j * left_op * right_op
         # Get FermionOperator for original Hamiltonian
         fermion_operator = normal_ordered(
@@ -202,23 +205,6 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         for i in numpy.ndindex((self.n_qubits, self.n_qubits)):
             self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
             self.assertAlmostEqual(0., constraint_matrix_2[i])
-
-
-class MajoranaOperatorTest(unittest.TestCase):
-
-    def test_none_term(self):
-        majorana_op = majorana_operator()
-        self.assertTrue(majorana_operator().isclose(FermionOperator()))
-
-    def test_bad_coefficient(self):
-        with self.assertRaises(ValueError):
-            majorana_op = majorana_operator((1, 1), 'a')
-
-    def test_bad_term(self):
-        with self.assertRaises(ValueError):
-            majorana_op = majorana_operator((2, 2))
-        with self.assertRaises(ValueError):
-            majorana_op = majorana_operator('a')
 
 
 class AntisymmetricCanonicalFormTest(unittest.TestCase):
