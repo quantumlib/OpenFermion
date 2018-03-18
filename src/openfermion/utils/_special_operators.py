@@ -162,7 +162,7 @@ def majorana_operator(term=None, coefficient=1.):
     Args:
         term(tuple or string): The first element of the tuple indicates the
             mode on which the Majorana operator acts, starting from zero.
-            The second element of the tuple is a string, either 0 or 1,
+            The second element of the tuple is an integer, either 0 or 1,
             indicating which type of Majorana operator it is:
 
                 Type 0: :math:`a^\dagger_p + a_p`
