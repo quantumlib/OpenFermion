@@ -32,8 +32,7 @@ from openfermion.utils import (commutator, count_qubits, expectation,
                                hermitian_conjugated,
                                jordan_wigner_sparse, jw_hartree_fock_state,
                                s_squared_operator, sz_operator)
-from openfermion.utils._unitary_cc import (uccsd_convert_amplitude_format,
-                                           uccsd_generator,
+from openfermion.utils._unitary_cc import (uccsd_generator,
                                            uccsd_singlet_paramsize,
                                            uccsd_singlet_generator)
 
