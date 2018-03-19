@@ -57,7 +57,7 @@ class CodeTransformTest(unittest.TestCase):
         op2 = QubitOperator('Z0 Z1 Z2 Z3 Z4 X5', 0.5) \
               - QubitOperator('Z0 Z1 Z2 Z3 Z4 Y5', 0.5j)
         op1 = binary_code_transform(ferm_op, jordan_wigner_code(6))
-        self.assertTrue(op1.isclose(op2))
+        self.assertTrue(op1 == op2)
 
     def test_checksum_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()
