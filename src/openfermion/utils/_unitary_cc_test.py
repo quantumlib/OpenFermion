@@ -115,7 +115,39 @@ class UnitaryCC(unittest.TestCase):
         self.assertTrue(test_generator.isclose(generator))
 
         # Build 2
-        # TODO
+        n_orbitals = 6
+        n_electrons = 2
+
+        n_params = uccsd_singlet_paramsize(n_orbitals, n_electrons)
+        self.assertEqual(n_params, 5)
+
+        initial_amplitudes = numpy.arange(1, 6, dtype=float)
+        generator = uccsd_singlet_generator(initial_amplitudes,
+                                           n_orbitals,
+                                           n_electrons)
+
+        test_generator = (FermionOperator("2^ 0", 1.) +
+                          FermionOperator("0^ 2", -1) +
+                          FermionOperator("3^ 1", 1.) +
+                          FermionOperator("1^ 3", -1.) +
+                          FermionOperator("4^ 0", 2.) +
+                          FermionOperator("0^ 4", -2) +
+                          FermionOperator("5^ 1", 2.) +
+                          FermionOperator("1^ 5", -2.) +
+                          FermionOperator("2^ 0 3^ 1", 3.) +
+                          FermionOperator("1^ 3 0^ 2", -3.) +
+                          FermionOperator("4^ 0 5^ 1", 4.) +
+                          FermionOperator("1^ 5 0^ 4", -4.) +
+                          FermionOperator("2^ 0 5^ 1", 5.) +
+                          FermionOperator("1^ 5 0^ 2", -5.) +
+                          FermionOperator("4^ 0 3^ 1", 5.) +
+                          FermionOperator("1^ 3 0^ 4", -5.) +
+                          FermionOperator("2^ 0 4^ 0", 5.) +
+                          FermionOperator("0^ 4 0^ 2", -5.) +
+                          FermionOperator("3^ 1 5^ 1", 5.) +
+                          FermionOperator("1^ 5 1^ 3", -5.))
+
+        self.assertTrue(test_generator.isclose(generator))
 
     def test_sparse_uccsd_generator_numpy_inputs(self):
         """Test numpy ndarray inputs to uccsd_generator that are sparse"""
