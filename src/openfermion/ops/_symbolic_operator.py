@@ -550,7 +550,9 @@ class SymbolicOperator(object):
         for term in set(self.terms).intersection(set(other.terms)):
             a = self.terms[term]
             b = other.terms[term]
-            if not abs(a - b) <= EQ_TOLERANCE:
+            # math.isclose does this in Python >=3.5
+            if not abs(a - b) <= max(EQ_TOLERANCE,
+                                     EQ_TOLERANCE * max(abs(a), abs(b))):
                 return False
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
