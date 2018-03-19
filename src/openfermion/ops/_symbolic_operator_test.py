@@ -223,10 +223,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
     def test_isclose_different_terms(self):
         a = DummyOperator1(((1, 0),), -0.1j)
         b = DummyOperator1(((1, 1),), -0.1j)
-        self.assertTrue(a == b)
         self.assertFalse(a == b)
-        self.assertTrue(b == a)
-        self.assertFalse(b == a)
 
     def test_isclose_different_num_terms(self):
         a = DummyOperator1(((1, 0),), -0.1j)
@@ -337,18 +334,16 @@ class SymbolicOperatorTest1(unittest.TestCase):
         correct_coefficient = 3.0j * 0.5
         correct_term = ((0, 1), (3, 1), (3, 0), (11, 1),
                         (1, 1), (3, 1), (8, 0))
-        self.assertTrue(op1.isclose(DummyOperator1(
-            ((0, 1), (3, 1), (3, 0), (11, 1)), 3.j)))
-        self.assertTrue(op2.isclose(DummyOperator1(((1, 1), (3, 1), (8, 0)),
-                                                   0.5)))
-        self.assertTrue(op3.isclose(DummyOperator1(correct_term,
-                                                   correct_coefficient)))
+        self.assertTrue(op1 == DummyOperator1(
+            ((0, 1), (3, 1), (3, 0), (11, 1)), 3.j))
+        self.assertTrue(op2 == DummyOperator1(((1, 1), (3, 1), (8, 0)), 0.5))
+        self.assertTrue(op3 == DummyOperator1(correct_term,
+                                              correct_coefficient))
 
     def test_mul_npfloat64(self):
         op = DummyOperator1(((1, 0), (3, 1)), 0.5)
         res = op * numpy.float64(0.5)
-        self.assertTrue(res.isclose(DummyOperator1(((1, 0), (3, 1)),
-                                                   0.5 * 0.5)))
+        self.assertTrue(res == DummyOperator1(((1, 0), (3, 1)), 0.5 * 0.5))
 
     def test_mul_multiple_terms(self):
         op = DummyOperator1(((1, 0), (8, 1)), 0.5)
@@ -560,8 +555,8 @@ class SymbolicOperatorTest1(unittest.TestCase):
         op = DummyOperator1(((1, 1), (3, 1), (8, 1)), 0.5)
         _ = -op
         # out of place
-        self.assertTrue(op.isclose(DummyOperator1(((1, 1), (3, 1), (8, 1)),
-                                                  0.5)))
+        self.assertTrue(op == DummyOperator1(((1, 1), (3, 1), (8, 1)),
+                                                  0.5))
         correct = -1.0 * op
         self.assertTrue(correct == -op)
 
@@ -744,9 +739,7 @@ class SymbolicOperatorTest2(unittest.TestCase):
     def test_isclose_different_terms(self):
         a = DummyOperator2(((1, 'Y'),), -0.1j)
         b = DummyOperator2(((1, 'X'),), -0.1j)
-        self.assertTrue(a == b)
         self.assertTrue(not a == b)
-        self.assertTrue(b == a)
         self.assertTrue(not b == a)
 
     def test_isclose_different_num_terms(self):
@@ -896,8 +889,8 @@ class SymbolicOperatorTest2(unittest.TestCase):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         -op
         # out of place
-        self.assertTrue(op.isclose(
-            DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)))
+        self.assertTrue(op ==
+                DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5))
         correct = -1.0 * op
         self.assertTrue(correct == -op)
 

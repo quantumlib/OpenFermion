@@ -87,19 +87,19 @@ class MajoranaOperatorTest(unittest.TestCase):
         op1 = majorana_operator((2, 0))
         op2 = majorana_operator('c2')
         correct = FermionOperator('2^') + FermionOperator('2')
-        self.assertTrue(op1.isclose(op2))
-        self.assertTrue(op1.isclose(correct))
+        self.assertTrue(op1 == op2)
+        self.assertTrue(op1 == correct)
 
         # Test 'd' operator
         op1 = majorana_operator((3, 1))
         op2 = majorana_operator('d3')
         correct = FermionOperator('3^', 1.j) - FermionOperator('3', 1.j)
-        self.assertTrue(op1.isclose(op2))
-        self.assertTrue(op1.isclose(correct))
+        self.assertTrue(op1 == op2)
+        self.assertTrue(op1 == correct)
 
     def test_none_term(self):
         majorana_op = majorana_operator()
-        self.assertTrue(majorana_operator().isclose(FermionOperator()))
+        self.assertTrue(majorana_operator() == FermionOperator())
 
     def test_bad_coefficient(self):
         with self.assertRaises(ValueError):

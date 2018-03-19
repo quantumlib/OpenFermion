@@ -111,8 +111,7 @@ def test_mul_out_of_place():
     op3 = op1 * op2
     correct_coefficient = 1.j * 3.0j * 0.5
     correct_term = ((0, 'Y'), (1, 'X'), (3, 'Z'), (11, 'X'))
-    assert op1.isclose(QubitOperator(
-        ((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.j))
+    assert op1 == QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.j)
     assert op2 == QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
     assert op3 == QubitOperator(correct_term, correct_coefficient)
 
