@@ -217,25 +217,23 @@ class SymbolicOperatorTest1(unittest.TestCase):
 
     def test_isclose_zero_terms(self):
         op = DummyOperator1('1^ 0', -1j) * 0
-        self.assertTrue(op.isclose(DummyOperator1((), 0.0),
-                                   rel_tol=1e-12, abs_tol=1e-12))
-        self.assertTrue(DummyOperator1().isclose(
-            op, rel_tol=1e-12, abs_tol=1e-12))
+        self.assertTrue(op == DummyOperator1())
+        self.assertTrue(DummyOperator1() == op)
 
     def test_isclose_different_terms(self):
         a = DummyOperator1(((1, 0),), -0.1j)
         b = DummyOperator1(((1, 1),), -0.1j)
-        self.assertTrue(a == b, rel_tol=1e-12, abs_tol=0.2)
-        self.assertFalse(a == b, rel_tol=1e-12, abs_tol=0.05)
-        self.assertTrue(b == a, rel_tol=1e-12, abs_tol=0.2)
-        self.assertFalse(b == a, rel_tol=1e-12, abs_tol=0.05)
+        self.assertTrue(a == b)
+        self.assertFalse(a == b)
+        self.assertTrue(b == a)
+        self.assertFalse(b == a)
 
     def test_isclose_different_num_terms(self):
         a = DummyOperator1(((1, 0),), -0.1j)
         a += DummyOperator1(((1, 1),), -0.1j)
         b = DummyOperator1(((1, 0),), -0.1j)
-        self.assertFalse(b == a, rel_tol=1e-12, abs_tol=0.05)
-        self.assertFalse(a == b, rel_tol=1e-12, abs_tol=0.05)
+        self.assertFalse(b == a)
+        self.assertFalse(a == b)
 
     def test_imul_inplace(self):
         fermion_op = DummyOperator1("1^")
@@ -709,18 +707,6 @@ class SymbolicOperatorTest2(unittest.TestCase):
         with self.assertRaises(ValueError):
             qubit_op = DummyOperator2('X-1')
 
-    def test_isclose_abs_tol(self):
-        a = DummyOperator2('X0', -1.)
-        b = DummyOperator2('X0', -1.05)
-        c = DummyOperator2('X0', -1.11)
-        self.assertTrue(a == b, rel_tol=1e-14, abs_tol=0.1)
-        self.assertTrue(not a == c, rel_tol=1e-14, abs_tol=0.1)
-        a = DummyOperator2('X0', -1.0j)
-        b = DummyOperator2('X0', -1.05j)
-        c = DummyOperator2('X0', -1.11j)
-        self.assertTrue(a == b, rel_tol=1e-14, abs_tol=0.1)
-        self.assertTrue(not a == c, rel_tol=1e-14, abs_tol=0.1)
-
     def test_compress(self):
         a = DummyOperator2('X0', .9e-12)
         self.assertTrue(len(a.terms) == 1)
@@ -750,35 +736,25 @@ class SymbolicOperatorTest2(unittest.TestCase):
         for term in a.terms:
             self.assertTrue(isinstance(a.terms[term], float))
 
-    def test_isclose_rel_tol(self):
-        a = DummyOperator2('X0', 1)
-        b = DummyOperator2('X0', 2)
-        self.assertTrue(a == b, rel_tol=2.5, abs_tol=0.1)
-        # Test symmetry
-        self.assertTrue(a == b, rel_tol=1, abs_tol=0.1)
-        self.assertTrue(b == a, rel_tol=1, abs_tol=0.1)
-
     def test_isclose_zero_terms(self):
         op = DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0
-        self.assertTrue(op.isclose(
-            DummyOperator2((), 0.0), rel_tol=1e-12, abs_tol=1e-12))
-        self.assertTrue(DummyOperator2((), 0.0).isclose(
-            op, rel_tol=1e-12, abs_tol=1e-12))
+        self.assertTrue(op == DummyOperator2())
+        self.assertTrue(DummyOperator2((), 0.0) == op)
 
     def test_isclose_different_terms(self):
         a = DummyOperator2(((1, 'Y'),), -0.1j)
         b = DummyOperator2(((1, 'X'),), -0.1j)
-        self.assertTrue(a == b, rel_tol=1e-12, abs_tol=0.2)
-        self.assertTrue(not a == b, rel_tol=1e-12, abs_tol=0.05)
-        self.assertTrue(b == a, rel_tol=1e-12, abs_tol=0.2)
-        self.assertTrue(not b == a, rel_tol=1e-12, abs_tol=0.05)
+        self.assertTrue(a == b)
+        self.assertTrue(not a == b)
+        self.assertTrue(b == a)
+        self.assertTrue(not b == a)
 
     def test_isclose_different_num_terms(self):
         a = DummyOperator2(((1, 'Y'),), -0.1j)
         a += DummyOperator2(((2, 'Y'),), -0.1j)
         b = DummyOperator2(((1, 'X'),), -0.1j)
-        self.assertTrue(not b == a, rel_tol=1e-12, abs_tol=0.05)
-        self.assertTrue(not a == b, rel_tol=1e-12, abs_tol=0.05)
+        self.assertTrue(not b == a)
+        self.assertTrue(not a == b)
 
     def test_isclose_invalid_type(self):
         a = DummyOperator1()

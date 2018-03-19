@@ -133,63 +133,63 @@ class JordanWignerTransformTest(unittest.TestCase):
         c2 = FermionOperator(((2, 1),))
         a4 = FermionOperator(((4, 0),))
 
-        self.assertTrue(normal_ordered(c2 * a4).isclose(
-            normal_ordered(-a4 * c2)))
-        self.assertTrue(jordan_wigner(c2 * a4).isclose(
-            jordan_wigner(-a4 * c2)))
+        self.assertTrue(normal_ordered(c2 * a4) ==
+            normal_ordered(-a4 * c2))
+        self.assertTrue(jordan_wigner(c2 * a4) ==
+            jordan_wigner(-a4 * c2))
 
     def test_ccr_offsite_odd_ca(self):
         c1 = FermionOperator(((1, 1),))
         a4 = FermionOperator(((4, 0),))
-        self.assertTrue(normal_ordered(c1 * a4).isclose(
-            normal_ordered(-a4 * c1)))
+        self.assertTrue(normal_ordered(c1 * a4) ==
+            normal_ordered(-a4 * c1))
 
-        self.assertTrue(jordan_wigner(c1 * a4).isclose(
-            jordan_wigner(-a4 * c1)))
+        self.assertTrue(jordan_wigner(c1 * a4) ==
+            jordan_wigner(-a4 * c1))
 
     def test_ccr_offsite_even_cc(self):
         c2 = FermionOperator(((2, 1),))
         c4 = FermionOperator(((4, 1),))
-        self.assertTrue(normal_ordered(c2 * c4).isclose(
-            normal_ordered(-c4 * c2)))
+        self.assertTrue(normal_ordered(c2 * c4) ==
+            normal_ordered(-c4 * c2))
 
-        self.assertTrue(jordan_wigner(c2 * c4).isclose(
-            jordan_wigner(-c4 * c2)))
+        self.assertTrue(jordan_wigner(c2 * c4) ==
+            jordan_wigner(-c4 * c2))
 
     def test_ccr_offsite_odd_cc(self):
         c1 = FermionOperator(((1, 1),))
         c4 = FermionOperator(((4, 1),))
-        self.assertTrue(normal_ordered(c1 * c4).isclose(
-            normal_ordered(-c4 * c1)))
+        self.assertTrue(normal_ordered(c1 * c4) ==
+            normal_ordered(-c4 * c1))
 
-        self.assertTrue(jordan_wigner(c1 * c4).isclose(
-            jordan_wigner(-c4 * c1)))
+        self.assertTrue(jordan_wigner(c1 * c4) ==
+            jordan_wigner(-c4 * c1))
 
     def test_ccr_offsite_even_aa(self):
         a2 = FermionOperator(((2, 0),))
         a4 = FermionOperator(((4, 0),))
-        self.assertTrue(normal_ordered(a2 * a4).isclose(
-            normal_ordered(-a4 * a2)))
+        self.assertTrue(normal_ordered(a2 * a4) ==
+            normal_ordered(-a4 * a2))
 
-        self.assertTrue(jordan_wigner(a2 * a4).isclose(
-            jordan_wigner(-a4 * a2)))
+        self.assertTrue(jordan_wigner(a2 * a4) ==
+            jordan_wigner(-a4 * a2))
 
     def test_ccr_offsite_odd_aa(self):
         a1 = FermionOperator(((1, 0),))
         a4 = FermionOperator(((4, 0),))
-        self.assertTrue(normal_ordered(a1 * a4).isclose(
-            normal_ordered(-a4 * a1)))
+        self.assertTrue(normal_ordered(a1 * a4) ==
+            normal_ordered(-a4 * a1))
 
-        self.assertTrue(jordan_wigner(a1 * a4).isclose(
-            jordan_wigner(-a4 * a1)))
+        self.assertTrue(jordan_wigner(a1 * a4) ==
+            jordan_wigner(-a4 * a1))
 
     def test_ccr_onsite(self):
         c1 = FermionOperator(((1, 1),))
         a1 = hermitian_conjugated(c1)
-        self.assertTrue(normal_ordered(c1 * a1).isclose(
-            FermionOperator(()) - normal_ordered(a1 * c1)))
-        self.assertTrue(jordan_wigner(c1 * a1).isclose(
-            QubitOperator(()) - jordan_wigner(a1 * c1)))
+        self.assertTrue(normal_ordered(c1 * a1) ==
+            FermionOperator(()) - normal_ordered(a1 * c1))
+        self.assertTrue(jordan_wigner(c1 * a1) ==
+            QubitOperator(()) - jordan_wigner(a1 * c1))
 
     def test_jordan_wigner_transm_op(self):
         n = number_operator(self.n_qubits)
@@ -261,14 +261,14 @@ class InteractionOperatorsJWTest(unittest.TestCase):
         retransformed_test_op = reverse_jordan_wigner(jordan_wigner(
             get_interaction_operator(test_op)))
 
-        self.assertTrue(normal_ordered(retransformed_test_op).isclose(
-            normal_ordered(test_op)))
+        self.assertTrue(normal_ordered(retransformed_test_op) ==
+            normal_ordered(test_op))
 
     def test_jordan_wigner_twobody_interaction_op_reversal_symmetric(self):
         test_op = FermionOperator('1^ 2^ 2 1')
         test_op += hermitian_conjugated(test_op)
-        self.assertTrue(jordan_wigner(test_op).isclose(
-                        jordan_wigner(get_interaction_operator(test_op))))
+        self.assertTrue(jordan_wigner(test_op) ==
+                        jordan_wigner(get_interaction_operator(test_op)))
 
     def test_jordan_wigner_interaction_op_too_few_n_qubits(self):
         with self.assertRaises(ValueError):

@@ -22,12 +22,12 @@ from openfermion.utils import (up_index, down_index, s_minus_operator,
 class FermionSpinOperatorsTest(unittest.TestCase):
 
     def test_up_index(self):
-        self.assertTrue(numpy == up_index(2), 4)
-        self.assertTrue(numpy == up_index(5), 10)
+        self.assertTrue(up_index(2) == 4)
+        self.assertTrue(up_index(5) == 10)
 
     def test_up_down(self):
-        self.assertTrue(numpy == down_index(2), 5)
-        self.assertTrue(numpy == down_index(5), 11)
+        self.assertTrue(down_index(2) == 5)
+        self.assertTrue(down_index(5) == 11)
 
     def test_sz_operator(self):
         op = sz_operator(2)

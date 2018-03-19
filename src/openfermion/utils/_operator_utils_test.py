@@ -149,10 +149,10 @@ class HermitianConjugatedTest(unittest.TestCase):
                    FermionOperator('2^ 7 9 11^'))
 
         # Check that hermitian conjugation commutes with transforms
-        self.assertTrue(jordan_wigner(hermitian_conjugated(ferm_op)).isclose(
-            hermitian_conjugated(jordan_wigner(ferm_op))))
-        self.assertTrue(bravyi_kitaev(hermitian_conjugated(ferm_op)).isclose(
-            hermitian_conjugated(bravyi_kitaev(ferm_op))))
+        self.assertTrue(jordan_wigner(hermitian_conjugated(ferm_op)) ==
+            hermitian_conjugated(jordan_wigner(ferm_op)))
+        self.assertTrue(bravyi_kitaev(hermitian_conjugated(ferm_op)) ==
+            hermitian_conjugated(bravyi_kitaev(ferm_op)))
 
     def test_hermitian_conjugate_empty(self):
         op = FermionOperator()
@@ -372,8 +372,8 @@ class FourierTransformTest(unittest.TestCase):
             h_dual_basis = plane_wave_hamiltonian(
                 grid, geometry, spinless, False)
             h_plane_wave_t = fourier_transform(h_plane_wave, grid, spinless)
-            self.assertTrue(normal_ordered(h_plane_wave_t).isclose(
-                normal_ordered(h_dual_basis)))
+            self.assertTrue(normal_ordered(h_plane_wave_t) ==
+                normal_ordered(h_dual_basis))
 
     def test_inverse_fourier_transform_1d(self):
         grid = Grid(dimensions=1, scale=1.5, length=4)
@@ -386,8 +386,8 @@ class FourierTransformTest(unittest.TestCase):
                 grid, geometry, spinless, False)
             h_dual_basis_t = inverse_fourier_transform(
                 h_dual_basis, grid, spinless)
-            self.assertTrue(normal_ordered(h_dual_basis_t).isclose(
-                normal_ordered(h_plane_wave)))
+            self.assertTrue(normal_ordered(h_dual_basis_t) ==
+                normal_ordered(h_plane_wave))
 
     def test_inverse_fourier_transform_2d(self):
         grid = Grid(dimensions=2, scale=1.5, length=3)
@@ -397,5 +397,5 @@ class FourierTransformTest(unittest.TestCase):
         h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless, False)
         h_dual_basis_t = inverse_fourier_transform(
             h_dual_basis, grid, spinless)
-        self.assertTrue(normal_ordered(h_dual_basis_t).isclose(
-            normal_ordered(h_plane_wave)))
+        self.assertTrue(normal_ordered(h_dual_basis_t) ==
+                        normal_ordered(h_plane_wave))

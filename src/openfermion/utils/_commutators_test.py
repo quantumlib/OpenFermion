@@ -65,12 +65,12 @@ class CommutatorTest(unittest.TestCase):
 
     def test_commutator(self):
         operator_a = FermionOperator('')
-        self.assertTrue(FermionOperator().isclose(
-            commutator(operator_a, self.fermion_operator)))
+        self.assertTrue(FermionOperator() ==
+            commutator(operator_a, self.fermion_operator))
         operator_b = QubitOperator('X1 Y2')
-        self.assertTrue(commutator(self.qubit_operator, operator_b).isclose(
+        self.assertTrue(commutator(self.qubit_operator, operator_b) ==
             self.qubit_operator * operator_b -
-            operator_b * self.qubit_operator))
+            operator_b * self.qubit_operator)
 
     def test_ndarray_input(self):
         """Test when the inputs are numpy arrays."""
@@ -102,18 +102,18 @@ class AnticommutatorTest(unittest.TestCase):
         zero = FermionOperator()
         one = FermionOperator('')
 
-        self.assertTrue(one.isclose(
-            normal_ordered(anticommutator(op_1, op_1_dag))))
-        self.assertTrue(zero.isclose(
-            normal_ordered(anticommutator(op_1, op_2))))
-        self.assertTrue(zero.isclose(
-            normal_ordered(anticommutator(op_1, op_2_dag))))
-        self.assertTrue(zero.isclose(
-            normal_ordered(anticommutator(op_1_dag, op_2))))
-        self.assertTrue(zero.isclose(
-            normal_ordered(anticommutator(op_1_dag, op_2_dag))))
-        self.assertTrue(one.isclose(
-            normal_ordered(anticommutator(op_2, op_2_dag))))
+        self.assertTrue(one ==
+            normal_ordered(anticommutator(op_1, op_1_dag)))
+        self.assertTrue(zero ==
+            normal_ordered(anticommutator(op_1, op_2)))
+        self.assertTrue(zero ==
+            normal_ordered(anticommutator(op_1, op_2_dag)))
+        self.assertTrue(zero ==
+            normal_ordered(anticommutator(op_1_dag, op_2)))
+        self.assertTrue(zero ==
+            normal_ordered(anticommutator(op_1_dag, op_2_dag)))
+        self.assertTrue(one ==
+            normal_ordered(anticommutator(op_2, op_2_dag)))
 
     def test_ndarray_input(self):
         """Test when the inputs are numpy arrays."""
@@ -142,7 +142,7 @@ class DoubleCommutatorTest(unittest.TestCase):
             FermionOperator('4^ 2^ 4 2'), indices2=set([2, 3]),
             indices3=set([2, 4]), is_hopping_operator2=True,
             is_hopping_operator3=False)
-        self.assertTrue(com.isclose(FermionOperator('4^ 2^ 4 2') -
+        self.assertTrue(com == (FermionOperator('4^ 2^ 4 2') -
                                     FermionOperator('4^ 3^ 4 3')))
 
     def test_double_commtator_more_info_both_hopping(self):
@@ -152,7 +152,7 @@ class DoubleCommutatorTest(unittest.TestCase):
             FermionOperator('1^ 3', -1.3) + FermionOperator('3^ 1', -1.3),
             indices2=set([1, 2]), indices3=set([1, 3]),
             is_hopping_operator2=True, is_hopping_operator3=True)
-        self.assertTrue(com.isclose(FermionOperator('4^ 3^ 4 2', 2.73) +
+        self.assertTrue(com == (FermionOperator('4^ 3^ 4 2', 2.73) +
                                     FermionOperator('4^ 2^ 4 3', 2.73)))
 
 

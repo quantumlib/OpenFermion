@@ -246,14 +246,14 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
         for term in terms:
             found_in_other = False
             for term2 in expected_terms:
-                if term == term2, rel_tol=1e-8:
+                if term == term2:
                     self.assertFalse(found_in_other)
                     found_in_other = True
             self.assertTrue(found_in_other, msg=str(term))
         for term in expected_terms:
             found_in_other = False
             for term2 in terms:
-                if term == term2, rel_tol=1e-8:
+                if term == term2:
                     self.assertFalse(found_in_other)
                     found_in_other = True
             self.assertTrue(found_in_other, msg=str(term))
