@@ -48,7 +48,7 @@ class JordanWignerTransformTest(unittest.TestCase):
 
         self.assertEqual(raising.terms[correct_operators_x], 0.5)
         self.assertEqual(raising.terms[correct_operators_y], -0.5j)
-        self.assertTrue(raising.isclose(qtermx + qtermy))
+        self.assertTrue(raising == qtermx + qtermy)
 
     def test_transm_raise1(self):
         raising = jordan_wigner(FermionOperator(((1, 1),)))
@@ -60,7 +60,7 @@ class JordanWignerTransformTest(unittest.TestCase):
 
         self.assertEqual(raising.terms[correct_operators_x], 0.5)
         self.assertEqual(raising.terms[correct_operators_y], -0.5j)
-        self.assertTrue(raising.isclose(qtermx + qtermy))
+        self.assertTrue(raising == qtermx + qtermy)
 
     def test_transm_lower3(self):
         lowering = jordan_wigner(FermionOperator(((3, 0),)))
@@ -72,7 +72,7 @@ class JordanWignerTransformTest(unittest.TestCase):
 
         self.assertEqual(lowering.terms[correct_operators_x], 0.5)
         self.assertEqual(lowering.terms[correct_operators_y], 0.5j)
-        self.assertTrue(lowering.isclose(qtermx + qtermy))
+        self.assertTrue(lowering == qtermx + qtermy)
 
     def test_transm_lower2(self):
         lowering = jordan_wigner(FermionOperator(((2, 0),)))
@@ -84,7 +84,7 @@ class JordanWignerTransformTest(unittest.TestCase):
 
         self.assertEqual(lowering.terms[correct_operators_x], 0.5)
         self.assertEqual(lowering.terms[correct_operators_y], 0.5j)
-        self.assertTrue(lowering.isclose(qtermx + qtermy))
+        self.assertTrue(lowering == qtermx + qtermy)
 
     def test_transm_lower1(self):
         lowering = jordan_wigner(FermionOperator(((1, 0),)))
@@ -96,7 +96,7 @@ class JordanWignerTransformTest(unittest.TestCase):
 
         self.assertEqual(lowering.terms[correct_operators_x], 0.5)
         self.assertEqual(lowering.terms[correct_operators_y], 0.5j)
-        self.assertTrue(lowering.isclose(qtermx + qtermy))
+        self.assertTrue(lowering == qtermx + qtermy)
 
     def test_transm_lower0(self):
         lowering = jordan_wigner(FermionOperator(((0, 0),)))
@@ -108,7 +108,7 @@ class JordanWignerTransformTest(unittest.TestCase):
 
         self.assertEqual(lowering.terms[correct_operators_x], 0.5)
         self.assertEqual(lowering.terms[correct_operators_y], 0.5j)
-        self.assertTrue(lowering.isclose(qtermx + qtermy))
+        self.assertTrue(lowering == qtermx + qtermy)
 
     def test_transm_raise3lower0(self):
         # recall that creation gets -1j on Y and annihilation gets +1j on Y.
@@ -224,10 +224,10 @@ class InteractionOperatorsJWTest(unittest.TestCase):
                 fermion_term = FermionOperator(((p, 1), (q, 0)))
                 correct_op = jordan_wigner(fermion_term)
                 hermitian_conjugate = hermitian_conjugated(fermion_term)
-                if not fermion_term.isclose(hermitian_conjugate):
+                if not fermion_term == hermitian_conjugate:
                     correct_op += jordan_wigner(hermitian_conjugate)
 
-                self.assertTrue(test_operator.isclose(correct_op))
+                self.assertTrue(test_operator == correct_op)
 
     def test_jordan_wigner_two_body(self):
         # Make sure it agrees with jordan_wigner(FermionTerm).
@@ -244,14 +244,14 @@ class InteractionOperatorsJWTest(unittest.TestCase):
                         correct_op = jordan_wigner(fermion_term)
                         hermitian_conjugate = hermitian_conjugated(
                             fermion_term)
-                        if not fermion_term.isclose(hermitian_conjugate):
+                        if not fermion_term == hermitian_conjugate:
                             if p == r and q == s:
                                 pass
                             else:
                                 correct_op += jordan_wigner(
                                     hermitian_conjugate)
 
-                        self.assertTrue(test_operator.isclose(correct_op),
+                        self.assertTrue(test_operator == correct_op,
                                         str(test_operator - correct_op))
 
     def test_jordan_wigner_twobody_interaction_op_allunique(self):
@@ -299,7 +299,7 @@ class GetInteractionOperatorTest(unittest.TestCase):
         interaction_operator = InteractionOperator(-2j, self.one_body,
                                                    self.two_body)
         qubit_operator = jordan_wigner(interaction_operator)
-        self.assertTrue(qubit_operator.isclose(-2j * QubitOperator(())))
+        self.assertTrue(qubit_operator == -2j * QubitOperator(()))
         self.assertEqual(interaction_operator,
                          get_interaction_operator(reverse_jordan_wigner(
                              qubit_operator), self.n_qubits))

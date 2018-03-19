@@ -112,7 +112,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
 
         terms_total = sum(terms, FermionOperator.zero())
 
-        self.assertTrue(terms_total.isclose(hamiltonian))
+        self.assertTrue(terms_total == hamiltonian)
 
     def test_sum_of_ordered_terms_equals_full_hamiltonian_even_side_len(self):
         hamiltonian = normal_ordered(
@@ -123,7 +123,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
             hamiltonian)[0]
         terms_total = sum(terms, FermionOperator.zero())
 
-        self.assertTrue(terms_total.isclose(hamiltonian))
+        self.assertTrue(terms_total == hamiltonian)
 
     def test_sum_of_ordered_terms_equals_full_hamiltonian_odd_side_len(self):
         hamiltonian = normal_ordered(
@@ -134,7 +134,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
             hamiltonian)[0]
         terms_total = sum(terms, FermionOperator.zero())
 
-        self.assertTrue(terms_total.isclose(hamiltonian))
+        self.assertTrue(terms_total == hamiltonian)
 
     def test_correct_indices_terms_with_info(self):
         hamiltonian = normal_ordered(

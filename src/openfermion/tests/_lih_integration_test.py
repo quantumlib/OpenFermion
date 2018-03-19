@@ -78,12 +78,12 @@ class LiHIntegrationTest(unittest.TestCase):
         # Test reverse Jordan-Wigner.
         fermion_hamiltonian = reverse_jordan_wigner(self.qubit_hamiltonian)
         fermion_hamiltonian = normal_ordered(fermion_hamiltonian)
-        self.assertTrue(self.fermion_hamiltonian.isclose(fermion_hamiltonian))
+        self.assertTrue(self.fermion_hamiltonian == fermion_hamiltonian)
 
         # Test mapping to interaction operator.
         fermion_hamiltonian = get_fermion_operator(self.molecular_hamiltonian)
         fermion_hamiltonian = normal_ordered(fermion_hamiltonian)
-        self.assertTrue(self.fermion_hamiltonian.isclose(fermion_hamiltonian))
+        self.assertTrue(self.fermion_hamiltonian == fermion_hamiltonian)
 
         # Test RDM energy.
         fci_rdm_energy = self.nuclear_repulsion

@@ -40,7 +40,7 @@ class UnitaryCC(unittest.TestCase):
         generator = uccsd_operator(single_amplitudes, double_amplitudes)
         conj_generator = hermitian_conjugated(generator)
 
-        self.assertTrue(generator.isclose(-1. * conj_generator))
+        self.assertTrue(generator == -1. * conj_generator)
 
     def test_uccsd_singlet_anti_hermitian(self):
         """Test that the singlet version is anti-Hermitian"""
@@ -58,7 +58,7 @@ class UnitaryCC(unittest.TestCase):
 
         conj_generator = hermitian_conjugated(generator)
 
-        self.assertTrue(generator.isclose(-1. * conj_generator))
+        self.assertTrue(generator == -1. * conj_generator)
 
     def test_uccsd_singlet_build(self):
         """Test a specific build of the UCCSD singlet operator"""
@@ -82,7 +82,7 @@ class UnitaryCC(unittest.TestCase):
                           (-1.1494145e-08) * FermionOperator("2^ 0") +
                           0.0565340614 * FermionOperator("3^ 1 3^ 1") +
                           (-0.0565340614) * FermionOperator("0^ 2 1^ 3"))
-        self.assertTrue(test_generator.isclose(generator))
+        self.assertTrue(test_generator == generator)
 
     def test_sparse_uccsd_operator_numpy_inputs(self):
         """Test numpy ndarray inputs to uccsd_operator that are sparse"""
@@ -108,7 +108,7 @@ class UnitaryCC(unittest.TestCase):
                           (-0.3434) * FermionOperator("2^ 6 12^ 0") +
                           (-0.23423) * FermionOperator("1^ 4 6^ 13") +
                           0.23423 * FermionOperator("13^ 6 4^ 1"))
-        self.assertTrue(test_generator.isclose(generator))
+        self.assertTrue(test_generator == generator)
 
     def test_sparse_uccsd_operator_list_inputs(self):
         """Test list inputs to uccsd_operator that are sparse"""
@@ -128,7 +128,7 @@ class UnitaryCC(unittest.TestCase):
                           (-0.3434) * FermionOperator("2^ 6 12^ 0") +
                           (-0.23423) * FermionOperator("1^ 4 6^ 13") +
                           0.23423 * FermionOperator("13^ 6 4^ 1"))
-        self.assertTrue(test_generator.isclose(generator))
+        self.assertTrue(test_generator == generator)
 
     def test_ucc(self):
         geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]

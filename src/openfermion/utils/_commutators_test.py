@@ -31,37 +31,37 @@ class CommutatorTest(unittest.TestCase):
     def test_commutes_identity(self):
         com = commutator(FermionOperator.identity(),
                          FermionOperator('2^ 3', 2.3))
-        self.assertTrue(com.isclose(FermionOperator.zero()))
+        self.assertTrue(com == FermionOperator.zero())
 
     def test_commutes_no_intersection(self):
         com = commutator(FermionOperator('2^ 3'), FermionOperator('4^ 5^ 3'))
         com = normal_ordered(com)
-        self.assertTrue(com.isclose(FermionOperator.zero()))
+        self.assertTrue(com == FermionOperator.zero())
 
     def test_commutes_number_operators(self):
         com = commutator(FermionOperator('4^ 3^ 4 3'), FermionOperator('2^ 2'))
         com = normal_ordered(com)
-        self.assertTrue(com.isclose(FermionOperator.zero()))
+        self.assertTrue(com == FermionOperator.zero())
 
     def test_commutator_hopping_operators(self):
         com = commutator(3 * FermionOperator('1^ 2'), FermionOperator('2^ 3'))
         com = normal_ordered(com)
-        self.assertTrue(com.isclose(FermionOperator('1^ 3', 3)))
+        self.assertTrue(com == FermionOperator('1^ 3', 3))
 
     def test_commutator_hopping_with_single_number(self):
         com = commutator(FermionOperator('1^ 2', 1j), FermionOperator('1^ 1'))
         com = normal_ordered(com)
-        self.assertTrue(com.isclose(-FermionOperator('1^ 2') * 1j))
+        self.assertTrue(com == -FermionOperator('1^ 2') * 1j)
 
     def test_commutator_hopping_with_double_number_one_intersection(self):
         com = commutator(FermionOperator('1^ 3'), FermionOperator('3^ 2^ 3 2'))
         com = normal_ordered(com)
-        self.assertTrue(com.isclose(-FermionOperator('2^ 1^ 3 2')))
+        self.assertTrue(com == -FermionOperator('2^ 1^ 3 2'))
 
     def test_commutator_hopping_with_double_number_two_intersections(self):
         com = commutator(FermionOperator('2^ 3'), FermionOperator('3^ 2^ 3 2'))
         com = normal_ordered(com)
-        self.assertTrue(com.isclose(FermionOperator.zero()))
+        self.assertTrue(com == FermionOperator.zero())
 
     def test_commutator(self):
         operator_a = FermionOperator('')
@@ -133,7 +133,7 @@ class DoubleCommutatorTest(unittest.TestCase):
         com = double_commutator(FermionOperator('4^ 3^ 6 5'),
                                 FermionOperator('2^ 1 0'),
                                 FermionOperator('0^'))
-        self.assertTrue(com.isclose(FermionOperator.zero()))
+        self.assertTrue(com == FermionOperator.zero())
 
     def test_double_commutator_more_info_not_hopping(self):
         com = double_commutator(

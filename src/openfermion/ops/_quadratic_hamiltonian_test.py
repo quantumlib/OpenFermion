@@ -162,7 +162,7 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         fermion_operator = normal_ordered(
             get_fermion_operator(self.quad_ham_npc))
         self.assertTrue(
-            normal_ordered(majorana_op).isclose(fermion_operator))
+            normal_ordered(majorana_op) == fermion_operator)
 
     def test_diagonalizing_bogoliubov_transform(self):
         """Test getting the diagonalizing Bogoliubov transformation."""
@@ -208,7 +208,7 @@ class MajoranaOperatorTest(unittest.TestCase):
 
     def test_none_term(self):
         majorana_op = majorana_operator()
-        self.assertTrue(majorana_operator().isclose(FermionOperator()))
+        self.assertTrue(majorana_operator() == FermionOperator())
 
     def test_bad_coefficient(self):
         with self.assertRaises(ValueError):
