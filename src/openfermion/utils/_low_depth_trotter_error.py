@@ -165,7 +165,7 @@ def simulation_ordered_grouped_low_depth_terms_with_info(
         permitted types of terms are hopping (i^ j + j^ i) and potential
         terms which are products of at most two number operators.
     """
-n_qubits = count_qubits(hamiltonian)
+    n_qubits = count_qubits(hamiltonian)
     hamiltonian = normal_ordered(hamiltonian)
 
     ordered_terms = []
