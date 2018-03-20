@@ -129,8 +129,8 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
     n_single_amplitudes = n_occupied * n_virtual
 
     # Below is equivalent to
-    #     2 * n_single_amplitudes + (n_single_amplitudes choose 2)
-    n_double_amplitudes = n_single_amplitudes * (n_single_amplitudes + 3) // 2
+    #     n_single_amplitudes + (n_single_amplitudes choose 2)
+    n_double_amplitudes = n_single_amplitudes * (n_single_amplitudes + 1) // 2
 
     return n_single_amplitudes + n_double_amplitudes
 
@@ -168,9 +168,9 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
     # Single amplitudes
     t1 = packed_amplitudes[:n_single_amplitudes]
     # Double amplitudes associated with one spatial occupied-virtual pair
-    t2_1 = packed_amplitudes[n_single_amplitudes:3 * n_single_amplitudes]
+    t2_1 = packed_amplitudes[n_single_amplitudes:2 * n_single_amplitudes]
     # Double amplitudes associated with two spatial occupied-virtual pairs
-    t2_2 = packed_amplitudes[3 * n_single_amplitudes:]
+    t2_2 = packed_amplitudes[2 * n_single_amplitudes:]
 
     # Initialize operator
     generator = FermionOperator()
@@ -188,8 +188,8 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
         virtual_down = down_index(virtual_spatial)
         occupied_up = up_index(occupied_spatial)
         occupied_down = down_index(occupied_spatial)
-        
-        # Generate single excitations 
+
+        # Generate single excitations
         coeff = t1[i]
         # Spin up excitation
         generator += FermionOperator((
@@ -210,9 +210,8 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
             (virtual_down, 0)),
             -coeff)
 
-        # Generate double excitations
-        # up -> up and down -> down
-        coeff = t2_1[2 * i]
+        # Generate double excitation
+        coeff = t2_1[i]
         generator += FermionOperator((
             (virtual_up, 1),
             (occupied_up, 0),
@@ -224,20 +223,6 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
             (virtual_down, 0),
             (occupied_up, 1),
             (virtual_up, 0)),
-            -coeff)
-        # up -> down and down -> up
-        coeff = t2_1[2 * i + 1]
-        generator += FermionOperator((
-            (virtual_down, 1),
-            (occupied_up, 0),
-            (virtual_up, 1),
-            (occupied_down, 0)),
-            coeff)
-        generator += FermionOperator((
-            (occupied_down, 1),
-            (virtual_up, 0),
-            (occupied_up, 1),
-            (virtual_down, 0)),
             -coeff)
 
     # Generate all spin-conserving double excitations derived
@@ -252,69 +237,49 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
         occupied_spatial_1 = q
         virtual_spatial_2 = n_occupied + r
         occupied_spatial_2 = s
-        # Get indices of spin orbitals
-        virtual_up_1 = up_index(virtual_spatial_1)
-        virtual_down_1 = down_index(virtual_spatial_1)
-        occupied_up_1 = up_index(occupied_spatial_1)
-        occupied_down_1 = down_index(occupied_spatial_1)
-        virtual_up_2 = up_index(virtual_spatial_2)
-        virtual_down_2 = down_index(virtual_spatial_2)
-        occupied_up_2 = up_index(occupied_spatial_2)
-        occupied_down_2 = down_index(occupied_spatial_2)
 
         # Generate double excitations
         coeff = t2_2[i]
-        # p -> q is spin up and s -> r is spin down
-        generator += FermionOperator((
-            (virtual_up_1, 1),
-            (occupied_up_1, 0),
-            (virtual_down_2, 1),
-            (occupied_down_2, 0)),
-            coeff)
-        generator += FermionOperator((
-            (occupied_down_2, 1),
-            (virtual_down_2, 0),
-            (occupied_up_1, 1),
-            (virtual_up_1, 0)),
-            -coeff)
-        # p -> q is spin down and s -> r is spin up
-        generator += FermionOperator((
-            (virtual_up_2, 1),
-            (occupied_up_2, 0),
-            (virtual_down_1, 1),
-            (occupied_down_1, 0)),
-            coeff)
-        generator += FermionOperator((
-            (occupied_down_1, 1),
-            (virtual_down_1, 0),
-            (occupied_up_2, 1),
-            (virtual_up_2, 0)),
-            -coeff)
-        # Both are spin up excitations
-        generator += FermionOperator((
-            (virtual_up_1, 1),
-            (occupied_up_1, 0),
-            (virtual_up_2, 1),
-            (occupied_up_2, 0)),
-            coeff)
-        generator += FermionOperator((
-            (occupied_up_2, 1),
-            (virtual_up_2, 0),
-            (occupied_up_1, 1),
-            (virtual_up_1, 0)),
-            -coeff)
-        # Both are spin down excitations
-        generator += FermionOperator((
-            (virtual_down_1, 1),
-            (occupied_down_1, 0),
-            (virtual_down_2, 1),
-            (occupied_down_2, 0)),
-            coeff)
-        generator += FermionOperator((
-            (occupied_down_2, 1),
-            (virtual_down_2, 0),
-            (occupied_down_1, 1),
-            (virtual_down_1, 0)),
-            -coeff)
+        spin_index_functions = [up_index, down_index]
+        for s in range(2):
+            # Get the functions which map a spatial orbital index to a
+            # spin orbital index
+            this_index = spin_index_functions[s]
+            other_index = spin_index_functions[1 - s]
+
+            # Get indices of spin orbitals
+            virtual_1_this = this_index(virtual_spatial_1)
+            occupied_1_this = this_index(occupied_spatial_1)
+            virtual_2_other = other_index(virtual_spatial_2)
+            occupied_2_other = other_index(occupied_spatial_2)
+            virtual_2_this = this_index(virtual_spatial_2)
+            occupied_2_this = this_index(occupied_spatial_2)
+
+            # p -> q is this spin and s -> r is the other spin
+            generator += FermionOperator((
+                (virtual_1_this, 1),
+                (occupied_1_this, 0),
+                (virtual_2_other, 1),
+                (occupied_2_other, 0)),
+                coeff)
+            generator += FermionOperator((
+                (occupied_2_other, 1),
+                (virtual_2_other, 0),
+                (occupied_1_this, 1),
+                (virtual_1_this, 0)),
+                -coeff)
+            # Both are this spin
+            generator += FermionOperator((
+                (virtual_1_this, 1),
+                (occupied_1_this, 0),
+                (virtual_2_this, 1),
+                (occupied_2_this, 0)),
+                coeff)
+            generator += FermionOperator((
+                (occupied_2_this, 1),
+                (virtual_2_this, 0),
+                (occupied_1_this, 1),
+                (virtual_1_this, 0)),
+                -coeff)
 
     return generator
