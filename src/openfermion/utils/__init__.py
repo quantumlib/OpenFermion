@@ -42,8 +42,8 @@ from ._trotter_exp_to_qgates import (pauli_exp_to_qasm,
                                      trotter_operator_grouping)
 
 from ._unitary_cc import (uccsd_convert_amplitude_format,
-                          uccsd_operator,
-                          uccsd_singlet_operator,
+                          uccsd_generator,
+                          uccsd_singlet_generator,
                           uccsd_singlet_paramsize)
 
 # Imports out of alphabetical order to avoid circular dependency.
