@@ -96,20 +96,25 @@ class UnitaryCC(unittest.TestCase):
     def test_uccsd_singlet_builds(self):
         """Test specific builds of the UCCSD singlet operator"""
         # Build 1
-        initial_amplitudes = [-1.14941450e-08, 5.65340614e-02]
         n_orbitals = 4
         n_electrons = 2
+        n_params = uccsd_singlet_paramsize(n_orbitals, n_electrons)
+        self.assertEqual(n_params, 3)
+
+        initial_amplitudes = [1., 2., 3.]
 
         generator = uccsd_singlet_generator(initial_amplitudes,
                                            n_orbitals,
                                            n_electrons)
 
-        test_generator = (FermionOperator("0^ 2", 1.1494145e-08) +
-                          FermionOperator("2^ 0", -1.1494145e-08) +
-                          FermionOperator("1^ 3", 1.1494145e-08) +
-                          FermionOperator("3^ 1", -1.1494145e-08) +
-                          FermionOperator("2^ 0 3^ 1", 0.0565340614) +
-                          FermionOperator("1^ 3 0^ 2", -0.0565340614))
+        test_generator = (FermionOperator("2^ 0", 1.) +
+                          FermionOperator("0^ 2", -1.) +
+                          FermionOperator("3^ 1", 1.) +
+                          FermionOperator("1^ 3", -1.) +
+                          FermionOperator("2^ 0 3^ 1", 2.) +
+                          FermionOperator("1^ 3 0^ 2", -2.) +
+                          FermionOperator("3^ 0 2^ 1", 3.) +
+                          FermionOperator("1^ 2 0^ 3", -3.))
 
         self.assertTrue(test_generator.isclose(generator))
 
@@ -118,9 +123,9 @@ class UnitaryCC(unittest.TestCase):
         n_electrons = 2
 
         n_params = uccsd_singlet_paramsize(n_orbitals, n_electrons)
-        self.assertEqual(n_params, 5)
+        self.assertEqual(n_params, 7)
 
-        initial_amplitudes = numpy.arange(1, 6, dtype=float)
+        initial_amplitudes = numpy.arange(1, 8, dtype=float)
         generator = uccsd_singlet_generator(initial_amplitudes,
                                            n_orbitals,
                                            n_electrons)
@@ -135,16 +140,20 @@ class UnitaryCC(unittest.TestCase):
                           FermionOperator("1^ 5", -2.) +
                           FermionOperator("2^ 0 3^ 1", 3.) +
                           FermionOperator("1^ 3 0^ 2", -3.) +
-                          FermionOperator("4^ 0 5^ 1", 4.) +
-                          FermionOperator("1^ 5 0^ 4", -4.) +
-                          FermionOperator("2^ 0 5^ 1", 5.) +
-                          FermionOperator("1^ 5 0^ 2", -5.) +
-                          FermionOperator("4^ 0 3^ 1", 5.) +
-                          FermionOperator("1^ 3 0^ 4", -5.) +
-                          FermionOperator("2^ 0 4^ 0", 5.) +
-                          FermionOperator("0^ 4 0^ 2", -5.) +
-                          FermionOperator("3^ 1 5^ 1", 5.) +
-                          FermionOperator("1^ 5 1^ 3", -5.))
+                          FermionOperator("3^ 0 2^ 1", 4.) +
+                          FermionOperator("1^ 2 0^ 3", -4.) +
+                          FermionOperator("4^ 0 5^ 1", 5.) +
+                          FermionOperator("1^ 5 0^ 4", -5.) +
+                          FermionOperator("5^ 0 4^ 1", 6.) +
+                          FermionOperator("1^ 4 0^ 5", -6.) +
+                          FermionOperator("2^ 0 5^ 1", 7.) +
+                          FermionOperator("1^ 5 0^ 2", -7.) +
+                          FermionOperator("4^ 0 3^ 1", 7.) +
+                          FermionOperator("1^ 3 0^ 4", -7.) +
+                          FermionOperator("2^ 0 4^ 0", 7.) +
+                          FermionOperator("0^ 4 0^ 2", -7.) +
+                          FermionOperator("3^ 1 5^ 1", 7.) +
+                          FermionOperator("1^ 5 1^ 3", -7.))
 
         self.assertTrue(test_generator.isclose(generator))
 

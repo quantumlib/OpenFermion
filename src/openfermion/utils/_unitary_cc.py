@@ -130,8 +130,8 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
     n_single_amplitudes = n_occupied * n_virtual
 
     # Below is equivalent to
-    #     n_single_amplitudes + (n_single_amplitudes choose 2)
-    n_double_amplitudes = n_single_amplitudes * (n_single_amplitudes + 1) // 2
+    #     2 * n_single_amplitudes + (n_single_amplitudes choose 2)
+    n_double_amplitudes = n_single_amplitudes * (n_single_amplitudes + 3) // 2
 
     return n_single_amplitudes + n_double_amplitudes
 
@@ -170,9 +170,9 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
     # Single amplitudes
     t1 = packed_amplitudes[:n_single_amplitudes]
     # Double amplitudes associated with one spatial occupied-virtual pair
-    t2_1 = packed_amplitudes[n_single_amplitudes:2 * n_single_amplitudes]
+    t2_1 = packed_amplitudes[n_single_amplitudes:3 * n_single_amplitudes]
     # Double amplitudes associated with two spatial occupied-virtual pairs
-    t2_2 = packed_amplitudes[2 * n_single_amplitudes:]
+    t2_2 = packed_amplitudes[3 * n_single_amplitudes:]
 
     # Initialize operator
     generator = FermionOperator()
@@ -212,8 +212,9 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
             (virtual_down, 0)),
             -coeff)
 
-        # Generate double excitation
-        coeff = t2_1[i]
+        # Generate double excitations
+        # up -> up and down -> down
+        coeff = t2_1[2 * i]
         generator += FermionOperator((
             (virtual_up, 1),
             (occupied_up, 0),
@@ -225,6 +226,20 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
             (virtual_down, 0),
             (occupied_up, 1),
             (virtual_up, 0)),
+            -coeff)
+        # up -> down and down -> up
+        coeff = t2_1[2 * i + 1]
+        generator += FermionOperator((
+            (virtual_down, 1),
+            (occupied_up, 0),
+            (virtual_up, 1),
+            (occupied_down, 0)),
+            coeff)
+        generator += FermionOperator((
+            (occupied_down, 1),
+            (virtual_up, 0),
+            (occupied_up, 1),
+            (virtual_down, 0)),
             -coeff)
 
     # Generate all spin-conserving double excitations derived
