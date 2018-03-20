@@ -248,38 +248,38 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
             other_index = spin_index_functions[1 - s]
 
             # Get indices of spin orbitals
-            virtual_this_1 = this_index(virtual_spatial_1)
-            occupied_this_1 = this_index(occupied_spatial_1)
-            virtual_other_2 = other_index(virtual_spatial_2)
-            occupied_other_2 = other_index(occupied_spatial_2)
-            virtual_this_2 = this_index(virtual_spatial_2)
-            occupied_this_2 = this_index(occupied_spatial_2)
+            virtual_1_this = this_index(virtual_spatial_1)
+            occupied_1_this = this_index(occupied_spatial_1)
+            virtual_2_other = other_index(virtual_spatial_2)
+            occupied_2_other = other_index(occupied_spatial_2)
+            virtual_2_this = this_index(virtual_spatial_2)
+            occupied_2_this = this_index(occupied_spatial_2)
 
             # p -> q is this spin and s -> r is the other spin
             generator += FermionOperator((
-                (virtual_this_1, 1),
-                (occupied_this_1, 0),
-                (virtual_other_2, 1),
-                (occupied_other_2, 0)),
+                (virtual_1_this, 1),
+                (occupied_1_this, 0),
+                (virtual_2_other, 1),
+                (occupied_2_other, 0)),
                 coeff)
             generator += FermionOperator((
-                (occupied_other_2, 1),
-                (virtual_other_2, 0),
-                (occupied_this_1, 1),
-                (virtual_this_1, 0)),
+                (occupied_2_other, 1),
+                (virtual_2_other, 0),
+                (occupied_1_this, 1),
+                (virtual_1_this, 0)),
                 -coeff)
             # Both are this spin
             generator += FermionOperator((
-                (virtual_this_1, 1),
-                (occupied_this_1, 0),
-                (virtual_this_2, 1),
-                (occupied_this_2, 0)),
+                (virtual_1_this, 1),
+                (occupied_1_this, 0),
+                (virtual_2_this, 1),
+                (occupied_2_this, 0)),
                 coeff)
             generator += FermionOperator((
-                (occupied_this_2, 1),
-                (virtual_this_2, 0),
-                (occupied_this_1, 1),
-                (virtual_this_1, 0)),
+                (occupied_2_this, 1),
+                (virtual_2_this, 0),
+                (occupied_1_this, 1),
+                (virtual_1_this, 0)),
                 -coeff)
 
     return generator
