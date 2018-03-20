@@ -62,8 +62,8 @@ class UnitaryCC(unittest.TestCase):
         packed_amplitudes = randn(int(packed_amplitude_size))
 
         generator = uccsd_singlet_generator(packed_amplitudes,
-                                           test_orbitals,
-                                           test_electrons)
+                                            test_orbitals,
+                                            test_electrons)
 
         conj_generator = hermitian_conjugated(generator)
 
@@ -78,8 +78,8 @@ class UnitaryCC(unittest.TestCase):
                                                         test_electrons)
         packed_amplitudes = randn(int(packed_amplitude_size))
         generator = uccsd_singlet_generator(packed_amplitudes,
-                                           test_orbitals,
-                                           test_electrons)
+                                            test_orbitals,
+                                            test_electrons)
 
         # Construct symmetry operators
         sz = sz_operator(test_orbitals)
@@ -104,8 +104,8 @@ class UnitaryCC(unittest.TestCase):
         initial_amplitudes = [1., 2.]
 
         generator = uccsd_singlet_generator(initial_amplitudes,
-                                           n_orbitals,
-                                           n_electrons)
+                                            n_orbitals,
+                                            n_electrons)
 
         test_generator = (FermionOperator("2^ 0", 1.) +
                           FermionOperator("0^ 2", -1.) +
@@ -114,7 +114,8 @@ class UnitaryCC(unittest.TestCase):
                           FermionOperator("2^ 0 3^ 1", 2.) +
                           FermionOperator("1^ 3 0^ 2", -2.))
 
-        self.assertTrue(test_generator.isclose(generator))
+        self.assertTrue(normal_ordered(test_generator).isclose(
+                        normal_ordered(generator)))
 
         # Build 2
         n_orbitals = 6
@@ -125,8 +126,8 @@ class UnitaryCC(unittest.TestCase):
 
         initial_amplitudes = numpy.arange(1, n_params + 1, dtype=float)
         generator = uccsd_singlet_generator(initial_amplitudes,
-                                           n_orbitals,
-                                           n_electrons)
+                                            n_orbitals,
+                                            n_electrons)
 
         test_generator = (FermionOperator("2^ 0", 1.) +
                           FermionOperator("0^ 2", -1) +
@@ -149,7 +150,8 @@ class UnitaryCC(unittest.TestCase):
                           FermionOperator("3^ 1 5^ 1", 5.) +
                           FermionOperator("1^ 5 1^ 3", -5.))
 
-        self.assertTrue(test_generator.isclose(generator))
+        self.assertTrue(normal_ordered(test_generator).isclose(
+                        normal_ordered(generator)))
 
     def test_sparse_uccsd_generator_numpy_inputs(self):
         """Test numpy ndarray inputs to uccsd_generator that are sparse"""
@@ -165,7 +167,7 @@ class UnitaryCC(unittest.TestCase):
         sparse_double_amplitudes[1, 4, 6, 13] = -0.23423
 
         generator = uccsd_generator(sparse_single_amplitudes,
-                                   sparse_double_amplitudes)
+                                    sparse_double_amplitudes)
 
         test_generator = (0.12345 * FermionOperator("3^ 5") +
                           (-0.12345) * FermionOperator("5^ 3") +
@@ -185,7 +187,7 @@ class UnitaryCC(unittest.TestCase):
                                     [[1, 4, 6, 13], -0.23423]]
 
         generator = uccsd_generator(sparse_single_amplitudes,
-                                   sparse_double_amplitudes)
+                                    sparse_double_amplitudes)
 
         test_generator = (0.12345 * FermionOperator("3^ 5") +
                           (-0.12345) * FermionOperator("5^ 3") +
