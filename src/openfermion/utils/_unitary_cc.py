@@ -118,13 +118,9 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
         Number of independent parameters for singlet UCCSD with a single
         reference.
     """
-    if n_electrons % 2 != 0:
-        raise ValueError('A singlet state must have an even number of '
-                         'electrons.')
-
     # Since the total spin S^2 is conserved, we work with spatial orbitals
     n_spatial_orbitals = n_qubits // 2
-    n_occupied = n_electrons // 2
+    n_occupied = int(numpy.ceil(n_electrons / 2))
     n_virtual = n_spatial_orbitals - n_occupied
 
     n_single_amplitudes = n_occupied * n_virtual
@@ -157,12 +153,8 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
         generator(FermionOperator): Generator of the UCCSD operator that
             builds the UCCSD wavefunction.
     """
-    if n_electrons % 2 != 0:
-        raise ValueError('A singlet state must have an even number of '
-                         'electrons.')
-
     n_spatial_orbitals = n_qubits // 2
-    n_occupied = n_electrons // 2
+    n_occupied = int(numpy.ceil(n_electrons / 2))
     n_virtual = n_spatial_orbitals - n_occupied
 
     # Unpack amplitudes
