@@ -25,6 +25,7 @@ openfermion.ops
     :members:
     :special-members: __init__
     :imported-members:
+    :show-inheritance:
 
 openfermion.transforms
 ----------------------

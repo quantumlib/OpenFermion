@@ -1,0 +1,19 @@
+# Hydrogen rings in minimal basis, 0.7414 angstroms between atoms.
+# Computed in Psi4. The names below indicate how many hydrogens
+# are in each ring. Calculations in these files contain FCI, MP2,
+# HF, CISD, CCSD and all integerals.
+H2_sto-3g_singlet_ring_0.7414.hdf5
+H3_sto-3g_doublet_ring_0.7414.hdf5
+H4_sto-3g_singlet_ring_0.7414.hdf5
+H5_sto-3g_doublet_ring_0.7414.hdf5
+H6_sto-3g_singlet_ring_0.7414.hdf5
+H7_sto-3g_doublet_ring_0.7414.hdf5
+H8_sto-3g_singlet_ring_0.7414.hdf5
+H9_sto-3g_doublet_ring_0.7414.hdf5
+H10_sto-3g_singlet_ring_0.7414.hdf5
+H11_sto-3g_singlet_ring_0.7414.hdf5
+H12_sto-3g_singlet_ring_0.7414.hdf5
+H13_sto-3g_singlet_ring_0.7414.hdf5
+H14_sto-3g_singlet_ring_0.7414.hdf5
+H15_sto-3g_singlet_ring_0.7414.hdf5
+H16_sto-3g_singlet_ring_0.7414.hdf5

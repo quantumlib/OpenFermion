@@ -35,19 +35,25 @@ def gaussian_state_preparation_circuit(
     operations; operations that can be performed in parallel are grouped
     together. Each elementary operation is either
 
-    - the string 'pht', indicating the operation
+    - the string 'pht', indicating the particle-hole transformation
+      on the last fermionic mode, which is the operator :math:`\mathcal{B}`
+      such that
 
       .. math::
 
-          a_N + a_N^\dagger,
+          \\begin{align}
+              \mathcal{B} a_N \mathcal{B}^\dagger &= a_N^\dagger,\\\\
+              \mathcal{B} a_j \mathcal{B}^\dagger &= a_j, \\quad
+                  j = 1, \ldots, N-1,
+          \end{align}
 
-      the particle-hole transformation on the last fermionic mode, or
+      or
 
     - a tuple :math:`(i, j, \\theta, \\varphi)`, indicating the operation
 
       .. math::
-          \exp[i \\varphi a_q^\dagger a_q]
-          \exp[\\theta (a_p^\dagger a_q - a_q^\dagger a_p)],
+          \exp[i \\varphi a_j^\dagger a_j]
+          \exp[\\theta (a_i^\dagger a_j - a_j^\dagger a_i)],
 
       a Givens rotation of modes :math:`i` and :math:`j` by angles
       :math:`\\theta` and :math:`\\varphi`.

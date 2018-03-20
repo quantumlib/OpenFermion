@@ -13,19 +13,9 @@
 """This module constructs Hamiltonians for the Fermi-Hubbard model."""
 from __future__ import absolute_import
 
-from openfermion.ops import (FermionOperator,
-                             hermitian_conjugated,
-                             number_operator)
-
-
-# Function to return up-orbital index given orbital index.
-def up_index(index):
-    return 2 * index
-
-
-# Function to return down-orbital index given orbital index.
-def down_index(index):
-    return 2 * index + 1
+from openfermion.ops import FermionOperator
+from openfermion.utils import (hermitian_conjugated, number_operator,
+                               up_index, down_index)
 
 
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
@@ -57,8 +47,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
              + U \sum_{i} a^\dagger_{i, \\uparrow} a_{i, \\uparrow}
                          a^\dagger_{j, \downarrow} a_{j, \downarrow}
             \\\\
-            &- \mu \sum_i (a^\dagger_{i, \\uparrow} a_{i, \\uparrow} +
-                         a^\dagger_{i, \downarrow} a_{i, \downarrow})
+            &- \mu \sum_i \sum_{\sigma} a^\dagger_{i, \sigma} a_{i, \sigma}
              - h \sum_i (a^\dagger_{i, \\uparrow} a_{i, \\uparrow} -
                        a^\dagger_{i, \downarrow} a_{i, \downarrow})
         \\end{align}
@@ -81,7 +70,6 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
         H = - t \sum_{k=1}^{N-1} (a_k^\dagger a_{k + 1} + a_{k+1}^\dagger a_k)
             + U \sum_{k=1}^{N-1} a_k^\dagger a_k a_{k+1}^\dagger a_{k+1}
-            + h \sum_{k=1}^N (-1)^k a_k^\dagger a_k
             - \mu \sum_{k=1}^N a_k^\dagger a_k.
 
     Args:
@@ -173,7 +161,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                 bottom_neighbor -= x_dimension * y_dimension
 
         # Add transition to neighbor on right.
-        if (site + 1) % x_dimension or (periodic and x_dimension > 2):
+        if (right_neighbor) % x_dimension or (periodic and x_dimension > 2):
             if spinless:
                 # Add Coulomb term.
                 operator_1 = number_operator(
