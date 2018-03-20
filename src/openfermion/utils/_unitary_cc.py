@@ -240,8 +240,8 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
 
         # Generate double excitations
         coeff = t2_2[i]
-        for spin, (this_index, other_index) in zip(
-                range(2), ((up_index, down_index), (down_index, up_index))):
+        for this_index, other_index in ((up_index, down_index),
+                                        (down_index, up_index)):
             # Get indices of spin orbitals
             virtual_this_1 = this_index(virtual_spatial_1)
             occupied_this_1 = this_index(occupied_spatial_1)
