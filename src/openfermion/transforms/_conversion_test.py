@@ -18,7 +18,7 @@ import numpy
 import unittest
 
 from openfermion.ops import (FermionOperator, InteractionOperator,
-                             normal_ordered, number_operator, QubitOperator)
+                             normal_ordered, QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.transforms import *

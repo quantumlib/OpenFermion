@@ -13,9 +13,9 @@
 """Tests for _commutators.py."""
 import unittest
 
-from openfermion.ops import (FermionOperator, hermitian_conjugated,
-                             QubitOperator)
+from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import jordan_wigner
+from openfermion.utils import hermitian_conjugated
 from openfermion.utils._commutators import *
 from openfermion.utils._sparse_tools import pauli_matrix_map
 
@@ -90,6 +90,41 @@ class CommutatorTest(unittest.TestCase):
     def test_commutator_not_same_type(self):
         with self.assertRaises(TypeError):
             commutator(self.fermion_operator, self.qubit_operator)
+
+
+class AnticommutatorTest(unittest.TestCase):
+
+    def test_canonical_anticommutation_relations(self):
+        op_1 = FermionOperator('3')
+        op_1_dag = FermionOperator('3^')
+        op_2 = FermionOperator('4')
+        op_2_dag = FermionOperator('4^')
+        zero = FermionOperator()
+        one = FermionOperator('')
+
+        self.assertTrue(one.isclose(
+            normal_ordered(anticommutator(op_1, op_1_dag))))
+        self.assertTrue(zero.isclose(
+            normal_ordered(anticommutator(op_1, op_2))))
+        self.assertTrue(zero.isclose(
+            normal_ordered(anticommutator(op_1, op_2_dag))))
+        self.assertTrue(zero.isclose(
+            normal_ordered(anticommutator(op_1_dag, op_2))))
+        self.assertTrue(zero.isclose(
+            normal_ordered(anticommutator(op_1_dag, op_2_dag))))
+        self.assertTrue(one.isclose(
+            normal_ordered(anticommutator(op_2, op_2_dag))))
+
+    def test_ndarray_input(self):
+        """Test when the inputs are numpy arrays."""
+        X = pauli_matrix_map['X'].toarray()
+        Y = pauli_matrix_map['Y'].toarray()
+        zero = numpy.zeros((2, 2))
+        self.assertTrue(numpy.allclose(anticommutator(X, Y), zero))
+
+    def test_anticommutator_not_same_type(self):
+        with self.assertRaises(TypeError):
+            anticommutator(FermionOperator(), QubitOperator())
 
 
 class DoubleCommutatorTest(unittest.TestCase):

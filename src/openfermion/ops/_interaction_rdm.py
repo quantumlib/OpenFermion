@@ -17,10 +17,10 @@ import copy
 import numpy
 
 from openfermion.ops import (FermionOperator,
-                             PolynomialTensor,
                              InteractionOperator,
-                             normal_ordered,
-                             QubitOperator)
+                             PolynomialTensor,
+                             QubitOperator,
+                             normal_ordered)
 
 
 class InteractionRDMError(Exception):

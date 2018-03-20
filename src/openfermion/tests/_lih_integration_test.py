@@ -130,3 +130,10 @@ class LiHIntegrationTest(unittest.TestCase):
             self.hamiltonian_matrix_no_core.todense())[0][0]
         self.assertAlmostEqual(no_core_fci_energy,
                                self.frozen_core_fci_energy)
+
+        # Check that the freeze_orbitals function has the same effect as the
+        # as the occupied_indices option of get_molecular_hamiltonian.
+        frozen_hamiltonian = freeze_orbitals(
+                get_fermion_operator(self.molecular_hamiltonian), [0, 1])
+        self.assertTrue(frozen_hamiltonian.isclose(
+                get_fermion_operator(self.molecular_hamiltonian_no_core)))

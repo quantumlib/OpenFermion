@@ -19,6 +19,7 @@ from openfermion.transforms._fenwick_tree import FenwickTree
 
 def bravyi_kitaev(operator, n_qubits=None):
     """Apply the Bravyi-Kitaev transform and return qubit operator.
+    (arxiv1701.07072)
 
     Args:
         operator (openfermion.ops.FermionOperator):

@@ -163,6 +163,7 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         self.assertEqual(evensector, 2 ** (n_qubits - 1))
 
     def test_bravyi_kitaev_fast_generate_fermions(self):
+        n_qubits = count_qubits(self.molecular_hamiltonian)
         # test for generating two fermions
         edge_matrix = _bksf.bravyi_kitaev_fast_edge_matrix(
             self.molecular_hamiltonian)
@@ -177,7 +178,7 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         bksf_vacuum_state_sp_matrix = get_sparse_operator(
             bksf_vacuum_state_operator)
         bksf_vacuum_state_matrix = bksf_vacuum_state_sp_matrix.toarray()
-        vacuum_state = numpy.zeros((64, 1))
+        vacuum_state = numpy.zeros((2**(n_qubits), 1))
         vacuum_state[0] = 1.
         bksf_vacuum_state = numpy.dot(bksf_vacuum_state_matrix, vacuum_state)
         two_fermion_state = numpy.dot(fermion_generation_matrix,
