@@ -276,3 +276,10 @@ class UnitaryCC(unittest.TestCase):
         expected_ccsd_energy = ccsd_state_l.getH().dot(
             self.hamiltonian_matrix.dot(ccsd_state_r))[0, 0]
         self.assertAlmostEqual(expected_ccsd_energy, self.molecule.fci_energy)
+
+    def test_exceptions(self):
+        # Pass odd n_qubits to singlet generators
+        with self.assertRaises(ValueError):
+            _ = uccsd_singlet_paramsize(3, 4)
+        with self.assertRaises(ValueError):
+            _ = uccsd_singlet_generator([1.], 3, 4)
