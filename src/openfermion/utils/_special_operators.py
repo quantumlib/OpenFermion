@@ -160,17 +160,20 @@ def majorana_operator(term=None, coefficient=1.):
     """Initialize a Majorana operator.
 
     Args:
-        term(tuple): The first element of the tuple indicates the mode
-            on which the Majorana operator acts, starting from zero.
-            The second element of the tuple is an integer, either 1 or 0,
+        term(tuple or string): The first element of the tuple indicates the
+            mode on which the Majorana operator acts, starting from zero.
+            The second element of the tuple is an integer, either 0 or 1,
             indicating which type of Majorana operator it is:
 
-                Type 1: :math:`\\frac{1}{\sqrt{2}} (a^\dagger_p + a_p)`
+                Type 0: :math:`a^\dagger_p + a_p`
 
-                Type 0: :math:`\\frac{i}{\sqrt{2}} (a^\dagger_p - a_p)`
+                Type 1: :math:`i (a^\dagger_p - a_p)`
 
             where the :math:`a^\dagger_p` and :math:`a_p` are the usual
             fermionic ladder operators.
+            Alternatively, one can provide a string such as 'c2', which
+            is a Type 0 operator on mode 2, or 'd3', which is a Type 1
+            operator on mode 3.
             Default will result in the zero operator.
         coefficient(complex or float, optional): The coefficient of the term.
             Default value is 1.0.
@@ -181,26 +184,42 @@ def majorana_operator(term=None, coefficient=1.):
     if not isinstance(coefficient, (int, float, complex)):
         raise ValueError('Coefficient must be scalar.')
 
-    if term is None:
-        # Return zero operator
-        return FermionOperator()
-    elif isinstance(term, tuple):
-        mode, operator_type = term
-        if operator_type == 1:
-            majorana_op = FermionOperator(
-                ((mode, 1),), coefficient / numpy.sqrt(2.))
-            majorana_op += FermionOperator(
-                ((mode, 0),), coefficient / numpy.sqrt(2.))
-        elif operator_type == 0:
-            majorana_op = FermionOperator(
-                ((mode, 1),), 1.j * coefficient / numpy.sqrt(2.))
-            majorana_op -= FermionOperator(
-                ((mode, 0),), 1.j * coefficient / numpy.sqrt(2.))
+    # If term is a string, convert it to a tuple
+    if isinstance(term, str):
+        operator_type = term[0]
+        mode = int(term[1:])
+        if operator_type == 'c':
+            operator_type = 0
+        elif operator_type == 'd':
+            operator_type = 1
         else:
-            raise ValueError('Operator specified incorrectly.')
+            raise ValueError('Invalid operator type: {}'.format(operator_type))
+        term = (mode, operator_type)
+
+    # Process term
+
+    # Zero operator
+    if term is None:
+        return FermionOperator()
+
+    # Tuple
+    if isinstance(term, tuple):
+        mode, operator_type = term
+
+        if operator_type == 0:
+            majorana_op = FermionOperator(((mode, 1),), coefficient)
+            majorana_op += FermionOperator(((mode, 0),), coefficient)
+        elif operator_type == 1:
+            majorana_op = FermionOperator(((mode, 1),), 1.j * coefficient)
+            majorana_op -= FermionOperator(((mode, 0),), 1.j * coefficient)
+        else:
+            raise ValueError('Invalid operator type: {}'.format(
+                str(operator_type)))
+
         return majorana_op
+
+    # Invalid input.
     else:
-        # Invalid input.
         raise ValueError('Operator specified incorrectly.')
 
 
