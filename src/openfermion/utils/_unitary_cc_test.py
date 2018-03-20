@@ -99,9 +99,9 @@ class UnitaryCC(unittest.TestCase):
         n_orbitals = 4
         n_electrons = 2
         n_params = uccsd_singlet_paramsize(n_orbitals, n_electrons)
-        self.assertEqual(n_params, 3)
+        self.assertEqual(n_params, 2)
 
-        initial_amplitudes = [1., 2., 3.]
+        initial_amplitudes = [1., 2.]
 
         generator = uccsd_singlet_generator(initial_amplitudes,
                                            n_orbitals,
@@ -112,9 +112,7 @@ class UnitaryCC(unittest.TestCase):
                           FermionOperator("3^ 1", 1.) +
                           FermionOperator("1^ 3", -1.) +
                           FermionOperator("2^ 0 3^ 1", 2.) +
-                          FermionOperator("1^ 3 0^ 2", -2.) +
-                          FermionOperator("3^ 0 2^ 1", 3.) +
-                          FermionOperator("1^ 2 0^ 3", -3.))
+                          FermionOperator("1^ 3 0^ 2", -2.))
 
         self.assertTrue(test_generator.isclose(generator))
 
@@ -123,9 +121,9 @@ class UnitaryCC(unittest.TestCase):
         n_electrons = 2
 
         n_params = uccsd_singlet_paramsize(n_orbitals, n_electrons)
-        self.assertEqual(n_params, 7)
+        self.assertEqual(n_params, 5)
 
-        initial_amplitudes = numpy.arange(1, 8, dtype=float)
+        initial_amplitudes = numpy.arange(1, n_params + 1, dtype=float)
         generator = uccsd_singlet_generator(initial_amplitudes,
                                            n_orbitals,
                                            n_electrons)
@@ -140,20 +138,16 @@ class UnitaryCC(unittest.TestCase):
                           FermionOperator("1^ 5", -2.) +
                           FermionOperator("2^ 0 3^ 1", 3.) +
                           FermionOperator("1^ 3 0^ 2", -3.) +
-                          FermionOperator("3^ 0 2^ 1", 4.) +
-                          FermionOperator("1^ 2 0^ 3", -4.) +
-                          FermionOperator("4^ 0 5^ 1", 5.) +
-                          FermionOperator("1^ 5 0^ 4", -5.) +
-                          FermionOperator("5^ 0 4^ 1", 6.) +
-                          FermionOperator("1^ 4 0^ 5", -6.) +
-                          FermionOperator("2^ 0 5^ 1", 7.) +
-                          FermionOperator("1^ 5 0^ 2", -7.) +
-                          FermionOperator("4^ 0 3^ 1", 7.) +
-                          FermionOperator("1^ 3 0^ 4", -7.) +
-                          FermionOperator("2^ 0 4^ 0", 7.) +
-                          FermionOperator("0^ 4 0^ 2", -7.) +
-                          FermionOperator("3^ 1 5^ 1", 7.) +
-                          FermionOperator("1^ 5 1^ 3", -7.))
+                          FermionOperator("4^ 0 5^ 1", 4.) +
+                          FermionOperator("1^ 5 0^ 4", -4.) +
+                          FermionOperator("2^ 0 5^ 1", 5.) +
+                          FermionOperator("1^ 5 0^ 2", -5.) +
+                          FermionOperator("4^ 0 3^ 1", 5.) +
+                          FermionOperator("1^ 3 0^ 4", -5.) +
+                          FermionOperator("2^ 0 4^ 0", 5.) +
+                          FermionOperator("0^ 4 0^ 2", -5.) +
+                          FermionOperator("3^ 1 5^ 1", 5.) +
+                          FermionOperator("1^ 5 1^ 3", -5.))
 
         self.assertTrue(test_generator.isclose(generator))
 
