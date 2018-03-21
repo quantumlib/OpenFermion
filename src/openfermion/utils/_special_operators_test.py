@@ -16,8 +16,8 @@ import unittest
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.utils import commutator
 from openfermion.utils._special_operators import (
-        majorana_operator, s_minus_operator,
-        s_plus_operator, s_squared_operator,
+        majorana_operator, number_operator,
+        s_minus_operator, s_plus_operator, s_squared_operator,
         sx_operator, sy_operator, sz_operator,
         up_index, down_index)
 
@@ -129,6 +129,21 @@ class FermionSpinOperatorsTest(unittest.TestCase):
             s_squared_operator('a')
 
 
+class NumberOperatorTest(unittest.TestCase):
+
+    def test_number_operator_site(self):
+        op = number_operator(3, 2, 1j)
+        self.assertTrue(op == FermionOperator(((2, 1), (2, 0))) * 1j)
+
+    def test_number_operator_nosite(self):
+        op = number_operator(4)
+        expected = (FermionOperator(((0, 1), (0, 0))) +
+                    FermionOperator(((1, 1), (1, 0))) +
+                    FermionOperator(((2, 1), (2, 0))) +
+                    FermionOperator(((3, 1), (3, 0))))
+        self.assertTrue(op == expected)
+
+
 class MajoranaOperatorTest(unittest.TestCase):
 
     def test_init(self):
@@ -159,3 +174,5 @@ class MajoranaOperatorTest(unittest.TestCase):
             majorana_op = majorana_operator((2, 2))
         with self.assertRaises(ValueError):
             majorana_op = majorana_operator('a')
+        with self.assertRaises(ValueError):
+            majorana_op = majorana_operator(2)
