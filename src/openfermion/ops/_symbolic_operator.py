@@ -563,6 +563,9 @@ class SymbolicOperator(object):
                 return False
         return True
 
+    def __neq__(self, other):
+        return not self == other
+
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
         Eliminates all terms with coefficients close to zero and removes
@@ -604,3 +607,13 @@ class SymbolicOperator(object):
         for coefficient in self.terms.values():
             norm += abs(coefficient) ** order
         return norm ** (1. / order)
+
+
+    # DEPRECATED FUNCTIONS
+    # ====================
+    def isclose(self, other):
+        raise DeprecationWarning('The method `isclose` is deprecated and will '
+                                 'be removed in a future version. Use == '
+                                 'instead. For instance, a == b instead of '
+                                 'a.isclose(b).'
+        return self == other
