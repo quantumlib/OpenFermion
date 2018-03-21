@@ -98,6 +98,7 @@ class SymbolicOperator(object):
     action_strings = ()
     action_before_index = False
     different_indices_commute = False
+    __hash__ = None
 
     def __init__(self, term=None, coefficient=1.):
         if not isinstance(coefficient, (int, float, complex)):
@@ -530,6 +531,38 @@ class SymbolicOperator(object):
             exponentiated *= self
         return exponentiated
 
+    def __eq__(self, other):
+        """
+        Returns True if other (SymbolicOperator) is close to self.
+
+        Comparison is done for each term individually. Return True
+        if the difference between each term in self and other is
+        less than EQ_TOLERANCE
+
+        Args:
+            other(SymbolicOperator): SymbolicOperator to compare against.
+        """
+        if not isinstance(other, type(self)):
+            raise TypeError('Cannot compare a {} with a {}'.format(
+                type(self).__name__, type(other).__name__))
+
+        # terms which are in both:
+        for term in set(self.terms).intersection(set(other.terms)):
+            a = self.terms[term]
+            b = other.terms[term]
+            # math.isclose does this in Python >=3.5
+            if not abs(a - b) <= max(EQ_TOLERANCE,
+                                     EQ_TOLERANCE * max(abs(a), abs(b))):
+                return False
+        # terms only in one (compare to 0.0 so only abs_tol)
+        for term in set(self.terms).symmetric_difference(set(other.terms)):
+            if term in self.terms:
+                if not abs(self.terms[term]) <= EQ_TOLERANCE: 
+                    return False
+            elif not abs(other.terms[term]) <= EQ_TOLERANCE:
+                return False
+        return True
+
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
         Eliminates all terms with coefficients close to zero and removes
@@ -553,41 +586,6 @@ class SymbolicOperator(object):
                 new_terms[term] = coeff
 
         self.terms = new_terms
-
-    def isclose(self, other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE):
-        """
-        Returns True if other (SymbolicOperator) is close to self.
-
-        Comparison is done for each term individually. Return True
-        if the difference between each term in self and other is
-        less than the relative tolerance w.r.t. either other or self
-        (symmetric test) or if the difference is less than the absolute
-        tolerance.
-
-        Args:
-            other(SymbolicOperator): SymbolicOperator to compare against.
-            rel_tol(float): Relative tolerance, must be greater than 0.0
-            abs_tol(float): Absolute tolerance, must be at least 0.0
-        """
-        if not isinstance(other, type(self)):
-            raise TypeError('Cannot compare a {} with a {}'.format(
-                type(self).__name__, type(other).__name__))
-
-        # terms which are in both:
-        for term in set(self.terms).intersection(set(other.terms)):
-            a = self.terms[term]
-            b = other.terms[term]
-            # math.isclose does this in Python >=3.5
-            if not abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol):
-                return False
-        # terms only in one (compare to 0.0 so only abs_tol)
-        for term in set(self.terms).symmetric_difference(set(other.terms)):
-            if term in self.terms:
-                if not abs(self.terms[term]) <= abs_tol:
-                    return False
-            elif not abs(other.terms[term]) <= abs_tol:
-                return False
-        return True
 
     def induced_norm(self, order=1):
         """

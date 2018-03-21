@@ -63,8 +63,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         self.assertEqual(raising.terms[correct_operators_c], 0.5)
 
     def test_bk_identity(self):
-        self.assertTrue(bravyi_kitaev(FermionOperator(())).isclose(
-                        QubitOperator(())))
+        self.assertTrue(bravyi_kitaev(FermionOperator(())) ==
+                        QubitOperator(()))
 
     def test_bk_n_qubits_too_small(self):
         with self.assertRaises(ValueError):

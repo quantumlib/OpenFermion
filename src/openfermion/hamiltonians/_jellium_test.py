@@ -304,7 +304,7 @@ class JelliumTest(unittest.TestCase):
         test_hamiltonian = jordan_wigner_dual_basis_jellium(grid, spinless)
 
         # Make sure Hamiltonians are the same.
-        self.assertTrue(test_hamiltonian.isclose(qubit_hamiltonian))
+        self.assertTrue(test_hamiltonian == qubit_hamiltonian)
 
         # Check number of terms.
         n_qubits = count_qubits(qubit_hamiltonian)
@@ -328,7 +328,7 @@ class JelliumTest(unittest.TestCase):
         difference = hamiltonian_with_constant - hamiltonian_without_constant
         expected = QubitOperator('') * (2.8372 / length_scale)
 
-        self.assertTrue(expected.isclose(difference))
+        self.assertTrue(expected == difference)
 
     def test_plane_wave_energy_cutoff(self):
         grid = Grid(dimensions=1, length=5, scale=1.0)

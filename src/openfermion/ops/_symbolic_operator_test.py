@@ -103,48 +103,48 @@ class SymbolicOperatorTest1(unittest.TestCase):
         f = DummyOperator1(((0, 1), (5, 0), (6, 1)), 0.6j)
         g = DummyOperator1(((0, 0), (5, 0), (6, 1)), 0.3j)
         h = f + g
-        self.assertTrue(f.isclose(u * f))
-        self.assertTrue(f.isclose(f * u))
-        self.assertTrue(g.isclose(u * g))
-        self.assertTrue(g.isclose(g * u))
-        self.assertTrue(h.isclose(u * h))
-        self.assertTrue(h.isclose(h * u))
+        self.assertTrue(f == u * f)
+        self.assertTrue(f == f * u)
+        self.assertTrue(g == u * g)
+        self.assertTrue(g == g * u)
+        self.assertTrue(h == u * h)
+        self.assertTrue(h == h * u)
 
         u *= h
-        self.assertTrue(h.isclose(u))
-        self.assertFalse(f.isclose(u))
+        self.assertTrue(h == u)
+        self.assertFalse(f == u)
 
         # Method always returns new instances.
-        self.assertFalse(DummyOperator1.identity().isclose(u))
+        self.assertFalse(DummyOperator1.identity() == u)
 
     def test_zero_is_additive_identity(self):
         o = DummyOperator1.zero()
         f = DummyOperator1(((0, 1), (5, 0), (6, 1)), 0.6j)
         g = DummyOperator1(((0, 0), (5, 0), (6, 1)), 0.3j)
         h = f + g
-        self.assertTrue(f.isclose(o + f))
-        self.assertTrue(f.isclose(f + o))
-        self.assertTrue(g.isclose(o + g))
-        self.assertTrue(g.isclose(g + o))
-        self.assertTrue(h.isclose(o + h))
-        self.assertTrue(h.isclose(h + o))
+        self.assertTrue(f == o + f)
+        self.assertTrue(f == f + o)
+        self.assertTrue(g == o + g)
+        self.assertTrue(g == g + o)
+        self.assertTrue(h == o + h)
+        self.assertTrue(h == h + o)
 
         o += h
-        self.assertTrue(h.isclose(o))
-        self.assertFalse(f.isclose(o))
+        self.assertTrue(h == o)
+        self.assertFalse(f == o)
 
         # Method always returns new instances.
-        self.assertFalse(DummyOperator1.zero().isclose(o))
+        self.assertFalse(DummyOperator1.zero() == o)
 
     def test_zero_is_multiplicative_nil(self):
         o = DummyOperator1.zero()
         u = DummyOperator1.identity()
         f = DummyOperator1(((0, 1), (5, 0), (6, 1)), 0.6j)
         g = DummyOperator1(((0, 0), (5, 0), (6, 1)), 0.3j)
-        self.assertTrue(o.isclose(o * u))
-        self.assertTrue(o.isclose(o * f))
-        self.assertTrue(o.isclose(o * g))
-        self.assertTrue(o.isclose(o * (f + g)))
+        self.assertTrue(o == o * u)
+        self.assertTrue(o == o * f)
+        self.assertTrue(o == o * g)
+        self.assertTrue(o == o * (f + g))
 
     def test_init_str(self):
         fermion_op = DummyOperator1('0^ 5 12^', -1.)
@@ -213,49 +213,24 @@ class SymbolicOperatorTest1(unittest.TestCase):
 
     def test_DummyOperator1(self):
         op = DummyOperator1((), 3.)
-        self.assertTrue(op.isclose(DummyOperator1(()) * 3.))
-
-    def test_isclose_abs_tol(self):
-        a = DummyOperator1('0^', -1.)
-        b = DummyOperator1('0^', -1.05)
-        c = DummyOperator1('0^', -1.11)
-        self.assertTrue(a.isclose(b, rel_tol=1e-14, abs_tol=0.1))
-        self.assertFalse(a.isclose(c, rel_tol=1e-14, abs_tol=0.1))
-        a = DummyOperator1('0^', -1.0j)
-        b = DummyOperator1('0^', -1.05j)
-        c = DummyOperator1('0^', -1.11j)
-        self.assertTrue(a.isclose(b, rel_tol=1e-14, abs_tol=0.1))
-        self.assertFalse(a.isclose(c, rel_tol=1e-14, abs_tol=0.1))
-
-    def test_isclose_rel_tol(self):
-        a = DummyOperator1('0', 1)
-        b = DummyOperator1('0', 2)
-        self.assertTrue(a.isclose(b, rel_tol=2.5, abs_tol=0.1))
-        # Test symmetry
-        self.assertTrue(a.isclose(b, rel_tol=1, abs_tol=0.1))
-        self.assertTrue(b.isclose(a, rel_tol=1, abs_tol=0.1))
+        self.assertTrue(op == DummyOperator1(()) * 3.)
 
     def test_isclose_zero_terms(self):
         op = DummyOperator1('1^ 0', -1j) * 0
-        self.assertTrue(op.isclose(DummyOperator1((), 0.0),
-                                   rel_tol=1e-12, abs_tol=1e-12))
-        self.assertTrue(DummyOperator1().isclose(
-            op, rel_tol=1e-12, abs_tol=1e-12))
+        self.assertTrue(op == DummyOperator1())
+        self.assertTrue(DummyOperator1() == op)
 
     def test_isclose_different_terms(self):
         a = DummyOperator1(((1, 0),), -0.1j)
         b = DummyOperator1(((1, 1),), -0.1j)
-        self.assertTrue(a.isclose(b, rel_tol=1e-12, abs_tol=0.2))
-        self.assertFalse(a.isclose(b, rel_tol=1e-12, abs_tol=0.05))
-        self.assertTrue(b.isclose(a, rel_tol=1e-12, abs_tol=0.2))
-        self.assertFalse(b.isclose(a, rel_tol=1e-12, abs_tol=0.05))
+        self.assertFalse(a == b)
 
     def test_isclose_different_num_terms(self):
         a = DummyOperator1(((1, 0),), -0.1j)
         a += DummyOperator1(((1, 1),), -0.1j)
         b = DummyOperator1(((1, 0),), -0.1j)
-        self.assertFalse(b.isclose(a, rel_tol=1e-12, abs_tol=0.05))
-        self.assertFalse(a.isclose(b, rel_tol=1e-12, abs_tol=0.05))
+        self.assertFalse(b == a)
+        self.assertFalse(a == b)
 
     def test_imul_inplace(self):
         fermion_op = DummyOperator1("1^")
@@ -359,18 +334,16 @@ class SymbolicOperatorTest1(unittest.TestCase):
         correct_coefficient = 3.0j * 0.5
         correct_term = ((0, 1), (3, 1), (3, 0), (11, 1),
                         (1, 1), (3, 1), (8, 0))
-        self.assertTrue(op1.isclose(DummyOperator1(
-            ((0, 1), (3, 1), (3, 0), (11, 1)), 3.j)))
-        self.assertTrue(op2.isclose(DummyOperator1(((1, 1), (3, 1), (8, 0)),
-                                                   0.5)))
-        self.assertTrue(op3.isclose(DummyOperator1(correct_term,
-                                                   correct_coefficient)))
+        self.assertTrue(op1 == DummyOperator1(
+            ((0, 1), (3, 1), (3, 0), (11, 1)), 3.j))
+        self.assertTrue(op2 == DummyOperator1(((1, 1), (3, 1), (8, 0)), 0.5))
+        self.assertTrue(op3 == DummyOperator1(correct_term,
+                                              correct_coefficient))
 
     def test_mul_npfloat64(self):
         op = DummyOperator1(((1, 0), (3, 1)), 0.5)
         res = op * numpy.float64(0.5)
-        self.assertTrue(res.isclose(DummyOperator1(((1, 0), (3, 1)),
-                                                   0.5 * 0.5)))
+        self.assertTrue(res == DummyOperator1(((1, 0), (3, 1)), 0.5 * 0.5))
 
     def test_mul_multiple_terms(self):
         op = DummyOperator1(((1, 0), (8, 1)), 0.5)
@@ -380,35 +353,35 @@ class SymbolicOperatorTest1(unittest.TestCase):
         correct += (DummyOperator1(((1, 0), (8, 1), (1, 1), (9, 1)), 0.7j) +
                     DummyOperator1(((1, 1), (9, 1), (1, 0), (8, 1)), 0.7j))
         correct += DummyOperator1(((1, 1), (9, 1), (1, 1), (9, 1)), 1.4j ** 2)
-        self.assertTrue(res.isclose(correct))
+        self.assertTrue(res == correct)
 
     def test_rmul_scalar_real(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         multiplier = 0.5
         res1 = op * multiplier
         res2 = multiplier * op
-        self.assertTrue(res1.isclose(res2))
+        self.assertTrue(res1 == res2)
 
     def test_rmul_scalar_complex(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         multiplier = 0.6j
         res1 = op * multiplier
         res2 = multiplier * op
-        self.assertTrue(res1.isclose(res2))
+        self.assertTrue(res1 == res2)
 
     def test_rmul_scalar_npfloat64(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         multiplier = numpy.float64(2.303)
         res1 = op * multiplier
         res2 = multiplier * op
-        self.assertTrue(res1.isclose(res2))
+        self.assertTrue(res1 == res2)
 
     def test_rmul_scalar_npcomplex128(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         multiplier = numpy.complex128(-1.5j + 7.7)
         res1 = op * multiplier
         res2 = multiplier * op
-        self.assertTrue(res1.isclose(res2))
+        self.assertTrue(res1 == res2)
 
     def test_rmul_bad_multiplier(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -421,9 +394,9 @@ class SymbolicOperatorTest1(unittest.TestCase):
         original = copy.deepcopy(op)
         res = op / divisor
         correct = op * (1. / divisor)
-        self.assertTrue(res.isclose(correct))
+        self.assertTrue(res == correct)
         # Test if done out of place
-        self.assertTrue(op.isclose(original))
+        self.assertTrue(op == original)
 
     def test_truediv_and_div_complex(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -431,9 +404,9 @@ class SymbolicOperatorTest1(unittest.TestCase):
         original = copy.deepcopy(op)
         res = op / divisor
         correct = op * (1. / divisor)
-        self.assertTrue(res.isclose(correct))
+        self.assertTrue(res == correct)
         # Test if done out of place
-        self.assertTrue(op.isclose(original))
+        self.assertTrue(op == original)
 
     def test_truediv_and_div_npfloat64(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -441,9 +414,9 @@ class SymbolicOperatorTest1(unittest.TestCase):
         original = copy.deepcopy(op)
         res = op / divisor
         correct = op * (1. / divisor)
-        self.assertTrue(res.isclose(correct))
+        self.assertTrue(res == correct)
         # Test if done out of place
-        self.assertTrue(op.isclose(original))
+        self.assertTrue(op == original)
 
     def test_truediv_and_div_npcomplex128(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -451,9 +424,9 @@ class SymbolicOperatorTest1(unittest.TestCase):
         original = copy.deepcopy(op)
         res = op / divisor
         correct = op * (1. / divisor)
-        self.assertTrue(res.isclose(correct))
+        self.assertTrue(res == correct)
         # Test if done out of place
-        self.assertTrue(op.isclose(original))
+        self.assertTrue(op == original)
 
     def test_truediv_bad_divisor(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -466,9 +439,9 @@ class SymbolicOperatorTest1(unittest.TestCase):
         original = copy.deepcopy(op)
         correct = op * (1. / divisor)
         op /= divisor
-        self.assertTrue(op.isclose(correct))
+        self.assertTrue(op == correct)
         # Test if done in-place
-        self.assertFalse(op.isclose(original))
+        self.assertFalse(op == original)
 
     def test_itruediv_and_idiv_complex(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -476,9 +449,9 @@ class SymbolicOperatorTest1(unittest.TestCase):
         original = copy.deepcopy(op)
         correct = op * (1. / divisor)
         op /= divisor
-        self.assertTrue(op.isclose(correct))
+        self.assertTrue(op == correct)
         # Test if done in-place
-        self.assertFalse(op.isclose(original))
+        self.assertFalse(op == original)
 
     def test_itruediv_and_idiv_npfloat64(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -486,9 +459,9 @@ class SymbolicOperatorTest1(unittest.TestCase):
         original = copy.deepcopy(op)
         correct = op * (1. / divisor)
         op /= divisor
-        self.assertTrue(op.isclose(correct))
+        self.assertTrue(op == correct)
         # Test if done in-place
-        self.assertFalse(op.isclose(original))
+        self.assertFalse(op == original)
 
     def test_itruediv_and_idiv_npcomplex128(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -496,9 +469,9 @@ class SymbolicOperatorTest1(unittest.TestCase):
         original = copy.deepcopy(op)
         correct = op * (1. / divisor)
         op /= divisor
-        self.assertTrue(op.isclose(correct))
+        self.assertTrue(op == correct)
         # Test if done in-place
-        self.assertFalse(op.isclose(original))
+        self.assertFalse(op == original)
 
     def test_itruediv_bad_divisor(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -533,8 +506,8 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertEqual(res.terms[term_a], 1.0)
         self.assertEqual(res.terms[term_b], 1.0)
         # Test out of place
-        self.assertTrue(a.isclose(DummyOperator1(term_a, 1.0)))
-        self.assertTrue(b.isclose(DummyOperator1(term_b, 0.5)))
+        self.assertTrue(a == DummyOperator1(term_a, 1.0))
+        self.assertTrue(b == DummyOperator1(term_b, 0.5))
 
     def test_add_bad_addend(self):
         op = DummyOperator1((), 1.0)
@@ -582,10 +555,10 @@ class SymbolicOperatorTest1(unittest.TestCase):
         op = DummyOperator1(((1, 1), (3, 1), (8, 1)), 0.5)
         _ = -op
         # out of place
-        self.assertTrue(op.isclose(DummyOperator1(((1, 1), (3, 1), (8, 1)),
-                                                  0.5)))
+        self.assertTrue(op == DummyOperator1(((1, 1), (3, 1), (8, 1)),
+                                                  0.5))
         correct = -1.0 * op
-        self.assertTrue(correct.isclose(-op))
+        self.assertTrue(correct == -op)
 
     def test_pow_square_term(self):
         coeff = 6.7j
@@ -593,8 +566,8 @@ class SymbolicOperatorTest1(unittest.TestCase):
         term = DummyOperator1(ops, coeff)
         squared = term ** 2
         expected = DummyOperator1(ops + ops, coeff ** 2)
-        self.assertTrue(squared.isclose(term * term))
-        self.assertTrue(squared.isclose(expected))
+        self.assertTrue(squared == term * term)
+        self.assertTrue(squared == expected)
 
     def test_pow_zero_term(self):
         coeff = 6.7j
@@ -602,13 +575,13 @@ class SymbolicOperatorTest1(unittest.TestCase):
         term = DummyOperator1(ops, coeff)
         zerod = term ** 0
         expected = DummyOperator1(())
-        self.assertTrue(expected.isclose(zerod))
+        self.assertTrue(expected == zerod)
 
     def test_pow_one_term(self):
         coeff = 6.7j
         ops = ((3, 1), (1, 0), (4, 1))
         term = DummyOperator1(ops, coeff)
-        self.assertTrue(term.isclose(term ** 1))
+        self.assertTrue(term == term ** 1)
 
     def test_pow_high_term(self):
         coeff = 6.7j
@@ -616,7 +589,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         term = DummyOperator1(ops, coeff)
         high = term ** 10
         expected = DummyOperator1(ops * 10, coeff ** 10)
-        self.assertTrue(expected.isclose(high))
+        self.assertTrue(expected == high)
 
     def test_pow_neg_error(self):
         with self.assertRaises(ValueError):
@@ -633,7 +606,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         op_compressed = (DummyOperator1('3^ 1', 0.3) +
                          DummyOperator1('1^ 3', 1e-3))
         op.compress(1e-7)
-        self.assertTrue(op_compressed.isclose(op))
+        self.assertTrue(op_compressed == op)
 
     def test_str(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -688,8 +661,8 @@ class SymbolicOperatorTest2(unittest.TestCase):
 
         qubit_op = DummyOperator2('[X0 X1] + [Y0 Y1]')
         correct = DummyOperator2('X0 X1') + DummyOperator2('Y0 Y1')
-        self.assertTrue(qubit_op.isclose(correct))
-        self.assertTrue(qubit_op.isclose(DummyOperator2(str(qubit_op))))
+        self.assertTrue(qubit_op == correct)
+        self.assertTrue(qubit_op == DummyOperator2(str(qubit_op)))
 
     def test_init_str_identity(self):
         qubit_op = DummyOperator2('', 2.)
@@ -729,18 +702,6 @@ class SymbolicOperatorTest2(unittest.TestCase):
         with self.assertRaises(ValueError):
             qubit_op = DummyOperator2('X-1')
 
-    def test_isclose_abs_tol(self):
-        a = DummyOperator2('X0', -1.)
-        b = DummyOperator2('X0', -1.05)
-        c = DummyOperator2('X0', -1.11)
-        self.assertTrue(a.isclose(b, rel_tol=1e-14, abs_tol=0.1))
-        self.assertTrue(not a.isclose(c, rel_tol=1e-14, abs_tol=0.1))
-        a = DummyOperator2('X0', -1.0j)
-        b = DummyOperator2('X0', -1.05j)
-        c = DummyOperator2('X0', -1.11j)
-        self.assertTrue(a.isclose(b, rel_tol=1e-14, abs_tol=0.1))
-        self.assertTrue(not a.isclose(c, rel_tol=1e-14, abs_tol=0.1))
-
     def test_compress(self):
         a = DummyOperator2('X0', .9e-12)
         self.assertTrue(len(a.terms) == 1)
@@ -770,48 +731,36 @@ class SymbolicOperatorTest2(unittest.TestCase):
         for term in a.terms:
             self.assertTrue(isinstance(a.terms[term], float))
 
-    def test_isclose_rel_tol(self):
-        a = DummyOperator2('X0', 1)
-        b = DummyOperator2('X0', 2)
-        self.assertTrue(a.isclose(b, rel_tol=2.5, abs_tol=0.1))
-        # Test symmetry
-        self.assertTrue(a.isclose(b, rel_tol=1, abs_tol=0.1))
-        self.assertTrue(b.isclose(a, rel_tol=1, abs_tol=0.1))
-
     def test_isclose_zero_terms(self):
         op = DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0
-        self.assertTrue(op.isclose(
-            DummyOperator2((), 0.0), rel_tol=1e-12, abs_tol=1e-12))
-        self.assertTrue(DummyOperator2((), 0.0).isclose(
-            op, rel_tol=1e-12, abs_tol=1e-12))
+        self.assertTrue(op == DummyOperator2())
+        self.assertTrue(DummyOperator2((), 0.0) == op)
 
     def test_isclose_different_terms(self):
         a = DummyOperator2(((1, 'Y'),), -0.1j)
         b = DummyOperator2(((1, 'X'),), -0.1j)
-        self.assertTrue(a.isclose(b, rel_tol=1e-12, abs_tol=0.2))
-        self.assertTrue(not a.isclose(b, rel_tol=1e-12, abs_tol=0.05))
-        self.assertTrue(b.isclose(a, rel_tol=1e-12, abs_tol=0.2))
-        self.assertTrue(not b.isclose(a, rel_tol=1e-12, abs_tol=0.05))
+        self.assertTrue(not a == b)
+        self.assertTrue(not b == a)
 
     def test_isclose_different_num_terms(self):
         a = DummyOperator2(((1, 'Y'),), -0.1j)
         a += DummyOperator2(((2, 'Y'),), -0.1j)
         b = DummyOperator2(((1, 'X'),), -0.1j)
-        self.assertTrue(not b.isclose(a, rel_tol=1e-12, abs_tol=0.05))
-        self.assertTrue(not a.isclose(b, rel_tol=1e-12, abs_tol=0.05))
+        self.assertTrue(not b == a)
+        self.assertTrue(not a == b)
 
     def test_isclose_invalid_type(self):
         a = DummyOperator1()
         b = DummyOperator2()
         with self.assertRaises(TypeError):
-            a.isclose(b)
+            a == b
 
     def test_rmul_scalar(self):
         multiplier = 0.5
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         res1 = op * multiplier
         res2 = multiplier * op
-        self.assertTrue(res1.isclose(res2))
+        self.assertTrue(res1 == res2)
 
     def test_rmul_bad_multiplier(self):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
@@ -826,11 +775,11 @@ class SymbolicOperatorTest2(unittest.TestCase):
         res = op / divisor
         res2 = op2.__div__(divisor)  # To test python 2 version as well
         correct = op * (1. / divisor)
-        self.assertTrue(res.isclose(correct))
-        self.assertTrue(res2.isclose(correct))
+        self.assertTrue(res == correct)
+        self.assertTrue(res2 == correct)
         # Test if done out of place
-        self.assertTrue(op.isclose(original))
-        self.assertTrue(op2.isclose(original))
+        self.assertTrue(op == original)
+        self.assertTrue(op2 == original)
 
     def test_truediv_bad_divisor(self):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
@@ -845,11 +794,11 @@ class SymbolicOperatorTest2(unittest.TestCase):
         correct = op * (1. / divisor)
         op /= divisor
         op2.__idiv__(divisor)  # To test python 2 version as well
-        self.assertTrue(op.isclose(correct))
-        self.assertTrue(op2.isclose(correct))
+        self.assertTrue(op == correct)
+        self.assertTrue(op2 == correct)
         # Test if done in-place
-        self.assertTrue(not op.isclose(original))
-        self.assertTrue(not op2.isclose(original))
+        self.assertTrue(not op == original)
+        self.assertTrue(not op2 == original)
 
     def test_itruediv_bad_divisor(self):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
@@ -891,8 +840,8 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertAlmostEqual(res.terms[term_a], 1.0)
         self.assertAlmostEqual(res.terms[term_b], 1.0)
         # Test out of place
-        self.assertTrue(a.isclose(DummyOperator2(term_a, 1.0)))
-        self.assertTrue(b.isclose(DummyOperator2(term_b, 0.5)))
+        self.assertTrue(a == DummyOperator2(term_a, 1.0))
+        self.assertTrue(b == DummyOperator2(term_b, 0.5))
 
     def test_add_bad_addend(self):
         op = DummyOperator2((), 1.0)
@@ -940,10 +889,10 @@ class SymbolicOperatorTest2(unittest.TestCase):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         -op
         # out of place
-        self.assertTrue(op.isclose(
-            DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)))
+        self.assertTrue(op ==
+                DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5))
         correct = -1.0 * op
-        self.assertTrue(correct.isclose(-op))
+        self.assertTrue(correct == -op)
 
     def test_str(self):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
@@ -985,4 +934,4 @@ class SymbolicOperatorTest2(unittest.TestCase):
         op = DummyOperator1(((1, 1), (8, 1), (3, 0)), 0.5)
         op = prune_unused_indices(op)
         expected = DummyOperator1(((0, 1), (2, 1), (1, 0)), 0.5)
-        self.assertTrue(expected.isclose(op))
+        self.assertTrue(expected == op)
