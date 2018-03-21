@@ -12,7 +12,7 @@
 
 from ._polynomial_tensor import PolynomialTensor, general_basis_change
 from ._quadratic_hamiltonian import QuadraticHamiltonian
-from ._symbolic_binary import SymbolicBinary
+from ._symbolic_binary import BinaryPolynomial
 from ._symbolic_operator import (SymbolicOperator,
                                  prune_unused_indices)
 

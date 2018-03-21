@@ -12,7 +12,7 @@
 
 import unittest
 
-from openfermion.ops import BinaryCode, FermionOperator
+from openfermion.ops import BinaryCode, FermionOperator, QubitOperator
 from openfermion.transforms import binary_code_transform, dissolve
 
 
@@ -22,8 +22,8 @@ class CodeTransformTest(unittest.TestCase):
         hamiltonian = FermionOperator('0^ 2', 0.5) + FermionOperator('2^ 0',
                                                                      0.5)
         transform = binary_code_transform(hamiltonian, code)
-        self.assertDictEqual(transform.terms,
-                             {((0, 'X'), (1, 'Z')): 0.25, ((0, 'X'),): 0.25})
+        correct_op = QubitOperator('X0 Z1',0.25) + QubitOperator('X0',0.25)
+        self.assertTrue(transform == correct_op)
 
         with self.assertRaises(TypeError):
             binary_code_transform('0^ 2', code)
@@ -36,9 +36,12 @@ class CodeTransformTest(unittest.TestCase):
         hamiltonian = FermionOperator('0^ 2', 0.5) + FermionOperator('2^ 0',
                                                                      0.5)
         transform = binary_code_transform(hamiltonian, code)
-        self.assertDictEqual(transform.terms, {((0, 'X'), (1, 'Z')): 0.375,
-                                               ((0, 'X'),): -0.125,
-                                               ((0, 'Y'),): 0.125j,
-                                               ((0, 'Y'), (1, 'Z')): 0.125j})
+
+        correct_op = QubitOperator('X0 Z1', 0.375) + \
+                     QubitOperator('X0', -0.125) + \
+                     QubitOperator('Y0', -0.125j) + \
+                     QubitOperator('Y0 Z1', -0.125j)
+        self.assertTrue(transform == correct_op)
+
         with self.assertRaises(ValueError):
             dissolve(((1, '1'),))

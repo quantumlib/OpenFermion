@@ -14,20 +14,20 @@
 import numpy
 import unittest
 from openfermion.ops import FermionOperator
-from openfermion.utils import (up_index, down_index, s_minus_operator,
-                               s_plus_operator, sz_operator,
-                               s_squared_operator)
+from openfermion.utils import (majorana_operator, s_minus_operator,
+                               s_plus_operator, s_squared_operator,
+                               sz_operator, up_index, down_index)
 
 
 class FermionSpinOperatorsTest(unittest.TestCase):
 
     def test_up_index(self):
-        self.assertTrue(numpy.isclose(up_index(2), 4))
-        self.assertTrue(numpy.isclose(up_index(5), 10))
+        self.assertTrue(up_index(2) == 4)
+        self.assertTrue(up_index(5) == 10)
 
     def test_up_down(self):
-        self.assertTrue(numpy.isclose(down_index(2), 5))
-        self.assertTrue(numpy.isclose(down_index(5), 11))
+        self.assertTrue(down_index(2) == 5)
+        self.assertTrue(down_index(5) == 11)
 
     def test_sz_operator(self):
         op = sz_operator(2)
@@ -35,7 +35,7 @@ class FermionSpinOperatorsTest(unittest.TestCase):
                     FermionOperator(((1, 1), (1, 0)), 0.5) +
                     FermionOperator(((2, 1), (2, 0)), 0.5) -
                     FermionOperator(((3, 1), (3, 0)), 0.5))
-        self.assertTrue(op.isclose(expected))
+        self.assertTrue(op == expected)
 
     def test_sz_operator_invalid_input(self):
         with self.assertRaises(TypeError):
@@ -45,7 +45,7 @@ class FermionSpinOperatorsTest(unittest.TestCase):
         op = s_plus_operator(2)
         expected = (FermionOperator(((0, 1), (1, 0))) +
                     FermionOperator(((2, 1), (3, 0))))
-        self.assertTrue(op.isclose(expected))
+        self.assertTrue(op == expected)
 
     def test_s_plus_operator_invalid_input(self):
         with self.assertRaises(TypeError):
@@ -56,7 +56,7 @@ class FermionSpinOperatorsTest(unittest.TestCase):
         expected = (FermionOperator(((1, 1), (0, 0))) +
                     FermionOperator(((3, 1), (2, 0))) +
                     FermionOperator(((5, 1), (4, 0))))
-        self.assertTrue(op.isclose(expected))
+        self.assertTrue(op == expected)
 
     def test_s_minus_operator_invalid_input(self):
         with self.assertRaises(TypeError):
@@ -73,9 +73,40 @@ class FermionSpinOperatorsTest(unittest.TestCase):
                FermionOperator(((2, 1), (2, 0)), 0.5) -
                FermionOperator(((3, 1), (3, 0)), 0.5))
         expected = s_minus * s_plus + s_z * s_z + s_z
-        self.assertTrue(op.isclose(expected))
+        self.assertTrue(op == expected)
 
     def test_s_squared_operator_invalid_input(self):
         with self.assertRaises(TypeError):
             s_squared_operator('a')
 
+
+class MajoranaOperatorTest(unittest.TestCase):
+
+    def test_init(self):
+        # Test 'c' operator
+        op1 = majorana_operator((2, 0))
+        op2 = majorana_operator('c2')
+        correct = FermionOperator('2^') + FermionOperator('2')
+        self.assertTrue(op1 == op2)
+        self.assertTrue(op1 == correct)
+
+        # Test 'd' operator
+        op1 = majorana_operator((3, 1))
+        op2 = majorana_operator('d3')
+        correct = FermionOperator('3^', 1.j) - FermionOperator('3', 1.j)
+        self.assertTrue(op1 == op2)
+        self.assertTrue(op1 == correct)
+
+    def test_none_term(self):
+        majorana_op = majorana_operator()
+        self.assertTrue(majorana_operator() == FermionOperator())
+
+    def test_bad_coefficient(self):
+        with self.assertRaises(ValueError):
+            majorana_op = majorana_operator((1, 1), 'a')
+
+    def test_bad_term(self):
+        with self.assertRaises(ValueError):
+            majorana_op = majorana_operator((2, 2))
+        with self.assertRaises(ValueError):
+            majorana_op = majorana_operator('a')

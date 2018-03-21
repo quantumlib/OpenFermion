@@ -19,6 +19,8 @@ from ._commutators import anticommutator, commutator, double_commutator
 
 from ._grid import Grid
 
+from ._lcu_util import preprocess_lcu_coefficients_for_reversible_sampling
+
 from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               get_file_path, hermitian_conjugated,
                               inverse_fourier_transform, is_hermitian,
@@ -40,8 +42,8 @@ from ._trotter_exp_to_qgates import (pauli_exp_to_qasm,
                                      trotter_operator_grouping)
 
 from ._unitary_cc import (uccsd_convert_amplitude_format,
-                          uccsd_operator,
-                          uccsd_singlet_operator,
+                          uccsd_generator,
+                          uccsd_singlet_generator,
                           uccsd_singlet_paramsize)
 
 # Imports out of alphabetical order to avoid circular dependency.

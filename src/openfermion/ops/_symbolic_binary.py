@@ -20,12 +20,12 @@ _SYMBOLIC_ONE = 'one'
 _ACTION = 'W'
 
 
-class SymbolicBinaryError(Exception):
+class BinaryPolynomialError(Exception):
     pass
 
 
-class SymbolicBinary(object):
-    """The SymbolicBinary class provides an analytic representation
+class BinaryPolynomial(object):
+    """The BinaryPolynomial class provides an analytic representation
     of non-linear binary functions. An instance of this class describes
     a term of binary variables (variables of the values {0,1}, indexed
     by integers like w0, w1, w2 and so on) that is considered to be evaluated
@@ -44,7 +44,7 @@ class SymbolicBinary(object):
     
     These binary functions are used for non-linear binary codes in order
     to decompress qubit bases back into fermion bases.  
-    In that instance, one SymbolicBinary object characterizes the occupation 
+    In that instance, one BinaryPolynomial object characterizes the occupation 
     of single orbital given a multi-qubit state in configuration 
     \|w0> \|w1> \|w2> ... . 
     
@@ -53,29 +53,29 @@ class SymbolicBinary(object):
     a whitespace, or in its native form of tuples,
     1 + w1 w2 + w0 w1 is represented as [(_SYMBOLIC_ONE,),(1,2),(0,1)]
 
-    After initialization,SymbolicBinary terms can be manipulated with the
+    After initialization,BinaryPolynomial terms can be manipulated with the
      overloaded signs +, * and ^, according to the binary rules mentioned.
 
     Example:
         .. code-block:: python
 
-            bin_fun = SymbolicBinary('1 + w1 w2 + w0 w1')
+            bin_fun = BinaryPolynomial('1 + w1 w2 + w0 w1')
             # Equivalently
-            bin_fun = SymbolicBinary(1) + SymbolicBinary([(1,2),(0,1)])
+            bin_fun = BinaryPolynomial(1) + BinaryPolynomial([(1,2),(0,1)])
             # Equivalently
-            bin_fun = SymbolicBinary([(_SYMBOLIC_ONE,),(1,2),(0,1)])
+            bin_fun = BinaryPolynomial([(_SYMBOLIC_ONE,),(1,2),(0,1)])
 
     Attributes:
         terms (list): a list of tuples. Each tuple represents a summand of the
-            SymbolicBinary term and each summand can contain multiple tuples
+            BinaryPolynomial term and each summand can contain multiple tuples
             representing the factors.
     """
 
     def __init__(self, term=None):
-        """ Initialize the SymbolicBinary based on term
+        """ Initialize the BinaryPolynomial based on term
 
         Args:
-            term (str, list, tuple): used for initializing a SymbolicBinary
+            term (str, list, tuple): used for initializing a BinaryPolynomial
 
         Raises:
             ValueError: when term is not a string,list or tuple
@@ -124,7 +124,7 @@ class SymbolicBinary(object):
         1 + w1 w2 + w3 w4'. Updates terms in place.
 
         Args:
-            term (str): a string representation of a SymbolicBinary
+            term (str): a string representation of a BinaryPolynomial
              that involves summation
         """
         for summand in term.split(' + '):
@@ -140,7 +140,7 @@ class SymbolicBinary(object):
         removes multiplications with 1.
 
         Args:
-            term (list): a single term for SymbolicBinary
+            term (list): a single term for BinaryPolynomial
             factor (int or str): a factor in term
 
         Returns (list): updated term
@@ -190,7 +190,7 @@ class SymbolicBinary(object):
         """ Parse a string term like 'w1 w2 w0'
 
         Args:
-            term (str): string representation of SymbolicBinary term.
+            term (str): string representation of BinaryPolynomial term.
 
         Returns (tuple): parsed string term
 
@@ -228,7 +228,7 @@ class SymbolicBinary(object):
         return parsed_term
 
     def enumerate_qubits(self):
-        """ Enumerates all qubits indexed in a given SymbolicBinary.
+        """ Enumerates all qubits indexed in a given BinaryPolynomial.
 
         Returns (list): a list of qubits
         """
@@ -263,7 +263,7 @@ class SymbolicBinary(object):
         self.terms = shifted_terms
 
     def evaluate(self, binary_list):
-        """Evaluates a SymbolicBinary
+        """Evaluates a BinaryPolynomial
 
         Args:
             binary_list (list, array, str): a list of binary values
@@ -273,8 +273,8 @@ class SymbolicBinary(object):
         Returns (int, 0 or 1): result of the evaluation
 
         Raises:
-          SymbolicBinaryError: Length of list provided must match the number
-                of qubits indexed in SymbolicBinary
+          BinaryPolynomialError: Length of list provided must match the number
+                of qubits indexed in BinaryPolynomial
         """
         if isinstance(binary_list,str):
             binary_list = list(map(int, list(binary_list)))
@@ -282,9 +282,9 @@ class SymbolicBinary(object):
         all_qubits = self.enumerate_qubits()
         if all_qubits:
             if max(all_qubits) >= len(binary_list):
-                raise SymbolicBinaryError(
+                raise BinaryPolynomialError(
                     'the length of the binary list provided does not match'
-                    ' the number of variables in the SymbolicBinary')
+                    ' the number of variables in the BinaryPolynomial')
 
             evaluation = 0
             for summand in self.terms:
@@ -301,9 +301,9 @@ class SymbolicBinary(object):
             return 0
 
     def _add_one(self):
-        """ Adds constant 1 to a SymbolicBinary. """
+        """ Adds constant 1 to a BinaryPolynomial. """
 
-        # (_SYMBOLIC_ONE,) can only exist as a loner in SymbolicBinary
+        # (_SYMBOLIC_ONE,) can only exist as a loner in BinaryPolynomial
         if (_SYMBOLIC_ONE,) in self.terms:
             self.terms.remove((_SYMBOLIC_ONE,))
         else:
@@ -313,7 +313,7 @@ class SymbolicBinary(object):
     def zero(cls):
         """
         Returns:
-            additive_identity (SymbolicBinary):
+            additive_identity (BinaryPolynomial):
                 A symbolic operator o with the property that o+x = x+o = x for
                 all operators x of the same class.
         """
@@ -323,7 +323,7 @@ class SymbolicBinary(object):
     def identity(cls):
         """
         Returns:
-            multiplicative_identity (SymbolicBinary):
+            multiplicative_identity (BinaryPolynomial):
                 A symbolic operator u with the property that u*x = x*u = x for
                 all operators x of the same class.
         """
@@ -351,13 +351,13 @@ class SymbolicBinary(object):
         """ In-place multiply (*=) with a scalar or operator of the same type.
 
         Args:
-            multiplier(int or SymbolicBinary): multiplier
+            multiplier(int or BinaryPolynomial): multiplier
 
         Returns:
-            product (SymbolicBinary): Mutated self.
+            product (BinaryPolynomial): Mutated self.
 
         Raises:
-          TypeError: Object of invalid type cannot multiply SymbolicBinary.
+          TypeError: Object of invalid type cannot multiply BinaryPolynomial.
         """
 
         # Handle integers.
@@ -399,17 +399,17 @@ class SymbolicBinary(object):
                 self.__class__.__name__, multiplier.__class__.__name__))
 
     def __rmul__(self, multiplier):
-        """ Return multiplier * self for a scalar or SymbolicBinary.
+        """ Return multiplier * self for a scalar or BinaryPolynomial.
 
         Args:
-          multiplier (int or SymbolicBinary): the multiplier of the
-           SymbolicBinary object
+          multiplier (int or BinaryPolynomial): the multiplier of the
+           BinaryPolynomial object
 
         Returns:
-          product (SymbolicBinary): A new instance of SymbolicBinary.
+          product (BinaryPolynomial): A new instance of BinaryPolynomial.
 
         Raises:
-          TypeError: Object of invalid type cannot multiply SymbolicBinary.
+          TypeError: Object of invalid type cannot multiply BinaryPolynomial.
         """
         if not isinstance(multiplier, (numpy.int64, numpy.int32, int,
                                        type(self))):
@@ -419,17 +419,17 @@ class SymbolicBinary(object):
         return self * multiplier
 
     def __mul__(self, multiplier):
-        """Return self * multiplier for int, or a SymbolicBinary.
+        """Return self * multiplier for int, or a BinaryPolynomial.
 
         Args:
-            multiplier (int or SymbolicBinary): the multiplier of the
-           SymbolicBinary object
+            multiplier (int or BinaryPolynomial): the multiplier of the
+           BinaryPolynomial object
 
         Returns:
-            product (SymbolicBinary): result of the multiplication
+            product (BinaryPolynomial): result of the multiplication
 
         Raises:
-            TypeError: Invalid type cannot be multiply with SymbolicBinary.
+            TypeError: Invalid type cannot be multiply with BinaryPolynomial.
         """
         if isinstance(multiplier, (numpy.int64, numpy.int32, int,
                                    type(self))):
@@ -442,13 +442,13 @@ class SymbolicBinary(object):
                 str(type(self)) + '.')
 
     def __iadd__(self, addend):
-        """In-place method for += addition of a int or a SymbolicBinary.
+        """In-place method for += addition of a int or a BinaryPolynomial.
 
         Args:
-            addend (int or SymbolicBinary): The operator to add.
+            addend (int or BinaryPolynomial): The operator to add.
 
         Returns:
-            sum (SymbolicBinary): Mutated self.
+            sum (BinaryPolynomial): Mutated self.
 
         Raises:
             TypeError: Cannot add invalid type.
@@ -468,13 +468,13 @@ class SymbolicBinary(object):
         return self
 
     def __radd__(self, addend):
-        """Method for right addition to SymbolicBinary.
+        """Method for right addition to BinaryPolynomial.
 
         Args:
-            addend (int or SymbolicBinary): The operator to add.
+            addend (int or BinaryPolynomial): The operator to add.
 
         Returns:
-            sum (SymbolicBinary): the sum of terms
+            sum (BinaryPolynomial): the sum of terms
 
         Raises:
             TypeError: Cannot add invalid type.
@@ -488,28 +488,28 @@ class SymbolicBinary(object):
 
     def __add__(self, addend):
         """ 
-        Left addition of SymbolicBinary.
+        Left addition of BinaryPolynomial.
         Args:
-            addend (int or SymbolicBinary): The operator or int to add.
+            addend (int or BinaryPolynomial): The operator or int to add.
 
         Returns:
-            sum (SymbolicBinary): the sum of terms
+            sum (BinaryPolynomial): the sum of terms
         """
         summand = copy.deepcopy(self)
         summand += addend
         return summand
 
     def __pow__(self, exponent):
-        """Exponentiate the SymbolicBinary.
+        """Exponentiate the BinaryPolynomial.
 
         Args:
             exponent (int): The exponent with which to raise the operator.
 
         Returns:
-            exponentiated (SymbolicBinary): Exponentiated symbolicBinary
+            exponentiated (BinaryPolynomial): Exponentiated symbolicBinary
 
         Raises:
-            TypeError: Can only raise SymbolicBinary to non-negative
+            TypeError: Can only raise BinaryPolynomial to non-negative
                 integer powers.
         """
         # Handle invalid exponents.
