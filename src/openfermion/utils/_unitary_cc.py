@@ -190,7 +190,9 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
         occupied_down = down_index(occupied_spatial)
 
         # Generate single excitations
-        coeff = t1[i]
+        # Multiply coefficient by 2 for compatibility with electronic structure
+        #   plugins
+        coeff = 2. * t1[i]
         # Spin up excitation
         generator += FermionOperator((
             (virtual_up, 1),
@@ -211,7 +213,9 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
             -coeff)
 
         # Generate double excitation
-        coeff = t2_1[i]
+        # Multiply coefficient by 2 for compatibility with electronic structure
+        #   plugins
+        coeff = 2. * t2_1[i]
         generator += FermionOperator((
             (virtual_up, 1),
             (occupied_up, 0),
@@ -239,7 +243,9 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons):
         occupied_spatial_2 = s
 
         # Generate double excitations
-        coeff = t2_2[i]
+        # Multiply coefficient by 2 for compatibility with electronic structure
+        #   plugins
+        coeff = 2. * t2_2[i]
         spin_index_functions = [up_index, down_index]
         for s in range(2):
             # Get the functions which map a spatial orbital index to a
