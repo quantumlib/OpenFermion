@@ -68,7 +68,7 @@ def is_hermitian(operator):
     """Test if operator is Hermitian."""
     # Handle FermionOperator or QubitOperator
     if isinstance(operator, (FermionOperator, QubitOperator)):
-        return operator.isclose(hermitian_conjugated(operator))
+        return operator == hermitian_conjugated(operator)
 
     # Handle sparse matrix
     elif isinstance(operator, spmatrix):
