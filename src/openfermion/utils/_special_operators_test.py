@@ -14,6 +14,7 @@
 import numpy
 import unittest
 from openfermion.ops import FermionOperator, normal_ordered
+from openfermion.utils import commutator
 from openfermion.utils._special_operators import (
         majorana_operator, s_minus_operator,
         s_plus_operator, s_squared_operator,
@@ -102,6 +103,10 @@ class FermionSpinOperatorsTest(unittest.TestCase):
         self.assertEqual(normal_ordered(s_squared),
                          normal_ordered(s_plus * s_minus +
                                         sz * (sz - identity)))
+        self.assertEqual(normal_ordered(commutator(s_plus, s_minus)),
+                         normal_ordered(2 * sz))
+        self.assertEqual(normal_ordered(commutator(sx, sy)),
+                         normal_ordered(1.j * sz))
 
     def test_invalid_input(self):
 
