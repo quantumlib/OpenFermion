@@ -65,3 +65,28 @@ class Grid:
                 The index-coordinate tuple of each point in the grid.
         """
         return itertools.product(range(self.length), repeat=self.dimensions)
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (self.dimensions == other.dimensions and
+                self.scale == other.scale and
+                self.length == other.length)
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash((Grid, self.dimensions, self.length, self.scale))
+
+    def __repr__(self):
+        return 'Grid(dimensions={}, length={}, scale={})'.format(
+            repr(self.dimensions),
+            repr(self.length),
+            repr(self.scale))
+
+    def __str__(self):
+        s = self.scale / self.length
+        return "{}**{}".format(
+            [(i - self.length // 2) * s for i in range(self.length)],
+            self.dimensions)
