@@ -13,6 +13,7 @@
 """Tests  _symbolic_operator.py."""
 import copy
 import unittest
+import warnings
 
 import numpy
 from openfermion.config import EQ_TOLERANCE
@@ -972,10 +973,16 @@ class DeprecatedFunctionsTest(unittest.TestCase):
     """Tests for deprecated functions."""
 
     def test_warnings(self):
-        op1 = DummyOperator1()
-        op2 = DummyOperator1('0^', 0.)
-        with self.assertRaises(DeprecationWarning):
-            op1.isclose(op2)
+        """Test that warnings are raised appropriately."""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+
+            op1 = DummyOperator1()
+            op1.isclose(op1)
+
+            self.assertEqual(len(w), 1)
+            self.assertTrue(issubclass(w[0].category, DeprecationWarning))
+            self.assertTrue("deprecated" in str(w[0].message))
 
     def test_isclose_zero_terms_1(self):
         op = DummyOperator1('1^ 0', -1j) * 0

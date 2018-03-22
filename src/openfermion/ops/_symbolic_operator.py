@@ -13,6 +13,7 @@
 """SymbolicOperator is the base class for FermionOperator and QubitOperator"""
 import copy
 import re
+import warnings
 
 from openfermion.config import EQ_TOLERANCE
 
@@ -634,8 +635,8 @@ class SymbolicOperator(object):
     # DEPRECATED FUNCTIONS
     # ====================
     def isclose(self, other):
-        raise DeprecationWarning('The method `isclose` is deprecated and will '
-                                 'be removed in a future version. Use == '
-                                 'instead. For instance, a == b instead of '
-                                 'a.isclose(b).')
+        warnings.warn('The method `isclose` is deprecated and will '
+                      'be removed in a future version. Use == '
+                      'instead. For instance, a == b instead of '
+                      'a.isclose(b).', DeprecationWarning)
         return self == other
