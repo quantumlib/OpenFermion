@@ -928,3 +928,13 @@ class SymbolicOperatorTest2(unittest.TestCase):
         op = prune_unused_indices(op)
         expected = DummyOperator1(((0, 1), (2, 1), (1, 0)), 0.5)
         self.assertTrue(expected == op)
+
+
+class DeprecatedFunctionsTest(unittest.TestCase):
+    """Tests for deprecated functions."""
+
+    def test_isclose(self):
+        op1 = DummyOperator1()
+        op2 = DummyOperator1('0^', 0.)
+        with self.assertRaises(DeprecationWarning):
+            op1.isclose(op2)
