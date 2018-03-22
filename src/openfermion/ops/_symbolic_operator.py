@@ -556,7 +556,7 @@ class SymbolicOperator(object):
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if not abs(self.terms[term]) <= EQ_TOLERANCE: 
+                if not abs(self.terms[term]) <= EQ_TOLERANCE:
                     return False
             elif not abs(other.terms[term]) <= EQ_TOLERANCE:
                 return False
@@ -606,7 +606,6 @@ class SymbolicOperator(object):
         for coefficient in self.terms.values():
             norm += abs(coefficient) ** order
         return norm ** (1. / order)
-
 
     # DEPRECATED FUNCTIONS
     # ====================
