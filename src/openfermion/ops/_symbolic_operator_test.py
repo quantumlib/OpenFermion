@@ -69,6 +69,16 @@ class GeneralTest(unittest.TestCase):
         for op in different_ops_2:
             equals_tester.add_equality_group(op)
 
+    def test_init_single_factor(self):
+        """Test initialization of the form DummyOperator((index, action))."""
+        equals_tester = EqualsTester(self)
+
+        group_1 = [DummyOperator1((3, 0)), DummyOperator1(((3, 0),))]
+        group_2 = [DummyOperator2((5, 'X')), DummyOperator2(((5, 'X'),))]
+
+        equals_tester.add_equality_group(*group_1)
+        equals_tester.add_equality_group(*group_2)
+
 
 class SymbolicOperatorTest1(unittest.TestCase):
     """Test the subclass DummyOperator1."""
