@@ -12,8 +12,10 @@
 
 """Tests  _symbolic_operator.py."""
 import copy
-import numpy
 import unittest
+
+import numpy
+from openfermion._testing_utils import EqualsTester
 
 from openfermion.ops._symbolic_operator import (SymbolicOperator,
                                                 prune_unused_indices)
@@ -33,6 +35,55 @@ class DummyOperator2(SymbolicOperator):
     action_strings = ('X', 'Y', 'Z')
     action_before_index = True
     different_indices_commute = True
+
+
+class GeneralTest(unittest.TestCase):
+    """General tests."""
+
+    def test_eq(self):
+        """Test == and !=."""
+        equals_tester = EqualsTester(self)
+
+        # Zeros
+        eq.add_equality_group(DummyOperator(),
+                              DummyOperator1('1^ 0', -1j, 0.),
+                              DummyOperator1('1^ 0', -1j) * 0)
+
+    def test_isclose_different_terms(self):
+        a = DummyOperator1(((1, 0),), -0.1j)
+        b = DummyOperator1(((1, 1),), -0.1j)
+        self.assertFalse(a == b)
+
+    def test_isclose_different_num_terms(self):
+        a = DummyOperator1(((1, 0),), -0.1j)
+        a += DummyOperator1(((1, 1),), -0.1j)
+        b = DummyOperator1(((1, 0),), -0.1j)
+        self.assertFalse(b == a)
+        self.assertFalse(a == b)
+
+    def test_isclose_zero_terms(self):
+        op = DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0
+        self.assertTrue(op == DummyOperator2())
+        self.assertTrue(DummyOperator2((), 0.0) == op)
+
+    def test_isclose_different_terms(self):
+        a = DummyOperator2(((1, 'Y'),), -0.1j)
+        b = DummyOperator2(((1, 'X'),), -0.1j)
+        self.assertTrue(not a == b)
+        self.assertTrue(not b == a)
+
+    def test_isclose_different_num_terms(self):
+        a = DummyOperator2(((1, 'Y'),), -0.1j)
+        a += DummyOperator2(((2, 'Y'),), -0.1j)
+        b = DummyOperator2(((1, 'X'),), -0.1j)
+        self.assertTrue(not b == a)
+        self.assertTrue(not a == b)
+
+    def test_isclose_invalid_type(self):
+        a = DummyOperator1()
+        b = DummyOperator2()
+        with self.assertRaises(TypeError):
+            a == b
 
 
 class SymbolicOperatorTest1(unittest.TestCase):
@@ -214,23 +265,6 @@ class SymbolicOperatorTest1(unittest.TestCase):
     def test_DummyOperator1(self):
         op = DummyOperator1((), 3.)
         self.assertTrue(op == DummyOperator1(()) * 3.)
-
-    def test_isclose_zero_terms(self):
-        op = DummyOperator1('1^ 0', -1j) * 0
-        self.assertTrue(op == DummyOperator1())
-        self.assertTrue(DummyOperator1() == op)
-
-    def test_isclose_different_terms(self):
-        a = DummyOperator1(((1, 0),), -0.1j)
-        b = DummyOperator1(((1, 1),), -0.1j)
-        self.assertFalse(a == b)
-
-    def test_isclose_different_num_terms(self):
-        a = DummyOperator1(((1, 0),), -0.1j)
-        a += DummyOperator1(((1, 1),), -0.1j)
-        b = DummyOperator1(((1, 0),), -0.1j)
-        self.assertFalse(b == a)
-        self.assertFalse(a == b)
 
     def test_imul_inplace(self):
         fermion_op = DummyOperator1("1^")
@@ -730,30 +764,6 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertTrue(len(a.terms) == 1)
         for term in a.terms:
             self.assertTrue(isinstance(a.terms[term], float))
-
-    def test_isclose_zero_terms(self):
-        op = DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0
-        self.assertTrue(op == DummyOperator2())
-        self.assertTrue(DummyOperator2((), 0.0) == op)
-
-    def test_isclose_different_terms(self):
-        a = DummyOperator2(((1, 'Y'),), -0.1j)
-        b = DummyOperator2(((1, 'X'),), -0.1j)
-        self.assertTrue(not a == b)
-        self.assertTrue(not b == a)
-
-    def test_isclose_different_num_terms(self):
-        a = DummyOperator2(((1, 'Y'),), -0.1j)
-        a += DummyOperator2(((2, 'Y'),), -0.1j)
-        b = DummyOperator2(((1, 'X'),), -0.1j)
-        self.assertTrue(not b == a)
-        self.assertTrue(not a == b)
-
-    def test_isclose_invalid_type(self):
-        a = DummyOperator1()
-        b = DummyOperator2()
-        with self.assertRaises(TypeError):
-            a == b
 
     def test_rmul_scalar(self):
         multiplier = 0.5
