@@ -933,8 +933,43 @@ class SymbolicOperatorTest2(unittest.TestCase):
 class DeprecatedFunctionsTest(unittest.TestCase):
     """Tests for deprecated functions."""
 
-    def test_isclose(self):
+    def test_warnings(self):
         op1 = DummyOperator1()
         op2 = DummyOperator1('0^', 0.)
         with self.assertRaises(DeprecationWarning):
             op1.isclose(op2)
+
+    def test_isclose_zero_terms_1(self):
+        op = DummyOperator1('1^ 0', -1j) * 0
+        self.assertTrue(op == DummyOperator1())
+        self.assertTrue(DummyOperator1() == op)
+
+    def test_isclose_different_terms_1(self):
+        a = DummyOperator1(((1, 0),), -0.1j)
+        b = DummyOperator1(((1, 1),), -0.1j)
+        self.assertFalse(a == b)
+
+    def test_isclose_different_num_terms_1(self):
+        a = DummyOperator1(((1, 0),), -0.1j)
+        a += DummyOperator1(((1, 1),), -0.1j)
+        b = DummyOperator1(((1, 0),), -0.1j)
+        self.assertFalse(b == a)
+        self.assertFalse(a == b)
+
+    def test_isclose_zero_terms_2(self):
+        op = DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0
+        self.assertTrue(op == DummyOperator2())
+        self.assertTrue(DummyOperator2((), 0.0) == op)
+
+    def test_isclose_different_terms_2(self):
+        a = DummyOperator2(((1, 'Y'),), -0.1j)
+        b = DummyOperator2(((1, 'X'),), -0.1j)
+        self.assertTrue(not a == b)
+        self.assertTrue(not b == a)
+
+    def test_isclose_different_num_terms_2(self):
+        a = DummyOperator2(((1, 'Y'),), -0.1j)
+        a += DummyOperator2(((2, 'Y'),), -0.1j)
+        b = DummyOperator2(((1, 'X'),), -0.1j)
+        self.assertTrue(not b == a)
+        self.assertTrue(not a == b)
