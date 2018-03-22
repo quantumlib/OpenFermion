@@ -573,8 +573,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         op = DummyOperator1(((1, 1), (3, 1), (8, 1)), 0.5)
         _ = -op
         # out of place
-        self.assertTrue(op == DummyOperator1(((1, 1), (3, 1), (8, 1)),
-                                                  0.5))
+        self.assertTrue(op == DummyOperator1(((1, 1), (3, 1), (8, 1)), 0.5))
         correct = -1.0 * op
         self.assertTrue(correct == -op)
 
@@ -883,8 +882,8 @@ class SymbolicOperatorTest2(unittest.TestCase):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         -op
         # out of place
-        self.assertTrue(op ==
-                DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5))
+        self.assertTrue(op == DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')),
+                                             0.5))
         correct = -1.0 * op
         self.assertTrue(correct == -op)
 
