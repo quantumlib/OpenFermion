@@ -172,6 +172,23 @@ class SymbolicOperator(object):
             else:
                 self.terms[term] += coef
 
+    def _validate_factor(self, factor):
+        """Check that a factor of a term is valid."""
+        if len(factor) != 2:
+            raise ValueError('Invalid factor {}.'.format(factor))
+
+        index, action = factor
+
+        if action not in self.actions:
+            raise ValueError('Invalid action in factor {}. '
+                             'Valid actions are: {}'.format(
+                                 factor, self.actions))
+
+        if not isinstance(index, int) or index < 0:
+            raise ValueError('Invalid index in factor {}. '
+                             'The index should be a non-negative '
+                             'integer.'.format(factor))
+
     def _parse_sequence(self, term):
         """Parse a term given as a sequence type (i.e., list, tuple, etc.).
 
@@ -181,23 +198,14 @@ class SymbolicOperator(object):
         if not term:
             # Empty sequence
             return ()
+        elif isinstance(term[0], int):
+            # Single factor
+            self._validate_factor(term)
+            return (tuple(term),)
         else:
             # Check that all factors in the term are valid
             for factor in term:
-                if len(factor) != 2:
-                    raise ValueError('Invalid factor {}.'.format(factor))
-
-                index, action = factor
-
-                if action not in self.actions:
-                    raise ValueError('Invalid action in factor {}. '
-                                     'Valid actions are: {}'.format(
-                                         factor, self.actions))
-
-                if not isinstance(index, int) or index < 0:
-                    raise ValueError('Invalid index in factor {}. '
-                                     'The index should be a non-negative '
-                                     'integer.'.format(factor))
+                self._validate_factor(factor)
 
             # If factors with different indices commute, sort the factors
             # by index
@@ -607,6 +615,22 @@ class SymbolicOperator(object):
         for coefficient in self.terms.values():
             norm += abs(coefficient) ** order
         return norm ** (1. / order)
+
+    def many_body_order(self):
+        """Compute the many-body order of a SymbolicOperator.
+
+        The many-body order of a SymbolicOperator is the maximum length of
+        a term with nonzero coefficient.
+
+        Returns:
+            int
+        """
+        if not self.terms:
+            # Zero operator
+            return 0
+        else:
+            return max(len(term) for term, coeff in self.terms.items()
+                       if abs(coeff) > EQ_TOLERANCE)
 
     # DEPRECATED FUNCTIONS
     # ====================
