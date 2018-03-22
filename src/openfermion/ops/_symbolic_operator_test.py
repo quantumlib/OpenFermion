@@ -75,6 +75,8 @@ class GeneralTest(unittest.TestCase):
 
         group_1 = [DummyOperator1((3, 0)), DummyOperator1(((3, 0),))]
         group_2 = [DummyOperator2((5, 'X')), DummyOperator2(((5, 'X'),))]
+        group_3 = [DummyOperator2((5, 'X'), .5),
+                   DummyOperator2(((5, 'X'),), .5)]
 
         equals_tester.add_equality_group(*group_1)
         equals_tester.add_equality_group(*group_2)
