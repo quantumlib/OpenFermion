@@ -936,7 +936,7 @@ class DeprecatedFunctionsTest(unittest.TestCase):
     def test_warnings(self):
         op1 = DummyOperator1()
         op2 = DummyOperator1('0^', 0.)
-        with self.assertRaises(DeprecationWarning):
+        with self.assertWarns(DeprecationWarning):
             op1.isclose(op2)
 
     def test_isclose_zero_terms_1(self):
