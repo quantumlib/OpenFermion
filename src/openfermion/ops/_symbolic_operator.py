@@ -171,6 +171,23 @@ class SymbolicOperator(object):
             else:
                 self.terms[term] += coef
 
+    def _validate_factor(self, factor):
+        """Check that a factor of a term is valid."""
+        if len(factor) != 2:
+            raise ValueError('Invalid factor {}.'.format(factor))
+
+        index, action = factor
+
+        if action not in self.actions:
+            raise ValueError('Invalid action in factor {}. '
+                             'Valid actions are: {}'.format(
+                                 factor, self.actions))
+
+        if not isinstance(index, int) or index < 0:
+            raise ValueError('Invalid index in factor {}. '
+                             'The index should be a non-negative '
+                             'integer.'.format(factor))
+
     def _parse_sequence(self, term):
         """Parse a term given as a sequence type (i.e., list, tuple, etc.).
 
@@ -180,23 +197,14 @@ class SymbolicOperator(object):
         if not term:
             # Empty sequence
             return ()
+        elif isinstance(term[0], int):
+            # Single factor
+            self._validate_factor(term)
+            return (tuple(term),)
         else:
             # Check that all factors in the term are valid
             for factor in term:
-                if len(factor) != 2:
-                    raise ValueError('Invalid factor {}.'.format(factor))
-
-                index, action = factor
-
-                if action not in self.actions:
-                    raise ValueError('Invalid action in factor {}. '
-                                     'Valid actions are: {}'.format(
-                                         factor, self.actions))
-
-                if not isinstance(index, int) or index < 0:
-                    raise ValueError('Invalid index in factor {}. '
-                                     'The index should be a non-negative '
-                                     'integer.'.format(factor))
+                self._validate_factor(factor)
 
             # If factors with different indices commute, sort the factors
             # by index

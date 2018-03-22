@@ -41,6 +41,19 @@ class DummyOperator2(SymbolicOperator):
 class GeneralTest(unittest.TestCase):
     """General tests."""
 
+    def test_init_single_factor(self):
+        """Test initialization of the form DummyOperator((index, action))."""
+        equals_tester = EqualsTester(self)
+
+        group_1 = [DummyOperator1((3, 0)), DummyOperator1(((3, 0),))]
+        group_2 = [DummyOperator2((5, 'X')), DummyOperator2(((5, 'X'),))]
+        group_3 = [DummyOperator2((5, 'X'), .5),
+                   DummyOperator2(((5, 'X'),), .5)]
+
+        equals_tester.add_equality_group(*group_1)
+        equals_tester.add_equality_group(*group_2)
+        equals_tester.add_equality_group(*group_3)
+
     def test_eq_and_neq(self):
         """Test == and !=."""
         equals_tester = EqualsTester(self)
@@ -71,6 +84,7 @@ class GeneralTest(unittest.TestCase):
             equals_tester.add_equality_group(op)
 
     def test_many_body_order(self):
+        """Test computing the many-body order."""
         zero = DummyOperator1()
         identity = DummyOperator2(())
 
