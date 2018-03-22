@@ -543,8 +543,7 @@ class SymbolicOperator(object):
             other(SymbolicOperator): SymbolicOperator to compare against.
         """
         if not isinstance(other, type(self)):
-            raise TypeError('Cannot compare a {} with a {}'.format(
-                type(self).__name__, type(other).__name__))
+            return False
 
         # terms which are in both:
         for term in set(self.terms).intersection(set(other.terms)):
@@ -557,11 +556,14 @@ class SymbolicOperator(object):
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if not abs(self.terms[term]) <= EQ_TOLERANCE: 
+                if not abs(self.terms[term]) <= EQ_TOLERANCE:
                     return False
             elif not abs(other.terms[term]) <= EQ_TOLERANCE:
                 return False
         return True
+
+    def __ne__(self, other):
+        return not (self == other)
 
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
@@ -604,3 +606,12 @@ class SymbolicOperator(object):
         for coefficient in self.terms.values():
             norm += abs(coefficient) ** order
         return norm ** (1. / order)
+
+    # DEPRECATED FUNCTIONS
+    # ====================
+    def isclose(self, other):
+        raise DeprecationWarning('The method `isclose` is deprecated and will '
+                                 'be removed in a future version. Use == '
+                                 'instead. For instance, a == b instead of '
+                                 'a.isclose(b).')
+        return self == other
