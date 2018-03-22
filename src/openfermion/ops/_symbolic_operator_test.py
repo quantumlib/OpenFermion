@@ -13,6 +13,7 @@
 """Tests  _symbolic_operator.py."""
 import copy
 import unittest
+import warnings
 
 import numpy
 from openfermion.utils._testing_utils import EqualsTester
@@ -932,6 +933,18 @@ class SymbolicOperatorTest2(unittest.TestCase):
 
 class DeprecatedFunctionsTest(unittest.TestCase):
     """Tests for deprecated functions."""
+
+    def test_warnings(self):
+        """Test that warnings are raised appropriately."""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+
+            op1 = DummyOperator1()
+            op1.isclose(op1)
+
+            self.assertEqual(len(w), 1)
+            self.assertTrue(issubclass(w[0].category, DeprecationWarning))
+            self.assertTrue("deprecated" in str(w[0].message))
 
     def test_isclose_zero_terms_1(self):
         op = DummyOperator1('1^ 0', -1j) * 0
