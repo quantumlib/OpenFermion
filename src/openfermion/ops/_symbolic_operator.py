@@ -543,8 +543,7 @@ class SymbolicOperator(object):
             other(SymbolicOperator): SymbolicOperator to compare against.
         """
         if not isinstance(other, type(self)):
-            raise TypeError('Cannot compare a {} with a {}'.format(
-                type(self).__name__, type(other).__name__))
+            return False
 
         # terms which are in both:
         for term in set(self.terms).intersection(set(other.terms)):
@@ -564,7 +563,7 @@ class SymbolicOperator(object):
         return True
 
     def __neq__(self, other):
-        return not self == other
+        return not (self == other)
 
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
@@ -615,5 +614,5 @@ class SymbolicOperator(object):
         raise DeprecationWarning('The method `isclose` is deprecated and will '
                                  'be removed in a future version. Use == '
                                  'instead. For instance, a == b instead of '
-                                 'a.isclose(b).'
+                                 'a.isclose(b).')
         return self == other

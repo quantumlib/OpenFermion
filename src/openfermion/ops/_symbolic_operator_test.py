@@ -15,7 +15,7 @@ import copy
 import unittest
 
 import numpy
-from openfermion._testing_utils import EqualsTester
+from openfermion.utils._testing_utils import EqualsTester
 
 from openfermion.ops._symbolic_operator import (SymbolicOperator,
                                                 prune_unused_indices)
@@ -40,50 +40,34 @@ class DummyOperator2(SymbolicOperator):
 class GeneralTest(unittest.TestCase):
     """General tests."""
 
-    def test_eq(self):
+    def test_eq_and_neq(self):
         """Test == and !=."""
         equals_tester = EqualsTester(self)
 
-        # Zeros
-        eq.add_equality_group(DummyOperator(),
-                              DummyOperator1('1^ 0', -1j, 0.),
-                              DummyOperator1('1^ 0', -1j) * 0)
+        zeros_1 = [DummyOperator1(),
+                   DummyOperator1('1^ 0', 0.),
+                   DummyOperator1('1^ 0', -1j) * 0]
 
-    def test_isclose_different_terms(self):
-        a = DummyOperator1(((1, 0),), -0.1j)
-        b = DummyOperator1(((1, 1),), -0.1j)
-        self.assertFalse(a == b)
+        zeros_2 = [DummyOperator2(),
+                   DummyOperator2(((1, 'Y'), (0, 'X')), 0.),
+                   DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0]
 
-    def test_isclose_different_num_terms(self):
-        a = DummyOperator1(((1, 0),), -0.1j)
-        a += DummyOperator1(((1, 1),), -0.1j)
-        b = DummyOperator1(((1, 0),), -0.1j)
-        self.assertFalse(b == a)
-        self.assertFalse(a == b)
+        different_ops_1 = [DummyOperator1(((1, 0),), -0.1j),
+                           DummyOperator1(((1, 1),), -0.1j),
+                           (DummyOperator1(((1, 0),), -0.1j) +
+                            DummyOperator1(((1, 1),), -0.1j))]
 
-    def test_isclose_zero_terms(self):
-        op = DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0
-        self.assertTrue(op == DummyOperator2())
-        self.assertTrue(DummyOperator2((), 0.0) == op)
+        different_ops_2 = [DummyOperator2(((1, 'Y'),), -0.1j),
+                           DummyOperator2(((1, 'X'),), -0.1j),
+                           (DummyOperator2(((1, 'Y'),), -0.1j) +
+                            DummyOperator2(((2, 'Y'),), -0.1j))]
 
-    def test_isclose_different_terms(self):
-        a = DummyOperator2(((1, 'Y'),), -0.1j)
-        b = DummyOperator2(((1, 'X'),), -0.1j)
-        self.assertTrue(not a == b)
-        self.assertTrue(not b == a)
-
-    def test_isclose_different_num_terms(self):
-        a = DummyOperator2(((1, 'Y'),), -0.1j)
-        a += DummyOperator2(((2, 'Y'),), -0.1j)
-        b = DummyOperator2(((1, 'X'),), -0.1j)
-        self.assertTrue(not b == a)
-        self.assertTrue(not a == b)
-
-    def test_isclose_invalid_type(self):
-        a = DummyOperator1()
-        b = DummyOperator2()
-        with self.assertRaises(TypeError):
-            a == b
+        equals_tester.add_equality_group(*zeros_1)
+        equals_tester.add_equality_group(*zeros_2)
+        for op in different_ops_1:
+            equals_tester.add_equality_group(op)
+        for op in different_ops_2:
+            equals_tester.add_equality_group(op)
 
 
 class SymbolicOperatorTest1(unittest.TestCase):
