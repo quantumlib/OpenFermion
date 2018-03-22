@@ -45,8 +45,8 @@ def weight(symbolic_operator):
     Returns:
         int
     """
-    # Zero operator
     if not symbolic_operator.terms:
+        # Zero operator
         return 0
     else:
         return max(len(term) for term, coeff in symbolic_operator.terms.items()
