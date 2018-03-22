@@ -15,6 +15,7 @@ import copy
 import unittest
 
 import numpy
+from openfermion.config import EQ_TOLERANCE
 from openfermion.utils._testing_utils import EqualsTester
 
 from openfermion.ops._symbolic_operator import (SymbolicOperator,
@@ -68,6 +69,29 @@ class GeneralTest(unittest.TestCase):
             equals_tester.add_equality_group(op)
         for op in different_ops_2:
             equals_tester.add_equality_group(op)
+
+    def test_many_body_order(self):
+        zero = DummyOperator1()
+        identity = DummyOperator2(())
+
+        op1 = DummyOperator1('0^ 3 5^ 6')
+        op2 = op1 + DummyOperator1('8^ 3')
+        op3 = op2 + DummyOperator1('1^ 2 3^ 4 5 ')
+
+        op4 = DummyOperator2('X0 X1 Y3')
+        op5 = op4 - DummyOperator2('Z0')
+        op6 = op5 - DummyOperator2('Z1 Z2 Y3 Y4 Y9 Y10')
+        op7 = op5 - DummyOperator2('Z1 Z2 Y3 Y4 Y9 Y10', EQ_TOLERANCE / 2.)
+
+        self.assertEqual(zero.many_body_order(), 0)
+        self.assertEqual(identity.many_body_order(), 0)
+        self.assertEqual(op1.many_body_order(), 4)
+        self.assertEqual(op2.many_body_order(), 4)
+        self.assertEqual(op3.many_body_order(), 5)
+        self.assertEqual(op4.many_body_order(), 3)
+        self.assertEqual(op5.many_body_order(), 3)
+        self.assertEqual(op6.many_body_order(), 6)
+        self.assertEqual(op7.many_body_order(), 3)
 
 
 class SymbolicOperatorTest1(unittest.TestCase):

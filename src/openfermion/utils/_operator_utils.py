@@ -32,27 +32,6 @@ class OperatorUtilsError(Exception):
     pass
 
 
-def weight(symbolic_operator):
-    """Compute the weight of a SymbolicOperator.
-
-    The weight of a SymbolicOperator is the maximum length of a term with
-    nonzero coefficient.
-
-    Args:
-        symbolic_operator(SymbolicOperator): The operator whose weight is
-            desired
-
-    Returns:
-        int
-    """
-    if not symbolic_operator.terms:
-        # Zero operator
-        return 0
-    else:
-        return max(len(term) for term, coeff in symbolic_operator.terms.items()
-                   if abs(coeff) > EQ_TOLERANCE)
-
-
 def hermitian_conjugated(operator):
     """Return Hermitian conjugate of operator."""
     # Handle FermionOperator

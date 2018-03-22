@@ -607,6 +607,22 @@ class SymbolicOperator(object):
             norm += abs(coefficient) ** order
         return norm ** (1. / order)
 
+    def many_body_order(self):
+        """Compute the many-body order of a SymbolicOperator.
+
+        The many-body order of a SymbolicOperator is the maximum length of
+        a term with nonzero coefficient.
+
+        Returns:
+            int
+        """
+        if not self.terms:
+            # Zero operator
+            return 0
+        else:
+            return max(len(term) for term, coeff in self.terms.items()
+                       if abs(coeff) > EQ_TOLERANCE)
+
     # DEPRECATED FUNCTIONS
     # ====================
     def isclose(self, other):

@@ -119,34 +119,6 @@ class OperatorUtilsTest(unittest.TestCase):
         self.assertEqual(up_then_down(3, 8), 5)
 
 
-class WeightTest(unittest.TestCase):
-
-    def test_weight(self):
-        zero = FermionOperator()
-        identity = QubitOperator(())
-
-        op1 = FermionOperator('0^ 3 5^ 6')
-        op2 = op1 + FermionOperator('8^ 3')
-        op3 = op2 + FermionOperator('1^ 2 3^ 4 5 ')
-
-        op4 = QubitOperator('X0 X1 Y3')
-        op5 = op4 - QubitOperator('Z0')
-        op6 = op5 - QubitOperator('Z1 Z2 Y3 Y4 Y9 Y10')
-        op7 = op5 - QubitOperator('Z1 Z2 Y3 Y4 Y9 Y10', EQ_TOLERANCE / 2.)
-        op8 = op4 * QubitOperator('X0')
-
-        self.assertEqual(weight(zero), 0)
-        self.assertEqual(weight(identity), 0)
-        self.assertEqual(weight(op1), 4)
-        self.assertEqual(weight(op2), 4)
-        self.assertEqual(weight(op3), 5)
-        self.assertEqual(weight(op4), 3)
-        self.assertEqual(weight(op5), 3)
-        self.assertEqual(weight(op6), 6)
-        self.assertEqual(weight(op7), 3)
-        self.assertEqual(weight(op8), 2)
-
-
 class HermitianConjugatedTest(unittest.TestCase):
 
     def test_hermitian_conjugated_qubit_op(self):
