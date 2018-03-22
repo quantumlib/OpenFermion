@@ -24,18 +24,6 @@ from openfermion.utils import number_operator
 
 class FermionOperatorTest(unittest.TestCase):
 
-    def test_number_operator_site(self):
-        op = number_operator(3, 2, 1j)
-        self.assertTrue(op == FermionOperator(((2, 1), (2, 0))) * 1j)
-
-    def test_number_operator_nosite(self):
-        op = number_operator(4)
-        expected = (FermionOperator(((0, 1), (0, 0))) +
-                    FermionOperator(((1, 1), (1, 0))) +
-                    FermionOperator(((2, 1), (2, 0))) +
-                    FermionOperator(((3, 1), (3, 0))))
-        self.assertTrue(op == expected)
-
     def test_is_normal_ordered_empty(self):
         op = FermionOperator() * 2
         self.assertTrue(op.is_normal_ordered())
