@@ -13,20 +13,21 @@
 """Tests for operator_utils."""
 from __future__ import absolute_import
 
-import numpy
 import os
 import unittest
 
-from openfermion.config import *
+import numpy
+from scipy.sparse import csc_matrix
+from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import plane_wave_hamiltonian
 from openfermion.ops import *
 from openfermion.transforms import (bravyi_kitaev, jordan_wigner,
                                     get_fermion_operator,
                                     get_interaction_operator)
 from openfermion.utils import Grid
-from openfermion.utils._operator_utils import *
 from openfermion.utils._testing_utils import random_interaction_operator
-from scipy.sparse import csc_matrix
+
+from openfermion.utils._operator_utils import *
 
 
 class OperatorUtilsTest(unittest.TestCase):
@@ -131,7 +132,8 @@ class WeightTest(unittest.TestCase):
         op4 = QubitOperator('X0 X1 Y3')
         op5 = op4 - QubitOperator('Z0')
         op6 = op5 - QubitOperator('Z1 Z2 Y3 Y4 Y9 Y10')
-        op7 = op4 * QubitOperator('X0')
+        op7 = op5 - QubitOperator('Z1 Z2 Y3 Y4 Y9 Y10', EQ_TOLERANCE / 2.)
+        op8 = op4 * QubitOperator('X0')
 
         self.assertEqual(weight(zero), 0)
         self.assertEqual(weight(identity), 0)
@@ -141,7 +143,8 @@ class WeightTest(unittest.TestCase):
         self.assertEqual(weight(op4), 3)
         self.assertEqual(weight(op5), 3)
         self.assertEqual(weight(op6), 6)
-        self.assertEqual(weight(op7), 2)
+        self.assertEqual(weight(op7), 3)
+        self.assertEqual(weight(op8), 2)
 
 
 class HermitianConjugatedTest(unittest.TestCase):
