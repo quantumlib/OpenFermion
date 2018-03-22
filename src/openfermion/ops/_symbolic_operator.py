@@ -562,7 +562,7 @@ class SymbolicOperator(object):
                 return False
         return True
 
-    def __neq__(self, other):
+    def __ne__(self, other):
         return not (self == other)
 
     def compress(self, abs_tol=EQ_TOLERANCE):
