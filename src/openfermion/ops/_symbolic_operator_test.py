@@ -80,6 +80,7 @@ class GeneralTest(unittest.TestCase):
 
         equals_tester.add_equality_group(*group_1)
         equals_tester.add_equality_group(*group_2)
+        equals_tester.add_equality_group(*group_3)
 
 
 class SymbolicOperatorTest1(unittest.TestCase):
