@@ -18,8 +18,16 @@ from openfermion.transforms._fenwick_tree import FenwickTree
 
 
 def bravyi_kitaev_tree(operator, n_qubits=None):
-    """Apply the Bravyi-Kitaev transform and return qubit operator.
-    (arxiv1701.07072)
+    """Apply the "tree" Bravyi-Kitaev transform.
+
+    Implementation from arxiv:1701.07072
+
+    Note that this implementation is different from the one described in
+    arXiv:quant-ph/0003137. In particular, it gives different results
+    when the total number of modes is not a power of 2. The one described
+    in arXiv:quant-ph/0003137 is the same as the one described in
+    arXiv:1208.5986, and it is implemented in OpenFermion under the name
+    `bravyi_kitaev`.
 
     Args:
         operator (openfermion.ops.FermionOperator):

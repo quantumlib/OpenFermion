@@ -17,7 +17,15 @@ from openfermion.utils import count_qubits
 
 
 def bravyi_kitaev(operator, n_qubits=None):
-    """Apply the Bravyi-Kitaev transform and return qubit operator.
+    """Apply the Bravyi-Kitaev transform.
+
+    Implementation from arXiv:quant-ph/0003137 and
+    "A New Data Structure for Cumulative Frequency Tables" by Peter M. Fenwick.
+
+    Note that this implementation is equivalent to the one described in
+    arXiv:1208.5986, and is different from the one described in
+    arXiv:1701.07072. The one described in arXiv:1701.07072 is implemented
+    in OpenFermion as `bravyi_kitaev_tree`.
 
     Args:
         operator (openfermion.ops.FermionOperator):
