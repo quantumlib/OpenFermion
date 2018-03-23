@@ -18,10 +18,11 @@ import unittest
 
 from openfermion.ops import (FermionOperator,
                              QubitOperator)
-from openfermion.transforms import (bravyi_kitaev,
-                                    get_sparse_operator,
+from openfermion.transforms import (get_sparse_operator,
                                     jordan_wigner)
 from openfermion.utils import eigenspectrum, number_operator
+
+from openfermion.transforms._bravyi_kitaev_binary import bravyi_kitaev
 
 
 class BravyiKitaevTransformTest(unittest.TestCase):
