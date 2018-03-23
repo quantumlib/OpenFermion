@@ -26,17 +26,17 @@ class ErrorOperatorTest(unittest.TestCase):
 
         terms = []
         for i in range(4):
-            terms.append(FO(((i, 1), (i, 0)), 0.018505508252))
-            terms.append(FO(((i, 1), ((i + 1) % 4, 0)), -0.0123370055014))
-            terms.append(FO(((i, 1), ((i + 2) % 4, 0)), 0.00616850275068))
-            terms.append(FO(((i, 1), ((i + 3) % 4, 0)), -0.0123370055014))
+            terms.append(FO(((i, 1), (i, 0)), 0.018505508252042547))
+            terms.append(FO(((i, 1), ((i + 1) % 4, 0)), -0.012337005501361697))
+            terms.append(FO(((i, 1), ((i + 2) % 4, 0)), 0.0061685027506808475))
+            terms.append(FO(((i, 1), ((i + 3) % 4, 0)), -0.012337005501361697))
             terms.append(normal_ordered(FO(((i, 1), ((i + 1) % 4, 1),
                                             (i, 0), ((i + 1) % 4, 0)),
-                                           3.18309886184)))
+                                           3.1830988618379052)))
             if i // 2:
                 terms.append(normal_ordered(
                     FO(((i, 1), ((i + 2) % 4, 1), (i, 0), ((i + 2) % 4, 0)),
-                       22.2816920329)))
+                       22.281692032865351)))
 
         self.assertAlmostEqual(
             low_depth_second_order_trotter_error_operator(
@@ -52,17 +52,21 @@ class ErrorBoundTest(unittest.TestCase):
 
         self.terms = []
         for i in range(4):
-            self.terms.append(FO(((i, 1), (i, 0)), 0.018505508252))
-            self.terms.append(FO(((i, 1), ((i + 1) % 4, 0)), -0.0123370055014))
-            self.terms.append(FO(((i, 1), ((i + 2) % 4, 0)), 0.00616850275068))
-            self.terms.append(FO(((i, 1), ((i + 3) % 4, 0)), -0.0123370055014))
+            self.terms.append(FO(((i, 1), (i, 0)),
+                                 0.018505508252042547))
+            self.terms.append(FO(((i, 1), ((i + 1) % 4, 0)),
+                                 -0.012337005501361697))
+            self.terms.append(FO(((i, 1), ((i + 2) % 4, 0)),
+                                 0.0061685027506808475))
+            self.terms.append(FO(((i, 1), ((i + 3) % 4, 0)),
+                                 -0.012337005501361697))
             self.terms.append(normal_ordered(FO(((i, 1), ((i + 1) % 4, 1),
                                                  (i, 0), ((i + 1) % 4, 0)),
-                                                3.18309886184)))
+                                                3.1830988618379052)))
             if i // 2:
                 self.terms.append(normal_ordered(
                     FO(((i, 1), ((i + 2) % 4, 1), (i, 0), ((i + 2) % 4, 0)),
-                       22.2816920329)))
+                       22.281692032865351)))
 
     def test_error_bound(self):
         self.assertAlmostEqual(low_depth_second_order_trotter_error_bound(
@@ -136,7 +140,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         grid = Grid(dimension, grid_length, length_scale)
         hamiltonian = jellium_model(grid, spinless=True, plane_wave=False)
         hamiltonian = normal_ordered(hamiltonian)
-        self.assertTrue(terms_total.isclose(hamiltonian))
+        self.assertTrue(terms_total == hamiltonian)
 
     def test_correct_indices_terms_with_info(self):
         grid_length = 4
@@ -228,32 +232,32 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
         expected_terms = []
         for i in range(grid_length ** dimension):
             expected_terms.append(FO(((i, 1), (i, 0)),
-                                     0.018505508252))
+                                     0.018505508252042547))
             expected_terms.append(FO(((i, 1), ((i + 1) % 4, 0)),
-                                     -0.0123370055014))
+                                     -0.012337005501361697))
             expected_terms.append(FO(((i, 1), ((i + 2) % 4, 0)),
-                                     0.00616850275068))
+                                     0.0061685027506808475))
             expected_terms.append(FO(((i, 1), ((i + 3) % 4, 0)),
-                                     -0.0123370055014))
+                                     -0.012337005501361697))
             expected_terms.append(normal_ordered(
                 FO(((i, 1), ((i + 1) % 4, 1), (i, 0), ((i + 1) % 4, 0)),
-                   3.18309886184)))
+                   3.1830988618379052)))
             if i // 2:
                 expected_terms.append(normal_ordered(
                     FO(((i, 1), ((i + 2) % 4, 1), (i, 0), ((i + 2) % 4, 0)),
-                       22.2816920329)))
+                       22.281692032865351)))
 
         for term in terms:
             found_in_other = False
             for term2 in expected_terms:
-                if term.isclose(term2, rel_tol=1e-8):
+                if term == term2:
                     self.assertFalse(found_in_other)
                     found_in_other = True
             self.assertTrue(found_in_other, msg=str(term))
         for term in expected_terms:
             found_in_other = False
             for term2 in terms:
-                if term.isclose(term2, rel_tol=1e-8):
+                if term == term2:
                     self.assertFalse(found_in_other)
                     found_in_other = True
             self.assertTrue(found_in_other, msg=str(term))
@@ -277,4 +281,4 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
         grid = Grid(dimension, grid_length, length_scale)
         hamiltonian = jellium_model(grid, spinless=True, plane_wave=False)
         hamiltonian = normal_ordered(hamiltonian)
-        self.assertTrue(terms_total.isclose(hamiltonian))
+        self.assertTrue(terms_total == hamiltonian)

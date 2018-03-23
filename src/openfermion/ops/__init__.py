@@ -10,9 +10,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from ._binary_polynomial import BinaryPolynomial
 from ._polynomial_tensor import PolynomialTensor, general_basis_change
 from ._quadratic_hamiltonian import QuadraticHamiltonian
-from ._symbolic_binary import SymbolicBinary
 from ._symbolic_operator import (SymbolicOperator,
                                  prune_unused_indices)
 

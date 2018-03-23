@@ -144,6 +144,7 @@ Authors
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
 `Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
 `Mark Steudtner <https://github.com/msteudtner>`__  (Leiden University),
+`Qiming Sun <https://github.com/sunqm>`__ (Caltech),
 `Wei Sun <https://github.com/Spaceenter>`__ (Google) and
 `Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan).
 

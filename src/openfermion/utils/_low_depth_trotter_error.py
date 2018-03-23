@@ -275,7 +275,7 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
         # If the overall hopping operator isn't close to zero, append it.
         # Include the indices it acts on and that it's a hopping operator.
         if not (left_hopping_operator +
-                right_hopping_operator).isclose(zero):
+                right_hopping_operator) == zero:
             terms_in_step.append(left_hopping_operator +
                                  right_hopping_operator)
             indices_in_step.append(set((left, right)))
@@ -284,7 +284,7 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
         # If the overall number operator isn't close to zero, append it.
         # Include the indices it acts on and that it's a number operator.
         if not (two_number_operator + left_number_operator +
-                right_number_operator).isclose(zero):
+                right_number_operator) == zero:
             terms_in_step.append(two_number_operator +
                                  left_number_operator +
                                  right_number_operator)

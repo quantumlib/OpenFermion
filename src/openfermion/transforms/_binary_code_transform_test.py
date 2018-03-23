@@ -23,7 +23,7 @@ class CodeTransformTest(unittest.TestCase):
                                                                      0.5)
         transform = binary_code_transform(hamiltonian, code)
         correct_op = QubitOperator('X0 Z1',0.25) + QubitOperator('X0',0.25)
-        self.assertTrue(transform.isclose(correct_op))
+        self.assertTrue(transform == correct_op)
 
         with self.assertRaises(TypeError):
             binary_code_transform('0^ 2', code)
@@ -41,7 +41,7 @@ class CodeTransformTest(unittest.TestCase):
                      QubitOperator('X0', -0.125) + \
                      QubitOperator('Y0', -0.125j) + \
                      QubitOperator('Y0 Z1', -0.125j)
-        self.assertTrue(transform.isclose(correct_op))
+        self.assertTrue(transform == correct_op)
 
         with self.assertRaises(ValueError):
             dissolve(((1, '1'),))

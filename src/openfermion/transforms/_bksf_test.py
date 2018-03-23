@@ -81,14 +81,14 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         qterm_b1 = QubitOperator(correct_operators_b1, 1)
         qterm_b2 = QubitOperator(correct_operators_b2, 1)
         qterm_b3 = QubitOperator(correct_operators_b3, 1)
-        self.assertTrue(qterm_b0.isclose(
-                        _bksf.edge_operator_b(edge_matrix_indices, 0)))
-        self.assertTrue(qterm_b1.isclose(
-                        _bksf.edge_operator_b(edge_matrix_indices, 1)))
-        self.assertTrue(qterm_b2.isclose(
-                        _bksf.edge_operator_b(edge_matrix_indices, 2)))
-        self.assertTrue(qterm_b3.isclose(
-                        _bksf.edge_operator_b(edge_matrix_indices, 3)))
+        self.assertTrue(qterm_b0 ==
+                        _bksf.edge_operator_b(edge_matrix_indices, 0))
+        self.assertTrue(qterm_b1 ==
+                        _bksf.edge_operator_b(edge_matrix_indices, 1))
+        self.assertTrue(qterm_b2 ==
+                        _bksf.edge_operator_b(edge_matrix_indices, 2))
+        self.assertTrue(qterm_b3 ==
+                        _bksf.edge_operator_b(edge_matrix_indices, 3))
 
     def test_bravyi_kitaev_fast_edgeoperator_Aij(self):
         # checking the edge operators
@@ -111,18 +111,18 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         qterm_a13 = QubitOperator(correct_operators_a13, 1)
         qterm_a23 = QubitOperator(correct_operators_a23, 1)
 
-        self.assertTrue(qterm_a01.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 0, 1)))
-        self.assertTrue(qterm_a02.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 0, 2)))
-        self.assertTrue(qterm_a03.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 0, 3)))
-        self.assertTrue(qterm_a12.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 1, 2)))
-        self.assertTrue(qterm_a13.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 1, 3)))
-        self.assertTrue(qterm_a23.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 2, 3)))
+        self.assertTrue(qterm_a01 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 0, 1))
+        self.assertTrue(qterm_a02 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 0, 2))
+        self.assertTrue(qterm_a03 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 0, 3))
+        self.assertTrue(qterm_a12 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 1, 2))
+        self.assertTrue(qterm_a13 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 1, 3))
+        self.assertTrue(qterm_a23 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 2, 3))
 
     def test_bravyi_kitaev_fast_jw_number_operator(self):
         # bksf algorithm allows for even number of particles. So, compare the

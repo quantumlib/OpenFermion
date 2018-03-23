@@ -12,14 +12,13 @@
 
 import unittest
 
-from openfermion.transforms._code_transform_functions import *
-from openfermion.transforms import jordan_wigner
-from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.hamiltonians import MolecularData
-from openfermion.transforms import binary_code_transform
-from openfermion.transforms import get_fermion_operator
+from openfermion.ops import FermionOperator, QubitOperator
+from openfermion.transforms import (binary_code_transform, bravyi_kitaev,
+                                    get_fermion_operator, jordan_wigner)
 from openfermion.utils import eigenspectrum
-from openfermion.transforms import jordan_wigner, bravyi_kitaev
+
+from openfermion.transforms._binary_codes import *
 
 
 def lih_hamiltonian():
@@ -45,20 +44,20 @@ class CodeTransformTest(unittest.TestCase):
         correct_op = QubitOperator(((1, 'Z'), (2, 'X'), (3, 'X'), (4, 'X')),
                                    0.5) + \
                      QubitOperator(((2, 'Y'), (3, 'X'), (4, 'X')), 0.5j)
-        self.assertTrue(qubit_op.isclose(correct_op))
+        self.assertTrue(qubit_op == correct_op)
         ferm_op = FermionOperator('2^')
         n_modes = 5
         qubit_op = binary_code_transform(ferm_op, parity_code(n_modes))
         correct_op = QubitOperator(((1, 'Z'), (2, 'X'), (3, 'X'), (4, 'X')),
                                    0.5) \
                      + QubitOperator(((2, 'Y'), (3, 'X'), (4, 'X')), -0.5j)
-        self.assertTrue(qubit_op.isclose(correct_op))
+        self.assertTrue(qubit_op == correct_op)
 
         ferm_op = FermionOperator('5^')
         op2 = QubitOperator('Z0 Z1 Z2 Z3 Z4 X5', 0.5) \
               - QubitOperator('Z0 Z1 Z2 Z3 Z4 Y5', 0.5j)
         op1 = binary_code_transform(ferm_op, jordan_wigner_code(6))
-        self.assertTrue(op1.isclose(op2))
+        self.assertTrue(op1 == op2)
 
     def test_checksum_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()

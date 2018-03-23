@@ -33,38 +33,6 @@ def down_index(index):
     return 2 * index + 1
 
 
-def sz_operator(n_spatial_orbitals):
-    """Return the sz operator.
-
-    .. math::
-        \\begin{align}
-        S^{z} = \\frac{1}{2}\sum_{i = 1}^{n}(n_{i, \\alpha} - n_{i, \\beta})
-        \\end{align}
-
-    Args:
-        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
-
-    Returns:
-        operator (FermionOperator): corresponding to the sz operator over
-        n_spatial_orbitals.
-
-    Note:
-        The indexing convention used is that even indices correspond to
-        spin-up (alpha) modes and odd indices correspond to spin-down (beta)
-        modes.
-    """
-    if not isinstance(n_spatial_orbitals, int):
-        raise TypeError("n_orbitals must be specified as an integer")
-
-    operator = FermionOperator()
-    n_spinless_orbitals = 2 * n_spatial_orbitals
-    for ni in range(n_spatial_orbitals):
-        operator += number_operator(n_spinless_orbitals, up_index(ni), 0.5) + \
-                    number_operator(n_spinless_orbitals, down_index(ni), -0.5)
-
-    return operator
-
-
 def s_plus_operator(n_spatial_orbitals):
     """Return the s+ operator.
 
@@ -125,6 +93,104 @@ def s_minus_operator(n_spatial_orbitals):
     return operator
 
 
+def sx_operator(n_spatial_orbitals):
+    """Return the sx operator.
+
+    .. math::
+        \\begin{align}
+        S^{x} = \\frac{1}{2}\sum_{i = 1}^{n}(S^{+} + S^{-})
+        \\end{align}
+
+    Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the sx operator over
+        n_spatial_orbitals.
+
+    Note:
+        The indexing convention used is that even indices correspond to
+        spin-up (alpha) modes and odd indices correspond to spin-down (beta)
+        modes.
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    operator = FermionOperator()
+    for ni in range(n_spatial_orbitals):
+        operator += FermionOperator(((up_index(ni), 1), (down_index(ni), 0)),
+                                    .5)
+        operator += FermionOperator(((down_index(ni), 1), (up_index(ni), 0)),
+                                    .5)
+
+    return operator
+
+
+def sy_operator(n_spatial_orbitals):
+    """Return the sy operator.
+
+    .. math::
+        \\begin{align}
+        S^{y} = \\frac{-i}{2}\sum_{i = 1}^{n}(S^{+} - S^{-})
+        \\end{align}
+
+    Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the sx operator over
+        n_spatial_orbitals.
+
+    Note:
+        The indexing convention used is that even indices correspond to
+        spin-up (alpha) modes and odd indices correspond to spin-down (beta)
+        modes.
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    operator = FermionOperator()
+    for ni in range(n_spatial_orbitals):
+        operator += FermionOperator(((up_index(ni), 1), (down_index(ni), 0)),
+                                    -.5j)
+        operator += FermionOperator(((down_index(ni), 1), (up_index(ni), 0)),
+                                    .5j)
+
+    return operator
+
+
+def sz_operator(n_spatial_orbitals):
+    """Return the sz operator.
+
+    .. math::
+        \\begin{align}
+        S^{z} = \\frac{1}{2}\sum_{i = 1}^{n}(n_{i, \\alpha} - n_{i, \\beta})
+        \\end{align}
+
+    Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the sz operator over
+        n_spatial_orbitals.
+
+    Note:
+        The indexing convention used is that even indices correspond to
+        spin-up (alpha) modes and odd indices correspond to spin-down (beta)
+        modes.
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    operator = FermionOperator()
+    n_spinless_orbitals = 2 * n_spatial_orbitals
+    for ni in range(n_spatial_orbitals):
+        operator += number_operator(n_spinless_orbitals, up_index(ni), 0.5) + \
+                    number_operator(n_spinless_orbitals, down_index(ni), -0.5)
+
+    return operator
+
+
 def s_squared_operator(n_spatial_orbitals):
     """Return the s^{2} operator.
 
@@ -160,17 +226,20 @@ def majorana_operator(term=None, coefficient=1.):
     """Initialize a Majorana operator.
 
     Args:
-        term(tuple): The first element of the tuple indicates the mode
-            on which the Majorana operator acts, starting from zero.
-            The second element of the tuple is an integer, either 1 or 0,
+        term(tuple or string): The first element of the tuple indicates the
+            mode on which the Majorana operator acts, starting from zero.
+            The second element of the tuple is an integer, either 0 or 1,
             indicating which type of Majorana operator it is:
 
-                Type 1: :math:`\\frac{1}{\sqrt{2}} (a^\dagger_p + a_p)`
+                Type 0: :math:`a^\dagger_p + a_p`
 
-                Type 0: :math:`\\frac{i}{\sqrt{2}} (a^\dagger_p - a_p)`
+                Type 1: :math:`i (a^\dagger_p - a_p)`
 
             where the :math:`a^\dagger_p` and :math:`a_p` are the usual
             fermionic ladder operators.
+            Alternatively, one can provide a string such as 'c2', which
+            is a Type 0 operator on mode 2, or 'd3', which is a Type 1
+            operator on mode 3.
             Default will result in the zero operator.
         coefficient(complex or float, optional): The coefficient of the term.
             Default value is 1.0.
@@ -181,26 +250,42 @@ def majorana_operator(term=None, coefficient=1.):
     if not isinstance(coefficient, (int, float, complex)):
         raise ValueError('Coefficient must be scalar.')
 
-    if term is None:
-        # Return zero operator
-        return FermionOperator()
-    elif isinstance(term, tuple):
-        mode, operator_type = term
-        if operator_type == 1:
-            majorana_op = FermionOperator(
-                ((mode, 1),), coefficient / numpy.sqrt(2.))
-            majorana_op += FermionOperator(
-                ((mode, 0),), coefficient / numpy.sqrt(2.))
-        elif operator_type == 0:
-            majorana_op = FermionOperator(
-                ((mode, 1),), 1.j * coefficient / numpy.sqrt(2.))
-            majorana_op -= FermionOperator(
-                ((mode, 0),), 1.j * coefficient / numpy.sqrt(2.))
+    # If term is a string, convert it to a tuple
+    if isinstance(term, str):
+        operator_type = term[0]
+        mode = int(term[1:])
+        if operator_type == 'c':
+            operator_type = 0
+        elif operator_type == 'd':
+            operator_type = 1
         else:
-            raise ValueError('Operator specified incorrectly.')
+            raise ValueError('Invalid operator type: {}'.format(operator_type))
+        term = (mode, operator_type)
+
+    # Process term
+
+    # Zero operator
+    if term is None:
+        return FermionOperator()
+
+    # Tuple
+    if isinstance(term, tuple):
+        mode, operator_type = term
+
+        if operator_type == 0:
+            majorana_op = FermionOperator(((mode, 1),), coefficient)
+            majorana_op += FermionOperator(((mode, 0),), coefficient)
+        elif operator_type == 1:
+            majorana_op = FermionOperator(((mode, 1),), 1.j * coefficient)
+            majorana_op -= FermionOperator(((mode, 0),), 1.j * coefficient)
+        else:
+            raise ValueError('Invalid operator type: {}'.format(
+                str(operator_type)))
+
         return majorana_op
+
+    # Invalid input.
     else:
-        # Invalid input.
         raise ValueError('Operator specified incorrectly.')
 
 

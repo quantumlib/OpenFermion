@@ -40,20 +40,20 @@ class ReverseJWTest(unittest.TestCase):
             ((1, 'Z'), (3, 'X'), (8, 'Z')), 1.2)
 
     def test_identity_jwterm(self):
-        self.assertTrue(FermionOperator(()).isclose(
-            reverse_jordan_wigner(QubitOperator(()))))
+        self.assertTrue(FermionOperator(()) ==
+            reverse_jordan_wigner(QubitOperator(())))
 
     def test_x(self):
         pauli_x = QubitOperator(((2, 'X'),))
         transmed_x = reverse_jordan_wigner(pauli_x)
         retransmed_x = jordan_wigner(transmed_x)
-        self.assertTrue(pauli_x.isclose(retransmed_x))
+        self.assertTrue(pauli_x == retransmed_x)
 
     def test_y(self):
         pauli_y = QubitOperator(((2, 'Y'),))
         transmed_y = reverse_jordan_wigner(pauli_y)
         retransmed_y = jordan_wigner(transmed_y)
-        self.assertTrue(pauli_y.isclose(retransmed_y))
+        self.assertTrue(pauli_y == retransmed_y)
 
     def test_z(self):
         pauli_z = QubitOperator(((2, 'Z'),))
@@ -61,10 +61,10 @@ class ReverseJWTest(unittest.TestCase):
 
         expected = (FermionOperator(()) +
                     FermionOperator(((2, 1), (2, 0)), -2.))
-        self.assertTrue(transmed_z.isclose(expected))
+        self.assertTrue(transmed_z == expected)
 
         retransmed_z = jordan_wigner(transmed_z)
-        self.assertTrue(pauli_z.isclose(retransmed_z))
+        self.assertTrue(pauli_z == retransmed_z)
 
     def test_reverse_jw_too_few_n_qubits(self):
         with self.assertRaises(ValueError):
@@ -74,30 +74,30 @@ class ReverseJWTest(unittest.TestCase):
         n_qubits = 5
         transmed_i = reverse_jordan_wigner(self.identity, n_qubits)
         expected_i = FermionOperator(())
-        self.assertTrue(transmed_i.isclose(expected_i))
+        self.assertTrue(transmed_i == expected_i)
         retransmed_i = jordan_wigner(transmed_i)
-        self.assertTrue(self.identity.isclose(retransmed_i))
+        self.assertTrue(self.identity == retransmed_i)
 
     def test_zero(self):
         n_qubits = 5
         transmed_i = reverse_jordan_wigner(QubitOperator(), n_qubits)
         expected_i = FermionOperator()
-        self.assertTrue(transmed_i.isclose(expected_i))
+        self.assertTrue(transmed_i == expected_i)
 
         retransmed_i = jordan_wigner(transmed_i)
         expected_i = QubitOperator()
-        self.assertTrue(expected_i.isclose(retransmed_i))
+        self.assertTrue(expected_i == retransmed_i)
 
     def test_yzxz(self):
         yzxz = QubitOperator(((0, 'Y'), (1, 'Z'), (2, 'X'), (3, 'Z')))
         transmed_yzxz = reverse_jordan_wigner(yzxz)
         retransmed_yzxz = jordan_wigner(transmed_yzxz)
-        self.assertTrue(yzxz.isclose(retransmed_yzxz))
+        self.assertTrue(yzxz == retransmed_yzxz)
 
     def test_term(self):
         transmed_term = reverse_jordan_wigner(self.term)
         retransmed_term = jordan_wigner(transmed_term)
-        self.assertTrue(self.term.isclose(retransmed_term))
+        self.assertTrue(self.term == retransmed_term)
 
     def test_xx(self):
         xx = QubitOperator(((3, 'X'), (4, 'X')), 2.)
@@ -110,9 +110,9 @@ class ReverseJWTest(unittest.TestCase):
                      FermionOperator(((4, 0),), 1.))
         expected = expected1 * expected2
 
-        self.assertTrue(xx.isclose(retransmed_xx))
-        self.assertTrue(normal_ordered(transmed_xx).isclose(
-            normal_ordered(expected)))
+        self.assertTrue(xx == retransmed_xx)
+        self.assertTrue(normal_ordered(transmed_xx) ==
+            normal_ordered(expected))
 
     def test_yy(self):
         yy = QubitOperator(((2, 'Y'), (3, 'Y')), 2.)
@@ -125,9 +125,9 @@ class ReverseJWTest(unittest.TestCase):
                      FermionOperator(((3, 0),)))
         expected = expected1 * expected2
 
-        self.assertTrue(yy.isclose(retransmed_yy))
-        self.assertTrue(normal_ordered(transmed_yy).isclose(
-            normal_ordered(expected)))
+        self.assertTrue(yy == retransmed_yy)
+        self.assertTrue(normal_ordered(transmed_yy) ==
+            normal_ordered(expected))
 
     def test_xy(self):
         xy = QubitOperator(((4, 'X'), (5, 'Y')), -2.j)
@@ -140,9 +140,9 @@ class ReverseJWTest(unittest.TestCase):
                      FermionOperator(((5, 0),)))
         expected = expected1 * expected2
 
-        self.assertTrue(xy.isclose(retransmed_xy))
-        self.assertTrue(normal_ordered(transmed_xy).isclose(
-            normal_ordered(expected)))
+        self.assertTrue(xy == retransmed_xy)
+        self.assertTrue(normal_ordered(transmed_xy) ==
+            normal_ordered(expected))
 
     def test_yx(self):
         yx = QubitOperator(((0, 'Y'), (1, 'X')), -0.5)
@@ -155,9 +155,9 @@ class ReverseJWTest(unittest.TestCase):
                             FermionOperator(((1, 0),)))
         expected = expected1 * expected2
 
-        self.assertTrue(yx.isclose(retransmed_yx))
-        self.assertTrue(normal_ordered(transmed_yx).isclose(
-            normal_ordered(expected)))
+        self.assertTrue(yx == retransmed_yx)
+        self.assertTrue(normal_ordered(transmed_yx) ==
+            normal_ordered(expected))
 
     def test_jw_term_bad_type(self):
         with self.assertRaises(TypeError):
@@ -166,14 +166,14 @@ class ReverseJWTest(unittest.TestCase):
     def test_reverse_jordan_wigner(self):
         transmed_operator = reverse_jordan_wigner(self.qubit_operator)
         retransmed_operator = jordan_wigner(transmed_operator)
-        self.assertTrue(self.qubit_operator.isclose(retransmed_operator))
+        self.assertTrue(self.qubit_operator == retransmed_operator)
 
     def test_reverse_jw_linearity(self):
         term1 = QubitOperator(((0, 'X'), (1, 'Y')), -0.5)
         term2 = QubitOperator(((0, 'Y'), (1, 'X'), (2, 'Y'), (3, 'Y')), -1j)
 
         op12 = reverse_jordan_wigner(term1) - reverse_jordan_wigner(term2)
-        self.assertTrue(op12.isclose(reverse_jordan_wigner(term1 - term2)))
+        self.assertTrue(op12 == reverse_jordan_wigner(term1 - term2))
 
     def test_bad_type(self):
         with self.assertRaises(TypeError):
@@ -186,4 +186,4 @@ class ReverseJWTest(unittest.TestCase):
         transformed_op = reverse_jordan_wigner(qubit_op)
         expected_op = FermionOperator('1^')
         expected_op += FermionOperator('1')
-        self.assertTrue(transformed_op.isclose(expected_op))
+        self.assertTrue(transformed_op == expected_op)
