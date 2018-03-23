@@ -14,6 +14,7 @@ from __future__ import absolute_import
 
 import unittest
 
+from openfermion.transforms._bravyi_kitaev import _parity_set
 from openfermion.transforms._fenwick_tree import FenwickNode, FenwickTree
 
 
@@ -64,6 +65,15 @@ class FenwickTreeTest(unittest.TestCase):
         f = FenwickTree(16)
         self.assertEqual(f.get_remainder_set(9)[0].index, 7)
 
+    def test_parity_set(self):
+        """Test getting the parity set."""
+        f = FenwickTree(16)
+        for j in range(1, 16):
+            parity_set_nodes = f.get_parity_set(j)
+            parity_set = [node.index for node in parity_set_nodes]
+            correct = _parity_set(j - 1)
+            self.assertEqual(set(parity_set), set(correct))
+            print(parity_set)
 
 if __name__ == '__main__':
     unittest.main()

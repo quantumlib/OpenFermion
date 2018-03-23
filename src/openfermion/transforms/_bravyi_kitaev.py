@@ -48,7 +48,7 @@ def bravyi_kitaev(operator, n_qubits=None):
     return inline_sum(seed=QubitOperator(), summands=transformed_terms)
 
 
-def update_set(index, n_qubits):
+def _update_set(index, n_qubits):
     """The bits that need to be updated upon flipping the occupancy
     of a mode."""
     indices = set()
@@ -64,7 +64,7 @@ def update_set(index, n_qubits):
     return indices
 
 
-def occupation_set(index):
+def _occupation_set(index):
     """The bits whose parity stores the occupation of mode `index`."""
     indices = set()
 
@@ -82,7 +82,7 @@ def occupation_set(index):
     return indices
 
 
-def parity_set(index):
+def _parity_set(index):
     """The bits whose parity stores the parity of the bits 0 .. `index`."""
     indices = set()
 
@@ -127,21 +127,21 @@ def _transform_ladder_operator(ladder_operator, n_qubits):
     """
     index, action = ladder_operator
 
-    update_set_ = update_set(index, n_qubits)
-    occupation_set_ = occupation_set(index)
-    parity_set_ = parity_set(index - 1)
+    update_set = _update_set(index, n_qubits)
+    occupation_set = _occupation_set(index)
+    parity_set = _parity_set(index - 1)
 
     # Initialize the transformed majorana operator (a_p^\dagger + a_p) / 2
     transformed_operator = QubitOperator(
-            [(i, 'X') for i in update_set_] +
-            [(i, 'Z') for i in parity_set_],
+            [(i, 'X') for i in update_set] +
+            [(i, 'Z') for i in parity_set],
             .5)
     # Get the transformed (a_p^\dagger - a_p) / 2
     # Below is equivalent to X(update_set) * Z(parity_set ^ occupation_set)
     transformed_majorana_difference = QubitOperator(
             [(index, 'Y')] +
-            [(i, 'X') for i in update_set_ - {index}] +
-            [(i, 'Z') for i in (parity_set_ ^ occupation_set_) - {index}],
+            [(i, 'X') for i in update_set - {index}] +
+            [(i, 'Z') for i in (parity_set ^ occupation_set) - {index}],
             -.5j)
 
     # Raising
