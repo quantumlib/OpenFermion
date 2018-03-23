@@ -135,7 +135,8 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
     return n_single_amplitudes + n_double_amplitudes
 
 
-def uccsd_singlet_get_packed_amplitudes(single_amplitudes, double_amplitudes):
+def uccsd_singlet_get_packed_amplitudes(single_amplitudes, double_amplitudes,
+                                        n_qubits, n_electrons):
     """Convert amplitudes for use with singlet UCCSD
 
     The output list contains only those amplitudes that are relevant to
@@ -148,6 +149,9 @@ def uccsd_singlet_get_packed_amplitudes(single_amplitudes, double_amplitudes):
         double_amplitudes(ndarray): [NxNxNxN] array storing double
             excitation amplitudes corresponding to
             t[i,j,k,l] * (a_i^\dagger a_j a_k^\dagger a_l - H.C.)
+        n_qubits(int): Number of spin-orbitals used to represent the system,
+            which also corresponds to number of qubits in a non-compact map.
+        n_electrons(int): Number of electrons in the physical system.
 
     Returns:
         packed_amplitudes(list): List storing the unique single
@@ -155,6 +159,10 @@ def uccsd_singlet_get_packed_amplitudes(single_amplitudes, double_amplitudes):
             The ordering lists unique single excitations before double
             excitations.
     """
+    n_spatial_orbitals = n_qubits // 2
+    n_occupied = int(numpy.ceil(n_electrons / 2))
+    n_virtual = n_spatial_orbitals - n_occupied
+
     singles = []
     doubles_1 = []
     doubles_2 = []

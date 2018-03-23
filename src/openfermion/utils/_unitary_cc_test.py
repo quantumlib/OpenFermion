@@ -33,8 +33,9 @@ from openfermion.utils import (commutator, count_qubits, expectation,
                                jordan_wigner_sparse, jw_hartree_fock_state,
                                s_squared_operator, sz_operator)
 from openfermion.utils._unitary_cc import (uccsd_generator,
-                                           uccsd_singlet_paramsize,
-                                           uccsd_singlet_generator)
+                                           uccsd_singlet_generator,
+                                           uccsd_singlet_get_packed_amplitudes,
+                                           uccsd_singlet_paramsize)
 
 
 class UnitaryCC(unittest.TestCase):
@@ -256,17 +257,31 @@ class UnitaryCC(unittest.TestCase):
         ccsd_sparse_l = jordan_wigner_sparse(
             -hermitian_conjugated(ccsd_operator))
 
+        ccsd_state_r = scipy.sparse.linalg.expm_multiply(ccsd_sparse_r,
+                                                         hf_state)
+        ccsd_state_l = scipy.sparse.linalg.expm_multiply(ccsd_sparse_l,
+                                                         hf_state)
+        expected_ccsd_energy = ccsd_state_l.getH().dot(
+            self.hamiltonian_matrix.dot(ccsd_state_r))[0, 0]
+        self.assertAlmostEqual(expected_ccsd_energy, self.molecule.fci_energy)
+
         # Test CCSD singlet for precise match against FCI using loaded t
         # amplitudes
-        # TODO
-        ccsd_singlet_operator = uccsd_generator(
-            self.molecule.ccsd_single_amps,
-            self.molecule.ccsd_double_amps,
-            anti_hermitian=False)
+        packed_amplitudes = uccsd_singlet_get_packed_amplitudes(
+                self.molecule.ccsd_single_amps,
+                self.molecule.ccsd_double_amps,
+                self.molecule.n_qubits,
+                self.molecule.n_electrons)
+        ccsd_operator = uccsd_singlet_generator(
+                packed_amplitudes,
+                self.molecule.n_qubits,
+                self.molecule.n_electrons,
+                anti_hermitian=False)
 
         ccsd_sparse_r = jordan_wigner_sparse(ccsd_operator)
         ccsd_sparse_l = jordan_wigner_sparse(
             -hermitian_conjugated(ccsd_operator))
+
         ccsd_state_r = scipy.sparse.linalg.expm_multiply(ccsd_sparse_r,
                                                          hf_state)
         ccsd_state_l = scipy.sparse.linalg.expm_multiply(ccsd_sparse_l,
