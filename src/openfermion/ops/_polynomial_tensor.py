@@ -111,7 +111,7 @@ class PolynomialTensor(object):
         n_body_tensors(dict): A dictionary storing the tensors describing
             n-body interactions. The keys are tuples that indicate the
             type of tensor. For instance, n_body_tensors[(1, 0)] would
-            be an (n_qubits x n_qubits x n_qubits x n_qubits) numpy array,
+            be an (n_qubits x n_qubits) numpy array,
             and it could represent the coefficients of terms of the form
             a^\dagger_i a_j, whereas n_body_tensors[(0, 1)] would be
             an array of the same shape, but instead representing terms
