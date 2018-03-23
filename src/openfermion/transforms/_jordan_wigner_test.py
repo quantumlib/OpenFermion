@@ -20,13 +20,15 @@ from openfermion.ops import (FermionOperator,
                              InteractionOperator,
                              normal_ordered,
                              QubitOperator)
-from openfermion.transforms import (get_interaction_operator,
+from openfermion.transforms import (get_fermion_operator,
+                                    get_interaction_operator,
                                     reverse_jordan_wigner)
 from openfermion.transforms._jordan_wigner import (
     jordan_wigner, jordan_wigner_one_body, jordan_wigner_two_body,
     jordan_wigner_interaction_op)
 
 from openfermion.utils import hermitian_conjugated, number_operator
+from openfermion.utils._testing_utils import random_interaction_operator
 
 
 class JordanWignerTransformTest(unittest.TestCase):
@@ -212,6 +214,15 @@ class InteractionOperatorsJWTest(unittest.TestCase):
         self.interaction_operator = InteractionOperator(self.constant,
                                                         self.one_body,
                                                         self.two_body)
+
+    def test_consistency(self):
+        """Test consistency with JW for FermionOperators."""
+        n_qubits = 5
+        iop = random_interaction_operator(n_qubits)
+        op1 = jordan_wigner(iop)
+        op2 = jordan_wigner(get_fermion_operator(iop))
+
+        self.assertTrue(op1 == op2)
 
     def test_jordan_wigner_one_body(self):
         # Make sure it agrees with jordan_wigner(FermionTerm).
