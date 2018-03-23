@@ -15,8 +15,10 @@ from __future__ import absolute_import
 
 import itertools
 
+from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (FermionOperator, InteractionOperator,
                              QubitOperator)
+from openfermion.utils import count_qubits
 
 
 def jordan_wigner(operator):
@@ -71,7 +73,6 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
     Returns:
         qubit_operator: An instance of the QubitOperator class.
     """
-    from openfermion.utils import count_qubits
     if n_qubits is None:
         n_qubits = count_qubits(iop)
     if n_qubits < count_qubits(iop):
@@ -95,7 +96,7 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
                     coefficient = complex(iop[(p, 1), (q, 1), (r, 0), (s, 0)])
 
                     # Skip zero terms.
-                    if (not coefficient) or (p == q) or (r == s):
+                    if abs(coefficient) < EQ_TOLERANCE or (p == q) or (r == s):
                         continue
 
                     # Identify and skip one of the complex conjugates.
