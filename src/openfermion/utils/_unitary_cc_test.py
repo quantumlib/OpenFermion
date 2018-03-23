@@ -94,8 +94,7 @@ class UnitaryCC(unittest.TestCase):
         self.assertTrue(comm_sz == zero)
         self.assertTrue(comm_s_squared == zero)
 
-    # TODO
-    def dont_test_uccsd_singlet_builds(self):
+    def test_uccsd_singlet_builds(self):
         """Test specific builds of the UCCSD singlet operator"""
         # Build 1
         n_orbitals = 4
