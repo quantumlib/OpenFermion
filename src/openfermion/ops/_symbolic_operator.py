@@ -13,6 +13,7 @@
 """SymbolicOperator is the base class for FermionOperator and QubitOperator"""
 import copy
 import re
+import warnings
 
 from openfermion.config import EQ_TOLERANCE
 
@@ -98,6 +99,7 @@ class SymbolicOperator(object):
     action_strings = ()
     action_before_index = False
     different_indices_commute = False
+    __hash__ = None
 
     def __init__(self, term=None, coefficient=1.):
         if not isinstance(coefficient, (int, float, complex)):
@@ -170,6 +172,23 @@ class SymbolicOperator(object):
             else:
                 self.terms[term] += coef
 
+    def _validate_factor(self, factor):
+        """Check that a factor of a term is valid."""
+        if len(factor) != 2:
+            raise ValueError('Invalid factor {}.'.format(factor))
+
+        index, action = factor
+
+        if action not in self.actions:
+            raise ValueError('Invalid action in factor {}. '
+                             'Valid actions are: {}'.format(
+                                 factor, self.actions))
+
+        if not isinstance(index, int) or index < 0:
+            raise ValueError('Invalid index in factor {}. '
+                             'The index should be a non-negative '
+                             'integer.'.format(factor))
+
     def _parse_sequence(self, term):
         """Parse a term given as a sequence type (i.e., list, tuple, etc.).
 
@@ -179,23 +198,14 @@ class SymbolicOperator(object):
         if not term:
             # Empty sequence
             return ()
+        elif isinstance(term[0], int):
+            # Single factor
+            self._validate_factor(term)
+            return (tuple(term),)
         else:
             # Check that all factors in the term are valid
             for factor in term:
-                if len(factor) != 2:
-                    raise ValueError('Invalid factor {}.'.format(factor))
-
-                index, action = factor
-
-                if action not in self.actions:
-                    raise ValueError('Invalid action in factor {}. '
-                                     'Valid actions are: {}'.format(
-                                         factor, self.actions))
-
-                if not isinstance(index, int) or index < 0:
-                    raise ValueError('Invalid index in factor {}. '
-                                     'The index should be a non-negative '
-                                     'integer.'.format(factor))
+                self._validate_factor(factor)
 
             # If factors with different indices commute, sort the factors
             # by index
@@ -530,6 +540,40 @@ class SymbolicOperator(object):
             exponentiated *= self
         return exponentiated
 
+    def __eq__(self, other):
+        """
+        Returns True if other (SymbolicOperator) is close to self.
+
+        Comparison is done for each term individually. Return True
+        if the difference between each term in self and other is
+        less than EQ_TOLERANCE
+
+        Args:
+            other(SymbolicOperator): SymbolicOperator to compare against.
+        """
+        if not isinstance(other, type(self)):
+            return False
+
+        # terms which are in both:
+        for term in set(self.terms).intersection(set(other.terms)):
+            a = self.terms[term]
+            b = other.terms[term]
+            # math.isclose does this in Python >=3.5
+            if not abs(a - b) <= max(EQ_TOLERANCE,
+                                     EQ_TOLERANCE * max(abs(a), abs(b))):
+                return False
+        # terms only in one (compare to 0.0 so only abs_tol)
+        for term in set(self.terms).symmetric_difference(set(other.terms)):
+            if term in self.terms:
+                if not abs(self.terms[term]) <= EQ_TOLERANCE:
+                    return False
+            elif not abs(other.terms[term]) <= EQ_TOLERANCE:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
         Eliminates all terms with coefficients close to zero and removes
@@ -554,41 +598,6 @@ class SymbolicOperator(object):
 
         self.terms = new_terms
 
-    def isclose(self, other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE):
-        """
-        Returns True if other (SymbolicOperator) is close to self.
-
-        Comparison is done for each term individually. Return True
-        if the difference between each term in self and other is
-        less than the relative tolerance w.r.t. either other or self
-        (symmetric test) or if the difference is less than the absolute
-        tolerance.
-
-        Args:
-            other(SymbolicOperator): SymbolicOperator to compare against.
-            rel_tol(float): Relative tolerance, must be greater than 0.0
-            abs_tol(float): Absolute tolerance, must be at least 0.0
-        """
-        if not isinstance(other, type(self)):
-            raise TypeError('Cannot compare a {} with a {}'.format(
-                type(self).__name__, type(other).__name__))
-
-        # terms which are in both:
-        for term in set(self.terms).intersection(set(other.terms)):
-            a = self.terms[term]
-            b = other.terms[term]
-            # math.isclose does this in Python >=3.5
-            if not abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol):
-                return False
-        # terms only in one (compare to 0.0 so only abs_tol)
-        for term in set(self.terms).symmetric_difference(set(other.terms)):
-            if term in self.terms:
-                if not abs(self.terms[term]) <= abs_tol:
-                    return False
-            elif not abs(other.terms[term]) <= abs_tol:
-                return False
-        return True
-
     def induced_norm(self, order=1):
         """
         Compute the induced p-norm of the operator.
@@ -606,3 +615,28 @@ class SymbolicOperator(object):
         for coefficient in self.terms.values():
             norm += abs(coefficient) ** order
         return norm ** (1. / order)
+
+    def many_body_order(self):
+        """Compute the many-body order of a SymbolicOperator.
+
+        The many-body order of a SymbolicOperator is the maximum length of
+        a term with nonzero coefficient.
+
+        Returns:
+            int
+        """
+        if not self.terms:
+            # Zero operator
+            return 0
+        else:
+            return max(len(term) for term, coeff in self.terms.items()
+                       if abs(coeff) > EQ_TOLERANCE)
+
+    # DEPRECATED FUNCTIONS
+    # ====================
+    def isclose(self, other):
+        warnings.warn('The method `isclose` is deprecated and will '
+                      'be removed in a future version. Use == '
+                      'instead. For instance, a == b instead of '
+                      'a.isclose(b).', DeprecationWarning)
+        return self == other

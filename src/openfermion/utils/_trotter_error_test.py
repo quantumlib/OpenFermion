@@ -30,19 +30,19 @@ class CommutatorTest(unittest.TestCase):
     def test_commutator_commutes(self):
         zero = QubitOperator()
         self.assertTrue(commutator(QubitOperator(()),
-                        QubitOperator('X3')).isclose(zero))
+                        QubitOperator('X3')) == zero)
 
     def test_commutator_single_pauli(self):
         com = commutator(QubitOperator('X3'),
                          QubitOperator('Y3'))
         expected = 2j * QubitOperator('Z3')
-        self.assertTrue(expected.isclose(com))
+        self.assertTrue(expected == com)
 
     def test_commutator_multi_pauli(self):
         com = commutator(QubitOperator('Z1 X2 Y4'),
                          QubitOperator('X1 Z2 X4'))
         expected = -2j * QubitOperator('Y1 Y2 Z4')
-        self.assertTrue(expected.isclose(com))
+        self.assertTrue(expected == com)
 
 
 class TriviallyCommutesTest(unittest.TestCase):
@@ -117,7 +117,7 @@ class ErrorOperatorTest(unittest.TestCase):
         terms = [QubitOperator(()), QubitOperator('Z0 Z1 Z2'),
                  QubitOperator('Z0 Z3'), QubitOperator('Z0 Z1 Z2 Z3')]
         zero = QubitOperator()
-        self.assertTrue(zero.isclose(error_operator(terms)))
+        self.assertTrue(zero == error_operator(terms))
 
 
 class ErrorBoundTest(unittest.TestCase):

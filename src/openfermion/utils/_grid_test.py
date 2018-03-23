@@ -15,6 +15,7 @@ from __future__ import absolute_import
 import unittest
 
 from openfermion.utils import Grid
+from openfermion.utils._testing_utils import EqualsTester
 
 
 class GridTest(unittest.TestCase):
@@ -57,3 +58,20 @@ class GridTest(unittest.TestCase):
             (2, 1),
             (2, 2),
         ])
+
+    def test_repr(self):
+        self.assertEqual(
+            repr(Grid(dimensions=5, length=3, scale=0.5)),
+            'Grid(dimensions=5, length=3, scale=0.5)')
+
+    def test_str(self):
+        self.assertEqual(
+            str(Grid(dimensions=5, length=4, scale=0.5)),
+            '[-0.25, -0.125, 0.0, 0.125]**5')
+
+    def test_equality(self):
+        eq = EqualsTester(self)
+        eq.make_equality_pair(lambda: Grid(dimensions=5, length=3, scale=0.5))
+        eq.add_equality_group(Grid(dimensions=4, length=3, scale=0.5))
+        eq.add_equality_group(Grid(dimensions=5, length=4, scale=0.5))
+        eq.add_equality_group(Grid(dimensions=5, length=3, scale=0.25))

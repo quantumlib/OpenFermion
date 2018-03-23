@@ -139,8 +139,8 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
 def stabilizer(i, j):
     """Stabilizer operators which act on the auxiliary space.
     In the original paper, these are referred to as P_{ij}."""
-    c_i = majorana_operator((i, 1), numpy.sqrt(2.))
-    d_j = majorana_operator((j, 0), numpy.sqrt(2.))
+    c_i = majorana_operator((i, 0))
+    d_j = majorana_operator((j, 1))
     return 1.j * c_i * d_j
 
 
