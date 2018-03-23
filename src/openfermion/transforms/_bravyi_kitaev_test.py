@@ -22,7 +22,7 @@ from openfermion.transforms import (get_sparse_operator,
                                     jordan_wigner)
 from openfermion.utils import eigenspectrum, number_operator
 
-from openfermion.transforms._bravyi_kitaev_binary import bravyi_kitaev
+from openfermion.transforms._bravyi_kitaev import bravyi_kitaev
 
 
 class BravyiKitaevTransformTest(unittest.TestCase):
