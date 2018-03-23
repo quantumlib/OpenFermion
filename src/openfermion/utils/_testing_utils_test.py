@@ -13,7 +13,10 @@
 import fractions
 import unittest
 
-from openfermion.utils._testing_utils import EqualsTester
+from openfermion.transforms import get_fermion_operator
+from openfermion.utils import is_hermitian
+from openfermion.utils._testing_utils import (EqualsTester, 
+                                              random_interaction_operator)
 
 
 class EqualsTesterTest(unittest.TestCase):
@@ -196,3 +199,19 @@ class EqualsTesterTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             eq.add_equality_group(NotCommutativeImplementation(1),
                                   NotCommutativeImplementation(0))
+
+
+class RandomInteractionOperatorTest(unittest.TestCase):
+
+    def test_hermiticity(self):
+        n_qubits = 5
+        
+        # Real case
+        iop = random_interaction_operator(n_qubits, True)
+        ferm_op = get_fermion_operator(iop)
+        self.assertTrue(is_hermitian(ferm_op))
+
+        # Complex case
+        iop = random_interaction_operator(n_qubits, False)
+        ferm_op = get_fermion_operator(iop)
+        self.assertTrue(is_hermitian(ferm_op))
