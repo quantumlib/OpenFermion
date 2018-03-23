@@ -18,11 +18,10 @@ import unittest
 
 from openfermion.ops import (FermionOperator,
                              QubitOperator)
-from openfermion.transforms import (get_sparse_operator,
+from openfermion.transforms import (bravyi_kitaev,
+                                    get_sparse_operator,
                                     jordan_wigner)
 from openfermion.utils import eigenspectrum, number_operator
-
-from openfermion.transforms._bravyi_kitaev import bravyi_kitaev
 
 
 class BravyiKitaevTransformTest(unittest.TestCase):
@@ -64,8 +63,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         self.assertEqual(raising.terms[correct_operators_c], 0.5)
 
     def test_bk_identity(self):
-        self.assertTrue(bravyi_kitaev(FermionOperator(())).isclose(
-                        QubitOperator(())))
+        self.assertTrue(bravyi_kitaev(FermionOperator(())) ==
+                        QubitOperator(()))
 
     def test_bk_n_qubits_too_small(self):
         with self.assertRaises(ValueError):
