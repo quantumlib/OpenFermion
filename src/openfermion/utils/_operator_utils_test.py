@@ -13,20 +13,21 @@
 """Tests for operator_utils."""
 from __future__ import absolute_import
 
-import numpy
 import os
 import unittest
 
-from openfermion.config import *
+import numpy
+from scipy.sparse import csc_matrix
+from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import plane_wave_hamiltonian
 from openfermion.ops import *
 from openfermion.transforms import (bravyi_kitaev, jordan_wigner,
                                     get_fermion_operator,
                                     get_interaction_operator)
 from openfermion.utils import Grid
-from openfermion.utils._operator_utils import *
 from openfermion.utils._testing_utils import random_interaction_operator
-from scipy.sparse import csc_matrix
+
+from openfermion.utils._operator_utils import *
 
 
 class OperatorUtilsTest(unittest.TestCase):

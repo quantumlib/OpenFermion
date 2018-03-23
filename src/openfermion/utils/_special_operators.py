@@ -33,38 +33,6 @@ def down_index(index):
     return 2 * index + 1
 
 
-def sz_operator(n_spatial_orbitals):
-    """Return the sz operator.
-
-    .. math::
-        \\begin{align}
-        S^{z} = \\frac{1}{2}\sum_{i = 1}^{n}(n_{i, \\alpha} - n_{i, \\beta})
-        \\end{align}
-
-    Args:
-        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
-
-    Returns:
-        operator (FermionOperator): corresponding to the sz operator over
-        n_spatial_orbitals.
-
-    Note:
-        The indexing convention used is that even indices correspond to
-        spin-up (alpha) modes and odd indices correspond to spin-down (beta)
-        modes.
-    """
-    if not isinstance(n_spatial_orbitals, int):
-        raise TypeError("n_orbitals must be specified as an integer")
-
-    operator = FermionOperator()
-    n_spinless_orbitals = 2 * n_spatial_orbitals
-    for ni in range(n_spatial_orbitals):
-        operator += number_operator(n_spinless_orbitals, up_index(ni), 0.5) + \
-                    number_operator(n_spinless_orbitals, down_index(ni), -0.5)
-
-    return operator
-
-
 def s_plus_operator(n_spatial_orbitals):
     """Return the s+ operator.
 
@@ -121,6 +89,104 @@ def s_minus_operator(n_spatial_orbitals):
     operator = FermionOperator()
     for ni in range(n_spatial_orbitals):
         operator += FermionOperator(((down_index(ni), 1), (up_index(ni), 0)))
+
+    return operator
+
+
+def sx_operator(n_spatial_orbitals):
+    """Return the sx operator.
+
+    .. math::
+        \\begin{align}
+        S^{x} = \\frac{1}{2}\sum_{i = 1}^{n}(S^{+} + S^{-})
+        \\end{align}
+
+    Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the sx operator over
+        n_spatial_orbitals.
+
+    Note:
+        The indexing convention used is that even indices correspond to
+        spin-up (alpha) modes and odd indices correspond to spin-down (beta)
+        modes.
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    operator = FermionOperator()
+    for ni in range(n_spatial_orbitals):
+        operator += FermionOperator(((up_index(ni), 1), (down_index(ni), 0)),
+                                    .5)
+        operator += FermionOperator(((down_index(ni), 1), (up_index(ni), 0)),
+                                    .5)
+
+    return operator
+
+
+def sy_operator(n_spatial_orbitals):
+    """Return the sy operator.
+
+    .. math::
+        \\begin{align}
+        S^{y} = \\frac{-i}{2}\sum_{i = 1}^{n}(S^{+} - S^{-})
+        \\end{align}
+
+    Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the sx operator over
+        n_spatial_orbitals.
+
+    Note:
+        The indexing convention used is that even indices correspond to
+        spin-up (alpha) modes and odd indices correspond to spin-down (beta)
+        modes.
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    operator = FermionOperator()
+    for ni in range(n_spatial_orbitals):
+        operator += FermionOperator(((up_index(ni), 1), (down_index(ni), 0)),
+                                    -.5j)
+        operator += FermionOperator(((down_index(ni), 1), (up_index(ni), 0)),
+                                    .5j)
+
+    return operator
+
+
+def sz_operator(n_spatial_orbitals):
+    """Return the sz operator.
+
+    .. math::
+        \\begin{align}
+        S^{z} = \\frac{1}{2}\sum_{i = 1}^{n}(n_{i, \\alpha} - n_{i, \\beta})
+        \\end{align}
+
+    Args:
+        n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
+
+    Returns:
+        operator (FermionOperator): corresponding to the sz operator over
+        n_spatial_orbitals.
+
+    Note:
+        The indexing convention used is that even indices correspond to
+        spin-up (alpha) modes and odd indices correspond to spin-down (beta)
+        modes.
+    """
+    if not isinstance(n_spatial_orbitals, int):
+        raise TypeError("n_orbitals must be specified as an integer")
+
+    operator = FermionOperator()
+    n_spinless_orbitals = 2 * n_spatial_orbitals
+    for ni in range(n_spatial_orbitals):
+        operator += number_operator(n_spinless_orbitals, up_index(ni), 0.5) + \
+                    number_operator(n_spinless_orbitals, down_index(ni), -0.5)
 
     return operator
 
