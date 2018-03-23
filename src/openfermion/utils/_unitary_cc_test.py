@@ -348,7 +348,9 @@ class UnitaryCC(unittest.TestCase):
         self.molecule.load()
 
         # Get molecular Hamiltonian.
-        self.molecular_hamiltonian = self.molecule.get_molecular_hamiltonian()
+        self.molecular_hamiltonian = self.molecule.get_molecular_hamiltonian(
+                occupied_indices=range(2),
+                active_indices=range(2, 12))
 
         # Get FCI RDM.
         self.fci_rdm = self.molecule.get_molecular_rdm(use_fci=1)
