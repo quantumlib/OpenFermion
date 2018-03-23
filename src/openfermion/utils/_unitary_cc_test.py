@@ -256,8 +256,10 @@ class UnitaryCC(unittest.TestCase):
         ccsd_sparse_l = jordan_wigner_sparse(
             -hermitian_conjugated(ccsd_operator))
 
-        # Test CCSD for precise match against FCI using loaded t amplitudes
-        ccsd_operator = uccsd_generator(
+        # Test CCSD singlet for precise match against FCI using loaded t
+        # amplitudes
+        # TODO
+        ccsd_singlet_operator = uccsd_generator(
             self.molecule.ccsd_single_amps,
             self.molecule.ccsd_double_amps,
             anti_hermitian=False)
