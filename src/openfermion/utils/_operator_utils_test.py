@@ -25,7 +25,6 @@ from openfermion.transforms import (bravyi_kitaev, jordan_wigner,
                                     get_fermion_operator,
                                     get_interaction_operator)
 from openfermion.utils import Grid
-from openfermion.utils._testing_utils import random_interaction_operator
 
 from openfermion.utils._operator_utils import *
 
