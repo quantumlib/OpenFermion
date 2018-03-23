@@ -18,6 +18,7 @@ import itertools
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (FermionOperator, InteractionOperator,
                              QubitOperator)
+from openfermion.utils import count_qubits
 
 
 def jordan_wigner(operator):
@@ -72,7 +73,6 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
     Returns:
         qubit_operator: An instance of the QubitOperator class.
     """
-    from openfermion.utils import count_qubits
     if n_qubits is None:
         n_qubits = count_qubits(iop)
     if n_qubits < count_qubits(iop):
