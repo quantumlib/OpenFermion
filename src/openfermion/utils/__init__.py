@@ -31,8 +31,9 @@ from ._slater_determinants import (gaussian_state_preparation_circuit,
                                    slater_determinant_preparation_circuit)
 
 from ._special_operators import (majorana_operator, number_operator,
-                                 s_squared_operator, s_plus_operator,
-                                 s_minus_operator, sz_operator,
+                                 s_minus_operator, s_plus_operator,
+                                 s_squared_operator, 
+                                 sx_operator, sy_operator, sz_operator,
                                  up_index, down_index)
 
 from ._trotter_error import error_bound, error_operator
