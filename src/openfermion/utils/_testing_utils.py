@@ -76,56 +76,50 @@ def random_quadratic_hamiltonian(n_qubits,
                                 antisymmetric_mat, chemical_potential)
 
 
-def random_interaction_operator(n_qubits):
+def random_interaction_operator(n_qubits, real=True):
     """Generate a random instance of InteractionOperator."""
+    if real:
+        dtype = float
+    else:
+        dtype = complex
 
-    # Initialize.
+    # The constant has to be real
     constant = numpy.random.randn()
-    one_body_coefficients = numpy.zeros((n_qubits, n_qubits), float)
+
+    # The one-body tensor is a random Hermitian matrix
+    one_body_coefficients = random_hermitian_matrix(n_qubits, real)
+
+    # Generate random two-body coefficients
     two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
-                                         n_qubits, n_qubits), float)
+                                         n_qubits, n_qubits), dtype)
+    # Generate "diagonal" terms, which are necessarily real
+    for p, q in itertools.combinations(range(n_qubits), 2):
+        coeff = numpy.random.randn()
+        two_body_coefficients[p, q, p, q] = coeff
+        two_body_coefficients[p, q, q, p] = -coeff
+        two_body_coefficients[q, p, q, p] = coeff
+    # Generate the rest of the terms
+    for (p, q), (r, s) in itertools.combinations(
+            itertools.combinations(range(n_qubits), 2),
+            2):
+        coeff = numpy.random.randn()
+        if not real:
+            coeff += 1.j * numpy.random.randn()
+        two_body_coefficients[p, q, r, s] = coeff
+        two_body_coefficients[p, q, s, r] = -coeff
+        two_body_coefficients[q, p, r, s] = -coeff
+        two_body_coefficients[q, p, s, r] = coeff
 
-    # Randomly generate the one-body and two-body integrals.
-    for p in range(n_qubits):
-        for q in range(n_qubits):
+        two_body_coefficients[s, r, q, p] = coeff.conjugate()
+        two_body_coefficients[s, r, p, q] = -coeff.conjugate()
+        two_body_coefficients[r, s, q, p] = -coeff.conjugate()
+        two_body_coefficients[r, s, p, q] = coeff.conjugate()
 
-            # One-body terms.
-            if (p <= p) and (p % 2 == q % 2):
-                one_body_coefficients[p, q] = numpy.random.randn()
-                one_body_coefficients[q, p] = one_body_coefficients[p, q]
-
-            # Keep looping.
-            for r in range(n_qubits):
-                for s in range(n_qubits):
-
-                    # Skip zero terms.
-                    if (p == q) or (r == s):
-                        continue
-
-                    # Identify and skip one of the complex conjugates.
-                    if [p, q, r, s] != [s, r, q, p]:
-                        unique_indices = len(set([p, q, r, s]))
-
-                        # srqp srpq sprq spqr sqpr sqrp
-                        # rsqp rspq rpsq rpqs rqps rqsp.
-                        if unique_indices == 4:
-                            if min(r, s) <= min(p, q):
-                                continue
-
-                        # qqpp.
-                        elif unique_indices == 2:
-                            if q < p:
-                                continue
-
-                    # Add the two-body coefficients.
-                    two_body_coefficients[p, q, r, s] = numpy.random.randn()
-                    two_body_coefficients[s, r, q, p] = two_body_coefficients[
-                        p, q, r, s]
-
-    # Build the molecular operator and return.
-    molecular_operator = InteractionOperator(
+    # Create the InteractionOperator and return
+    interaction_operator = InteractionOperator(
         constant, one_body_coefficients, two_body_coefficients)
-    return molecular_operator
+
+    return interaction_operator
 
 
 class EqualsTester(object):
