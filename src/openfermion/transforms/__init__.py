@@ -22,6 +22,7 @@ from ._binary_codes import (bravyi_kitaev_code,
                             weight_one_binary_addressing_code,
                             weight_one_segment_code)
 from ._bravyi_kitaev import bravyi_kitaev
+from ._bravyi_kitaev_tree import bravyi_kitaev_tree
 from ._conversion import (get_fermion_operator,
                           get_interaction_rdm,
                           get_interaction_operator,
