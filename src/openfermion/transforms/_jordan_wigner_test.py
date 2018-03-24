@@ -12,10 +12,13 @@
 
 """Tests  _jordan_wigner.py."""
 from __future__ import absolute_import
-import numpy
-
+import os
 import unittest
 
+import numpy
+
+from openfermion.config import DATA_DIRECTORY
+from openfermion.hamiltonians import MolecularData
 from openfermion.ops import (FermionOperator,
                              InteractionOperator,
                              normal_ordered,
@@ -23,12 +26,12 @@ from openfermion.ops import (FermionOperator,
 from openfermion.transforms import (get_fermion_operator,
                                     get_interaction_operator,
                                     reverse_jordan_wigner)
+from openfermion.utils import hermitian_conjugated, number_operator
+from openfermion.utils._testing_utils import random_interaction_operator
+
 from openfermion.transforms._jordan_wigner import (
     jordan_wigner, jordan_wigner_one_body, jordan_wigner_two_body,
     jordan_wigner_interaction_op)
-
-from openfermion.utils import hermitian_conjugated, number_operator
-from openfermion.utils._testing_utils import random_interaction_operator
 
 
 class JordanWignerTransformTest(unittest.TestCase):
@@ -217,12 +220,29 @@ class InteractionOperatorsJWTest(unittest.TestCase):
 
     def test_consistency(self):
         """Test consistency with JW for FermionOperators."""
+        # Random interaction operator
         n_qubits = 5
         iop = random_interaction_operator(n_qubits)
         op1 = jordan_wigner(iop)
         op2 = jordan_wigner(get_fermion_operator(iop))
 
         self.assertTrue(op1 == op2)
+
+        # Interaction operator from molecule
+
+        geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., 1.45))]
+        basis = 'sto-3g'
+        multiplicity = 1
+
+        filename = os.path.join(DATA_DIRECTORY, 'H1-Li1_sto-3g_singlet_1.45')
+        molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
+        molecule.load()
+
+        iop = molecule.get_molecular_hamiltonian()
+        op1 = jordan_wigner(iop)
+        op2 = jordan_wigner(get_fermion_operator(iop))
+
+        assert op1 == op2
 
     def test_jordan_wigner_one_body(self):
         # Make sure it agrees with jordan_wigner(FermionTerm).
@@ -278,11 +298,6 @@ class InteractionOperatorsJWTest(unittest.TestCase):
     def test_jordan_wigner_twobody_interaction_op_reversal_symmetric(self):
         test_op = FermionOperator('1^ 2^ 2 1')
         test_op += hermitian_conjugated(test_op)
-        print(jordan_wigner(test_op))
-        print()
-        print(jordan_wigner(get_interaction_operator(test_op)))
-        print()
-        print(get_interaction_operator(test_op)[(1, 1), (2, 1), (2, 0), (1, 0)])
         self.assertTrue(jordan_wigner(test_op) ==
                         jordan_wigner(get_interaction_operator(test_op)))
 
