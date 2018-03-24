@@ -70,7 +70,7 @@ class UnitaryCC(unittest.TestCase):
 
         self.assertTrue(generator == -1. * conj_generator)
 
-    def test_uccsd_symmetries(self):
+    def test_uccsd_singlet_symmetries(self):
         """Test that the singlet generator has the correct symmetries."""
         test_orbitals = 8
         test_electrons = 4
@@ -199,6 +199,31 @@ class UnitaryCC(unittest.TestCase):
                           (-0.23423) * FermionOperator("1^ 4 6^ 13") +
                           0.23423 * FermionOperator("13^ 6 4^ 1"))
         self.assertTrue(test_generator == generator)
+
+    def test_uccsd_singlet_get_packed_amplitudes(self):
+        test_orbitals = 6
+        test_electrons = 2
+        sparse_single_amplitudes = numpy.zeros((test_orbitals, test_orbitals))
+        sparse_double_amplitudes = numpy.zeros((test_orbitals, test_orbitals,
+                                                test_orbitals, test_orbitals))
+
+        sparse_single_amplitudes[2, 0] = 0.12345
+        sparse_single_amplitudes[3, 1] = 0.12345
+
+        sparse_double_amplitudes[2, 0, 3, 1] = 0.9
+
+        sparse_double_amplitudes[2, 0, 4, 0] = 0.3434
+        sparse_double_amplitudes[5, 1, 3, 1] = 0.3434
+
+        packed_amplitudes = uccsd_singlet_get_packed_amplitudes(
+                sparse_single_amplitudes, sparse_double_amplitudes,
+                test_orbitals, test_electrons)
+
+        self.assertEqual(len(packed_amplitudes), 5)
+
+        self.assertTrue(numpy.allclose(
+            packed_amplitudes,
+            numpy.array([0.12345, 0., 0.9, 0., 0.3434])))
 
     def test_ucc_h2(self):
         geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
