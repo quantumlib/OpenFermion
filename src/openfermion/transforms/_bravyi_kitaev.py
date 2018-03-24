@@ -11,15 +11,21 @@
 #   limitations under the License.
 
 """Bravyi-Kitaev transform on fermionic operators."""
-from __future__ import absolute_import
 
 from openfermion.ops import QubitOperator
-from openfermion.transforms._fenwick_tree import FenwickTree
+from openfermion.utils import count_qubits
 
 
 def bravyi_kitaev(operator, n_qubits=None):
-    """Apply the Bravyi-Kitaev transform and return qubit operator.
-    (arxiv1701.07072)
+    """Apply the Bravyi-Kitaev transform.
+
+    Implementation from arXiv:quant-ph/0003137 and
+    "A New Data Structure for Cumulative Frequency Tables" by Peter M. Fenwick.
+
+    Note that this implementation is equivalent to the one described in
+    arXiv:1208.5986, and is different from the one described in
+    arXiv:1701.07072. The one described in arXiv:1701.07072 is implemented
+    in OpenFermion as `bravyi_kitaev_tree`.
 
     Args:
         operator (openfermion.ops.FermionOperator):
@@ -35,85 +41,125 @@ def bravyi_kitaev(operator, n_qubits=None):
         ValueError: Invalid number of qubits specified.
     """
     # Compute the number of qubits.
-    from openfermion.utils import count_qubits
     if n_qubits is None:
         n_qubits = count_qubits(operator)
     if n_qubits < count_qubits(operator):
         raise ValueError('Invalid number of qubits specified.')
 
-    # Build the Fenwick tree.
-    fenwick_tree = FenwickTree(n_qubits)
-
     # Compute transformed operator.
     transformed_terms = (
         _transform_operator_term(term=term,
                                  coefficient=operator.terms[term],
-                                 fenwick_tree=fenwick_tree)
+                                 n_qubits=n_qubits)
         for term in operator.terms
     )
     return inline_sum(seed=QubitOperator(), summands=transformed_terms)
 
 
-def _transform_operator_term(term, coefficient, fenwick_tree):
+def _update_set(index, n_qubits):
+    """The bits that need to be updated upon flipping the occupancy
+    of a mode."""
+    indices = set()
+
+    # For bit manipulation we need to count from 1 rather than 0
+    index += 1
+
+    while index <= n_qubits:
+        indices.add(index - 1)
+        # Add least significant one to index
+        # E.g. 00010100 -> 00011000
+        index += index & -index
+    return indices
+
+
+def _occupation_set(index):
+    """The bits whose parity stores the occupation of mode `index`."""
+    indices = set()
+
+    # For bit manipulation we need to count from 1 rather than 0
+    index += 1
+
+    indices.add(index - 1)
+    parent = index & (index - 1)
+    index -= 1
+    while index != parent:
+        indices.add(index - 1)
+        # Remove least significant one from index
+        # E.g. 00010100 -> 00010000
+        index &= index - 1
+    return indices
+
+
+def _parity_set(index):
+    """The bits whose parity stores the parity of the bits 0 .. `index`."""
+    indices = set()
+
+    # For bit manipulation we need to count from 1 rather than 0
+    index += 1
+
+    while index > 0:
+        indices.add(index - 1)
+        # Remove least significant one from index
+        # E.g. 00010100 -> 00010000
+        index &= index - 1
+    return indices
+
+
+def _transform_operator_term(term, coefficient, n_qubits):
     """
     Args:
         term (list[tuple[int, int]]):
             A list of (mode, raising-vs-lowering) ladder operator terms.
         coefficient (float):
-        fenwick_tree (FenwickTree):
+        n_qubits (int):
     Returns:
         QubitOperator:
     """
 
     # Build the Bravyi-Kitaev transformed operators.
     transformed_ladder_ops = (
-        _transform_ladder_operator(ladder_operator, fenwick_tree)
+        _transform_ladder_operator(ladder_operator, n_qubits)
         for ladder_operator in term
     )
     return inline_product(seed=QubitOperator((), coefficient),
                           factors=transformed_ladder_ops)
 
 
-def _transform_ladder_operator(ladder_operator, fenwick_tree):
+def _transform_ladder_operator(ladder_operator, n_qubits):
     """
     Args:
-        ladder_operator (tuple[int, int]):
-        fenwick_tree (FenwickTree):
+        ladder_operator (tuple[int, int]): the ladder operator
+        n_qubits (int): the number of qubits
     Returns:
-        QubitOperator:
+        QubitOperator
     """
-    index = ladder_operator[0]
+    index, action = ladder_operator
 
-    # Parity set. Set of nodes to apply Z to.
-    parity_set = [node.index for node in
-                  fenwick_tree.get_parity_set(index)]
+    update_set = _update_set(index, n_qubits)
+    occupation_set = _occupation_set(index)
+    parity_set = _parity_set(index - 1)
 
-    # Update set. Set of ancestors to apply X to.
-    ancestors = [node.index for node in
-                 fenwick_tree.get_update_set(index)]
+    # Initialize the transformed majorana operator (a_p^\dagger + a_p) / 2
+    transformed_operator = QubitOperator(
+            [(i, 'X') for i in update_set] +
+            [(i, 'Z') for i in parity_set],
+            .5)
+    # Get the transformed (a_p^\dagger - a_p) / 2
+    # Below is equivalent to X(update_set) * Z(parity_set ^ occupation_set)
+    transformed_majorana_difference = QubitOperator(
+            [(index, 'Y')] +
+            [(i, 'X') for i in update_set - {index}] +
+            [(i, 'Z') for i in (parity_set ^ occupation_set) - {index}],
+            -.5j)
 
-    # The C(j) set.
-    ancestor_children = [node.index for node in
-                         fenwick_tree.get_remainder_set(index)]
+    # Raising
+    if action == 1:
+        transformed_operator += transformed_majorana_difference
+    # Lowering
+    else:
+        transformed_operator -= transformed_majorana_difference
 
-    # Switch between lowering/raising operators.
-    d_coefficient = -.5j if ladder_operator[1] else .5j
-
-    # The fermion lowering operator is given by
-    # a = (c+id)/2 where c, d are the majoranas.
-    d_majorana_component = QubitOperator(
-        (((ladder_operator[0], 'Y'),) +
-         tuple((index, 'Z') for index in ancestor_children) +
-         tuple((index, 'X') for index in ancestors)),
-        d_coefficient)
-
-    c_majorana_component = QubitOperator(
-        (((ladder_operator[0], 'X'),) +
-         tuple((index, 'Z') for index in parity_set) +
-         tuple((index, 'X') for index in ancestors)),
-        0.5)
-
-    return c_majorana_component + d_majorana_component
+    return transformed_operator
 
 
 def inline_sum(seed, summands):
