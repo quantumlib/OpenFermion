@@ -70,6 +70,8 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
     One could accomplish this very easily by first mapping to fermions and
     then mapping to qubits. We skip the middle step for the sake of speed.
 
+    This only works for real InteractionOperators (no complex numbers).
+
     Returns:
         qubit_operator: An instance of the QubitOperator class.
     """
@@ -81,41 +83,40 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
     # Initialize qubit operator as constant.
     qubit_operator = QubitOperator((), iop.constant)
 
-    # Loop through all indices.
+    # Transform diagonal one-body terms
     for p in range(n_qubits):
-        for q in range(n_qubits):
+        coefficient = iop[(p, 1), (p, 0)]
+        qubit_operator += jordan_wigner_one_body(p, p, coefficient)
 
-            # Handle one-body terms.
-            coefficient = complex(iop[(p, 1), (q, 0)])
-            if coefficient and p >= q:
-                qubit_operator += coefficient * jordan_wigner_one_body(p, q)
+    # Transform other one-body terms and "diagonal" two-body terms
+    for p, q in itertools.combinations(range(n_qubits), 2):
+        # One-body
+        coefficient = iop[(p, 1), (q, 0)]
+        qubit_operator += jordan_wigner_one_body(p, q, coefficient)
 
-            # Keep looping for the two-body terms.
-            for r in range(n_qubits):
-                for s in range(n_qubits):
-                    coefficient = complex(iop[(p, 1), (q, 1), (r, 0), (s, 0)])
+        # Two-body
+        coefficient = iop[(p, 1), (q, 1), (p, 0), (q, 0)]
+        qubit_operator += jordan_wigner_two_body(p, q, p, q, coefficient)
+        coefficient = iop[(p, 1), (q, 1), (q, 0), (p, 0)]
+        qubit_operator += jordan_wigner_two_body(p, q, q, p, coefficient)
 
-                    # Skip zero terms.
-                    if abs(coefficient) < EQ_TOLERANCE or (p == q) or (r == s):
-                        continue
-
-                    # Identify and skip one of the complex conjugates.
-                    if [p, q, r, s] != [s, r, q, p]:
-                        if len(set([p, q, r, s])) == 4:
-                            if min(r, s) < min(p, q):
-                                continue
-                        elif p != r and q < p:
-                                continue
-
-                    # Handle the two-body terms.
-                    transformed_term = jordan_wigner_two_body(p, q, r, s)
-                    transformed_term *= coefficient
-                    qubit_operator += transformed_term
+    # Transform the rest of the two-body terms
+    for (p, q), (r, s) in itertools.combinations(
+            itertools.combinations(range(n_qubits), 2),
+            2):
+        coefficient = iop[(p, 1), (q, 1), (r, 0), (s, 0)]
+        qubit_operator += jordan_wigner_two_body(p, q, r, s, coefficient)
+        coefficient = iop[(p, 1), (q, 1), (s, 0), (r, 0)]
+        qubit_operator += jordan_wigner_two_body(p, q, s, r, coefficient)
+        coefficient = iop[(q, 1), (p, 1), (r, 0), (s, 0)]
+        qubit_operator += jordan_wigner_two_body(q, p, r, s, coefficient)
+        coefficient = iop[(q, 1), (p, 1), (s, 0), (r, 0)]
+        qubit_operator += jordan_wigner_two_body(q, p, s, r, coefficient)
 
     return qubit_operator
 
 
-def jordan_wigner_one_body(p, q):
+def jordan_wigner_one_body(p, q, coefficient=1.):
     """Map the term a^\dagger_p a_q + a^\dagger_q a_p to QubitOperator.
 
     Note that the diagonal terms are divided by a factor of 2
@@ -128,17 +129,17 @@ def jordan_wigner_one_body(p, q):
         parity_string = tuple((z, 'Z') for z in range(a + 1, b))
         for operator in ['X', 'Y']:
             operators = ((a, operator),) + parity_string + ((b, operator),)
-            qubit_operator += QubitOperator(operators, .5)
+            qubit_operator += QubitOperator(operators, .5 * coefficient)
 
     # Handle diagonal terms.
     else:
-        qubit_operator += QubitOperator((), .5)
-        qubit_operator += QubitOperator(((p, 'Z'),), -.5)
+        qubit_operator += QubitOperator((), .5 * coefficient)
+        qubit_operator += QubitOperator(((p, 'Z'),), -.5 * coefficient)
 
     return qubit_operator
 
 
-def jordan_wigner_two_body(p, q, r, s):
+def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
     """Map the term a^\dagger_p a^\dagger_q a_r a_s + h.c. to QubitOperator.
 
     Note that the diagonal terms are divided by a factor of two
@@ -178,7 +179,7 @@ def jordan_wigner_two_body(p, q, r, s):
             operators += ((d, operator_d),)
 
             # Get coefficients.
-            coefficient = .125
+            coefficient *= .125
             parity_condition = bool(operator_p != operator_q or
                                     operator_p == operator_r)
             if (p > q) ^ (r > s):
@@ -215,9 +216,9 @@ def jordan_wigner_two_body(p, q, r, s):
 
             # Get coefficient.
             if (p == s) or (q == r):
-                coefficient = .25
+                coefficient *= .25
             else:
-                coefficient = -.25
+                coefficient *= -.25
 
             # Add term.
             hopping_term = QubitOperator(operators, coefficient)
@@ -229,9 +230,9 @@ def jordan_wigner_two_body(p, q, r, s):
 
         # Get coefficient.
         if p == s:
-            coefficient = -.25
+            coefficient *= -.25
         else:
-            coefficient = .25
+            coefficient *= .25
 
         # Add terms.
         qubit_operator -= QubitOperator((), coefficient)
