@@ -278,6 +278,11 @@ class InteractionOperatorsJWTest(unittest.TestCase):
     def test_jordan_wigner_twobody_interaction_op_reversal_symmetric(self):
         test_op = FermionOperator('1^ 2^ 2 1')
         test_op += hermitian_conjugated(test_op)
+        print(jordan_wigner(test_op))
+        print()
+        print(jordan_wigner(get_interaction_operator(test_op)))
+        print()
+        print(get_interaction_operator(test_op)[(1, 1), (2, 1), (2, 0), (1, 0)])
         self.assertTrue(jordan_wigner(test_op) ==
                         jordan_wigner(get_interaction_operator(test_op)))
 

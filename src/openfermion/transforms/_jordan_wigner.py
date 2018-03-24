@@ -179,17 +179,17 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
             operators += ((d, operator_d),)
 
             # Get coefficients.
-            coefficient *= .125
+            coeff = .125 * coefficient
             parity_condition = bool(operator_p != operator_q or
                                     operator_p == operator_r)
             if (p > q) ^ (r > s):
                 if not parity_condition:
-                    coefficient *= -1.
+                    coeff *= -1.
             elif parity_condition:
-                coefficient *= -1.
+                coeff *= -1.
 
             # Add term.
-            qubit_operator += QubitOperator(operators, coefficient)
+            qubit_operator += QubitOperator(operators, coeff)
 
     # Handle case of three unique indices.
     elif len(set([p, q, r, s])) == 3:
@@ -216,12 +216,12 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
 
             # Get coefficient.
             if (p == s) or (q == r):
-                coefficient *= .25
+                coeff = .25 * coefficient
             else:
-                coefficient *= -.25
+                coeff = -.25 * coefficient
 
             # Add term.
-            hopping_term = QubitOperator(operators, coefficient)
+            hopping_term = QubitOperator(operators, coeff)
             qubit_operator -= pauli_z * hopping_term
             qubit_operator += hopping_term
 
@@ -230,15 +230,16 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
 
         # Get coefficient.
         if p == s:
-            coefficient *= -.25
+            coeff = -.25 * coefficient
         else:
-            coefficient *= .25
+            coeff = .25 * coefficient
 
         # Add terms.
-        qubit_operator -= QubitOperator((), coefficient)
-        qubit_operator += QubitOperator(((p, 'Z'),), coefficient)
-        qubit_operator += QubitOperator(((q, 'Z'),), coefficient)
+        qubit_operator -= QubitOperator((), coeff)
+        qubit_operator += QubitOperator(((p, 'Z'),), coeff)
+        qubit_operator += QubitOperator(((q, 'Z'),), coeff)
         qubit_operator -= QubitOperator(((min(q, p), 'Z'), (max(q, p), 'Z')),
-                                        coefficient)
+                                        coeff)
 
     return qubit_operator
+
