@@ -91,27 +91,25 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
     # Transform other one-body terms and "diagonal" two-body terms
     for p, q in itertools.combinations(range(n_qubits), 2):
         # One-body
-        coefficient = iop[(p, 1), (q, 0)]
+        coefficient = .5 * (iop[(p, 1), (q, 0)] + iop[(q, 1), (p, 0)])
         qubit_operator += jordan_wigner_one_body(p, q, coefficient)
 
         # Two-body
-        coefficient = iop[(p, 1), (q, 1), (p, 0), (q, 0)]
+        coefficient = (iop[(p, 1), (q, 1), (p, 0), (q, 0)] -
+                       iop[(p, 1), (q, 1), (q, 0), (p, 0)] -
+                       iop[(q, 1), (p, 1), (p, 0), (q, 0)] +
+                       iop[(q, 1), (p, 1), (q, 0), (p, 0)])
         qubit_operator += jordan_wigner_two_body(p, q, p, q, coefficient)
-        coefficient = iop[(p, 1), (q, 1), (q, 0), (p, 0)]
-        qubit_operator += jordan_wigner_two_body(p, q, q, p, coefficient)
 
     # Transform the rest of the two-body terms
     for (p, q), (r, s) in itertools.combinations(
             itertools.combinations(range(n_qubits), 2),
             2):
-        coefficient = iop[(p, 1), (q, 1), (r, 0), (s, 0)]
+        coefficient = (iop[(p, 1), (q, 1), (r, 0), (s, 0)] -
+                       iop[(p, 1), (q, 1), (s, 0), (r, 0)] -
+                       iop[(q, 1), (p, 1), (r, 0), (s, 0)] +
+                       iop[(q, 1), (p, 1), (s, 0), (r, 0)])
         qubit_operator += jordan_wigner_two_body(p, q, r, s, coefficient)
-        coefficient = iop[(p, 1), (q, 1), (s, 0), (r, 0)]
-        qubit_operator += jordan_wigner_two_body(p, q, s, r, coefficient)
-        coefficient = iop[(q, 1), (p, 1), (r, 0), (s, 0)]
-        qubit_operator += jordan_wigner_two_body(q, p, r, s, coefficient)
-        coefficient = iop[(q, 1), (p, 1), (s, 0), (r, 0)]
-        qubit_operator += jordan_wigner_two_body(q, p, s, r, coefficient)
 
     return qubit_operator
 
