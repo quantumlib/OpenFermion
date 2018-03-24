@@ -226,23 +226,23 @@ class InteractionOperatorsJWTest(unittest.TestCase):
         op1 = jordan_wigner(iop)
         op2 = jordan_wigner(get_fermion_operator(iop))
 
-        self.assertTrue(op1 == op2)
+        self.assertEqual(op1, op2)
 
         # Interaction operator from molecule
-
         geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., 1.45))]
         basis = 'sto-3g'
         multiplicity = 1
 
         filename = os.path.join(DATA_DIRECTORY, 'H1-Li1_sto-3g_singlet_1.45')
-        molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
+        molecule = MolecularData(geometry, basis, multiplicity,
+                                 filename=filename)
         molecule.load()
 
         iop = molecule.get_molecular_hamiltonian()
         op1 = jordan_wigner(iop)
         op2 = jordan_wigner(get_fermion_operator(iop))
 
-        assert op1 == op2
+        self.assertEqual(op1, op2)
 
     def test_jordan_wigner_one_body(self):
         # Make sure it agrees with jordan_wigner(FermionTerm).
