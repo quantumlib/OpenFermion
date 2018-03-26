@@ -21,13 +21,12 @@ from scipy.sparse import csc_matrix
 from scipy.special import comb
 
 from openfermion.hamiltonians import (fermi_hubbard, jellium_model,
-                                      number_operator,
-                                      wigner_seitz_length_scale,
-                                      up_index, down_index)
+                                      wigner_seitz_length_scale)
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
                                     jordan_wigner)
-from openfermion.utils import fourier_transform, Grid
+from openfermion.utils import (Grid, fourier_transform, number_operator,
+                               up_index, down_index) 
 from openfermion.utils._jellium_hf_state import (
     lowest_single_particle_energy_states)
 from openfermion.utils._slater_determinants_test import (
@@ -158,24 +157,23 @@ class JWSzIndicesTest(unittest.TestCase):
     def test_jw_sz_indices(self):
         """Test the indexing scheme for selecting specific sz value"""
 
-        def sz_integer(bitstring, up_map=up_index, down_map=down_index):
+        def sz_integer(bitstring):
             """Computes the total number of occupied up sites
             minus the total number of occupied down sites."""
             n_sites = len(bitstring) // 2
 
             n_up = len([site for site in range(n_sites)
-                        if bitstring[up_map(site)] == '1'])
+                        if bitstring[up_index(site)] == '1'])
             n_down = len([site for site in range(n_sites)
-                          if bitstring[down_map(site)] == '1'])
+                          if bitstring[down_index(site)] == '1'])
 
             return n_up - n_down
 
-        def jw_sz_indices_brute_force(sz_value, n_qubits,
-                                      up_map=up_index, down_map=down_index):
+        def jw_sz_indices_brute_force(sz_value, n_qubits):
             """Computes the correct indices by brute force."""
             indices = []
             for bitstring in itertools.product(['0', '1'], repeat=n_qubits):
-                if (sz_integer(bitstring, up_map, down_map) ==
+                if (sz_integer(bitstring) ==
                         int(2 * sz_value)):
                     indices.append(int(''.join(bitstring), 2))
 
@@ -640,7 +638,7 @@ class GroundStateTest(unittest.TestCase):
         self.assertAlmostEqual(ground[0], -2)
         self.assertAlmostEqual(
             numpy.absolute(
-                expected_state.T.conj().dot(ground[1].A))[0, 0], 1.0)
+                expected_state.T.conj().dot(ground[1]))[0], 1.)
 
     def test_get_ground_state_nonhermitian(self):
         with self.assertRaises(ValueError):

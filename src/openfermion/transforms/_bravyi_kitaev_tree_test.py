@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests for _bravyi_kitaev.py."""
+"""Tests for _bravyi_kitaev_tree.py."""
 from __future__ import absolute_import
 
 import numpy
@@ -18,7 +18,7 @@ import unittest
 
 from openfermion.ops import (FermionOperator,
                              QubitOperator)
-from openfermion.transforms import (bravyi_kitaev,
+from openfermion.transforms import (bravyi_kitaev_tree,
                                     get_sparse_operator,
                                     jordan_wigner)
 from openfermion.utils import eigenspectrum, number_operator
@@ -26,10 +26,10 @@ from openfermion.utils import eigenspectrum, number_operator
 
 class BravyiKitaevTransformTest(unittest.TestCase):
 
-    def test_bravyi_kitaev_transform(self):
+    def test_bravyi_kitaev_tree_transform(self):
         # Check that the QubitOperators are two-term.
-        lowering = bravyi_kitaev(FermionOperator(((3, 0),)))
-        raising = bravyi_kitaev(FermionOperator(((3, 1),)))
+        lowering = bravyi_kitaev_tree(FermionOperator(((3, 0),)))
+        raising = bravyi_kitaev_tree(FermionOperator(((3, 1),)))
         self.assertEqual(len(raising.terms), 2)
         self.assertEqual(len(lowering.terms), 2)
 
@@ -38,7 +38,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         n_qubits = 16
         invariant = numpy.log2(n_qubits) + 1
         for index in range(n_qubits):
-            operator = bravyi_kitaev(FermionOperator(((index, 0),)), n_qubits)
+            operator = bravyi_kitaev_tree(FermionOperator(((index, 0),)), n_qubits)
             qubit_terms = operator.terms.items()  # Get the majorana terms.
 
             for item in qubit_terms:
@@ -50,8 +50,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
                     self.assertEqual(len(item[0]), invariant)
 
         #  Hardcoded coefficient test on 16 qubits
-        lowering = bravyi_kitaev(FermionOperator(((9, 0),)), n_qubits)
-        raising = bravyi_kitaev(FermionOperator(((9, 1),)), n_qubits)
+        lowering = bravyi_kitaev_tree(FermionOperator(((9, 0),)), n_qubits)
+        raising = bravyi_kitaev_tree(FermionOperator(((9, 1),)), n_qubits)
 
         correct_operators_c = ((7, 'Z'), (8, 'Z'), (9, 'X'),
                                (11, 'X'), (15, 'X'))
@@ -63,19 +63,19 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         self.assertEqual(raising.terms[correct_operators_c], 0.5)
 
     def test_bk_identity(self):
-        self.assertTrue(bravyi_kitaev(FermionOperator(())) ==
+        self.assertTrue(bravyi_kitaev_tree(FermionOperator(())) ==
                         QubitOperator(()))
 
     def test_bk_n_qubits_too_small(self):
         with self.assertRaises(ValueError):
-            bravyi_kitaev(FermionOperator('2^ 3^ 5 0'), n_qubits=4)
+            bravyi_kitaev_tree(FermionOperator('2^ 3^ 5 0'), n_qubits=4)
 
     def test_bk_jw_number_operator(self):
         # Check if number operator has the same spectrum in both
         # BK and JW representations
         n = number_operator(1, 0)
         jw_n = jordan_wigner(n)
-        bk_n = bravyi_kitaev(n)
+        bk_n = bravyi_kitaev_tree(n)
 
         # Diagonalize and make sure the spectra are the same.
         jw_spectrum = eigenspectrum(jw_n)
@@ -93,7 +93,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         n = n1 + n2
 
         jw_n = jordan_wigner(n)
-        bk_n = bravyi_kitaev(n)
+        bk_n = bravyi_kitaev_tree(n)
 
         # Diagonalize and make sure the spectra are the same.
         jw_spectrum = eigenspectrum(jw_n)
@@ -108,7 +108,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         n_qubits = 1
         n = number_operator(n_qubits, 0, coefficient=2)  # eigenspectrum (0,2)
         jw_n = jordan_wigner(n)
-        bk_n = bravyi_kitaev(n)
+        bk_n = bravyi_kitaev_tree(n)
 
         # Diagonalize and make sure the spectra are the same.
         jw_spectrum = eigenspectrum(jw_n)
@@ -123,7 +123,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         ho = FermionOperator(((1, 1), (4, 0))) + FermionOperator(
             ((4, 1), (1, 0)))
         jw_ho = jordan_wigner(ho)
-        bk_ho = bravyi_kitaev(ho)
+        bk_ho = bravyi_kitaev_tree(ho)
 
         # Diagonalize and make sure the spectra are the same.
         jw_spectrum = eigenspectrum(jw_ho)
@@ -143,8 +143,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         c = a + a_dag
         d = 1j * (a_dag - a)
 
-        c_spins = [jordan_wigner(c), bravyi_kitaev(c)]
-        d_spins = [jordan_wigner(d), bravyi_kitaev(d)]
+        c_spins = [jordan_wigner(c), bravyi_kitaev_tree(c)]
+        d_spins = [jordan_wigner(d), bravyi_kitaev_tree(d)]
 
         c_sparse = [get_sparse_operator(c_spins[0]),
                     get_sparse_operator(c_spins[1])]
@@ -168,7 +168,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         fo = FermionOperator(((3, 1),))
 
         jw = jordan_wigner(fo)
-        bk = bravyi_kitaev(fo)
+        bk = bravyi_kitaev_tree(fo)
 
         jw_spectrum = eigenspectrum(jw)
         bk_spectrum = eigenspectrum(bk)
@@ -187,7 +187,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
 
         # Map to qubits and compare matrix versions.
         jw_qubit_operator = jordan_wigner(fermion_operator)
-        bk_qubit_operator = bravyi_kitaev(fermion_operator)
+        bk_qubit_operator = bravyi_kitaev_tree(fermion_operator)
 
         # Diagonalize and make sure the spectra are the same.
         jw_spectrum = eigenspectrum(jw_qubit_operator)

@@ -17,7 +17,6 @@ import copy
 import numpy
 import unittest
 
-from openfermion.hamiltonians import number_operator
 from openfermion.ops import (FermionOperator, InteractionOperator,
                              normal_ordered, QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
@@ -36,7 +35,7 @@ class GetInteractionOperatorTest(unittest.TestCase):
         molecular_operator = get_interaction_operator(op)
         fermion_operator = get_fermion_operator(molecular_operator)
         fermion_operator = normal_ordered(fermion_operator)
-        self.assertTrue(normal_ordered(op).isclose(fermion_operator))
+        self.assertTrue(normal_ordered(op) == fermion_operator)
 
     def test_get_interaction_operator_bad_input(self):
         with self.assertRaises(TypeError):
@@ -97,7 +96,7 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         fermion_operator = get_fermion_operator(quadratic_op)
         fermion_operator = normal_ordered(fermion_operator)
         self.assertTrue(
-            normal_ordered(self.hermitian_op).isclose(fermion_operator))
+            normal_ordered(self.hermitian_op) == fermion_operator)
 
         # Non-particle-number-conserving chemical potential
         quadratic_op = get_quadratic_hamiltonian(self.hermitian_op,
@@ -105,14 +104,14 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         fermion_operator = get_fermion_operator(quadratic_op)
         fermion_operator = normal_ordered(fermion_operator)
         self.assertTrue(
-            normal_ordered(self.hermitian_op).isclose(fermion_operator))
+            normal_ordered(self.hermitian_op) == fermion_operator)
 
         # Particle-number-conserving
         quadratic_op = get_quadratic_hamiltonian(self.hermitian_op_pc)
         fermion_operator = get_fermion_operator(quadratic_op)
         fermion_operator = normal_ordered(fermion_operator)
         self.assertTrue(
-            normal_ordered(self.hermitian_op_pc).isclose(fermion_operator))
+            normal_ordered(self.hermitian_op_pc) == fermion_operator)
 
     def test_get_quadratic_hamiltonian_hermitian_bad_term(self):
         """Test an operator with non-quadratic terms."""

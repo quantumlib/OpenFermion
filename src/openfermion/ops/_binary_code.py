@@ -18,17 +18,17 @@ import numpy
 import scipy
 import scipy.sparse
 
-from openfermion.ops import SymbolicBinary
+from openfermion.ops import BinaryPolynomial
 
 
 def shift_decoder(decoder, shift_constant):
     """ Shifts the indices of a decoder by a constant.
 
     Args:
-        decoder (iterable): list of SymbolicBinary; the decoder
+        decoder (iterable): list of BinaryPolynomial; the decoder
         shift_constant (int): the qubit index that corresponds to the offset.
 
-    Returns (list): list of SymbolicBinary shifted decoder
+    Returns (list): list of BinaryPolynomial shifted decoder
     """
     decode_shifted = []
     if not isinstance(shift_constant, (numpy.int64, numpy.int32, int)):
@@ -46,19 +46,19 @@ def double_decoding(decoder_1, decoder_2):
     """ Concatenates two decodings
 
     Args:
-        decoder_1 (iterable): list of SymbolicBinary
+        decoder_1 (iterable): list of BinaryPolynomial
             decoding of the outer code layer
-        decoder_2 (iterable): list of SymbolicBinary
+        decoder_2 (iterable): list of BinaryPolynomial
             decoding of the inner code layer
 
-    Returns (list): list of SymbolicBinary the decoding defined by
+    Returns (list): list of BinaryPolynomial the decoding defined by
         w -> decoder_1( decoder_2(w) )
     """
     doubled_decoder = []
     for entry in decoder_1:
         tmp_sum = 0
         for summand in entry.terms:
-            tmp_term = SymbolicBinary('1')
+            tmp_term = BinaryPolynomial('1')
             for factor in summand:
                 if isinstance(factor, (numpy.int32, numpy.int64, int)):
                     tmp_term *= decoder_2[factor]
@@ -74,7 +74,7 @@ def linearize_decoder(matrix):
         matrix (np.ndarray or list): list of lists or 2D numpy array
             to derive the decoding function from
 
-    Returns (list): list of SymbolicBinary
+    Returns (list): list of BinaryPolynomial
     """
     matrix = numpy.array(list(map(numpy.array, matrix)))
     system_dim, code_dim = numpy.shape(matrix)
@@ -85,7 +85,7 @@ def linearize_decoder(matrix):
             if matrix[row_idx, col_idx] == 1:
                 dec_str += 'W' + str(col_idx) + ' + '
         dec_str = dec_str.rstrip(' + ')
-        decoder.append(SymbolicBinary(dec_str))
+        decoder.append(BinaryPolynomial(dec_str))
     return decoder
 
 
@@ -101,7 +101,7 @@ class BinaryCode(object):
     As the occupation number of fermionic mode is effectively binary,
     a length-N vector (v) of binary number can be utilized to describe
     a configuration of a many-body fermionic state on N modes.
-    An n-qubit product state configuration |w0> |w1> |w2> ... |wn-1>,
+    An n-qubit product state configuration \|w0> \|w1> \|w2> ... \|wn-1>,
     on the other hand is described by a length-n binary vector
     w=(w0, w1, ..., wn-1). To map a subset of N-Orbital Fermion states
     to n-qubit states we define a binary code, which consists of a
@@ -129,10 +129,10 @@ class BinaryCode(object):
     A BinaryCode-instance is initialized by BinaryCode(A,d),
     given the encoding (e) as n x N array or matrix-like nested lists A,
     such that e(v) = (A v) mod 2. The decoding d is an array or a list
-    input of length N, which has entries either of type SymbolicBinary, or of
-    valid type for an input of the SymbolicBinary-constructor.
+    input of length N, which has entries either of type BinaryPolynomial, or of
+    valid type for an input of the BinaryPolynomial-constructor.
 
-    The signs + and *, += and *= are overloaded to implement concatenation
+    The signs + and \*, += and \*= are overloaded to implement concatenation
     and appendage on BinaryCode-objects.
 
     NOTE: multiplication of a BinaryCode with an integer yields a
@@ -140,7 +140,7 @@ class BinaryCode(object):
         BinaryCode their concatenation.
 
     Attributes:
-        decoder (list):  list of SymbolicBinary: Outputs the decoding functions
+        decoder (list):  list of BinaryPolynomial: Outputs the decoding functions
             as components.
         encoder (scipy.sparse.csc_matrix): Outputs A, the linear matrix that
             implements the encoding function.
@@ -153,11 +153,11 @@ class BinaryCode(object):
 
         Args:
             encoding (np.ndarray or list): nested lists or binary 2D-array
-            decoding (array or list): list of SymbolicBinary(list-like or str)
+            decoding (array or list): list of BinaryPolynomial(list-like or str)
 
         Raises:
             TypeError: non-list, array like encoding or decoding, unsuitable
-                SymbolicBinary generators,
+                BinaryPolynomial generators,
             BinaryCodeError: in case of decoder/encoder size mismatch or
                 decoder size, qubits indexed mismatch
         """
@@ -181,15 +181,15 @@ class BinaryCode(object):
         for symbolic_binary in decoding:
             if isinstance(symbolic_binary, (tuple, list, str, int,
                                             numpy.int32, numpy.int64)):
-                symbolic_binary = SymbolicBinary(symbolic_binary)
-            if isinstance(symbolic_binary, SymbolicBinary):
+                symbolic_binary = BinaryPolynomial(symbolic_binary)
+            if isinstance(symbolic_binary, BinaryPolynomial):
                 self.decoder.append(symbolic_binary)
                 decoder_qubits = decoder_qubits | set(
                     symbolic_binary.enumerate_qubits())
             else:
                 raise TypeError(
                     'decoder component provided '
-                    'is not a suitable for SymbolicBinary',
+                    'is not a suitable for BinaryPolynomial',
                     symbolic_binary)
 
         if len(decoder_qubits) != self.n_qubits:

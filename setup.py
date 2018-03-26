@@ -9,6 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from builtins import open
 
 import os
 
@@ -19,7 +20,7 @@ from setuptools import setup, find_packages
 exec(open('src/openfermion/_version.py').read())
 
 # Readme file as long_description:
-long_description = open('README.rst').read()
+long_description = open('README.rst', encoding='utf-8').read()
 
 # Read in requirements.txt
 requirements = open('requirements.txt').readlines()

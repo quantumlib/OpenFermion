@@ -13,39 +13,39 @@
 
 import unittest
 
-from openfermion.ops import SymbolicBinary
-from openfermion.ops._code_operator import (BinaryCode,
-                                            BinaryCodeError,
-                                            linearize_decoder,
-                                            shift_decoder)
+from openfermion.ops import BinaryPolynomial
+from openfermion.ops._binary_code import (BinaryCode,
+                                          BinaryCodeError,
+                                          linearize_decoder,
+                                          shift_decoder)
 
 
 class CodeOperatorTest(unittest.TestCase):
     def test_init_errors(self):
         with self.assertRaises(TypeError):
             BinaryCode(1,
-                       [SymbolicBinary(' w1 + w0 '), SymbolicBinary('w0 + 1')])
+                       [BinaryPolynomial(' w1 + w0 '), BinaryPolynomial('w0 + 1')])
         with self.assertRaises(TypeError):
             BinaryCode([[0, 1], [1, 0]], '1+w1')
         with self.assertRaises(BinaryCodeError):
-            BinaryCode([[0, 1], [1, 0]], [SymbolicBinary(' w1 + w0 ')])
+            BinaryCode([[0, 1], [1, 0]], [BinaryPolynomial(' w1 + w0 ')])
         with self.assertRaises(TypeError):
             BinaryCode([[0, 1, 1], [1, 0, 0]], ['1 + w1',
-                                                SymbolicBinary('1 + w0'),
+                                                BinaryPolynomial('1 + w0'),
                                                 2.0])
         with self.assertRaises(BinaryCodeError):
-            BinaryCode([[0, 1], [1, 0]], [SymbolicBinary(' w0 '),
-                                          SymbolicBinary('w0 + 1')])
+            BinaryCode([[0, 1], [1, 0]], [BinaryPolynomial(' w0 '),
+                                          BinaryPolynomial('w0 + 1')])
         with self.assertRaises(BinaryCodeError):
-            BinaryCode([[0, 1], [1, 0]], [SymbolicBinary(' w5 '),
-                                          SymbolicBinary('w0 + 1')])
+            BinaryCode([[0, 1], [1, 0]], [BinaryPolynomial(' w5 '),
+                                          BinaryPolynomial('w0 + 1')])
 
     def test_addition(self):
         a = BinaryCode([[0, 1, 0], [1, 0, 1]],
-                       [SymbolicBinary(' w1 + w0 '), SymbolicBinary('w0 + 1'),
-                        SymbolicBinary('w1')])
+                       [BinaryPolynomial(' w1 + w0 '), BinaryPolynomial('w0 + 1'),
+                        BinaryPolynomial('w1')])
         d = BinaryCode([[0, 1], [1, 0]],
-                       [SymbolicBinary(' w0 '), SymbolicBinary('w0 w1')])
+                       [BinaryPolynomial(' w0 '), BinaryPolynomial('w0 w1')])
         summation = a + d
         self.assertEqual(str(summation), "[[[0, 1, 0, 0, 0],"
                                          " [1, 0, 1, 0, 0],"
@@ -58,10 +58,10 @@ class CodeOperatorTest(unittest.TestCase):
 
     def test_multiplication(self):
         a = BinaryCode([[0, 1, 0], [1, 0, 1]],
-                       [SymbolicBinary(' w1 + w0 '), SymbolicBinary('w0 + 1'),
-                        SymbolicBinary('w1')])
+                       [BinaryPolynomial(' w1 + w0 '), BinaryPolynomial('w0 + 1'),
+                        BinaryPolynomial('w1')])
         d = BinaryCode([[0, 1], [1, 0]],
-                       [SymbolicBinary(' w0 '), SymbolicBinary('w0 w1')])
+                       [BinaryPolynomial(' w0 '), BinaryPolynomial('w0 w1')])
 
         b = a * d
         self.assertEqual(b.__repr__(), "[[[1, 0, 1], [0, 1, 0]],"
@@ -85,6 +85,6 @@ class CodeOperatorTest(unittest.TestCase):
         self.assertListEqual([str(a[0]), str(a[1])], ['[W1] + [W2]', '[W0]'])
 
     def test_shift(self):
-        decoder = [SymbolicBinary('1'), SymbolicBinary('1 + w1 w0')]
+        decoder = [BinaryPolynomial('1'), BinaryPolynomial('1 + w1 w0')]
         with self.assertRaises(TypeError):
             shift_decoder(decoder, 2.5)

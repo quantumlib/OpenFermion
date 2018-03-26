@@ -18,7 +18,7 @@ import numpy
 from openfermion.ops import (BinaryCode,
                              FermionOperator,
                              QubitOperator,
-                             SymbolicBinary)
+                             BinaryPolynomial)
 
 
 def extractor(binary_op):
@@ -26,7 +26,7 @@ def extractor(binary_op):
      to obtain the corresponding qubit operators.
 
     Args:
-        binary_op (SymbolicBinary): the binary term
+        binary_op (BinaryPolynomial): the binary term
 
     Returns (QubitOperator): the qubit operator corresponding to the
         binary terms
@@ -76,14 +76,14 @@ def make_parity_list(code):
     Args:
         code (BinaryCode): the code to extract the parity list from.
 
-    Returns (list): list of SymbolicBinary, the parity list
+    Returns (list): list of BinaryPolynomial, the parity list
 
     Raises:
         TypeError: argument is not BinaryCode
     """
     if not isinstance(code, BinaryCode):
         raise TypeError('argument is not BinaryCode')
-    parity_binaries = [SymbolicBinary()]
+    parity_binaries = [BinaryPolynomial()]
     for index in numpy.arange(code.n_modes - 1):
         parity_binaries += [parity_binaries[-1] + code.decoder[index]]
     return parity_binaries
@@ -135,7 +135,7 @@ def binary_code_transform(hamiltonian, code):
         """ the updated parity and occupation account for sign changes due
         changed occupations mid-way in the term """
         updated_parity = 0  # parity sign exponent
-        parity_term = SymbolicBinary()
+        parity_term = BinaryPolynomial()
         changed_occupation_vector = [0] * code.n_modes
         transformed_term = QubitOperator(())
 
@@ -167,12 +167,15 @@ def binary_code_transform(hamiltonian, code):
         # the update operator
         changed_qubit_vector = numpy.mod(code.encoder.dot(
             changed_occupation_vector), 2)
+
+        update_operator = QubitOperator(())
         for index, q_vec in enumerate(changed_qubit_vector):
             if q_vec:
-                transformed_term *= QubitOperator('X' + str(index))
+                update_operator *= QubitOperator('X' + str(index))
 
         # append new term to new hamiltonian
-        new_hamiltonian += term_coefficient * transformed_term
+        new_hamiltonian += term_coefficient * update_operator * \
+                           transformed_term
 
     new_hamiltonian.compress()
     return new_hamiltonian

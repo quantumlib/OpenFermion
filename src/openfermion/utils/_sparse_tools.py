@@ -25,13 +25,15 @@ import scipy.sparse.linalg
 import warnings
 
 from openfermion.config import *
-from openfermion.hamiltonians import number_operator, up_index, down_index
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
-                             QubitOperator, hermitian_conjugated,
-                             normal_ordered)
-from openfermion.utils import (Grid, commutator, fourier_transform,
+                             QubitOperator, normal_ordered)
+from openfermion.utils import (Grid, commutator, count_qubits,
+                               fourier_transform,
                                gaussian_state_preparation_circuit,
-                               slater_determinant_preparation_circuit)
+                               hermitian_conjugated, is_hermitian,
+                               number_operator,
+                               slater_determinant_preparation_circuit,
+                               up_index, down_index)
 from openfermion.hamiltonians._jellium import (grid_indices,
                                                momentum_vector,
                                                position_vector)
@@ -99,7 +101,6 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
         The corresponding Scipy sparse matrix.
     """
     if n_qubits is None:
-        from openfermion.utils import count_qubits
         n_qubits = count_qubits(fermion_operator)
 
     # Create a list of raising and lowering operators for each orbital.
@@ -153,7 +154,6 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     Returns:
         The corresponding Scipy sparse matrix.
     """
-    from openfermion.utils import count_qubits
     if n_qubits is None:
         n_qubits = count_qubits(qubit_operator)
     if n_qubits < count_qubits(qubit_operator):
@@ -256,8 +256,7 @@ def jw_number_indices(n_electrons, n_qubits):
     return indices
 
 
-def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
-                  up_map=up_index, down_map=down_index):
+def jw_sz_indices(sz_value, n_qubits, n_electrons=None):
     """Return the indices of basis vectors with fixed Sz under JW encoding.
 
     The returned indices label computational basis vectors which lie within
@@ -274,14 +273,6 @@ def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
         n_qubits(int): Number of qubits defining the total state
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired
-        up_map(function, optional): function mapping a spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals
-        down_map(function, optional): function mapping spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals.
 
     Returns:
         indices(list): The list of indices
@@ -311,9 +302,9 @@ def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
         # Each arrangement of up spins can be paired with an arrangement
         # of down spins
         for up_occupation in up_occupations:
-            up_occupation = [up_map(index) for index in up_occupation]
+            up_occupation = [up_index(index) for index in up_occupation]
             for down_occupation in down_occupations:
-                down_occupation = [down_map(index)
+                down_occupation = [down_index(index)
                                    for index in down_occupation]
                 occupation = up_occupation + down_occupation
                 indices.append(sum(2 ** (n_qubits - 1 - k)
@@ -322,12 +313,12 @@ def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
         # Particle number is not fixed
         if sz_integer < 0:
             # There are more down spins than up spins
-            more_map = down_map
-            less_map = up_map
+            more_map = down_index
+            less_map = up_index
         else:
             # There are at least as many up spins as down spins
-            more_map = up_map
-            less_map = down_map
+            more_map = up_index
+            less_map = down_index
         for n in range(abs(sz_integer), n_sites + 1):
             # Choose n of the 'more' spin and n - abs(sz_integer) of the
             # 'less' spin
@@ -370,8 +361,7 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
 
 
 def jw_sz_restrict_operator(operator, sz_value,
-                            n_electrons=None, n_qubits=None,
-                            up_map=up_index, down_map=down_index):
+                            n_electrons=None, n_qubits=None):
     """Restrict a Jordan-Wigner encoded operator to a given Sz value
 
     Args:
@@ -382,14 +372,6 @@ def jw_sz_restrict_operator(operator, sz_value,
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired.
         n_qubits(int, optional): Number of qubits defining the total state
-        up_map(function, optional): function mapping a spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals
-        down_map(function, optional): function mapping spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals.
 
     Returns:
         new_operator(ndarray or sparse): Numpy operator restricted to
@@ -398,8 +380,7 @@ def jw_sz_restrict_operator(operator, sz_value,
     if n_qubits is None:
         n_qubits = int(numpy.log2(operator.shape[0]))
 
-    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons,
-                                   up_map=up_map, down_map=down_map)
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
     return operator[numpy.ix_(select_indices, select_indices)]
 
 
@@ -423,8 +404,7 @@ def jw_number_restrict_state(state, n_electrons, n_qubits=None):
     return state[select_indices]
 
 
-def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None,
-                         up_map=up_index, down_map=down_index):
+def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None):
     """Restrict a Jordan-Wigner encoded state to a given Sz value
 
     Args:
@@ -435,14 +415,6 @@ def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None,
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired.
         n_qubits(int, optional): Number of qubits defining the total state
-        up_map(function, optional): function mapping a spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals
-        down_map(function, optional): function mapping spatial index to a
-            spin-orbital index. Default is the canonical spin-up
-            corresponds to even spin-orbitals and spin-down corresponds
-            to odd spin-orbitals.
 
     Returns:
         new_operator(ndarray or sparse): Numpy vector restricted to
@@ -451,8 +423,7 @@ def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None,
     if n_qubits is None:
         n_qubits = int(numpy.log2(state.shape[0]))
 
-    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons,
-                                   up_map=up_map, down_map=down_map)
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
     return state[select_indices]
 
 
@@ -697,18 +668,13 @@ def get_density_matrix(states, probabilities):
     return density_matrix
 
 
-def is_hermitian(sparse_operator):
-    """Test if matrix is Hermitian."""
-    difference = sparse_operator - sparse_operator.getH()
-    if difference.nnz:
-        discrepancy = max(map(abs, difference.data))
-        if discrepancy > EQ_TOLERANCE:
-            return False
-    return True
-
-
-def get_ground_state(sparse_operator):
+def get_ground_state(sparse_operator, initial_guess=None):
     """Compute lowest eigenvalue and eigenstate.
+
+    Args:
+        sparse_operator (LinearOperator): Operator to find the ground state of.
+        initial_guess (ndarray): Initial guess for ground state.  A good
+            guess dramatically reduces the cost required to converge.
 
     Returns
     -------
@@ -721,13 +687,13 @@ def get_ground_state(sparse_operator):
         raise ValueError('sparse_operator must be Hermitian.')
 
     values, vectors = scipy.sparse.linalg.eigsh(
-        sparse_operator, 2, which='SA', maxiter=1e7)
+        sparse_operator, k=1, v0=initial_guess, which='SA', maxiter=1e7)
 
     order = numpy.argsort(values)
     values = values[order]
     vectors = vectors[:, order]
     eigenvalue = values[0]
-    eigenstate = scipy.sparse.csc_matrix(vectors[:, 0])
+    eigenstate = vectors[:, 0]
     return eigenvalue, eigenstate.T
 
 
@@ -750,6 +716,7 @@ def expectation(sparse_operator, state):
 
     Args:
         state: scipy.sparse.csc vector representing a pure state,
+            ndarray vector representing a pure state,
             or, a scipy.sparse.csc matrix representing a density matrix.
 
     Returns:
@@ -763,11 +730,16 @@ def expectation(sparse_operator, state):
         product = state * sparse_operator
         expectation = numpy.sum(product.diagonal())
 
-    elif state.shape == (sparse_operator.shape[0], 1):
+    elif (state.shape == (sparse_operator.shape[0], 1) or
+          state.shape == (sparse_operator.shape[0], )):
         # Handle state vector.
-        expectation = state.getH() * sparse_operator * state
-        expectation = expectation[0, 0]
-
+        if scipy.sparse.issparse(state):
+            expectation = (state.getH() * sparse_operator * state)
+        else:
+            expectation = numpy.dot(numpy.conj(state.T),
+                                    sparse_operator.dot(state))
+        if expectation.shape != ():
+            expectation = expectation[0, 0]
     else:
         # Handle exception.
         raise ValueError('Input state has invalid format.')
@@ -1139,16 +1111,20 @@ def expectation_three_body_db_operator_computational_basis_state(
     return expectation_value
 
 
-def get_gap(sparse_operator):
+def get_gap(sparse_operator, initial_guess=None):
     """Compute gap between lowest eigenvalue and first excited state.
 
+    Args:
+        sparse_operator (LinearOperator): Operator to find the ground state of.
+        initial_guess (ndarray): Initial guess for eigenspace.  A good
+            guess dramatically reduces the cost required to converge.
     Returns: A real float giving eigenvalue gap.
     """
     if not is_hermitian(sparse_operator):
         raise ValueError('sparse_operator must be Hermitian.')
 
     values, _ = scipy.sparse.linalg.eigsh(
-        sparse_operator, 2, which='SA', maxiter=1e7)
+        sparse_operator, k=2, v0=initial_guess, which='SA', maxiter=1e7)
 
     gap = abs(values[1] - values[0])
     return gap
