@@ -16,7 +16,7 @@ Transforms
 * Reverse Jordan-Wigner transform: method for mapping QubitOperators to FermionOperators.
 
 * Bravyi-Kitaev transform: method for mapping FermionOperators to QubitOperators with
-  logarithmic many-body order. Implementation from arXiv:1208.5986.
+  logarithmic many-body order. Implementation from arXiv:1701.07072.
 
 * Bravyi-Kitaev Superfast transform: method for mapping FermionOperators to QubitOperators
   with constant many-body order. Number of qubits required scales as number of terms.
@@ -24,7 +24,7 @@ Transforms
 
 * Verstraete-Cirac transform: maps a FermionOperator on a d-dimensional lattice to a
   QubitOperator on a d-dimensional lattice with twice as many degrees of freedom.
-  Implementation from arXiv:cond-mat/050835.
+  Implementation from arXiv:cond-mat/0508353.
 
 * Fermion transforms from binary codes: generalized machinery for implementing an
   arbitrary (possibly non-linear) fermion transform (and decoding). Can be used to reduce
@@ -69,35 +69,45 @@ Hamiltonians
   for single atom calculations. Function chooses the correct spin assignment automatically.
   Can generate for first half of periodic table with any basis set.
 
-* Special fermion operators: helper functions generate Sz, S+, S-, S^2, majorana and number operators.
-
 
 Core Data Structures
 --------------------
 
-* SymbolicOperator:
+* SymbolicOperator: A weighted sum of terms, each of which is a product of factors specifying
+  an index (a non-negative integer) and an action on that index.
+  Parent class of FermionOperator and QubitOperator.
 
-* FermionOperator:
+* FermionOperator: A sum of products of fermionic ladder operators.
 
-* QubitOperator:
+* QubitOperator: A sum of products of Pauli operators.
 
 * MolecularData:
 
-* PolynomialTensor:
+* PolynomialTensor: Efficient tensor representation of an operator that corresponds
+  with a multilinear polynomial in the fermionic ladder operators.
+  Parent class of InteractionOperator, InteractionRDM, and QuadraticHamiltonian.
+
+* InteractionOperator:
+
+* InteractionRDM:
+
+* QuadraticHamiltonian: A Hamiltonian that is quadratic in the fermionic ladder operators.
 
 * CodeOperator:
 
 * BinaryOperator:
 
-* QuadraticHamiltonian:
-
-* InteractionRDM:
-
 
 Utilities
 ---------
 
-* Lots of stuff:
+* Special fermion operators: helper functions generate Sz, S+, S-, S^2, majorana and number operators.
+
+* Slater determinants: compile quantum circuits for preparing Slater determinants and
+  fermionic Gaussian states using Givens rotations
+
+* BCH expansion: compute the logarithm of a product of exponentials of operators
+  up to a specified order using the Baker-Campbell-Hausdorff formula
 
 
 Measurements
