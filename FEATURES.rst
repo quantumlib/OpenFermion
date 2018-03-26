@@ -16,7 +16,10 @@ Transforms
 * Reverse Jordan-Wigner transform: method for mapping QubitOperators to FermionOperators.
 
 * Bravyi-Kitaev transform: method for mapping FermionOperators to QubitOperators with
-  logarithmic many-body order. Implementation from arXiv:1701.07072.
+  logarithmic many-body order. Implementation from arXiv:1208.5986.
+
+* Bravyi-Kitaev Fenwick tree transform: method for mapping FermionOperators to QubitOperators with
+  logarithmic many-body order basedon Fenwick Trees. Implementation from arXiv:1701.07072.
 
 * Bravyi-Kitaev Superfast transform: method for mapping FermionOperators to QubitOperators
   with constant many-body order. Number of qubits required scales as number of terms.
@@ -30,6 +33,9 @@ Transforms
   arbitrary (possibly non-linear) fermion transform (and decoding). Can be used to reduce
   qubit requirements by exploiting symmetries in FermionOperator.
   Implementation from arXiv:1712.07067.
+
+* Routines for converting between InteractionOperator, QuadraticHamiltonian,
+  FermionOperator, QubitOperator as well sparse matrix representations.
 
 
 Hamiltonians
@@ -81,15 +87,15 @@ Core Data Structures
 
 * QubitOperator: A sum of products of Pauli operators.
 
-* MolecularData:
+* MolecularData: Structure for storing electronic structure calculations on molecules.
 
 * PolynomialTensor: Efficient tensor representation of an operator that corresponds
   with a multilinear polynomial in the fermionic ladder operators.
   Parent class of InteractionOperator, InteractionRDM, and QuadraticHamiltonian.
 
-* InteractionOperator:
+* InteractionOperator: A numerically performant class for storing 2-body operators.
 
-* InteractionRDM:
+* InteractionRDM: A numerically performant class for storying 2-body RDMs
 
 * QuadraticHamiltonian: A Hamiltonian that is quadratic in the fermionic ladder operators.
 
