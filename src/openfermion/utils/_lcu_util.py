@@ -145,7 +145,7 @@ def preprocess_lcu_coefficients_for_reversible_sampling(
 
     Treats the coefficients of unitaries in the linear combination of
     unitaries decomposition of the Hamiltonian as probabilities in order to
-    decompose them into a list of alternate and keep numbers allowing for
+    decompose them into a list of alternate and keep numerators allowing for
     an efficient preparation method of a state where the computational basis
     state :math: `|k>` has an amplitude proportional to the coefficient.
 
@@ -153,7 +153,7 @@ def preprocess_lcu_coefficients_for_reversible_sampling(
     sample each index k with a probability within epsilon of
     lcu_coefficients[k] / sum(lcu_coefficients) and also,
     1. Uniformly sample an index i from [0, len(lcu_coefficients) - 1].
-    2. With probability keep_numbers[i] / by keep_denom, return i.
+    2. With probability keep_numers[i] / by keep_denom, return i.
     3. Otherwise return alternates[i].
 
     Args:
@@ -167,7 +167,7 @@ def preprocess_lcu_coefficients_for_reversible_sampling(
             indices that may be switched to after generating a uniform index.
             The int at offset k is the alternate to use when the initial index
             is k.
-        keep_numbers (list[int]): A python list of ints indicating the
+        keep_numers (list[int]): A python list of ints indicating the
             numerators of the probability that the alternative index should be
             used instead of the initial index.
         keep_denom (int): A python int indicating the denominator to divide the
@@ -175,6 +175,6 @@ def preprocess_lcu_coefficients_for_reversible_sampling(
     """
     numers, denom = _discretize_probability_distribution(
         lcu_coefficients, epsilon)
-    alternates, keep_numbers = _preprocess_for_efficient_roulette_selection(
+    alternates, keep_numers = _preprocess_for_efficient_roulette_selection(
         numers)
-    return alternates, keep_numbers, denom
+    return alternates, keep_numers, denom
