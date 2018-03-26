@@ -171,7 +171,7 @@ def preprocess_lcu_coefficients_for_reversible_sampling(
             numerators of the probability that the alternative index should be
             used instead of the initial index.
         keep_denom (int): A python int indicating the denominator to divide the
-            items in keep_numbers by in order to get a probability.
+            items in keep_numers by in order to get a probability.
     """
     numers, denom = _discretize_probability_distribution(
         lcu_coefficients, epsilon)
