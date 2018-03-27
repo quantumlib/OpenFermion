@@ -118,6 +118,29 @@ class OperatorUtilsTest(unittest.TestCase):
         self.assertEqual(up_then_down(3, 8), 5)
 
 
+class FreezeOrbitalsTest(unittest.TestCase):
+
+    def test_freeze_orbitals_nonvanishing(self):
+        op = FermionOperator(((1, 1), (1, 0), (0, 1), (2, 0)))
+        op_frozen = freeze_orbitals(op,[1])
+        expected = FermionOperator(((0, 1), (1, 0)), -1)
+        self.assertTrue(op_frozen == expected)
+
+    def test_freeze_orbitals_vanishing(self):
+        op = FermionOperator(((1, 1), (2, 0)))
+        op_frozen = freeze_orbitals(op, [], [2])
+        self.assertEquals(len(op_frozen.terms), 0)
+
+
+class PruneUnusedIndicesTest(unittest.TestCase):
+
+    def test_prune(self):
+        op = FermionOperator(((1, 1), (8, 1), (3, 0)), 0.5)
+        op = prune_unused_indices(op)
+        expected = FermionOperator(((0, 1), (2, 1), (1, 0)), 0.5)
+        self.assertTrue(expected == op)
+
+
 class HermitianConjugatedTest(unittest.TestCase):
 
     def test_hermitian_conjugated_qubit_op(self):

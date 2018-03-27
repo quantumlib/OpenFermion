@@ -36,6 +36,13 @@ def lih_hamiltonian():
     return hamiltonian, ground_state_energy
 
 
+class LinearizeDecoderTest(unittest.TestCase):
+
+    def test_linearize(self):
+        a = linearize_decoder([[0, 1, 1], [1, 0, 0]])
+        self.assertListEqual([str(a[0]), str(a[1])], ['[W1] + [W2]', '[W0]'])
+
+
 class CodeTransformTest(unittest.TestCase):
     def test_tranform_function(self):
         ferm_op = FermionOperator('2')

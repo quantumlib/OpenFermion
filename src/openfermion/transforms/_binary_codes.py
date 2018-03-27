@@ -14,7 +14,29 @@
 
 import numpy
 
-from openfermion.ops import BinaryCode, BinaryPolynomial, linearize_decoder
+from openfermion.ops import BinaryCode, BinaryPolynomial
+
+
+def linearize_decoder(matrix):
+    """ Outputs  linear decoding function from input matrix
+
+    Args:
+        matrix (np.ndarray or list): list of lists or 2D numpy array
+            to derive the decoding function from
+
+    Returns (list): list of BinaryPolynomial
+    """
+    matrix = numpy.array(list(map(numpy.array, matrix)))
+    system_dim, code_dim = numpy.shape(matrix)
+    decoder = [] * system_dim
+    for row_idx in numpy.arange(system_dim):
+        dec_str = ''
+        for col_idx in numpy.arange(code_dim):
+            if matrix[row_idx, col_idx] == 1:
+                dec_str += 'W' + str(col_idx) + ' + '
+        dec_str = dec_str.rstrip(' + ')
+        decoder.append(BinaryPolynomial(dec_str))
+    return decoder
 
 
 def _encoder_bk(n_modes):
