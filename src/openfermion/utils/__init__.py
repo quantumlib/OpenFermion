@@ -22,9 +22,10 @@ from ._grid import Grid
 from ._lcu_util import preprocess_lcu_coefficients_for_reversible_sampling
 
 from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
-                              get_file_path, hermitian_conjugated,
-                              inverse_fourier_transform, is_hermitian,
-                              is_identity, reorder, up_then_down,
+                              freeze_orbitals, get_file_path,
+                              hermitian_conjugated, inverse_fourier_transform,
+                              is_hermitian, is_identity, prune_unused_indices,
+                              reorder, up_then_down,
                               load_operator, save_operator)
 
 from ._slater_determinants import (gaussian_state_preparation_circuit,

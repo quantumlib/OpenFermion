@@ -17,8 +17,7 @@ import unittest
 
 from openfermion.ops._fermion_operator import (FermionOperator,
                                                FermionOperatorError,
-                                               normal_ordered,
-                                               freeze_orbitals)
+                                               normal_ordered)
 from openfermion.utils import number_operator
 
 
@@ -140,14 +139,3 @@ class FermionOperatorTest(unittest.TestCase):
     def test_is_molecular_term_out_of_order(self):
         op = FermionOperator(((0, 1), (2, 0), (1, 1), (3, 0)))
         self.assertTrue(op.is_molecular_term())
-
-    def test_freeze_orbitals_nonvanishing(self):
-        op = FermionOperator(((1, 1), (1, 0), (0, 1), (2, 0)))
-        op_frozen = freeze_orbitals(op,[1])
-        expected = FermionOperator(((0, 1), (1, 0)), -1)
-        self.assertTrue(op_frozen == expected)
-
-    def test_freeze_orbitals_vanishing(self):
-        op = FermionOperator(((1, 1), (2, 0)))
-        op_frozen = freeze_orbitals(op, [], [2])
-        self.assertEquals(len(op_frozen.terms), 0)
