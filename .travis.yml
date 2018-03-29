@@ -40,7 +40,6 @@ install:
   - pip$PY install --only-binary=scipy scipy
   - pip$PY install --only-binary=jupyter jupyter
   - pip$PY install --only-binary=matplotlib matplotlib
-  - pip$PY install -r requirements.txt
   - pip$PY install pytest
   - pip$PY install pytest-cov
   - pip$PY install coveralls
