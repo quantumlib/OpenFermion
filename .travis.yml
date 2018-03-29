@@ -36,16 +36,12 @@ before_install:
 
 install:
   - if [ "${PYTHON:0:1}" = "3" ]; then export PY=3; fi
-  - pip$PY install --only-binary=numpy numpy
-  - pip$PY install --only-binary=scipy scipy
-  - pip$PY install --only-binary=jupyter jupyter
-  - pip$PY install --only-binary=matplotlib matplotlib
-  - pip$PY install -r requirements.txt
   - pip$PY install pytest
   - pip$PY install pytest-cov
   - pip$PY install coveralls
   - pip$PY install sphinx
   - pip$PY install sphinx_rtd_theme
+  - pip$PY install -e .
 
 script: sphinx-build -nW -b html -d docs/_build/doctrees/ docs/ docs/_build/html
 script: export OMP_NUM_THREADS=1 && pytest src/openfermion --cov src/openfermion
