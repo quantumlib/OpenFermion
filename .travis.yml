@@ -45,6 +45,7 @@ install:
   - pip$PY install coveralls
   - pip$PY install sphinx
   - pip$PY install sphinx_rtd_theme
+  - pip$PY install -e .
 
 script: sphinx-build -nW -b html -d docs/_build/doctrees/ docs/ docs/_build/html
 script: export OMP_NUM_THREADS=1 && pytest src/openfermion --cov src/openfermion
