@@ -12,22 +12,21 @@
 
 """Tests  _bravyi_kitaev_fast_test.py."""
 from __future__ import absolute_import
+
+import numpy
 import os
 import unittest
 
-from openfermion.config import (THIS_DIRECTORY)
+from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
 from openfermion.ops import (FermionOperator, InteractionOperator,
                              normal_ordered, QubitOperator)
+from openfermion.transforms import _bksf
 from openfermion.transforms._conversion import (get_fermion_operator,
                                                 get_sparse_operator)
 from openfermion.transforms._jordan_wigner import (jordan_wigner,
                                                    jordan_wigner_one_body)
-from openfermion.utils import (count_qubits, eigenspectrum)
-
-import numpy
-
-from . import _bksf
+from openfermion.utils import count_qubits, eigenspectrum
 
 
 class bravyi_kitaev_fastTransformTest(unittest.TestCase):
@@ -60,7 +59,7 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
 
         # Get the sparse matrix.
         self.hamiltonian_matrix = get_sparse_operator(
-                                                    self.molecular_hamiltonian)
+            self.molecular_hamiltonian)
 
     def test_bad_input(self):
         with self.assertRaises(TypeError):
@@ -69,9 +68,9 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
     def test_bravyi_kitaev_fast_edgeoperator_Bi(self):
         # checking the edge operators
         edge_matrix = numpy.triu(numpy.ones((4, 4)))
-        edge_matrix_indices = numpy.array(numpy.nonzero(
-                                          numpy.triu(edge_matrix) -
-                                          numpy.diag(numpy.diag(edge_matrix))))
+        edge_matrix_indices = numpy.array(
+            numpy.nonzero(numpy.triu(edge_matrix) -
+                          numpy.diag(numpy.diag(edge_matrix))))
 
         correct_operators_b0 = ((0, 'Z'), (1, 'Z'), (2, 'Z'))
         correct_operators_b1 = ((0, 'Z'), (3, 'Z'), (4, 'Z'))
@@ -82,14 +81,14 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         qterm_b1 = QubitOperator(correct_operators_b1, 1)
         qterm_b2 = QubitOperator(correct_operators_b2, 1)
         qterm_b3 = QubitOperator(correct_operators_b3, 1)
-        self.assertTrue(qterm_b0.isclose(
-                        _bksf.edge_operator_b(edge_matrix_indices, 0)))
-        self.assertTrue(qterm_b1.isclose(
-                        _bksf.edge_operator_b(edge_matrix_indices, 1)))
-        self.assertTrue(qterm_b2.isclose(
-                        _bksf.edge_operator_b(edge_matrix_indices, 2)))
-        self.assertTrue(qterm_b3.isclose(
-                        _bksf.edge_operator_b(edge_matrix_indices, 3)))
+        self.assertTrue(qterm_b0 ==
+                        _bksf.edge_operator_b(edge_matrix_indices, 0))
+        self.assertTrue(qterm_b1 ==
+                        _bksf.edge_operator_b(edge_matrix_indices, 1))
+        self.assertTrue(qterm_b2 ==
+                        _bksf.edge_operator_b(edge_matrix_indices, 2))
+        self.assertTrue(qterm_b3 ==
+                        _bksf.edge_operator_b(edge_matrix_indices, 3))
 
     def test_bravyi_kitaev_fast_edgeoperator_Aij(self):
         # checking the edge operators
@@ -112,18 +111,18 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         qterm_a13 = QubitOperator(correct_operators_a13, 1)
         qterm_a23 = QubitOperator(correct_operators_a23, 1)
 
-        self.assertTrue(qterm_a01.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 0, 1)))
-        self.assertTrue(qterm_a02.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 0, 2)))
-        self.assertTrue(qterm_a03.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 0, 3)))
-        self.assertTrue(qterm_a12.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 1, 2)))
-        self.assertTrue(qterm_a13.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 1, 3)))
-        self.assertTrue(qterm_a23.isclose(_bksf.edge_operator_aij(
-                                          edge_matrix_indices, 2, 3)))
+        self.assertTrue(qterm_a01 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 0, 1))
+        self.assertTrue(qterm_a02 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 0, 2))
+        self.assertTrue(qterm_a03 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 0, 3))
+        self.assertTrue(qterm_a12 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 1, 2))
+        self.assertTrue(qterm_a13 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 1, 3))
+        self.assertTrue(qterm_a23 == _bksf.edge_operator_aij(
+                                          edge_matrix_indices, 2, 3))
 
     def test_bravyi_kitaev_fast_jw_number_operator(self):
         # bksf algorithm allows for even number of particles. So, compare the
@@ -131,7 +130,7 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         # to make sure half of the jordan-wigner number operator spectrum
         # can be found in bksf number operator spectrum.
         bravyi_kitaev_fast_n = _bksf.number_operator(
-                                                    self.molecular_hamiltonian)
+            self.molecular_hamiltonian)
         jw_n = QubitOperator()
         n_qubits = count_qubits(self.molecular_hamiltonian)
         for i in range(n_qubits):
@@ -150,7 +149,7 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         # be found in bksf Hamiltonian eigenspectrum.
         n_qubits = count_qubits(self.molecular_hamiltonian)
         bravyi_kitaev_fast_H = _bksf.bravyi_kitaev_fast(
-                                                    self.molecular_hamiltonian)
+            self.molecular_hamiltonian)
         jw_H = jordan_wigner(self.molecular_hamiltonian)
         bravyi_kitaev_fast_H_eig = eigenspectrum(bravyi_kitaev_fast_H)
         jw_H_eig = eigenspectrum(jw_H)
@@ -161,25 +160,25 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
             if bool(numpy.size(numpy.where(jw_H_eig[i] ==
                                            bravyi_kitaev_fast_H_eig))):
                 evensector += 1
-        self.assertEqual(evensector, 2**(n_qubits - 1))
+        self.assertEqual(evensector, 2 ** (n_qubits - 1))
 
     def test_bravyi_kitaev_fast_generate_fermions(self):
+        n_qubits = count_qubits(self.molecular_hamiltonian)
         # test for generating two fermions
         edge_matrix = _bksf.bravyi_kitaev_fast_edge_matrix(
-                        self.molecular_hamiltonian)
+            self.molecular_hamiltonian)
         edge_matrix_indices = numpy.array(numpy.nonzero(
-                                numpy.triu(edge_matrix) - numpy.diag(
-                                        numpy.diag(edge_matrix))))
+            numpy.triu(edge_matrix) - numpy.diag(numpy.diag(edge_matrix))))
         fermion_generation_operator = _bksf.generate_fermions(
-                                      edge_matrix_indices, 2, 3)
+            edge_matrix_indices, 2, 3)
         fermion_generation_sp_matrix = get_sparse_operator(
-                                        fermion_generation_operator)
+            fermion_generation_operator)
         fermion_generation_matrix = fermion_generation_sp_matrix.toarray()
         bksf_vacuum_state_operator = _bksf.vacuum_operator(edge_matrix_indices)
         bksf_vacuum_state_sp_matrix = get_sparse_operator(
-                                      bksf_vacuum_state_operator)
+            bksf_vacuum_state_operator)
         bksf_vacuum_state_matrix = bksf_vacuum_state_sp_matrix.toarray()
-        vacuum_state = numpy.zeros((64, 1))
+        vacuum_state = numpy.zeros((2**(n_qubits), 1))
         vacuum_state[0] = 1.
         bksf_vacuum_state = numpy.dot(bksf_vacuum_state_matrix, vacuum_state)
         two_fermion_state = numpy.dot(fermion_generation_matrix,

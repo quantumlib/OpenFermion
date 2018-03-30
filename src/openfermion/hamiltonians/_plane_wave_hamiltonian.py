@@ -81,8 +81,9 @@ def dual_basis_external_potential(grid, geometry, spinless):
             for momenta_indices in grid.all_points_indices():
                 momenta = momentum_vector(momenta_indices, grid)
                 momenta_squared = momenta.dot(momenta)
-                if momenta_squared < EQ_TOLERANCE:
+                if momenta_squared == 0:
                     continue
+
                 exp_index = 1.0j * momenta.dot(coordinate_j - coordinate_p)
                 coefficient = (prefactor / momenta_squared *
                                periodic_hash_table[nuclear_term[0]] *
@@ -98,7 +99,7 @@ def dual_basis_external_potential(grid, geometry, spinless):
     return operator
 
 
-def plane_wave_external_potential(grid, geometry, spinless):
+def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
     """Return the external potential operator in plane wave basis.
 
     Args:
@@ -107,6 +108,7 @@ def plane_wave_external_potential(grid, geometry, spinless):
             example is [('H', (0, 0, 0)), ('H', (0, 0, 0.7414))].
             Distances in atomic units. Use atomic symbols to specify atoms.
         spinless: Bool, whether to use the spinless model or not.
+        e_cutoff (float): Energy cutoff.
 
     Returns:
         FermionOperator: The plane wave operator.
@@ -126,7 +128,11 @@ def plane_wave_external_potential(grid, geometry, spinless):
                 for i in range(grid.dimensions)]
             momenta_p_q = momentum_vector(grid_indices_p_q, grid)
             momenta_p_q_squared = momenta_p_q.dot(momenta_p_q)
-            if momenta_p_q_squared < EQ_TOLERANCE:
+            if momenta_p_q_squared == 0:
+                continue
+
+            # Energy cutoff.
+            if e_cutoff is not None and momenta_p_q_squared / 2. > e_cutoff:
                 continue
 
             for nuclear_term in geometry:
@@ -150,7 +156,7 @@ def plane_wave_external_potential(grid, geometry, spinless):
 
 def plane_wave_hamiltonian(grid, geometry=None,
                            spinless=False, plane_wave=True,
-                           include_constant=False):
+                           include_constant=False, e_cutoff=None):
     """Returns Hamiltonian as FermionOperator class.
 
     Args:
@@ -162,11 +168,13 @@ def plane_wave_hamiltonian(grid, geometry=None,
         plane_wave (bool): Whether to return in plane wave basis (True)
             or plane wave dual basis (False).
         include_constant (bool): Whether to include the Madelung constant.
+        e_cutoff (float): Energy cutoff.
 
     Returns:
         FermionOperator: The hamiltonian.
     """
-    jellium_op = jellium_model(grid, spinless, plane_wave, include_constant)
+    jellium_op = jellium_model(grid, spinless, plane_wave, include_constant,
+                               e_cutoff)
 
     if geometry is None:
         return jellium_op
@@ -179,7 +187,7 @@ def plane_wave_hamiltonian(grid, geometry=None,
 
     if plane_wave:
         external_potential = plane_wave_external_potential(
-            grid, geometry, spinless)
+            grid, geometry, spinless, e_cutoff)
     else:
         external_potential = dual_basis_external_potential(
             grid, geometry, spinless)
@@ -226,7 +234,7 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
     for k_indices in grid.all_points_indices():
         momenta = momentum_vector(k_indices, grid)
         momenta_squared = momenta.dot(momenta)
-        if momenta_squared < EQ_TOLERANCE:
+        if momenta_squared == 0:
             continue
 
         for p in range(n_qubits):

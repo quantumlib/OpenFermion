@@ -18,13 +18,19 @@ import unittest
 
 from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix
+from scipy.special import comb
 
-from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
-from openfermion.ops import FermionOperator, normal_ordered, number_operator
-from openfermion.transforms import get_sparse_operator, jordan_wigner
-from openfermion.utils import fourier_transform, Grid
+from openfermion.hamiltonians import (fermi_hubbard, jellium_model,
+                                      wigner_seitz_length_scale)
+from openfermion.ops import FermionOperator, normal_ordered
+from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
+                                    jordan_wigner)
+from openfermion.utils import (Grid, fourier_transform, number_operator,
+                               up_index, down_index) 
 from openfermion.utils._jellium_hf_state import (
     lowest_single_particle_energy_states)
+from openfermion.utils._slater_determinants_test import (
+    random_quadratic_hamiltonian)
 from openfermion.utils._sparse_tools import *
 
 
@@ -54,6 +60,73 @@ class SparseOperatorTest(unittest.TestCase):
         self.assertAlmostEqual(0., numpy.amax(
             numpy.absolute(fermion_spectrum - qubit_spectrum)))
 
+
+class JordanWignerSparseTest(unittest.TestCase):
+
+    def test_jw_sparse_0create(self):
+        expected = csc_matrix(([1], ([1], [0])), shape=(2, 2))
+        self.assertTrue(numpy.allclose(
+            jordan_wigner_sparse(FermionOperator('0^')).A,
+            expected.A))
+
+    def test_jw_sparse_1annihilate(self):
+        expected = csc_matrix(([1, -1], ([0, 2], [1, 3])), shape=(4, 4))
+        self.assertTrue(numpy.allclose(
+            jordan_wigner_sparse(FermionOperator('1')).A,
+            expected.A))
+
+    def test_jw_sparse_0create_2annihilate(self):
+        expected = csc_matrix(([-1j, 1j],
+                               ([4, 6], [1, 3])),
+                              shape=(8, 8))
+        self.assertTrue(numpy.allclose(
+            jordan_wigner_sparse(FermionOperator('0^ 2', -1j)).A,
+            expected.A))
+
+    def test_jw_sparse_0create_3annihilate(self):
+        expected = csc_matrix(([-1j, 1j, 1j, -1j],
+                               ([8, 10, 12, 14], [1, 3, 5, 7])),
+                              shape=(16, 16))
+        self.assertTrue(numpy.allclose(
+            jordan_wigner_sparse(FermionOperator('0^ 3', -1j)).A,
+            expected.A))
+
+    def test_jw_sparse_twobody(self):
+        expected = csc_matrix(([1, 1], ([6, 14], [5, 13])), shape=(16, 16))
+        self.assertTrue(numpy.allclose(
+            jordan_wigner_sparse(FermionOperator('2^ 1^ 1 3')).A,
+            expected.A))
+
+    def test_qubit_operator_sparse_n_qubits_too_small(self):
+        with self.assertRaises(ValueError):
+            qubit_operator_sparse(QubitOperator('X3'), 1)
+
+    def test_qubit_operator_sparse_n_qubits_not_specified(self):
+        expected = csc_matrix(([1, 1, 1, 1], ([1, 0, 3, 2], [0, 1, 2, 3])),
+                              shape=(4, 4))
+        self.assertTrue(numpy.allclose(
+            qubit_operator_sparse(QubitOperator('X1')).A,
+            expected.A))
+
+
+class ComputationalBasisStateTest(unittest.TestCase):
+    def test_computational_basis_state(self):
+        comp_basis_state = jw_configuration_state([0, 2, 5], 7)
+        dense_array = comp_basis_state.toarray()
+        self.assertAlmostEqual(dense_array[82, 0], 1.)
+        self.assertAlmostEqual(sum(dense_array), 1.)
+
+
+class JWHartreeFockStateTest(unittest.TestCase):
+    def test_jw_hartree_fock_state(self):
+        hartree_fock_state = jw_hartree_fock_state(3, 7)
+        dense_array = hartree_fock_state.toarray()
+        self.assertAlmostEqual(dense_array[112, 0], 1.)
+        self.assertAlmostEqual(sum(dense_array), 1.)
+
+
+class JWNumberIndicesTest(unittest.TestCase):
+
     def test_jw_sparse_index(self):
         """Test the indexing scheme for selecting specific particle numbers"""
         expected = [1, 2]
@@ -63,6 +136,99 @@ class SparseOperatorTest(unittest.TestCase):
         expected = [3]
         calculated_indices = jw_number_indices(2, 2)
         self.assertEqual(expected, calculated_indices)
+
+    def test_jw_number_indices(self):
+        n_qubits = numpy.random.randint(1, 12)
+        n_particles = numpy.random.randint(n_qubits + 1)
+
+        number_indices = jw_number_indices(n_particles, n_qubits)
+        subspace_dimension = len(number_indices)
+
+        self.assertEqual(subspace_dimension, comb(n_qubits, n_particles))
+
+        for index in number_indices:
+            binary_string = bin(index)[2:].zfill(n_qubits)
+            n_ones = binary_string.count('1')
+            self.assertEqual(n_ones, n_particles)
+
+
+class JWSzIndicesTest(unittest.TestCase):
+
+    def test_jw_sz_indices(self):
+        """Test the indexing scheme for selecting specific sz value"""
+
+        def sz_integer(bitstring):
+            """Computes the total number of occupied up sites
+            minus the total number of occupied down sites."""
+            n_sites = len(bitstring) // 2
+
+            n_up = len([site for site in range(n_sites)
+                        if bitstring[up_index(site)] == '1'])
+            n_down = len([site for site in range(n_sites)
+                          if bitstring[down_index(site)] == '1'])
+
+            return n_up - n_down
+
+        def jw_sz_indices_brute_force(sz_value, n_qubits):
+            """Computes the correct indices by brute force."""
+            indices = []
+            for bitstring in itertools.product(['0', '1'], repeat=n_qubits):
+                if (sz_integer(bitstring) ==
+                        int(2 * sz_value)):
+                    indices.append(int(''.join(bitstring), 2))
+
+            return indices
+
+        # General test
+        n_sites = numpy.random.randint(1, 10)
+        n_qubits = 2 * n_sites
+        sz_int = ((-1) ** numpy.random.randint(2) *
+                  numpy.random.randint(n_sites + 1))
+        sz_value = sz_int / 2.
+
+        correct_indices = jw_sz_indices_brute_force(sz_value, n_qubits)
+        subspace_dimension = len(correct_indices)
+
+        calculated_indices = jw_sz_indices(sz_value, n_qubits)
+
+        self.assertEqual(len(calculated_indices), subspace_dimension)
+
+        for index in calculated_indices:
+            binary_string = bin(index)[2:].zfill(n_qubits)
+            self.assertEqual(sz_integer(binary_string), sz_int)
+
+        # Test fixing particle number
+        n_particles = abs(sz_int)
+
+        correct_indices = [index for index in correct_indices
+                           if bin(index)[2:].count('1') == n_particles]
+        subspace_dimension = len(correct_indices)
+
+        calculated_indices = jw_sz_indices(sz_value, n_qubits,
+                                           n_electrons=n_particles)
+
+        self.assertEqual(len(calculated_indices), subspace_dimension)
+
+        for index in calculated_indices:
+            binary_string = bin(index)[2:].zfill(n_qubits)
+            self.assertEqual(sz_integer(binary_string), sz_int)
+            self.assertEqual(binary_string.count('1'), n_particles)
+
+        # Test exceptions
+        with self.assertRaises(ValueError):
+            indices = jw_sz_indices(3, 3)
+
+        with self.assertRaises(ValueError):
+            indices = jw_sz_indices(3.1, 4)
+
+        with self.assertRaises(ValueError):
+            indices = jw_sz_indices(1.5, 8, n_electrons=6)
+
+        with self.assertRaises(ValueError):
+            indices = jw_sz_indices(1.5, 8, n_electrons=1)
+
+
+class JWNumberRestrictOperatorTest(unittest.TestCase):
 
     def test_jw_restrict_operator(self):
         """Test the scheme for restricting JW encoded operators to number"""
@@ -153,52 +319,85 @@ class SparseOperatorTest(unittest.TestCase):
         self.assertAlmostEqual(number_expectation, 2)
 
 
-class JordanWignerSparseTest(unittest.TestCase):
+class JWSzRestrictOperatorTest(unittest.TestCase):
 
-    def test_jw_sparse_0create(self):
-        expected = csc_matrix(([1], ([1], [0])), shape=(2, 2))
-        self.assertTrue(numpy.allclose(
-            jordan_wigner_sparse(FermionOperator('0^')).A,
-            expected.A))
+    def test_restrict_interaction_hamiltonian(self):
+        """Test restricting a coulomb repulsion Hamiltonian to a specified
+        Sz manifold."""
+        x_dim = 3
+        y_dim = 2
 
-    def test_jw_sparse_1annihilate(self):
-        expected = csc_matrix(([1, 1], ([0, 2], [1, 3])), shape=(4, 4))
-        self.assertTrue(numpy.allclose(
-            jordan_wigner_sparse(FermionOperator('1')).A,
-            expected.A))
+        interaction_term = fermi_hubbard(x_dim, y_dim, 0., 1.)
+        interaction_sparse = get_sparse_operator(interaction_term)
+        sz_value = 2
+        interaction_restricted = jw_sz_restrict_operator(interaction_sparse,
+                                                         sz_value)
+        restricted_interaction_values = set([
+            int(value.real) for value in interaction_restricted.diagonal()])
+        # Originally the eigenvalues run from 0 to 6 but after restricting,
+        # they should run from 0 to 2
+        self.assertEqual(restricted_interaction_values, {0, 1, 2})
 
-    def test_jw_sparse_0create_2annihilate(self):
-        expected = csc_matrix(([-1j, 1j],
-                               ([4, 6], [1, 3])),
-                              shape=(8, 8))
-        self.assertTrue(numpy.allclose(
-            jordan_wigner_sparse(FermionOperator('0^ 2', -1j)).A,
-            expected.A))
 
-    def test_jw_sparse_0create_3annihilate(self):
-        expected = csc_matrix(([-1j, 1j, 1j, -1j],
-                               ([8, 10, 12, 14], [1, 3, 5, 7])),
-                              shape=(16, 16))
-        self.assertTrue(numpy.allclose(
-            jordan_wigner_sparse(FermionOperator('0^ 3', -1j)).A,
-            expected.A))
+class JWNumberRestrictStateTest(unittest.TestCase):
 
-    def test_jw_sparse_twobody(self):
-        expected = csc_matrix(([1, 1], ([6, 14], [5, 13])), shape=(16, 16))
-        self.assertTrue(numpy.allclose(
-            jordan_wigner_sparse(FermionOperator('2^ 1^ 1 3')).A,
-            expected.A))
+    def test_jw_number_restrict_state(self):
+        n_qubits = numpy.random.randint(1, 12)
+        n_particles = numpy.random.randint(0, n_qubits)
 
-    def test_qubit_operator_sparse_n_qubits_too_small(self):
-        with self.assertRaises(ValueError):
-            qubit_operator_sparse(QubitOperator('X3'), 1)
+        number_indices = jw_number_indices(n_particles, n_qubits)
+        subspace_dimension = len(number_indices)
 
-    def test_qubit_operator_sparse_n_qubits_not_specified(self):
-        expected = csc_matrix(([1, 1, 1, 1], ([1, 0, 3, 2], [0, 1, 2, 3])),
-                              shape=(4, 4))
-        self.assertTrue(numpy.allclose(
-            qubit_operator_sparse(QubitOperator('X1')).A,
-            expected.A))
+        # Create a vector that has entry 1 for every coordinate with
+        # the specified particle number, and 0 everywhere else
+        vector = csc_matrix(
+                    ([1.] * subspace_dimension,
+                     number_indices,
+                     [0, 1]),
+                    shape=(2 ** n_qubits, 1))
+
+        # Restrict the vector
+        restricted_vector = jw_number_restrict_state(vector, n_particles)
+
+        # Check that it has the correct shape
+        self.assertEqual(restricted_vector.shape[0], subspace_dimension)
+
+        # Check that it has the same norm as the original vector
+        self.assertAlmostEqual(inner_product(vector, vector),
+                               inner_product(restricted_vector,
+                                             restricted_vector))
+
+
+class JWSzRestrictStateTest(unittest.TestCase):
+
+    def test_jw_sz_restrict_state(self):
+        n_sites = numpy.random.randint(1, 10)
+        n_qubits = 2 * n_sites
+        sz_int = ((-1) ** numpy.random.randint(2) *
+                  numpy.random.randint(n_sites + 1))
+        sz_value = sz_int / 2
+
+        sz_indices = jw_sz_indices(sz_value, n_qubits)
+        subspace_dimension = len(sz_indices)
+
+        # Create a vector that has entry 1 for every coordinate in
+        # the specified subspace, and 0 everywhere else
+        vector = csc_matrix(
+                    ([1.] * subspace_dimension,
+                     sz_indices,
+                     [0, 1]),
+                    shape=(2 ** n_qubits, 1))
+
+        # Restrict the vector
+        restricted_vector = jw_sz_restrict_state(vector, sz_value)
+
+        # Check that it has the correct shape
+        self.assertEqual(restricted_vector.shape[0], subspace_dimension)
+
+        # Check that it has the same norm as the original vector
+        self.assertAlmostEqual(inner_product(vector, vector),
+                               inner_product(restricted_vector,
+                                             restricted_vector))
 
 
 class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
@@ -215,17 +414,23 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
         for particle_number in range(n_qubits):
             # Get the ground energy and ground states at this particle number
             energy, states = jw_get_ground_states_by_particle_number(
-                    sparse_operator,
-                    particle_number)
+                sparse_operator, particle_number)
+            # Construct particle number operator
+            num_op = get_sparse_operator(number_operator(n_qubits))
             # For each vector returned, make sure that it is indeed an
             # eigenvector of the original operator with the returned eigenvalue
+            # and that it has the correct particle number
             for vec in states:
+                # Check that it's an eigenvector with the correct eigenvalue
                 op_vec_product = sparse_operator.dot(vec)
                 difference = op_vec_product - energy * vec
+                discrepancy = 0.
                 if difference.nnz:
                     discrepancy = max(map(abs, difference.data))
-                    self.assertAlmostEqual(0, discrepancy)
-        return
+                self.assertAlmostEqual(0., discrepancy)
+                # Check that it has the correct particle number
+                num = expectation(num_op, vec)
+                self.assertAlmostEqual(num, particle_number)
 
     def test_jw_get_ground_states_by_particle_number_herm_nonconserving(self):
         # Initialize a non-particle-number-conserving Hermitian operator
@@ -236,7 +441,6 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             jw_get_ground_states_by_particle_number(sparse_operator, 0)
-        return
 
     def test_get_ground_states_by_particle_number_nonhermitian(self):
         # Initialize a non-Hermitian operator
@@ -246,7 +450,181 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             jw_get_ground_states_by_particle_number(sparse_operator, 0)
-        return
+
+
+class JWGetGaussianStateTest(unittest.TestCase):
+
+    def setUp(self):
+        self.n_qubits_range = range(2, 10)
+
+    def test_ground_state_particle_conserving(self):
+        """Test getting the ground state of a Hamiltonian that conserves
+        particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                n_qubits, True)
+
+            # Compute the true ground state
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            ground_energy, ground_state = get_ground_state(sparse_operator)
+
+            # Compute the ground state using the circuit
+            circuit_energy, circuit_state = jw_get_gaussian_state(
+                quadratic_hamiltonian)
+
+            # Check that the energies match
+            self.assertAlmostEqual(ground_energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is a ground state
+            difference = (sparse_operator * circuit_state -
+                          ground_energy * circuit_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_ground_state_particle_nonconserving(self):
+        """Test getting the ground state of a Hamiltonian that does not
+        conserve particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a non-particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                n_qubits, False)
+
+            # Compute the true ground state
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            ground_energy, ground_state = get_ground_state(sparse_operator)
+
+            # Compute the ground state using the circuit
+            circuit_energy, circuit_state = (
+                jw_get_gaussian_state(quadratic_hamiltonian))
+
+            # Check that the energies match
+            self.assertAlmostEqual(ground_energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is a ground state
+            difference = (sparse_operator * circuit_state -
+                          ground_energy * circuit_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_excited_state_particle_conserving(self):
+        """Test getting an excited state of a Hamiltonian that conserves
+        particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                n_qubits, True)
+
+            # Pick some orbitals to occupy
+            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
+            occupied_orbitals = numpy.random.choice(
+                range(n_qubits), num_occupied_orbitals, False)
+
+            # Compute the Gaussian state
+            circuit_energy, gaussian_state = jw_get_gaussian_state(
+                quadratic_hamiltonian, occupied_orbitals)
+
+            # Compute the true energy
+            orbital_energies, constant = (
+                quadratic_hamiltonian.orbital_energies())
+            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
+
+            # Check that the energies match
+            self.assertAlmostEqual(energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is an eigenstate
+            # with the correct eigenvalue
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            difference = (sparse_operator * gaussian_state -
+                          energy * gaussian_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_excited_state_particle_nonconserving(self):
+        """Test getting an excited state of a Hamiltonian that conserves
+        particle number."""
+        for n_qubits in self.n_qubits_range:
+            # Initialize a non-particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                n_qubits, False)
+
+            # Pick some orbitals to occupy
+            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
+            occupied_orbitals = numpy.random.choice(
+                range(n_qubits), num_occupied_orbitals, False)
+
+            # Compute the Gaussian state
+            circuit_energy, gaussian_state = jw_get_gaussian_state(
+                quadratic_hamiltonian, occupied_orbitals)
+
+            # Compute the true energy
+            orbital_energies, constant = (
+                quadratic_hamiltonian.orbital_energies())
+            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
+
+            # Check that the energies match
+            self.assertAlmostEqual(energy, circuit_energy)
+
+            # Check that the state obtained using the circuit is an eigenstate
+            # with the correct eigenvalue
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            difference = (sparse_operator * gaussian_state -
+                          energy * gaussian_state)
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_bad_input(self):
+        """Test bad input."""
+        with self.assertRaises(ValueError):
+            energy, state = jw_get_gaussian_state('a')
+
+
+class JWSparseGivensRotationTest(unittest.TestCase):
+
+    def test_bad_input(self):
+        with self.assertRaises(ValueError):
+            givens_matrix = jw_sparse_givens_rotation(0, 2, 1., 1., 5)
+        with self.assertRaises(ValueError):
+            givens_matrix = jw_sparse_givens_rotation(4, 5, 1., 1., 5)
+
+
+class JWSlaterDeterminantTest(unittest.TestCase):
+
+    def test_hadamard_transform(self):
+        """Test creating the states
+        1 / sqrt(2) (a^\dagger_0 + a^\dagger_1) |vac>
+        and
+        1 / sqrt(2) (a^\dagger_0 - a^\dagger_1) |vac>.
+        """
+        slater_determinant_matrix = numpy.array([[1., 1.]]) / numpy.sqrt(2.)
+        slater_determinant = jw_slater_determinant(slater_determinant_matrix)
+        self.assertAlmostEqual(slater_determinant[1, 0],
+                               slater_determinant[2, 0])
+        self.assertAlmostEqual(abs(slater_determinant[1, 0]),
+                               1. / numpy.sqrt(2.))
+        self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[3, 0]), 0.)
+
+        slater_determinant_matrix = numpy.array([[1., -1.]]) / numpy.sqrt(2.)
+        slater_determinant = jw_slater_determinant(slater_determinant_matrix)
+        self.assertAlmostEqual(slater_determinant[1, 0],
+                               -slater_determinant[2, 0])
+        self.assertAlmostEqual(abs(slater_determinant[1, 0]),
+                               1. / numpy.sqrt(2.))
+        self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[3, 0]), 0.)
 
 
 class GroundStateTest(unittest.TestCase):
@@ -259,7 +637,8 @@ class GroundStateTest(unittest.TestCase):
 
         self.assertAlmostEqual(ground[0], -2)
         self.assertAlmostEqual(
-            numpy.absolute(expected_state.T.dot(ground[1].A))[0, 0], 1.0)
+            numpy.absolute(
+                expected_state.T.conj().dot(ground[1]))[0], 1.)
 
     def test_get_ground_state_nonhermitian(self):
         with self.assertRaises(ValueError):
@@ -284,6 +663,24 @@ class ExpectationTest(unittest.TestCase):
                              ([0, 1, 2], [0, 0, 0])), shape=(3, 1))
         with self.assertRaises(ValueError):
             expectation(operator, vector)
+
+
+class VarianceTest(unittest.TestCase):
+    def test_variance(self):
+        X = pauli_matrix_map['X']
+        Z = pauli_matrix_map['Z']
+        zero = csc_matrix(numpy.array([[1.], [0.]]))
+        plus = csc_matrix(numpy.array([[1.], [1.]]) / numpy.sqrt(2))
+        minus = csc_matrix(numpy.array([[1.], [-1.]]) / numpy.sqrt(2))
+
+        self.assertAlmostEqual(variance(Z, zero), 0.)
+        self.assertAlmostEqual(variance(X, zero), 1.)
+
+        self.assertAlmostEqual(variance(Z, plus), 1.)
+        self.assertAlmostEqual(variance(X, plus), 0.)
+
+        self.assertAlmostEqual(variance(Z, minus), 1.)
+        self.assertAlmostEqual(variance(X, minus), 0.)
 
 
 class ExpectationComputationalBasisStateTest(unittest.TestCase):
@@ -707,3 +1104,12 @@ class GetGapTest(unittest.TestCase):
                     QubitOperator('Z0 Z1', 1j) + QubitOperator((), 2 + 1j))
         with self.assertRaises(ValueError):
             get_gap(get_sparse_operator(operator))
+
+
+class InnerProductTest(unittest.TestCase):
+    def test_inner_product(self):
+        state_1 = csc_matrix(([1., 1.j], ([0, 1], [0, 0])), shape=(2, 1))
+        state_2 = csc_matrix(([1., -1.j], ([0, 1], [0, 0])), shape=(2, 1))
+
+        self.assertAlmostEqual(inner_product(state_1, state_1), 2.)
+        self.assertAlmostEqual(inner_product(state_1, state_2), 0.)

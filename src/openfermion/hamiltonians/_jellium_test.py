@@ -113,8 +113,8 @@ class JelliumTest(unittest.TestCase):
         # Diagonalize and confirm the same energy.
         jw_momentum = jordan_wigner(momentum_kinetic)
         jw_position = jordan_wigner(position_kinetic)
-        momentum_spectrum = eigenspectrum(jw_momentum)
-        position_spectrum = eigenspectrum(jw_position)
+        momentum_spectrum = eigenspectrum(jw_momentum, 8)
+        position_spectrum = eigenspectrum(jw_position, 8)
 
         # Confirm spectra are the same.
         difference = numpy.amax(
@@ -255,6 +255,7 @@ class JelliumTest(unittest.TestCase):
         for indices_a in grid.all_points_indices():
             for indices_b in grid.all_points_indices():
 
+                potential_coefficient = 0.
                 paper_kinetic_coefficient = 0.
                 paper_potential_coefficient = 0.
 
@@ -303,7 +304,7 @@ class JelliumTest(unittest.TestCase):
         test_hamiltonian = jordan_wigner_dual_basis_jellium(grid, spinless)
 
         # Make sure Hamiltonians are the same.
-        self.assertTrue(test_hamiltonian.isclose(qubit_hamiltonian))
+        self.assertTrue(test_hamiltonian == qubit_hamiltonian)
 
         # Check number of terms.
         n_qubits = count_qubits(qubit_hamiltonian)
@@ -325,6 +326,22 @@ class JelliumTest(unittest.TestCase):
             grid, spinless, include_constant=True)
 
         difference = hamiltonian_with_constant - hamiltonian_without_constant
-        expected = FermionOperator.identity() * (2.8372 / length_scale)
+        expected = QubitOperator('') * (2.8372 / length_scale)
 
-        self.assertTrue(expected.isclose(difference))
+        self.assertTrue(expected == difference)
+
+    def test_plane_wave_energy_cutoff(self):
+        grid = Grid(dimensions=1, length=5, scale=1.0)
+        spinless = True
+        e_cutoff = 20.0
+
+        hamiltonian_1 = jellium_model(grid, spinless, True, False)
+        jw_1 = jordan_wigner(hamiltonian_1)
+        spectrum_1 = eigenspectrum(jw_1)
+
+        hamiltonian_2 = jellium_model(grid, spinless, True, False, e_cutoff)
+        jw_2 = jordan_wigner(hamiltonian_2)
+        spectrum_2 = eigenspectrum(jw_2)
+
+        max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
+        self.assertGreater(max_diff, 0.)
