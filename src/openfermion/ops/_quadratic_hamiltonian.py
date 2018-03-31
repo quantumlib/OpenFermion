@@ -699,13 +699,11 @@ def givens_decomposition(unitary_rows):
             Givens rotation of coordinates
             :math:`i` and :math:`j` by angles :math:`\\theta` and
             :math:`\\varphi`.
-        left_decomposition (list[tuple]):
-            The decomposition of :math:`V^\dagger D`.
+        left_unitary (ndarray):
+            An :math:`m \\times m` numpy array representing the matrix
+            :math:`V`.
         diagonal (ndarray):
             A list of the nonzero entries of :math:`D`.
-        left_diagonal (ndarray):
-            A list of the nonzero entries left from the decomposition
-            of :math:`V^\dagger D`.
     """
     current_matrix = numpy.copy(unitary_rows)
     m, n = current_matrix.shape
