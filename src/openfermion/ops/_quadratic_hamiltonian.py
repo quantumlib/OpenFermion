@@ -341,11 +341,11 @@ class QuadraticHamiltonian(PolynomialTensor):
         if self.conserves_particle_number:
             # The Hamiltonian conserves particle number, so we don't need
             # to use the most general procedure.
-            decomposition, left_decomposition, diagonal, left_diagonal = (
-                givens_decomposition(diagonalizing_unitary))
+            decomposition, diagonal = givens_decomposition_square(
+                    diagonalizing_unitary)
             circuit_description = list(reversed(
-                decomposition + left_decomposition +
-                list(enumerate(left_diagnonal))))
+                decomposition + list(enumerate(diagonal))
+                ))
         else:
             # The Hamiltonian does not conserve particle number, so we
             # need to use the most general procedure.
@@ -358,7 +358,8 @@ class QuadraticHamiltonian(PolynomialTensor):
             # need to use left_diagonal too
             circuit_description = list(reversed(
                 decomposition + left_decomposition +
-                list(enumerate(left_diagnonal))))
+                list(enumerate(left_diagnonal))
+                ))
 
         return circuit_description
 
@@ -603,51 +604,9 @@ def fermionic_gaussian_decomposition(unitary_rows):
     current_matrix = left_unitary.T
     for k in range(n):
         current_matrix[:, k] *= diagonal[k].conj()
-    left_decomposition = []
 
-    for k in range(2 * (n - 1) - 1):
-        # Initialize the list of parallel operations to perform
-        # in this iteration
-        parallel_ops = []
-
-        # Get the (row, column) indices of elements to zero out in parallel.
-        if k < n - 1:
-            start_row = 0
-            start_column = n - 1 - k
-        else:
-            start_row = k - (n - 2)
-            start_column = k - (n - 3)
-        column_indices = range(start_column, n, 2)
-        row_indices = range(start_row, start_row + len(column_indices))
-        indices_to_zero_out = zip(row_indices, column_indices)
-
-        for i, j in indices_to_zero_out:
-            # Compute the Givens rotation to zero out the (i, j) element,
-            # if needed
-            right_element = current_matrix[i, j].conj()
-            if abs(right_element) > EQ_TOLERANCE:
-                # We actually need to perform a Givens rotation
-                left_element = current_matrix[i, j - 1].conj()
-                givens_rotation = givens_matrix_elements(left_element,
-                                                         right_element,
-                                                         which='right')
-
-                # Add the parameters to the list
-                theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
-                phi = numpy.angle(givens_rotation[1, 1])
-                parallel_ops.append((j - 1, j, theta, phi))
-
-                # Update the matrix
-                givens_rotate(current_matrix, givens_rotation,
-                              j - 1, j, which='col')
-
-        # If the current list of parallel operations is not empty,
-        # append it to the list,
-        if parallel_ops:
-            left_decomposition.append(tuple(parallel_ops))
-
-    # Get the diagonal entries
-    left_diagonal = current_matrix[range(n), range(n)]
+    left_decomposition, left_diagonal = givens_decomposition_square(
+            current_matrix)
 
     return decomposition, left_decomposition, diagonal, left_diagonal
 
@@ -795,6 +754,105 @@ def givens_decomposition(unitary_rows):
     diagonal = current_matrix.diagonal()
 
     return givens_rotations, left_unitary, diagonal
+
+
+def givens_decomposition_square(unitary_matrix):
+    """Decompose a square matrix into a sequence of Givens rotations.
+
+    The input is a square :math:`n \\times n` matrix :math:`Q`.
+    :math:`Q` can be decomposed as follows:
+
+    .. math::
+
+        Q = DU
+
+    where :math:`U` is unitary and :math:`D` is diagonal.
+    Furthermore, we can decompose :math:`U` as
+
+    .. math::
+
+        U = G_k ... G_1
+
+    where :math:`G_1, \\ldots, G_k` are complex Givens rotations.
+    A Givens rotation is a rotation within the two-dimensional subspace
+    spanned by two coordinate axes. Within the two relevant coordinate
+    axes, a Givens rotation has the form
+
+    .. math::
+
+        \\begin{pmatrix}
+            \\cos(\\theta) & -e^{i \\varphi} \\sin(\\theta) \\\\
+            \\sin(\\theta) &     e^{i \\varphi} \\cos(\\theta)
+        \\end{pmatrix}.
+
+    Args:
+        unitary_matrix: A numpy array with orthonormal rows,
+            representing the matrix Q.
+
+    Returns
+    -------
+        decomposition (list[tuple]):
+            A list of tuples of objects describing Givens
+            rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
+            The Givens rotations within a tuple can be implemented in parallel.
+            The description of a Givens rotation is itself a tuple of the
+            form :math:`(i, j, \\theta, \\varphi)`, which represents a
+            Givens rotation of coordinates
+            :math:`i` and :math:`j` by angles :math:`\\theta` and
+            :math:`\\varphi`.
+        diagonal (ndarray):
+            A list of the nonzero entries of :math:`D`.
+    """
+    current_matrix = numpy.copy(unitary_matrix)
+    n = current_matrix.shape[0]
+
+    decomposition = []
+
+    for k in range(2 * (n - 1) - 1):
+        # Initialize the list of parallel operations to perform
+        # in this iteration
+        parallel_ops = []
+
+        # Get the (row, column) indices of elements to zero out in parallel.
+        if k < n - 1:
+            start_row = 0
+            start_column = n - 1 - k
+        else:
+            start_row = k - (n - 2)
+            start_column = k - (n - 3)
+        column_indices = range(start_column, n, 2)
+        row_indices = range(start_row, start_row + len(column_indices))
+        indices_to_zero_out = zip(row_indices, column_indices)
+
+        for i, j in indices_to_zero_out:
+            # Compute the Givens rotation to zero out the (i, j) element,
+            # if needed
+            right_element = current_matrix[i, j].conj()
+            if abs(right_element) > EQ_TOLERANCE:
+                # We actually need to perform a Givens rotation
+                left_element = current_matrix[i, j - 1].conj()
+                givens_rotation = givens_matrix_elements(left_element,
+                                                         right_element,
+                                                         which='right')
+
+                # Add the parameters to the list
+                theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
+                phi = numpy.angle(givens_rotation[1, 1])
+                parallel_ops.append((j - 1, j, theta, phi))
+
+                # Update the matrix
+                givens_rotate(current_matrix, givens_rotation,
+                              j - 1, j, which='col')
+
+        # If the current list of parallel operations is not empty,
+        # append it to the list,
+        if parallel_ops:
+            decomposition.append(tuple(parallel_ops))
+
+    # Get the diagonal entries
+    diagonal = current_matrix[range(n), range(n)]
+
+    return decomposition, diagonal
 
 
 def givens_matrix_elements(a, b, which='left'):
