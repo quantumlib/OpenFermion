@@ -334,7 +334,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                 of modes :math:`i` and :math:`j` by angles :math:`\\theta`
                 and :math:`\\varphi`, or a tuple of the form
                 :math:`(j, \\varphi)`, indicating the operation
-                :math:`e^{-i \\varphi a^\dagger_j a_j}`.
+                :math:`e^{i \\varphi a^\dagger_j a_j}`.
         """
         diagonalizing_unitary = self.diagonalizing_bogoliubov_transform()
 
@@ -344,7 +344,8 @@ class QuadraticHamiltonian(PolynomialTensor):
             decomposition, diagonal = givens_decomposition_square(
                     diagonalizing_unitary)
             circuit_description = list(reversed(
-                decomposition + list(enumerate(diagonal))
+                decomposition +
+                [tuple((j, -numpy.angle(d)) for j, d in enumerate(diagonal))]
                 ))
         else:
             # The Hamiltonian does not conserve particle number, so we
@@ -358,7 +359,7 @@ class QuadraticHamiltonian(PolynomialTensor):
             # need to use left_diagonal too
             circuit_description = list(reversed(
                 decomposition + left_decomposition +
-                list(enumerate(left_diagnonal))
+                [tuple((j, -numpy.angle(d)) for j, d in enumerate(diagonal))]
                 ))
 
         return circuit_description

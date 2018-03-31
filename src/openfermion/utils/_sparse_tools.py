@@ -659,6 +659,16 @@ def jw_sparse_particle_hole_transformation_last_mode(n_qubits):
     return kronecker_operators([left_eye, pauli_matrix_map['X']])
 
 
+def jw_sparse_occupation_phase(j, phi, n_qubits):
+    """Return the matrix that performs e^{i phi a^\dagger_j a_j} under the JWT.
+    """
+    left_eye = scipy.sparse.eye(2 ** j, format='csc')
+    z_rotation = scipy.sparse.csc_matrix(
+            ([1., numpy.exp(1.j * phi)], [0, 1], [0, 1, 2]))
+    right_eye = scipy.sparse.eye(2 ** (n_qubits - j - 1), format='csc')
+    return kronecker_operators([left_eye, z_rotation, right_eye])
+
+
 def get_density_matrix(states, probabilities):
     n_qubits = states[0].shape[0]
     density_matrix = scipy.sparse.csc_matrix(

@@ -14,12 +14,18 @@
 from __future__ import absolute_import
 
 import numpy
+import scipy.sparse
 import unittest
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (normal_ordered, FermionOperator)
 from openfermion.transforms import get_fermion_operator, get_sparse_operator
-from openfermion.utils import get_ground_state, majorana_operator
+from openfermion.utils import (
+        get_ground_state, jw_configuration_state, majorana_operator)
+from openfermion.utils._sparse_tools import (
+        jw_sparse_givens_rotation,
+        jw_sparse_occupation_phase,
+        jw_sparse_particle_hole_transformation_last_mode)
 from openfermion.utils._testing_utils import (random_antisymmetric_matrix,
                                               random_hermitian_matrix,
                                               random_quadratic_hamiltonian,
@@ -36,7 +42,7 @@ from openfermion.ops._quadratic_hamiltonian import (
         swap_rows)
 
 
-class QuadraticHamiltoniansTest(unittest.TestCase):
+class QuadraticHamiltonianTest(unittest.TestCase):
     def setUp(self):
         self.n_qubits = 5
         self.constant = 1.7
@@ -215,6 +221,80 @@ class QuadraticHamiltoniansTest(unittest.TestCase):
         for i in numpy.ndindex((self.n_qubits, self.n_qubits)):
             self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
             self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+
+class DiagonalizingCircuitTest(unittest.TestCase):
+
+    def setUp(self):
+        self.n_qubits_range = range(3, 9)
+
+    def test_particle_conserving(self):
+        for n_qubits in self.n_qubits_range:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                n_qubits, True)
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+
+            # Diagonalize the Hamiltonian using the circuit
+            circuit_description = reversed(
+                    quadratic_hamiltonian.diagonalizing_circuit())
+
+            for parallel_ops in circuit_description:
+                for op in parallel_ops:
+                    if len(op) == 2:
+                        j, phi = op
+                        gate = jw_sparse_occupation_phase(j, phi, n_qubits)
+                    else:
+                        i, j, theta, phi = op
+                        gate = jw_sparse_givens_rotation(
+                                i, j, theta, phi, n_qubits)
+                    sparse_operator = (
+                            gate.getH().dot(sparse_operator).dot(gate))
+
+            # Check that the result is diagonal
+            diag = scipy.sparse.diags(sparse_operator.diagonal())
+            difference = sparse_operator - diag
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+    def test_non_particle_conserving(self):
+        for n_qubits in self.n_qubits_range:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                n_qubits, False)
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+
+            # Diagonalize the Hamiltonian using the circuit
+            circuit_description = reversed(
+                    quadratic_hamiltonian.diagonalizing_circuit())
+
+            particle_hole_transformation = (
+                jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+            for parallel_ops in circuit_description:
+                for op in parallel_ops:
+                    if op == 'pht':
+                        gate = particle_hole_transformation
+                    elif len(op) == 2:
+                        j, phi = op
+                        gate = jw_sparse_occupation_phase(j, phi, n_qubits)
+                    else:
+                        i, j, theta, phi = op
+                        gate = jw_sparse_givens_rotation(
+                                i, j, theta, phi, n_qubits)
+                    sparse_operator = (
+                            gate.getH().dot(sparse_operator).dot(gate))
+
+            # Check that the result is diagonal
+            diag = scipy.sparse.diags(sparse_operator.diagonal())
+            difference = sparse_operator - diag
+            discrepancy = 0.
+            if difference.nnz:
+                discrepancy = max(abs(difference.data))
+
+            self.assertTrue(discrepancy < EQ_TOLERANCE)
 
 
 class AntisymmetricCanonicalFormTest(unittest.TestCase):
