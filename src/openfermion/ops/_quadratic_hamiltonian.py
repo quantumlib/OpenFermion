@@ -325,6 +325,8 @@ class QuadraticHamiltonian(PolynomialTensor):
             # Get the circuit description
             decomposition, left_decomposition, diagonal, left_diagonal = (
                 fermionic_gaussian_decomposition(gaussian_unitary_matrix))
+            # TODO
+            # need to use left_diagonal too
             circuit_description = list(reversed(
                 decomposition + left_decomposition))
 
