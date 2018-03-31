@@ -311,10 +311,10 @@ class QuadraticHamiltonian(PolynomialTensor):
 
             return diagonalizing_unitary
 
-    def gaussian_unitary_circuit(self):
-        """Get a circuit for the Gaussian unitary for this Hamiltonian
+    def diagonalizing_circuit(self):
+        """Get a circuit for a unitary that diagonalizes this Hamiltonian
 
-        This circuit performs the transformation to the basis in which the
+        This circuit performs the transformation to a basis in which the
         Hamiltonian takes the diagonal form
 
         .. math::
@@ -327,25 +327,25 @@ class QuadraticHamiltonian(PolynomialTensor):
                 A list of operations describing the circuit. Each operation
                 is a tuple of objects describing elementary operations that
                 can be performed in parallel. Each elementary operation
-                is either the string 'pht', indicating a particle-hole
-                transformation on the last fermionic mode, or a tuple of
+                is either the string 'pht' indicating a particle-hole
+                transformation on the last fermionic mode, a tuple of
                 the form :math:`(i, j, \\theta, \\varphi)`,
                 indicating a Givens rotation
                 of modes :math:`i` and :math:`j` by angles :math:`\\theta`
-                and :math:`\\varphi`.
+                and :math:`\\varphi`, or a tuple of the form
+                :math:`(j, \\varphi)`, indicating the operation
+                :math:`e^{-i \\varphi a^\dagger_j a_j}`.
         """
+        diagonalizing_unitary = self.diagonalizing_bogoliubov_transform()
+
         if self.conserves_particle_number:
             # The Hamiltonian conserves particle number, so we don't need
             # to use the most general procedure.
-            energies, diagonalizing_unitary_T = numpy.linalg.eigh(
-                    self.combined_hermitian_part)
             circuit_description = list(reversed(
-                general_givens_decomposition(diagonalizing_unitary_T.T)))
+                general_givens_decomposition(diagonalizing_unitary)))
         else:
             # The Hamiltonian does not conserve particle number, so we
             # need to use the most general procedure.
-            diagonalizing_unitary = self.diagonalizing_bogoliubov_transform()
-
             # Get the unitary rows which represent the Gaussian unitary
             gaussian_unitary_matrix = diagonalizing_unitary[self.n_qubits:]
 
@@ -437,26 +437,6 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_rows(diagonal, i, arg_min)
 
     return canonical, orthogonal.T
-
-
-def swap_rows(M, i, j):
-    """Swap rows i and j of matrix M."""
-    if len(M.shape) == 1:
-        M[i], M[j] = M[j], M[i]
-    else:
-        row_i = M[i, :].copy()
-        row_j = M[j, :].copy()
-        M[i, :], M[j, :] = row_j, row_i
-
-
-def swap_columns(M, i, j):
-    """Swap columns i and j of matrix M."""
-    if len(M.shape) == 1:
-        M[i], M[j] = M[j], M[i]
-    else:
-        column_i = M[:, i].copy()
-        column_j = M[:, j].copy()
-        M[:, i], M[:, j] = column_j, column_i
 
 
 def fermionic_gaussian_decomposition(unitary_rows):
@@ -669,6 +649,153 @@ def fermionic_gaussian_decomposition(unitary_rows):
     return decomposition, left_decomposition, diagonal, left_diagonal
 
 
+def givens_decomposition(unitary_rows):
+    """Decompose a matrix into a sequence of Givens rotations.
+
+    The input is an :math:`m \\times n` matrix :math:`Q` with :math:`m \leq n`.
+    The rows of :math:`Q` are orthonormal.
+    :math:`Q` can be decomposed as follows:
+
+    .. math::
+
+        V Q U^\dagger = D
+
+    where :math:`V` and :math:`U` are unitary matrices, and :math:`D`
+    is an :math:`m \\times n` matrix with the
+    first :math:`m` columns forming a diagonal matrix and the rest of the
+    columns being zero. Furthermore, we can decompose :math:`U` as
+
+    .. math::
+
+        U = G_k ... G_1
+
+    where :math:`G_1, \\ldots, G_k` are complex Givens rotations.
+    A Givens rotation is a rotation within the two-dimensional subspace
+    spanned by two coordinate axes. Within the two relevant coordinate
+    axes, a Givens rotation has the form
+
+    .. math::
+
+        \\begin{pmatrix}
+            \\cos(\\theta) & -e^{i \\varphi} \\sin(\\theta) \\\\
+            \\sin(\\theta) &     e^{i \\varphi} \\cos(\\theta)
+        \\end{pmatrix}.
+
+    Args:
+        unitary_rows: A numpy array or matrix with orthonormal rows,
+            representing the matrix Q.
+
+    Returns
+    -------
+        givens_rotations (list[tuple]):
+            A list of tuples of objects describing Givens
+            rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
+            The Givens rotations within a tuple can be implemented in parallel.
+            The description of a Givens rotation is itself a tuple of the
+            form :math:`(i, j, \\theta, \\varphi)`, which represents a
+            Givens rotation of coordinates
+            :math:`i` and :math:`j` by angles :math:`\\theta` and
+            :math:`\\varphi`.
+        left_decomposition (list[tuple]):
+            The decomposition of :math:`V^\dagger D`.
+        diagonal (ndarray):
+            A list of the nonzero entries of :math:`D`.
+        left_diagonal (ndarray):
+            A list of the nonzero entries left from the decomposition
+            of :math:`V^T D^*`.
+    """
+    current_matrix = numpy.copy(unitary_rows)
+    m, n = current_matrix.shape
+
+    # Check that m <= n
+    if m > n:
+        raise ValueError('The input m x n matrix must have m <= n')
+
+    # Compute left_unitary using Givens rotations
+    left_unitary = numpy.eye(m, dtype=complex)
+    for k in reversed(range(n - m + 1, n)):
+        # Zero out entries in column k
+        for l in range(m - n + k):
+            # Zero out entry in row l if needed
+            if abs(current_matrix[l, k]) > EQ_TOLERANCE:
+                givens_rotation = givens_matrix_elements(
+                    current_matrix[l, k], current_matrix[l + 1, k])
+                # Apply Givens rotation
+                givens_rotate(current_matrix, givens_rotation, l, l + 1)
+                givens_rotate(left_unitary, givens_rotation, l, l + 1)
+
+    # Compute the decomposition of current_matrix into Givens rotations
+    givens_rotations = []
+    # If m = n (the matrix is square) then we don't need to perform any
+    # Givens rotations!
+    if m != n:
+        # Get the maximum number of simultaneous rotations that
+        # will be performed
+        max_simul_rotations = min(m, n - m)
+        # There are n - 1 iterations (the circuit depth is n - 1)
+        for k in range(n - 1):
+            # Get the (row, column) indices of elements to zero out in
+            # parallel.
+            if k < max_simul_rotations - 1:
+                # There are k + 1 elements to zero out
+                start_row = 0
+                end_row = k + 1
+                start_column = n - m - k
+                end_column = start_column + 2 * (k + 1)
+            elif k > n - 1 - max_simul_rotations:
+                # There are n - 1 - k elements to zero out
+                start_row = m - (n - 1 - k)
+                end_row = m
+                start_column = m - (n - 1 - k) + 1
+                end_column = start_column + 2 * (n - 1 - k)
+            else:
+                # There are max_simul_rotations elements to zero out
+                if max_simul_rotations == m:
+                    start_row = 0
+                    end_row = m
+                    start_column = n - m - k
+                    end_column = start_column + 2 * m
+                else:
+                    start_row = k + 1 - max_simul_rotations
+                    end_row = k + 1
+                    start_column = k + 1 - max_simul_rotations + 1
+                    end_column = start_column + 2 * max_simul_rotations
+
+            row_indices = range(start_row, end_row)
+            column_indices = range(start_column, end_column, 2)
+            indices_to_zero_out = zip(row_indices, column_indices)
+
+            parallel_rotations = []
+            for i, j in indices_to_zero_out:
+                # Compute the Givens rotation to zero out the (i, j) element,
+                # if needed
+                right_element = current_matrix[i, j].conj()
+                if abs(right_element) > EQ_TOLERANCE:
+                    # We actually need to perform a Givens rotation
+                    left_element = current_matrix[i, j - 1].conj()
+                    givens_rotation = givens_matrix_elements(
+                        left_element, right_element, which='right')
+
+                    # Add the parameters to the list
+                    theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
+                    phi = numpy.angle(givens_rotation[1, 1])
+                    parallel_rotations.append((j - 1, j, theta, phi))
+
+                    # Update the matrix
+                    givens_rotate(current_matrix, givens_rotation,
+                                  j - 1, j, which='col')
+
+            # If the current list of parallel operations is not empty,
+            # append it to the list,
+            if parallel_rotations:
+                givens_rotations.append(tuple(parallel_rotations))
+
+    # Get the diagonal entries
+    diagonal = current_matrix.diagonal()
+
+    return givens_rotations, left_unitary, diagonal
+
+
 def givens_matrix_elements(a, b, which='left'):
     """Compute the matrix elements of the Givens rotation that zeroes out one
     of two row entries.
@@ -789,3 +916,23 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
                       which='col')
     else:
         raise ValueError('"which" must be equal to "row" or "col".')
+
+
+def swap_rows(M, i, j):
+    """Swap rows i and j of matrix M."""
+    if len(M.shape) == 1:
+        M[i], M[j] = M[j], M[i]
+    else:
+        row_i = M[i, :].copy()
+        row_j = M[j, :].copy()
+        M[i, :], M[j, :] = row_j, row_i
+
+
+def swap_columns(M, i, j):
+    """Swap columns i and j of matrix M."""
+    if len(M.shape) == 1:
+        M[i], M[j] = M[j], M[i]
+    else:
+        column_i = M[:, i].copy()
+        column_j = M[:, j].copy()
+        M[:, i], M[:, j] = column_j, column_i
