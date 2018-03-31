@@ -341,8 +341,11 @@ class QuadraticHamiltonian(PolynomialTensor):
         if self.conserves_particle_number:
             # The Hamiltonian conserves particle number, so we don't need
             # to use the most general procedure.
+            decomposition, left_decomposition, diagonal, left_diagonal = (
+                givens_decomposition(diagonalizing_unitary))
             circuit_description = list(reversed(
-                general_givens_decomposition(diagonalizing_unitary)))
+                decomposition + left_decomposition +
+                list(enumerate(left_diagnonal))))
         else:
             # The Hamiltonian does not conserve particle number, so we
             # need to use the most general procedure.
@@ -352,10 +355,10 @@ class QuadraticHamiltonian(PolynomialTensor):
             # Get the circuit description
             decomposition, left_decomposition, diagonal, left_diagonal = (
                 fermionic_gaussian_decomposition(gaussian_unitary_matrix))
-            # TODO
             # need to use left_diagonal too
             circuit_description = list(reversed(
-                decomposition + left_decomposition))
+                decomposition + left_decomposition +
+                list(enumerate(left_diagnonal))))
 
         return circuit_description
 
@@ -702,7 +705,7 @@ def givens_decomposition(unitary_rows):
             A list of the nonzero entries of :math:`D`.
         left_diagonal (ndarray):
             A list of the nonzero entries left from the decomposition
-            of :math:`V^T D^*`.
+            of :math:`V^\dagger D`.
     """
     current_matrix = numpy.copy(unitary_rows)
     m, n = current_matrix.shape
