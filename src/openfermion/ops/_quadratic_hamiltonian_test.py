@@ -24,7 +24,6 @@ from openfermion.utils import (
         get_ground_state, jw_configuration_state, majorana_operator)
 from openfermion.utils._sparse_tools import (
         jw_sparse_givens_rotation,
-        jw_sparse_occupation_phase,
         jw_sparse_particle_hole_transformation_last_mode)
 from openfermion.utils._testing_utils import (random_antisymmetric_matrix,
                                               random_hermitian_matrix,
