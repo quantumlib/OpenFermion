@@ -240,13 +240,9 @@ class DiagonalizingCircuitTest(unittest.TestCase):
 
             for parallel_ops in circuit_description:
                 for op in parallel_ops:
-                    if len(op) == 2:
-                        j, phi = op
-                        gate = jw_sparse_occupation_phase(j, phi, n_qubits)
-                    else:
-                        i, j, theta, phi = op
-                        gate = jw_sparse_givens_rotation(
-                                i, j, theta, phi, n_qubits)
+                    i, j, theta, phi = op
+                    gate = jw_sparse_givens_rotation(
+                            i, j, theta, phi, n_qubits)
                     sparse_operator = (
                             gate.getH().dot(sparse_operator).dot(gate))
 
@@ -285,9 +281,6 @@ class DiagonalizingCircuitTest(unittest.TestCase):
                 for op in parallel_ops:
                     if op == 'pht':
                         gate = particle_hole_transformation
-                    elif len(op) == 2:
-                        j, phi = op
-                        gate = jw_sparse_occupation_phase(j, phi, n_qubits)
                     else:
                         i, j, theta, phi = op
                         gate = jw_sparse_givens_rotation(

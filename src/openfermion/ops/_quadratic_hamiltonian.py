@@ -328,13 +328,11 @@ class QuadraticHamiltonian(PolynomialTensor):
                 is a tuple of objects describing elementary operations that
                 can be performed in parallel. Each elementary operation
                 is either the string 'pht' indicating a particle-hole
-                transformation on the last fermionic mode, a tuple of
+                transformation on the last fermionic mode, or a tuple of
                 the form :math:`(i, j, \\theta, \\varphi)`,
                 indicating a Givens rotation
                 of modes :math:`i` and :math:`j` by angles :math:`\\theta`
-                and :math:`\\varphi`, or a tuple of the form
-                :math:`(j, \\varphi)`, indicating the operation
-                :math:`e^{i \\varphi a^\dagger_j a_j}`.
+                and :math:`\\varphi`.
         """
         diagonalizing_unitary = self.diagonalizing_bogoliubov_transform()
 
