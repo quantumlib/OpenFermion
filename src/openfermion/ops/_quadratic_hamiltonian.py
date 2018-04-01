@@ -51,13 +51,12 @@ class QuadraticHamiltonian(PolynomialTensor):
         chemical_potential(float): The chemical potential :math:`\mu`.
     """
 
-    def __init__(self, constant, hermitian_part,
-                 antisymmetric_part=None, chemical_potential=0.):
+    def __init__(self, hermitian_part, antisymmetric_part=None,
+                 constant=0., chemical_potential=0.):
         """
         Initialize the QuadraticHamiltonian class.
 
         Args:
-            constant(float): A constant term in the operator.
             hermitian_part(ndarray): The matrix :math:`M`, which represents the
                 coefficients of the particle-number-conserving terms.
                 This is an `n_qubits` x `n_qubits` numpy array of complex
@@ -67,7 +66,9 @@ class QuadraticHamiltonian(PolynomialTensor):
                 non-particle-number-conserving terms.
                 This is an `n_qubits` x `n_qubits` numpy array of complex
                 numbers.
-            chemical_potential(float): The chemical potential :math:`\mu`.
+            constant(float, optional): A constant term in the operator.
+            chemical_potential(float, optional): The chemical potential
+                :math:`\mu`.
         """
         n_qubits = hermitian_part.shape[0]
 

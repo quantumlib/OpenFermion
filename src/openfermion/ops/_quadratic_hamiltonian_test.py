@@ -57,12 +57,12 @@ class QuadraticHamiltonianTest(unittest.TestCase):
 
         # Initialize a particle-number-conserving Hamiltonian
         self.quad_ham_pc = QuadraticHamiltonian(
-            self.constant, self.hermitian_mat)
+            self.hermitian_mat, constant=self.constant)
 
         # Initialize a non-particle-number-conserving Hamiltonian
         self.quad_ham_npc = QuadraticHamiltonian(
-            self.constant, self.hermitian_mat, self.antisymmetric_mat,
-            self.chemical_potential)
+            self.hermitian_mat, self.antisymmetric_mat,
+            self.constant, self.chemical_potential)
 
         # Initialize the sparse operators and get their ground energies
         self.quad_ham_pc_sparse = get_sparse_operator(self.quad_ham_pc)
