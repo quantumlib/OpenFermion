@@ -10,8 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Class and functions to store and manipulate Hamiltonians that are quadratic
-in the fermionic ladder operators."""
+"""Hamiltonians that are quadratic in the fermionic ladder operators."""
 from __future__ import absolute_import
 
 import numpy
