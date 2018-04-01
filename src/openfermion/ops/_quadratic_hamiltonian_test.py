@@ -260,6 +260,15 @@ class DiagonalizingCircuitTest(unittest.TestCase):
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
 
+            # Check that the eigenvalues are in the expected order
+            orbital_energies, constant = (
+                    quadratic_hamiltonian.orbital_energies())
+            for index in range(2 ** n_qubits):
+                bitstring = bin(index)[2:].zfill(n_qubits)
+                subset = [j for j in range(n_qubits) if bitstring[j] == '1']
+                energy = sum([orbital_energies[j] for j in subset]) + constant
+                self.assertAlmostEqual(sparse_operator[index, index], energy)
+
     def test_non_particle_conserving(self):
         for n_qubits in self.n_qubits_range:
             # Initialize a particle-number-conserving Hamiltonian
@@ -295,6 +304,15 @@ class DiagonalizingCircuitTest(unittest.TestCase):
                 discrepancy = max(abs(difference.data))
 
             self.assertTrue(discrepancy < EQ_TOLERANCE)
+
+            # Check that the eigenvalues are in the expected order
+            orbital_energies, constant = (
+                    quadratic_hamiltonian.orbital_energies())
+            for index in range(2 ** n_qubits):
+                bitstring = bin(index)[2:].zfill(n_qubits)
+                subset = [j for j in range(n_qubits) if bitstring[j] == '1']
+                energy = sum([orbital_energies[j] for j in subset]) + constant
+                self.assertAlmostEqual(sparse_operator[index, index], energy)
 
 
 class AntisymmetricCanonicalFormTest(unittest.TestCase):
