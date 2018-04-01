@@ -343,10 +343,7 @@ class QuadraticHamiltonian(PolynomialTensor):
             # to use the most general procedure.
             decomposition, diagonal = givens_decomposition_square(
                     diagonalizing_unitary)
-            circuit_description = list(reversed(
-                decomposition +
-                [tuple((j, -numpy.angle(d)) for j, d in enumerate(diagonal))]
-                ))
+            circuit_description = list(reversed(decomposition))
         else:
             # The Hamiltonian does not conserve particle number, so we
             # need to use the most general procedure.
@@ -358,9 +355,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                 fermionic_gaussian_decomposition(gaussian_unitary_matrix))
             # need to use left_diagonal too
             circuit_description = list(reversed(
-                decomposition + left_decomposition +
-                [tuple((j, -numpy.angle(d)) for j, d in enumerate(diagonal))]
-                ))
+                decomposition + left_decomposition))
 
         return circuit_description
 
