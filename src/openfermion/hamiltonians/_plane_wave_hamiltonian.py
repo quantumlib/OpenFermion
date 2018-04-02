@@ -222,7 +222,7 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
         if item[0] not in periodic_hash_table:
             raise ValueError("Invalid nuclear element.")
 
-    n_orbitals = grid.num_points()
+    n_orbitals = grid.num_points
     volume = grid.volume_scale()
     if spinless:
         n_qubits = n_orbitals

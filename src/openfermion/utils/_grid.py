@@ -66,7 +66,7 @@ class Grid:
 
         # If single float, construct cubic unit cell
         if isinstance(scale, float):
-            self.scale = numpy.diagonal([scale] * self.dimensions)
+            self.scale = numpy.diag([scale] * self.dimensions)
         else:
             self.scale = scale
 
@@ -88,7 +88,7 @@ class Grid:
             Integer momentum vector
         """
         # Set baseline for grid between [-N//2, N//2]
-        momentum_int = [(index[i] % self.length[i]) - self.shifts[i]
+        momentum_int = [index[i] - self.shifts[i]
                         for i in range(self.dimensions)]
 
         # Adjust for even grids without 0 point
@@ -149,9 +149,7 @@ class Grid:
         """
         # If we want to alias the momentum, do so in the index space
         if periodic:
-            momentum_ints = self.index_to_momentum_ints(
-                self.momentum_ints_to_index(momentum_ints))
-
+            """TODO"""
         momentum_vector = sum([n * self.reciprocal_scale[:, i]
                                for i, n in enumerate(momentum_ints)])
         return momentum_vector
@@ -177,7 +175,8 @@ class Grid:
             iterable[tuple[int]]:
                 The index-coordinate tuple of each point in the grid.
         """
-        return itertools.product(range(self.length), repeat=self.dimensions)
+        return itertools.product(*[range(self.length[i])
+                                  for i in range(self.dimensions)])
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):

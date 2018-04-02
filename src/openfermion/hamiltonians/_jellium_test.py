@@ -52,16 +52,10 @@ class JelliumTest(unittest.TestCase):
 
         # Test in 1D.
         grid = Grid(dimensions=1, length=4, scale=4.)
-        test_output = [position_vector(i, grid)
-                       for i in range(grid.length)]
-        correct_output = [-2, -1, 0, 1]
+        test_output = [position_vector(i, grid)[0]
+                       for i in range(grid.length[0])]
+        correct_output = [0., 1., 2., 3.]
         self.assertEqual(correct_output, test_output)
-
-        grid = Grid(dimensions=1, length=11, scale=2. * numpy.pi)
-        for i in range(grid.length):
-            self.assertAlmostEqual(
-                -position_vector(i, grid),
-                position_vector(grid.length - i - 1, grid))
 
         # Test in 2D.
         grid = Grid(dimensions=2, length=3, scale=3.)
@@ -71,23 +65,25 @@ class JelliumTest(unittest.TestCase):
             for j in range(3):
                 test_input += [(i, j)]
                 test_output += [position_vector((i, j), grid)]
-        correct_output = numpy.array([[-1., -1.], [-1., 0.], [-1., 1.],
-                                      [0., -1.], [0., 0.], [0., 1.],
-                                      [1., -1.], [1., 0.], [1., 1.]])
+        correct_output = numpy.array([[0., 0.], [0., 1.], [0., 2.],
+                                      [1., 0.], [1., 1.], [1., 2.],
+                                      [2., 0.], [2., 1.], [2., 2.]])
         self.assertAlmostEqual(0., numpy.amax(test_output - correct_output))
 
     def test_momentum_vector(self):
         grid = Grid(dimensions=1, length=3, scale=2. * numpy.pi)
         test_output = [momentum_vector(i, grid)
-                       for i in range(grid.length)]
+                       for i in range(grid.length[0])]
         correct_output = [-1., 0, 1.]
+        print test_output
+        print correct_output
         self.assertEqual(correct_output, test_output)
 
         grid = Grid(dimensions=1, length=11, scale=2. * numpy.pi)
-        for i in range(grid.length):
+        for i in range(grid.length[0]):
             self.assertAlmostEqual(
                 -momentum_vector(i, grid),
-                momentum_vector(grid.length - i - 1, grid))
+                momentum_vector(grid.length[0] - i - 1, grid))
 
         # Test in 2D.
         grid = Grid(dimensions=2, length=3, scale=2. * numpy.pi)
@@ -189,7 +185,7 @@ class JelliumTest(unittest.TestCase):
         # Test that the coefficients post-JW transform are as claimed in paper.
         grid = Grid(dimensions=2, length=3, scale=2.)
         spinless = 1
-        n_orbitals = grid.num_points()
+        n_orbitals = grid.num_points
         n_qubits = (2 ** (1 - spinless)) * n_orbitals
         volume = grid.volume_scale()
 
