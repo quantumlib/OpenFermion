@@ -72,8 +72,8 @@ def random_quadratic_hamiltonian(n_qubits,
         antisymmetric_mat = None
     else:
         antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
-    return QuadraticHamiltonian(constant, hermitian_mat,
-                                antisymmetric_mat, chemical_potential)
+    return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat,
+                                constant, chemical_potential)
 
 
 def random_interaction_operator(n_qubits, real=True):
