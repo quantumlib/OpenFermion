@@ -40,6 +40,10 @@ class PolynomialTensorTest(unittest.TestCase):
         self.polynomial_tensor_a = PolynomialTensor(
             {(): self.constant, (1, 0): one_body_a, (1, 1, 0, 0): two_body_a})
 
+        self.polynomial_tensor_a_with_zeros = PolynomialTensor(
+            {(): self.constant, (1, 0): one_body_a, (1, 1, 0, 0): two_body_a,
+             (1, 1, 0, 0, 0, 0): numpy.zeros([self.n_qubits] * 6)})
+
         one_body_na = numpy.zeros((self.n_qubits, self.n_qubits))
         two_body_na = numpy.zeros((self.n_qubits, self.n_qubits,
                                    self.n_qubits, self.n_qubits))
@@ -172,6 +176,12 @@ class PolynomialTensorTest(unittest.TestCase):
                             self.polynomial_tensor_hole)
         self.assertNotEqual(self.polynomial_tensor_a,
                             self.polynomial_tensor_spinful)
+
+        # OK to have different keys if arrays for differing keys are 0-arrays
+        self.assertEqual(self.polynomial_tensor_a,
+                         self.polynomial_tensor_a_with_zeros)
+        self.assertEqual(self.polynomial_tensor_a_with_zeros,
+                         self.polynomial_tensor_a)
 
     def test_neq(self):
         self.assertNotEqual(self.polynomial_tensor_a,

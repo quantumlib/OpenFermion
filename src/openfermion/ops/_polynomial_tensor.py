@@ -173,18 +173,27 @@ class PolynomialTensor(object):
             index = tuple([operator[0] for operator in args])
             self.n_body_tensors[key][index] = value
 
-    def __eq__(self, other_operator):
-        if self.n_qubits != other_operator.n_qubits:
+    def __eq__(self, other):
+        if self.n_qubits != other.n_qubits:
             return False
-        if self.n_body_tensors.keys() != other_operator.n_body_tensors.keys():
-            return False
+
         diff = 0.
-        for key in self.n_body_tensors:
-            self_tensor = self.n_body_tensors[key]
-            other_tensor = other_operator.n_body_tensors[key]
-            discrepancy = numpy.amax(
-                numpy.absolute(self_tensor - other_tensor))
+        self_keys = set(self.n_body_tensors.keys())
+        other_keys = set(other.n_body_tensors.keys())
+
+        for key in (self_keys | other_keys):
+            self_tensor = self.n_body_tensors.get(key)
+            other_tensor = other.n_body_tensors.get(key)
+
+            if self_tensor is not None and other_tensor is not None:
+                discrepancy = numpy.amax(
+                    numpy.absolute(self_tensor - other_tensor))
+            else:
+                tensor = self_tensor if other_tensor is None else other_tensor
+                discrepancy = numpy.amax(numpy.absolute(tensor))
+
             diff = max(diff, discrepancy)
+
         return diff < EQ_TOLERANCE
 
     def __neq__(self, other_operator):
