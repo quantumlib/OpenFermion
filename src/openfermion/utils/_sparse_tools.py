@@ -34,10 +34,6 @@ from openfermion.utils import (Grid, commutator, count_qubits,
                                number_operator,
                                slater_determinant_preparation_circuit,
                                up_index, down_index)
-from openfermion.hamiltonians._jellium import (grid_indices,
-                                               momentum_vector,
-                                               position_vector)
-
 
 # Make global definitions.
 identity_csc = scipy.sparse.identity(2, format='csc', dtype=complex)

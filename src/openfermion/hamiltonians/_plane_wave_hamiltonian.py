@@ -75,11 +75,11 @@ def dual_basis_external_potential(grid, geometry, spinless):
     else:
         spins = [0, 1]
     for pos_indices in grid.all_points_indices():
-        coordinate_p = position_vector(pos_indices, grid)
+        coordinate_p = grid.position_vector(pos_indices)
         for nuclear_term in geometry:
             coordinate_j = numpy.array(nuclear_term[1], float)
             for momenta_indices in grid.all_points_indices():
-                momenta = momentum_vector(momenta_indices, grid)
+                momenta = grid.momentum_vector(momenta_indices)
                 momenta_squared = momenta.dot(momenta)
                 if momenta_squared == 0:
                     continue
@@ -90,7 +90,7 @@ def dual_basis_external_potential(grid, geometry, spinless):
                                numpy.exp(exp_index))
 
                 for spin_p in spins:
-                    orbital_p = orbital_id(grid, pos_indices, spin_p)
+                    orbital_p = grid.orbital_id(pos_indices, spin_p)
                     operators = ((orbital_p, 1), (orbital_p, 0))
                     if operator is None:
                         operator = FermionOperator(operators, coefficient)
@@ -122,14 +122,17 @@ def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
 
     for indices_p in grid.all_points_indices():
         for indices_q in grid.all_points_indices():
-            shift = grid.length // 2
-            grid_indices_p_q = [
-                (indices_p[i] - indices_q[i] + shift) % grid.length
-                for i in range(grid.dimensions)]
-            momenta_p_q = momentum_vector(grid_indices_p_q, grid)
-            momenta_p_q_squared = momenta_p_q.dot(momenta_p_q)
-            if momenta_p_q_squared == 0:
+            momenta_ints_p = grid.index_to_momentum_ints(indices_p)
+            momenta_ints_q = grid.index_to_momentum_ints(indices_q)
+            momenta_ints_qp = momenta_ints_q - momenta_ints_p
+
+            # Cut out 0 momentum modes
+            if momenta_ints_qp == (0, ) * grid.dimensions:
                 continue
+
+            momenta_p_q = grid.momentum_ints_to_value(momenta_ints_qp,
+                                                      periodic=False)
+            momenta_p_q_squared = momenta_p_q.dot(momenta_p_q)
 
             # Energy cutoff.
             if e_cutoff is not None and momenta_p_q_squared / 2. > e_cutoff:
@@ -143,8 +146,8 @@ def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
                                numpy.exp(exp_index))
 
                 for spin in spins:
-                    orbital_p = orbital_id(grid, indices_p, spin)
-                    orbital_q = orbital_id(grid, indices_q, spin)
+                    orbital_p = grid.orbital_id(indices_p, spin)
+                    orbital_q = grid.orbital_id(indices_q, spin)
                     operators = ((orbital_p, 1), (orbital_q, 0))
                     if operator is None:
                         operator = FermionOperator(operators, coefficient)
@@ -232,14 +235,14 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
     external_potential = QubitOperator()
 
     for k_indices in grid.all_points_indices():
-        momenta = momentum_vector(k_indices, grid)
+        momenta = grid.momentum_vector(k_indices)
         momenta_squared = momenta.dot(momenta)
         if momenta_squared == 0:
             continue
 
         for p in range(n_qubits):
-            index_p = grid_indices(p, grid, spinless)
-            coordinate_p = position_vector(index_p, grid)
+            index_p = grid.grid_indices(p, spinless)
+            coordinate_p = grid.position_vector(index_p)
 
             for nuclear_term in geometry:
                 coordinate_j = numpy.array(nuclear_term[1], float)

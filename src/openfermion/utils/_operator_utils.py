@@ -20,10 +20,6 @@ import numpy
 import os
 
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
-from openfermion.hamiltonians._jellium import (grid_indices,
-                                               momentum_vector,
-                                               orbital_id,
-                                               position_vector)
 from openfermion.ops import (FermionOperator, InteractionOperator,
                              InteractionRDM, PolynomialTensor, QubitOperator)
 from scipy.sparse import spmatrix

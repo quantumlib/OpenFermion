@@ -20,8 +20,8 @@ import numpy
 from openfermion.hamiltonians import jellium_model
 from openfermion.hamiltonians._plane_wave_hamiltonian import *
 from openfermion.ops import normal_ordered
-from openfermion.transforms import jordan_wigner
-from openfermion.utils import eigenspectrum, Grid
+from openfermion.transforms import jordan_wigner, get_sparse_operator
+from openfermion.utils import eigenspectrum, Grid, is_hermitian
 
 
 class PlaneWaveHamiltonianTest(unittest.TestCase):
@@ -69,30 +69,41 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
             wigner_seitz_length_scale(3, 2, dimension=0)
 
     def test_plane_wave_hamiltonian_integration(self):
-        length_set = [3, 4]
-        spinless_set = [True, False]
-        geometry = [('H', (0,)), ('H', (0.8,))]
+        # length_set = [3, 4]
+        length_set = [2, 3]
+        spinless_set = [True]
+        #spinless_set = [True, False]
         length_scale = 1.1
+        for geometry in [#[('H', (0,)), ('H', (0.8,))],
+                         #[('H', (0.1,))],
+                         [('H', (0.1,))]]:
+            for l in length_set:
+                for spinless in spinless_set:
+                    grid = Grid(dimensions=1, scale=length_scale, length=l)
+                    h_plane_wave = plane_wave_hamiltonian(
+                        grid, geometry, spinless, True, include_constant=True)
+                    h_dual_basis = plane_wave_hamiltonian(grid, geometry,
+                                                          spinless, False)
 
-        for l in length_set:
-            for spinless in spinless_set:
-                grid = Grid(dimensions=1, scale=length_scale, length=l)
-                h_plane_wave = plane_wave_hamiltonian(
-                    grid, geometry, spinless, True, include_constant=True)
-                h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless,
-                                                      False)
-                jw_h_plane_wave = jordan_wigner(h_plane_wave)
-                jw_h_dual_basis = jordan_wigner(h_dual_basis)
-                h_plane_wave_spectrum = eigenspectrum(jw_h_plane_wave)
-                h_dual_basis_spectrum = eigenspectrum(jw_h_dual_basis)
+                    # Test for Hermiticity
+                    plane_wave_operator = get_sparse_operator(h_plane_wave)
+                    dual_operator = get_sparse_operator(h_dual_basis)
+                    print plane_wave_operator
+                    print dual_operator
+                    self.assertTrue(is_hermitian((plane_wave_operator)))
+                    self.assertTrue(is_hermitian(dual_operator))
 
-                max_diff = numpy.amax(
-                    h_plane_wave_spectrum - h_dual_basis_spectrum)
-                min_diff = numpy.amin(
-                    h_plane_wave_spectrum - h_dual_basis_spectrum)
+                    jw_h_plane_wave = jordan_wigner(h_plane_wave)
+                    jw_h_dual_basis = jordan_wigner(h_dual_basis)
+                    h_plane_wave_spectrum = eigenspectrum(jw_h_plane_wave)
+                    h_dual_basis_spectrum = eigenspectrum(jw_h_dual_basis)
 
-                self.assertAlmostEqual(max_diff, 2.8372 / length_scale)
-                self.assertAlmostEqual(min_diff, 2.8372 / length_scale)
+                    max_diff = numpy.amax(
+                        h_plane_wave_spectrum - h_dual_basis_spectrum)
+                    min_diff = numpy.amin(
+                        h_plane_wave_spectrum - h_dual_basis_spectrum)
+                    self.assertAlmostEqual(max_diff, 2.8372 / length_scale)
+                    self.assertAlmostEqual(min_diff, 2.8372 / length_scale)
 
     def test_plane_wave_hamiltonian_default_to_jellium_with_no_geometry(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)

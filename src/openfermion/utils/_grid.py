@@ -17,6 +17,9 @@ import numpy
 import scipy
 import scipy.linalg
 
+# Exceptions.
+class OrbitalSpecificationError(Exception):
+    pass
 
 class Grid:
     """
@@ -37,9 +40,9 @@ class Grid:
                 dimension must be passed.  We assume column vectors define
                 the supercell vectors.
         """
-        if not isinstance(dimensions, int) or dimensions < 0:
+        if not isinstance(dimensions, int) or dimensions <= 0:
             raise ValueError(
-                'dimensions must be a non-negative int but was {} {}'.format(
+                'dimensions must be a positive int but was {} {}'.format(
                     type(dimensions), repr(dimensions)))
         if ((not isinstance(length, int) or length < 0) and
                 (not isinstance(length, tuple))):
@@ -80,6 +83,73 @@ class Grid:
         self.reciprocal_scale = 2 * numpy.pi * scipy.linalg.inv(self.scale).T
 
 
+    def volume_scale(self):
+        """
+        Returns:
+            float: The volume of a length-scale hypercube within the grid.
+        """
+        return self.volume
+
+
+    def all_points_indices(self):
+        """
+        Returns:
+            iterable[tuple[int]]:
+                The index-coordinate tuple of each point in the grid.
+        """
+        return itertools.product(*[range(self.length[i])
+                                  for i in range(self.dimensions)])
+
+    def position_vector(self, position_indices):
+        """Given grid point coordinate, return position vector with dimensions.
+
+        Args:
+            position_indices (int|iterable[int]):
+                List or tuple of integers giving grid point coordinate.
+                Allowed values are ints in [0, grid_length).
+
+        Returns:
+            position_vector (numpy.ndarray[float])
+        """
+        # Raise exceptions.
+        if isinstance(position_indices, int):
+            position_indices = [position_indices]
+        if not all(0 <= e < self.length[i]
+                   for i, e in enumerate(position_indices)):
+            raise OrbitalSpecificationError(
+                'Position indices must be integers in [0, grid_length).')
+
+        # Compute position vector.
+        vector = sum([(float(n) / self.length[i]) * self.scale[:, i]
+                      for i, n in enumerate(position_indices)])
+        return vector
+
+    def momentum_vector(self, momentum_indices):
+        """Given grid point coordinate, return momentum vector with dimensions.
+
+        Args:
+            momentum_indices: List or tuple of integers giving momentum
+            indices.
+                Allowed values are ints in [0, grid_length).
+
+            Returns:
+                momentum_vector: A numpy array giving the momentum vector with
+                    dimensions.
+        """
+        # Raise exceptions.
+        if isinstance(momentum_indices, int):
+            momentum_indices = [momentum_indices]
+        if (not all(0 <= e < self.length[i]
+                    for i, e in enumerate(momentum_indices))):
+            raise OrbitalSpecificationError(
+                'Momentum indices must be integers in [0, grid_length).')
+
+        # Compute momentum vector.
+        momentum_ints = self.index_to_momentum_ints(momentum_indices)
+        vector = self.momentum_ints_to_value(momentum_ints)
+
+        return vector
+
     def index_to_momentum_ints(self, index):
         """
         Args:
@@ -92,34 +162,9 @@ class Grid:
                         for i in range(self.dimensions)]
 
         # Adjust for even grids without 0 point
-        momentum_int = [v + ((v > 0) and (self.length[i] % 2) == 0) for i, v in
-                        enumerate(momentum_int)]
-
-        return momentum_int
-
-    def index_to_momentum_value(self, index):
-        """
-        Args:
-            index (tuple): d-dimensional tuple specifying index in the grid
-        Returns:
-            ndarray of momentum on the reciprocal lattice
-        """
-        # Calculate the momentum index and translate to vectors using recip lat
-        momentum_ints = self.index_to_momentum_ints(index)
-        momentum_vector = self.momentum_ints_to_value(momentum_ints)
-
-        return momentum_vector
-
-    def index_to_position(self, index):
-        """
-        Args:
-            index (tuple): d-dimensional tuple specifying index in the grid
-        Returns:
-            ndarray of position on the lattice
-        """
-        position_vector = sum([(float(n) / self.length[i]) * self.scale[:, i]
-                              for i, n in enumerate(index)])
-        return position_vector
+        # momentum_int = [v + ((v >= 0) and (self.length[i] % 2) == 0) for i, v in
+        #                 enumerate(momentum_int)]
+        return numpy.array(momentum_int, dtype=int)
 
     def momentum_ints_to_index(self, momentum_ints):
         """
@@ -128,11 +173,14 @@ class Grid:
         Returns:
             d-dimensional tuples of indices
         """
-        indices = [n + self.shifts[i] for i, n in enumerate(momentum_ints)]
 
-        # Take care of even dimension
-        indices = [n - ((n > 0) and (self.length[i] % 2) == 0)
-                   for i, v in enumerate(indices)]
+        # Take care of even length by removing 0 from momentum
+        # indices = [n - ((n >= 0) and (self.length[i] % 2) == 0)
+        #           for i, n in enumerate(momentum_ints)]
+        indices = momentum_ints
+
+        # Shift to indices
+        indices = [n + self.shifts[i] for i, n in enumerate(indices)]
 
         # Wrap dimensions
         indices = [n % self.length[i] for i, n in enumerate(indices)]
@@ -147,58 +195,89 @@ class Grid:
         Returns:
 
         """
-        # If we want to alias the momentum, do so in the index space
+        # Alias the higher momentum modes
         if periodic:
-            """TODO"""
+            momentum_ints = self.index_to_momentum_ints(
+                self.momentum_ints_to_index(momentum_ints))
+
         momentum_vector = sum([n * self.reciprocal_scale[:, i]
                                for i, n in enumerate(momentum_ints)])
         return momentum_vector
 
+    def orbital_id(self, grid_coordinates, spin=None):
+        """Return the tensor factor of a orbital with given coordinates and spin.
 
-    def volume_scale(self):
-        """
-        Returns:
-            float: The volume of a length-scale hypercube within the grid.
-        """
-        return self.volume
+        Args:
+            grid_coordinates: List or tuple of ints giving coordinates of grid
+                element. Acceptable to provide an int (instead of tuple or list)
+                for 1D case.
+            spin: Boole, 0 means spin down and 1 means spin up.
+                If None, assume spinless model.
 
-    def num_points(self):
-        """
         Returns:
-            int: The number of points in the grid.
+            tensor_factor (int):
+                tensor factor associated with provided orbital label.
         """
-        return self.num_points
+        # Initialize.
+        if isinstance(grid_coordinates, int):
+            grid_coordinates = [grid_coordinates]
 
-    def all_points_indices(self):
-        """
+        # Loop through dimensions of coordinate tuple.
+        tensor_factor = 0
+        for dimension, grid_coordinate in enumerate(grid_coordinates):
+
+            # Make sure coordinate is an integer in the correct bounds.
+            if (isinstance(grid_coordinate, int) and
+                        grid_coordinate < self.length[dimension]):
+                tensor_factor += (grid_coordinate *
+                                  int(numpy.product(self.length[:dimension])))
+
+            else:
+                # Raise for invalid model.
+                raise OrbitalSpecificationError(
+                    'Invalid orbital coordinates provided.')
+
+        # Account for spin and return.
+        if spin is None:
+            return tensor_factor
+        else:
+            tensor_factor *= 2
+            tensor_factor += spin
+            return tensor_factor
+
+    def grid_indices(self, qubit_id, spinless):
+        """This function is the inverse of orbital_id.
+
+        Args:
+            qubit_id (int): The tensor factor to map to grid indices.
+            spinless (bool): Whether to use the spinless model or not.
+
         Returns:
-            iterable[tuple[int]]:
-                The index-coordinate tuple of each point in the grid.
+            grid_indices (numpy.ndarray[int]):
+                The location of the qubit on the grid.
         """
-        return itertools.product(*[range(self.length[i])
-                                  for i in range(self.dimensions)])
+        # Remove spin degree of freedom.
+        orbital_id = qubit_id
+        if not spinless:
+            if (orbital_id % 2):
+                orbital_id -= 1
+            orbital_id /= 2
+
+        # Get grid indices.
+        grid_indices = []
+        for dimension in range(self.dimensions):
+            remainder = (orbital_id %
+                         int(numpy.product(self.length[:dimension + 1])))
+            grid_index = remainder // numpy.product(self.length[:dimension])
+            grid_indices += [grid_index]
+        return grid_indices
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
         return (self.dimensions == other.dimensions and
-                self.scale == other.scale and
+                (self.scale == other.scale).all() and
                 self.length == other.length)
 
     def __ne__(self, other):
         return not self == other
-
-    def __hash__(self):
-        return hash((Grid, self.dimensions, self.length, self.scale))
-
-    def __repr__(self):
-        return 'Grid(dimensions={}, length={}, scale={})'.format(
-            repr(self.dimensions),
-            repr(self.length),
-            repr(self.scale))
-
-    def __str__(self):
-        s = self.scale / self.length
-        return "{}**{}".format(
-            [(i - self.length // 2) * s for i in range(self.length)],
-            self.dimensions)
