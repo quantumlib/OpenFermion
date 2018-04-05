@@ -102,6 +102,12 @@ class GridTest(unittest.TestCase):
                                       [1, -1], [1, 0], [1, 1]])
         self.assertAlmostEqual(0., numpy.amax(test_output - correct_output))
 
+    def test_initialize(self):
+        g1 = Grid(dimensions=3, length=3, scale=1.0)
+        scale_matrix = numpy.diag([1.0] * 3)
+        g2 = Grid(dimensions=3, length=(3,3,3), scale=scale_matrix)
+        self.assertEqual(g1, g2)
+
     def test_preconditions(self):
         nan = float('nan')
 
@@ -125,6 +131,14 @@ class GridTest(unittest.TestCase):
             _ = Grid(dimensions=1, length=-1, scale=1.0)
         with self.assertRaises(ValueError):
             _ = Grid(dimensions=-1, length=1, scale=1.0)
+
+        with self.assertRaises(OrbitalSpecificationError):
+            g = Grid(dimensions=1, length=2, scale=1.0)
+            _ = g.position_vector((10, ))
+        with self.assertRaises(OrbitalSpecificationError):
+            g = Grid(dimensions=1, length=2, scale=1.0)
+            _ = g.momentum_vector((10, ))
+
 
     def test_properties(self):
         g = Grid(dimensions=2, length=3, scale=5.0)

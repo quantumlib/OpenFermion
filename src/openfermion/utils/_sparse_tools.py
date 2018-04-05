@@ -864,16 +864,16 @@ def expectation_one_body_db_operator_computational_basis_state(
     """
     expectation_value = 0.0
 
-    r_p = position_vector(grid_indices(dual_basis_action[0][0],
-                                       grid, spinless), grid)
-    r_q = position_vector(grid_indices(dual_basis_action[1][0],
-                                       grid, spinless), grid)
+    r_p = grid.position_vector(grid.grid_indices(dual_basis_action[0][0],
+                                                 spinless))
+    r_q = grid.position_vector(grid.grid_indices(dual_basis_action[1][0],
+                                                 spinless))
 
     for orbital in plane_wave_occ_orbitals:
         # If there's spin, p and q have to have the same parity (spin),
         # and the new orbital has to have the same spin as these.
-        k_orbital = momentum_vector(grid_indices(orbital,
-                                                 grid, spinless), grid)
+        k_orbital = grid.momentum_vector(grid.grid_indices(orbital,
+                                                           spinless))
         # The Fourier transform is spin-conserving. This means that p, q,
         # and the new orbital all have to have the same spin (parity).
         if spinless or (dual_basis_action[0][0] % 2 ==
@@ -902,8 +902,8 @@ def expectation_two_body_db_operator_computational_basis_state(
 
     r = {}
     for i in range(4):
-        r[i] = position_vector(grid_indices(dual_basis_action[i][0], grid,
-                                            spinless), grid)
+        r[i] = grid.position_vector(grid.grid_indices(dual_basis_action[i][0],
+                                                      spinless))
 
     rr = {}
     k_map = {}
@@ -916,7 +916,7 @@ def expectation_two_body_db_operator_computational_basis_state(
 
     # Pre-computations.
     for o in plane_wave_occ_orbitals:
-        k = momentum_vector(grid_indices(o, grid, spinless), grid)
+        k = grid.momentum_vector(grid.grid_indices(o, spinless))
         for i in range(2):
             for j in range(2, 4):
                 k_map[i][j][o] = k.dot(rr[i][j])
@@ -978,8 +978,8 @@ def expectation_three_body_db_operator_computational_basis_state(
 
     r = {}
     for i in range(6):
-        r[i] = position_vector(grid_indices(dual_basis_action[i][0], grid,
-                                            spinless), grid)
+        r[i] = grid.position_vector(grid.grid_indices(dual_basis_action[i][0],
+                                                      spinless))
 
     rr = {}
     k_map = {}
@@ -992,7 +992,7 @@ def expectation_three_body_db_operator_computational_basis_state(
 
     # Pre-computations.
     for o in plane_wave_occ_orbitals:
-        k = momentum_vector(grid_indices(o, grid, spinless), grid)
+        k = grid.momentum_vector(grid.grid_indices(o, spinless))
         for i in range(3):
             for j in range(3, 6):
                 k_map[i][j][o] = k.dot(rr[i][j])

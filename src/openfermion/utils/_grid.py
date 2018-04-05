@@ -17,9 +17,11 @@ import numpy
 import scipy
 import scipy.linalg
 
+
 # Exceptions.
 class OrbitalSpecificationError(Exception):
     pass
+
 
 class Grid:
     """
@@ -82,14 +84,12 @@ class Grid:
         # Compute the reciprocal lattice basis
         self.reciprocal_scale = 2 * numpy.pi * scipy.linalg.inv(self.scale).T
 
-
     def volume_scale(self):
         """
         Returns:
             float: The volume of a length-scale hypercube within the grid.
         """
         return self.volume
-
 
     def all_points_indices(self):
         """
@@ -98,7 +98,7 @@ class Grid:
                 The index-coordinate tuple of each point in the grid.
         """
         return itertools.product(*[range(self.length[i])
-                                  for i in range(self.dimensions)])
+                                   for i in range(self.dimensions)])
 
     def position_vector(self, position_indices):
         """Given grid point coordinate, return position vector with dimensions.
@@ -162,8 +162,8 @@ class Grid:
                         for i in range(self.dimensions)]
 
         # Adjust for even grids without 0 point
-        # momentum_int = [v + ((v >= 0) and (self.length[i] % 2) == 0) for i, v in
-        #                 enumerate(momentum_int)]
+        # momentum_int = [v + ((v >= 0) and (self.length[i] % 2) == 0)
+        #                 for i, v in enumerate(momentum_int)]
         return numpy.array(momentum_int, dtype=int)
 
     def momentum_ints_to_index(self, momentum_ints):
@@ -175,7 +175,7 @@ class Grid:
         """
 
         # Take care of even length by removing 0 from momentum
-        # indices = [n - ((n >= 0) and (self.length[i] % 2) == 0)
+        #indices = [n - ((n >= 0) and (self.length[i] % 2) == 0)
         #           for i, n in enumerate(momentum_ints)]
         indices = momentum_ints
 
@@ -209,7 +209,7 @@ class Grid:
 
         Args:
             grid_coordinates: List or tuple of ints giving coordinates of grid
-                element. Acceptable to provide an int (instead of tuple or list)
+                element. Acceptable to provide an int(instead of tuple or list)
                 for 1D case.
             spin: Boole, 0 means spin down and 1 means spin up.
                 If None, assume spinless model.
@@ -228,7 +228,7 @@ class Grid:
 
             # Make sure coordinate is an integer in the correct bounds.
             if (isinstance(grid_coordinate, int) and
-                        grid_coordinate < self.length[dimension]):
+                    grid_coordinate < self.length[dimension]):
                 tensor_factor += (grid_coordinate *
                                   int(numpy.product(self.length[:dimension])))
 

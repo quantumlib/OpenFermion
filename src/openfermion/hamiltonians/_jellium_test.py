@@ -149,7 +149,7 @@ class JelliumTest(unittest.TestCase):
             momentum_spectrum = eigenspectrum(jw_momentum)
             position_spectrum = eigenspectrum(jw_position)
 
-            # Confirm momentum spectrum is shifted 2.8372 / length_scale higher.
+            # Confirm momentum spectrum is shifted 2.8372/length_scale higher.
             max_difference = numpy.amax(momentum_spectrum - position_spectrum)
             min_difference = numpy.amax(momentum_spectrum - position_spectrum)
             self.assertAlmostEqual(max_difference, 2.8372 / length_scale)

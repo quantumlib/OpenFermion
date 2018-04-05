@@ -72,10 +72,10 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
         # length_set = [3, 4]
         length_set = [2, 3]
         spinless_set = [True]
-        #spinless_set = [True, False]
+        # spinless_set = [True, False]
         length_scale = 1.1
-        for geometry in [#[('H', (0,)), ('H', (0.8,))],
-                         #[('H', (0.1,))],
+        for geometry in [  # [('H', (0,)), ('H', (0.8,))],
+                           # [('H', (0.1,))],
                          [('H', (0.1,))]]:
             for l in length_set:
                 for spinless in spinless_set:
@@ -136,7 +136,7 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
     def test_jordan_wigner_dual_basis_hamiltonian_default_to_jellium(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)
         self.assertTrue(jordan_wigner_dual_basis_hamiltonian(grid) ==
-            jordan_wigner(jellium_model(grid, plane_wave=False)))
+                        jordan_wigner(jellium_model(grid, plane_wave=False)))
 
     def test_jordan_wigner_dual_basis_hamiltonian_bad_geometry(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)

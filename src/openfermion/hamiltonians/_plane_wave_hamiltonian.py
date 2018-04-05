@@ -127,11 +127,11 @@ def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
             momenta_ints_qp = momenta_ints_q - momenta_ints_p
 
             # Cut out 0 momentum modes
-            if momenta_ints_qp == (0, ) * grid.dimensions:
+            if (momenta_ints_qp == (0, ) * grid.dimensions).all():
                 continue
 
             momenta_p_q = grid.momentum_ints_to_value(momenta_ints_qp,
-                                                      periodic=False)
+                                                      periodic=True)
             momenta_p_q_squared = momenta_p_q.dot(momenta_p_q)
 
             # Energy cutoff.

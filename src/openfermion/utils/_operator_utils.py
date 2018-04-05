@@ -271,18 +271,18 @@ def _fourier_transform_helper(hamiltonian,
                               vec_func_1,
                               vec_func_2):
     hamiltonian_t = FermionOperator.zero()
-    normalize_factor = numpy.sqrt(1.0 / float(grid.num_points()))
+    normalize_factor = numpy.sqrt(1.0 / float(grid.num_points))
 
     for term in hamiltonian.terms:
         transformed_term = FermionOperator.identity()
         for ladder_op_mode, ladder_op_type in term:
-            indices_1 = grid_indices(ladder_op_mode, grid, spinless)
-            vec1 = vec_func_1(indices_1, grid)
+            indices_1 = grid.grid_indices(ladder_op_mode, spinless)
+            vec1 = vec_func_1(indices_1)
             new_basis = FermionOperator.zero()
             for indices_2 in grid.all_points_indices():
-                vec2 = vec_func_2(indices_2, grid)
+                vec2 = vec_func_2(indices_2)
                 spin = None if spinless else ladder_op_mode % 2
-                orbital = orbital_id(grid, indices_2, spin)
+                orbital = grid.orbital_id(indices_2, spin)
                 exp_index = phase_factor * 1.0j * numpy.dot(vec1, vec2)
                 if ladder_op_type == 1:
                     exp_index *= -1.0
@@ -322,8 +322,8 @@ def fourier_transform(hamiltonian, grid, spinless):
                                      grid=grid,
                                      spinless=spinless,
                                      phase_factor=+1,
-                                     vec_func_1=momentum_vector,
-                                     vec_func_2=position_vector)
+                                     vec_func_1=grid.momentum_vector,
+                                     vec_func_2=grid.position_vector)
 
 
 def get_file_path(file_name, data_directory):
@@ -376,8 +376,8 @@ def inverse_fourier_transform(hamiltonian, grid, spinless):
                                      grid=grid,
                                      spinless=spinless,
                                      phase_factor=-1,
-                                     vec_func_1=position_vector,
-                                     vec_func_2=momentum_vector)
+                                     vec_func_1=grid.position_vector,
+                                     vec_func_2=grid.momentum_vector)
 
 
 def load_operator(file_name=None, data_directory=None):
