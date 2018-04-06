@@ -196,8 +196,8 @@ class PolynomialTensor(object):
 
         return diff < EQ_TOLERANCE
 
-    def __neq__(self, other_operator):
-        return not (self == other_operator)
+    def __ne__(self, other):
+        return not (self == other)
 
     def __iadd__(self, addend):
         if not issubclass(type(addend), PolynomialTensor):

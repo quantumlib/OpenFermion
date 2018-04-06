@@ -196,7 +196,7 @@ class PolynomialTensorTest(unittest.TestCase):
         self.assertEqual(self.polynomial_tensor_a_with_zeros,
                          self.polynomial_tensor_a)
 
-    def test_neq(self):
+    def test_ne(self):
         self.assertNotEqual(self.polynomial_tensor_a,
                             self.polynomial_tensor_b)
 
