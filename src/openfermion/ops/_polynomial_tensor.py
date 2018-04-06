@@ -118,6 +118,8 @@ class PolynomialTensor(object):
             of the form a_i a^\dagger_j.
     """
 
+    __hash__ = None
+
     def __init__(self, n_body_tensors):
         """Initialize the PolynomialTensor class.
 
