@@ -28,9 +28,10 @@ Getting started
 ===============
 
 Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
-For information about getting started beyond what is provided below please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__
-and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the
-`ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
+For information about getting started beyond what is provided below please see our
+`tutorial <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_tutorial.ipynb>`__
+in the
+`examples <https://github.com/quantumlib/OpenFermion/blob/master/examples>`__ folder
 as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
 Currently, OpenFermion is only tested on Mac and Linux for the reason that both
@@ -134,13 +135,17 @@ Authors
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Thomas O'Brien <https://github.com/obriente>`__ (Leiden University),
+`Isil Ozfidan <https://github.com/conta877>`__ (D-Wave Systems),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
+`Max Radin <https://github.com/max-radin>`__ (UC Santa Barbara),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
 `Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
 `Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
+`Mark Steudtner <https://github.com/msteudtner>`__  (Leiden University),
+`Qiming Sun <https://github.com/sunqm>`__ (Caltech),
 `Wei Sun <https://github.com/Spaceenter>`__ (Google) and
 `Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan).
 
@@ -149,11 +154,12 @@ How to cite
 ===========
 When using OpenFermion for research projects, please cite:
 
-    Jarrod R. McClean, Ian D. Kivlichan, Damian S. Steiger, Kevin J. Sung,
-    Yudong Cao, Chengyu Dai, E. Schuyler Fried, Craig Gidney, Thomas Häner,
-    Vojtĕch Havlíček, Cupjin Huang, Zhang Jiang, Matthew Neeley, Jhonathan Romero,
-    Nicholas Rubin, Nicolas P. D. Sawaya, Kanav Setia, Sukin Sim, Wei Sun,
-    Fang Zhang and Ryan Babbush.
+    Jarrod R. McClean, Ian D. Kivlichan, Kevin J. Sung, Damian S. Steiger,
+    Yudong Cao, Chengyu Dai, E. Schuyler Fried, Craig Gidney, Brendan Gimby,
+    Thomas Häner, Tarini Hardikar, Vojtĕch Havlíček, Cupjin Huang, Zhang Jiang,
+    Matthew Neeley, Thomas O'Brien, Isil Ozfidan, Maxwell D. Radin, Jhonathan Romero,
+    Nicholas Rubin, Nicolas P. D. Sawaya, Kanav Setia, Sukin Sim, Mark Steudtner,
+    Wei Sun, Fang Zhang and Ryan Babbush.
     *OpenFermion: The Electronic Structure Package for Quantum Computers*.
     `arXiv:1710.07629 <https://arxiv.org/abs/1710.07629>`__. 2017.
 

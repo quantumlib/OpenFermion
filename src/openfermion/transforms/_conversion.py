@@ -263,11 +263,12 @@ def get_quadratic_hamiltonian(fermion_operator,
     if discrepancy < EQ_TOLERANCE:
         # Hamiltonian conserves particle number
         quadratic_hamiltonian = QuadraticHamiltonian(
-            constant, hermitian_part, chemical_potential=chemical_potential)
+            hermitian_part, constant=constant,
+            chemical_potential=chemical_potential)
     else:
         # Hamiltonian does not conserve particle number
         quadratic_hamiltonian = QuadraticHamiltonian(
-            constant, hermitian_part, antisymmetric_part, chemical_potential)
+            hermitian_part, antisymmetric_part, constant, chemical_potential)
 
     return quadratic_hamiltonian
 

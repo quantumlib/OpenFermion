@@ -96,8 +96,7 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
 
     def test_plane_wave_hamiltonian_default_to_jellium_with_no_geometry(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)
-        self.assertTrue(plane_wave_hamiltonian(grid).isclose(
-            jellium_model(grid)))
+        self.assertTrue(plane_wave_hamiltonian(grid) == jellium_model(grid))
 
     def test_plane_wave_hamiltonian_bad_geometry(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)
@@ -121,12 +120,12 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
 
         test_hamiltonian = jordan_wigner_dual_basis_hamiltonian(
             grid, geometry, spinless, include_constant=True)
-        self.assertTrue(test_hamiltonian.isclose(qubit_hamiltonian))
+        self.assertTrue(test_hamiltonian == qubit_hamiltonian)
 
     def test_jordan_wigner_dual_basis_hamiltonian_default_to_jellium(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)
-        self.assertTrue(jordan_wigner_dual_basis_hamiltonian(grid).isclose(
-            jordan_wigner(jellium_model(grid, plane_wave=False))))
+        self.assertTrue(jordan_wigner_dual_basis_hamiltonian(grid) ==
+            jordan_wigner(jellium_model(grid, plane_wave=False)))
 
     def test_jordan_wigner_dual_basis_hamiltonian_bad_geometry(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)

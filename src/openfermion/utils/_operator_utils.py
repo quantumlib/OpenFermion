@@ -12,23 +12,185 @@
 
 """This module provides generic tools for classes in ops/"""
 from __future__ import absolute_import
+from builtins import map, zip
 
+import copy
 import marshal
 import numpy
 import os
-import time
 
-from openfermion.config import *
+from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 from openfermion.hamiltonians._jellium import (grid_indices,
                                                momentum_vector,
                                                orbital_id,
                                                position_vector)
-from openfermion.ops import *
-from future.builtins.iterators import map, zip
+from openfermion.ops import (FermionOperator, InteractionOperator,
+                             InteractionRDM, PolynomialTensor, QubitOperator)
+from scipy.sparse import spmatrix
 
 
 class OperatorUtilsError(Exception):
     pass
+
+
+def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
+    """Fix some orbitals to be occupied and others unoccupied.
+
+    Removes all operators acting on the specified orbitals, and renumbers the
+    remaining orbitals to eliminate unused indices. The sign of each term
+    is modified according to the ladder uperator anti-commutation relations in
+    order to preserve the expectation value of the operator.
+
+    Args:
+        occupied: A list containing the indices of the orbitals that are to be
+            assumed to be occupied.
+        unoccupied: A list containing the indices of the orbitals that are to
+            be assumed to be unoccupied.
+    """
+    new_operator = fermion_operator
+    frozen = [(index, 1) for index in occupied]
+    if unoccupied is not None:
+        frozen += [(index, 0) for index in unoccupied]
+
+    # Loop over each orbital to be frozen. Within each term, move all
+    # ops acting on that orbital to the right side of the term, keeping
+    # track of sign flips that come from swapping operators.
+    for item in frozen:
+        tmp_operator = FermionOperator()
+        for term in new_operator.terms:
+            new_term = []
+            new_coef = new_operator.terms[term]
+            current_occupancy = item[1]
+            n_ops = 0  # Number of operations on index that have been moved
+            n_swaps = 0  # Number of swaps that have been done
+
+            for op in enumerate(reversed(term)):
+                if op[1][0] is item[0]:
+                    n_ops += 1
+
+                    # Determine number of swaps needed to bring the op in
+                    # front of all ops acting on other indices
+                    n_swaps += op[0] - n_ops
+
+                    # Check if the op annihilates the current state
+                    if current_occupancy == op[1][1]:
+                        new_coef = 0
+
+                    # Update current state
+                    current_occupancy = (current_occupancy + 1) % 2
+                else:
+                    new_term.insert(0, op[1])
+            if n_swaps % 2 is 1:
+                new_coef *= -1
+            if new_coef is not 0 and current_occupancy is item[1]:
+                tmp_operator += FermionOperator(tuple(new_term), new_coef)
+        new_operator = tmp_operator
+
+    # For occupied frozen orbitals, we must also bring together the creation
+    # operator from the ket and the annihilation operator from the bra when
+    # evaluating expectation values. This can result in an additional minus
+    # sign.
+    for term in new_operator.terms:
+        for index in occupied:
+            for op in term:
+                if op[0] > index:
+                    new_operator.terms[term] *= -1
+
+    # Renumber indices to remove frozen orbitals
+    new_operator = prune_unused_indices(new_operator)
+
+    return new_operator
+
+
+def prune_unused_indices(symbolic_operator):
+    """
+    Remove indices that do not appear in any terms.
+
+    Indices will be renumbered such that if an index i does not appear in
+    any terms, then the next largest index that appears in at least one
+    term will be renumbered to i.
+    """
+
+    # Determine which indices appear in at least one term
+    indices = []
+    for term in symbolic_operator.terms:
+        for op in term:
+            if op[0] not in indices:
+                indices.append(op[0])
+    indices.sort()
+
+    # Construct a dict that maps the old indices to new ones
+    index_map = {}
+    for index in enumerate(indices):
+        index_map[index[1]] = index[0]
+
+    new_operator = copy.deepcopy(symbolic_operator)
+    new_operator.terms.clear()
+
+    # Replace the indices in the terms with the new indices
+    for term in symbolic_operator.terms:
+        new_term = [(index_map[op[0]], op[1]) for op in term]
+        new_operator.terms[tuple(new_term)] = symbolic_operator.terms[term]
+
+    return new_operator
+
+
+def hermitian_conjugated(operator):
+    """Return Hermitian conjugate of operator."""
+    # Handle FermionOperator
+    if isinstance(operator, FermionOperator):
+        conjugate_operator = FermionOperator()
+        for term, coefficient in operator.terms.items():
+            conjugate_term = tuple([(tensor_factor, 1 - action) for
+                                    (tensor_factor, action) in reversed(term)])
+            conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
+
+    # Handle QubitOperator
+    elif isinstance(operator, QubitOperator):
+        conjugate_operator = QubitOperator()
+        for term, coefficient in operator.terms.items():
+            conjugate_operator.terms[term] = coefficient.conjugate()
+
+    # Handle sparse matrix
+    elif isinstance(operator, spmatrix):
+        conjugate_operator = operator.getH()
+
+    # Handle numpy array
+    elif isinstance(operator, numpy.ndarray):
+        conjugate_operator = operator.T.conj()
+
+    # Unsupported type
+    else:
+        raise TypeError('Taking the hermitian conjugate of a {} is not '
+                        'supported.'.format(type(operator).__name__))
+
+    return conjugate_operator
+
+
+def is_hermitian(operator):
+    """Test if operator is Hermitian."""
+    # Handle FermionOperator or QubitOperator
+    if isinstance(operator, (FermionOperator, QubitOperator)):
+        return operator == hermitian_conjugated(operator)
+
+    # Handle sparse matrix
+    elif isinstance(operator, spmatrix):
+        difference = operator - hermitian_conjugated(operator)
+        discrepancy = 0.
+        if difference.nnz:
+            discrepancy = max(abs(difference.data))
+        return discrepancy < EQ_TOLERANCE
+
+    # Handle numpy array
+    elif isinstance(operator, numpy.ndarray):
+        difference = operator - hermitian_conjugated(operator)
+        discrepancy = numpy.amax(abs(difference))
+        return discrepancy < EQ_TOLERANCE
+
+    # Unsupported type
+    else:
+        raise TypeError('Checking whether a {} is hermitian is not '
+                        'supported.'.format(type(operator).__name__))
 
 
 def count_qubits(operator):
@@ -79,15 +241,17 @@ def eigenspectrum(operator, n_qubits=None):
     Args:
         operator: QubitOperator, InteractionOperator, FermionOperator,
             PolynomialTensor, or InteractionRDM.
+        n_qubits (int): number of qubits/modes in operator. if None, will
+            be counted.
 
     Returns:
-        eigenspectrum: dense numpy array of floats giving eigenspectrum.
+        spectrum: dense numpy array of floats giving eigenspectrum.
     """
     from openfermion.transforms import get_sparse_operator
     from openfermion.utils import sparse_eigenspectrum
     sparse_operator = get_sparse_operator(operator, n_qubits)
-    eigenspectrum = sparse_eigenspectrum(sparse_operator)
-    return eigenspectrum
+    spectrum = sparse_eigenspectrum(sparse_operator)
+    return spectrum
 
 
 def is_identity(operator):
@@ -289,4 +453,65 @@ def save_operator(operator, file_name=None, data_directory=None,
     tm = operator.terms
     with open(file_path, 'wb') as f:
         marshal.dump((operator_type, dict(zip(tm.keys(),
-                                          map(complex, tm.values())))), f)
+                                              map(complex, tm.values())))), f)
+
+
+def reorder(operator, order_function, num_modes=None, reverse=False):
+    """Changes the fermionic order of the Hamiltonian based on the provided
+    order_function per mode index
+
+    Args:
+        operator (SymbolicOperator): the operator that will be reordered. must
+            be a SymbolicOperator or any type of operator that inherits from
+            SymbolicOperator.
+        order_function (func): a function per mode that is used to map the
+            indexing. must have arguments mode index and num_modes.
+        num_modes (int): default None. User can provide the number of modes
+            assumed for the system. if None, the number of modes will be
+            calculated based on the Operator.
+        reverse (bool): default False. if set to True, the mode mapping is
+            reversed. reverse = True will not revert back to original if
+            num_modes calculated differs from original and reverted.
+
+    Note: Every order function must take in a mode_idx and num_modes.
+    """
+
+    if num_modes is None:
+        num_modes = max(
+            [factor[0] for term in operator.terms for factor in term]) + 1
+
+    mode_map = {mode_idx: order_function(mode_idx, num_modes) for mode_idx in
+                range(num_modes)}
+
+    if reverse:
+        mode_map = {val: key for key, val in mode_map.items()}
+
+    rotated_hamiltonian = operator.__class__()
+    for term, value in operator.terms.items():
+        new_term = tuple([(mode_map[op[0]], op[1]) for op in term])
+        rotated_hamiltonian += operator.__class__(new_term, value)
+    return rotated_hamiltonian
+
+
+def up_then_down(mode_idx, num_modes):
+    """ up then down reordering, given the operator has the default even-odd
+     ordering. Otherwise this function will reorder indices where all even
+     indices now come before odd indices.
+
+     Example:
+         0,1,2,3,4,5 -> 0,2,4,1,3,5
+
+    The function takes in the index of the mode that will be relabeled and
+    the total number modes.
+
+    Args:
+        mode_idx (int): the mode index that is being reordered
+        num_modes (int): the total number of modes of the operator.
+
+    Returns (int): reordered index of the mode.
+    """
+    halfway = int(numpy.ceil(num_modes / 2.))
+    if mode_idx % 2 == 0:
+        return mode_idx // 2
+    else:
+        return mode_idx // 2 + halfway

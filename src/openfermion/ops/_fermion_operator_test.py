@@ -17,83 +17,11 @@ import unittest
 
 from openfermion.ops._fermion_operator import (FermionOperator,
                                                FermionOperatorError,
-                                               hermitian_conjugated,
-                                               normal_ordered,
-                                               number_operator)
+                                               normal_ordered)
+from openfermion.utils import number_operator
 
 
 class FermionOperatorTest(unittest.TestCase):
-
-    def test_number_operator_site(self):
-        op = number_operator(3, 2, 1j)
-        self.assertTrue(op.isclose(FermionOperator(((2, 1), (2, 0))) * 1j))
-
-    def test_number_operator_nosite(self):
-        op = number_operator(4)
-        expected = (FermionOperator(((0, 1), (0, 0))) +
-                    FermionOperator(((1, 1), (1, 0))) +
-                    FermionOperator(((2, 1), (2, 0))) +
-                    FermionOperator(((3, 1), (3, 0))))
-        self.assertTrue(op.isclose(expected))
-
-    def test_hermitian_conjugate_empty(self):
-        op = FermionOperator()
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(FermionOperator()))
-
-    def test_hermitian_conjugate_simple(self):
-        op = FermionOperator('1^')
-        op_hc = FermionOperator('1')
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(op_hc))
-
-    def test_hermitian_conjugate_complex_const(self):
-        op = FermionOperator('1^ 3', 3j)
-        op_hc = -3j * FermionOperator('3^ 1')
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(op_hc))
-
-    def test_hermitian_conjugate_notordered(self):
-        op = FermionOperator('1 3^ 3 3^', 3j)
-        op_hc = -3j * FermionOperator('3 3^ 3 1^')
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(op_hc))
-
-    def test_hermitian_conjugate_semihermitian(self):
-        op = (FermionOperator() + 2j * FermionOperator('1^ 3') +
-              FermionOperator('3^ 1') * -2j + FermionOperator('2^ 2', 0.1j))
-        op_hc = (FermionOperator() + FermionOperator('1^ 3', 2j) +
-                 FermionOperator('3^ 1', -2j) +
-                 FermionOperator('2^ 2', -0.1j))
-        op = hermitian_conjugated(op)
-        self.assertTrue(op.isclose(op_hc))
-
-    def test_hermitian_conjugated_empty(self):
-        op = FermionOperator()
-        self.assertTrue(op.isclose(hermitian_conjugated(op)))
-
-    def test_hermitian_conjugated_simple(self):
-        op = FermionOperator('0')
-        op_hc = FermionOperator('0^')
-        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
-
-    def test_hermitian_conjugated_complex_const(self):
-        op = FermionOperator('2^ 2', 3j)
-        op_hc = FermionOperator('2^ 2', -3j)
-        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
-
-    def test_hermitian_conjugated_multiterm(self):
-        op = FermionOperator('1^ 2') + FermionOperator('2 3 4')
-        op_hc = FermionOperator('2^ 1') + FermionOperator('4^ 3^ 2^')
-        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
-
-    def test_hermitian_conjugated_semihermitian(self):
-        op = (FermionOperator() + 2j * FermionOperator('1^ 3') +
-              FermionOperator('3^ 1') * -2j + FermionOperator('2^ 2', 0.1j))
-        op_hc = (FermionOperator() + FermionOperator('1^ 3', 2j) +
-                 FermionOperator('3^ 1', -2j) +
-                 FermionOperator('2^ 2', -0.1j))
-        self.assertTrue(op_hc.isclose(hermitian_conjugated(op)))
 
     def test_is_normal_ordered_empty(self):
         op = FermionOperator() * 2
@@ -131,58 +59,58 @@ class FermionOperatorTest(unittest.TestCase):
 
     def test_normal_ordered_single_term(self):
         op = FermionOperator('4 3 2 1') + FermionOperator('3 2')
-        self.assertTrue(op.isclose(normal_ordered(op)))
+        self.assertTrue(op == normal_ordered(op))
 
     def test_normal_ordered_two_term(self):
         op_b = FermionOperator(((2, 0), (4, 0), (2, 1)), -88.)
         normal_ordered_b = normal_ordered(op_b)
         expected = (FermionOperator(((4, 0),), 88.) +
                     FermionOperator(((2, 1), (4, 0), (2, 0)), 88.))
-        self.assertTrue(normal_ordered_b.isclose(expected))
+        self.assertTrue(normal_ordered_b == expected)
 
     def test_normal_ordered_number(self):
         number_op2 = FermionOperator(((2, 1), (2, 0)))
-        self.assertTrue(number_op2.isclose(normal_ordered(number_op2)))
+        self.assertTrue(number_op2 == normal_ordered(number_op2))
 
     def test_normal_ordered_number_reversed(self):
         n_term_rev2 = FermionOperator(((2, 0), (2, 1)))
         number_op2 = number_operator(3, 2)
         expected = FermionOperator(()) - number_op2
-        self.assertTrue(normal_ordered(n_term_rev2).isclose(expected))
+        self.assertTrue(normal_ordered(n_term_rev2) == expected)
 
     def test_normal_ordered_offsite(self):
         op = FermionOperator(((3, 1), (2, 0)))
-        self.assertTrue(op.isclose(normal_ordered(op)))
+        self.assertTrue(op == normal_ordered(op))
 
     def test_normal_ordered_offsite_reversed(self):
         op = FermionOperator(((3, 0), (2, 1)))
         expected = -FermionOperator(((2, 1), (3, 0)))
-        self.assertTrue(expected.isclose(normal_ordered(op)))
+        self.assertTrue(expected == normal_ordered(op))
 
     def test_normal_ordered_double_create(self):
         op = FermionOperator(((2, 0), (3, 1), (3, 1)))
         expected = FermionOperator((), 0.0)
-        self.assertTrue(expected.isclose(normal_ordered(op)))
+        self.assertTrue(expected == normal_ordered(op))
 
     def test_normal_ordered_double_create_separated(self):
         op = FermionOperator(((3, 1), (2, 0), (3, 1)))
         expected = FermionOperator((), 0.0)
-        self.assertTrue(expected.isclose(normal_ordered(op)))
+        self.assertTrue(expected == normal_ordered(op))
 
     def test_normal_ordered_multi(self):
         op = FermionOperator(((2, 0), (1, 1), (2, 1)))
         expected = (-FermionOperator(((2, 1), (1, 1), (2, 0))) -
                     FermionOperator(((1, 1),)))
-        self.assertTrue(expected.isclose(normal_ordered(op)))
+        self.assertTrue(expected == normal_ordered(op))
 
     def test_normal_ordered_triple(self):
         op_132 = FermionOperator(((1, 1), (3, 0), (2, 0)))
         op_123 = FermionOperator(((1, 1), (2, 0), (3, 0)))
         op_321 = FermionOperator(((3, 0), (2, 0), (1, 1)))
 
-        self.assertTrue(op_132.isclose(normal_ordered(-op_123)))
-        self.assertTrue(op_132.isclose(normal_ordered(op_132)))
-        self.assertTrue(op_132.isclose(normal_ordered(op_321)))
+        self.assertTrue(op_132 == normal_ordered(-op_123))
+        self.assertTrue(op_132 == normal_ordered(op_132))
+        self.assertTrue(op_132 == normal_ordered(op_321))
 
     def test_is_molecular_term_FermionOperator(self):
         op = FermionOperator()
