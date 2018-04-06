@@ -206,12 +206,13 @@ class PolynomialTensor(object):
         if self.n_qubits != addend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
-        if self.n_body_tensors.keys() != addend.n_body_tensors.keys():
-            raise TypeError('Invalid tensor type.')
+        for key in addend.n_body_tensors:
+            if key in self.n_body_tensors:
+                self.n_body_tensors[key] = numpy.add(
+                    self.n_body_tensors[key], addend.n_body_tensors[key])
+            else:
+                self.n_body_tensors[key] = addend.n_body_tensors[key]
 
-        for key in self.n_body_tensors:
-            self.n_body_tensors[key] = numpy.add(self.n_body_tensors[key],
-                                                 addend.n_body_tensors[key])
         return self
 
     def __add__(self, addend):
@@ -232,12 +233,13 @@ class PolynomialTensor(object):
         if self.n_qubits != subtrahend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
-        if self.n_body_tensors.keys() != subtrahend.n_body_tensors.keys():
-            raise TypeError('Invalid tensor type.')
+        for key in subtrahend.n_body_tensors:
+            if key in self.n_body_tensors:
+                self.n_body_tensors[key] = numpy.subtract(
+                    self.n_body_tensors[key], subtrahend.n_body_tensors[key])
+            else:
+                self.n_body_tensors[key] = subtrahend.n_body_tensors[key]
 
-        for key in self.n_body_tensors:
-            self.n_body_tensors[key] = numpy.subtract(
-                self.n_body_tensors[key], subtrahend.n_body_tensors[key])
         return self
 
     def __sub__(self, subtrahend):
@@ -252,12 +254,13 @@ class PolynomialTensor(object):
         if self.n_qubits != multiplier.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
-        if self.n_body_tensors.keys() != multiplier.n_body_tensors.keys():
-            raise TypeError('Invalid tensor type.')
+        for key in multiplier.n_body_tensors:
+            if key in self.n_body_tensors:
+                self.n_body_tensors[key] = numpy.multiply(
+                    self.n_body_tensors[key], multiplier.n_body_tensors[key])
+            else:
+                self.n_body_tensors[key] = multiplier.n_body_tensors[key]
 
-        for key in self.n_body_tensors:
-            self.n_body_tensors[key] = numpy.multiply(
-                self.n_body_tensors[key], multiplier.n_body_tensors[key])
         return self
 
     def __mul__(self, multiplier):
