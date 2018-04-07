@@ -54,7 +54,7 @@ class GeneralTest(unittest.TestCase):
         equals_tester.add_equality_group(*group_2)
         equals_tester.add_equality_group(*group_3)
 
-    def test_eq_and_neq(self):
+    def test_eq_and_ne(self):
         """Test == and !=."""
         equals_tester = EqualsTester(self)
 
