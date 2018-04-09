@@ -19,7 +19,7 @@ import unittest
 import numpy
 from scipy.sparse import csc_matrix
 from openfermion.config import EQ_TOLERANCE
-from openfermion.hamiltonians import plane_wave_hamiltonian
+from openfermion.hamiltonians import fermi_hubbard, plane_wave_hamiltonian
 from openfermion.ops import *
 from openfermion.transforms import (bravyi_kitaev, jordan_wigner,
                                     get_fermion_operator,
@@ -243,7 +243,7 @@ class HermitianConjugatedTest(unittest.TestCase):
 
 
 class IsHermitianTest(unittest.TestCase):
-    
+
     def test_fermion_operator_zero(self):
         op = FermionOperator()
         self.assertTrue(is_hermitian(op))
@@ -259,6 +259,9 @@ class IsHermitianTest(unittest.TestCase):
     def test_fermion_operator_hermitian(self):
         op = FermionOperator('0^ 1 2^ 3')
         op += FermionOperator('3^ 2 1^ 0')
+        self.assertTrue(is_hermitian(op))
+
+        op = fermi_hubbard(2, 2, 1., 1.)
         self.assertTrue(is_hermitian(op))
 
     def test_qubit_operator_zero(self):

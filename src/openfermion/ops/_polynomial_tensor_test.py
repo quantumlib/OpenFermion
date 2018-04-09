@@ -36,9 +36,26 @@ class PolynomialTensorTest(unittest.TestCase):
         one_body_a[1, 0] = 3
         two_body_a[0, 1, 0, 1] = 4
         two_body_a[1, 1, 0, 0] = 5
+        self.one_body_a = one_body_a
+        self.two_body_a = two_body_a
 
         self.polynomial_tensor_a = PolynomialTensor(
             {(): self.constant, (1, 0): one_body_a, (1, 1, 0, 0): two_body_a})
+
+        self.one_body_operand = numpy.zeros((self.n_qubits, self.n_qubits))
+        self.two_body_operand = numpy.zeros((self.n_qubits, self.n_qubits,
+                                             self.n_qubits, self.n_qubits))
+        self.one_body_operand[0, 1] = 6
+        self.one_body_operand[1, 0] = 7
+        self.two_body_operand[0, 1, 0, 1] = 8
+        self.two_body_operand[1, 1, 0, 0] = 9
+        self.polynomial_tensor_operand = PolynomialTensor(
+                {(1, 0): self.one_body_operand,
+                 (0, 0, 1, 1): self.two_body_operand})
+
+        self.polynomial_tensor_a_with_zeros = PolynomialTensor(
+            {(): self.constant, (1, 0): one_body_a, (1, 1, 0, 0): two_body_a,
+             (1, 1, 0, 0, 0, 0): numpy.zeros([self.n_qubits] * 6)})
 
         one_body_na = numpy.zeros((self.n_qubits, self.n_qubits))
         two_body_na = numpy.zeros((self.n_qubits, self.n_qubits,
@@ -173,7 +190,13 @@ class PolynomialTensorTest(unittest.TestCase):
         self.assertNotEqual(self.polynomial_tensor_a,
                             self.polynomial_tensor_spinful)
 
-    def test_neq(self):
+        # OK to have different keys if arrays for differing keys are 0-arrays
+        self.assertEqual(self.polynomial_tensor_a,
+                         self.polynomial_tensor_a_with_zeros)
+        self.assertEqual(self.polynomial_tensor_a_with_zeros,
+                         self.polynomial_tensor_a)
+
+    def test_ne(self):
         self.assertNotEqual(self.polynomial_tensor_a,
                             self.polynomial_tensor_b)
 
@@ -194,9 +217,14 @@ class PolynomialTensorTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.polynomial_tensor_a + self.polynomial_tensor_c
 
-    def test_invalid_tensor_keys_add(self):
-        with self.assertRaises(TypeError):
-            self.polynomial_tensor_a + self.polynomial_tensor_hole
+    def test_different_keys_add(self):
+        result = self.polynomial_tensor_a + self.polynomial_tensor_operand
+        expected = PolynomialTensor(
+            {(): self.constant,
+             (1, 0): numpy.add(self.one_body_a, self.one_body_operand),
+             (1, 1, 0, 0): self.two_body_a,
+             (0, 0, 1, 1): self.two_body_operand})
+        self.assertEqual(result, expected)
 
     def test_neg(self):
         self.assertEqual(-self.polynomial_tensor_a,
@@ -219,9 +247,14 @@ class PolynomialTensorTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.polynomial_tensor_a - self.polynomial_tensor_c
 
-    def test_invalid_tensor_keys_sub(self):
-        with self.assertRaises(TypeError):
-            self.polynomial_tensor_a - self.polynomial_tensor_hole
+    def test_different_keys_sub(self):
+        result = self.polynomial_tensor_a - self.polynomial_tensor_operand
+        expected = PolynomialTensor(
+            {(): self.constant,
+             (1, 0): numpy.subtract(self.one_body_a, self.one_body_operand),
+             (1, 1, 0, 0): self.two_body_a,
+             (0, 0, 1, 1): self.two_body_operand})
+        self.assertEqual(result, expected)
 
     def test_mul(self):
         new_tensor = self.polynomial_tensor_a * self.polynomial_tensor_b
@@ -240,9 +273,14 @@ class PolynomialTensorTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.polynomial_tensor_a * self.polynomial_tensor_c
 
-    def test_invalid_tensor_keys_mult(self):
-        with self.assertRaises(TypeError):
-            self.polynomial_tensor_a * self.polynomial_tensor_hole
+    def test_different_keys_mult(self):
+        result = self.polynomial_tensor_a * self.polynomial_tensor_operand
+        expected = PolynomialTensor(
+            {(): self.constant,
+             (1, 0): numpy.multiply(self.one_body_a, self.one_body_operand),
+             (1, 1, 0, 0): self.two_body_a,
+             (0, 0, 1, 1): self.two_body_operand})
+        self.assertEqual(result, expected)
 
     def test_iter_and_str(self):
         one_body = numpy.zeros((self.n_qubits, self.n_qubits))

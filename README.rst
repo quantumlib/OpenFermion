@@ -129,6 +129,7 @@ Authors
 `E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
 `Craig Gidney <https://github.com/Strilanc>`__ (Google),
 `Brendan Gimby <https://github.com/bgimby>`__ (University of Michigan),
+`Pranav Gokhale <https://github.com/singular-value>`__ (University of Chicago),
 `Thomas Häner <https://github.com/thomashaener>`__ (ETH Zurich),
 `Tarini Hardikar <https://github.com/TariniHardikar>`__ (Dartmouth),
 `Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),

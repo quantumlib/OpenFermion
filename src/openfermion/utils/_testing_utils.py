@@ -152,7 +152,7 @@ class EqualsTester(object):
             self.test_case.assertTrue(v1 == v2)
             self.test_case.assertTrue(not v1 != v2)
 
-            # __eq__ and __neq__ should both be correct or not implemented.
+            # __eq__ and __ne__ should both be correct or not implemented.
             self.test_case.assertTrue(
                 hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
             # Careful: python2 int doesn't have __eq__ or __ne__.
@@ -172,7 +172,7 @@ class EqualsTester(object):
                 self.test_case.assertTrue(not v1 == v2)
                 self.test_case.assertTrue(v1 != v2)
 
-                # __eq__ and __neq__ should both be correct or not implemented.
+                # __eq__ and __ne__ should both be correct or not implemented.
                 self.test_case.assertTrue(
                     hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
                 # Careful: python2 int doesn't have __eq__ or __ne__.
