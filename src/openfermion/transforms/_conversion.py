@@ -303,7 +303,8 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
             elif actions == [1, 1, 0, 0]:
                 p, q, r, s = [operator[0] for operator in term]
                 if p == r and q == s:
-                    two_body[p, q] = -coefficient
+                    two_body[p, q] = -.5 * coefficient
+                    two_body[q, p] = -.5 * coefficient
                 else:
                     raise ValueError('FermionOperator does not map to '
                                      'DiagonalCoulombHamiltonian '
