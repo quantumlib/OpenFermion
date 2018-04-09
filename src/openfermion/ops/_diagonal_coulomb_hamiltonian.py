@@ -30,8 +30,10 @@ class DiagonalCoulombHamiltonian:
         one_body(ndarray): The Hermitian matrix :math:`T`.
         two_body(ndarray): The real symmetric matrix :math:`V`.
         constant(float): The constant.
+        n_qubits(int): The number of qubits.
     """
     def __init__(self, one_body, two_body, constant=0.):
         self.one_body = one_body
         self.two_body = two_body
         self.constant = constant
+        self.n_qubits = self.one_body.shape[0]

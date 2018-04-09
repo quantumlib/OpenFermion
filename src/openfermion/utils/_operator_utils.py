@@ -24,8 +24,9 @@ from openfermion.hamiltonians._jellium import (grid_indices,
                                                momentum_vector,
                                                orbital_id,
                                                position_vector)
-from openfermion.ops import (FermionOperator, InteractionOperator,
-                             InteractionRDM, PolynomialTensor, QubitOperator)
+from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
+                             InteractionOperator, InteractionRDM,
+                             PolynomialTensor, QubitOperator)
 from scipy.sparse import spmatrix
 
 
@@ -223,8 +224,8 @@ def count_qubits(operator):
                     num_qubits = term[-1][0] + 1
         return num_qubits
 
-    # Handle PolynomialTensor
-    elif isinstance(operator, PolynomialTensor):
+    # Handle DiagonalCoulombHamiltonian and PolynomialTensor
+    elif isinstance(operator, (DiagonalCoulombHamiltonian, PolynomialTensor)):
         return operator.n_qubits
 
     # Raise for other classes.

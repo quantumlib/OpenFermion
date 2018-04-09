@@ -20,13 +20,14 @@ from future.utils import iteritems
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
-from openfermion.ops import (FermionOperator,
-                             normal_ordered,
+from openfermion.ops import (DiagonalCoulombHamiltonian,
+                             FermionOperator,
                              InteractionOperator,
                              InteractionRDM,
                              PolynomialTensor,
                              QuadraticHamiltonian,
-                             QubitOperator)
+                             QubitOperator,
+                             normal_ordered)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.utils import (count_qubits,
@@ -273,18 +274,27 @@ def get_quadratic_hamiltonian(fermion_operator,
     return quadratic_hamiltonian
 
 
-def get_fermion_operator(polynomial_tensor):
-    """Output PolynomialTensor as instance of FermionOperator class.
+def get_fermion_operator(operator):
+    """Convert to FermionOperator.
 
     Returns:
         fermion_operator: An instance of the FermionOperator class.
     """
+    n_qubits = count_qubits(operator)
     fermion_operator = FermionOperator()
-    n_qubits = count_qubits(polynomial_tensor)
 
-    for term in polynomial_tensor:
-        fermion_operator += FermionOperator(
-            term, coefficient=polynomial_tensor[term])
+    if isinstance(operator, PolynomialTensor):
+        for term in operator:
+            fermion_operator += FermionOperator(term, operator[term])
+
+    elif isinstance(operator, DiagonalCoulombHamiltonian):
+        for p, q in itertools.product(range(n_qubits), repeat=2):
+            fermion_operator += FermionOperator(
+                    ((p, 1), (q, 0)),
+                    operator.one_body[p, q])
+            fermion_operator += FermionOperator(
+                    ((p, 1), (p, 0), (q, 1), (q, 0)),
+                    operator.two_body[p, q])
 
     return fermion_operator
 
