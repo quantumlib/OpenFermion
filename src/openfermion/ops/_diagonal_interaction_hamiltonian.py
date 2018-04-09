@@ -12,7 +12,7 @@
 
 """Class for electronic structure Hamiltonians with a diagonal Coulomb term"""
 
-class DiagonalInteractionHamiltonian:
+class DiagonalCoulombHamiltonian:
     """Class for storing Hamiltonians of the form
 
     .. math::
@@ -22,17 +22,16 @@ class DiagonalInteractionHamiltonian:
         \\text{constant}
 
     where
-    
+
         - :math:`T` is a Hermitian matrix.
         - :math:`V` is a real symmetric matrix.
 
     Attributes:
-        kinetic_term(ndarray): The Hermitian matrix :math:`T`.
-        potential_term(ndarray): The real symmetric matrix :math:`V`.
+        one_body(ndarray): The Hermitian matrix :math:`T`.
+        two_body(ndarray): The real symmetric matrix :math:`V`.
         constant(float): The constant.
     """
-
-    def __init__(self, kinetic_term, potential_term, constant=0.):
-        self.kinetic_term = kinetic_term
-        self.potential_term = potential_term
+    def __init__(self, one_body, two_body, constant=0.):
+        self.one_body = one_body
+        self.two_body = two_body
         self.constant = constant
