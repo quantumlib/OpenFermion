@@ -69,7 +69,7 @@ def jordan_wigner(operator):
     return transformed_operator
 
 
-def jordan_wigner_diagonal_coulomb_hamiltonian(operator)
+def jordan_wigner_diagonal_coulomb_hamiltonian(operator):
     n_qubits = count_qubits(iop)
     qubit_operator = QubitOperator((), operator.constant)
 

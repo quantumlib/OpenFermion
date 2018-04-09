@@ -180,6 +180,7 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
         op2 = FermionOperator('0^ 3') + FermionOperator('3^ 0')
         op3 = FermionOperator('0^ 1^')
         op4 = FermionOperator('0^ 1^ 2^ 3')
+        op5 = FermionOperator('0^ 3')
         with self.assertRaises(TypeError):
             _ = get_diagonal_coulomb_hamiltonian(op1)
         with self.assertRaises(ValueError):
@@ -188,6 +189,8 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
             _ = get_diagonal_coulomb_hamiltonian(op3)
         with self.assertRaises(ValueError):
             _ = get_diagonal_coulomb_hamiltonian(op4)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op5)
 
 
 class GetSparseOperatorQubitTest(unittest.TestCase):

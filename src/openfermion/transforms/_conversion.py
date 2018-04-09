@@ -31,6 +31,7 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.utils import (count_qubits,
+                               is_hermitian,
                                jordan_wigner_sparse,
                                qubit_operator_sparse)
 
@@ -252,9 +253,7 @@ def get_quadratic_hamiltonian(fermion_operator,
                       chemical_potential * numpy.eye(n_qubits))
 
     # Check that the operator is Hermitian
-    difference = hermitian_part - hermitian_part.T.conj()
-    discrepancy = numpy.max(numpy.abs(difference))
-    if discrepancy > EQ_TOLERANCE:
+    if not is_hermitian(hermitian_part):
         raise QuadraticHamiltonianError(
             'FermionOperator does not map '
             'to QuadraticHamiltonian (not Hermitian).')
@@ -314,6 +313,12 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
                 raise ValueError('FermionOperator does not map to '
                                  'DiagonalCoulombHamiltonian (contains terms '
                                  'with action {}.'.format(tuple(actions)))
+
+    # Check that the operator is Hermitian
+    if not is_hermitian(one_body) and is_hermitian(two_body):
+        raise ValueError(
+            'FermionOperator does not mapto DiagonalCoulombHamiltonian '
+            '(not Hermitian).')
 
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
 
