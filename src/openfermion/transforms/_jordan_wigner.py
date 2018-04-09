@@ -11,9 +11,9 @@
 #   limitations under the License.
 
 """Jordan-Wigner transform on fermionic operators."""
-from __future__ import absolute_import
-
 import itertools
+
+import numpy
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
@@ -70,7 +70,7 @@ def jordan_wigner(operator):
 
 
 def jordan_wigner_diagonal_coulomb_hamiltonian(operator):
-    n_qubits = count_qubits(iop)
+    n_qubits = count_qubits(operator)
     qubit_operator = QubitOperator((), operator.constant)
 
     # Transform diagonal one-body terms
@@ -82,20 +82,20 @@ def jordan_wigner_diagonal_coulomb_hamiltonian(operator):
     # Transform other one-body terms and two-body terms
     for p, q in itertools.combinations(range(n_qubits), 2):
         # One-body
-        real_part = numpy.real(one_body[p, q])
-        imag_part = numpy.imag(one_body[p, q])
+        real_part = numpy.real(operator.one_body[p, q])
+        imag_part = numpy.imag(operator.one_body[p, q])
         parity_string = [(i, 'Z') for i in range(p + 1, q)]
         qubit_operator += QubitOperator(
-                [(p, 'X')] + parity_string + [(p, 'X')], .5 * real_part)
+                [(p, 'X')] + parity_string + [(q, 'X')], .5 * real_part)
         qubit_operator += QubitOperator(
-                [(p, 'Y')] + parity_string + [(p, 'Y')], .5 * real_part)
+                [(p, 'Y')] + parity_string + [(q, 'Y')], .5 * real_part)
         qubit_operator += QubitOperator(
-                [(p, 'Y')] + parity_string + [(p, 'X')], .5 * imag_part)
+                [(p, 'Y')] + parity_string + [(q, 'X')], .5 * imag_part)
         qubit_operator += QubitOperator(
-                [(p, 'X')] + parity_string + [(p, 'Y')], -.5 * imag_part)
+                [(p, 'X')] + parity_string + [(q, 'Y')], -.5 * imag_part)
 
         # Two-body
-        coefficient = two_body[p, q]
+        coefficient = operator.two_body[p, q]
         qubit_operator += QubitOperator(((p, 'Z'), (q, 'Z')), .25 * coefficient)
         qubit_operator += QubitOperator((p, 'Z'), -.25 * coefficient)
         qubit_operator += QubitOperator((q, 'Z'), -.25 * coefficient)

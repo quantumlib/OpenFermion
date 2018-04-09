@@ -18,16 +18,19 @@ import unittest
 import numpy
 
 from openfermion.config import DATA_DIRECTORY
-from openfermion.hamiltonians import MolecularData
+from openfermion.hamiltonians import MolecularData, fermi_hubbard
 from openfermion.ops import (FermionOperator,
                              InteractionOperator,
                              normal_ordered,
                              QubitOperator)
-from openfermion.transforms import (get_fermion_operator,
+from openfermion.transforms import (get_diagonal_coulomb_hamiltonian,
+                                    get_fermion_operator,
                                     get_interaction_operator,
                                     reverse_jordan_wigner)
 from openfermion.utils import hermitian_conjugated, number_operator
-from openfermion.utils._testing_utils import random_interaction_operator
+from openfermion.utils._testing_utils import (
+        random_interaction_operator,
+        random_quadratic_hamiltonian)
 
 from openfermion.transforms._jordan_wigner import (
     jordan_wigner, jordan_wigner_one_body, jordan_wigner_two_body,
@@ -370,3 +373,31 @@ class GetInteractionOperatorTest(unittest.TestCase):
         two_body[1, 0, 3, 2] = 1.
         self.assertEqual(interaction_operator,
                          InteractionOperator(0.0, self.one_body, two_body))
+
+
+class JordanWignerDiagonalCoulombHamiltonianTest(unittest.TestCase):
+
+    def test_hubbard(self):
+        x_dim = 4
+        y_dim = 5
+        tunneling = 2.
+        coulomb = 3.
+        chemical_potential = 7.
+        magnetic_field = 11.
+        periodic = False
+
+        hubbard_model = fermi_hubbard(x_dim, y_dim, tunneling, coulomb,
+                                      chemical_potential, magnetic_field,
+                                      periodic)
+
+        self.assertTrue(
+                jordan_wigner(hubbard_model) ==
+                jordan_wigner(get_diagonal_coulomb_hamiltonian(hubbard_model)))
+
+    def test_random_quadratic(self):
+        n_qubits = 5
+        quad_ham = random_quadratic_hamiltonian(n_qubits, True)
+        ferm_op = get_fermion_operator(quad_ham)
+        self.assertTrue(
+                jordan_wigner(ferm_op) ==
+                jordan_wigner(get_diagonal_coulomb_hamiltonian(ferm_op)))

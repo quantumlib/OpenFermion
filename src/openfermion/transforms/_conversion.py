@@ -315,9 +315,9 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
                                  'with action {}.'.format(tuple(actions)))
 
     # Check that the operator is Hermitian
-    if not is_hermitian(one_body) and is_hermitian(two_body):
+    if not (is_hermitian(one_body) and is_hermitian(two_body)):
         raise ValueError(
-            'FermionOperator does not mapto DiagonalCoulombHamiltonian '
+            'FermionOperator does not map to DiagonalCoulombHamiltonian '
             '(not Hermitian).')
 
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
