@@ -72,8 +72,8 @@ def random_quadratic_hamiltonian(n_qubits,
         antisymmetric_mat = None
     else:
         antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
-    return QuadraticHamiltonian(constant, hermitian_mat,
-                                antisymmetric_mat, chemical_potential)
+    return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat,
+                                constant, chemical_potential)
 
 
 def random_interaction_operator(n_qubits, real=True):
@@ -152,7 +152,7 @@ class EqualsTester(object):
             self.test_case.assertTrue(v1 == v2)
             self.test_case.assertTrue(not v1 != v2)
 
-            # __eq__ and __neq__ should both be correct or not implemented.
+            # __eq__ and __ne__ should both be correct or not implemented.
             self.test_case.assertTrue(
                 hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
             # Careful: python2 int doesn't have __eq__ or __ne__.
@@ -172,7 +172,7 @@ class EqualsTester(object):
                 self.test_case.assertTrue(not v1 == v2)
                 self.test_case.assertTrue(v1 != v2)
 
-                # __eq__ and __neq__ should both be correct or not implemented.
+                # __eq__ and __ne__ should both be correct or not implemented.
                 self.test_case.assertTrue(
                     hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
                 # Careful: python2 int doesn't have __eq__ or __ne__.
