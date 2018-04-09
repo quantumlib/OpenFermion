@@ -25,7 +25,8 @@ from openfermion.hamiltonians._jellium import (grid_indices,
                                                orbital_id,
                                                position_vector)
 from openfermion.ops import (FermionOperator, InteractionOperator,
-                             InteractionRDM, PolynomialTensor, QubitOperator)
+                             InteractionRDM, PolynomialTensor, QubitOperator,
+                             normal_ordered)
 from scipy.sparse import spmatrix
 
 
@@ -169,8 +170,13 @@ def hermitian_conjugated(operator):
 
 def is_hermitian(operator):
     """Test if operator is Hermitian."""
-    # Handle FermionOperator or QubitOperator
-    if isinstance(operator, (FermionOperator, QubitOperator)):
+    # Handle FermionOperator
+    if isinstance(operator, FermionOperator):
+        return (normal_ordered(operator) ==
+                normal_ordered(hermitian_conjugated(operator)))
+
+    # Handle QubitOperator
+    if isinstance(operator, QubitOperator):
         return operator == hermitian_conjugated(operator)
 
     # Handle sparse matrix
