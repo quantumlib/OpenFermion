@@ -16,8 +16,8 @@ from __future__ import absolute_import
 import itertools
 
 from openfermion.config import EQ_TOLERANCE
-from openfermion.ops import (FermionOperator, InteractionOperator,
-                             QubitOperator)
+from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
+                             InteractionOperator, QubitOperator)
 from openfermion.utils import count_qubits
 
 
@@ -38,9 +38,13 @@ def jordan_wigner(operator):
     """
     if isinstance(operator, InteractionOperator):
         return jordan_wigner_interaction_op(operator)
+    if isinstance(operator, DiagonalCoulombHamiltonian):
+        return jordan_wigner_diagonal_coulomb_hamiltonian(operator)
+
     if not isinstance(operator, FermionOperator):
         raise TypeError("operator must be a FermionOperator or "
                         "InteractionOperator.")
+
     transformed_operator = QubitOperator()
     for term in operator.terms:
 
@@ -61,7 +65,43 @@ def jordan_wigner(operator):
                     z_factors + ((ladder_operator[0], 'Y'),), 0.5j)
             transformed_term *= pauli_x_component + pauli_y_component
         transformed_operator += transformed_term
+
     return transformed_operator
+
+
+def jordan_wigner_diagonal_coulomb_hamiltonian(operator)
+    n_qubits = count_qubits(iop)
+    qubit_operator = QubitOperator((), operator.constant)
+
+    # Transform diagonal one-body terms
+    for p in range(n_qubits):
+        coefficient = operator.one_body[p, p] + operator.two_body[p, p]
+        qubit_operator += QubitOperator(((p, 'Z'),), -.5 * coefficient)
+        qubit_operator += QubitOperator((), .5 * coefficient)
+
+    # Transform other one-body terms and two-body terms
+    for p, q in itertools.combinations(range(n_qubits), 2):
+        # One-body
+        real_part = numpy.real(one_body[p, q])
+        imag_part = numpy.imag(one_body[p, q])
+        parity_string = [(i, 'Z') for i in range(p + 1, q)]
+        qubit_operator += QubitOperator(
+                [(p, 'X')] + parity_string + [(p, 'X')], .5 * real_part)
+        qubit_operator += QubitOperator(
+                [(p, 'Y')] + parity_string + [(p, 'Y')], .5 * real_part)
+        qubit_operator += QubitOperator(
+                [(p, 'Y')] + parity_string + [(p, 'X')], .5 * imag_part)
+        qubit_operator += QubitOperator(
+                [(p, 'X')] + parity_string + [(p, 'Y')], -.5 * imag_part)
+
+        # Two-body
+        coefficient = two_body[p, q]
+        qubit_operator += QubitOperator(((p, 'Z'), (q, 'Z')), .25 * coefficient)
+        qubit_operator += QubitOperator((p, 'Z'), -.25 * coefficient)
+        qubit_operator += QubitOperator((q, 'Z'), -.25 * coefficient)
+        qubit_operator += QubitOperator((), .25 * coefficient)
+
+    return qubit_operator
 
 
 def jordan_wigner_interaction_op(iop, n_qubits=None):
