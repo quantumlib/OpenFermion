@@ -289,8 +289,7 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
     one_body = numpy.zeros((n_qubits, n_qubits), complex)
     two_body = numpy.zeros((n_qubits, n_qubits), float)
 
-    for term in fermion_operator.terms:
-        coefficient = fermion_operator.terms[term]
+    for term, coefficient in fermion_operator.terms.items():
         # Ignore this term if the coefficient is zero
         if abs(coefficient) < EQ_TOLERANCE:
             continue
@@ -314,7 +313,7 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
             else:
                 raise ValueError('FermionOperator does not map to '
                                  'DiagonalCoulombHamiltonian (contains terms '
-                                 'with action {}.'.format(tuple(ladder_type)))
+                                 'with action {}.'.format(tuple(actions)))
 
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
 
@@ -333,6 +332,7 @@ def get_fermion_operator(operator):
             fermion_operator += FermionOperator(term, operator[term])
 
     elif isinstance(operator, DiagonalCoulombHamiltonian):
+        fermion_operator += FermionOperator((), operator.constant)
         for p, q in itertools.product(range(n_qubits), repeat=2):
             fermion_operator += FermionOperator(
                     ((p, 1), (q, 0)),

@@ -24,6 +24,7 @@ from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.transforms import *
 from openfermion.utils import *
+from openfermion.utils._testing_utils import random_quadratic_hamiltonian
 
 
 class GetInteractionOperatorTest(unittest.TestCase):
@@ -163,6 +164,30 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
                 normal_ordered(
                     get_fermion_operator(
                         get_diagonal_coulomb_hamiltonian(hubbard_model))))
+
+    def test_random_quadratic(self):
+        n_qubits = 5
+        quad_ham = random_quadratic_hamiltonian(n_qubits, True)
+        ferm_op = get_fermion_operator(quad_ham)
+        self.assertTrue(
+                normal_ordered(ferm_op) ==
+                normal_ordered(
+                    get_fermion_operator(
+                        get_diagonal_coulomb_hamiltonian(ferm_op))))
+
+    def test_exceptions(self):
+        op1 = QubitOperator()
+        op2 = FermionOperator('0^ 3') + FermionOperator('3^ 0')
+        op3 = FermionOperator('0^ 1^')
+        op4 = FermionOperator('0^ 1^ 2^ 3')
+        with self.assertRaises(TypeError):
+            _ = get_diagonal_coulomb_hamiltonian(op1)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op2, n_qubits=2)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op3)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op4)
 
 
 class GetSparseOperatorQubitTest(unittest.TestCase):
