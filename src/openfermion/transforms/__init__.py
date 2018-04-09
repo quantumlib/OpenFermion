@@ -24,7 +24,8 @@ from ._binary_codes import (bravyi_kitaev_code,
                             linearize_decoder)
 from ._bravyi_kitaev import bravyi_kitaev
 from ._bravyi_kitaev_tree import bravyi_kitaev_tree
-from ._conversion import (get_fermion_operator,
+from ._conversion import (get_diagonal_coulomb_hamiltonian,
+                          get_fermion_operator,
                           get_interaction_rdm,
                           get_interaction_operator,
                           get_quadratic_hamiltonian,

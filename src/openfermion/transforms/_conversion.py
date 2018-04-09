@@ -310,7 +310,7 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
                     raise ValueError('FermionOperator does not map to '
                                      'DiagonalCoulombHamiltonian '
                                      '(contains terms with indices '
-                                     '{}).'.format((p, q, r, s))
+                                     '{}).'.format((p, q, r, s)))
             else:
                 raise ValueError('FermionOperator does not map to '
                                  'DiagonalCoulombHamiltonian (contains terms '

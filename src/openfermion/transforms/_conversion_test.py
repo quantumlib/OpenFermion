@@ -17,6 +17,7 @@ import copy
 import numpy
 import unittest
 
+from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops import (FermionOperator, InteractionOperator,
                              normal_ordered, QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
@@ -140,6 +141,28 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         """Test asking for too few qubits."""
         with self.assertRaises(ValueError):
             get_quadratic_hamiltonian(FermionOperator('3^ 2^'), n_qubits=3)
+
+
+class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
+
+    def test_hubbard(self):
+        x_dim = 4
+        y_dim = 5
+        tunneling = 2.
+        coulomb = 3.
+        chemical_potential = 7.
+        magnetic_field = 11.
+        periodic = False
+
+        hubbard_model = fermi_hubbard(x_dim, y_dim, tunneling, coulomb,
+                                      chemical_potential, magnetic_field,
+                                      periodic)
+
+        self.assertTrue(
+                normal_ordered(hubbard_model) ==
+                normal_ordered(
+                    get_fermion_operator(
+                        get_diagonal_coulomb_hamiltonian(hubbard_model))))
 
 
 class GetSparseOperatorQubitTest(unittest.TestCase):
