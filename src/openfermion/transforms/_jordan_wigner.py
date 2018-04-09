@@ -96,10 +96,10 @@ def jordan_wigner_diagonal_coulomb_hamiltonian(operator):
 
         # Two-body
         coefficient = operator.two_body[p, q]
-        qubit_operator += QubitOperator(((p, 'Z'), (q, 'Z')), .25 * coefficient)
-        qubit_operator += QubitOperator((p, 'Z'), -.25 * coefficient)
-        qubit_operator += QubitOperator((q, 'Z'), -.25 * coefficient)
-        qubit_operator += QubitOperator((), .25 * coefficient)
+        qubit_operator += QubitOperator(((p, 'Z'), (q, 'Z')), .5 * coefficient)
+        qubit_operator += QubitOperator((p, 'Z'), -.5 * coefficient)
+        qubit_operator += QubitOperator((q, 'Z'), -.5 * coefficient)
+        qubit_operator += QubitOperator((), .5 * coefficient)
 
     return qubit_operator
 
