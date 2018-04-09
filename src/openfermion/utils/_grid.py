@@ -47,7 +47,8 @@ class Grid:
                 'dimensions must be a positive int but was {} {}'.format(
                     type(dimensions), repr(dimensions)))
         if ((not isinstance(length, int) or length < 0) and
-                (not isinstance(length, tuple))):
+                (not isinstance(length, tuple)) and
+                (not isinstance(length, list))):
             raise ValueError(
                 'length must be a non-negative int or tuple '
                 'but was {} {}'.format(
@@ -120,7 +121,7 @@ class Grid:
                 'Position indices must be integers in [0, grid_length).')
 
         # Compute position vector.
-        vector = sum([(float(n) / self.length[i]) * self.scale[:, i]
+        vector = sum([(float(n - self.shifts[i]) / self.length[i]) * self.scale[:, i]
                       for i, n in enumerate(position_indices)])
         return vector
 
@@ -161,9 +162,6 @@ class Grid:
         momentum_int = [index[i] - self.shifts[i]
                         for i in range(self.dimensions)]
 
-        # Adjust for even grids without 0 point
-        # momentum_int = [v + ((v >= 0) and (self.length[i] % 2) == 0)
-        #                 for i, v in enumerate(momentum_int)]
         return numpy.array(momentum_int, dtype=int)
 
     def momentum_ints_to_index(self, momentum_ints):
@@ -231,7 +229,6 @@ class Grid:
                     grid_coordinate < self.length[dimension]):
                 tensor_factor += (grid_coordinate *
                                   int(numpy.product(self.length[:dimension])))
-
             else:
                 # Raise for invalid model.
                 raise OrbitalSpecificationError(

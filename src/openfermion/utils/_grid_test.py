@@ -52,7 +52,7 @@ class GridTest(unittest.TestCase):
         grid = Grid(dimensions=1, length=4, scale=4.)
         test_output = [grid.position_vector(i)[0]
                        for i in range(grid.length[0])]
-        correct_output = [0., 1., 2., 3.]
+        correct_output = [-2, -1, 0, 1]
         self.assertEqual(correct_output, test_output)
 
         # Test in 2D.
@@ -63,9 +63,9 @@ class GridTest(unittest.TestCase):
             for j in range(3):
                 test_input += [(i, j)]
                 test_output += [grid.position_vector((i, j))]
-        correct_output = numpy.array([[0., 0.], [0., 1.], [0., 2.],
-                                      [1., 0.], [1., 1.], [1., 2.],
-                                      [2., 0.], [2., 1.], [2., 2.]])
+        correct_output = numpy.array([[-1., -1.], [-1., 0.], [-1., 1.],
+                                      [0., -1.], [0., 0.], [0., 1.],
+                                      [1., -1.], [1., 0.], [1., 1.]])
         self.assertAlmostEqual(0., numpy.amax(test_output - correct_output))
 
     def test_momentum_vector(self):

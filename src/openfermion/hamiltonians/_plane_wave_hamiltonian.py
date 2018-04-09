@@ -84,11 +84,13 @@ def dual_basis_external_potential(grid, geometry, spinless):
                 if momenta_squared == 0:
                     continue
 
-                exp_index = 1.0j * momenta.dot(coordinate_j - coordinate_p)
+                exp_index = momenta.dot(coordinate_j - coordinate_p)
+                #coefficient = (prefactor / momenta_squared *
+                #               periodic_hash_table[nuclear_term[0]] *
+                #               numpy.exp(1.0j * exp_index))
                 coefficient = (prefactor / momenta_squared *
                                periodic_hash_table[nuclear_term[0]] *
-                               numpy.exp(exp_index))
-
+                               numpy.cos(exp_index))
                 for spin_p in spins:
                     orbital_p = grid.orbital_id(pos_indices, spin_p)
                     operators = ((orbital_p, 1), (orbital_p, 0))
@@ -124,15 +126,13 @@ def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
         for indices_q in grid.all_points_indices():
             momenta_ints_p = grid.index_to_momentum_ints(indices_p)
             momenta_ints_q = grid.index_to_momentum_ints(indices_q)
-            momenta_ints_qp = momenta_ints_q - momenta_ints_p
-
-            # Cut out 0 momentum modes
-            if (momenta_ints_qp == (0, ) * grid.dimensions).all():
-                continue
-
-            momenta_p_q = grid.momentum_ints_to_value(momenta_ints_qp,
+            momenta_ints_pq = momenta_ints_p - momenta_ints_q
+            momenta_p_q = grid.momentum_ints_to_value(momenta_ints_pq,
                                                       periodic=True)
             momenta_p_q_squared = momenta_p_q.dot(momenta_p_q)
+
+            if momenta_p_q_squared == 0:
+                continue
 
             # Energy cutoff.
             if e_cutoff is not None and momenta_p_q_squared / 2. > e_cutoff:
@@ -140,10 +140,14 @@ def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
 
             for nuclear_term in geometry:
                 coordinate_j = numpy.array(nuclear_term[1])
-                exp_index = 1.0j * momenta_p_q.dot(coordinate_j)
+                exp_index = momenta_p_q.dot(coordinate_j)
+                #coefficient = (prefactor / momenta_p_q_squared *
+                #                periodic_hash_table[nuclear_term[0]] *
+                #               numpy.exp(1.0j * exp_index))
+
                 coefficient = (prefactor / momenta_p_q_squared *
                                periodic_hash_table[nuclear_term[0]] *
-                               numpy.exp(exp_index))
+                               numpy.cos(exp_index))
 
                 for spin in spins:
                     orbital_p = grid.orbital_id(indices_p, spin)
