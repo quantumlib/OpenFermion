@@ -274,6 +274,51 @@ def get_quadratic_hamiltonian(fermion_operator,
     return quadratic_hamiltonian
 
 
+def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
+    """Convert a FermionOperator to a DiagonalCoulombHamiltonian."""
+    if not isinstance(fermion_operator, FermionOperator):
+        raise TypeError('Input must be a FermionOperator.')
+
+    if n_qubits is None:
+        n_qubits = count_qubits(fermion_operator)
+    if n_qubits < count_qubits(fermion_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    fermion_operator = normal_ordered(fermion_operator)
+    constant = 0.
+    one_body = numpy.zeros((n_qubits, n_qubits), complex)
+    two_body = numpy.zeros((n_qubits, n_qubits), float)
+
+    for term in fermion_operator.terms:
+        coefficient = fermion_operator.terms[term]
+        # Ignore this term if the coefficient is zero
+        if abs(coefficient) < EQ_TOLERANCE:
+            continue
+
+        if len(term) == 0:
+            constant = coefficient
+        else:
+            actions = [operator[1] for operator in term]
+            if actions == [1, 0]:
+                p, q = [operator[0] for operator in term]
+                one_body[p, q] = coefficient
+            elif actions == [1, 1, 0, 0]:
+                p, q, r, s = [operator[0] for operator in term]
+                if p == r and q == s:
+                    two_body[p, q] = -coefficient
+                else:
+                    raise ValueError('FermionOperator does not map to '
+                                     'DiagonalCoulombHamiltonian '
+                                     '(contains terms with indices '
+                                     '{}).'.format((p, q, r, s))
+            else:
+                raise ValueError('FermionOperator does not map to '
+                                 'DiagonalCoulombHamiltonian (contains terms '
+                                 'with action {}.'.format(tuple(ladder_type)))
+
+    return DiagonalCoulombHamiltonian(one_body, two_body, constant)
+
+
 def get_fermion_operator(operator):
     """Convert to FermionOperator.
 
