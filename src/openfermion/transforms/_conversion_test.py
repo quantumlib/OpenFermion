@@ -18,13 +18,16 @@ import numpy
 import unittest
 
 from openfermion.hamiltonians import fermi_hubbard
-from openfermion.ops import (FermionOperator, InteractionOperator,
-                             normal_ordered, QubitOperator)
+from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
+                             InteractionOperator, QubitOperator, normal_ordered)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.transforms import *
 from openfermion.utils import *
-from openfermion.utils._testing_utils import random_quadratic_hamiltonian
+from openfermion.utils._testing_utils import (
+        random_hermitian_matrix,
+        random_interaction_operator,
+        random_quadratic_hamiltonian)
 
 
 class GetInteractionOperatorTest(unittest.TestCase):
@@ -278,3 +281,21 @@ class GetSparseOperatorFermionTest(unittest.TestCase):
         sparse_operator.eliminate_zeros()
         self.assertEqual(len(list(sparse_operator.data)), 0)
         self.assertEqual(sparse_operator.shape, (16, 16))
+
+
+class GetSparseOperatorDiagonalCoulombHamiltonianTest(unittest.TestCase):
+
+    def test_diagonal_coulomb_hamiltonian(self):
+        n_qubits = 5
+        one_body = random_hermitian_matrix(n_qubits, real=False)
+        two_body = random_hermitian_matrix(n_qubits, real=True)
+        constant = numpy.random.randn()
+        op = DiagonalCoulombHamiltonian(one_body, two_body, constant)
+
+        op1 = get_sparse_operator(op)
+        op2 = get_sparse_operator(jordan_wigner(get_fermion_operator(op)))
+        diff = op1 - op2
+        discrepancy = 0.
+        if diff.nnz:
+            discrepancy = max(abs(diff.data))
+        self.assertAlmostEqual(discrepancy, 0.)

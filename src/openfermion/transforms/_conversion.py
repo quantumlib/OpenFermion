@@ -37,20 +37,19 @@ from openfermion.utils import (count_qubits,
 
 
 def get_sparse_operator(operator, n_qubits=None):
-    """Map a FermionOperator, QubitOperator, or PolyomialTensor to a
-    sparse matrix."""
-    if isinstance(operator, PolynomialTensor):
-        return polynomial_tensor_sparse(operator)
+    """Map an operator to a sparse matrix.
+
+    If the input is not a QubitOperator, the Jordan-Wigner Transform is used.
+    """
+    if isinstance(operator, (DiagonalCoulombHamiltonian, PolynomialTensor)):
+        return jordan_wigner_sparse(get_fermion_operator(operator))
     elif isinstance(operator, FermionOperator):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
         return qubit_operator_sparse(operator, n_qubits)
-
-
-def polynomial_tensor_sparse(polynomial_tensor):
-    fermion_operator = get_fermion_operator(polynomial_tensor)
-    sparse_operator = jordan_wigner_sparse(fermion_operator)
-    return sparse_operator
+    else:
+        raise TypeError('Failed to convert a {} to a sparse matrix.'.format(
+            type(operator).__name__))
 
 
 def get_interaction_rdm(qubit_operator, n_qubits=None):
