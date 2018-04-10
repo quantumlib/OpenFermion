@@ -120,8 +120,9 @@ class Grid:
             raise OrbitalSpecificationError(
                 'Position indices must be integers in [0, grid_length).')
 
-        # Compute position vector.
-        vector = sum([(float(n - self.shifts[i]) / self.length[i]) * self.scale[:, i]
+        # Compute position vector
+        vector = sum([(float(n - self.shifts[i]) /
+                       self.length[i]) * self.scale[:, i]
                       for i, n in enumerate(position_indices)])
         return vector
 
