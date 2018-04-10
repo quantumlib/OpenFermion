@@ -303,6 +303,11 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
             elif actions == [1, 1, 0, 0]:
                 p, q, r, s = [operator[0] for operator in term]
                 if p == r and q == s:
+                    if abs(numpy.imag(coefficient)) > EQ_TOLERANCE:
+                        raise ValueError(
+                            'FermionOperator does not map to '
+                            'DiagonalCoulombHamiltonian (not Hermitian).')
+                    coefficient = numpy.real(coefficient)
                     two_body[p, q] = -.5 * coefficient
                     two_body[q, p] = -.5 * coefficient
                 else:
@@ -316,7 +321,7 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
                                  'with action {}.'.format(tuple(actions)))
 
     # Check that the operator is Hermitian
-    if not (is_hermitian(one_body) and is_hermitian(two_body)):
+    if not is_hermitian(one_body):
         raise ValueError(
             'FermionOperator does not map to DiagonalCoulombHamiltonian '
             '(not Hermitian).')
