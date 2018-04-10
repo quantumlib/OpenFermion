@@ -204,7 +204,8 @@ def count_qubits(operator):
     """Compute the minimum number of qubits on which operator acts.
 
     Args:
-        operator: FermionOperator, QubitOperator, or PolynomialTensor.
+        operator: FermionOperator, QubitOperator, DiagonalCoulombHamiltonian,
+            or PolynomialTensor.
 
     Returns:
         num_qubits (int): The minimum number of qubits on which operator acts.
@@ -230,8 +231,12 @@ def count_qubits(operator):
                     num_qubits = term[-1][0] + 1
         return num_qubits
 
-    # Handle DiagonalCoulombHamiltonian and PolynomialTensor
-    elif isinstance(operator, (DiagonalCoulombHamiltonian, PolynomialTensor)):
+    # Handle DiagonalCoulombHamiltonian
+    elif isinstance(operator, DiagonalCoulombHamiltonian):
+        return operator.one_body.shape[0]
+
+    # Handle PolynomialTensor
+    elif isinstance(operator, PolynomialTensor):
         return operator.n_qubits
 
     # Raise for other classes.
