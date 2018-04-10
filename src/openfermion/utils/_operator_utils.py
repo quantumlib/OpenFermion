@@ -24,9 +24,10 @@ from openfermion.hamiltonians._jellium import (grid_indices,
                                                momentum_vector,
                                                orbital_id,
                                                position_vector)
-from openfermion.ops import (FermionOperator, InteractionOperator,
-                             InteractionRDM, PolynomialTensor, QubitOperator,
-                             normal_ordered)
+from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
+                             InteractionOperator, InteractionRDM,
+                             PolynomialTensor, QubitOperator, normal_ordered)
+
 from scipy.sparse import spmatrix
 
 
@@ -203,7 +204,8 @@ def count_qubits(operator):
     """Compute the minimum number of qubits on which operator acts.
 
     Args:
-        operator: FermionOperator, QubitOperator, or PolynomialTensor.
+        operator: FermionOperator, QubitOperator, DiagonalCoulombHamiltonian,
+            or PolynomialTensor.
 
     Returns:
         num_qubits (int): The minimum number of qubits on which operator acts.
@@ -228,6 +230,10 @@ def count_qubits(operator):
                 if term[-1][0] + 1 > num_qubits:
                     num_qubits = term[-1][0] + 1
         return num_qubits
+
+    # Handle DiagonalCoulombHamiltonian
+    elif isinstance(operator, DiagonalCoulombHamiltonian):
+        return operator.one_body.shape[0]
 
     # Handle PolynomialTensor
     elif isinstance(operator, PolynomialTensor):
