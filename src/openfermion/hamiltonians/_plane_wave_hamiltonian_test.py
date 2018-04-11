@@ -15,11 +15,8 @@ from __future__ import absolute_import
 
 import unittest
 
-import numpy
 
-from openfermion.hamiltonians import jellium_model
 from openfermion.hamiltonians._plane_wave_hamiltonian import *
-from openfermion.ops import normal_ordered
 from openfermion.transforms import jordan_wigner, get_sparse_operator
 from openfermion.utils import (eigenspectrum, Grid, inverse_fourier_transform,
                                is_hermitian)
@@ -83,23 +80,13 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
                     grid = Grid(dimensions=1, scale=length_scale, length=l)
                     h_plane_wave = plane_wave_hamiltonian(
                         grid, geometry, spinless, True, include_constant=True)
-                    h_dual_basis = plane_wave_hamiltonian(grid, geometry,
-                                                          spinless, False)
+                    h_dual_basis = plane_wave_hamiltonian(
+                        grid, geometry, spinless, False, include_constant=True)
                     h_dual_t = inverse_fourier_transform(h_dual_basis, grid,
-                                                         spinless)
+                                                 spinless)
                     # Test for Hermiticity
-                    print "\n\n Length Set: {}".format(l)
-                    print "Plane Wave"
-                    print normal_ordered(h_plane_wave)
-                    print "\n\nDual"
-                    print normal_ordered(h_dual_basis)
-                    print
-                    print '\n\nTransformed Dual'
-                    print normal_ordered(h_dual_t)
                     plane_wave_operator = get_sparse_operator(h_plane_wave)
                     dual_operator = get_sparse_operator(h_dual_basis)
-                    print plane_wave_operator
-                    print dual_operator
                     self.assertTrue(is_hermitian((plane_wave_operator)))
                     self.assertTrue(is_hermitian(dual_operator))
 
@@ -112,9 +99,8 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
                         h_plane_wave_spectrum - h_dual_basis_spectrum)
                     min_diff = numpy.amin(
                         h_plane_wave_spectrum - h_dual_basis_spectrum)
-                    self.assertAlmostEqual(max_diff, 2.8372 / length_scale)
-                    self.assertAlmostEqual(min_diff, 2.8372 / length_scale)
-            self.assertTrue(False)
+                    self.assertAlmostEqual(max_diff, 0)
+                    self.assertAlmostEqual(min_diff, 0)
 
     def test_plane_wave_hamiltonian_default_to_jellium_with_no_geometry(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)

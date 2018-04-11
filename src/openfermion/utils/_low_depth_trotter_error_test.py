@@ -13,7 +13,6 @@
 """Tests for _dual_basis_trotter_error.py."""
 import unittest
 
-from openfermion.ops import FermionOperator
 from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.utils._low_depth_trotter_error import *
 from openfermion.utils import Grid

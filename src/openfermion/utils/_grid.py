@@ -70,6 +70,15 @@ class Grid:
 
         self.shifts = [self.length[i] // 2 for i in range(dimensions)]
 
+        # Only support an all-even or all odd grid at the moment
+        if all([self.length[i] %2 == 0 for i in range(self.dimensions)]):
+            self.is_even_grid = True
+        elif all([self.length[i] % 2 != 0 for i in range(self.dimensions)]):
+            self.is_even_grid = False
+        else:
+            raise ValueError('Grid lengths must be either all even or all odd'
+                             'with current implementation')
+
         # If single float, construct cubic unit cell
         if isinstance(scale, float):
             self.scale = numpy.diag([scale] * self.dimensions)

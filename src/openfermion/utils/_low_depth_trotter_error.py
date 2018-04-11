@@ -15,9 +15,8 @@ from __future__ import absolute_import
 from future.utils import iteritems, itervalues
 
 import numpy
+import openfermion.hamiltonians
 
-from openfermion.config import *
-from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.utils import count_qubits, Grid
 from openfermion.utils._commutators import (
@@ -350,11 +349,14 @@ def dual_basis_jellium_hamiltonian(grid_length, dimension=3,
                          ' spin-orbitals.')
 
     # Compute appropriate length scale.
-    length_scale = wigner_seitz_length_scale(
+    length_scale = openfermion.hamiltonians.wigner_seitz_length_scale(
         wigner_seitz_radius, n_particles, dimension)
 
     grid = Grid(dimension, grid_length, length_scale)
-    hamiltonian = jellium_model(grid, spinless=spinless, plane_wave=False)
+    hamiltonian = (
+        openfermion.hamiltonians.jellium_model(grid,
+                                               spinless=spinless,
+                                               plane_wave=False))
     hamiltonian = normal_ordered(hamiltonian)
     hamiltonian.compress()
     return hamiltonian

@@ -14,11 +14,13 @@
 from __future__ import absolute_import
 
 import numpy
+import openfermion.utils._operator_utils
 
 from openfermion.config import *
 from openfermion.hamiltonians._jellium import *
 from openfermion.hamiltonians._molecular_data import periodic_hash_table
 from openfermion.ops import FermionOperator, QubitOperator
+
 
 
 def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
@@ -85,12 +87,15 @@ def dual_basis_external_potential(grid, geometry, spinless):
                     continue
 
                 exp_index = momenta.dot(coordinate_j - coordinate_p)
-                #coefficient = (prefactor / momenta_squared *
-                #               periodic_hash_table[nuclear_term[0]] *
-                #               numpy.exp(1.0j * exp_index))
-                coefficient = (prefactor / momenta_squared *
-                               periodic_hash_table[nuclear_term[0]] *
-                               numpy.cos(exp_index))
+                if grid.is_even_grid:
+                    coefficient = (prefactor / momenta_squared *
+                                   periodic_hash_table[nuclear_term[0]] *
+                                   numpy.cos(exp_index))
+                else:
+                    coefficient = (prefactor / momenta_squared *
+                                   periodic_hash_table[nuclear_term[0]] *
+                                   numpy.exp(1.0j * exp_index))
+
                 for spin_p in spins:
                     orbital_p = grid.orbital_id(pos_indices, spin_p)
                     operators = ((orbital_p, 1), (orbital_p, 0))
@@ -115,48 +120,11 @@ def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
     Returns:
         FermionOperator: The plane wave operator.
     """
-    prefactor = -4.0 * numpy.pi / grid.volume_scale()
-    operator = None
-    if spinless:
-        spins = [None]
-    else:
-        spins = [0, 1]
-
-    for indices_p in grid.all_points_indices():
-        for indices_q in grid.all_points_indices():
-            momenta_ints_p = grid.index_to_momentum_ints(indices_p)
-            momenta_ints_q = grid.index_to_momentum_ints(indices_q)
-            momenta_ints_pq = momenta_ints_p - momenta_ints_q
-            momenta_p_q = grid.momentum_ints_to_value(momenta_ints_pq,
-                                                      periodic=True)
-            momenta_p_q_squared = momenta_p_q.dot(momenta_p_q)
-
-            if momenta_p_q_squared == 0:
-                continue
-
-            # Energy cutoff.
-            if e_cutoff is not None and momenta_p_q_squared / 2. > e_cutoff:
-                continue
-
-            for nuclear_term in geometry:
-                coordinate_j = numpy.array(nuclear_term[1])
-                exp_index = momenta_p_q.dot(coordinate_j)
-                #coefficient = (prefactor / momenta_p_q_squared *
-                #                periodic_hash_table[nuclear_term[0]] *
-                #               numpy.exp(1.0j * exp_index))
-
-                coefficient = (prefactor / momenta_p_q_squared *
-                               periodic_hash_table[nuclear_term[0]] *
-                               numpy.cos(exp_index))
-
-                for spin in spins:
-                    orbital_p = grid.orbital_id(indices_p, spin)
-                    orbital_q = grid.orbital_id(indices_q, spin)
-                    operators = ((orbital_p, 1), (orbital_q, 0))
-                    if operator is None:
-                        operator = FermionOperator(operators, coefficient)
-                    else:
-                        operator += FermionOperator(operators, coefficient)
+    dual_basis_operator = dual_basis_external_potential(grid, geometry,
+                                                        spinless)
+    operator = (
+        openfermion.utils.inverse_fourier_transform(dual_basis_operator,
+                                                    grid, spinless))
 
     return operator
 
