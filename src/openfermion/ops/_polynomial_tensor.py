@@ -250,18 +250,25 @@ class PolynomialTensor(object):
         return r
 
     def __imul__(self, multiplier):
-        if not issubclass(type(multiplier), PolynomialTensor):
+        if isinstance(multiplier, (int, float, complex)):
+            for key in self.n_body_tensors:
+                self.n_body_tensors[key] *= multiplier
+
+        elif isinstance(multiplier, PolynomialTensor):
+            if self.n_qubits != multiplier.n_qubits:
+                raise TypeError('Invalid tensor shape.')
+            for key in self.n_body_tensors:
+                if key in multiplier.n_body_tensors:
+                    self.n_body_tensors[key] = numpy.multiply(
+                            self.n_body_tensors[key],
+                            multiplier.n_body_tensors[key])
+                elif key == ():
+                    self.constant = 0.
+                else:
+                    self.n_body_tensors[key] = numpy.zeros(
+                            self.n_body_tensors[key].shape)
+        else:
             raise TypeError('Invalid type.')
-
-        if self.n_qubits != multiplier.n_qubits:
-            raise TypeError('Invalid tensor shape.')
-
-        for key in multiplier.n_body_tensors:
-            if key in self.n_body_tensors:
-                self.n_body_tensors[key] = numpy.multiply(
-                    self.n_body_tensors[key], multiplier.n_body_tensors[key])
-            else:
-                self.n_body_tensors[key] = multiplier.n_body_tensors[key]
 
         return self
 
@@ -269,6 +276,20 @@ class PolynomialTensor(object):
         product = copy.deepcopy(self)
         product *= multiplier
         return product
+
+    def __itruediv__(self, dividend):
+        if isinstance(dividend, (int, float, complex)):
+            for key in self.n_body_tensors:
+                self.n_body_tensors[key] /= dividend
+        else:
+            raise TypeError('Invalid type.')
+
+        return self
+
+    def __truediv__(self, dividend):
+        quotient = copy.deepcopy(self)
+        quotient /= dividend
+        return quotient
 
     def __iter__(self):
         """Iterate over non-zero elements of PolynomialTensor."""
