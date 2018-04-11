@@ -19,6 +19,7 @@ import copy
 import numpy
 
 from openfermion.ops import PolynomialTensor
+from openfermion.transforms import get_fermion_operator
 from openfermion.utils._slater_determinants_test import (
     random_quadratic_hamiltonian)
 
@@ -260,6 +261,22 @@ class PolynomialTensorTest(unittest.TestCase):
         new_tensor = self.polynomial_tensor_a * self.polynomial_tensor_b
         self.assertEqual(new_tensor, self.polynomial_tensor_axb)
 
+        new_tensor_1 = self.polynomial_tensor_a * 2.
+        new_tensor_2 = 2. * self.polynomial_tensor_a
+
+        self.assertEqual(new_tensor_1, PolynomialTensor(
+            {(): self.constant * 2.,
+             (1, 0): self.one_body_a * 2.,
+             (1, 1, 0, 0): self.two_body_a * 2.}))
+        self.assertEqual(new_tensor_2, PolynomialTensor(
+            {(): self.constant * 2.,
+             (1, 0): self.one_body_a * 2.,
+             (1, 1, 0, 0): self.two_body_a * 2.}))
+        self.assertEqual(get_fermion_operator(new_tensor_1),
+                         get_fermion_operator(self.polynomial_tensor_a) * 2.)
+        self.assertEqual(get_fermion_operator(new_tensor_2),
+                         get_fermion_operator(self.polynomial_tensor_a) * 2.)
+
     def test_imul(self):
         new_tensor = copy.deepcopy(self.polynomial_tensor_a)
         new_tensor *= self.polynomial_tensor_b
@@ -285,6 +302,8 @@ class PolynomialTensorTest(unittest.TestCase):
             {(): self.constant / 2.,
              (1, 0): self.one_body_a / 2.,
              (1, 1, 0, 0): self.two_body_a / 2.}))
+        self.assertEqual(get_fermion_operator(new_tensor),
+                         get_fermion_operator(self.polynomial_tensor_a) / 2.)
 
     def test_idiv(self):
         new_tensor = copy.deepcopy(self.polynomial_tensor_a)
@@ -293,6 +312,8 @@ class PolynomialTensorTest(unittest.TestCase):
             {(): self.constant / 3.,
              (1, 0): self.one_body_a / 3.,
              (1, 1, 0, 0): self.two_body_a / 3.}))
+        self.assertEqual(get_fermion_operator(new_tensor),
+                         get_fermion_operator(self.polynomial_tensor_a) / 3.)
 
     def test_invalid_dividend(self):
         with self.assertRaises(TypeError):

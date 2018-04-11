@@ -277,6 +277,11 @@ class PolynomialTensor(object):
         product *= multiplier
         return product
 
+    def __rmul__(self, multiplier):
+        product = copy.deepcopy(self)
+        product *= multiplier
+        return product
+
     def __itruediv__(self, dividend):
         if isinstance(dividend, (int, float, complex)):
             for key in self.n_body_tensors:
@@ -290,6 +295,10 @@ class PolynomialTensor(object):
         quotient = copy.deepcopy(self)
         quotient /= dividend
         return quotient
+
+    def __div__(self, divisor):
+        """ For compatibility with Python 2. """
+        return self.__truediv__(divisor)
 
     def __iter__(self):
         """Iterate over non-zero elements of PolynomialTensor."""
