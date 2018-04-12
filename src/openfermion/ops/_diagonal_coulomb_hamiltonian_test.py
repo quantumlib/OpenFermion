@@ -9,12 +9,15 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from __future__ import division
 import unittest
 
 import numpy
 
+from openfermion.transforms import get_fermion_operator
 from openfermion.ops._diagonal_coulomb_hamiltonian import (
         DiagonalCoulombHamiltonian)
+from openfermion.utils._testing_utils import random_diagonal_coulomb_hamiltonian
 
 
 class DiagonalCoulombHamiltonianTest(unittest.TestCase):
@@ -31,6 +34,22 @@ class DiagonalCoulombHamiltonianTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(op.two_body, numpy.array([[0., 11.],
                                                                  [11., 0.]])))
         self.assertAlmostEqual(op.constant, 17.)
+
+    def test_multiply(self):
+        n_qubits = 5
+        op1 = random_diagonal_coulomb_hamiltonian(n_qubits)
+        op2 = op1 * 1.5
+        op3 = 1.5 * op1
+        self.assertEqual(get_fermion_operator(op1) * 1.5,
+                         get_fermion_operator(op2),
+                         get_fermion_operator(op3))
+
+    def test_divide(self):
+        n_qubits = 5
+        op1 = random_diagonal_coulomb_hamiltonian(n_qubits)
+        op2 = op1 / 1.5
+        self.assertEqual(get_fermion_operator(op1) / 1.5,
+                         get_fermion_operator(op2))
 
     def test_exceptions(self):
         mat1 = numpy.array([[2., 3.],
