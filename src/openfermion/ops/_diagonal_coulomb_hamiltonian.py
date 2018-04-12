@@ -13,6 +13,7 @@ import numpy
 
 """Class for electronic structure Hamiltonians with a diagonal Coulomb term"""
 
+
 class DiagonalCoulombHamiltonian:
     """Class for storing Hamiltonians of the form
 
@@ -36,9 +37,9 @@ class DiagonalCoulombHamiltonian:
         if two_body.dtype != numpy.float:
             raise ValueError('Two-body tensor has invalid dtype. Expected {} '
                              'but was {}'.format(numpy.float, two_body.dtype))
-        if not is_hermitian(two_body):
+        if not numpy.allclose(two_body, two_body.T):
             raise ValueError('Two-body tensor must be symmetric.')
-        if not is_hermitian(one_body):
+        if not numpy.allclose(one_body, one_body.T.conj()):
             raise ValueError('One-body tensor must be Hermitian.')
 
         # Move the diagonal of two_body to one_body
