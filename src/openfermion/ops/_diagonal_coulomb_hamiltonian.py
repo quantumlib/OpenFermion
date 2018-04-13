@@ -9,11 +9,13 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+"""Class for electronic structure Hamiltonians with a diagonal Coulomb term"""
 from __future__ import division
 
 import copy
 
-"""Class for electronic structure Hamiltonians with a diagonal Coulomb term"""
+import numpy
+
 
 class DiagonalCoulombHamiltonian:
     """Class for storing Hamiltonians of the form
@@ -35,6 +37,19 @@ class DiagonalCoulombHamiltonian:
         constant(float): The constant.
     """
     def __init__(self, one_body, two_body, constant=0.):
+        if two_body.dtype != numpy.float:
+            raise ValueError('Two-body tensor has invalid dtype. Expected {} '
+                             'but was {}'.format(numpy.float, two_body.dtype))
+        if not numpy.allclose(two_body, two_body.T):
+            raise ValueError('Two-body tensor must be symmetric.')
+        if not numpy.allclose(one_body, one_body.T.conj()):
+            raise ValueError('One-body tensor must be Hermitian.')
+
+        # Move the diagonal of two_body to one_body
+        diag_indices = numpy.diag_indices(one_body.shape[0])
+        one_body[diag_indices] += two_body[diag_indices]
+        numpy.fill_diagonal(two_body, 0.)
+
         self.one_body = one_body
         self.two_body = two_body
         self.constant = constant

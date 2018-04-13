@@ -10,13 +10,30 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 from __future__ import division
-
 import unittest
 
+import numpy
+
 from openfermion.transforms import get_fermion_operator
+from openfermion.ops._diagonal_coulomb_hamiltonian import (
+        DiagonalCoulombHamiltonian)
 from openfermion.utils._testing_utils import random_diagonal_coulomb_hamiltonian
 
+
 class DiagonalCoulombHamiltonianTest(unittest.TestCase):
+
+    def test_init(self):
+        one_body = numpy.array([[2., 3.],
+                                [3., 5.]])
+        two_body = numpy.array([[7., 11.],
+                                [11., 13.]])
+        constant = 17.
+        op = DiagonalCoulombHamiltonian(one_body, two_body, constant)
+        self.assertTrue(numpy.allclose(op.one_body, numpy.array([[9., 3.],
+                                                                 [3., 18.]])))
+        self.assertTrue(numpy.allclose(op.two_body, numpy.array([[0., 11.],
+                                                                 [11., 0.]])))
+        self.assertAlmostEqual(op.constant, 17.)
 
     def test_multiply(self):
         n_qubits = 5
@@ -33,3 +50,17 @@ class DiagonalCoulombHamiltonianTest(unittest.TestCase):
         op2 = op1 / 1.5
         self.assertEqual(get_fermion_operator(op1) / 1.5,
                          get_fermion_operator(op2))
+
+    def test_exceptions(self):
+        mat1 = numpy.array([[2., 3.],
+                           [3., 5.]])
+        mat2 = numpy.array([[2., 3. + 1.j],
+                           [3 - 1.j, 5.]])
+        mat3 = numpy.array([[2., 3.],
+                           [4., 5.]])
+        with self.assertRaises(ValueError):
+            _ = DiagonalCoulombHamiltonian(mat1, mat2)
+        with self.assertRaises(ValueError):
+            _ = DiagonalCoulombHamiltonian(mat2, mat3)
+        with self.assertRaises(ValueError):
+            _ = DiagonalCoulombHamiltonian(mat3, mat1)
