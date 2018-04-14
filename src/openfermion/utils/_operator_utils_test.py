@@ -129,7 +129,7 @@ class FreezeOrbitalsTest(unittest.TestCase):
     def test_freeze_orbitals_vanishing(self):
         op = FermionOperator(((1, 1), (2, 0)))
         op_frozen = freeze_orbitals(op, [], [2])
-        self.assertEquals(len(op_frozen.terms), 0)
+        self.assertEqual(len(op_frozen.terms), 0)
 
 
 class PruneUnusedIndicesTest(unittest.TestCase):
@@ -333,9 +333,24 @@ class SaveLoadOperatorTest(unittest.TestCase):
                          msg=str(self.fermion_operator -
                                  loaded_fermion_operator))
 
+    def test_save_and_load_fermion_operators_readably(self):
+        save_operator(self.fermion_operator, self.file_name,
+                      human_readable=True)
+        loaded_fermion_operator = load_operator(self.file_name,
+                                                human_readable=True)
+        self.assertEqual(self.fermion_operator.terms,
+                         loaded_fermion_operator.terms)
+
     def test_save_and_load_qubit_operators(self):
         save_operator(self.qubit_operator, self.file_name)
         loaded_qubit_operator = load_operator(self.file_name)
+        self.assertEqual(self.qubit_operator.terms,
+                         loaded_qubit_operator.terms)
+
+    def test_save_and_load_qubit_operators_readably(self):
+        save_operator(self.qubit_operator, self.file_name, human_readable=True)
+        loaded_qubit_operator = load_operator(self.file_name,
+                                              human_readable=True)
         self.assertEqual(self.qubit_operator.terms,
                          loaded_qubit_operator.terms)
 
