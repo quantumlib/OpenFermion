@@ -182,9 +182,6 @@ class Grid:
             d-dimensional tuples of indices
         """
 
-        # Take care of even length by removing 0 from momentum
-        #indices = [n - ((n >= 0) and (self.length[i] % 2) == 0)
-        #           for i, n in enumerate(momentum_ints)]
         indices = momentum_ints
 
         # Shift to indices
