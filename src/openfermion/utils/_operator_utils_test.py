@@ -328,8 +328,8 @@ class SaveLoadOperatorTest(unittest.TestCase):
     def test_save_and_load_fermion_operators(self):
         save_operator(self.fermion_operator, self.file_name)
         loaded_fermion_operator = load_operator(self.file_name)
-        self.assertEqual(self.fermion_operator.terms,
-                         loaded_fermion_operator.terms,
+        self.assertEqual(self.fermion_operator,
+                         loaded_fermion_operator,
                          msg=str(self.fermion_operator -
                                  loaded_fermion_operator))
 
@@ -344,8 +344,8 @@ class SaveLoadOperatorTest(unittest.TestCase):
     def test_save_and_load_qubit_operators(self):
         save_operator(self.qubit_operator, self.file_name)
         loaded_qubit_operator = load_operator(self.file_name)
-        self.assertEqual(self.qubit_operator.terms,
-                         loaded_qubit_operator.terms)
+        self.assertEqual(self.qubit_operator,
+                         loaded_qubit_operator)
 
     def test_save_and_load_qubit_operators_readably(self):
         save_operator(self.qubit_operator, self.file_name, plain_text=True)
