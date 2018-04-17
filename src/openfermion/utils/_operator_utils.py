@@ -396,15 +396,14 @@ def inverse_fourier_transform(hamiltonian, grid, spinless):
                                      vec_func_2=momentum_vector)
 
 
-def load_operator(file_name=None, data_directory=None, human_readable=False):
+def load_operator(file_name=None, data_directory=None, plain_text=False):
     """Load FermionOperator or QubitOperator from file.
 
     Args:
         file_name: The name of the saved file.
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
-        human_readable: Whether the operator should be loaded from a
-                        human-readable format
+        plain_text: Whether the input file is plain text
 
     Returns:
         operator: The stored FermionOperator or QubitOperator
@@ -414,10 +413,10 @@ def load_operator(file_name=None, data_directory=None, human_readable=False):
     """
     file_path = get_file_path(file_name, data_directory)
 
-    if human_readable:
+    if plain_text:
         with open(file_path, 'r') as f:
             data = f.read()
-            operator_type, operator_terms = data.split(": ")
+            operator_type, operator_terms = data.split(":\n")
 
         if operator_type == 'FermionOperator':
             operator = FermionOperator(operator_terms)
@@ -446,7 +445,7 @@ def load_operator(file_name=None, data_directory=None, human_readable=False):
 
 
 def save_operator(operator, file_name=None, data_directory=None,
-                  allow_overwrite=False, human_readable=False):
+                  allow_overwrite=False, plain_text=False):
     """Save FermionOperator or QubitOperator to file.
 
     Args:
@@ -455,8 +454,8 @@ def save_operator(operator, file_name=None, data_directory=None,
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
         allow_overwrite: Whether to allow files to be overwritten.
-        human_readable: Whether the operator should be saved to a
-                        human-readable format for manual analysis
+        plain_text: Whether the operator should be saved to a
+                        plain-text format for manual analysis
 
     Raises:
         OperatorUtilsError: Not saved, file already exists.
@@ -478,9 +477,9 @@ def save_operator(operator, file_name=None, data_directory=None,
     else:
         raise TypeError('Operator of invalid type.')
 
-    if human_readable:
+    if plain_text:
         with open(file_path, 'w') as f:
-            f.write(operator_type + ": " + str(operator))
+            f.write(operator_type + ":\n" + str(operator))
     else:
         tm = operator.terms
         with open(file_path, 'wb') as f:
