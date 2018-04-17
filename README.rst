@@ -147,7 +147,8 @@ Authors
 `Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
 `Mark Steudtner <https://github.com/msteudtner>`__  (Leiden University),
 `Qiming Sun <https://github.com/sunqm>`__ (Caltech),
-`Wei Sun <https://github.com/Spaceenter>`__ (Google) and
+`Wei Sun <https://github.com/Spaceenter>`__ (Google),
+`Chris Winkler <https://github.com/quid256>`__ (University of Chicago) and
 `Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan).
 
 
