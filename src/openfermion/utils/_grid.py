@@ -135,13 +135,13 @@ class Grid:
                       for i, n in enumerate(position_indices)])
         return vector
 
-    def momentum_vector(self, momentum_indices):
+    def momentum_vector(self, momentum_indices, periodic=True):
         """Given grid point coordinate, return momentum vector with dimensions.
 
         Args:
-            momentum_indices: List or tuple of integers giving momentum
-            indices.
-                Allowed values are ints in [0, grid_length).
+            momentum_indices (list): integers giving momentum
+                indices. Allowed values are ints in [0, grid_length).
+            periodic (bool): Wrap the momentum indices
 
             Returns:
                 momentum_vector: A numpy array giving the momentum vector with
@@ -157,7 +157,7 @@ class Grid:
 
         # Compute momentum vector.
         momentum_ints = self.index_to_momentum_ints(momentum_indices)
-        vector = self.momentum_ints_to_value(momentum_ints)
+        vector = self.momentum_ints_to_value(momentum_ints, periodic)
 
         return vector
 

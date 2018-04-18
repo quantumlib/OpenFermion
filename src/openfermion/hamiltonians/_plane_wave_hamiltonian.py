@@ -81,7 +81,7 @@ def dual_basis_external_potential(grid, geometry, spinless):
         for nuclear_term in geometry:
             coordinate_j = numpy.array(nuclear_term[1], float)
             for momenta_indices in grid.all_points_indices():
-                momenta = grid.momentum_vector(momenta_indices)
+                momenta = grid.momentum_vector(momenta_indices, False)
                 momenta_squared = momenta.dot(momenta)
                 if momenta_squared == 0:
                     continue

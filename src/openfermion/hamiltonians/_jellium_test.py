@@ -39,30 +39,31 @@ class JelliumTest(unittest.TestCase):
         position_kinetic_operator = get_sparse_operator(position_kinetic)
         self.assertTrue(is_hermitian(position_kinetic_operator))
 
-        # Confirm spectral match and hermiticity for odd grids
-        grid = Grid(dimensions=1, length=3, scale=3.)
-        spinless = False
+        # Confirm spectral match and hermiticity
+        for length in [2, 3, 4]:
+            grid = Grid(dimensions=1, length=length, scale=2.1)
+            spinless = False
 
-        momentum_kinetic = plane_wave_kinetic(grid, spinless)
-        position_kinetic = dual_basis_kinetic(grid, spinless)
+            momentum_kinetic = plane_wave_kinetic(grid, spinless)
+            position_kinetic = dual_basis_kinetic(grid, spinless)
 
-        # Confirm they are Hermitian
-        momentum_kinetic_operator = get_sparse_operator(momentum_kinetic)
-        self.assertTrue(is_hermitian(momentum_kinetic_operator))
+            # Confirm they are Hermitian
+            momentum_kinetic_operator = get_sparse_operator(momentum_kinetic)
+            self.assertTrue(is_hermitian(momentum_kinetic_operator))
 
-        position_kinetic_operator = get_sparse_operator(position_kinetic)
-        self.assertTrue(is_hermitian(position_kinetic_operator))
+            position_kinetic_operator = get_sparse_operator(position_kinetic)
+            self.assertTrue(is_hermitian(position_kinetic_operator))
 
-        # Diagonalize and confirm the same energy.
-        jw_momentum = jordan_wigner(momentum_kinetic)
-        jw_position = jordan_wigner(position_kinetic)
-        momentum_spectrum = eigenspectrum(jw_momentum, 6)
-        position_spectrum = eigenspectrum(jw_position, 6)
+            # Diagonalize and confirm the same energy.
+            jw_momentum = jordan_wigner(momentum_kinetic)
+            jw_position = jordan_wigner(position_kinetic)
+            momentum_spectrum = eigenspectrum(jw_momentum, 2 * length)
+            position_spectrum = eigenspectrum(jw_position, 2 * length)
 
-        # Confirm spectra are the same.
-        difference = numpy.amax(
-            numpy.absolute(momentum_spectrum - position_spectrum))
-        self.assertAlmostEqual(difference, 0.)
+            # Confirm spectra are the same.
+            difference = numpy.amax(
+                numpy.absolute(momentum_spectrum - position_spectrum))
+            self.assertAlmostEqual(difference, 0.)
 
     def test_potential_integration(self):
 

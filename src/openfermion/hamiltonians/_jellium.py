@@ -186,8 +186,7 @@ def dual_basis_jellium_model(grid, spinless=False,
                 if momenta_squared == 0:
                     continue
 
-                # cos_difference = numpy.cos(momenta.dot(differences))
-                cos_difference = numpy.exp(1.0j * momenta.dot(differences))
+                cos_difference = numpy.cos(momenta.dot(differences))
                 if kinetic:
                     kinetic_coefficient += (
                         cos_difference * momenta_squared /
