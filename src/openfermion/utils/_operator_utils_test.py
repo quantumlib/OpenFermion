@@ -130,7 +130,7 @@ class FreezeOrbitalsTest(unittest.TestCase):
     def test_freeze_orbitals_vanishing(self):
         op = FermionOperator(((1, 1), (2, 0)))
         op_frozen = freeze_orbitals(op, [], [2])
-        self.assertEquals(len(op_frozen.terms), 0)
+        self.assertEqual(len(op_frozen.terms), 0)
 
 
 class PruneUnusedIndicesTest(unittest.TestCase):
@@ -329,16 +329,41 @@ class SaveLoadOperatorTest(unittest.TestCase):
     def test_save_and_load_fermion_operators(self):
         save_operator(self.fermion_operator, self.file_name)
         loaded_fermion_operator = load_operator(self.file_name)
-        self.assertEqual(self.fermion_operator.terms,
-                         loaded_fermion_operator.terms,
+        self.assertEqual(self.fermion_operator,
+                         loaded_fermion_operator,
                          msg=str(self.fermion_operator -
                                  loaded_fermion_operator))
+
+    def test_save_and_load_fermion_operators_readably(self):
+        save_operator(self.fermion_operator, self.file_name,
+                      plain_text=True)
+        loaded_fermion_operator = load_operator(self.file_name,
+                                                plain_text=True)
+        self.assertEqual(self.fermion_operator,
+                         loaded_fermion_operator)
 
     def test_save_and_load_qubit_operators(self):
         save_operator(self.qubit_operator, self.file_name)
         loaded_qubit_operator = load_operator(self.file_name)
-        self.assertEqual(self.qubit_operator.terms,
-                         loaded_qubit_operator.terms)
+        self.assertEqual(self.qubit_operator,
+                         loaded_qubit_operator)
+
+    def test_save_and_load_qubit_operators_readably(self):
+        save_operator(self.qubit_operator, self.file_name, plain_text=True)
+        loaded_qubit_operator = load_operator(self.file_name,
+                                              plain_text=True)
+        self.assertEqual(self.qubit_operator,
+                         loaded_qubit_operator)
+
+    def test_save_readably(self):
+        save_operator(self.fermion_operator, self.file_name, plain_text=True)
+        file_path = os.path.join(DATA_DIRECTORY, self.file_name + '.data')
+        with open(file_path, "r") as f:
+            self.assertEqual(f.read(), "\n".join([
+                "FermionOperator:",
+                "-3.17 [1^ 2^ 3 4] +",
+                "-3.17 [4^ 3^ 2 1]"
+            ]))
 
     def test_save_no_filename_operator_utils_error(self):
         with self.assertRaises(OperatorUtilsError):
