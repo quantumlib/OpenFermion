@@ -54,7 +54,7 @@ def plane_wave_kinetic(grid, spinless=False, e_cutoff=None):
 
 
 def plane_wave_potential(grid, spinless=False, e_cutoff=None):
-    """Return the potential operator in the plane wave basis.
+    """Return the e-e potential operator in the plane wave basis.
 
     Args:
         grid (Grid): The discretization to use.
@@ -147,6 +147,8 @@ def dual_basis_jellium_model(grid, spinless=False,
         kinetic (bool): Whether to include kinetic terms.
         potential (bool): Whether to include potential terms.
         include_constant (bool): Whether to include the Madelung constant.
+            Note: constant is unsupported for non-uniform, non-cubic cells with
+            ions.
 
     Returns:
         operator (FermionOperator)
@@ -261,6 +263,8 @@ def jellium_model(grid, spinless=False, plane_wave=True,
         plane_wave (bool): Whether to return in momentum space (True)
             or position space (False).
         include_constant (bool): Whether to include the Madelung constant.
+            Note: constant is unsupported for non-uniform, non-cubic cells with
+            ions.
         e_cutoff (float): Energy cutoff.
 
     Returns:
@@ -287,6 +291,8 @@ def jordan_wigner_dual_basis_jellium(grid, spinless=False,
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
         include_constant (bool): Whether to include the Madelung constant.
+            Note: constant is unsupported for non-uniform, non-cubic cells with
+            ions.
 
     Returns:
         hamiltonian (QubitOperator)
@@ -382,7 +388,7 @@ def jordan_wigner_dual_basis_jellium(grid, spinless=False,
 
     # Include the Madelung constant if requested.
     if include_constant:
-        # TODO
+        # TODO Generalize to other cells
         hamiltonian += (QubitOperator((),) *
                         (2.8372 / grid.volume_scale() ** (1./grid.dimensions)))
 

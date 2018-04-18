@@ -13,14 +13,11 @@
 """Construct Hamiltonians in plan wave basis and its dual in 3D."""
 from __future__ import absolute_import
 
-import numpy
 import openfermion.utils._operator_utils
 
-from openfermion.config import *
 from openfermion.hamiltonians._jellium import *
 from openfermion.hamiltonians._molecular_data import periodic_hash_table
 from openfermion.ops import FermionOperator, QubitOperator
-
 
 
 def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
@@ -59,6 +56,13 @@ def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
 
 def dual_basis_external_potential(grid, geometry, spinless):
     """Return the external potential in the dual basis of arXiv:1706.00023.
+
+    The external potential resulting from electrons interacting with nuclei
+        in the plane wave dual basis.  Note that a cos term is used which is
+        strictly only equivalent under aliasing in odd grids, and amounts
+        to the addition of an extra term to make the diagonals real on even
+        grids.  This approximation is not expected to be significant and allows
+        for use of even and odd grids on an even footing.
 
     Args:
         grid (Grid): The discretization to use.
@@ -104,6 +108,12 @@ def dual_basis_external_potential(grid, geometry, spinless):
 def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
     """Return the external potential operator in plane wave basis.
 
+    The external potential resulting from electrons interacting with nuclei.
+        It is defined here as the Fourier transform of the dual basis
+        Hamiltonian such that is spectrally equivalent in the case of
+        both even and odd grids.  Otherwise, the two differ in the case of
+        even grids.
+
     Args:
         grid (Grid): The discretization to use.
         geometry: A list of tuples giving the coordinates of each atom.
@@ -143,6 +153,9 @@ def plane_wave_hamiltonian(grid, geometry=None,
     Returns:
         FermionOperator: The hamiltonian.
     """
+    if (geometry is not None) and (include_constant is True):
+        raise ValueError('Constant term unsupported for non-uniform systems')
+
     jellium_op = jellium_model(grid, spinless, plane_wave, include_constant,
                                e_cutoff)
 
@@ -180,6 +193,9 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
     Returns:
         hamiltonian (QubitOperator)
     """
+    if (geometry is not None) and (include_constant is True):
+        raise ValueError('Constant term unsupported for non-uniform systems')
+
     jellium_op = jordan_wigner_dual_basis_jellium(
         grid, spinless, include_constant)
 

@@ -25,7 +25,24 @@ class OrbitalSpecificationError(Exception):
 
 class Grid:
     """
-    A multi-dimensional grid of points.
+    A multi-dimension grid of points with an assigned length scale.
+
+    This grid acts as a helper class for parallelpiped super cells.  It
+        tracks a mapping from indices to grid points and stores the associated
+        reciprocal lattice with respect to the original real-space lattice.
+        This enables calculations with non-trivial unit cells.
+
+    Attributes:
+        dimensions (int): Number of spatial dimensions the grid occupys
+        length (tuple of ints): d-length tuple specifying number of points
+            along each dimension.
+        shifts (list of ints): Integer shifts in position to center grid.
+        scale (ndarray): Vectors defining the super cell being simulated,
+            vectors are stored as columns in the matrix.
+        volume (float): Total volume of the supercell parallelpiped.
+        num_points (int): Total number of points in the grid.
+        reciprocal_scale (ndarray): Vectors defining the reciprocal lattice.
+            The vectors are stored as the columns in the matrix.
     """
 
     def __init__(self, dimensions, length, scale):
@@ -69,15 +86,6 @@ class Grid:
             self.length = length
 
         self.shifts = [self.length[i] // 2 for i in range(dimensions)]
-
-        # Only support an all-even or all odd grid at the moment
-        if all([self.length[i] %2 == 0 for i in range(self.dimensions)]):
-            self.is_even_grid = True
-        elif all([self.length[i] % 2 != 0 for i in range(self.dimensions)]):
-            self.is_even_grid = False
-        else:
-            raise ValueError('Grid lengths must be either all even or all odd'
-                             'with current implementation')
 
         # If single float, construct cubic unit cell
         if isinstance(scale, float):
@@ -141,7 +149,7 @@ class Grid:
         Args:
             momentum_indices (list): integers giving momentum
                 indices. Allowed values are ints in [0, grid_length).
-            periodic (bool): Wrap the momentum indices
+            periodic (bool): Wrap the momentum indices according to periodicity
 
             Returns:
                 momentum_vector: A numpy array giving the momentum vector with
@@ -198,6 +206,7 @@ class Grid:
             momentum_ints (tuple): d-dimensional tuple momentum integers
             periodic (bool): Alias the momentum
         Returns:
+            ndarray containing the momentum vector.
 
         """
         # Alias the higher momentum modes
@@ -216,7 +225,7 @@ class Grid:
             grid_coordinates: List or tuple of ints giving coordinates of grid
                 element. Acceptable to provide an int(instead of tuple or list)
                 for 1D case.
-            spin: Boole, 0 means spin down and 1 means spin up.
+            spin (bool): 0 means spin down and 1 means spin up.
                 If None, assume spinless model.
 
         Returns:
@@ -260,7 +269,8 @@ class Grid:
             grid_indices (numpy.ndarray[int]):
                 The location of the qubit on the grid.
         """
-        # Remove spin degree of freedom.
+
+        # Remove spin degree of freedom if it exists.
         orbital_id = qubit_id
         if not spinless:
             if (orbital_id % 2):
