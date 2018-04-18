@@ -120,16 +120,16 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
 
     def test_jordan_wigner_dual_basis_hamiltonian(self):
         grid = Grid(dimensions=2, length=3, scale=1.)
-        spinless = True
+        spinless_set = [True, False]
         geometry = [('H', (0, 0)), ('H', (0.5, 0.8))]
+        for spinless in spinless_set:
+            fermion_hamiltonian = plane_wave_hamiltonian(
+                grid, geometry, spinless, False, include_constant=False)
+            qubit_hamiltonian = jordan_wigner(fermion_hamiltonian)
 
-        fermion_hamiltonian = plane_wave_hamiltonian(
-            grid, geometry, spinless, False, include_constant=False)
-        qubit_hamiltonian = jordan_wigner(fermion_hamiltonian)
-
-        test_hamiltonian = jordan_wigner_dual_basis_hamiltonian(
-            grid, geometry, spinless, include_constant=False)
-        self.assertTrue(test_hamiltonian == qubit_hamiltonian)
+            test_hamiltonian = jordan_wigner_dual_basis_hamiltonian(
+                grid, geometry, spinless, include_constant=False)
+            self.assertTrue(test_hamiltonian == qubit_hamiltonian)
 
     def test_jordan_wigner_dual_basis_hamiltonian_default_to_jellium(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)

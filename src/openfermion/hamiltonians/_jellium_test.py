@@ -221,8 +221,6 @@ class JelliumTest(unittest.TestCase):
         # Check Zp Zq.
         if spinless:
             spins = [None]
-        else:
-            spins = [0, 1]
 
         for indices_a in grid.all_points_indices():
             for indices_b in grid.all_points_indices():

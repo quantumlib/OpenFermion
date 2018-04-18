@@ -79,8 +79,6 @@ class GridTest(unittest.TestCase):
         test_output = [grid.momentum_vector(i)
                        for i in range(grid.length[0])]
         correct_output = [-1., 0.]
-        print test_output
-        print correct_output
         self.assertEqual(correct_output, test_output)
 
         grid = Grid(dimensions=1, length=11, scale=2. * numpy.pi)

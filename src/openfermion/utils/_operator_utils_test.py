@@ -426,12 +426,6 @@ class FourierTransformTest(unittest.TestCase):
                     grid, geometry, spinless, False)
                 h_plane_wave_t = fourier_transform(h_plane_wave, grid,
                                                    spinless)
-                print "Plane Wave"
-                print normal_ordered(h_plane_wave)
-                print "\n\n Dual"
-                print normal_ordered(h_dual_basis)
-                print "\n\n Transformed Plane Wave"
-                print normal_ordered(h_plane_wave_t)
                 self.assertTrue(normal_ordered(h_plane_wave_t) ==
                     normal_ordered(h_dual_basis))
 
@@ -454,11 +448,6 @@ class FourierTransformTest(unittest.TestCase):
                 grid, geometry, spinless, False)
             h_dual_basis_t = inverse_fourier_transform(
                 h_dual_basis, grid, spinless)
-            print grid.is_even_grid
-            print "Original"
-            print normal_ordered(h_plane_wave)
-            print 'Transformed'
-            print normal_ordered(h_dual_basis_t)
             self.assertTrue(normal_ordered(h_dual_basis_t) ==
                 normal_ordered(h_plane_wave))
 
