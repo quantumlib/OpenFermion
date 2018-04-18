@@ -81,20 +81,15 @@ def dual_basis_external_potential(grid, geometry, spinless):
         for nuclear_term in geometry:
             coordinate_j = numpy.array(nuclear_term[1], float)
             for momenta_indices in grid.all_points_indices():
-                momenta = grid.momentum_vector(momenta_indices, False)
+                momenta = grid.momentum_vector(momenta_indices)
                 momenta_squared = momenta.dot(momenta)
                 if momenta_squared == 0:
                     continue
 
-                exp_index = momenta.dot(coordinate_j - coordinate_p)
-                if grid.is_even_grid:
-                    coefficient = (prefactor / momenta_squared *
-                                   periodic_hash_table[nuclear_term[0]] *
-                                   numpy.cos(exp_index))
-                else:
-                    coefficient = (prefactor / momenta_squared *
-                                   periodic_hash_table[nuclear_term[0]] *
-                                   numpy.exp(1.0j * exp_index))
+                cos_index = momenta.dot(coordinate_j - coordinate_p)
+                coefficient = (prefactor / momenta_squared *
+                               periodic_hash_table[nuclear_term[0]] *
+                               numpy.cos(cos_index))
 
                 for spin_p in spins:
                     orbital_p = grid.orbital_id(pos_indices, spin_p)
@@ -219,10 +214,10 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
             for nuclear_term in geometry:
                 coordinate_j = numpy.array(nuclear_term[1], float)
 
-                exp_index = 1.0j * momenta.dot(coordinate_j - coordinate_p)
+                cos_index = momenta.dot(coordinate_j - coordinate_p)
                 coefficient = (prefactor / momenta_squared *
                                periodic_hash_table[nuclear_term[0]] *
-                               numpy.exp(exp_index))
+                               numpy.cos(cos_index))
                 external_potential += (QubitOperator((), coefficient) -
                                        QubitOperator(((p, 'Z'),), coefficient))
 
