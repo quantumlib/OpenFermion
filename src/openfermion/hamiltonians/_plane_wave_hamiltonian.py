@@ -13,9 +13,8 @@
 """Construct Hamiltonians in plan wave basis and its dual in 3D."""
 from __future__ import absolute_import
 
-import numpy
+import openfermion.utils._operator_utils
 
-from openfermion.config import *
 from openfermion.hamiltonians._jellium import *
 from openfermion.hamiltonians._molecular_data import periodic_hash_table
 from openfermion.ops import FermionOperator, QubitOperator
@@ -58,6 +57,13 @@ def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
 def dual_basis_external_potential(grid, geometry, spinless):
     """Return the external potential in the dual basis of arXiv:1706.00023.
 
+    The external potential resulting from electrons interacting with nuclei
+        in the plane wave dual basis.  Note that a cos term is used which is
+        strictly only equivalent under aliasing in odd grids, and amounts
+        to the addition of an extra term to make the diagonals real on even
+        grids.  This approximation is not expected to be significant and allows
+        for use of even and odd grids on an even footing.
+
     Args:
         grid (Grid): The discretization to use.
         geometry: A list of tuples giving the coordinates of each atom.
@@ -75,22 +81,22 @@ def dual_basis_external_potential(grid, geometry, spinless):
     else:
         spins = [0, 1]
     for pos_indices in grid.all_points_indices():
-        coordinate_p = position_vector(pos_indices, grid)
+        coordinate_p = grid.position_vector(pos_indices)
         for nuclear_term in geometry:
             coordinate_j = numpy.array(nuclear_term[1], float)
             for momenta_indices in grid.all_points_indices():
-                momenta = momentum_vector(momenta_indices, grid)
+                momenta = grid.momentum_vector(momenta_indices)
                 momenta_squared = momenta.dot(momenta)
                 if momenta_squared == 0:
                     continue
 
-                exp_index = 1.0j * momenta.dot(coordinate_j - coordinate_p)
+                cos_index = momenta.dot(coordinate_j - coordinate_p)
                 coefficient = (prefactor / momenta_squared *
                                periodic_hash_table[nuclear_term[0]] *
-                               numpy.exp(exp_index))
+                               numpy.cos(cos_index))
 
                 for spin_p in spins:
-                    orbital_p = orbital_id(grid, pos_indices, spin_p)
+                    orbital_p = grid.orbital_id(pos_indices, spin_p)
                     operators = ((orbital_p, 1), (orbital_p, 0))
                     if operator is None:
                         operator = FermionOperator(operators, coefficient)
@@ -101,6 +107,12 @@ def dual_basis_external_potential(grid, geometry, spinless):
 
 def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
     """Return the external potential operator in plane wave basis.
+
+    The external potential resulting from electrons interacting with nuclei.
+        It is defined here as the Fourier transform of the dual basis
+        Hamiltonian such that is spectrally equivalent in the case of
+        both even and odd grids.  Otherwise, the two differ in the case of
+        even grids.
 
     Args:
         grid (Grid): The discretization to use.
@@ -113,43 +125,11 @@ def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None):
     Returns:
         FermionOperator: The plane wave operator.
     """
-    prefactor = -4.0 * numpy.pi / grid.volume_scale()
-    operator = None
-    if spinless:
-        spins = [None]
-    else:
-        spins = [0, 1]
-
-    for indices_p in grid.all_points_indices():
-        for indices_q in grid.all_points_indices():
-            shift = grid.length // 2
-            grid_indices_p_q = [
-                (indices_p[i] - indices_q[i] + shift) % grid.length
-                for i in range(grid.dimensions)]
-            momenta_p_q = momentum_vector(grid_indices_p_q, grid)
-            momenta_p_q_squared = momenta_p_q.dot(momenta_p_q)
-            if momenta_p_q_squared == 0:
-                continue
-
-            # Energy cutoff.
-            if e_cutoff is not None and momenta_p_q_squared / 2. > e_cutoff:
-                continue
-
-            for nuclear_term in geometry:
-                coordinate_j = numpy.array(nuclear_term[1])
-                exp_index = 1.0j * momenta_p_q.dot(coordinate_j)
-                coefficient = (prefactor / momenta_p_q_squared *
-                               periodic_hash_table[nuclear_term[0]] *
-                               numpy.exp(exp_index))
-
-                for spin in spins:
-                    orbital_p = orbital_id(grid, indices_p, spin)
-                    orbital_q = orbital_id(grid, indices_q, spin)
-                    operators = ((orbital_p, 1), (orbital_q, 0))
-                    if operator is None:
-                        operator = FermionOperator(operators, coefficient)
-                    else:
-                        operator += FermionOperator(operators, coefficient)
+    dual_basis_operator = dual_basis_external_potential(grid, geometry,
+                                                        spinless)
+    operator = (
+        openfermion.utils.inverse_fourier_transform(dual_basis_operator,
+                                                    grid, spinless))
 
     return operator
 
@@ -173,6 +153,9 @@ def plane_wave_hamiltonian(grid, geometry=None,
     Returns:
         FermionOperator: The hamiltonian.
     """
+    if (geometry is not None) and (include_constant is True):
+        raise ValueError('Constant term unsupported for non-uniform systems')
+
     jellium_op = jellium_model(grid, spinless, plane_wave, include_constant,
                                e_cutoff)
 
@@ -210,6 +193,9 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
     Returns:
         hamiltonian (QubitOperator)
     """
+    if (geometry is not None) and (include_constant is True):
+        raise ValueError('Constant term unsupported for non-uniform systems')
+
     jellium_op = jordan_wigner_dual_basis_jellium(
         grid, spinless, include_constant)
 
@@ -222,7 +208,7 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
         if item[0] not in periodic_hash_table:
             raise ValueError("Invalid nuclear element.")
 
-    n_orbitals = grid.num_points()
+    n_orbitals = grid.num_points
     volume = grid.volume_scale()
     if spinless:
         n_qubits = n_orbitals
@@ -232,22 +218,22 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
     external_potential = QubitOperator()
 
     for k_indices in grid.all_points_indices():
-        momenta = momentum_vector(k_indices, grid)
+        momenta = grid.momentum_vector(k_indices)
         momenta_squared = momenta.dot(momenta)
         if momenta_squared == 0:
             continue
 
         for p in range(n_qubits):
-            index_p = grid_indices(p, grid, spinless)
-            coordinate_p = position_vector(index_p, grid)
+            index_p = grid.grid_indices(p, spinless)
+            coordinate_p = grid.position_vector(index_p)
 
             for nuclear_term in geometry:
                 coordinate_j = numpy.array(nuclear_term[1], float)
 
-                exp_index = 1.0j * momenta.dot(coordinate_j - coordinate_p)
+                cos_index = momenta.dot(coordinate_j - coordinate_p)
                 coefficient = (prefactor / momenta_squared *
                                periodic_hash_table[nuclear_term[0]] *
-                               numpy.exp(exp_index))
+                               numpy.cos(cos_index))
                 external_potential += (QubitOperator((), coefficient) -
                                        QubitOperator(((p, 'Z'),), coefficient))
 
