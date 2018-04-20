@@ -11,19 +11,20 @@
 #   limitations under the License.
 
 """Tests for _rdm_mapping_functions.py"""
-import unittest
 import os
-import numpy
+import unittest
+
 import h5py
-from openfermion.measurements._rdm_mapping_functions import (
+import numpy
+from openfermion.config import DATA_DIRECTORY, THIS_DIRECTORY
+from openfermion.hamiltonians import MolecularData
+from openfermion.utils._rdm_mapping_functions import (
     kronecker_delta, map_two_pdm_to_two_hole_dm, map_two_pdm_to_one_pdm,
     map_one_pdm_to_one_hole_dm, map_one_hole_dm_to_one_pdm,
     map_two_pdm_to_particle_hole_dm,
     map_two_hole_dm_to_two_pdm, map_two_hole_dm_to_one_hole_dm,
     map_particle_hole_dm_to_one_pdm,
     map_particle_hole_dm_to_two_pdm)
-from openfermion.hamiltonians import MolecularData
-from openfermion.config import DATA_DIRECTORY, THIS_DIRECTORY
 
 
 class RDMMappingTest(unittest.TestCase):
