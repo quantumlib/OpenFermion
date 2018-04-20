@@ -147,7 +147,7 @@ def dual_basis_jellium_model(grid, spinless=False,
         kinetic (bool): Whether to include kinetic terms.
         potential (bool): Whether to include potential terms.
         include_constant (bool): Whether to include the Madelung constant.
-            Note: constant is unsupported for non-uniform, non-cubic cells with
+            Note constant is unsupported for non-uniform, non-cubic cells with
             ions.
 
     Returns:
@@ -263,7 +263,7 @@ def jellium_model(grid, spinless=False, plane_wave=True,
         plane_wave (bool): Whether to return in momentum space (True)
             or position space (False).
         include_constant (bool): Whether to include the Madelung constant.
-            Note: constant is unsupported for non-uniform, non-cubic cells with
+            Note constant is unsupported for non-uniform, non-cubic cells with
             ions.
         e_cutoff (float): Energy cutoff.
 
@@ -291,7 +291,7 @@ def jordan_wigner_dual_basis_jellium(grid, spinless=False,
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
         include_constant (bool): Whether to include the Madelung constant.
-            Note: constant is unsupported for non-uniform, non-cubic cells with
+            Note constant is unsupported for non-uniform, non-cubic cells with
             ions.
 
     Returns:
