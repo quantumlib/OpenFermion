@@ -9,17 +9,17 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """Mapping RDMs to other RDMs"""
+from __future__ import division
 import numpy
 from itertools import product
 
 
-def krond(i, j):
-    return 1 if i == j else 0
+def kronecker_delta(i, j):
+    return 1 if float(i == j) else 0
 
 
-def tpdm_to_opdm(tpdm, particle_number):
+def map_two_pdm_to_one_pdm(tpdm, particle_number):
     """
     Contract a 2-RDM to a 1-RDM
 
@@ -35,7 +35,7 @@ def tpdm_to_opdm(tpdm, particle_number):
     return numpy.einsum('prrq', tpdm) / (particle_number - 1)
 
 
-def tpdm_to_tqdm(tpdm, opdm):
+def map_two_pdm_to_two_hole_dm(tpdm, opdm):
     """
     Map from the 2-RDM to the 2-hole-RDM
 
@@ -53,15 +53,18 @@ def tpdm_to_tqdm(tpdm, opdm):
     ldim = opdm.shape[0]
     tqdm = numpy.zeros_like(tpdm)
     for p, q, r, s in product(range(ldim), repeat=4):
-        term1 = opdm[p, s] * krond(q, r) + opdm[q, r] * krond(p, s)
-        term2 = -1 * (opdm[q, s] * krond(p, r) + opdm[p, r] * krond(q, s))
-        term3 = krond(q, s) * krond(p, r) - krond(p, s) * krond(q, r)
+        term1 = opdm[p, s] * kronecker_delta(q, r) + \
+                opdm[q, r] * kronecker_delta(p, s)
+        term2 = -1 * (opdm[q, s] * kronecker_delta(p, r) +
+                      opdm[p, r] * kronecker_delta(q, s))
+        term3 = (kronecker_delta(q, s) * kronecker_delta(p, r) -
+                 kronecker_delta(p, s) * kronecker_delta(q, r))
         tqdm[s, r, q, p] = tpdm[p, q, r, s] - term1 - term2 - term3
 
     return tqdm
 
 
-def tqdm_to_tpdm(tqdm, opdm):
+def map_two_hole_dm_to_two_pdm(tqdm, opdm):
     """
     Map from the 2-hole-RDM to the 2-RDM
 
@@ -79,15 +82,18 @@ def tqdm_to_tpdm(tqdm, opdm):
     ldim = opdm.shape[0]
     tpdm = numpy.zeros_like(tqdm)
     for p, q, r, s in product(range(ldim), repeat=4):
-        term1 = opdm[p, s] * krond(q, r) + opdm[q, r] * krond(p, s)
-        term2 = -1 * (opdm[q, s] * krond(p, r) + opdm[p, r] * krond(q, s))
-        term3 = krond(q, s) * krond(p, r) - krond(p, s) * krond(q, r)
+        term1 = opdm[p, s] * kronecker_delta(q, r) + \
+                opdm[q, r] * kronecker_delta(p, s)
+        term2 = -1 * (opdm[q, s] * kronecker_delta(p, r) +
+                      opdm[p, r] * kronecker_delta(q, s))
+        term3 = (kronecker_delta(q, s) * kronecker_delta(p, r) -
+                 kronecker_delta(p, s) * kronecker_delta(q, r))
         tpdm[p, q, r, s] = tqdm[r, s, p, q] + term1 + term2 + term3
 
     return tpdm
 
 
-def tqdm_to_oqdm(tqdm, hole_number):
+def map_two_hole_dm_to_one_hole_dm(tqdm, hole_number):
     """
     Map from 2-hole-RDM to 1-hole-RDM
 
@@ -95,7 +101,9 @@ def tqdm_to_oqdm(tqdm, hole_number):
         tqdm (numpy.ndarray): The 2-hole-RDM as a 4-index tensor. Indices
             follow the internal convention of tqdm[p, q, r, s] ==
             :math:`a_{p}a_{q}a_{r}^{\dagger}a_{s}^{\dagger}`.
-        hole_number (float):
+        hole_number (float): Number of holes in the system.  For chemical
+                             systems this is usually the number of spin
+                             orbitals minus the number of electrons.
 
     Returns:
         oqdm (numpy.ndarray): The 1-hole-RDM contracted from the tqdm.
@@ -103,14 +111,14 @@ def tqdm_to_oqdm(tqdm, hole_number):
     return numpy.einsum('prrq', tqdm) / (hole_number - 1)
 
 
-def opdm_to_oqdm(opdm):
+def map_one_pdm_to_one_hole_dm(opdm):
     """
     Convert a 1-RDM to a 1-hole-RDM
 
     Args:
         opdm (numpy.ndarray): The 1-RDM as a 2-index tensor. Indices follow the
             internal convention of opdm[p, q] ==
-            :math:`a_{p}^{\dagger}a_{q}`.:
+            :math:`a_{p}^{\dagger}a_{q}`.
 
     Returns:
         oqdm (numpy.ndarray): the 1-hole-RDM transformed from a 1-RDM.
@@ -119,14 +127,14 @@ def opdm_to_oqdm(opdm):
     return identity_matrix - opdm
 
 
-def oqdm_to_opdm(oqdm):
+def map_one_hole_dm_to_one_pdm(oqdm):
     """
     Convert a 1-hole-RDM to a 1-RDM
 
     Args:
         oqdm (numpy.ndarray): The 1-hole-RDM as a 2-index tensor. Indices
             follow the internal convention of oqdm[p, q] ==
-            :math:`a_{p}a_{q}^{\dagger}`.:
+            :math:`a_{p}a_{q}^{\dagger}`.
 
     Returns:
         oqdm (numpy.ndarray): the 1-hole-RDM transformed from a 1-RDM.
@@ -135,7 +143,7 @@ def oqdm_to_opdm(oqdm):
     return identity_matrix - oqdm
 
 
-def tpdm_to_phdm(tpdm, opdm):
+def map_two_pdm_to_particle_hole_dm(tpdm, opdm):
     """
     Map the 2-RDM to the particle-hole-RDM
 
@@ -151,14 +159,15 @@ def tpdm_to_phdm(tpdm, opdm):
         phdm (numpy.ndarray): The particle-hole matrix.
     """
     ldim = opdm.shape[0]
-    tgdm = numpy.zeros_like(tpdm)
+    phdm = numpy.zeros_like(tpdm)
     for p, q, r, s in product(range(ldim), repeat=4):
-        tgdm[p, r, q, s] = opdm[p, s] * krond(q, r) - tpdm[p, q, r, s]
+        phdm[p, r, q, s] = opdm[p, s] * kronecker_delta(q, r) - \
+                           tpdm[p, q, r, s]
 
-    return tgdm
+    return phdm
 
 
-def phdm_to_tpdm(phdm, opdm):
+def map_particle_hole_dm_to_two_pdm(phdm, opdm):
     """
     Map the 2-RDM to the particle-hole-RDM
 
@@ -176,12 +185,13 @@ def phdm_to_tpdm(phdm, opdm):
     ldim = opdm.shape[0]
     tpdm = numpy.zeros_like(phdm)
     for p, q, r, s in product(range(ldim), repeat=4):
-        tpdm[p, q, r, s] = opdm[p, s] * krond(q, r) - phdm[p, r, q, s]
+        tpdm[p, q, r, s] = opdm[p, s] * kronecker_delta(q, r) - \
+                           phdm[p, r, q, s]
 
     return tpdm
 
 
-def phdm_to_opdm(phdm, num_particles, num_basis_functions):
+def map_particle_hole_dm_to_one_pdm(phdm, num_particles, num_basis_functions):
     """
     Map the particle-hole-RDM to the 1-RDM
 
