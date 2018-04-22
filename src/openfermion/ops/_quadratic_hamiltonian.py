@@ -252,7 +252,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                 a_N
            \\end{pmatrix},
 
-        where :math:`W` is an :math:`N \\times (2N)` unitary matrix.
+        where :math:`W` is an :math:`N \\times (2N)` matrix.
         However, if the Hamiltonian conserves particle number then
         creation operators don't need to be mixed with annihilation operators
         and :math:`W` only needs to be an :math:`N \\times N` matrix:
@@ -349,6 +349,7 @@ class QuadraticHamiltonian(PolynomialTensor):
             # creation operators
             left_block = transformation_matrix[:, :self.n_qubits]
             right_block = transformation_matrix[:, self.n_qubits:]
+            # Can't use numpy.block because that requires numpy>=1.13.0
             new_transformation_matrix = numpy.empty(
                     (self.n_qubits, 2 * self.n_qubits), dtype=complex)
             new_transformation_matrix[:, :self.n_qubits] = numpy.conjugate(

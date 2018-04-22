@@ -121,6 +121,7 @@ def gaussian_state_preparation_circuit(
         n_qubits = quadratic_hamiltonian.n_qubits
         left_block = transformation_matrix[:, :n_qubits]
         right_block = transformation_matrix[:, n_qubits:]
+        # Can't use numpy.block because that requires numpy>=1.13.0
         new_transformation_matrix = numpy.empty((n_qubits, 2 * n_qubits),
                                                 dtype=complex)
         new_transformation_matrix[:, :n_qubits] = numpy.conjugate(right_block)
