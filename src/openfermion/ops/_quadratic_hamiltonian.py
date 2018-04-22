@@ -229,11 +229,11 @@ class QuadraticHamiltonian(PolynomialTensor):
 
             \sum_{j} \\varepsilon_j b^\dagger_j b_j + \\text{constant},
 
-        where the :math:`b_j` are a new set fermionic operators
+        where the :math:`b^\dagger_j` are a new set fermionic creation operators
         that satisfy the canonical anticommutation relations.
-        The new fermionic operators are linear combinations of the
-        original ones. In the most general case, creation and annihilation
-        operators are mixed together:
+        The new creation operators are linear combinations of the
+        original ladder operators. In the most general case, creation and
+        annihilation operators are mixed together:
 
         .. math::
 
@@ -241,9 +241,6 @@ class QuadraticHamiltonian(PolynomialTensor):
                 b^\dagger_1 \\\\
                 \\vdots \\\\
                 b^\dagger_N \\\\
-                b_1 \\\\
-                \\vdots \\\\
-                b_N
            \\end{pmatrix}
            = W
            \\begin{pmatrix}
@@ -255,7 +252,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                 a_N
            \\end{pmatrix},
 
-        where :math:`W` is a :math:`2N \\times 2N` unitary matrix.
+        where :math:`W` is an :math:`N \\times (2N)` unitary matrix.
         However, if the Hamiltonian conserves particle number then
         creation operators don't need to be mixed with annihilation operators
         and :math:`W` only needs to be an :math:`N \\times N` matrix:
@@ -311,7 +308,7 @@ class QuadraticHamiltonian(PolynomialTensor):
             diagonalizing_unitary = majorana_basis_change.T.conj().dot(
                 orthogonal.dot(majorana_basis_change))
 
-            return diagonalizing_unitary
+            return diagonalizing_unitary[:self.n_qubits]
 
     def diagonalizing_circuit(self):
         """Get a circuit for a unitary that diagonalizes this Hamiltonian
@@ -336,23 +333,31 @@ class QuadraticHamiltonian(PolynomialTensor):
                 of modes :math:`i` and :math:`j` by angles :math:`\\theta`
                 and :math:`\\varphi`.
         """
-        diagonalizing_unitary = self.diagonalizing_bogoliubov_transform()
+        transformation_matrix = self.diagonalizing_bogoliubov_transform()
 
         if self.conserves_particle_number:
             # The Hamiltonian conserves particle number, so we don't need
             # to use the most general procedure.
             decomposition, diagonal = givens_decomposition_square(
-                    diagonalizing_unitary)
+                    transformation_matrix)
             circuit_description = list(reversed(decomposition))
         else:
             # The Hamiltonian does not conserve particle number, so we
             # need to use the most general procedure.
-            # Get the unitary rows which represent the Gaussian unitary
-            gaussian_unitary_matrix = diagonalizing_unitary[self.n_qubits:]
-
+            # Rearrange the transformation matrix because the circuit generation
+            # routine expects it to describe annihilation operators rather than
+            # creation operators
+            left_block = transformation_matrix[:, :self.n_qubits]
+            right_block = transformation_matrix[:, self.n_qubits:]
+            new_transformation_matrix = numpy.empty(
+                    (self.n_qubits, 2 * self.n_qubits), dtype=complex)
+            new_transformation_matrix[:, :self.n_qubits] = numpy.conjugate(
+                    right_block)
+            new_transformation_matrix[:, self.n_qubits:] = numpy.conjugate(
+                    left_block)
             # Get the circuit description
             decomposition, left_decomposition, diagonal, left_diagonal = (
-                fermionic_gaussian_decomposition(gaussian_unitary_matrix))
+                fermionic_gaussian_decomposition(new_transformation_matrix))
             # need to use left_diagonal too
             circuit_description = list(reversed(
                 decomposition + left_decomposition))

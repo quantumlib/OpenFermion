@@ -112,16 +112,23 @@ def gaussian_state_preparation_circuit(
     else:
         # The Hamiltonian does not conserve particle number, so we
         # need to use the most general procedure.
-        diagonalizing_unitary = (
+        transformation_matrix = (
             quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
 
-        # Get the unitary rows which represent the Gaussian unitary
-        gaussian_unitary_matrix = diagonalizing_unitary[
-            quadratic_hamiltonian.n_qubits:]
+        # Rearrange the transformation matrix because the circuit generation
+        # routine expects it to describe annihilation operators rather than
+        # creation operators
+        n_qubits = quadratic_hamiltonian.n_qubits
+        left_block = transformation_matrix[:, :n_qubits]
+        right_block = transformation_matrix[:, n_qubits:]
+        new_transformation_matrix = numpy.empty((n_qubits, 2 * n_qubits),
+                                                dtype=complex)
+        new_transformation_matrix[:, :n_qubits] = numpy.conjugate(right_block)
+        new_transformation_matrix[:, n_qubits:] = numpy.conjugate(left_block)
 
         # Get the circuit description
         decomposition, left_decomposition, diagonal, left_diagonal = (
-            fermionic_gaussian_decomposition(gaussian_unitary_matrix))
+            fermionic_gaussian_decomposition(new_transformation_matrix))
         if occupied_orbitals is None:
             # The ground state is desired, so the circuit should be applied
             # to the vaccuum state
