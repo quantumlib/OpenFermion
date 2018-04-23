@@ -183,7 +183,18 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         block_matrix[self.n_qubits:, self.n_qubits:] = (
             -antisymmetric_part.conj())
 
-        ferm_unitary = self.quad_ham_npc.diagonalizing_bogoliubov_transform()
+        transformation_matrix = (
+                self.quad_ham_npc.diagonalizing_bogoliubov_transform())
+        left_block = transformation_matrix[:, :self.n_qubits]
+        right_block = transformation_matrix[:, self.n_qubits:]
+        ferm_unitary = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits),
+                                   dtype=complex)
+        ferm_unitary[:self.n_qubits, :self.n_qubits] = left_block
+        ferm_unitary[:self.n_qubits, self.n_qubits:] = right_block
+        ferm_unitary[self.n_qubits:, :self.n_qubits] = numpy.conjugate(
+                right_block)
+        ferm_unitary[self.n_qubits:, self.n_qubits:] = numpy.conjugate(
+                left_block)
 
         # Check that the transformation is diagonalizing
         majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
