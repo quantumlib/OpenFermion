@@ -30,25 +30,25 @@ class BinaryPolynomial(object):
     a term of binary variables (variables of the values {0,1}, indexed
     by integers like w0, w1, w2 and so on) that is considered to be evaluated
     modulo 2. This implies the following set of rules:
-    
-    the binary addition  w1 + w1 = 0, 
-    binary multiplication w2 * w2 = w2 
+
+    the binary addition  w1 + w1 = 0,
+    binary multiplication w2 * w2 = w2
     and power rule w3 ^ 0  = 1, where raising to every other
     integer power than zero reproduces w3.
-    
+
     Of course, we can also add a non-trivial constant, which is 1.
-    Due to these binary rules, every function available will be a 
+    Due to these binary rules, every function available will be a
     multinomial like e.g.
-    
+
     1 + w1 w2 + w0 w1 .
-    
+
     These binary functions are used for non-linear binary codes in order
-    to decompress qubit bases back into fermion bases.  
-    In that instance, one BinaryPolynomial object characterizes the occupation 
-    of single orbital given a multi-qubit state in configuration 
-    \|w0> \|w1> \|w2> ... . 
-    
-    For initialization, the preferred data types is either a string of the 
+    to decompress qubit bases back into fermion bases.
+    In that instance, one BinaryPolynomial object characterizes the occupation
+    of single orbital given a multi-qubit state in configuration
+    \|w0> \|w1> \|w2> ... .
+
+    For initialization, the preferred data types is either a string of the
     multinomial, where each variable and constant is to be well separated by
     a whitespace, or in its native form of tuples,
     1 + w1 w2 + w0 w1 is represented as [(_SYMBOLIC_ONE,),(1,2),(0,1)]
@@ -267,8 +267,8 @@ class BinaryPolynomial(object):
 
         Args:
             binary_list (list, array, str): a list of binary values
-                corresponding  each binary variable 
-                (in order of their indices) in the expression 
+                corresponding  each binary variable
+                (in order of their indices) in the expression
 
         Returns (int, 0 or 1): result of the evaluation
 
@@ -276,7 +276,7 @@ class BinaryPolynomial(object):
           BinaryPolynomialError: Length of list provided must match the number
                 of qubits indexed in BinaryPolynomial
         """
-        if isinstance(binary_list,str):
+        if isinstance(binary_list, str):
             binary_list = list(map(int, list(binary_list)))
 
         all_qubits = self.enumerate_qubits()
@@ -487,7 +487,7 @@ class BinaryPolynomial(object):
         return self + addend
 
     def __add__(self, addend):
-        """ 
+        """
         Left addition of BinaryPolynomial.
         Args:
             addend (int or BinaryPolynomial): The operator or int to add.

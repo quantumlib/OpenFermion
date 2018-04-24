@@ -11,14 +11,12 @@
 #   limitations under the License.
 
 """Tests for _qubit_operator.py."""
-import copy
 
 import numpy
 import pytest
 
 from openfermion.ops._qubit_operator import (_PAULI_OPERATOR_PRODUCTS,
-                                             QubitOperator,
-                                             QubitOperatorError)
+                                             QubitOperator)
 
 
 def test_pauli_operator_product_unchanged():
@@ -61,7 +59,6 @@ def test_imul_qubit_op():
     op1 = QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.j)
     op2 = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
     op1 *= op2
-    correct_coefficient = 1.j * 3.0j * 0.5
     correct_term = ((0, 'Y'), (1, 'X'), (3, 'Z'), (11, 'X'))
     assert len(op1.terms) == 1
     assert correct_term in op1.terms

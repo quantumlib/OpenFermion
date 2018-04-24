@@ -166,7 +166,7 @@ class QubitOperator(SymbolicOperator):
         else:
             raise TypeError('Cannot in-place multiply term of invalid type ' +
                             'to QubitTerm.')
-    
+
     def renormalize(self):
         """Fix the trace norm of an operator to 1"""
         norm = self.induced_norm(2)

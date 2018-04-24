@@ -10,9 +10,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for quadratic_hamiltonian.py."""
+import unittest
+
 import numpy
 import scipy.sparse
-import unittest
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (normal_ordered, FermionOperator)
@@ -159,10 +160,11 @@ class QuadraticHamiltonianTest(unittest.TestCase):
                                             normalization)
             for j in range(2 * self.n_qubits):
                 if j < self.n_qubits:
-                    right_op = majorana_operator((j, 0),
-                            majorana_matrix[i, j] * normalization)
+                    right_op = majorana_operator(
+                            (j, 0), majorana_matrix[i, j] * normalization)
                 else:
-                    right_op = majorana_operator((j - self.n_qubits, 1),
+                    right_op = majorana_operator(
+                            (j - self.n_qubits, 1),
                             majorana_matrix[i, j] * normalization)
                 majorana_op += .5j * left_op * right_op
         # Get FermionOperator for original Hamiltonian
@@ -197,8 +199,8 @@ class QuadraticHamiltonianTest(unittest.TestCase):
                 left_block)
 
         # Check that the transformation is diagonalizing
-        majorana_matrix, majorana_constant = self.quad_ham_npc.majorana_form()
-        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
+        majorana_matrix, _ = self.quad_ham_npc.majorana_form()
+        canonical, _ = antisymmetric_canonical_form(majorana_matrix)
         diagonalized = ferm_unitary.conj().dot(
             block_matrix.dot(ferm_unitary.T.conj()))
         for i in numpy.ndindex((2 * self.n_qubits, 2 * self.n_qubits)):
@@ -326,8 +328,7 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
         # Obtain a random antisymmetric matrix
         rand_mat = numpy.random.randn(2 * n, 2 * n)
         antisymmetric_matrix = rand_mat - rand_mat.T
-        canonical, orthogonal = antisymmetric_canonical_form(
-            antisymmetric_matrix)
+        canonical, _ = antisymmetric_canonical_form(antisymmetric_matrix)
         for i in range(2 * n):
             for j in range(2 * n):
                 if i < n and j == n + i:

@@ -13,9 +13,10 @@
 """Tests for interaction_rdms.py."""
 from __future__ import absolute_import
 
+import os
 import unittest
 
-from openfermion.config import *
+from openfermion.config import THIS_DIRECTORY, EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
 from openfermion.ops import QubitOperator
 from openfermion.ops._interaction_rdm import InteractionRDMError

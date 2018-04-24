@@ -13,8 +13,9 @@
 """Tests for interaction_operator.py."""
 from __future__ import absolute_import
 
-import numpy
 import unittest
+
+import numpy
 
 from openfermion.ops import InteractionOperator
 
