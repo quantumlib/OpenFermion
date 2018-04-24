@@ -28,12 +28,23 @@ from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               reorder, up_then_down,
                               load_operator, save_operator)
 
+from ._rdm_mapping_functions import (kronecker_delta,
+                                     map_two_pdm_to_two_hole_dm,
+                                     map_two_pdm_to_one_pdm,
+                                     map_one_pdm_to_one_hole_dm,
+                                     map_one_hole_dm_to_one_pdm,
+                                     map_two_pdm_to_particle_hole_dm,
+                                     map_two_hole_dm_to_two_pdm,
+                                     map_two_hole_dm_to_one_hole_dm,
+                                     map_particle_hole_dm_to_one_pdm,
+                                     map_particle_hole_dm_to_two_pdm)
+
 from ._slater_determinants import (gaussian_state_preparation_circuit,
                                    slater_determinant_preparation_circuit)
 
 from ._special_operators import (majorana_operator, number_operator,
                                  s_minus_operator, s_plus_operator,
-                                 s_squared_operator, 
+                                 s_squared_operator,
                                  sx_operator, sy_operator, sz_operator,
                                  up_index, down_index)
 

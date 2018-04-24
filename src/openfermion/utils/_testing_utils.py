@@ -18,7 +18,9 @@ import itertools
 import numpy
 from scipy.linalg import qr
 
-from openfermion.ops import InteractionOperator, QuadraticHamiltonian
+from openfermion.ops import (DiagonalCoulombHamiltonian,
+                             InteractionOperator,
+                             QuadraticHamiltonian)
 
 
 def random_unitary_matrix(n, real=False):
@@ -49,6 +51,19 @@ def random_antisymmetric_matrix(n, real=False):
         rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
     antisymmetric_mat = rand_mat - rand_mat.T
     return antisymmetric_mat
+
+
+def random_diagonal_coulomb_hamiltonian(n_qubits, real=False):
+    """Generate a random instance of DiagonalCoulombHamiltonian.
+
+    Args:
+        n_qubits: The number of qubits
+        real: Whether to use only real numbers in the one-body term
+    """
+    one_body = random_hermitian_matrix(n_qubits, real=real)
+    two_body = random_hermitian_matrix(n_qubits, real=True)
+    constant = numpy.random.randn()
+    return DiagonalCoulombHamiltonian(one_body, two_body, constant)
 
 
 def random_quadratic_hamiltonian(n_qubits,
@@ -152,7 +167,7 @@ class EqualsTester(object):
             self.test_case.assertTrue(v1 == v2)
             self.test_case.assertTrue(not v1 != v2)
 
-            # __eq__ and __neq__ should both be correct or not implemented.
+            # __eq__ and __ne__ should both be correct or not implemented.
             self.test_case.assertTrue(
                 hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
             # Careful: python2 int doesn't have __eq__ or __ne__.
@@ -172,7 +187,7 @@ class EqualsTester(object):
                 self.test_case.assertTrue(not v1 == v2)
                 self.test_case.assertTrue(v1 != v2)
 
-                # __eq__ and __neq__ should both be correct or not implemented.
+                # __eq__ and __ne__ should both be correct or not implemented.
                 self.test_case.assertTrue(
                     hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
                 # Careful: python2 int doesn't have __eq__ or __ne__.

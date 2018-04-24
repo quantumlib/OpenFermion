@@ -19,12 +19,13 @@ import unittest
 import numpy
 from scipy.sparse import csc_matrix
 from openfermion.config import EQ_TOLERANCE
-from openfermion.hamiltonians import plane_wave_hamiltonian
+from openfermion.hamiltonians import fermi_hubbard, plane_wave_hamiltonian
 from openfermion.ops import *
 from openfermion.transforms import (bravyi_kitaev, jordan_wigner,
                                     get_fermion_operator,
-                                    get_interaction_operator)
-from openfermion.utils import Grid
+                                    get_interaction_operator,
+                                    get_sparse_operator)
+from openfermion.utils import Grid, is_hermitian
 
 from openfermion.utils._operator_utils import *
 
@@ -129,7 +130,7 @@ class FreezeOrbitalsTest(unittest.TestCase):
     def test_freeze_orbitals_vanishing(self):
         op = FermionOperator(((1, 1), (2, 0)))
         op_frozen = freeze_orbitals(op, [], [2])
-        self.assertEquals(len(op_frozen.terms), 0)
+        self.assertEqual(len(op_frozen.terms), 0)
 
 
 class PruneUnusedIndicesTest(unittest.TestCase):
@@ -242,7 +243,7 @@ class HermitianConjugatedTest(unittest.TestCase):
 
 
 class IsHermitianTest(unittest.TestCase):
-    
+
     def test_fermion_operator_zero(self):
         op = FermionOperator()
         self.assertTrue(is_hermitian(op))
@@ -258,6 +259,9 @@ class IsHermitianTest(unittest.TestCase):
     def test_fermion_operator_hermitian(self):
         op = FermionOperator('0^ 1 2^ 3')
         op += FermionOperator('3^ 2 1^ 0')
+        self.assertTrue(is_hermitian(op))
+
+        op = fermi_hubbard(2, 2, 1., 1.)
         self.assertTrue(is_hermitian(op))
 
     def test_qubit_operator_zero(self):
@@ -325,16 +329,41 @@ class SaveLoadOperatorTest(unittest.TestCase):
     def test_save_and_load_fermion_operators(self):
         save_operator(self.fermion_operator, self.file_name)
         loaded_fermion_operator = load_operator(self.file_name)
-        self.assertEqual(self.fermion_operator.terms,
-                         loaded_fermion_operator.terms,
+        self.assertEqual(self.fermion_operator,
+                         loaded_fermion_operator,
                          msg=str(self.fermion_operator -
                                  loaded_fermion_operator))
+
+    def test_save_and_load_fermion_operators_readably(self):
+        save_operator(self.fermion_operator, self.file_name,
+                      plain_text=True)
+        loaded_fermion_operator = load_operator(self.file_name,
+                                                plain_text=True)
+        self.assertEqual(self.fermion_operator,
+                         loaded_fermion_operator)
 
     def test_save_and_load_qubit_operators(self):
         save_operator(self.qubit_operator, self.file_name)
         loaded_qubit_operator = load_operator(self.file_name)
-        self.assertEqual(self.qubit_operator.terms,
-                         loaded_qubit_operator.terms)
+        self.assertEqual(self.qubit_operator,
+                         loaded_qubit_operator)
+
+    def test_save_and_load_qubit_operators_readably(self):
+        save_operator(self.qubit_operator, self.file_name, plain_text=True)
+        loaded_qubit_operator = load_operator(self.file_name,
+                                              plain_text=True)
+        self.assertEqual(self.qubit_operator,
+                         loaded_qubit_operator)
+
+    def test_save_readably(self):
+        save_operator(self.fermion_operator, self.file_name, plain_text=True)
+        file_path = os.path.join(DATA_DIRECTORY, self.file_name + '.data')
+        with open(file_path, "r") as f:
+            self.assertEqual(f.read(), "\n".join([
+                "FermionOperator:",
+                "-3.17 [1^ 2^ 3 4] +",
+                "-3.17 [4^ 3^ 2 1]"
+            ]))
 
     def test_save_no_filename_operator_utils_error(self):
         with self.assertRaises(OperatorUtilsError):
@@ -386,17 +415,27 @@ class SaveLoadOperatorTest(unittest.TestCase):
 class FourierTransformTest(unittest.TestCase):
 
     def test_fourier_transform(self):
-        grid = Grid(dimensions=1, scale=1.5, length=3)
-        spinless_set = [True, False]
-        geometry = [('H', (0,)), ('H', (0.5,))]
-        for spinless in spinless_set:
-            h_plane_wave = plane_wave_hamiltonian(
-                grid, geometry, spinless, True)
-            h_dual_basis = plane_wave_hamiltonian(
-                grid, geometry, spinless, False)
-            h_plane_wave_t = fourier_transform(h_plane_wave, grid, spinless)
-            self.assertTrue(normal_ordered(h_plane_wave_t) ==
-                normal_ordered(h_dual_basis))
+        for length in [2,3]:
+            grid = Grid(dimensions=1, scale=1.5, length=length)
+            spinless_set = [True, False]
+            geometry = [('H', (0.1,)), ('H', (0.5,))]
+            for spinless in spinless_set:
+                h_plane_wave = plane_wave_hamiltonian(
+                    grid, geometry, spinless, True)
+                h_dual_basis = plane_wave_hamiltonian(
+                    grid, geometry, spinless, False)
+                h_plane_wave_t = fourier_transform(h_plane_wave, grid,
+                                                   spinless)
+                self.assertTrue(normal_ordered(h_plane_wave_t) ==
+                    normal_ordered(h_dual_basis))
+
+                # Verify that all 3 are Hermitian
+                plane_wave_operator = get_sparse_operator(h_plane_wave)
+                dual_operator = get_sparse_operator(h_dual_basis)
+                plane_wave_t_operator = get_sparse_operator(h_plane_wave_t)
+                self.assertTrue(is_hermitian(plane_wave_operator))
+                self.assertTrue(is_hermitian(dual_operator))
+                self.assertTrue(is_hermitian(plane_wave_t_operator))
 
     def test_inverse_fourier_transform_1d(self):
         grid = Grid(dimensions=1, scale=1.5, length=4)

@@ -247,10 +247,14 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             # Obtain a random quadratic Hamiltonian
             quadratic_hamiltonian = random_quadratic_hamiltonian(n)
 
-            # Get the diagonalizing fermionic unitary
-            ferm_unitary = (
+            # Get the diagonalizing transformation
+            transformation_matrix = (
                 quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
-            lower_unitary = ferm_unitary[n:]
+            left_block = transformation_matrix[:, :n]
+            right_block = transformation_matrix[:, n:]
+            lower_unitary = numpy.empty((n, 2 * n), dtype=complex)
+            lower_unitary[:, :n] = numpy.conjugate(right_block)
+            lower_unitary[:, n:] = numpy.conjugate(left_block)
 
             # Get fermionic Gaussian decomposition of lower_unitary
             decomposition, left_decomposition, diagonal, left_diagonal = (

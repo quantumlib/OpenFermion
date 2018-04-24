@@ -20,12 +20,11 @@ import numpy
 import os
 
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
-from openfermion.hamiltonians._jellium import (grid_indices,
-                                               momentum_vector,
-                                               orbital_id,
-                                               position_vector)
-from openfermion.ops import (FermionOperator, InteractionOperator,
-                             InteractionRDM, PolynomialTensor, QubitOperator)
+
+from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
+                             InteractionOperator, InteractionRDM,
+                             PolynomialTensor, QubitOperator, normal_ordered)
+
 from scipy.sparse import spmatrix
 
 
@@ -169,8 +168,13 @@ def hermitian_conjugated(operator):
 
 def is_hermitian(operator):
     """Test if operator is Hermitian."""
-    # Handle FermionOperator or QubitOperator
-    if isinstance(operator, (FermionOperator, QubitOperator)):
+    # Handle FermionOperator
+    if isinstance(operator, FermionOperator):
+        return (normal_ordered(operator) ==
+                normal_ordered(hermitian_conjugated(operator)))
+
+    # Handle QubitOperator
+    if isinstance(operator, QubitOperator):
         return operator == hermitian_conjugated(operator)
 
     # Handle sparse matrix
@@ -197,7 +201,8 @@ def count_qubits(operator):
     """Compute the minimum number of qubits on which operator acts.
 
     Args:
-        operator: FermionOperator, QubitOperator, or PolynomialTensor.
+        operator: FermionOperator, QubitOperator, DiagonalCoulombHamiltonian,
+            or PolynomialTensor.
 
     Returns:
         num_qubits (int): The minimum number of qubits on which operator acts.
@@ -222,6 +227,10 @@ def count_qubits(operator):
                 if term[-1][0] + 1 > num_qubits:
                     num_qubits = term[-1][0] + 1
         return num_qubits
+
+    # Handle DiagonalCoulombHamiltonian
+    elif isinstance(operator, DiagonalCoulombHamiltonian):
+        return operator.one_body.shape[0]
 
     # Handle PolynomialTensor
     elif isinstance(operator, PolynomialTensor):
@@ -275,18 +284,18 @@ def _fourier_transform_helper(hamiltonian,
                               vec_func_1,
                               vec_func_2):
     hamiltonian_t = FermionOperator.zero()
-    normalize_factor = numpy.sqrt(1.0 / float(grid.num_points()))
+    normalize_factor = numpy.sqrt(1.0 / float(grid.num_points))
 
     for term in hamiltonian.terms:
         transformed_term = FermionOperator.identity()
         for ladder_op_mode, ladder_op_type in term:
-            indices_1 = grid_indices(ladder_op_mode, grid, spinless)
-            vec1 = vec_func_1(indices_1, grid)
+            indices_1 = grid.grid_indices(ladder_op_mode, spinless)
+            vec1 = vec_func_1(indices_1)
             new_basis = FermionOperator.zero()
             for indices_2 in grid.all_points_indices():
-                vec2 = vec_func_2(indices_2, grid)
+                vec2 = vec_func_2(indices_2)
                 spin = None if spinless else ladder_op_mode % 2
-                orbital = orbital_id(grid, indices_2, spin)
+                orbital = grid.orbital_id(indices_2, spin)
                 exp_index = phase_factor * 1.0j * numpy.dot(vec1, vec2)
                 if ladder_op_type == 1:
                     exp_index *= -1.0
@@ -326,8 +335,8 @@ def fourier_transform(hamiltonian, grid, spinless):
                                      grid=grid,
                                      spinless=spinless,
                                      phase_factor=+1,
-                                     vec_func_1=momentum_vector,
-                                     vec_func_2=position_vector)
+                                     vec_func_1=grid.momentum_vector,
+                                     vec_func_2=grid.position_vector)
 
 
 def get_file_path(file_name, data_directory):
@@ -380,17 +389,18 @@ def inverse_fourier_transform(hamiltonian, grid, spinless):
                                      grid=grid,
                                      spinless=spinless,
                                      phase_factor=-1,
-                                     vec_func_1=position_vector,
-                                     vec_func_2=momentum_vector)
+                                     vec_func_1=grid.position_vector,
+                                     vec_func_2=grid.momentum_vector)
 
 
-def load_operator(file_name=None, data_directory=None):
+def load_operator(file_name=None, data_directory=None, plain_text=False):
     """Load FermionOperator or QubitOperator from file.
 
     Args:
         file_name: The name of the saved file.
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
+        plain_text: Whether the input file is plain text
 
     Returns:
         operator: The stored FermionOperator or QubitOperator
@@ -400,27 +410,39 @@ def load_operator(file_name=None, data_directory=None):
     """
     file_path = get_file_path(file_name, data_directory)
 
-    with open(file_path, 'rb') as f:
-        data = marshal.load(f)
-        operator_type = data[0]
-        operator_terms = data[1]
+    if plain_text:
+        with open(file_path, 'r') as f:
+            data = f.read()
+            operator_type, operator_terms = data.split(":\n")
 
-    if operator_type == 'FermionOperator':
-        operator = FermionOperator()
-        for term in operator_terms:
-            operator += FermionOperator(term, operator_terms[term])
-    elif operator_type == 'QubitOperator':
-        operator = QubitOperator()
-        for term in operator_terms:
-            operator += QubitOperator(term, operator_terms[term])
+        if operator_type == 'FermionOperator':
+            operator = FermionOperator(operator_terms)
+        elif operator_type == 'QubitOperator':
+            operator = QubitOperator(operator_terms)
+        else:
+            raise TypeError('Operator of invalid type.')
     else:
-        raise TypeError('Operator of invalid type.')
+        with open(file_path, 'rb') as f:
+            data = marshal.load(f)
+            operator_type = data[0]
+            operator_terms = data[1]
+
+        if operator_type == 'FermionOperator':
+            operator = FermionOperator()
+            for term in operator_terms:
+                operator += FermionOperator(term, operator_terms[term])
+        elif operator_type == 'QubitOperator':
+            operator = QubitOperator()
+            for term in operator_terms:
+                operator += QubitOperator(term, operator_terms[term])
+        else:
+            raise TypeError('Operator of invalid type.')
 
     return operator
 
 
 def save_operator(operator, file_name=None, data_directory=None,
-                  allow_overwrite=False):
+                  allow_overwrite=False, plain_text=False):
     """Save FermionOperator or QubitOperator to file.
 
     Args:
@@ -429,6 +451,8 @@ def save_operator(operator, file_name=None, data_directory=None,
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
         allow_overwrite: Whether to allow files to be overwritten.
+        plain_text: Whether the operator should be saved to a
+                        plain-text format for manual analysis
 
     Raises:
         OperatorUtilsError: Not saved, file already exists.
@@ -450,10 +474,14 @@ def save_operator(operator, file_name=None, data_directory=None,
     else:
         raise TypeError('Operator of invalid type.')
 
-    tm = operator.terms
-    with open(file_path, 'wb') as f:
-        marshal.dump((operator_type, dict(zip(tm.keys(),
-                                              map(complex, tm.values())))), f)
+    if plain_text:
+        with open(file_path, 'w') as f:
+            f.write(operator_type + ":\n" + str(operator))
+    else:
+        tm = operator.terms
+        with open(file_path, 'wb') as f:
+            marshal.dump((operator_type, dict(zip(tm.keys(),
+                                                  map(complex, tm.values())))), f)
 
 
 def reorder(operator, order_function, num_modes=None, reverse=False):
