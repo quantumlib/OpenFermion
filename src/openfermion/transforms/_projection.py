@@ -25,7 +25,47 @@ def project_onto_sector(operator, qubits, sectors):
     Note - this requires knowledge of which sector
     we wish to project into.
 
-    Input:
+    Args:
+        operator: the QubitOperator to work on
+        qubits: a list of indices of qubits in
+           operator to remove
+        sectors: for each qubit, whether to project
+            into the 0 subspace (<Z>=1) or the
+            1 subspace (<Z>=-1).
+        calculate_error: flag to calculate the trace norm
+            of the removed operator.
+
+    Returns:
+        projected_operator: the resultant operator
+        error: the trace norm of the removed term.
+    '''
+    if type(operator) is not QubitOperator:
+        raise ValueError('''Input operator must be a QubitOperator''')
+
+    projected_operator = QubitOperator()
+    for term, factor in operator.terms.items():
+
+        # Any term containing X or Y on the removed
+        # qubits has an expectation value of zero
+        if [t for t in term if t[0] in qubits
+                and t[1] in ['X', 'Y']]:
+            continue
+
+        new_term = tuple((t[0]-len([q for q in qubits if q < t[0]]), t[1])
+                         for t in term if t[0] not in qubits)
+        new_factor =\
+            factor * (-1)**(sum([sectors[qubits.index(t[0])]
+                                 for t in term if t[0] in qubits]))
+        projected_operator += QubitOperator(new_term, new_factor)
+
+    return projected_operator
+
+
+def projection_error(operator, qubits, sectors):
+    '''
+    Calculates the error from the project_onto_sector function.
+
+    Args:
         operator: the QubitOperator to work on
         qubits: a list of indices of qubits in
            operator to remove
@@ -40,21 +80,13 @@ def project_onto_sector(operator, qubits, sectors):
     if type(operator) is not QubitOperator:
         raise ValueError('''Input operator must be a QubitOperator''')
 
-    projected_operator = QubitOperator()
     error = 0
     for term, factor in operator.terms.items():
 
         # Any term containing X or Y on the removed
-        # qubits has an expectation value of zero
+        # qubits contributes to the error
         if [t for t in term if t[0] in qubits
                 and t[1] in ['X', 'Y']]:
             error += abs(factor)**2
-            continue
 
-        new_term = tuple((t[0]-len([q for q in qubits if q < t[0]]), t[1])
-                         for t in term if t[0] not in qubits)
-        new_factor =\
-            factor * (-1)**(sum([sectors[qubits.index(t[0])]
-                                 for t in term if t[0] in qubits]))
-        projected_operator += QubitOperator(new_term, new_factor)
-    return projected_operator, numpy.sqrt(error)
+    return numpy.sqrt(error)
