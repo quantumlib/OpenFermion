@@ -32,12 +32,9 @@ def project_onto_sector(operator, qubits, sectors):
         sectors: for each qubit, whether to project
             into the 0 subspace (<Z>=1) or the
             1 subspace (<Z>=-1).
-        calculate_error: flag to calculate the trace norm
-            of the removed operator.
 
     Returns:
         projected_operator: the resultant operator
-        error: the trace norm of the removed term.
     '''
     if type(operator) is not QubitOperator:
         raise ValueError('''Input operator must be a QubitOperator''')
@@ -74,7 +71,6 @@ def projection_error(operator, qubits, sectors):
             1 subspace (<Z>=-1).
 
     Returns:
-        projected_operator: the resultant operator
         error: the trace norm of the removed term.
     '''
     if type(operator) is not QubitOperator:
