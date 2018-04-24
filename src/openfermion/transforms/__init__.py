@@ -33,3 +33,4 @@ from ._conversion import (get_fermion_operator,
 from ._jordan_wigner import jordan_wigner
 from ._reverse_jordan_wigner import reverse_jordan_wigner
 from ._verstraete_cirac import verstraete_cirac_2d_square
+from ._projection import project_onto_sector
