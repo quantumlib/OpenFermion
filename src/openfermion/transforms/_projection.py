@@ -42,7 +42,7 @@ def project_onto_sector(operator, qubits, sectors):
 
     projected_operator = QubitOperator()
     error = 0
-    for term,factor in operator.terms.items():
+    for term, factor in operator.terms.items():
 
         # Any term containing X or Y on the removed
         # qubits has an expectation value of zero
@@ -51,11 +51,10 @@ def project_onto_sector(operator, qubits, sectors):
             error += abs(factor)**2
             continue
 
-        new_term = tuple((t[0]-len([q for q in qubits 
-                                    if q < t[0]]), t[1])
+        new_term = tuple((t[0]-len([q for q in qubits if q < t[0]]), t[1])
                          for t in term if t[0] not in qubits)
         new_factor =\
-            factor * (-1)**(sum([sectors[qubits.index(t[0])] 
+            factor * (-1)**(sum([sectors[qubits.index(t[0])]
                                  for t in term if t[0] in qubits]))
         projected_operator += QubitOperator(new_term, new_factor)
     return projected_operator, numpy.sqrt(error)
