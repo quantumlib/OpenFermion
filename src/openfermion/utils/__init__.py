@@ -47,7 +47,7 @@ from ._special_operators import (majorana_operator, number_operator,
                                  s_minus_operator, s_plus_operator,
                                  s_squared_operator,
                                  sx_operator, sy_operator, sz_operator,
-                                 up_index, down_index)
+                                 up_index, down_index, boson_number_operator)
 
 from ._trotter_error import error_bound, error_operator
 

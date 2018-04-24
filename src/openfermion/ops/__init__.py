@@ -20,6 +20,8 @@ from ._symbolic_operator import SymbolicOperator
 from ._binary_code import BinaryCode
 from ._fermion_operator import (FermionOperator,
                                 normal_ordered)
+from ._boson_operator import (BosonOperator,
+                                normal_ordered as normal_ordered_boson)
 from ._interaction_operator import InteractionOperator
 from ._qubit_operator import QubitOperator
 from ._interaction_rdm import InteractionRDM
