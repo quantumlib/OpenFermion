@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 """Tests for polynomial_tensor.py."""
-from __future__ import absolute_import, division
+from __future__ import division
 
 import unittest
 
@@ -176,7 +176,7 @@ class PolynomialTensorTest(unittest.TestCase):
 
     def test_invalid_getitem_indexing(self):
         with self.assertRaises(KeyError):
-            self.polynomial_tensor_a[(0, 1), (1, 1), (0, 0)]
+            _ = self.polynomial_tensor_a[(0, 1), (1, 1), (0, 0)]
 
     def test_invalid_setitem_indexing(self):
         test_tensor = copy.deepcopy(self.polynomial_tensor_a)
@@ -212,11 +212,11 @@ class PolynomialTensorTest(unittest.TestCase):
 
     def test_invalid_addend(self):
         with self.assertRaises(TypeError):
-            self.polynomial_tensor_a + 2
+            _ = self.polynomial_tensor_a + 2
 
     def test_invalid_tensor_shape_add(self):
         with self.assertRaises(TypeError):
-            self.polynomial_tensor_a + self.polynomial_tensor_c
+            _ = self.polynomial_tensor_a + self.polynomial_tensor_c
 
     def test_different_keys_add(self):
         result = self.polynomial_tensor_a + self.polynomial_tensor_operand
@@ -242,11 +242,11 @@ class PolynomialTensorTest(unittest.TestCase):
 
     def test_invalid_subtrahend(self):
         with self.assertRaises(TypeError):
-            self.polynomial_tensor_a - 2
+            _ = self.polynomial_tensor_a - 2
 
     def test_invalid_tensor_shape_sub(self):
         with self.assertRaises(TypeError):
-            self.polynomial_tensor_a - self.polynomial_tensor_c
+            _ = self.polynomial_tensor_a - self.polynomial_tensor_c
 
     def test_different_keys_sub(self):
         result = self.polynomial_tensor_a - self.polynomial_tensor_operand
@@ -284,11 +284,11 @@ class PolynomialTensorTest(unittest.TestCase):
 
     def test_invalid_multiplier(self):
         with self.assertRaises(TypeError):
-            self.polynomial_tensor_a * 'a'
+            _ = self.polynomial_tensor_a * 'a'
 
     def test_invalid_tensor_shape_mult(self):
         with self.assertRaises(TypeError):
-            self.polynomial_tensor_a * self.polynomial_tensor_c
+            _ = self.polynomial_tensor_a * self.polynomial_tensor_c
 
     def test_different_keys_mult(self):
         result = self.polynomial_tensor_a * self.polynomial_tensor_operand
@@ -317,7 +317,7 @@ class PolynomialTensorTest(unittest.TestCase):
 
     def test_invalid_dividend(self):
         with self.assertRaises(TypeError):
-            self.polynomial_tensor_a / 'a'
+            _ = self.polynomial_tensor_a / 'a'
 
     def test_iter_and_str(self):
         one_body = numpy.zeros((self.n_qubits, self.n_qubits))

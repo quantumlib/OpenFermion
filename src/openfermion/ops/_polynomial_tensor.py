@@ -17,7 +17,7 @@ import copy
 import itertools
 import numpy
 
-from openfermion.config import *
+from openfermion.config import EQ_TOLERANCE
 
 
 class PolynomialTensorError(Exception):

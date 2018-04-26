@@ -118,8 +118,8 @@ class BinaryCode(object):
         BinaryCode their concatenation.
 
     Attributes:
-        decoder (list):  list of BinaryPolynomial: Outputs the decoding functions
-            as components.
+        decoder (list):  list of BinaryPolynomial: Outputs the decoding
+            functions as components.
         encoder (scipy.sparse.csc_matrix): Outputs A, the linear matrix that
             implements the encoding function.
         n_modes (int): Outputs the number of modes.

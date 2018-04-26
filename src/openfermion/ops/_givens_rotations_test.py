@@ -54,7 +54,7 @@ class GivensMatrixElementsTest(unittest.TestCase):
         """Test bad input."""
         with self.assertRaises(ValueError):
             v = numpy.random.randn(2)
-            G = givens_matrix_elements(v[0], v[1], which='a')
+            _ = givens_matrix_elements(v[0], v[1], which='a')
 
 
 class GivensRotateTest(unittest.TestCase):
@@ -171,7 +171,7 @@ class GivensDecompositionTest(unittest.TestCase):
         Q = Q[:m, :n]
 
         with self.assertRaises(ValueError):
-            givens_rotations, V, diagonal = givens_decomposition(Q)
+            _ = givens_decomposition(Q)
 
     def test_identity(self):
         n = 3
@@ -322,12 +322,10 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         n, p = (3, 7)
         rand_mat = numpy.random.randn(n, p)
         with self.assertRaises(ValueError):
-            decomposition, left_unitary, antidiagonal = (
-                fermionic_gaussian_decomposition(rand_mat))
+            _ = fermionic_gaussian_decomposition(rand_mat)
 
     def test_bad_constraints(self):
         n = 3
         ones_mat = numpy.ones((n, 2 * n))
         with self.assertRaises(ValueError):
-            decomposition, left_unitary, antidiagonal = (
-                fermionic_gaussian_decomposition(ones_mat))
+            _ = fermionic_gaussian_decomposition(ones_mat)

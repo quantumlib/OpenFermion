@@ -23,7 +23,8 @@ class CodeOperatorTest(unittest.TestCase):
     def test_init_errors(self):
         with self.assertRaises(TypeError):
             BinaryCode(1,
-                       [BinaryPolynomial(' w1 + w0 '), BinaryPolynomial('w0 + 1')])
+                       [BinaryPolynomial(' w1 + w0 '),
+                           BinaryPolynomial('w0 + 1')])
         with self.assertRaises(TypeError):
             BinaryCode([[0, 1], [1, 0]], '1+w1')
         with self.assertRaises(BinaryCodeError):
@@ -41,8 +42,9 @@ class CodeOperatorTest(unittest.TestCase):
 
     def test_addition(self):
         a = BinaryCode([[0, 1, 0], [1, 0, 1]],
-                       [BinaryPolynomial(' w1 + w0 '), BinaryPolynomial('w0 + 1'),
-                        BinaryPolynomial('w1')])
+                       [BinaryPolynomial(' w1 + w0 '),
+                           BinaryPolynomial('w0 + 1'),
+                           BinaryPolynomial('w1')])
         d = BinaryCode([[0, 1], [1, 0]],
                        [BinaryPolynomial(' w0 '), BinaryPolynomial('w0 w1')])
         summation = a + d
@@ -57,8 +59,9 @@ class CodeOperatorTest(unittest.TestCase):
 
     def test_multiplication(self):
         a = BinaryCode([[0, 1, 0], [1, 0, 1]],
-                       [BinaryPolynomial(' w1 + w0 '), BinaryPolynomial('w0 + 1'),
-                        BinaryPolynomial('w1')])
+                       [BinaryPolynomial(' w1 + w0 '),
+                           BinaryPolynomial('w0 + 1'),
+                           BinaryPolynomial('w1')])
         d = BinaryCode([[0, 1], [1, 0]],
                        [BinaryPolynomial(' w0 '), BinaryPolynomial('w0 w1')])
 
@@ -71,9 +74,9 @@ class CodeOperatorTest(unittest.TestCase):
                                  "[0, 0, 0, 1], [0, 0, 1, 0]], "
                                  "'[[W0],[W0 W1],[W2],[W2 W3]]']")
         with self.assertRaises(BinaryCodeError):
-            d * a
+            _ = d * a
         with self.assertRaises(TypeError):
-            2.0 * a
+            _ = 2.0 * a
         with self.assertRaises(TypeError):
             a *= 2.0
         with self.assertRaises(ValueError):

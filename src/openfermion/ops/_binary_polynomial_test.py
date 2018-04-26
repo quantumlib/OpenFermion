@@ -52,7 +52,7 @@ class BinaryPolynomialTest(unittest.TestCase):
         self.assertEqual(operator1.terms, [(3, 4)])
         operator1 = BinaryPolynomial([(4, 3, _SYMBOLIC_ONE)])
         self.assertEqual(operator1.terms, [(3, 4)])
-        operator1 = BinaryPolynomial(((1,2),(1,2)))
+        operator1 = BinaryPolynomial(((1, 2), (1, 2)))
         self.assertEqual(operator1.terms, [])
         with self.assertRaises(ValueError):
             operator1 = BinaryPolynomial(((1, -2),))
@@ -74,9 +74,9 @@ class BinaryPolynomialTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             operator1 *= 4.3
         with self.assertRaises(TypeError):
-            tmp = 4.3 * operator1
+            _ = 4.3 * operator1
         with self.assertRaises(TypeError):
-            tmp = operator1 * 4.3
+            _ = operator1 * 4.3
 
     def test_addition(self):
         operator1 = BinaryPolynomial('w1 w2')
@@ -88,7 +88,7 @@ class BinaryPolynomialTest(unittest.TestCase):
         addition = addition + 1
         self.assertEqual(addition.terms, [(_SYMBOLIC_ONE,)])
         with self.assertRaises(TypeError):
-            tmp = 4.3 + operator1
+            _ = 4.3 + operator1
         with self.assertRaises(TypeError):
             operator1 += 4.3
 
@@ -104,9 +104,9 @@ class BinaryPolynomialTest(unittest.TestCase):
         self.assertEqual(pow_loc.terms, [(_SYMBOLIC_ONE,), (1, 2),
                                          (3, 4)])
         with self.assertRaises(TypeError):
-            tmp = operator1 ** 4.3
+            _ = operator1 ** 4.3
         with self.assertRaises(TypeError):
-            tmp = operator1 ** (-1)
+            _ = operator1 ** (-1)
 
     def test_init_binary_rule(self):
         operator1 = BinaryPolynomial('1 + w2 w2 + w2')
@@ -158,9 +158,9 @@ class BinaryPolynomialTest(unittest.TestCase):
 
     def test_evaluate(self):
         operator1 = BinaryPolynomial()
-        self.assertEqual(operator1.evaluate('1111'),0)
+        self.assertEqual(operator1.evaluate('1111'), 0)
         operator1 = BinaryPolynomial(1)
-        self.assertEqual(operator1.evaluate('1111'),1)
+        self.assertEqual(operator1.evaluate('1111'), 1)
         operator1 = BinaryPolynomial('1 + w0 w2 w1 + w0 w1 + w0 w2')
         a = operator1.evaluate([0, 0, 1])
         self.assertEqual(a, 1.0)
@@ -195,4 +195,3 @@ class BinaryPolynomialTest(unittest.TestCase):
         operator2 += operator1
         self.assertEqual(operator1.terms, [(1,), (_SYMBOLIC_ONE,)])
         self.assertEqual(operator2.terms, [(_SYMBOLIC_ONE,)])
-

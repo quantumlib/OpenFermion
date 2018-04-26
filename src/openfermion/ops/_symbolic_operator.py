@@ -87,7 +87,7 @@ class SymbolicOperator(object):
 
         # Parse the term
         # Sequence input
-        elif isinstance(term, tuple) or isinstance(term, list):
+        if isinstance(term, tuple) or isinstance(term, list):
             term = self._parse_sequence(term)
         # String input
         elif isinstance(term, str):
@@ -503,7 +503,7 @@ class SymbolicOperator(object):
         exponentiated = self.__class__(())
 
         # Handle non-zero exponents.
-        for i in range(exponent):
+        for _ in range(exponent):
             exponentiated *= self
         return exponentiated
 
