@@ -60,11 +60,19 @@ class RDMMappingTest(unittest.TestCase):
         with h5py.File(phdm_lih_sto3g, 'r') as fid:
             self.phdm_lih_sto3g = fid['phdm'][...]
 
-    def test_kronecker_delta(self):
+    def test_kronecker_delta_00(self):
         assert kronecker_delta(0, 0) == 1
+
+    def test_kronecker_delta_01(self):
         assert kronecker_delta(0, 1) == 0
+
+    def test_kronecker_delta_10(self):
         assert kronecker_delta(1, 0) == 0
+
+    def test_kronecker_delta_11(self):
         assert kronecker_delta(1, 1) == 1
+
+    def test_kronecker_delta_nonunit_args(self):
         assert kronecker_delta(3, 3) == 1
 
     def test_tpdm_to_opdm(self):
@@ -73,8 +81,8 @@ class RDMMappingTest(unittest.TestCase):
                            os.listdir(DATA_DIRECTORY)):
             molecule = MolecularData(
                 filename=os.path.join(DATA_DIRECTORY, file))
-            if (molecule.fci_one_rdm is not None
-               and molecule.fci_two_rdm is not None):
+            if (molecule.fci_one_rdm is not None and
+                    molecule.fci_two_rdm is not None):
                 test_opdm = map_two_pdm_to_one_pdm(molecule.fci_two_rdm,
                                                    molecule.n_electrons)
                 assert numpy.allclose(test_opdm, molecule.fci_one_rdm)
