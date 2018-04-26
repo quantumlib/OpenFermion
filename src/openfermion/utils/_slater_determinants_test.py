@@ -25,7 +25,7 @@ from openfermion.utils._sparse_tools import (
 from openfermion.utils._testing_utils import random_quadratic_hamiltonian
 
 from openfermion.utils._slater_determinants import (
-        gaussian_state_preparation_circuit)
+    gaussian_state_preparation_circuit)
 
 
 class GaussianStatePreparationCircuitTest(unittest.TestCase):

@@ -50,7 +50,7 @@ class UnitaryCC(unittest.TestCase):
         generator = uccsd_generator(single_amplitudes, double_amplitudes)
         conj_generator = hermitian_conjugated(generator)
 
-        self.assertTrue(generator == -1. * conj_generator)
+        self.assertEqual(generator, -1. * conj_generator)
 
     def test_uccsd_singlet_anti_hermitian(self):
         """Test that the singlet version is anti-Hermitian"""
@@ -68,7 +68,7 @@ class UnitaryCC(unittest.TestCase):
 
         conj_generator = hermitian_conjugated(generator)
 
-        self.assertTrue(generator == -1. * conj_generator)
+        self.assertEqual(generator, -1. * conj_generator)
 
     def test_uccsd_singlet_symmetries(self):
         """Test that the singlet generator has the correct symmetries."""
@@ -91,8 +91,8 @@ class UnitaryCC(unittest.TestCase):
         comm_s_squared = normal_ordered(commutator(generator, s_squared))
         zero = FermionOperator()
 
-        self.assertTrue(comm_sz == zero)
-        self.assertTrue(comm_s_squared == zero)
+        self.assertEqual(comm_sz, zero)
+        self.assertEqual(comm_s_squared, zero)
 
     def test_uccsd_singlet_builds(self):
         """Test specific builds of the UCCSD singlet operator"""
@@ -115,8 +115,8 @@ class UnitaryCC(unittest.TestCase):
                           FermionOperator("2^ 0 3^ 1", 4.) +
                           FermionOperator("1^ 3 0^ 2", -4.))
 
-        self.assertTrue(normal_ordered(test_generator) ==
-                        normal_ordered(generator))
+        self.assertEqual(normal_ordered(test_generator),
+                         normal_ordered(generator))
 
         # Build 2
         n_orbitals = 6
@@ -151,8 +151,8 @@ class UnitaryCC(unittest.TestCase):
                           FermionOperator("3^ 1 5^ 1", 5.) +
                           FermionOperator("1^ 5 1^ 3", -5.))
 
-        self.assertTrue(normal_ordered(test_generator) ==
-                        normal_ordered(generator))
+        self.assertEqual(normal_ordered(test_generator),
+                         normal_ordered(generator))
 
     def test_sparse_uccsd_generator_numpy_inputs(self):
         """Test numpy ndarray inputs to uccsd_generator that are sparse"""
@@ -178,7 +178,7 @@ class UnitaryCC(unittest.TestCase):
                           (-0.3434) * FermionOperator("2^ 6 12^ 0") +
                           (-0.23423) * FermionOperator("1^ 4 6^ 13") +
                           0.23423 * FermionOperator("13^ 6 4^ 1"))
-        self.assertTrue(test_generator == generator)
+        self.assertEqual(test_generator, generator)
 
     def test_sparse_uccsd_generator_list_inputs(self):
         """Test list inputs to uccsd_generator that are sparse"""
@@ -198,7 +198,7 @@ class UnitaryCC(unittest.TestCase):
                           (-0.3434) * FermionOperator("2^ 6 12^ 0") +
                           (-0.23423) * FermionOperator("1^ 4 6^ 13") +
                           0.23423 * FermionOperator("13^ 6 4^ 1"))
-        self.assertTrue(test_generator == generator)
+        self.assertEqual(test_generator, generator)
 
     def test_uccsd_singlet_get_packed_amplitudes(self):
         test_orbitals = 6
@@ -216,8 +216,8 @@ class UnitaryCC(unittest.TestCase):
         sparse_double_amplitudes[5, 1, 3, 1] = 0.3434
 
         packed_amplitudes = uccsd_singlet_get_packed_amplitudes(
-                sparse_single_amplitudes, sparse_double_amplitudes,
-                test_orbitals, test_electrons)
+            sparse_single_amplitudes, sparse_double_amplitudes,
+            test_orbitals, test_electrons)
 
         self.assertEqual(len(packed_amplitudes), 5)
 
@@ -340,15 +340,15 @@ class UnitaryCC(unittest.TestCase):
         # Test CCSD singlet for precise match against FCI using loaded t
         # amplitudes
         packed_amplitudes = uccsd_singlet_get_packed_amplitudes(
-                self.molecule.ccsd_single_amps,
-                self.molecule.ccsd_double_amps,
-                self.molecule.n_qubits,
-                self.molecule.n_electrons)
+            self.molecule.ccsd_single_amps,
+            self.molecule.ccsd_double_amps,
+            self.molecule.n_qubits,
+            self.molecule.n_electrons)
         ccsd_operator = uccsd_singlet_generator(
-                packed_amplitudes,
-                self.molecule.n_qubits,
-                self.molecule.n_electrons,
-                anti_hermitian=False)
+            packed_amplitudes,
+            self.molecule.n_qubits,
+            self.molecule.n_electrons,
+            anti_hermitian=False)
 
         ccsd_sparse_r = jordan_wigner_sparse(ccsd_operator)
         ccsd_sparse_l = jordan_wigner_sparse(
@@ -362,9 +362,11 @@ class UnitaryCC(unittest.TestCase):
             self.hamiltonian_matrix.dot(ccsd_state_r))[0, 0]
         self.assertAlmostEqual(expected_ccsd_energy, self.molecule.fci_energy)
 
-    def test_exceptions(self):
+    def test_value_error_for_odd_n_qubits(self):
         # Pass odd n_qubits to singlet generators
         with self.assertRaises(ValueError):
-            _ = uccsd_singlet_paramsize(3, 4)
+            uccsd_singlet_paramsize(3, 4)
+
+    def test_value_error_bad_amplitudes(self):
         with self.assertRaises(ValueError):
-            _ = uccsd_singlet_generator([1.], 3, 4)
+            uccsd_singlet_generator([1.], 3, 4)

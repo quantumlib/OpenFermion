@@ -79,9 +79,9 @@ def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
                     current_occupancy = (current_occupancy + 1) % 2
                 else:
                     new_term.insert(0, op[1])
-            if n_swaps % 2 is 1:
+            if n_swaps % 2:
                 new_coef *= -1
-            if new_coef is not 0 and current_occupancy is item[1]:
+            if new_coef and current_occupancy == item[1]:
                 tmp_operator += FermionOperator(tuple(new_term), new_coef)
         new_operator = tmp_operator
 
@@ -480,8 +480,8 @@ def save_operator(operator, file_name=None, data_directory=None,
     else:
         tm = operator.terms
         with open(file_path, 'wb') as f:
-            marshal.dump((operator_type, dict(zip(tm.keys(),
-                                                  map(complex, tm.values())))), f)
+            marshal.dump((operator_type,
+                          dict(zip(tm.keys(), map(complex, tm.values())))), f)
 
 
 def reorder(operator, order_function, num_modes=None, reverse=False):

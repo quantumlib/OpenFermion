@@ -310,7 +310,7 @@ Rz 1.0 ancilla'''
         self.assertEqual(qasmstr, strcorrect)
 
     def test_qasm_string_multiple_operator(self):
-        # Testing for correct QASM string output 
+        # Testing for correct QASM string output
         # w/ sum of Pauli-{X,Y,Z} and Pauli-{Z}
         # QubitOperator('X0 Z1 Y3', 0.5) + QubitOperator('Z3 Z4', 0.6)
 

@@ -103,40 +103,41 @@ class GridTest(unittest.TestCase):
     def test_initialize(self):
         g1 = Grid(dimensions=3, length=3, scale=1.0)
         scale_matrix = numpy.diag([1.0] * 3)
-        g2 = Grid(dimensions=3, length=(3,3,3), scale=scale_matrix)
+        g2 = Grid(dimensions=3, length=(3, 3, 3), scale=scale_matrix)
         self.assertEqual(g1, g2)
 
-    def test_preconditions(self):
+    def test_no_errors_in_call(self):
+        # No exception
+        Grid(dimensions=1, length=1, scale=1.0)
+        Grid(dimensions=2, length=3, scale=0.01)
+        Grid(dimensions=23, length=34, scale=45.0)
+
+    def test_preconditions_raise_value_error(self):
         nan = float('nan')
 
-        # No exception
-        _ = Grid(dimensions=1, length=1, scale=1.0)
-        _ = Grid(dimensions=2, length=3, scale=0.01)
-        _ = Grid(dimensions=23, length=34, scale=45.0)
+        with self.assertRaises(ValueError):
+            Grid(dimensions=0, length=0, scale=1.0)
+        with self.assertRaises(ValueError):
+            Grid(dimensions=1, length=1, scale=1)
+        with self.assertRaises(ValueError):
+            Grid(dimensions=1, length=1, scale=0.0)
+        with self.assertRaises(ValueError):
+            Grid(dimensions=1, length=1, scale=-1.0)
+        with self.assertRaises(ValueError):
+            Grid(dimensions=1, length=1, scale=nan)
 
         with self.assertRaises(ValueError):
-            _ = Grid(dimensions=0, length=0, scale=1.0)
+            Grid(dimensions=1, length=-1, scale=1.0)
         with self.assertRaises(ValueError):
-            _ = Grid(dimensions=1, length=1, scale=1)
-        with self.assertRaises(ValueError):
-            _ = Grid(dimensions=1, length=1, scale=0.0)
-        with self.assertRaises(ValueError):
-            _ = Grid(dimensions=1, length=1, scale=-1.0)
-        with self.assertRaises(ValueError):
-            _ = Grid(dimensions=1, length=1, scale=nan)
+            Grid(dimensions=-1, length=1, scale=1.0)
 
-        with self.assertRaises(ValueError):
-            _ = Grid(dimensions=1, length=-1, scale=1.0)
-        with self.assertRaises(ValueError):
-            _ = Grid(dimensions=-1, length=1, scale=1.0)
-
+    def test_position_and_momentum_vector_orbital_specification_error(self):
         with self.assertRaises(OrbitalSpecificationError):
             g = Grid(dimensions=1, length=2, scale=1.0)
-            _ = g.position_vector((10, ))
+            g.position_vector((10, ))
         with self.assertRaises(OrbitalSpecificationError):
             g = Grid(dimensions=1, length=2, scale=1.0)
-            _ = g.momentum_vector((10, ))
-
+            g.momentum_vector((10, ))
 
     def test_properties(self):
         g = Grid(dimensions=2, length=3, scale=5.0)

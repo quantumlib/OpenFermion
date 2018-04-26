@@ -185,8 +185,10 @@ def sz_operator(n_spatial_orbitals):
     operator = FermionOperator()
     n_spinless_orbitals = 2 * n_spatial_orbitals
     for ni in range(n_spatial_orbitals):
-        operator += number_operator(n_spinless_orbitals, up_index(ni), 0.5) + \
-                    number_operator(n_spinless_orbitals, down_index(ni), -0.5)
+        operator += (number_operator(n_spinless_orbitals,
+                                     up_index(ni), 0.5) +
+                     number_operator(n_spinless_orbitals,
+                                     down_index(ni), -0.5))
 
     return operator
 

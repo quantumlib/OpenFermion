@@ -100,7 +100,8 @@ class OperatorUtilsTest(unittest.TestCase):
             is_identity('eleven')
 
     def test_reorder(self):
-        shift_by_one = lambda x, y: (x + 1) % y
+        def shift_by_one(x, y):
+            return (x + 1) % y
         operator = FermionOperator('1^ 2^ 3 4', -3.17)
         reordered = reorder(operator, shift_by_one)
         self.assertEqual(reordered.terms,
@@ -123,9 +124,9 @@ class FreezeOrbitalsTest(unittest.TestCase):
 
     def test_freeze_orbitals_nonvanishing(self):
         op = FermionOperator(((1, 1), (1, 0), (0, 1), (2, 0)))
-        op_frozen = freeze_orbitals(op,[1])
+        op_frozen = freeze_orbitals(op, [1])
         expected = FermionOperator(((0, 1), (1, 0)), -1)
-        self.assertTrue(op_frozen == expected)
+        self.assertEqual(op_frozen, expected)
 
     def test_freeze_orbitals_vanishing(self):
         op = FermionOperator(((1, 1), (2, 0)))
@@ -139,7 +140,7 @@ class PruneUnusedIndicesTest(unittest.TestCase):
         op = FermionOperator(((1, 1), (8, 1), (3, 0)), 0.5)
         op = prune_unused_indices(op)
         expected = FermionOperator(((0, 1), (2, 1), (1, 0)), 0.5)
-        self.assertTrue(expected == op)
+        self.assertEqual(expected, op)
 
 
 class HermitianConjugatedTest(unittest.TestCase):
@@ -149,23 +150,23 @@ class HermitianConjugatedTest(unittest.TestCase):
         op = QubitOperator()
         op_hc = hermitian_conjugated(op)
         correct_op = op
-        self.assertTrue(op_hc == correct_op)
+        self.assertEqual(op_hc, correct_op)
 
         op = QubitOperator('X0 Y1', 2.)
         op_hc = hermitian_conjugated(op)
         correct_op = op
-        self.assertTrue(op_hc == correct_op)
+        self.assertEqual(op_hc, correct_op)
 
         op = QubitOperator('X0 Y1', 2.j)
         op_hc = hermitian_conjugated(op)
         correct_op = QubitOperator('X0 Y1', -2.j)
-        self.assertTrue(op_hc == correct_op)
+        self.assertEqual(op_hc, correct_op)
 
         op = QubitOperator('X0 Y1', 2.) + QubitOperator('Z4 X5 Y7', 3.j)
         op_hc = hermitian_conjugated(op)
         correct_op = (QubitOperator('X0 Y1', 2.) +
                       QubitOperator('Z4 X5 Y7', -3.j))
-        self.assertTrue(op_hc == correct_op)
+        self.assertEqual(op_hc, correct_op)
 
     def test_hermitian_conjugated_qubit_op_consistency(self):
         """Some consistency checks for conjugating QubitOperators."""
@@ -173,33 +174,33 @@ class HermitianConjugatedTest(unittest.TestCase):
                    FermionOperator('2^ 7 9 11^'))
 
         # Check that hermitian conjugation commutes with transforms
-        self.assertTrue(jordan_wigner(hermitian_conjugated(ferm_op)) ==
-            hermitian_conjugated(jordan_wigner(ferm_op)))
-        self.assertTrue(bravyi_kitaev(hermitian_conjugated(ferm_op)) ==
-            hermitian_conjugated(bravyi_kitaev(ferm_op)))
+        self.assertEqual(jordan_wigner(hermitian_conjugated(ferm_op)),
+                         hermitian_conjugated(jordan_wigner(ferm_op)))
+        self.assertEqual(bravyi_kitaev(hermitian_conjugated(ferm_op)),
+                         hermitian_conjugated(bravyi_kitaev(ferm_op)))
 
     def test_hermitian_conjugate_empty(self):
         op = FermionOperator()
         op = hermitian_conjugated(op)
-        self.assertTrue(op == FermionOperator())
+        self.assertEqual(op, FermionOperator())
 
     def test_hermitian_conjugate_simple(self):
         op = FermionOperator('1^')
         op_hc = FermionOperator('1')
         op = hermitian_conjugated(op)
-        self.assertTrue(op == op_hc)
+        self.assertEqual(op, op_hc)
 
     def test_hermitian_conjugate_complex_const(self):
         op = FermionOperator('1^ 3', 3j)
         op_hc = -3j * FermionOperator('3^ 1')
         op = hermitian_conjugated(op)
-        self.assertTrue(op == op_hc)
+        self.assertEqual(op, op_hc)
 
     def test_hermitian_conjugate_notordered(self):
         op = FermionOperator('1 3^ 3 3^', 3j)
         op_hc = -3j * FermionOperator('3 3^ 3 1^')
         op = hermitian_conjugated(op)
-        self.assertTrue(op == op_hc)
+        self.assertEqual(op, op_hc)
 
     def test_hermitian_conjugate_semihermitian(self):
         op = (FermionOperator() + 2j * FermionOperator('1^ 3') +
@@ -208,26 +209,26 @@ class HermitianConjugatedTest(unittest.TestCase):
                  FermionOperator('3^ 1', -2j) +
                  FermionOperator('2^ 2', -0.1j))
         op = hermitian_conjugated(op)
-        self.assertTrue(op == op_hc)
+        self.assertEqual(op, op_hc)
 
     def test_hermitian_conjugated_empty(self):
         op = FermionOperator()
-        self.assertTrue(op == hermitian_conjugated(op))
+        self.assertEqual(op, hermitian_conjugated(op))
 
     def test_hermitian_conjugated_simple(self):
         op = FermionOperator('0')
         op_hc = FermionOperator('0^')
-        self.assertTrue(op_hc == hermitian_conjugated(op))
+        self.assertEqual(op_hc, hermitian_conjugated(op))
 
     def test_hermitian_conjugated_complex_const(self):
         op = FermionOperator('2^ 2', 3j)
         op_hc = FermionOperator('2^ 2', -3j)
-        self.assertTrue(op_hc == hermitian_conjugated(op))
+        self.assertEqual(op_hc, hermitian_conjugated(op))
 
     def test_hermitian_conjugated_multiterm(self):
         op = FermionOperator('1^ 2') + FermionOperator('2 3 4')
         op_hc = FermionOperator('2^ 1') + FermionOperator('4^ 3^ 2^')
-        self.assertTrue(op_hc == hermitian_conjugated(op))
+        self.assertEqual(op_hc, hermitian_conjugated(op))
 
     def test_hermitian_conjugated_semihermitian(self):
         op = (FermionOperator() + 2j * FermionOperator('1^ 3') +
@@ -235,11 +236,11 @@ class HermitianConjugatedTest(unittest.TestCase):
         op_hc = (FermionOperator() + FermionOperator('1^ 3', 2j) +
                  FermionOperator('3^ 1', -2j) +
                  FermionOperator('2^ 2', -0.1j))
-        self.assertTrue(op_hc == hermitian_conjugated(op))
+        self.assertEqual(op_hc, hermitian_conjugated(op))
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):
-            _ = is_hermitian('a')
+            is_hermitian('a')
 
 
 class IsHermitianTest(unittest.TestCase):
@@ -309,7 +310,7 @@ class IsHermitianTest(unittest.TestCase):
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):
-            _ = is_hermitian('a')
+            is_hermitian('a')
 
 
 class SaveLoadOperatorTest(unittest.TestCase):
@@ -339,14 +340,12 @@ class SaveLoadOperatorTest(unittest.TestCase):
                       plain_text=True)
         loaded_fermion_operator = load_operator(self.file_name,
                                                 plain_text=True)
-        self.assertEqual(self.fermion_operator,
-                         loaded_fermion_operator)
+        self.assertTrue(self.fermion_operator == loaded_fermion_operator)
 
     def test_save_and_load_qubit_operators(self):
         save_operator(self.qubit_operator, self.file_name)
         loaded_qubit_operator = load_operator(self.file_name)
-        self.assertEqual(self.qubit_operator,
-                         loaded_qubit_operator)
+        self.assertTrue(self.qubit_operator == loaded_qubit_operator)
 
     def test_save_and_load_qubit_operators_readably(self):
         save_operator(self.qubit_operator, self.file_name, plain_text=True)
@@ -401,7 +400,7 @@ class SaveLoadOperatorTest(unittest.TestCase):
                       allow_overwrite=True)
         fermion_operator = load_operator(self.file_name)
 
-        self.assertTrue(fermion_operator == self.fermion_operator)
+        self.assertEqual(fermion_operator, self.fermion_operator)
 
     def test_load_bad_type(self):
         with self.assertRaises(TypeError):
@@ -415,7 +414,7 @@ class SaveLoadOperatorTest(unittest.TestCase):
 class FourierTransformTest(unittest.TestCase):
 
     def test_fourier_transform(self):
-        for length in [2,3]:
+        for length in [2, 3]:
             grid = Grid(dimensions=1, scale=1.5, length=length)
             spinless_set = [True, False]
             geometry = [('H', (0.1,)), ('H', (0.5,))]
@@ -426,8 +425,9 @@ class FourierTransformTest(unittest.TestCase):
                     grid, geometry, spinless, False)
                 h_plane_wave_t = fourier_transform(h_plane_wave, grid,
                                                    spinless)
-                self.assertTrue(normal_ordered(h_plane_wave_t) ==
-                    normal_ordered(h_dual_basis))
+
+                self.assertEqual(normal_ordered(h_plane_wave_t),
+                                 normal_ordered(h_dual_basis))
 
                 # Verify that all 3 are Hermitian
                 plane_wave_operator = get_sparse_operator(h_plane_wave)
@@ -448,8 +448,8 @@ class FourierTransformTest(unittest.TestCase):
                 grid, geometry, spinless, False)
             h_dual_basis_t = inverse_fourier_transform(
                 h_dual_basis, grid, spinless)
-            self.assertTrue(normal_ordered(h_dual_basis_t) ==
-                normal_ordered(h_plane_wave))
+            self.assertEqual(normal_ordered(h_dual_basis_t),
+                             normal_ordered(h_plane_wave))
 
     def test_inverse_fourier_transform_2d(self):
         grid = Grid(dimensions=2, scale=1.5, length=3)
@@ -459,5 +459,5 @@ class FourierTransformTest(unittest.TestCase):
         h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless, False)
         h_dual_basis_t = inverse_fourier_transform(
             h_dual_basis, grid, spinless)
-        self.assertTrue(normal_ordered(h_dual_basis_t) ==
-                        normal_ordered(h_plane_wave))
+        self.assertEqual(normal_ordered(h_dual_basis_t),
+                         normal_ordered(h_plane_wave))
