@@ -11,8 +11,6 @@
 #   limitations under the License.
 
 """Class and functions to store reduced density matrices."""
-from __future__ import absolute_import
-
 import copy
 import numpy
 
