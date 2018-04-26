@@ -11,8 +11,6 @@
 #   limitations under the License.
 
 """Tests for interaction_rdms.py."""
-from __future__ import absolute_import
-
 import os
 import unittest
 
