@@ -153,12 +153,12 @@ class QuadraticHamiltonian(PolynomialTensor):
         """
         if self.conserves_particle_number and not non_negative:
             hermitian_matrix = self.combined_hermitian_part
-            orbital_energies, diagonalizing_unitary = numpy.linalg.eigh(
+            orbital_energies, _ = numpy.linalg.eigh(
                 hermitian_matrix)
             constant = self.constant
         else:
             majorana_matrix, majorana_constant = self.majorana_form()
-            canonical, orthogonal = antisymmetric_canonical_form(
+            canonical, _ = antisymmetric_canonical_form(
                 majorana_matrix)
             orbital_energies = canonical[
                 range(self.n_qubits), range(self.n_qubits, 2 * self.n_qubits)]
@@ -278,18 +278,18 @@ class QuadraticHamiltonian(PolynomialTensor):
                 A matrix representing the transformation :math:`W` of the
                 fermionic ladder operators. If the Hamiltonian conserves
                 particle number then this is :math:`N \\times N`; otherwise
-                it is :math:`2N \\times 2N`.
+                it is :math:`N \\times 2N`.
         """
         if self.conserves_particle_number:
-            energies, diagonalizing_unitary_T = numpy.linalg.eigh(
+            _, diagonalizing_unitary_T = numpy.linalg.eigh(
                     self.combined_hermitian_part)
             return diagonalizing_unitary_T.T
         else:
-            majorana_matrix, majorana_constant = self.majorana_form()
+            majorana_matrix, _ = self.majorana_form()
 
             # Get the orthogonal transformation that puts majorana_matrix
             # into canonical form
-            canonical, orthogonal = antisymmetric_canonical_form(
+            _, orthogonal = antisymmetric_canonical_form(
                     majorana_matrix)
 
             # Create the matrix that converts between fermionic ladder and
@@ -338,7 +338,7 @@ class QuadraticHamiltonian(PolynomialTensor):
         if self.conserves_particle_number:
             # The Hamiltonian conserves particle number, so we don't need
             # to use the most general procedure.
-            decomposition, diagonal = givens_decomposition_square(
+            decomposition, _ = givens_decomposition_square(
                     transformation_matrix)
             circuit_description = list(reversed(decomposition))
         else:
@@ -357,7 +357,7 @@ class QuadraticHamiltonian(PolynomialTensor):
             new_transformation_matrix[:, self.n_qubits:] = numpy.conjugate(
                     left_block)
             # Get the circuit description
-            decomposition, left_decomposition, diagonal, left_diagonal = (
+            decomposition, left_decomposition, _, _ = (
                 fermionic_gaussian_decomposition(new_transformation_matrix))
             # need to use left_diagonal too
             circuit_description = list(reversed(

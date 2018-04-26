@@ -11,8 +11,6 @@
 #   limitations under the License.
 
 """Class and functions to store interaction operators."""
-from __future__ import absolute_import
-
 import itertools
 
 from openfermion.ops import PolynomialTensor
