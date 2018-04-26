@@ -20,15 +20,16 @@ from ._jellium import (dual_basis_kinetic,
                        jellium_model,
                        jordan_wigner_dual_basis_jellium,
                        plane_wave_kinetic,
-                       plane_wave_potential)
+                       plane_wave_potential,
+                       standardized_dual_basis_jellium_hamiltonian,
+                       wigner_seitz_length_scale)
 
 from ._molecular_data import MolecularData, periodic_table
 
 from ._plane_wave_hamiltonian import (dual_basis_external_potential,
                                       plane_wave_external_potential,
                                       plane_wave_hamiltonian,
-                                      jordan_wigner_dual_basis_hamiltonian,
-                                      wigner_seitz_length_scale)
+                                      jordan_wigner_dual_basis_hamiltonian)
 
 # Imports out of alphabetical order to avoid circular dependancy.
 

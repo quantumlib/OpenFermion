@@ -18,7 +18,7 @@ import numpy
 import openfermion.hamiltonians
 
 from openfermion.ops import FermionOperator, normal_ordered
-from openfermion.utils import count_qubits, Grid
+from openfermion.utils import count_qubits
 from openfermion.utils._commutators import (
     double_commutator,
     trivially_double_commutes_dual_basis,
@@ -322,41 +322,3 @@ def ordered_low_depth_terms_no_info(hamiltonian):
         terms += [FermionOperator(operators, coefficient)]
 
     return terms
-
-
-def dual_basis_jellium_hamiltonian(grid_length, dimension=3,
-                                   wigner_seitz_radius=10., n_particles=None,
-                                   spinless=True):
-    """Return the jellium Hamiltonian with the given parameters.
-
-    Args:
-        grid_length (int): The number of spatial orbitals per dimension.
-        dimension (int): The dimension of the system.
-        wigner_seitz_radius (float): The radius per particle in Bohr.
-        n_particles (int): The number of particles in the system.
-                           Defaults to half filling if not specified.
-    """
-    n_qubits = grid_length ** dimension
-    if not spinless:
-        n_qubits *= 2
-
-    if n_particles is None:
-        # Default to half filling fraction.
-        n_particles = n_qubits // 2
-
-    if not (0 <= n_particles <= n_qubits):
-        raise ValueError('n_particles must be between 0 and the number of'
-                         ' spin-orbitals.')
-
-    # Compute appropriate length scale.
-    length_scale = openfermion.hamiltonians.wigner_seitz_length_scale(
-        wigner_seitz_radius, n_particles, dimension)
-
-    grid = Grid(dimension, grid_length, length_scale)
-    hamiltonian = (
-        openfermion.hamiltonians.jellium_model(grid,
-                                               spinless=spinless,
-                                               plane_wave=False))
-    hamiltonian = normal_ordered(hamiltonian)
-    hamiltonian.compress()
-    return hamiltonian

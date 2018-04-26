@@ -15,7 +15,42 @@ from __future__ import absolute_import
 
 import numpy
 
-from openfermion.ops import FermionOperator, QubitOperator
+from openfermion.ops import FermionOperator, normal_ordered, QubitOperator
+from openfermion.utils._grid import Grid
+
+
+def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
+    """Function to give length_scale associated with Wigner-Seitz radius.
+
+    Args:
+        wigner_seitz_radius (float): The radius per particle in atomic units.
+        n_particles (int): The number of particles in the simulation cell.
+        dimension (int): The dimension of the system.
+
+    Returns:
+        length_scale (float): The length scale for the simulation.
+
+    Raises:
+        ValueError: System dimension must be a positive integer.
+    """
+    if not isinstance(dimension, int) or dimension < 1:
+        raise ValueError('System dimension must be a positive integer.')
+
+    half_dimension = dimension // 2
+    if dimension % 2:
+        volume_per_particle = (2 * numpy.math.factorial(half_dimension) *
+                               (4 * numpy.pi) ** half_dimension /
+                               numpy.math.factorial(dimension) *
+                               wigner_seitz_radius ** dimension)
+    else:
+        volume_per_particle = (numpy.pi ** half_dimension /
+                               numpy.math.factorial(half_dimension) *
+                               wigner_seitz_radius ** dimension)
+
+    volume = volume_per_particle * n_particles
+    length_scale = volume ** (1. / dimension)
+
+    return length_scale
 
 
 def plane_wave_kinetic(grid, spinless=False, e_cutoff=None):
@@ -393,4 +428,46 @@ def jordan_wigner_dual_basis_jellium(grid, spinless=False,
                         (2.8372 / grid.volume_scale() ** (1./grid.dimensions)))
 
     # Return Hamiltonian.
+    return hamiltonian
+
+
+def standardized_dual_basis_jellium_hamiltonian(
+        grid_length, dimension, wigner_seitz_radius=10., n_particles=None,
+        spinless=True):
+    """Return the jellium Hamiltonian in the dual basis in standardized form
+    (normal ordered, compressed, and without constant offset) with the
+    given parameters.
+
+    Args:
+        grid_length (int): The number of spatial orbitals along each
+            dimension.
+        dimension (int): The number of spatial dimensions in the system.
+        wigner_seitz_radius (float): The Wigner-Seitz radius per particle,
+            in Bohr. Defaults to 10.
+        n_particles (int): The number of particles in the system.
+            Defaults to half filling, rounding down, if not specified.
+        spinless (boolean): Whether to generate the Hamiltonian without
+            or with spin. Defaults to True.
+    """
+    n_qubits = grid_length ** dimension
+    if not spinless:
+        n_qubits *= 2
+
+    if n_particles is None:
+        # Default to half filling fraction.
+        n_particles = n_qubits // 2
+
+    if not (0 <= n_particles <= n_qubits):
+        raise ValueError('n_particles must be between 0 and the number of'
+                         ' spin-orbitals.')
+
+    # Compute appropriate length scale.
+    length_scale = wigner_seitz_length_scale(
+        wigner_seitz_radius, n_particles, dimension)
+
+    grid = Grid(dimension, grid_length, length_scale)
+    hamiltonian = normal_ordered(jellium_model(
+        grid, spinless=spinless, plane_wave=False))
+
+    hamiltonian.compress()
     return hamiltonian
