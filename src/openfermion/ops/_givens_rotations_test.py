@@ -171,7 +171,7 @@ class GivensDecompositionTest(unittest.TestCase):
         Q = Q[:m, :n]
 
         with self.assertRaises(ValueError):
-            _, _, _ = givens_decomposition(Q)
+            _ = givens_decomposition(Q)
 
     def test_identity(self):
         n = 3
@@ -322,10 +322,10 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
         n, p = (3, 7)
         rand_mat = numpy.random.randn(n, p)
         with self.assertRaises(ValueError):
-            _, _, _ = fermionic_gaussian_decomposition(rand_mat)
+            _ = fermionic_gaussian_decomposition(rand_mat)
 
     def test_bad_constraints(self):
         n = 3
         ones_mat = numpy.ones((n, 2 * n))
         with self.assertRaises(ValueError):
-            _, _, _ = fermionic_gaussian_decomposition(ones_mat)
+            _ = fermionic_gaussian_decomposition(ones_mat)
