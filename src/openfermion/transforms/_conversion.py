@@ -20,35 +20,36 @@ from future.utils import iteritems
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
-from openfermion.ops import (FermionOperator,
-                             normal_ordered,
+from openfermion.ops import (DiagonalCoulombHamiltonian,
+                             FermionOperator,
                              InteractionOperator,
                              InteractionRDM,
                              PolynomialTensor,
                              QuadraticHamiltonian,
-                             QubitOperator)
+                             QubitOperator,
+                             normal_ordered)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.utils import (count_qubits,
+                               is_hermitian,
                                jordan_wigner_sparse,
                                qubit_operator_sparse)
 
 
 def get_sparse_operator(operator, n_qubits=None):
-    """Map a FermionOperator, QubitOperator, or PolyomialTensor to a
-    sparse matrix."""
-    if isinstance(operator, PolynomialTensor):
-        return polynomial_tensor_sparse(operator)
+    """Map an operator to a sparse matrix.
+
+    If the input is not a QubitOperator, the Jordan-Wigner Transform is used.
+    """
+    if isinstance(operator, (DiagonalCoulombHamiltonian, PolynomialTensor)):
+        return jordan_wigner_sparse(get_fermion_operator(operator))
     elif isinstance(operator, FermionOperator):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
         return qubit_operator_sparse(operator, n_qubits)
-
-
-def polynomial_tensor_sparse(polynomial_tensor):
-    fermion_operator = get_fermion_operator(polynomial_tensor)
-    sparse_operator = jordan_wigner_sparse(fermion_operator)
-    return sparse_operator
+    else:
+        raise TypeError('Failed to convert a {} to a sparse matrix.'.format(
+            type(operator).__name__))
 
 
 def get_interaction_rdm(qubit_operator, n_qubits=None):
@@ -251,9 +252,7 @@ def get_quadratic_hamiltonian(fermion_operator,
                       chemical_potential * numpy.eye(n_qubits))
 
     # Check that the operator is Hermitian
-    difference = hermitian_part - hermitian_part.T.conj()
-    discrepancy = numpy.max(numpy.abs(difference))
-    if discrepancy > EQ_TOLERANCE:
+    if not is_hermitian(hermitian_part):
         raise QuadraticHamiltonianError(
             'FermionOperator does not map '
             'to QuadraticHamiltonian (not Hermitian).')
@@ -263,27 +262,94 @@ def get_quadratic_hamiltonian(fermion_operator,
     if discrepancy < EQ_TOLERANCE:
         # Hamiltonian conserves particle number
         quadratic_hamiltonian = QuadraticHamiltonian(
-            constant, hermitian_part, chemical_potential=chemical_potential)
+            hermitian_part, constant=constant,
+            chemical_potential=chemical_potential)
     else:
         # Hamiltonian does not conserve particle number
         quadratic_hamiltonian = QuadraticHamiltonian(
-            constant, hermitian_part, antisymmetric_part, chemical_potential)
+            hermitian_part, antisymmetric_part, constant, chemical_potential)
 
     return quadratic_hamiltonian
 
 
-def get_fermion_operator(polynomial_tensor):
-    """Output PolynomialTensor as instance of FermionOperator class.
+def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
+    """Convert a FermionOperator to a DiagonalCoulombHamiltonian."""
+    if not isinstance(fermion_operator, FermionOperator):
+        raise TypeError('Input must be a FermionOperator.')
+
+    if n_qubits is None:
+        n_qubits = count_qubits(fermion_operator)
+    if n_qubits < count_qubits(fermion_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    fermion_operator = normal_ordered(fermion_operator)
+    constant = 0.
+    one_body = numpy.zeros((n_qubits, n_qubits), complex)
+    two_body = numpy.zeros((n_qubits, n_qubits), float)
+
+    for term, coefficient in fermion_operator.terms.items():
+        # Ignore this term if the coefficient is zero
+        if abs(coefficient) < EQ_TOLERANCE:
+            continue
+
+        if len(term) == 0:
+            constant = coefficient
+        else:
+            actions = [operator[1] for operator in term]
+            if actions == [1, 0]:
+                p, q = [operator[0] for operator in term]
+                one_body[p, q] = coefficient
+            elif actions == [1, 1, 0, 0]:
+                p, q, r, s = [operator[0] for operator in term]
+                if p == r and q == s:
+                    if abs(numpy.imag(coefficient)) > EQ_TOLERANCE:
+                        raise ValueError(
+                            'FermionOperator does not map to '
+                            'DiagonalCoulombHamiltonian (not Hermitian).')
+                    coefficient = numpy.real(coefficient)
+                    two_body[p, q] = -.5 * coefficient
+                    two_body[q, p] = -.5 * coefficient
+                else:
+                    raise ValueError('FermionOperator does not map to '
+                                     'DiagonalCoulombHamiltonian '
+                                     '(contains terms with indices '
+                                     '{}).'.format((p, q, r, s)))
+            else:
+                raise ValueError('FermionOperator does not map to '
+                                 'DiagonalCoulombHamiltonian (contains terms '
+                                 'with action {}.'.format(tuple(actions)))
+
+    # Check that the operator is Hermitian
+    if not is_hermitian(one_body):
+        raise ValueError(
+            'FermionOperator does not map to DiagonalCoulombHamiltonian '
+            '(not Hermitian).')
+
+    return DiagonalCoulombHamiltonian(one_body, two_body, constant)
+
+
+def get_fermion_operator(operator):
+    """Convert to FermionOperator.
 
     Returns:
         fermion_operator: An instance of the FermionOperator class.
     """
+    n_qubits = count_qubits(operator)
     fermion_operator = FermionOperator()
-    n_qubits = count_qubits(polynomial_tensor)
 
-    for term in polynomial_tensor:
-        fermion_operator += FermionOperator(
-            term, coefficient=polynomial_tensor[term])
+    if isinstance(operator, PolynomialTensor):
+        for term in operator:
+            fermion_operator += FermionOperator(term, operator[term])
+
+    elif isinstance(operator, DiagonalCoulombHamiltonian):
+        fermion_operator += FermionOperator((), operator.constant)
+        for p, q in itertools.product(range(n_qubits), repeat=2):
+            fermion_operator += FermionOperator(
+                    ((p, 1), (q, 0)),
+                    operator.one_body[p, q])
+            fermion_operator += FermionOperator(
+                    ((p, 1), (p, 0), (q, 1), (q, 0)),
+                    operator.two_body[p, q])
 
     return fermion_operator
 

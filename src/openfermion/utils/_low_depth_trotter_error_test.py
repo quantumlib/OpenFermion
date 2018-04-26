@@ -13,7 +13,6 @@
 """Tests for _dual_basis_trotter_error.py."""
 import unittest
 
-from openfermion.ops import FermionOperator
 from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.utils._low_depth_trotter_error import *
 from openfermion.utils import Grid
@@ -140,7 +139,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         grid = Grid(dimension, grid_length, length_scale)
         hamiltonian = jellium_model(grid, spinless=True, plane_wave=False)
         hamiltonian = normal_ordered(hamiltonian)
-        self.assertTrue(terms_total.isclose(hamiltonian))
+        self.assertTrue(terms_total == hamiltonian)
 
     def test_correct_indices_terms_with_info(self):
         grid_length = 4
@@ -250,14 +249,14 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
         for term in terms:
             found_in_other = False
             for term2 in expected_terms:
-                if term.isclose(term2):
+                if term == term2:
                     self.assertFalse(found_in_other)
                     found_in_other = True
             self.assertTrue(found_in_other, msg=str(term))
         for term in expected_terms:
             found_in_other = False
             for term2 in terms:
-                if term.isclose(term2):
+                if term == term2:
                     self.assertFalse(found_in_other)
                     found_in_other = True
             self.assertTrue(found_in_other, msg=str(term))
@@ -281,4 +280,4 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
         grid = Grid(dimension, grid_length, length_scale)
         hamiltonian = jellium_model(grid, spinless=True, plane_wave=False)
         hamiltonian = normal_ordered(hamiltonian)
-        self.assertTrue(terms_total.isclose(hamiltonian))
+        self.assertTrue(terms_total == hamiltonian)

@@ -14,22 +14,124 @@
 from __future__ import absolute_import
 from builtins import map, zip
 
+import copy
 import marshal
 import numpy
 import os
 
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
-from openfermion.hamiltonians._jellium import (grid_indices,
-                                               momentum_vector,
-                                               orbital_id,
-                                               position_vector)
-from openfermion.ops import (FermionOperator, InteractionOperator,
-                             InteractionRDM, PolynomialTensor, QubitOperator)
+
+from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
+                             InteractionOperator, InteractionRDM,
+                             PolynomialTensor, QubitOperator, normal_ordered)
+
 from scipy.sparse import spmatrix
 
 
 class OperatorUtilsError(Exception):
     pass
+
+
+def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
+    """Fix some orbitals to be occupied and others unoccupied.
+
+    Removes all operators acting on the specified orbitals, and renumbers the
+    remaining orbitals to eliminate unused indices. The sign of each term
+    is modified according to the ladder uperator anti-commutation relations in
+    order to preserve the expectation value of the operator.
+
+    Args:
+        occupied: A list containing the indices of the orbitals that are to be
+            assumed to be occupied.
+        unoccupied: A list containing the indices of the orbitals that are to
+            be assumed to be unoccupied.
+    """
+    new_operator = fermion_operator
+    frozen = [(index, 1) for index in occupied]
+    if unoccupied is not None:
+        frozen += [(index, 0) for index in unoccupied]
+
+    # Loop over each orbital to be frozen. Within each term, move all
+    # ops acting on that orbital to the right side of the term, keeping
+    # track of sign flips that come from swapping operators.
+    for item in frozen:
+        tmp_operator = FermionOperator()
+        for term in new_operator.terms:
+            new_term = []
+            new_coef = new_operator.terms[term]
+            current_occupancy = item[1]
+            n_ops = 0  # Number of operations on index that have been moved
+            n_swaps = 0  # Number of swaps that have been done
+
+            for op in enumerate(reversed(term)):
+                if op[1][0] is item[0]:
+                    n_ops += 1
+
+                    # Determine number of swaps needed to bring the op in
+                    # front of all ops acting on other indices
+                    n_swaps += op[0] - n_ops
+
+                    # Check if the op annihilates the current state
+                    if current_occupancy == op[1][1]:
+                        new_coef = 0
+
+                    # Update current state
+                    current_occupancy = (current_occupancy + 1) % 2
+                else:
+                    new_term.insert(0, op[1])
+            if n_swaps % 2 is 1:
+                new_coef *= -1
+            if new_coef is not 0 and current_occupancy is item[1]:
+                tmp_operator += FermionOperator(tuple(new_term), new_coef)
+        new_operator = tmp_operator
+
+    # For occupied frozen orbitals, we must also bring together the creation
+    # operator from the ket and the annihilation operator from the bra when
+    # evaluating expectation values. This can result in an additional minus
+    # sign.
+    for term in new_operator.terms:
+        for index in occupied:
+            for op in term:
+                if op[0] > index:
+                    new_operator.terms[term] *= -1
+
+    # Renumber indices to remove frozen orbitals
+    new_operator = prune_unused_indices(new_operator)
+
+    return new_operator
+
+
+def prune_unused_indices(symbolic_operator):
+    """
+    Remove indices that do not appear in any terms.
+
+    Indices will be renumbered such that if an index i does not appear in
+    any terms, then the next largest index that appears in at least one
+    term will be renumbered to i.
+    """
+
+    # Determine which indices appear in at least one term
+    indices = []
+    for term in symbolic_operator.terms:
+        for op in term:
+            if op[0] not in indices:
+                indices.append(op[0])
+    indices.sort()
+
+    # Construct a dict that maps the old indices to new ones
+    index_map = {}
+    for index in enumerate(indices):
+        index_map[index[1]] = index[0]
+
+    new_operator = copy.deepcopy(symbolic_operator)
+    new_operator.terms.clear()
+
+    # Replace the indices in the terms with the new indices
+    for term in symbolic_operator.terms:
+        new_term = [(index_map[op[0]], op[1]) for op in term]
+        new_operator.terms[tuple(new_term)] = symbolic_operator.terms[term]
+
+    return new_operator
 
 
 def hermitian_conjugated(operator):
@@ -66,9 +168,14 @@ def hermitian_conjugated(operator):
 
 def is_hermitian(operator):
     """Test if operator is Hermitian."""
-    # Handle FermionOperator or QubitOperator
-    if isinstance(operator, (FermionOperator, QubitOperator)):
-        return operator.isclose(hermitian_conjugated(operator))
+    # Handle FermionOperator
+    if isinstance(operator, FermionOperator):
+        return (normal_ordered(operator) ==
+                normal_ordered(hermitian_conjugated(operator)))
+
+    # Handle QubitOperator
+    if isinstance(operator, QubitOperator):
+        return operator == hermitian_conjugated(operator)
 
     # Handle sparse matrix
     elif isinstance(operator, spmatrix):
@@ -94,7 +201,8 @@ def count_qubits(operator):
     """Compute the minimum number of qubits on which operator acts.
 
     Args:
-        operator: FermionOperator, QubitOperator, or PolynomialTensor.
+        operator: FermionOperator, QubitOperator, DiagonalCoulombHamiltonian,
+            or PolynomialTensor.
 
     Returns:
         num_qubits (int): The minimum number of qubits on which operator acts.
@@ -119,6 +227,10 @@ def count_qubits(operator):
                 if term[-1][0] + 1 > num_qubits:
                     num_qubits = term[-1][0] + 1
         return num_qubits
+
+    # Handle DiagonalCoulombHamiltonian
+    elif isinstance(operator, DiagonalCoulombHamiltonian):
+        return operator.one_body.shape[0]
 
     # Handle PolynomialTensor
     elif isinstance(operator, PolynomialTensor):
@@ -172,18 +284,18 @@ def _fourier_transform_helper(hamiltonian,
                               vec_func_1,
                               vec_func_2):
     hamiltonian_t = FermionOperator.zero()
-    normalize_factor = numpy.sqrt(1.0 / float(grid.num_points()))
+    normalize_factor = numpy.sqrt(1.0 / float(grid.num_points))
 
     for term in hamiltonian.terms:
         transformed_term = FermionOperator.identity()
         for ladder_op_mode, ladder_op_type in term:
-            indices_1 = grid_indices(ladder_op_mode, grid, spinless)
-            vec1 = vec_func_1(indices_1, grid)
+            indices_1 = grid.grid_indices(ladder_op_mode, spinless)
+            vec1 = vec_func_1(indices_1)
             new_basis = FermionOperator.zero()
             for indices_2 in grid.all_points_indices():
-                vec2 = vec_func_2(indices_2, grid)
+                vec2 = vec_func_2(indices_2)
                 spin = None if spinless else ladder_op_mode % 2
-                orbital = orbital_id(grid, indices_2, spin)
+                orbital = grid.orbital_id(indices_2, spin)
                 exp_index = phase_factor * 1.0j * numpy.dot(vec1, vec2)
                 if ladder_op_type == 1:
                     exp_index *= -1.0
@@ -223,8 +335,8 @@ def fourier_transform(hamiltonian, grid, spinless):
                                      grid=grid,
                                      spinless=spinless,
                                      phase_factor=+1,
-                                     vec_func_1=momentum_vector,
-                                     vec_func_2=position_vector)
+                                     vec_func_1=grid.momentum_vector,
+                                     vec_func_2=grid.position_vector)
 
 
 def get_file_path(file_name, data_directory):
@@ -277,17 +389,18 @@ def inverse_fourier_transform(hamiltonian, grid, spinless):
                                      grid=grid,
                                      spinless=spinless,
                                      phase_factor=-1,
-                                     vec_func_1=position_vector,
-                                     vec_func_2=momentum_vector)
+                                     vec_func_1=grid.position_vector,
+                                     vec_func_2=grid.momentum_vector)
 
 
-def load_operator(file_name=None, data_directory=None):
+def load_operator(file_name=None, data_directory=None, plain_text=False):
     """Load FermionOperator or QubitOperator from file.
 
     Args:
         file_name: The name of the saved file.
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
+        plain_text: Whether the input file is plain text
 
     Returns:
         operator: The stored FermionOperator or QubitOperator
@@ -297,27 +410,39 @@ def load_operator(file_name=None, data_directory=None):
     """
     file_path = get_file_path(file_name, data_directory)
 
-    with open(file_path, 'rb') as f:
-        data = marshal.load(f)
-        operator_type = data[0]
-        operator_terms = data[1]
+    if plain_text:
+        with open(file_path, 'r') as f:
+            data = f.read()
+            operator_type, operator_terms = data.split(":\n")
 
-    if operator_type == 'FermionOperator':
-        operator = FermionOperator()
-        for term in operator_terms:
-            operator += FermionOperator(term, operator_terms[term])
-    elif operator_type == 'QubitOperator':
-        operator = QubitOperator()
-        for term in operator_terms:
-            operator += QubitOperator(term, operator_terms[term])
+        if operator_type == 'FermionOperator':
+            operator = FermionOperator(operator_terms)
+        elif operator_type == 'QubitOperator':
+            operator = QubitOperator(operator_terms)
+        else:
+            raise TypeError('Operator of invalid type.')
     else:
-        raise TypeError('Operator of invalid type.')
+        with open(file_path, 'rb') as f:
+            data = marshal.load(f)
+            operator_type = data[0]
+            operator_terms = data[1]
+
+        if operator_type == 'FermionOperator':
+            operator = FermionOperator()
+            for term in operator_terms:
+                operator += FermionOperator(term, operator_terms[term])
+        elif operator_type == 'QubitOperator':
+            operator = QubitOperator()
+            for term in operator_terms:
+                operator += QubitOperator(term, operator_terms[term])
+        else:
+            raise TypeError('Operator of invalid type.')
 
     return operator
 
 
 def save_operator(operator, file_name=None, data_directory=None,
-                  allow_overwrite=False):
+                  allow_overwrite=False, plain_text=False):
     """Save FermionOperator or QubitOperator to file.
 
     Args:
@@ -326,6 +451,8 @@ def save_operator(operator, file_name=None, data_directory=None,
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
         allow_overwrite: Whether to allow files to be overwritten.
+        plain_text: Whether the operator should be saved to a
+                        plain-text format for manual analysis
 
     Raises:
         OperatorUtilsError: Not saved, file already exists.
@@ -347,10 +474,14 @@ def save_operator(operator, file_name=None, data_directory=None,
     else:
         raise TypeError('Operator of invalid type.')
 
-    tm = operator.terms
-    with open(file_path, 'wb') as f:
-        marshal.dump((operator_type, dict(zip(tm.keys(),
-                                              map(complex, tm.values())))), f)
+    if plain_text:
+        with open(file_path, 'w') as f:
+            f.write(operator_type + ":\n" + str(operator))
+    else:
+        tm = operator.terms
+        with open(file_path, 'wb') as f:
+            marshal.dump((operator_type, dict(zip(tm.keys(),
+                                                  map(complex, tm.values())))), f)
 
 
 def reorder(operator, order_function, num_modes=None, reverse=False):

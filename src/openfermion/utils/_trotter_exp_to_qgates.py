@@ -197,7 +197,11 @@ def pauli_exp_to_qasm(qubit_operator_list,
         ret_list = []
 
         for term in qubit_operator.terms:
+
             term_coeff = qubit_operator.terms[term]
+
+            # Force float
+            term_coeff = float(numpy.real(term_coeff))
 
             # List of operators and list of qubit ids
             ops = []
@@ -244,10 +248,12 @@ def pauli_exp_to_qasm(qubit_operator_list,
             if ancilla is not None:
                 if len(qids) > 0:
                     ret_list = ret_list + ["C-Phase {} {} {}".format(
-                        term_coeff * evolution_time, ancilla, qids[-1])]
+                        -2 * term_coeff * evolution_time, ancilla, qids[-1])]
+                    ret_list = ret_list + ["Rz {} {}".format(
+                        1 * term_coeff * evolution_time, ancilla)]
                 else:
                     ret_list = ret_list + ["Rz {} {}".format(
-                        term_coeff*evolution_time, ancilla)]
+                        1 * term_coeff*evolution_time, ancilla)]
             else:
                 if len(qids) > 0:
                     ret_list = ret_list + ["Rz {} {}".format(
@@ -264,6 +270,7 @@ def pauli_exp_to_qasm(qubit_operator_list,
 
 
 def trotterize_exp_qubop_to_qasm(hamiltonian,
+                                 evolution_time=1,
                                  trotter_number=1,
                                  trotter_order=1,
                                  term_ordering=None,
@@ -305,5 +312,6 @@ def trotterize_exp_qubop_to_qasm(hamiltonian,
                                                     term_ordering,
                                                     k_exp):
         for exponentiated_qasm_string in pauli_exp_to_qasm(
-                [trotterized_op], qubit_list=qubit_list, ancilla=ancilla):
+                [trotterized_op], evolution_time=evolution_time,
+                qubit_list=qubit_list, ancilla=ancilla):
             yield exponentiated_qasm_string

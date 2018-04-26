@@ -18,89 +18,11 @@ import numpy
 
 from openfermion.hamiltonians._jellium import *
 from openfermion.ops import FermionOperator, QubitOperator
-from openfermion.transforms import jordan_wigner
-from openfermion.utils import count_qubits, eigenspectrum, Grid
+from openfermion.transforms import get_sparse_operator, jordan_wigner
+from openfermion.utils import count_qubits, eigenspectrum, Grid, is_hermitian
 
 
 class JelliumTest(unittest.TestCase):
-
-    def test_orbital_id(self):
-
-        # Test in 1D with spin.
-        grid = Grid(dimensions=1, length=5, scale=1.0)
-        input_coords = [0, 1, 2, 3, 4]
-        tensor_factors_up = [1, 3, 5, 7, 9]
-        tensor_factors_down = [0, 2, 4, 6, 8]
-
-        test_output_up = [orbital_id(grid, i, 1) for i in input_coords]
-        test_output_down = [orbital_id(grid, i, 0) for i in input_coords]
-
-        self.assertEqual(test_output_up, tensor_factors_up)
-        self.assertEqual(test_output_down, tensor_factors_down)
-
-        with self.assertRaises(OrbitalSpecificationError):
-            orbital_id(grid, 6, 1)
-
-        # Test in 2D without spin.
-        grid = Grid(dimensions=2, length=3, scale=1.0)
-        input_coords = [(0, 0), (0, 1), (1, 2)]
-        tensor_factors = [0, 3, 7]
-        test_output = [orbital_id(grid, i) for i in input_coords]
-        self.assertEqual(test_output, tensor_factors)
-
-    def test_position_vector(self):
-
-        # Test in 1D.
-        grid = Grid(dimensions=1, length=4, scale=4.)
-        test_output = [position_vector(i, grid)
-                       for i in range(grid.length)]
-        correct_output = [-2, -1, 0, 1]
-        self.assertEqual(correct_output, test_output)
-
-        grid = Grid(dimensions=1, length=11, scale=2. * numpy.pi)
-        for i in range(grid.length):
-            self.assertAlmostEqual(
-                -position_vector(i, grid),
-                position_vector(grid.length - i - 1, grid))
-
-        # Test in 2D.
-        grid = Grid(dimensions=2, length=3, scale=3.)
-        test_input = []
-        test_output = []
-        for i in range(3):
-            for j in range(3):
-                test_input += [(i, j)]
-                test_output += [position_vector((i, j), grid)]
-        correct_output = numpy.array([[-1., -1.], [-1., 0.], [-1., 1.],
-                                      [0., -1.], [0., 0.], [0., 1.],
-                                      [1., -1.], [1., 0.], [1., 1.]])
-        self.assertAlmostEqual(0., numpy.amax(test_output - correct_output))
-
-    def test_momentum_vector(self):
-        grid = Grid(dimensions=1, length=3, scale=2. * numpy.pi)
-        test_output = [momentum_vector(i, grid)
-                       for i in range(grid.length)]
-        correct_output = [-1., 0, 1.]
-        self.assertEqual(correct_output, test_output)
-
-        grid = Grid(dimensions=1, length=11, scale=2. * numpy.pi)
-        for i in range(grid.length):
-            self.assertAlmostEqual(
-                -momentum_vector(i, grid),
-                momentum_vector(grid.length - i - 1, grid))
-
-        # Test in 2D.
-        grid = Grid(dimensions=2, length=3, scale=2. * numpy.pi)
-        test_input = []
-        test_output = []
-        for i in range(3):
-            for j in range(3):
-                test_input += [(i, j)]
-                test_output += [momentum_vector((i, j), grid)]
-        correct_output = numpy.array([[-1, -1], [-1, 0], [-1, 1],
-                                      [0, -1], [0, 0], [0, 1],
-                                      [1, -1], [1, 0], [1, 1]])
-        self.assertAlmostEqual(0., numpy.amax(test_output - correct_output))
 
     def test_kinetic_integration(self):
 
@@ -110,86 +32,136 @@ class JelliumTest(unittest.TestCase):
         momentum_kinetic = plane_wave_kinetic(grid, spinless)
         position_kinetic = dual_basis_kinetic(grid, spinless)
 
-        # Diagonalize and confirm the same energy.
-        jw_momentum = jordan_wigner(momentum_kinetic)
-        jw_position = jordan_wigner(position_kinetic)
-        momentum_spectrum = eigenspectrum(jw_momentum, 8)
-        position_spectrum = eigenspectrum(jw_position, 8)
+        # Confirm they are Hermitian
+        momentum_kinetic_operator = get_sparse_operator(momentum_kinetic)
+        self.assertTrue(is_hermitian(momentum_kinetic_operator))
 
-        # Confirm spectra are the same.
-        difference = numpy.amax(
-            numpy.absolute(momentum_spectrum - position_spectrum))
-        self.assertAlmostEqual(difference, 0.)
+        position_kinetic_operator = get_sparse_operator(position_kinetic)
+        self.assertTrue(is_hermitian(position_kinetic_operator))
+
+        # Confirm spectral match and hermiticity
+        for length in [2, 3, 4]:
+            grid = Grid(dimensions=1, length=length, scale=2.1)
+            spinless = False
+
+            momentum_kinetic = plane_wave_kinetic(grid, spinless)
+            position_kinetic = dual_basis_kinetic(grid, spinless)
+
+            # Confirm they are Hermitian
+            momentum_kinetic_operator = get_sparse_operator(momentum_kinetic)
+            self.assertTrue(is_hermitian(momentum_kinetic_operator))
+
+            position_kinetic_operator = get_sparse_operator(position_kinetic)
+            self.assertTrue(is_hermitian(position_kinetic_operator))
+
+            # Diagonalize and confirm the same energy.
+            jw_momentum = jordan_wigner(momentum_kinetic)
+            jw_position = jordan_wigner(position_kinetic)
+            momentum_spectrum = eigenspectrum(jw_momentum, 2 * length)
+            position_spectrum = eigenspectrum(jw_position, 2 * length)
+
+            # Confirm spectra are the same.
+            difference = numpy.amax(
+                numpy.absolute(momentum_spectrum - position_spectrum))
+            self.assertAlmostEqual(difference, 0.)
 
     def test_potential_integration(self):
 
         # Compute potential energy operator in momentum and position space.
-        grid = Grid(dimensions=2, length=3, scale=2.)
-        spinless = 1
-        momentum_potential = plane_wave_potential(grid, spinless)
-        position_potential = dual_basis_potential(grid, spinless)
+        for length in [2, 3]:
+            grid = Grid(dimensions=2, length=length, scale=2.)
+            spinless = True
+            momentum_potential = plane_wave_potential(grid, spinless)
+            position_potential = dual_basis_potential(grid, spinless)
 
-        # Diagonalize and confirm the same energy.
-        jw_momentum = jordan_wigner(momentum_potential)
-        jw_position = jordan_wigner(position_potential)
-        momentum_spectrum = eigenspectrum(jw_momentum)
-        position_spectrum = eigenspectrum(jw_position)
+            # Confirm they are Hermitian
+            momentum_potential_operator = (
+                get_sparse_operator(momentum_potential))
+            self.assertTrue(is_hermitian(momentum_potential_operator))
 
-        # Confirm spectra are the same.
-        difference = numpy.amax(
-            numpy.absolute(momentum_spectrum - position_spectrum))
-        self.assertAlmostEqual(difference, 0.)
+            position_potential_operator = (
+                get_sparse_operator(position_potential))
+            self.assertTrue(is_hermitian(position_potential_operator))
+
+            # Diagonalize and confirm the same energy.
+            jw_momentum = jordan_wigner(momentum_potential)
+            jw_position = jordan_wigner(position_potential)
+            momentum_spectrum = eigenspectrum(jw_momentum)
+            position_spectrum = eigenspectrum(jw_position)
+
+            # Confirm spectra are the same.
+            difference = numpy.amax(
+                numpy.absolute(momentum_spectrum - position_spectrum))
+            self.assertAlmostEqual(difference, 0.)
 
     def test_model_integration(self):
-
         # Compute Hamiltonian in both momentum and position space.
-        grid = Grid(dimensions=2, length=3, scale=1.0)
-        spinless = True
-        momentum_hamiltonian = jellium_model(grid, spinless, True)
-        position_hamiltonian = jellium_model(grid, spinless, False)
+        for length in [2, 3]:
+            grid = Grid(dimensions=2, length=length, scale=1.0)
+            spinless = True
+            momentum_hamiltonian = jellium_model(grid, spinless, True)
+            position_hamiltonian = jellium_model(grid, spinless, False)
 
-        # Diagonalize and confirm the same energy.
-        jw_momentum = jordan_wigner(momentum_hamiltonian)
-        jw_position = jordan_wigner(position_hamiltonian)
-        momentum_spectrum = eigenspectrum(jw_momentum)
-        position_spectrum = eigenspectrum(jw_position)
+            # Confirm they are Hermitian
+            momentum_hamiltonian_operator = (
+                get_sparse_operator(momentum_hamiltonian))
+            self.assertTrue(is_hermitian(momentum_hamiltonian_operator))
 
-        # Confirm spectra are the same.
-        difference = numpy.amax(
-            numpy.absolute(momentum_spectrum - position_spectrum))
-        self.assertAlmostEqual(difference, 0.)
+            position_hamiltonian_operator = (
+                get_sparse_operator(position_hamiltonian))
+            self.assertTrue(is_hermitian(position_hamiltonian_operator))
+
+            # Diagonalize and confirm the same energy.
+            jw_momentum = jordan_wigner(momentum_hamiltonian)
+            jw_position = jordan_wigner(position_hamiltonian)
+            momentum_spectrum = eigenspectrum(jw_momentum)
+            position_spectrum = eigenspectrum(jw_position)
+
+            # Confirm spectra are the same.
+            difference = numpy.amax(
+                numpy.absolute(momentum_spectrum - position_spectrum))
+            self.assertAlmostEqual(difference, 0.)
 
     def test_model_integration_with_constant(self):
         # Compute Hamiltonian in both momentum and position space.
         length_scale = 0.7
+        for length in [2, 3]:
+            grid = Grid(dimensions=2, length=length, scale=length_scale)
+            spinless = True
 
-        grid = Grid(dimensions=2, length=3, scale=length_scale)
-        spinless = True
+            # Include Madelung constant in the momentum but not the position
+            # Hamiltonian.
+            momentum_hamiltonian = jellium_model(grid, spinless, True,
+                                                 include_constant=True)
+            position_hamiltonian = jellium_model(grid, spinless, False)
 
-        # Include the Madelung constant in the momentum but not the position
-        # Hamiltonian.
-        momentum_hamiltonian = jellium_model(grid, spinless, True,
-                                             include_constant=True)
-        position_hamiltonian = jellium_model(grid, spinless, False)
+            # Confirm they are Hermitian
+            momentum_hamiltonian_operator = (
+                get_sparse_operator(momentum_hamiltonian))
+            self.assertTrue(is_hermitian(momentum_hamiltonian_operator))
 
-        # Diagonalize and confirm the same energy.
-        jw_momentum = jordan_wigner(momentum_hamiltonian)
-        jw_position = jordan_wigner(position_hamiltonian)
-        momentum_spectrum = eigenspectrum(jw_momentum)
-        position_spectrum = eigenspectrum(jw_position)
+            position_hamiltonian_operator = (
+                get_sparse_operator(position_hamiltonian))
+            self.assertTrue(is_hermitian(position_hamiltonian_operator))
 
-        # Confirm momentum spectrum is shifted 2.8372 / length_scale higher.
-        max_difference = numpy.amax(momentum_spectrum - position_spectrum)
-        min_difference = numpy.amax(momentum_spectrum - position_spectrum)
-        self.assertAlmostEqual(max_difference, 2.8372 / length_scale)
-        self.assertAlmostEqual(min_difference, 2.8372 / length_scale)
+            # Diagonalize and confirm the same energy.
+            jw_momentum = jordan_wigner(momentum_hamiltonian)
+            jw_position = jordan_wigner(position_hamiltonian)
+            momentum_spectrum = eigenspectrum(jw_momentum)
+            position_spectrum = eigenspectrum(jw_position)
+
+            # Confirm momentum spectrum is shifted 2.8372/length_scale higher.
+            max_difference = numpy.amax(momentum_spectrum - position_spectrum)
+            min_difference = numpy.amax(momentum_spectrum - position_spectrum)
+            self.assertAlmostEqual(max_difference, 2.8372 / length_scale)
+            self.assertAlmostEqual(min_difference, 2.8372 / length_scale)
 
     def test_coefficients(self):
 
         # Test that the coefficients post-JW transform are as claimed in paper.
         grid = Grid(dimensions=2, length=3, scale=2.)
         spinless = 1
-        n_orbitals = grid.num_points()
+        n_orbitals = grid.num_points
         n_qubits = (2 ** (1 - spinless)) * n_orbitals
         volume = grid.volume_scale()
 
@@ -209,7 +181,7 @@ class JelliumTest(unittest.TestCase):
         paper_kinetic_coefficient = 0.
         paper_potential_coefficient = 0.
         for indices in grid.all_points_indices():
-            momenta = momentum_vector(indices, grid)
+            momenta = grid.momentum_vector(indices)
             paper_kinetic_coefficient += float(
                 n_qubits) * momenta.dot(momenta) / float(4. * n_orbitals)
 
@@ -232,7 +204,7 @@ class JelliumTest(unittest.TestCase):
             paper_kinetic_coefficient = 0.
             paper_potential_coefficient = 0.
             for indices in grid.all_points_indices():
-                momenta = momentum_vector(indices, grid)
+                momenta = grid.momentum_vector(indices)
                 paper_kinetic_coefficient -= momenta.dot(
                     momenta) / float(4. * n_orbitals)
 
@@ -249,8 +221,6 @@ class JelliumTest(unittest.TestCase):
         # Check Zp Zq.
         if spinless:
             spins = [None]
-        else:
-            spins = [0, 1]
 
         for indices_a in grid.all_points_indices():
             for indices_b in grid.all_points_indices():
@@ -259,15 +229,15 @@ class JelliumTest(unittest.TestCase):
                 paper_kinetic_coefficient = 0.
                 paper_potential_coefficient = 0.
 
-                position_a = position_vector(indices_a, grid)
-                position_b = position_vector(indices_b, grid)
+                position_a = grid.position_vector(indices_a)
+                position_b = grid.position_vector(indices_b)
                 differences = position_b - position_a
 
                 for spin_a in spins:
                     for spin_b in spins:
 
-                        p = orbital_id(grid, indices_a, spin_a)
-                        q = orbital_id(grid, indices_b, spin_b)
+                        p = grid.orbital_id(indices_a, spin_a)
+                        q = grid.orbital_id(indices_b, spin_b)
 
                         if p == q:
                             continue
@@ -277,7 +247,7 @@ class JelliumTest(unittest.TestCase):
                             potential_coefficient = qubit_potential.terms[zpzq]
 
                         for indices_c in grid.all_points_indices():
-                            momenta = momentum_vector(indices_c, grid)
+                            momenta = grid.momentum_vector(indices_c)
 
                             if momenta.any():
                                 potential_contribution = numpy.pi * numpy.cos(
@@ -304,7 +274,7 @@ class JelliumTest(unittest.TestCase):
         test_hamiltonian = jordan_wigner_dual_basis_jellium(grid, spinless)
 
         # Make sure Hamiltonians are the same.
-        self.assertTrue(test_hamiltonian.isclose(qubit_hamiltonian))
+        self.assertTrue(test_hamiltonian == qubit_hamiltonian)
 
         # Check number of terms.
         n_qubits = count_qubits(qubit_hamiltonian)
@@ -328,7 +298,7 @@ class JelliumTest(unittest.TestCase):
         difference = hamiltonian_with_constant - hamiltonian_without_constant
         expected = QubitOperator('') * (2.8372 / length_scale)
 
-        self.assertTrue(expected.isclose(difference))
+        self.assertTrue(expected == difference)
 
     def test_plane_wave_energy_cutoff(self):
         grid = Grid(dimensions=1, length=5, scale=1.0)

@@ -108,8 +108,16 @@ def bravyi_kitaev_fast_interaction_op(iop):
                         if len(set([p, q, r, s])) == 4:
                             if min(r, s) < min(p, q):
                                 continue
+                        # Handle case of 3 unique indices
+                        elif len(set([p, q, r, s])) == 3:
+                            transformed_term = two_body(edge_matrix_indices,
+                                                        p, q, r, s)
+                            transformed_term *= .5 * coefficient
+                            qubit_operator += transformed_term
+                            continue
                         elif p != r and q < p:
                                 continue
+
 
                     # Handle the two-body terms.
                     transformed_term = two_body(edge_matrix_indices,

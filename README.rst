@@ -28,9 +28,10 @@ Getting started
 ===============
 
 Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
-For information about getting started beyond what is provided below please see `intro <http://openfermion.readthedocs.io/en/latest/intro.html>`__
-and  `code examples <http://openfermion.readthedocs.io/en/latest/examples.html>`__. Also take a look at the
-`ipython notebook demo <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_demo.ipynb>`__
+For information about getting started beyond what is provided below please see our
+`tutorial <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_tutorial.ipynb>`__
+in the
+`examples <https://github.com/quantumlib/OpenFermion/blob/master/examples>`__ folder
 as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
 Currently, OpenFermion is only tested on Mac and Linux for the reason that both
@@ -128,6 +129,7 @@ Authors
 `E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
 `Craig Gidney <https://github.com/Strilanc>`__ (Google),
 `Brendan Gimby <https://github.com/bgimby>`__ (University of Michigan),
+`Pranav Gokhale <https://github.com/singular-value>`__ (University of Chicago),
 `Thomas Häner <https://github.com/thomashaener>`__ (ETH Zurich),
 `Tarini Hardikar <https://github.com/TariniHardikar>`__ (Dartmouth),
 `Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
@@ -145,7 +147,8 @@ Authors
 `Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
 `Mark Steudtner <https://github.com/msteudtner>`__  (Leiden University),
 `Qiming Sun <https://github.com/sunqm>`__ (Caltech),
-`Wei Sun <https://github.com/Spaceenter>`__ (Google) and
+`Wei Sun <https://github.com/Spaceenter>`__ (Google),
+`Chris Winkler <https://github.com/quid256>`__ (University of Chicago) and
 `Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan).
 
 

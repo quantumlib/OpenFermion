@@ -9,10 +9,9 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """Base class for representating operators that are polynomials in the
 fermionic ladder operators."""
-from __future__ import absolute_import
+from __future__ import division
 
 import copy
 import itertools
@@ -111,12 +110,14 @@ class PolynomialTensor(object):
         n_body_tensors(dict): A dictionary storing the tensors describing
             n-body interactions. The keys are tuples that indicate the
             type of tensor. For instance, n_body_tensors[(1, 0)] would
-            be an (n_qubits x n_qubits x n_qubits x n_qubits) numpy array,
+            be an (n_qubits x n_qubits) numpy array,
             and it could represent the coefficients of terms of the form
             a^\dagger_i a_j, whereas n_body_tensors[(0, 1)] would be
             an array of the same shape, but instead representing terms
             of the form a_i a^\dagger_j.
     """
+
+    __hash__ = None
 
     def __init__(self, n_body_tensors):
         """Initialize the PolynomialTensor class.
@@ -137,7 +138,7 @@ class PolynomialTensor(object):
     @property
     def constant(self):
         """Get the value of the constant term."""
-        return self.n_body_tensors[()]
+        return self.n_body_tensors.get((), 0.)
 
     @constant.setter
     def constant(self, value):
@@ -173,22 +174,31 @@ class PolynomialTensor(object):
             index = tuple([operator[0] for operator in args])
             self.n_body_tensors[key][index] = value
 
-    def __eq__(self, other_operator):
-        if self.n_qubits != other_operator.n_qubits:
+    def __eq__(self, other):
+        if self.n_qubits != other.n_qubits:
             return False
-        if self.n_body_tensors.keys() != other_operator.n_body_tensors.keys():
-            return False
+
         diff = 0.
-        for key in self.n_body_tensors:
-            self_tensor = self.n_body_tensors[key]
-            other_tensor = other_operator.n_body_tensors[key]
-            discrepancy = numpy.amax(
-                numpy.absolute(self_tensor - other_tensor))
+        self_keys = set(self.n_body_tensors.keys())
+        other_keys = set(other.n_body_tensors.keys())
+
+        for key in (self_keys | other_keys):
+            self_tensor = self.n_body_tensors.get(key)
+            other_tensor = other.n_body_tensors.get(key)
+
+            if self_tensor is not None and other_tensor is not None:
+                discrepancy = numpy.amax(
+                    numpy.absolute(self_tensor - other_tensor))
+            else:
+                tensor = self_tensor if other_tensor is None else other_tensor
+                discrepancy = numpy.amax(numpy.absolute(tensor))
+
             diff = max(diff, discrepancy)
+
         return diff < EQ_TOLERANCE
 
-    def __neq__(self, other_operator):
-        return not (self == other_operator)
+    def __ne__(self, other):
+        return not (self == other)
 
     def __iadd__(self, addend):
         if not issubclass(type(addend), PolynomialTensor):
@@ -197,12 +207,13 @@ class PolynomialTensor(object):
         if self.n_qubits != addend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
-        if self.n_body_tensors.keys() != addend.n_body_tensors.keys():
-            raise TypeError('Invalid tensor type.')
+        for key in addend.n_body_tensors:
+            if key in self.n_body_tensors:
+                self.n_body_tensors[key] = numpy.add(
+                    self.n_body_tensors[key], addend.n_body_tensors[key])
+            else:
+                self.n_body_tensors[key] = addend.n_body_tensors[key]
 
-        for key in self.n_body_tensors:
-            self.n_body_tensors[key] = numpy.add(self.n_body_tensors[key],
-                                                 addend.n_body_tensors[key])
         return self
 
     def __add__(self, addend):
@@ -223,12 +234,13 @@ class PolynomialTensor(object):
         if self.n_qubits != subtrahend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
-        if self.n_body_tensors.keys() != subtrahend.n_body_tensors.keys():
-            raise TypeError('Invalid tensor type.')
+        for key in subtrahend.n_body_tensors:
+            if key in self.n_body_tensors:
+                self.n_body_tensors[key] = numpy.subtract(
+                    self.n_body_tensors[key], subtrahend.n_body_tensors[key])
+            else:
+                self.n_body_tensors[key] = subtrahend.n_body_tensors[key]
 
-        for key in self.n_body_tensors:
-            self.n_body_tensors[key] = numpy.subtract(
-                self.n_body_tensors[key], subtrahend.n_body_tensors[key])
         return self
 
     def __sub__(self, subtrahend):
@@ -237,24 +249,55 @@ class PolynomialTensor(object):
         return r
 
     def __imul__(self, multiplier):
-        if not issubclass(type(multiplier), PolynomialTensor):
+        if isinstance(multiplier, (int, float, complex)):
+            for key in self.n_body_tensors:
+                self.n_body_tensors[key] *= multiplier
+
+        elif isinstance(multiplier, PolynomialTensor):
+            if self.n_qubits != multiplier.n_qubits:
+                raise TypeError('Invalid tensor shape.')
+            for key in self.n_body_tensors:
+                if key in multiplier.n_body_tensors:
+                    self.n_body_tensors[key] = numpy.multiply(
+                            self.n_body_tensors[key],
+                            multiplier.n_body_tensors[key])
+                elif key == ():
+                    self.constant = 0.
+                else:
+                    self.n_body_tensors[key] = numpy.zeros(
+                            self.n_body_tensors[key].shape)
+        else:
             raise TypeError('Invalid type.')
 
-        if self.n_qubits != multiplier.n_qubits:
-            raise TypeError('Invalid tensor shape.')
-
-        if self.n_body_tensors.keys() != multiplier.n_body_tensors.keys():
-            raise TypeError('Invalid tensor type.')
-
-        for key in self.n_body_tensors:
-            self.n_body_tensors[key] = numpy.multiply(
-                self.n_body_tensors[key], multiplier.n_body_tensors[key])
         return self
 
     def __mul__(self, multiplier):
         product = copy.deepcopy(self)
         product *= multiplier
         return product
+
+    def __rmul__(self, multiplier):
+        product = copy.deepcopy(self)
+        product *= multiplier
+        return product
+
+    def __itruediv__(self, dividend):
+        if isinstance(dividend, (int, float, complex)):
+            for key in self.n_body_tensors:
+                self.n_body_tensors[key] /= dividend
+        else:
+            raise TypeError('Invalid type.')
+
+        return self
+
+    def __truediv__(self, dividend):
+        quotient = copy.deepcopy(self)
+        quotient /= dividend
+        return quotient
+
+    def __div__(self, divisor):
+        """ For compatibility with Python 2. """
+        return self.__truediv__(divisor)
 
     def __iter__(self):
         """Iterate over non-zero elements of PolynomialTensor."""

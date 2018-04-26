@@ -22,17 +22,30 @@ from ._grid import Grid
 from ._lcu_util import preprocess_lcu_coefficients_for_reversible_sampling
 
 from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
-                              get_file_path, hermitian_conjugated,
-                              inverse_fourier_transform, is_hermitian,
-                              is_identity, reorder, up_then_down,
+                              freeze_orbitals, get_file_path,
+                              hermitian_conjugated, inverse_fourier_transform,
+                              is_hermitian, is_identity, prune_unused_indices,
+                              reorder, up_then_down,
                               load_operator, save_operator)
+
+from ._rdm_mapping_functions import (kronecker_delta,
+                                     map_two_pdm_to_two_hole_dm,
+                                     map_two_pdm_to_one_pdm,
+                                     map_one_pdm_to_one_hole_dm,
+                                     map_one_hole_dm_to_one_pdm,
+                                     map_two_pdm_to_particle_hole_dm,
+                                     map_two_hole_dm_to_two_pdm,
+                                     map_two_hole_dm_to_one_hole_dm,
+                                     map_particle_hole_dm_to_one_pdm,
+                                     map_particle_hole_dm_to_two_pdm)
 
 from ._slater_determinants import (gaussian_state_preparation_circuit,
                                    slater_determinant_preparation_circuit)
 
 from ._special_operators import (majorana_operator, number_operator,
-                                 s_squared_operator, s_plus_operator,
-                                 s_minus_operator, sz_operator,
+                                 s_minus_operator, s_plus_operator,
+                                 s_squared_operator,
+                                 sx_operator, sy_operator, sz_operator,
                                  up_index, down_index)
 
 from ._trotter_error import error_bound, error_operator
@@ -44,6 +57,7 @@ from ._trotter_exp_to_qgates import (pauli_exp_to_qasm,
 from ._unitary_cc import (uccsd_convert_amplitude_format,
                           uccsd_generator,
                           uccsd_singlet_generator,
+                          uccsd_singlet_get_packed_amplitudes,
                           uccsd_singlet_paramsize)
 
 # Imports out of alphabetical order to avoid circular dependency.

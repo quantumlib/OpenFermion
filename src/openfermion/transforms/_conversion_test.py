@@ -17,12 +17,17 @@ import copy
 import numpy
 import unittest
 
-from openfermion.ops import (FermionOperator, InteractionOperator,
-                             normal_ordered, QubitOperator)
+from openfermion.hamiltonians import fermi_hubbard
+from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
+                             InteractionOperator, QubitOperator, normal_ordered)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.transforms import *
 from openfermion.utils import *
+from openfermion.utils._testing_utils import (
+        random_hermitian_matrix,
+        random_interaction_operator,
+        random_quadratic_hamiltonian)
 
 
 class GetInteractionOperatorTest(unittest.TestCase):
@@ -35,7 +40,7 @@ class GetInteractionOperatorTest(unittest.TestCase):
         molecular_operator = get_interaction_operator(op)
         fermion_operator = get_fermion_operator(molecular_operator)
         fermion_operator = normal_ordered(fermion_operator)
-        self.assertTrue(normal_ordered(op).isclose(fermion_operator))
+        self.assertTrue(normal_ordered(op) == fermion_operator)
 
     def test_get_interaction_operator_bad_input(self):
         with self.assertRaises(TypeError):
@@ -96,7 +101,7 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         fermion_operator = get_fermion_operator(quadratic_op)
         fermion_operator = normal_ordered(fermion_operator)
         self.assertTrue(
-            normal_ordered(self.hermitian_op).isclose(fermion_operator))
+            normal_ordered(self.hermitian_op) == fermion_operator)
 
         # Non-particle-number-conserving chemical potential
         quadratic_op = get_quadratic_hamiltonian(self.hermitian_op,
@@ -104,14 +109,14 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         fermion_operator = get_fermion_operator(quadratic_op)
         fermion_operator = normal_ordered(fermion_operator)
         self.assertTrue(
-            normal_ordered(self.hermitian_op).isclose(fermion_operator))
+            normal_ordered(self.hermitian_op) == fermion_operator)
 
         # Particle-number-conserving
         quadratic_op = get_quadratic_hamiltonian(self.hermitian_op_pc)
         fermion_operator = get_fermion_operator(quadratic_op)
         fermion_operator = normal_ordered(fermion_operator)
         self.assertTrue(
-            normal_ordered(self.hermitian_op_pc).isclose(fermion_operator))
+            normal_ordered(self.hermitian_op_pc) == fermion_operator)
 
     def test_get_quadratic_hamiltonian_hermitian_bad_term(self):
         """Test an operator with non-quadratic terms."""
@@ -140,6 +145,58 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         """Test asking for too few qubits."""
         with self.assertRaises(ValueError):
             get_quadratic_hamiltonian(FermionOperator('3^ 2^'), n_qubits=3)
+
+
+class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
+
+    def test_hubbard(self):
+        x_dim = 4
+        y_dim = 5
+        tunneling = 2.
+        coulomb = 3.
+        chemical_potential = 7.
+        magnetic_field = 11.
+        periodic = False
+
+        hubbard_model = fermi_hubbard(x_dim, y_dim, tunneling, coulomb,
+                                      chemical_potential, magnetic_field,
+                                      periodic)
+
+        self.assertTrue(
+                normal_ordered(hubbard_model) ==
+                normal_ordered(
+                    get_fermion_operator(
+                        get_diagonal_coulomb_hamiltonian(hubbard_model))))
+
+    def test_random_quadratic(self):
+        n_qubits = 5
+        quad_ham = random_quadratic_hamiltonian(n_qubits, True)
+        ferm_op = get_fermion_operator(quad_ham)
+        self.assertTrue(
+                normal_ordered(ferm_op) ==
+                normal_ordered(
+                    get_fermion_operator(
+                        get_diagonal_coulomb_hamiltonian(ferm_op))))
+
+    def test_exceptions(self):
+        op1 = QubitOperator()
+        op2 = FermionOperator('0^ 3') + FermionOperator('3^ 0')
+        op3 = FermionOperator('0^ 1^')
+        op4 = FermionOperator('0^ 1^ 2^ 3')
+        op5 = FermionOperator('0^ 3')
+        op6 = FermionOperator('0^ 0 1^ 1', 1.j)
+        with self.assertRaises(TypeError):
+            _ = get_diagonal_coulomb_hamiltonian(op1)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op2, n_qubits=2)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op3)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op4)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op5)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op6)
 
 
 class GetSparseOperatorQubitTest(unittest.TestCase):
@@ -224,3 +281,21 @@ class GetSparseOperatorFermionTest(unittest.TestCase):
         sparse_operator.eliminate_zeros()
         self.assertEqual(len(list(sparse_operator.data)), 0)
         self.assertEqual(sparse_operator.shape, (16, 16))
+
+
+class GetSparseOperatorDiagonalCoulombHamiltonianTest(unittest.TestCase):
+
+    def test_diagonal_coulomb_hamiltonian(self):
+        n_qubits = 5
+        one_body = random_hermitian_matrix(n_qubits, real=False)
+        two_body = random_hermitian_matrix(n_qubits, real=True)
+        constant = numpy.random.randn()
+        op = DiagonalCoulombHamiltonian(one_body, two_body, constant)
+
+        op1 = get_sparse_operator(op)
+        op2 = get_sparse_operator(jordan_wigner(get_fermion_operator(op)))
+        diff = op1 - op2
+        discrepancy = 0.
+        if diff.nnz:
+            discrepancy = max(abs(diff.data))
+        self.assertAlmostEqual(discrepancy, 0.)

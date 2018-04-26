@@ -15,9 +15,8 @@ from __future__ import absolute_import
 from future.utils import iteritems, itervalues
 
 import numpy
+import openfermion.hamiltonians
 
-from openfermion.config import *
-from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.utils import count_qubits, Grid
 from openfermion.utils._commutators import (
@@ -275,7 +274,7 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
         # If the overall hopping operator isn't close to zero, append it.
         # Include the indices it acts on and that it's a hopping operator.
         if not (left_hopping_operator +
-                right_hopping_operator).isclose(zero):
+                right_hopping_operator) == zero:
             terms_in_step.append(left_hopping_operator +
                                  right_hopping_operator)
             indices_in_step.append(set((left, right)))
@@ -284,7 +283,7 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
         # If the overall number operator isn't close to zero, append it.
         # Include the indices it acts on and that it's a number operator.
         if not (two_number_operator + left_number_operator +
-                right_number_operator).isclose(zero):
+                right_number_operator) == zero:
             terms_in_step.append(two_number_operator +
                                  left_number_operator +
                                  right_number_operator)
@@ -350,11 +349,14 @@ def dual_basis_jellium_hamiltonian(grid_length, dimension=3,
                          ' spin-orbitals.')
 
     # Compute appropriate length scale.
-    length_scale = wigner_seitz_length_scale(
+    length_scale = openfermion.hamiltonians.wigner_seitz_length_scale(
         wigner_seitz_radius, n_particles, dimension)
 
     grid = Grid(dimension, grid_length, length_scale)
-    hamiltonian = jellium_model(grid, spinless=spinless, plane_wave=False)
+    hamiltonian = (
+        openfermion.hamiltonians.jellium_model(grid,
+                                               spinless=spinless,
+                                               plane_wave=False))
     hamiltonian = normal_ordered(hamiltonian)
     hamiltonian.compress()
     return hamiltonian

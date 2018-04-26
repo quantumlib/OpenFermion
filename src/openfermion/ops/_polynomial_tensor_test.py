@@ -19,6 +19,7 @@ import copy
 import numpy
 
 from openfermion.ops import PolynomialTensor
+from openfermion.transforms import get_fermion_operator
 from openfermion.utils._slater_determinants_test import (
     random_quadratic_hamiltonian)
 
@@ -36,9 +37,26 @@ class PolynomialTensorTest(unittest.TestCase):
         one_body_a[1, 0] = 3
         two_body_a[0, 1, 0, 1] = 4
         two_body_a[1, 1, 0, 0] = 5
+        self.one_body_a = one_body_a
+        self.two_body_a = two_body_a
 
         self.polynomial_tensor_a = PolynomialTensor(
             {(): self.constant, (1, 0): one_body_a, (1, 1, 0, 0): two_body_a})
+
+        self.one_body_operand = numpy.zeros((self.n_qubits, self.n_qubits))
+        self.two_body_operand = numpy.zeros((self.n_qubits, self.n_qubits,
+                                             self.n_qubits, self.n_qubits))
+        self.one_body_operand[0, 1] = 6
+        self.one_body_operand[1, 0] = 7
+        self.two_body_operand[0, 1, 0, 1] = 8
+        self.two_body_operand[1, 1, 0, 0] = 9
+        self.polynomial_tensor_operand = PolynomialTensor(
+                {(1, 0): self.one_body_operand,
+                 (0, 0, 1, 1): self.two_body_operand})
+
+        self.polynomial_tensor_a_with_zeros = PolynomialTensor(
+            {(): self.constant, (1, 0): one_body_a, (1, 1, 0, 0): two_body_a,
+             (1, 1, 0, 0, 0, 0): numpy.zeros([self.n_qubits] * 6)})
 
         one_body_na = numpy.zeros((self.n_qubits, self.n_qubits))
         two_body_na = numpy.zeros((self.n_qubits, self.n_qubits,
@@ -173,7 +191,13 @@ class PolynomialTensorTest(unittest.TestCase):
         self.assertNotEqual(self.polynomial_tensor_a,
                             self.polynomial_tensor_spinful)
 
-    def test_neq(self):
+        # OK to have different keys if arrays for differing keys are 0-arrays
+        self.assertEqual(self.polynomial_tensor_a,
+                         self.polynomial_tensor_a_with_zeros)
+        self.assertEqual(self.polynomial_tensor_a_with_zeros,
+                         self.polynomial_tensor_a)
+
+    def test_ne(self):
         self.assertNotEqual(self.polynomial_tensor_a,
                             self.polynomial_tensor_b)
 
@@ -194,9 +218,14 @@ class PolynomialTensorTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.polynomial_tensor_a + self.polynomial_tensor_c
 
-    def test_invalid_tensor_keys_add(self):
-        with self.assertRaises(TypeError):
-            self.polynomial_tensor_a + self.polynomial_tensor_hole
+    def test_different_keys_add(self):
+        result = self.polynomial_tensor_a + self.polynomial_tensor_operand
+        expected = PolynomialTensor(
+            {(): self.constant,
+             (1, 0): numpy.add(self.one_body_a, self.one_body_operand),
+             (1, 1, 0, 0): self.two_body_a,
+             (0, 0, 1, 1): self.two_body_operand})
+        self.assertEqual(result, expected)
 
     def test_neg(self):
         self.assertEqual(-self.polynomial_tensor_a,
@@ -219,13 +248,34 @@ class PolynomialTensorTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.polynomial_tensor_a - self.polynomial_tensor_c
 
-    def test_invalid_tensor_keys_sub(self):
-        with self.assertRaises(TypeError):
-            self.polynomial_tensor_a - self.polynomial_tensor_hole
+    def test_different_keys_sub(self):
+        result = self.polynomial_tensor_a - self.polynomial_tensor_operand
+        expected = PolynomialTensor(
+            {(): self.constant,
+             (1, 0): numpy.subtract(self.one_body_a, self.one_body_operand),
+             (1, 1, 0, 0): self.two_body_a,
+             (0, 0, 1, 1): self.two_body_operand})
+        self.assertEqual(result, expected)
 
     def test_mul(self):
         new_tensor = self.polynomial_tensor_a * self.polynomial_tensor_b
         self.assertEqual(new_tensor, self.polynomial_tensor_axb)
+
+        new_tensor_1 = self.polynomial_tensor_a * 2.
+        new_tensor_2 = 2. * self.polynomial_tensor_a
+
+        self.assertEqual(new_tensor_1, PolynomialTensor(
+            {(): self.constant * 2.,
+             (1, 0): self.one_body_a * 2.,
+             (1, 1, 0, 0): self.two_body_a * 2.}))
+        self.assertEqual(new_tensor_2, PolynomialTensor(
+            {(): self.constant * 2.,
+             (1, 0): self.one_body_a * 2.,
+             (1, 1, 0, 0): self.two_body_a * 2.}))
+        self.assertEqual(get_fermion_operator(new_tensor_1),
+                         get_fermion_operator(self.polynomial_tensor_a) * 2.)
+        self.assertEqual(get_fermion_operator(new_tensor_2),
+                         get_fermion_operator(self.polynomial_tensor_a) * 2.)
 
     def test_imul(self):
         new_tensor = copy.deepcopy(self.polynomial_tensor_a)
@@ -234,15 +284,40 @@ class PolynomialTensorTest(unittest.TestCase):
 
     def test_invalid_multiplier(self):
         with self.assertRaises(TypeError):
-            self.polynomial_tensor_a * 2
+            self.polynomial_tensor_a * 'a'
 
     def test_invalid_tensor_shape_mult(self):
         with self.assertRaises(TypeError):
             self.polynomial_tensor_a * self.polynomial_tensor_c
 
-    def test_invalid_tensor_keys_mult(self):
+    def test_different_keys_mult(self):
+        result = self.polynomial_tensor_a * self.polynomial_tensor_operand
+        expected = PolynomialTensor(
+            {(1, 0): numpy.multiply(self.one_body_a, self.one_body_operand)})
+        self.assertEqual(result, expected)
+
+    def test_div(self):
+        new_tensor = self.polynomial_tensor_a / 2.
+        self.assertEqual(new_tensor, PolynomialTensor(
+            {(): self.constant / 2.,
+             (1, 0): self.one_body_a / 2.,
+             (1, 1, 0, 0): self.two_body_a / 2.}))
+        self.assertEqual(get_fermion_operator(new_tensor),
+                         get_fermion_operator(self.polynomial_tensor_a) / 2.)
+
+    def test_idiv(self):
+        new_tensor = copy.deepcopy(self.polynomial_tensor_a)
+        new_tensor /= 3.
+        self.assertEqual(new_tensor, PolynomialTensor(
+            {(): self.constant / 3.,
+             (1, 0): self.one_body_a / 3.,
+             (1, 1, 0, 0): self.two_body_a / 3.}))
+        self.assertEqual(get_fermion_operator(new_tensor),
+                         get_fermion_operator(self.polynomial_tensor_a) / 3.)
+
+    def test_invalid_dividend(self):
         with self.assertRaises(TypeError):
-            self.polynomial_tensor_a * self.polynomial_tensor_hole
+            self.polynomial_tensor_a / 'a'
 
     def test_iter_and_str(self):
         one_body = numpy.zeros((self.n_qubits, self.n_qubits))
@@ -354,9 +429,8 @@ class PolynomialTensorTest(unittest.TestCase):
         orbital_energies, constant = quad_ham.orbital_energies()
 
         # Rotate a basis where the Hamiltonian is diagonal
-        hermitian_matrix = quad_ham.combined_hermitian_part
-        energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
-        quad_ham.rotate_basis(diagonalizing_unitary)
+        diagonalizing_unitary = quad_ham.diagonalizing_bogoliubov_transform()
+        quad_ham.rotate_basis(diagonalizing_unitary.T)
 
         # Check that the rotated Hamiltonian is diagonal with the correct
         # orbital energies

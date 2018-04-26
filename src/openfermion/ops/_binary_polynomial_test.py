@@ -15,9 +15,9 @@ import unittest
 
 import numpy
 
-from openfermion.ops._symbolic_binary import (BinaryPolynomial,
-                                              BinaryPolynomialError,
-                                              _SYMBOLIC_ONE)
+from openfermion.ops._binary_polynomial import (BinaryPolynomial,
+                                                BinaryPolynomialError,
+                                                _SYMBOLIC_ONE)
 
 
 class BinaryPolynomialTest(unittest.TestCase):

@@ -20,14 +20,19 @@ from ._binary_codes import (bravyi_kitaev_code,
                             parity_code,
                             weight_two_segment_code,
                             weight_one_binary_addressing_code,
-                            weight_one_segment_code)
+                            weight_one_segment_code,
+                            linearize_decoder)
 from ._bravyi_kitaev import bravyi_kitaev
-from ._conversion import (get_fermion_operator,
+from ._bravyi_kitaev_tree import bravyi_kitaev_tree
+from ._conversion import (get_diagonal_coulomb_hamiltonian,
+                          get_fermion_operator,
                           get_interaction_rdm,
                           get_interaction_operator,
                           get_quadratic_hamiltonian,
                           get_molecular_data,
                           get_sparse_operator)
 from ._jordan_wigner import jordan_wigner
+from ._projection import (project_onto_sector,
+                          projection_error)
 from ._reverse_jordan_wigner import reverse_jordan_wigner
 from ._verstraete_cirac import verstraete_cirac_2d_square

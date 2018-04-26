@@ -16,7 +16,6 @@ import unittest
 from openfermion.ops import BinaryPolynomial
 from openfermion.ops._binary_code import (BinaryCode,
                                           BinaryCodeError,
-                                          linearize_decoder,
                                           shift_decoder)
 
 
@@ -79,10 +78,6 @@ class CodeOperatorTest(unittest.TestCase):
             a *= 2.0
         with self.assertRaises(ValueError):
             b = 0 * a
-
-    def test_linearize(self):
-        a = linearize_decoder([[0, 1, 1], [1, 0, 0]])
-        self.assertListEqual([str(a[0]), str(a[1])], ['[W1] + [W2]', '[W0]'])
 
     def test_shift(self):
         decoder = [BinaryPolynomial('1'), BinaryPolynomial('1 + w1 w0')]
