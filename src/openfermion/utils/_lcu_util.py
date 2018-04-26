@@ -58,7 +58,7 @@ def _discretize_probability_distribution(unnormalized_probabilities, epsilon):
         the i'th input probability (after normalization).
     """
     n = len(unnormalized_probabilities)
-    sub_bit_precision = max(0, int(math.ceil(-math.log2(epsilon * n))))
+    sub_bit_precision = max(0, int(math.ceil(-math.log(epsilon * n, 2))))
     bin_count = 2**sub_bit_precision * n
 
     cumulative = list(_partial_sums(unnormalized_probabilities))
@@ -98,8 +98,10 @@ def _preprocess_for_efficient_roulette_selection(discretized_probabilities):
         alternates (list[int]): An alternate index for each index from 0 to
             len(weights) - 1
         keep_weight (list[int]): Indicates how often one should stay at index i
-            instead of switching to alternates[i]. Divide by the sum of the
-            given discretized_probabilities to get normalized probabilities.
+            instead of switching to alternates[i]. To get the actual keep
+            probability of the i'th element, multiply keep_weight[i] by
+            len(discretized_probabilities) then divide by
+            sum(discretized_probabilities).
     """
     weights = list(discretized_probabilities)  # Need a copy we can mutate.
     if not weights:
