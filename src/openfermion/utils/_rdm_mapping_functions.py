@@ -32,7 +32,7 @@ def map_two_pdm_to_one_pdm(tpdm, particle_number):
     Returns:
         opdm (numpy.ndarray): The 1-RDM contracted from the tpdm.
     """
-    return numpy.einsum('prrq', tpdm) / float(particle_number - 1)
+    return numpy.einsum('prrq', tpdm) / (particle_number - 1)
 
 
 def map_two_pdm_to_two_hole_dm(tpdm, opdm):
@@ -108,7 +108,7 @@ def map_two_hole_dm_to_one_hole_dm(tqdm, hole_number):
     Returns:
         oqdm (numpy.ndarray): The 1-hole-RDM contracted from the tqdm.
     """
-    return numpy.einsum('prrq', tqdm) / float(hole_number - 1)
+    return numpy.einsum('prrq', tqdm) / (hole_number - 1)
 
 
 def map_one_pdm_to_one_hole_dm(opdm):
@@ -206,5 +206,5 @@ def map_particle_hole_dm_to_one_pdm(phdm, num_particles, num_basis_functions):
     Returns:
         opdm (numpy.ndarray): the 1-RDM transformed from a 1-RDM.
     """
-    return numpy.einsum('prrq', phdm) / float(
-        num_basis_functions - num_particles + 1)
+    return numpy.einsum('prrq', phdm) / (num_basis_functions -
+                                         num_particles + 1)
