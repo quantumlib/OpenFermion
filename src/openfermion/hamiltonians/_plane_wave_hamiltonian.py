@@ -20,40 +20,6 @@ from openfermion.hamiltonians._molecular_data import periodic_hash_table
 from openfermion.ops import FermionOperator, QubitOperator
 
 
-def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
-    """Function to give length_scale associated with Wigner-Seitz radius.
-
-    Args:
-        wigner_seitz_radius (float): The radius per particle in atomic units.
-        n_particles (int): The number of particles in the simulation cell.
-        dimension (int): The dimension of the system.
-
-    Returns:
-        length_scale (float): The length scale for the simulation.
-
-    Raises:
-        ValueError: System dimension must be a positive integer.
-    """
-    if not isinstance(dimension, int) or dimension < 1:
-        raise ValueError('System dimension must be a positive integer.')
-
-    half_dimension = dimension // 2
-    if dimension % 2:
-        volume_per_particle = (2 * numpy.math.factorial(half_dimension) *
-                               (4 * numpy.pi) ** half_dimension /
-                               numpy.math.factorial(dimension) *
-                               wigner_seitz_radius ** dimension)
-    else:
-        volume_per_particle = (numpy.pi ** half_dimension /
-                               numpy.math.factorial(half_dimension) *
-                               wigner_seitz_radius ** dimension)
-
-    volume = volume_per_particle * n_particles
-    length_scale = volume ** (1. / dimension)
-
-    return length_scale
-
-
 def dual_basis_external_potential(grid, geometry, spinless):
     """Return the external potential in the dual basis of arXiv:1706.00023.
 
