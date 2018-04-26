@@ -365,8 +365,8 @@ class UnitaryCC(unittest.TestCase):
     def test_value_error_for_odd_n_qubits(self):
         # Pass odd n_qubits to singlet generators
         with self.assertRaises(ValueError):
-            uccsd_singlet_paramsize(3, 4)
+            _ = uccsd_singlet_paramsize(3, 4)
 
     def test_value_error_bad_amplitudes(self):
         with self.assertRaises(ValueError):
-            uccsd_singlet_generator([1.], 3, 4)
+            _ = uccsd_singlet_generator([1.], 3, 4)

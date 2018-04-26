@@ -97,7 +97,7 @@ class OperatorUtilsTest(unittest.TestCase):
 
     def test_is_identity_bad_type(self):
         with self.assertRaises(TypeError):
-            is_identity('eleven')
+            _ = is_identity('eleven')
 
     def test_reorder(self):
         def shift_by_one(x, y):
@@ -240,7 +240,7 @@ class HermitianConjugatedTest(unittest.TestCase):
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):
-            is_hermitian('a')
+            _ = is_hermitian('a')
 
 
 class IsHermitianTest(unittest.TestCase):
@@ -310,7 +310,7 @@ class IsHermitianTest(unittest.TestCase):
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):
-            is_hermitian('a')
+            _ = is_hermitian('a')
 
 
 class SaveLoadOperatorTest(unittest.TestCase):
@@ -404,7 +404,7 @@ class SaveLoadOperatorTest(unittest.TestCase):
 
     def test_load_bad_type(self):
         with self.assertRaises(TypeError):
-            load_operator('bad_type_operator')
+            _ = load_operator('bad_type_operator')
 
     def test_save_bad_type(self):
         with self.assertRaises(TypeError):
