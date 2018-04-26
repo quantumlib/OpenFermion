@@ -19,7 +19,7 @@ import numpy
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._givens_rotations import (
-        fermionic_gaussian_decomposition, givens_decomposition)
+    fermionic_gaussian_decomposition, givens_decomposition)
 
 
 def gaussian_state_preparation_circuit(

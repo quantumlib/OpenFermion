@@ -26,7 +26,7 @@ from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.transforms import (get_fermion_operator, get_sparse_operator,
                                     jordan_wigner)
 from openfermion.utils import (Grid, fourier_transform, number_operator,
-                               up_index, down_index) 
+                               up_index, down_index)
 from openfermion.utils._jellium_hf_state import (
     lowest_single_particle_energy_states)
 from openfermion.utils._slater_determinants_test import (
@@ -351,10 +351,8 @@ class JWNumberRestrictStateTest(unittest.TestCase):
         # Create a vector that has entry 1 for every coordinate with
         # the specified particle number, and 0 everywhere else
         vector = csc_matrix(
-                    ([1.] * subspace_dimension,
-                     number_indices,
-                     [0, 1]),
-                    shape=(2 ** n_qubits, 1))
+            ([1.] * subspace_dimension, number_indices, [0, 1]),
+            shape=(2 ** n_qubits, 1))
 
         # Restrict the vector
         restricted_vector = jw_number_restrict_state(vector, n_particles)
@@ -383,10 +381,8 @@ class JWSzRestrictStateTest(unittest.TestCase):
         # Create a vector that has entry 1 for every coordinate in
         # the specified subspace, and 0 everywhere else
         vector = csc_matrix(
-                    ([1.] * subspace_dimension,
-                     sz_indices,
-                     [0, 1]),
-                    shape=(2 ** n_qubits, 1))
+            ([1.] * subspace_dimension, sz_indices, [0, 1]),
+            shape=(2 ** n_qubits, 1))
 
         # Restrict the vector
         restricted_vector = jw_sz_restrict_state(vector, sz_value)

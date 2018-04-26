@@ -247,7 +247,7 @@ def jw_number_indices(n_electrons, n_qubits):
             in a Jordan-Wigner encoding.
     """
     occupations = itertools.combinations(range(n_qubits), n_electrons)
-    indices = [sum([2**n for n in occupation])
+    indices = [sum([2 ** n for n in occupation])
                for occupation in occupations]
     return indices
 
@@ -294,7 +294,7 @@ def jw_sz_indices(sz_value, n_qubits, n_electrons=None):
         num_down = n_electrons - num_up
         up_occupations = itertools.combinations(range(n_sites), num_up)
         down_occupations = list(
-                itertools.combinations(range(n_sites), num_down))
+            itertools.combinations(range(n_sites), num_down))
         # Each arrangement of up spins can be paired with an arrangement
         # of down spins
         for up_occupation in up_occupations:
@@ -601,7 +601,7 @@ def jw_slater_determinant(slater_determinant_matrix):
         The Slater determinant as a sparse matrix.
     """
     circuit_description = slater_determinant_preparation_circuit(
-            slater_determinant_matrix)
+        slater_determinant_matrix)
     start_orbitals = range(slater_determinant_matrix.shape[0])
     n_qubits = slater_determinant_matrix.shape[1]
 
