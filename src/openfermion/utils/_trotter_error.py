@@ -17,7 +17,6 @@ from math import sqrt, ceil
 from scipy.linalg import expm
 
 from openfermion.config import *
-from openfermion.hamiltonians import MolecularData
 from openfermion.ops import normal_ordered, QubitOperator
 
 

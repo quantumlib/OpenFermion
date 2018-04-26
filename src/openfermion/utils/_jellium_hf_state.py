@@ -13,7 +13,6 @@
 """This module constructs the uniform electron gas' Hartree-Fock state."""
 from __future__ import absolute_import
 
-from openfermion.hamiltonians import jellium_model, plane_wave_kinetic
 from openfermion.ops import FermionOperator, normal_ordered
 from openfermion.utils import count_qubits, inverse_fourier_transform
 
@@ -60,6 +59,7 @@ def hartree_fock_state_jellium(grid, n_electrons, spinless=True,
         single-particle states in the plane-wave Hamiltonian until
         n_electrons states are filled.
     """
+    from openfermion.hamiltonians import plane_wave_kinetic
     # Get the jellium Hamiltonian in the plane wave basis.
     # For determining the Hartree-Fock state in the PW basis, only the
     # kinetic energy terms matter.

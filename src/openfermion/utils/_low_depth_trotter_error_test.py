@@ -13,7 +13,9 @@
 """Tests for _dual_basis_trotter_error.py."""
 import unittest
 
-from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
+from openfermion.hamiltonians import (
+    jellium_model, standardized_dual_basis_jellium_hamiltonian,
+    wigner_seitz_length_scale)
 from openfermion.utils._low_depth_trotter_error import *
 from openfermion.utils import Grid
 
@@ -73,8 +75,8 @@ class ErrorBoundTest(unittest.TestCase):
 
     def test_error_bound_using_info_1d(self):
         # Generate the Hamiltonian.
-        hamiltonian = dual_basis_jellium_hamiltonian(grid_length=4,
-                                                     dimension=1)
+        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
+            grid_length=4, dimension=1)
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
@@ -86,8 +88,8 @@ class ErrorBoundTest(unittest.TestCase):
 
     def test_error_bound_using_info_1d_with_input_ordering(self):
         # Generate the Hamiltonian.
-        hamiltonian = dual_basis_jellium_hamiltonian(grid_length=4,
-                                                     dimension=1)
+        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
+            grid_length=4, dimension=1)
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
@@ -99,8 +101,8 @@ class ErrorBoundTest(unittest.TestCase):
 
     def test_error_bound_using_info_2d_verbose(self):
         # Generate the Hamiltonian.
-        hamiltonian = dual_basis_jellium_hamiltonian(grid_length=3,
-                                                     dimension=2)
+        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
+            grid_length=3, dimension=2)
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
@@ -126,7 +128,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         n_particles = n_qubits // inverse_filling_fraction
 
         # Generate the Hamiltonian.
-        hamiltonian = dual_basis_jellium_hamiltonian(
+        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
             grid_length, dimension, wigner_seitz_radius, n_particles)
 
         terms = simulation_ordered_grouped_low_depth_terms_with_info(
@@ -152,7 +154,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         n_particles = n_qubits // inverse_filling_fraction
 
         # Generate the Hamiltonian.
-        hamiltonian = dual_basis_jellium_hamiltonian(
+        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
             grid_length, dimension, wigner_seitz_radius, n_particles)
 
         # Unpack result into terms, indices they act on, and whether they're
@@ -179,7 +181,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         # Compute appropriate length scale.
         n_particles = n_qubits // inverse_filling_fraction
 
-        hamiltonian = dual_basis_jellium_hamiltonian(
+        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
             grid_length, dimension, wigner_seitz_radius, n_particles)
 
         # Unpack result into terms, indices they act on, and whether they're
@@ -204,7 +206,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         # Compute appropriate length scale.
         n_particles = n_qubits // inverse_filling_fraction
 
-        hamiltonian = dual_basis_jellium_hamiltonian(
+        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
             grid_length, dimension, wigner_seitz_radius, n_particles)
 
         # Unpack result into terms, indices they act on, and whether they're
@@ -218,12 +220,13 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
 
 class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
 
-    def test_all_terms_in_dual_basis_jellium_hamiltonian(self):
+    def test_all_terms_in_standardized_dual_basis_jellium_hamiltonian(self):
         grid_length = 4
         dimension = 1
 
         # Generate the Hamiltonian.
-        hamiltonian = dual_basis_jellium_hamiltonian(grid_length, dimension)
+        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
+            grid_length, dimension)
 
         terms = ordered_low_depth_terms_no_info(hamiltonian)
         FO = FermionOperator
@@ -273,7 +276,8 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
         length_scale = wigner_seitz_length_scale(
             wigner_seitz_radius, n_particles, dimension)
 
-        hamiltonian = dual_basis_jellium_hamiltonian(grid_length, dimension)
+        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
+            grid_length, dimension)
         terms = ordered_low_depth_terms_no_info(hamiltonian)
         terms_total = sum(terms, FermionOperator.zero())
 
