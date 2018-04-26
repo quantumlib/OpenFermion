@@ -28,10 +28,11 @@ class DiscretizeDistributionTest(unittest.TestCase):
 
     def assertGetDiscretizedDistribution(self, probabilities, epsilon):
         total_probability = sum(probabilities)
-        numers, denom = _discretize_probability_distribution(probabilities,
-                                                             epsilon)
+        numers, denom, mu = _discretize_probability_distribution(probabilities,
+                                                                 epsilon)
         self.assertEqual(sum(numers), denom)
         self.assertEqual(len(numers), len(probabilities))
+        self.assertEqual(len(probabilities) * 2**mu, denom)
         for i in range(len(numers)):
             self.assertAlmostEqual(numers[i] / denom,
                                    probabilities[i] / total_probability,
@@ -68,15 +69,15 @@ class DiscretizeDistributionTest(unittest.TestCase):
 
         self.assertEqual(
             self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.05),
-            ([6, 8, 7], 21))
+            ([7, 9, 8], 24))
 
         self.assertEqual(
             self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.01),
-            ([31, 37, 34], 102))
+            ([58, 70, 64], 192))
 
         self.assertEqual(
             self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.00335),
-            ([90, 110, 100], 300))
+            ([115, 141, 128], 384))
 
 
 class PreprocessForEfficientRouletteSelectionTest(unittest.TestCase):
@@ -147,17 +148,20 @@ class PreprocessForEfficientRouletteSelectionTest(unittest.TestCase):
 
 class PreprocessLCUCoefficientsForReversibleSamplingTest(unittest.TestCase):
     def assertPreprocess(self, lcu_coefs, epsilon):
-        alternates, keep_numers, keep_denom = (
+        alternates, keep_numers, mu = (
             preprocess_lcu_coefficients_for_reversible_sampling(
                 lcu_coefs, epsilon))
 
         n = len(lcu_coefs)
+        keep_denom = 2**mu
         self.assertEqual(len(alternates), n)
         self.assertEqual(len(keep_numers), n)
+        self.assertTrue(all(0 <= e < keep_denom for e in keep_numers))
 
-        out_distribution = [numer/keep_denom for numer in keep_numers]
+        out_distribution = [1/n*numer/keep_denom for numer in keep_numers]
         for i in range(n):
-            out_distribution[alternates[i]] += 1/n - keep_numers[i]/keep_denom
+            switch_probability = 1 - keep_numers[i]/keep_denom
+            out_distribution[alternates[i]] += 1/n*switch_probability
 
         total = sum(lcu_coefs)
         for i in range(n):
@@ -177,4 +181,8 @@ class PreprocessLCUCoefficientsForReversibleSamplingTest(unittest.TestCase):
     def test_known(self):
         self.assertEqual(
             self.assertPreprocess([1, 2], epsilon=0.01),
-            ([1, 1], [33, 0], 100))
+            ([1, 1], [43, 0], 64))
+
+        self.assertEqual(
+            self.assertPreprocess([1, 2, 3], epsilon=0.01),
+            ([2, 1, 2], [32, 0, 0], 64))
