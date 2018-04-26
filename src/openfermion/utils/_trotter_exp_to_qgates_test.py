@@ -248,7 +248,8 @@ H 0
 Rx 1.5707963267948966 3
 CNOT 0 1
 CNOT 1 3
-C-Phase 0.5 ancilla 3
+C-Phase -1.0 ancilla 3
+Rz 0.5 ancilla
 CNOT 1 3
 CNOT 0 1
 H 0
@@ -276,7 +277,8 @@ H q0
 Rx 1.5707963267948966 q3
 CNOT q0 q1
 CNOT q1 q3
-C-Phase 0.5 ancilla q3
+C-Phase -1.0 ancilla q3
+Rz 0.5 ancilla
 CNOT q1 q3
 CNOT q0 q1
 H q0
