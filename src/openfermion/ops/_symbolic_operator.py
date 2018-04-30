@@ -566,13 +566,13 @@ class SymbolicOperator(object):
         self.terms = new_terms
 
     def induced_norm(self, order=1):
-        """
+        r"""
         Compute the induced p-norm of the operator.
 
         If we represent an operator as
         :math: `\sum_{j} w_j H_j`
         where :math: `w_j` are scalar coefficients then this norm is
-        :math: `\left(\sum_{j} \| w_j \|^p \\right)^{\\frac{1}{p}}
+        :math: `\left(\sum_{j} \| w_j \|^p \right)^{\frac{1}{p}}
         where :math: `p` is the order of the induced norm
 
         Args:

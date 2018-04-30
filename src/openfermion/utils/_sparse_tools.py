@@ -253,15 +253,15 @@ def jw_number_indices(n_electrons, n_qubits):
 
 
 def jw_sz_indices(sz_value, n_qubits, n_electrons=None):
-    """Return the indices of basis vectors with fixed Sz under JW encoding.
+    r"""Return the indices of basis vectors with fixed Sz under JW encoding.
 
     The returned indices label computational basis vectors which lie within
     the corresponding eigenspace of the Sz operator,
 
     .. math::
-        \\begin{align}
-        S^{z} = \\frac{1}{2}\sum_{i = 1}^{n}(n_{i, \\alpha} - n_{i, \\beta})
-        \\end{align}
+        \begin{align}
+        S^{z} = \frac{1}{2}\sum_{i = 1}^{n}(n_{i, \alpha} - n_{i, \beta})
+        \end{align}
 
     Args:
         sz_value(float): Desired Sz value. Should be an integer or
@@ -579,14 +579,14 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
 
 
 def jw_slater_determinant(slater_determinant_matrix):
-    """Obtain a Slater determinant.
+    r"""Obtain a Slater determinant.
 
-    The input is an :math:`N_f \\times N` matrix :math:`Q` with orthonormal
+    The input is an :math:`N_f \times N` matrix :math:`Q` with orthonormal
     rows. Such a matrix describes the Slater determinant
 
     .. math::
 
-        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \\text{vac} \\rangle,
+        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \text{vac} \rangle,
 
     where
 

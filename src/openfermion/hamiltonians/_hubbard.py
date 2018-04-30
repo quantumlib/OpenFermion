@@ -22,7 +22,7 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                   chemical_potential=0., magnetic_field=0.,
                   periodic=True, spinless=False,
                   particle_hole_symmetry=False):
-    """Return symbolic representation of a Fermi-Hubbard Hamiltonian.
+    r"""Return symbolic representation of a Fermi-Hubbard Hamiltonian.
 
     The idea of this model is that some fermions move around on a grid and the
     energy of the model depends on where the fermions are.
@@ -40,24 +40,24 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
     .. math::
 
-        \\begin{align}
-        H = &- t \sum_{\langle i,j \\rangle} \sum_{\sigma}
+        \begin{align}
+        H = &- t \sum_{\langle i,j \rangle} \sum_{\sigma}
                      (a^\dagger_{i, \sigma} a_{j, \sigma} +
                       a^\dagger_{j, \sigma} a_{i, \sigma})
-             + U \sum_{i} a^\dagger_{i, \\uparrow} a_{i, \\uparrow}
+             + U \sum_{i} a^\dagger_{i, \uparrow} a_{i, \uparrow}
                          a^\dagger_{j, \downarrow} a_{j, \downarrow}
-            \\\\
+            \\
             &- \mu \sum_i \sum_{\sigma} a^\dagger_{i, \sigma} a_{i, \sigma}
-             - h \sum_i (a^\dagger_{i, \\uparrow} a_{i, \\uparrow} -
+             - h \sum_i (a^\dagger_{i, \uparrow} a_{i, \uparrow} -
                        a^\dagger_{i, \downarrow} a_{i, \downarrow})
-        \\end{align}
+        \end{align}
 
     where
 
-        - The indices :math:`\langle i, j \\rangle` run over pairs
+        - The indices :math:`\langle i, j \rangle` run over pairs
           :math:`i` and :math:`j` of sites that are connected to each other
           in the grid
-        - :math:`\sigma \in \\{\\uparrow, \downarrow\\}` is the spin
+        - :math:`\sigma \in \{\uparrow, \downarrow\}` is the spin
         - :math:`t` is the tunneling amplitude
         - :math:`U` is the Coulomb potential
         - :math:`\mu` is the chemical potential
@@ -96,8 +96,8 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
             .. math::
 
-                U \sum_{k=1}^{N-1} (a_k^\dagger a_k - \\frac12)
-                                   (a_{k+1}^\dagger a_{k+1} - \\frac12)
+                U \sum_{k=1}^{N-1} (a_k^\dagger a_k - \frac12)
+                                   (a_{k+1}^\dagger a_{k+1} - \frac12)
 
             which is unchanged under a particle-hole transformation.
             Default is False
