@@ -27,20 +27,20 @@ class QuadraticHamiltonianError(Exception):
 
 
 class QuadraticHamiltonian(PolynomialTensor):
-    """Class for storing Hamiltonians that are quadratic in the fermionic
+    r"""Class for storing Hamiltonians that are quadratic in the fermionic
     ladder operators. The operators stored in this class take the form
 
     .. math::
 
         \sum_{p, q} (M_{pq} - \mu \delta_{pq}) a^\dagger_p a_q
-        + \\frac12 \sum_{p, q}
-            (\\Delta_{pq} a^\dagger_p a^\dagger_q + \\text{h.c.})
-        + \\text{constant}
+        + \frac12 \sum_{p, q}
+            (\Delta_{pq} a^\dagger_p a^\dagger_q + \text{h.c.})
+        + \text{constant}
 
     where
 
         - :math:`M` is a Hermitian `n_qubits` x `n_qubits` matrix.
-        - :math:`\\Delta` is an antisymmetric `n_qubits` x `n_qubits` matrix.
+        - :math:`\Delta` is an antisymmetric `n_qubits` x `n_qubits` matrix.
         - :math:`\mu` is a real number representing the chemical potential.
         - :math:`\delta_{pq}` is the Kronecker delta symbol.
 
@@ -54,7 +54,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     def __init__(self, hermitian_part, antisymmetric_part=None,
                  constant=0., chemical_potential=0.):
-        """
+        r"""
         Initialize the QuadraticHamiltonian class.
 
         Args:
@@ -62,7 +62,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                 coefficients of the particle-number-conserving terms.
                 This is an `n_qubits` x `n_qubits` numpy array of complex
                 numbers.
-            antisymmetric_part(ndarray): The matrix :math:`\\Delta`,
+            antisymmetric_part(ndarray): The matrix :math:`\Delta`,
                 which represents the coefficients of the
                 non-particle-number-conserving terms.
                 This is an `n_qubits` x `n_qubits` numpy array of complex
@@ -125,16 +125,16 @@ class QuadraticHamiltonian(PolynomialTensor):
         self.chemical_potential += chemical_potential
 
     def orbital_energies(self, non_negative=False):
-        """Return the orbital energies.
+        r"""Return the orbital energies.
 
         Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
         of the form
 
         .. math::
 
-            \sum_{j} \\varepsilon_j b^\dagger_j b_j + \\text{constant}.
+            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
 
-        We call the :math:`\\varepsilon_j` the orbital energies.
+        We call the :math:`\varepsilon_j` the orbital energies.
         The eigenvalues of the Hamiltonian are sums of subsets of the
         orbital energies (up to the additive constant).
 
@@ -147,7 +147,7 @@ class QuadraticHamiltonian(PolynomialTensor):
         Returns
         -------
         orbital_energies(ndarray)
-            A one-dimensional array containing the :math:`\\varepsilon_j`
+            A one-dimensional array containing the :math:`\varepsilon_j`
         constant(float)
             The constant
         """
@@ -172,21 +172,21 @@ class QuadraticHamiltonian(PolynomialTensor):
         return constant
 
     def majorana_form(self):
-        """Return the Majorana represention of the Hamiltonian.
+        r"""Return the Majorana represention of the Hamiltonian.
 
         Any quadratic Hamiltonian can be written in the form
 
         .. math::
 
-            \\frac{i}{2} \sum_{j, k} A_{jk} f_j f_k + \\text{constant}
+            \frac{i}{2} \sum_{j, k} A_{jk} f_j f_k + \text{constant}
 
         where the :math:`f_i` are normalized Majorana fermion operators:
 
         .. math::
 
-            f_j = \\frac{1}{\\sqrt{2}} (a^\dagger_j + a_j)
+            f_j = \frac{1}{\sqrt{2}} (a^\dagger_j + a_j)
 
-            f_{j + N} = \\frac{i}{\\sqrt{2}} (a^\dagger_j - a_j)
+            f_{j + N} = \frac{i}{\sqrt{2}} (a^\dagger_j - a_j)
 
         and :math:`A` is a (2 * `n_qubits`) x (2 * `n_qubits`) real
         antisymmetric matrix. This function returns the matrix
@@ -221,13 +221,13 @@ class QuadraticHamiltonian(PolynomialTensor):
         return majorana_matrix, majorana_constant
 
     def diagonalizing_bogoliubov_transform(self):
-        """Compute the unitary that diagonalizes a quadratic Hamiltonian.
+        r"""Compute the unitary that diagonalizes a quadratic Hamiltonian.
 
         Any quadratic Hamiltonian can be rewritten in the form
 
         .. math::
 
-            \sum_{j} \\varepsilon_j b^\dagger_j b_j + \\text{constant},
+            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant},
 
         where the :math:`b^\dagger_j` are a new set fermionic creation operators
         that satisfy the canonical anticommutation relations.
@@ -237,39 +237,39 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         .. math::
 
-           \\begin{pmatrix}
-                b^\dagger_1 \\\\
-                \\vdots \\\\
-                b^\dagger_N \\\\
-           \\end{pmatrix}
+           \begin{pmatrix}
+                b^\dagger_1 \\
+                \vdots \\
+                b^\dagger_N \\
+           \end{pmatrix}
            = W
-           \\begin{pmatrix}
-                a^\dagger_1 \\\\
-                \\vdots \\\\
-                a^\dagger_N \\\\
-                a_1 \\\\
-                \\vdots \\\\
+           \begin{pmatrix}
+                a^\dagger_1 \\
+                \vdots \\
+                a^\dagger_N \\
+                a_1 \\
+                \vdots \\
                 a_N
-           \\end{pmatrix},
+           \end{pmatrix},
 
-        where :math:`W` is an :math:`N \\times (2N)` matrix.
+        where :math:`W` is an :math:`N \times (2N)` matrix.
         However, if the Hamiltonian conserves particle number then
         creation operators don't need to be mixed with annihilation operators
-        and :math:`W` only needs to be an :math:`N \\times N` matrix:
+        and :math:`W` only needs to be an :math:`N \times N` matrix:
 
         .. math::
 
-           \\begin{pmatrix}
-                b^\dagger_1 \\\\
-                \\vdots \\\\
-                b^\dagger_N \\\\
-           \\end{pmatrix}
+           \begin{pmatrix}
+                b^\dagger_1 \\
+                \vdots \\
+                b^\dagger_N \\
+           \end{pmatrix}
            = W
-           \\begin{pmatrix}
-                a^\dagger_1 \\\\
-                \\vdots \\\\
-                a^\dagger_N \\\\
-           \\end{pmatrix},
+           \begin{pmatrix}
+                a^\dagger_1 \\
+                \vdots \\
+                a^\dagger_N \\
+           \end{pmatrix},
 
         This method returns the matrix :math:`W`.
 
@@ -277,8 +277,8 @@ class QuadraticHamiltonian(PolynomialTensor):
             diagonalizing_unitary (ndarray):
                 A matrix representing the transformation :math:`W` of the
                 fermionic ladder operators. If the Hamiltonian conserves
-                particle number then this is :math:`N \\times N`; otherwise
-                it is :math:`N \\times 2N`.
+                particle number then this is :math:`N \times N`; otherwise
+                it is :math:`N \times 2N`.
         """
         if self.conserves_particle_number:
             _, diagonalizing_unitary_T = numpy.linalg.eigh(
@@ -311,14 +311,14 @@ class QuadraticHamiltonian(PolynomialTensor):
             return diagonalizing_unitary[:self.n_qubits]
 
     def diagonalizing_circuit(self):
-        """Get a circuit for a unitary that diagonalizes this Hamiltonian
+        r"""Get a circuit for a unitary that diagonalizes this Hamiltonian
 
         This circuit performs the transformation to a basis in which the
         Hamiltonian takes the diagonal form
 
         .. math::
 
-            \sum_{j} \\varepsilon_j b^\dagger_j b_j + \\text{constant}.
+            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
 
         Returns
         -------
@@ -328,10 +328,10 @@ class QuadraticHamiltonian(PolynomialTensor):
                 can be performed in parallel. Each elementary operation
                 is either the string 'pht' indicating a particle-hole
                 transformation on the last fermionic mode, or a tuple of
-                the form :math:`(i, j, \\theta, \\varphi)`,
+                the form :math:`(i, j, \theta, \varphi)`,
                 indicating a Givens rotation
-                of modes :math:`i` and :math:`j` by angles :math:`\\theta`
-                and :math:`\\varphi`.
+                of modes :math:`i` and :math:`j` by angles :math:`\theta`
+                and :math:`\varphi`.
         """
         transformation_matrix = self.diagonalizing_bogoliubov_transform()
 
