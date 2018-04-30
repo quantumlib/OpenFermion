@@ -64,7 +64,9 @@ def givens_matrix_elements(a, b, which='left'):
     # Construct matrix and return
     if which == 'left':
         # We want to zero out a
-        if numpy.isreal(a) and numpy.isreal(b):
+        if (abs(numpy.imag(a)) < EQ_TOLERANCE and
+                abs(numpy.imag(b)) < EQ_TOLERANCE):
+            # a and b are real, so return a standard rotation matrix
             givens_rotation = numpy.array([[cosine, -phase * sine],
                                            [phase * sine, cosine]])
         else:
@@ -72,7 +74,9 @@ def givens_matrix_elements(a, b, which='left'):
                                            [sine, phase * cosine]])
     elif which == 'right':
         # We want to zero out b
-        if numpy.isreal(a) and numpy.isreal(b):
+        if (abs(numpy.imag(a)) < EQ_TOLERANCE and
+                abs(numpy.imag(b)) < EQ_TOLERANCE):
+            # a and b are real, so return a standard rotation matrix
             givens_rotation = numpy.array([[sine, phase * cosine],
                                            [-phase * cosine, sine]])
         else:
