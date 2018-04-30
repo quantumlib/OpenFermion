@@ -50,6 +50,17 @@ class GivensMatrixElementsTest(unittest.TestCase):
             self.assertAlmostEqual(G_left.dot(v)[0], 0.)
             self.assertAlmostEqual(G_right.dot(v)[1], 0.)
 
+    def test_approximately_real(self):
+        """Test that the procedure throws out small imaginary components."""
+        for _ in range(self.num_test_repetitions):
+            v = numpy.random.randn(2) + 1.j * 1e-14
+            G_left = givens_matrix_elements(v[0], v[1], which='left')
+            G_right = givens_matrix_elements(v[0], v[1], which='right')
+            self.assertAlmostEqual(G_left[0, 0], G_left[1, 1])
+            self.assertAlmostEqual(G_right[0, 0], G_right[1, 1])
+            self.assertAlmostEqual(G_left.dot(v)[0], 0.)
+            self.assertAlmostEqual(G_right.dot(v)[1], 0.)
+
     def test_bad_input(self):
         """Test bad input."""
         with self.assertRaises(ValueError):
