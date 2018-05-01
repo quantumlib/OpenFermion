@@ -67,10 +67,70 @@ class WignerSeitzRadiusTest(unittest.TestCase):
             _ = wigner_seitz_length_scale(3, 2, dimension=0)
 
 
+class HypercubeGridTest(unittest.TestCase):
+
+    def test_1d_generation(self):
+        dim = 1
+        orbitals = 4
+        wigner_seitz_radius = 7.
+
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dim, orbitals, wigner_seitz_radius)
+        self.assertEqual(grid.dimensions, 1)
+        self.assertEqual(grid.length, (4,))
+        self.assertEqual(grid.volume_scale(), orbitals * wigner_seitz_radius)
+
+    def test_generation_away_from_half_filling(self):
+        dim = 1
+        orbitals = 100
+        wigner_seitz_radius = 7.
+        filling = 0.2
+
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dim, orbitals, wigner_seitz_radius, filling_fraction=filling)
+        self.assertEqual(grid.dimensions, 1)
+        self.assertEqual(grid.length, (100,))
+        self.assertAlmostEqual(grid.volume_scale(),
+                               orbitals * wigner_seitz_radius / 2.5)
+
+    def test_generation_with_spin(self):
+        dim = 2
+        orbitals = 4
+        wigner_seitz_radius = 10.
+        spinless = False
+
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dim, orbitals, wigner_seitz_radius, spinless=spinless)
+        self.assertEqual(grid.dimensions, 2)
+        self.assertEqual(grid.length, (4, 4))
+        self.assertAlmostEqual(grid.volume_scale(), numpy.pi * 16 * 100.)
+
+    def test_3d_generation_with_rounding(self):
+        filling = 0.42
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            3, 5, 1., filling_fraction=filling)
+        self.assertEqual(grid.dimensions, 3)
+        self.assertEqual(grid.length, (5, 5, 5))
+
+        # There are floor(125 * .42) = 52 particles.
+        # The volume scale should be 4/3 pi r^3 * the "true" filling fraction.
+        self.assertAlmostEqual(grid.volume_scale(),
+                               (4. / 3.) * numpy.pi * (5. ** 3) * (52. / 125))
+
+    def test_raise_ValueError_filling_fraction_too_low(self):
+        with self.assertRaises(ValueError):
+            _ = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+                3, 5, wigner_seitz_radius=10., filling_fraction=0.005)
+
+    def test_raise_ValueError_filling_fraction_too_high(self):
+        with self.assertRaises(ValueError):
+            _ = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+                1, 4, wigner_seitz_radius=1., filling_fraction=2.)
+
+
 class JelliumTest(unittest.TestCase):
 
     def test_kinetic_integration(self):
-
         # Compute kinetic energy operator in both momentum and position space.
         grid = Grid(dimensions=2, length=2, scale=3.)
         spinless = False
@@ -111,7 +171,6 @@ class JelliumTest(unittest.TestCase):
             self.assertAlmostEqual(difference, 0.)
 
     def test_potential_integration(self):
-
         # Compute potential energy operator in momentum and position space.
         for length in [2, 3]:
             grid = Grid(dimensions=2, length=length, scale=2.)
@@ -202,7 +261,6 @@ class JelliumTest(unittest.TestCase):
             self.assertAlmostEqual(min_difference, 2.8372 / length_scale)
 
     def test_coefficients(self):
-
         # Test that the coefficients post-JW transform are as claimed in paper.
         grid = Grid(dimensions=2, length=3, scale=2.)
         spinless = 1
