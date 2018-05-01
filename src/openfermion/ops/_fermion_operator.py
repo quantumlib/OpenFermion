@@ -11,9 +11,7 @@
 #   limitations under the License.
 
 """FermionOperator stores a sum of products of fermionic ladder operators."""
-import numpy
 
-from future.utils import iteritems
 from openfermion.ops import SymbolicOperator
 
 
@@ -25,15 +23,15 @@ def normal_ordered_term(term, coefficient):
     """Return a normal ordered FermionOperator corresponding to single term.
 
     Args:
-        term: A tuple of tuples. The first element of each tuple is
-            an integer indicating the mode on which a fermion ladder
+        term(list or tuple): A sequence of tuples. The first element of each
+            tuple is an integer indicating the mode on which a fermion ladder
             operator acts, starting from zero. The second element of each
             tuple is an integer, either 1 or 0, indicating whether creation
             or annihilation acts on that mode.
-        coefficient: The coefficient of the term.
+        coefficient(complex or float): The coefficient of the term.
 
     Returns:
-        ordered_term (FermionOperator): The normal ordered form of the input.
+        ordered_term(FermionOperator): The normal ordered form of the input.
             Note that this might have more terms.
 
     In our convention, normal ordering implies terms are ordered
@@ -64,11 +62,10 @@ def normal_ordered_term(term, coefficient):
                 # Replace a a^\dagger with 1 - a^\dagger a
                 # if indices are the same.
                 if right_operator[0] == left_operator[0]:
-                    new_term = term[:(j - 1)] + term[(j + 1)::]
+                    new_term = term[:(j - 1)] + term[(j + 1):]
 
                     # Recursively add the processed new term.
-                    ordered_term += normal_ordered_term(
-                        tuple(new_term), -coefficient)
+                    ordered_term += normal_ordered_term(new_term, -coefficient)
 
             # Handle case when operator type is the same.
             elif right_operator[1] == left_operator[1]:

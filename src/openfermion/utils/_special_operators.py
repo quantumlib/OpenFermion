@@ -34,12 +34,12 @@ def down_index(index):
 
 
 def s_plus_operator(n_spatial_orbitals):
-    """Return the s+ operator.
+    r"""Return the s+ operator.
 
     .. math::
-        \\begin{align}
-        S^{+} = \sum_{i=1}^{n} a_{i, \\alpha}^{\dagger}a_{i, \\beta}
-        \\end{align}
+        \begin{align}
+        S^{+} = \sum_{i=1}^{n} a_{i, \alpha}^{\dagger}a_{i, \beta}
+        \end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
@@ -64,12 +64,12 @@ def s_plus_operator(n_spatial_orbitals):
 
 
 def s_minus_operator(n_spatial_orbitals):
-    """Return the s+ operator.
+    r"""Return the s+ operator.
 
     .. math::
-        \\begin{align}
-        S^{-} = \sum_{i=1}^{n} a_{i, \\beta}^{\dagger}a_{i, \\alpha}
-        \\end{align}
+        \begin{align}
+        S^{-} = \sum_{i=1}^{n} a_{i, \beta}^{\dagger}a_{i, \alpha}
+        \end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
@@ -94,12 +94,12 @@ def s_minus_operator(n_spatial_orbitals):
 
 
 def sx_operator(n_spatial_orbitals):
-    """Return the sx operator.
+    r"""Return the sx operator.
 
     .. math::
-        \\begin{align}
-        S^{x} = \\frac{1}{2}\sum_{i = 1}^{n}(S^{+} + S^{-})
-        \\end{align}
+        \begin{align}
+        S^{x} = \frac{1}{2}\sum_{i = 1}^{n}(S^{+} + S^{-})
+        \end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
@@ -127,12 +127,12 @@ def sx_operator(n_spatial_orbitals):
 
 
 def sy_operator(n_spatial_orbitals):
-    """Return the sy operator.
+    r"""Return the sy operator.
 
     .. math::
-        \\begin{align}
-        S^{y} = \\frac{-i}{2}\sum_{i = 1}^{n}(S^{+} - S^{-})
-        \\end{align}
+        \begin{align}
+        S^{y} = \frac{-i}{2}\sum_{i = 1}^{n}(S^{+} - S^{-})
+        \end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
@@ -160,12 +160,12 @@ def sy_operator(n_spatial_orbitals):
 
 
 def sz_operator(n_spatial_orbitals):
-    """Return the sz operator.
+    r"""Return the sz operator.
 
     .. math::
-        \\begin{align}
-        S^{z} = \\frac{1}{2}\sum_{i = 1}^{n}(n_{i, \\alpha} - n_{i, \\beta})
-        \\end{align}
+        \begin{align}
+        S^{z} = \frac{1}{2}\sum_{i = 1}^{n}(n_{i, \alpha} - n_{i, \beta})
+        \end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
@@ -185,19 +185,21 @@ def sz_operator(n_spatial_orbitals):
     operator = FermionOperator()
     n_spinless_orbitals = 2 * n_spatial_orbitals
     for ni in range(n_spatial_orbitals):
-        operator += number_operator(n_spinless_orbitals, up_index(ni), 0.5) + \
-                    number_operator(n_spinless_orbitals, down_index(ni), -0.5)
+        operator += (number_operator(n_spinless_orbitals,
+                                     up_index(ni), 0.5) +
+                     number_operator(n_spinless_orbitals,
+                                     down_index(ni), -0.5))
 
     return operator
 
 
 def s_squared_operator(n_spatial_orbitals):
-    """Return the s^{2} operator.
+    r"""Return the s^{2} operator.
 
     .. math::
-        \\begin{align}
+        \begin{align}
         S^{2} = S^{-} S^{+} + S^{z}( S^{z} + 1)
-        \\end{align}
+        \end{align}
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).

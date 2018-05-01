@@ -19,12 +19,12 @@ import numpy
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._givens_rotations import (
-        fermionic_gaussian_decomposition, givens_decomposition)
+    fermionic_gaussian_decomposition, givens_decomposition)
 
 
 def gaussian_state_preparation_circuit(
         quadratic_hamiltonian, occupied_orbitals=None):
-    """Obtain the description of a circuit which prepares a fermionic Gaussian
+    r"""Obtain the description of a circuit which prepares a fermionic Gaussian
     state.
 
     Fermionic Gaussian states can be regarded as eigenstates of quadratic
@@ -42,22 +42,22 @@ def gaussian_state_preparation_circuit(
 
       .. math::
 
-          \\begin{align}
-              \mathcal{B} a_N \mathcal{B}^\dagger &= a_N^\dagger,\\\\
-              \mathcal{B} a_j \mathcal{B}^\dagger &= a_j, \\quad
+          \begin{align}
+              \mathcal{B} a_N \mathcal{B}^\dagger &= a_N^\dagger,\\
+              \mathcal{B} a_j \mathcal{B}^\dagger &= a_j, \quad
                   j = 1, \ldots, N-1,
           \end{align}
 
       or
 
-    - a tuple :math:`(i, j, \\theta, \\varphi)`, indicating the operation
+    - a tuple :math:`(i, j, \theta, \varphi)`, indicating the operation
 
       .. math::
-          \exp[i \\varphi a_j^\dagger a_j]
-          \exp[\\theta (a_i^\dagger a_j - a_j^\dagger a_i)],
+          \exp[i \varphi a_j^\dagger a_j]
+          \exp[\theta (a_i^\dagger a_j - a_j^\dagger a_i)],
 
       a Givens rotation of modes :math:`i` and :math:`j` by angles
-      :math:`\\theta` and :math:`\\varphi`.
+      :math:`\theta` and :math:`\varphi`.
 
     Args:
         quadratic_hamiltonian(QuadraticHamiltonian):
@@ -76,10 +76,10 @@ def gaussian_state_preparation_circuit(
             can be performed in parallel. Each elementary operation
             is either the string 'pht', indicating a particle-hole
             transformation on the last fermionic mode, or a tuple of
-            the form :math:`(i, j, \\theta, \\varphi)`,
+            the form :math:`(i, j, \theta, \varphi)`,
             indicating a Givens rotation
-            of modes :math:`i` and :math:`j` by angles :math:`\\theta`
-            and :math:`\\varphi`.
+            of modes :math:`i` and :math:`j` by angles :math:`\theta`
+            and :math:`\varphi`.
         start_orbitals (list):
             The occupied orbitals to start with. This describes the
             initial state that the circuit should be applied to: it should
@@ -146,14 +146,14 @@ def gaussian_state_preparation_circuit(
 
 
 def slater_determinant_preparation_circuit(slater_determinant_matrix):
-    """Obtain the description of a circuit which prepares a Slater determinant.
+    r"""Obtain the description of a circuit which prepares a Slater determinant.
 
-    The input is an :math:`N_f \\times N` matrix :math:`Q` with orthonormal
+    The input is an :math:`N_f \times N` matrix :math:`Q` with orthonormal
     rows. Such a matrix describes the Slater determinant
 
     .. math::
 
-        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \\text{vac} \\rangle,
+        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \text{vac} \rangle,
 
     where
 
@@ -175,9 +175,9 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
             A list of operations describing the circuit. Each operation
             is a tuple of elementary operations that can be performed in
             parallel. Each elementary operation is a tuple of the form
-            :math:`(i, j, \\theta, \\varphi)`, indicating a Givens rotation
-            of modes :math:`i` and :math:`j` by angles :math:`\\theta`
-            and :math:`\\varphi`.
+            :math:`(i, j, \theta, \varphi)`, indicating a Givens rotation
+            of modes :math:`i` and :math:`j` by angles :math:`\theta`
+            and :math:`\varphi`.
     """
     decomposition, left_unitary, diagonal = givens_decomposition(
         slater_determinant_matrix)

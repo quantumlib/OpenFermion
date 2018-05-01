@@ -11,13 +11,9 @@
 #   limitations under the License.
 
 """Tests  _fermion_operator.py."""
-import copy
-import numpy
 import unittest
 
-from openfermion.ops._fermion_operator import (FermionOperator,
-                                               FermionOperatorError,
-                                               normal_ordered)
+from openfermion.ops._fermion_operator import FermionOperator, normal_ordered
 from openfermion.utils import number_operator
 
 

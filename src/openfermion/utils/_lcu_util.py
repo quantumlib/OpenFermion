@@ -48,23 +48,25 @@ def _discretize_probability_distribution(unnormalized_probabilities, epsilon):
 
     Returns:
         numerators (list[int]): A list of numerators for each probability.
-        denominator (int): A common denominator.
+        denominator (int): The common denominator to divide numerators by to
+            get probabilities.
+        sub_bit_precision (int): The exponent mu such that
+            denominator = n * 2**mu
+            where n = len(unnormalized_probabilities).
 
         It is guaranteed that numerators[i] / denominator is within epsilon of
         the i'th input probability (after normalization).
-
-        It is guaranteed that the common denominator is a multiple of the
-        number of probabilities in the distribution.
     """
     n = len(unnormalized_probabilities)
-    bin_count = math.ceil(1 / (epsilon * n)) * n
+    sub_bit_precision = max(0, int(math.ceil(-math.log(epsilon * n, 2))))
+    bin_count = 2**sub_bit_precision * n
 
     cumulative = list(_partial_sums(unnormalized_probabilities))
     total = cumulative[-1]
     discretized_cumulative = [int(math.floor(c / total * bin_count + 0.5))
                               for c in cumulative]
     discretized = list(_differences(discretized_cumulative))
-    return discretized, bin_count
+    return discretized, bin_count, sub_bit_precision
 
 
 def _preprocess_for_efficient_roulette_selection(discretized_probabilities):
@@ -76,7 +78,7 @@ def _preprocess_for_efficient_roulette_selection(discretized_probabilities):
     with probability weights[i] / sum(weights):
 
         1. Pick a number i in [0, len(weights) - 1] uniformly at random.
-        2. With probability keep_weights[i] / sum(weights), return i.
+        2. Return i With probability keep_weights[i]*len(weights)/sum(weights).
         3. Otherwise return alternates[i].
 
     In other words, the output makes it possible to perform roulette selection
@@ -96,8 +98,10 @@ def _preprocess_for_efficient_roulette_selection(discretized_probabilities):
         alternates (list[int]): An alternate index for each index from 0 to
             len(weights) - 1
         keep_weight (list[int]): Indicates how often one should stay at index i
-            instead of switching to alternates[i]. Divide by the sum of the
-            given discretized_probabilities to get normalized probabilities.
+            instead of switching to alternates[i]. To get the actual keep
+            probability of the i'th element, multiply keep_weight[i] by
+            len(discretized_probabilities) then divide by
+            sum(discretized_probabilities).
     """
     weights = list(discretized_probabilities)  # Need a copy we can mutate.
     if not weights:
@@ -170,11 +174,13 @@ def preprocess_lcu_coefficients_for_reversible_sampling(
         keep_numers (list[int]): A python list of ints indicating the
             numerators of the probability that the alternative index should be
             used instead of the initial index.
-        keep_denom (int): A python int indicating the denominator to divide the
-            items in keep_numers by in order to get a probability.
+        sub_bit_precision (int): A python int indicating the exponent of the
+            denominator to divide the items in keep_numers by in order to get
+            a probability. The actual denominator is 2**sub_bit_precision.
     """
-    numers, denom = _discretize_probability_distribution(
+    numers, denom, sub_bit_precision = _discretize_probability_distribution(
         lcu_coefficients, epsilon)
+    assert denom == 2**sub_bit_precision * len(numers)
     alternates, keep_numers = _preprocess_for_efficient_roulette_selection(
         numers)
-    return alternates, keep_numers, denom
+    return alternates, keep_numers, sub_bit_precision

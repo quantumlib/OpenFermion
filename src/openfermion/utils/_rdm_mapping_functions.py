@@ -16,7 +16,7 @@ from itertools import product
 
 
 def kronecker_delta(i, j):
-    return 1 if float(i == j) else 0
+    return float(i == j)
 
 
 def map_two_pdm_to_one_pdm(tpdm, particle_number):
@@ -53,8 +53,8 @@ def map_two_pdm_to_two_hole_dm(tpdm, opdm):
     ldim = opdm.shape[0]
     tqdm = numpy.zeros_like(tpdm)
     for p, q, r, s in product(range(ldim), repeat=4):
-        term1 = opdm[p, s] * kronecker_delta(q, r) + \
-                opdm[q, r] * kronecker_delta(p, s)
+        term1 = (opdm[p, s] * kronecker_delta(q, r) +
+                 opdm[q, r] * kronecker_delta(p, s))
         term2 = -1 * (opdm[q, s] * kronecker_delta(p, r) +
                       opdm[p, r] * kronecker_delta(q, s))
         term3 = (kronecker_delta(q, s) * kronecker_delta(p, r) -
@@ -82,8 +82,8 @@ def map_two_hole_dm_to_two_pdm(tqdm, opdm):
     ldim = opdm.shape[0]
     tpdm = numpy.zeros_like(tqdm)
     for p, q, r, s in product(range(ldim), repeat=4):
-        term1 = opdm[p, s] * kronecker_delta(q, r) + \
-                opdm[q, r] * kronecker_delta(p, s)
+        term1 = (opdm[p, s] * kronecker_delta(q, r) +
+                 opdm[q, r] * kronecker_delta(p, s))
         term2 = -1 * (opdm[q, s] * kronecker_delta(p, r) +
                       opdm[p, r] * kronecker_delta(q, s))
         term3 = (kronecker_delta(q, s) * kronecker_delta(p, r) -
@@ -161,8 +161,8 @@ def map_two_pdm_to_particle_hole_dm(tpdm, opdm):
     ldim = opdm.shape[0]
     phdm = numpy.zeros_like(tpdm)
     for p, q, r, s in product(range(ldim), repeat=4):
-        phdm[p, r, q, s] = opdm[p, s] * kronecker_delta(q, r) - \
-                           tpdm[p, q, r, s]
+        phdm[p, r, q, s] = (opdm[p, s] * kronecker_delta(q, r) -
+                            tpdm[p, q, r, s])
 
     return phdm
 
@@ -185,8 +185,8 @@ def map_particle_hole_dm_to_two_pdm(phdm, opdm):
     ldim = opdm.shape[0]
     tpdm = numpy.zeros_like(phdm)
     for p, q, r, s in product(range(ldim), repeat=4):
-        tpdm[p, q, r, s] = opdm[p, s] * kronecker_delta(q, r) - \
-                           phdm[p, r, q, s]
+        tpdm[p, q, r, s] = (opdm[p, s] * kronecker_delta(q, r) -
+                            phdm[p, r, q, s])
 
     return tpdm
 

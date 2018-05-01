@@ -64,7 +64,9 @@ def givens_matrix_elements(a, b, which='left'):
     # Construct matrix and return
     if which == 'left':
         # We want to zero out a
-        if numpy.isreal(a) and numpy.isreal(b):
+        if (abs(numpy.imag(a)) < EQ_TOLERANCE and
+                abs(numpy.imag(b)) < EQ_TOLERANCE):
+            # a and b are real, so return a standard rotation matrix
             givens_rotation = numpy.array([[cosine, -phase * sine],
                                            [phase * sine, cosine]])
         else:
@@ -72,7 +74,9 @@ def givens_matrix_elements(a, b, which='left'):
                                            [sine, phase * cosine]])
     elif which == 'right':
         # We want to zero out b
-        if numpy.isreal(a) and numpy.isreal(b):
+        if (abs(numpy.imag(a)) < EQ_TOLERANCE and
+                abs(numpy.imag(b)) < EQ_TOLERANCE):
+            # a and b are real, so return a standard rotation matrix
             givens_rotation = numpy.array([[sine, phase * cosine],
                                            [-phase * cosine, sine]])
         else:
@@ -138,9 +142,9 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
 
 
 def givens_decomposition_square(unitary_matrix):
-    """Decompose a square matrix into a sequence of Givens rotations.
+    r"""Decompose a square matrix into a sequence of Givens rotations.
 
-    The input is a square :math:`n \\times n` matrix :math:`Q`.
+    The input is a square :math:`n \times n` matrix :math:`Q`.
     :math:`Q` can be decomposed as follows:
 
     .. math::
@@ -154,17 +158,17 @@ def givens_decomposition_square(unitary_matrix):
 
         U = G_k ... G_1
 
-    where :math:`G_1, \\ldots, G_k` are complex Givens rotations.
+    where :math:`G_1, \ldots, G_k` are complex Givens rotations.
     A Givens rotation is a rotation within the two-dimensional subspace
     spanned by two coordinate axes. Within the two relevant coordinate
     axes, a Givens rotation has the form
 
     .. math::
 
-        \\begin{pmatrix}
-            \\cos(\\theta) & -e^{i \\varphi} \\sin(\\theta) \\\\
-            \\sin(\\theta) &     e^{i \\varphi} \\cos(\\theta)
-        \\end{pmatrix}.
+        \begin{pmatrix}
+            \cos(\theta) & -e^{i \varphi} \sin(\theta) \\
+            \sin(\theta) &     e^{i \varphi} \cos(\theta)
+        \end{pmatrix}.
 
     Args:
         unitary_matrix: A numpy array with orthonormal rows,
@@ -177,10 +181,10 @@ def givens_decomposition_square(unitary_matrix):
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
-            form :math:`(i, j, \\theta, \\varphi)`, which represents a
+            form :math:`(i, j, \theta, \varphi)`, which represents a
             Givens rotation of coordinates
-            :math:`i` and :math:`j` by angles :math:`\\theta` and
-            :math:`\\varphi`.
+            :math:`i` and :math:`j` by angles :math:`\theta` and
+            :math:`\varphi`.
         diagonal (ndarray):
             A list of the nonzero entries of :math:`D`.
     """
@@ -237,9 +241,9 @@ def givens_decomposition_square(unitary_matrix):
 
 
 def givens_decomposition(unitary_rows):
-    """Decompose a matrix into a sequence of Givens rotations.
+    r"""Decompose a matrix into a sequence of Givens rotations.
 
-    The input is an :math:`m \\times n` matrix :math:`Q` with :math:`m \leq n`.
+    The input is an :math:`m \times n` matrix :math:`Q` with :math:`m \leq n`.
     The rows of :math:`Q` are orthonormal.
     :math:`Q` can be decomposed as follows:
 
@@ -248,7 +252,7 @@ def givens_decomposition(unitary_rows):
         V Q U^\dagger = D
 
     where :math:`V` and :math:`U` are unitary matrices, and :math:`D`
-    is an :math:`m \\times n` matrix with the
+    is an :math:`m \times n` matrix with the
     first :math:`m` columns forming a diagonal matrix and the rest of the
     columns being zero. Furthermore, we can decompose :math:`U` as
 
@@ -256,17 +260,17 @@ def givens_decomposition(unitary_rows):
 
         U = G_k ... G_1
 
-    where :math:`G_1, \\ldots, G_k` are complex Givens rotations.
+    where :math:`G_1, \ldots, G_k` are complex Givens rotations.
     A Givens rotation is a rotation within the two-dimensional subspace
     spanned by two coordinate axes. Within the two relevant coordinate
     axes, a Givens rotation has the form
 
     .. math::
 
-        \\begin{pmatrix}
-            \\cos(\\theta) & -e^{i \\varphi} \\sin(\\theta) \\\\
-            \\sin(\\theta) &     e^{i \\varphi} \\cos(\\theta)
-        \\end{pmatrix}.
+        \begin{pmatrix}
+            \cos(\theta) & -e^{i \varphi} \sin(\theta) \\
+            \sin(\theta) &     e^{i \varphi} \cos(\theta)
+        \end{pmatrix}.
 
     Args:
         unitary_rows: A numpy array or matrix with orthonormal rows,
@@ -279,12 +283,12 @@ def givens_decomposition(unitary_rows):
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
-            form :math:`(i, j, \\theta, \\varphi)`, which represents a
+            form :math:`(i, j, \theta, \varphi)`, which represents a
             Givens rotation of coordinates
-            :math:`i` and :math:`j` by angles :math:`\\theta` and
-            :math:`\\varphi`.
+            :math:`i` and :math:`j` by angles :math:`\theta` and
+            :math:`\varphi`.
         left_unitary (ndarray):
-            An :math:`m \\times m` numpy array representing the matrix
+            An :math:`m \times m` numpy array representing the matrix
             :math:`V`.
         diagonal (ndarray):
             A list of the nonzero entries of :math:`D`.
@@ -382,10 +386,10 @@ def givens_decomposition(unitary_rows):
 
 
 def fermionic_gaussian_decomposition(unitary_rows):
-    """Decompose a matrix into a sequence of Givens rotations and
+    r"""Decompose a matrix into a sequence of Givens rotations and
     particle-hole transformations on the last fermionic mode.
 
-    The input is an :math:`N \\times 2N` matrix :math:`W` with orthonormal
+    The input is an :math:`N \times 2N` matrix :math:`W` with orthonormal
     rows. Furthermore, :math:`W` must have the block form
 
     .. math::
@@ -426,9 +430,9 @@ def fermionic_gaussian_decomposition(unitary_rows):
     something like [('pht', ), (G_1, ), ('pht', G_2), ... ].
     The objects within a tuple are either the string 'pht', which indicates
     a particle-hole transformation on the last fermionic mode, or a tuple
-    of the form :math:`(i, j, \\theta, \\varphi)`, which indicates a
+    of the form :math:`(i, j, \theta, \varphi)`, which indicates a
     Givens rotation of rows :math:`i` and :math:`j` by angles
-    :math:`\\theta` and :math:`\\varphi`.
+    :math:`\theta` and :math:`\varphi`.
 
     The matrix :math:`V^T D^*` can also be decomposed as a sequence of
     Givens rotations. This decomposition is needed for a circuit that

@@ -327,7 +327,6 @@ class SymbolicOperatorTest1(unittest.TestCase):
         op1 = DummyOperator1(((0, 1), (3, 0), (8, 1), (8, 0), (11, 1)), 3.j)
         op2 = DummyOperator1(((1, 1), (3, 1), (8, 0)), 0.5)
         op1 *= op2
-        correct_coefficient = 1.j * 3.0j * 0.5
         correct_term = ((0, 1), (3, 0), (8, 1), (8, 0), (11, 1),
                         (1, 1), (3, 1), (8, 0))
         self.assertEqual(len(op1.terms), 1)
@@ -727,35 +726,35 @@ class SymbolicOperatorTest2(unittest.TestCase):
 
     def test_init_bad_term(self):
         with self.assertRaises(ValueError):
-            qubit_op = DummyOperator2(2)
+            _ = DummyOperator2(2)
 
     def test_init_bad_coefficient(self):
         with self.assertRaises(ValueError):
-            qubit_op = DummyOperator2('X0', "0.5")
+            _ = DummyOperator2('X0', "0.5")
 
     def test_init_bad_action(self):
         with self.assertRaises(ValueError):
-            qubit_op = DummyOperator2('Q0')
+            _ = DummyOperator2('Q0')
 
     def test_init_bad_action_in_tuple(self):
         with self.assertRaises(ValueError):
-            qubit_op = DummyOperator2(((1, 'Q'),))
+            _ = DummyOperator2(((1, 'Q'),))
 
     def test_init_bad_qubit_num_in_tuple(self):
         with self.assertRaises(ValueError):
-            qubit_op = DummyOperator2((("1", 'X'),))
+            _ = DummyOperator2((("1", 'X'),))
 
     def test_init_bad_tuple(self):
         with self.assertRaises(ValueError):
-            qubit_op = DummyOperator2(((0, 1, 'X'),))
+            _ = DummyOperator2(((0, 1, 'X'),))
 
     def test_init_bad_str(self):
         with self.assertRaises(ValueError):
-            qubit_op = DummyOperator2('X')
+            _ = DummyOperator2('X')
 
     def test_init_bad_qubit_num(self):
         with self.assertRaises(ValueError):
-            qubit_op = DummyOperator2('X-1')
+            _ = DummyOperator2('X-1')
 
     def test_compress(self):
         a = DummyOperator2('X0', .9e-12)
@@ -918,7 +917,6 @@ class SymbolicOperatorTest2(unittest.TestCase):
 
     def test_neg(self):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
-        -op
         # out of place
         self.assertTrue(op == DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')),
                                              0.5))

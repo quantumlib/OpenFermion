@@ -87,7 +87,7 @@ class SymbolicOperator(object):
 
         # Parse the term
         # Sequence input
-        elif isinstance(term, tuple) or isinstance(term, list):
+        if isinstance(term, tuple) or isinstance(term, list):
             term = self._parse_sequence(term)
         # String input
         elif isinstance(term, str):
@@ -503,7 +503,7 @@ class SymbolicOperator(object):
         exponentiated = self.__class__(())
 
         # Handle non-zero exponents.
-        for i in range(exponent):
+        for _ in range(exponent):
             exponentiated *= self
         return exponentiated
 
@@ -566,13 +566,13 @@ class SymbolicOperator(object):
         self.terms = new_terms
 
     def induced_norm(self, order=1):
-        """
+        r"""
         Compute the induced p-norm of the operator.
 
         If we represent an operator as
         :math: `\sum_{j} w_j H_j`
         where :math: `w_j` are scalar coefficients then this norm is
-        :math: `\left(\sum_{j} \| w_j \|^p \\right)^{\\frac{1}{p}}
+        :math: `\left(\sum_{j} \| w_j \|^p \right)^{\frac{1}{p}}
         where :math: `p` is the order of the induced norm
 
         Args:
