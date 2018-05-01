@@ -82,16 +82,16 @@ class HypercubeGridTest(unittest.TestCase):
 
     def test_generation_away_from_half_filling(self):
         dim = 1
-        orbitals = 10
+        orbitals = 100
         wigner_seitz_radius = 7.
         filling = 0.2
 
         grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
-            dim, orbitals, wigner_seitz_radius)
+            dim, orbitals, wigner_seitz_radius, filling_fraction=filling)
         self.assertEqual(grid.dimensions, 1)
-        self.assertEqual(grid.length, (4,))
-        self.assertEqual(grid.volume_scale(),
-                         orbitals * wigner_seitz_radius / 2.5)
+        self.assertEqual(grid.length, (100,))
+        self.assertAlmostEqual(grid.volume_scale(),
+                               orbitals * wigner_seitz_radius / 2.5)
 
     def test_generation_with_spin(self):
         dim = 2
@@ -103,14 +103,19 @@ class HypercubeGridTest(unittest.TestCase):
             dim, orbitals, wigner_seitz_radius, spinless=spinless)
         self.assertEqual(grid.dimensions, 2)
         self.assertEqual(grid.length, (4, 4))
-        self.assertEqual(grid.volume_scale(), numpy.pi * 16 * 100.)
+        self.assertAlmostEqual(grid.volume_scale(), numpy.pi * 16 * 100.)
 
-    def test_3d_generation(self):
+    def test_3d_generation_with_rounding(self):
+        filling = 0.42
         grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
-            3, 5, 1.)
+            3, 5, 1., filling_fraction=filling)
         self.assertEqual(grid.dimensions, 3)
         self.assertEqual(grid.length, (5, 5, 5))
-        self.assertEqual(grid.volume_scale(), 5 ** 3 * numpy.pi / 3)
+
+        # There are floor(125 * .42) = 52 particles.
+        # The volume scale should be 4/3 pi r^3 * the "true" filling fraction.
+        self.assertAlmostEqual(grid.volume_scale(),
+                               (4. / 3.) * numpy.pi * (5. ** 3) * (52. / 125))
 
     def test_raise_ValueError_filling_fraction_too_low(self):
         with self.assertRaises(ValueError):
