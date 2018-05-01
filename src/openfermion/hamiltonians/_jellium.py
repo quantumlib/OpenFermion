@@ -431,6 +431,34 @@ def jordan_wigner_dual_basis_jellium(grid, spinless=False,
     return hamiltonian
 
 
+def hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+        dimension, grid_length, wigner_seitz_radius,
+        filling_fraction=0.5, spinless=True):
+    """Return a Grid with the same number of orbitals along each dimension
+    with the specified Wigner-Seitz radius.
+
+    Args:
+        dimension (int): The number of spatial dimensions.
+        grid_length (int): The number of orbitals along each dimension.
+        wigner_seitz_radius (float): The Wigner-Seitz radius per particle,
+            in Bohr.
+        filling_fraction (float): The average spin-orbital occupation.
+            Specifies the number of particles (rounding down).
+        spinless (boolean): Whether to give the system without or with spin.
+    """
+    n_qubits = grid_length ** dimension
+    if not spinless:
+        n_qubits *= 2
+
+    n_particles = int(numpy.floor(n_qubits * filling_fraction))
+
+    # Compute appropriate length scale.
+    length_scale = wigner_seitz_length_scale(
+        wigner_seitz_radius, n_particles, dimension)
+
+    return Grid(dimension, grid_length, length_scale)
+
+
 def standardized_dual_basis_jellium_hamiltonian(
         grid_length, dimension, wigner_seitz_radius=10., n_particles=None,
         spinless=True):
@@ -449,23 +477,9 @@ def standardized_dual_basis_jellium_hamiltonian(
         spinless (boolean): Whether to generate the Hamiltonian without
             or with spin. Defaults to True.
     """
-    n_qubits = grid_length ** dimension
-    if not spinless:
-        n_qubits *= 2
+    grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+        dimension, grid_length, wigner_seitz_radius=10., spinless=spinless)
 
-    if n_particles is None:
-        # Default to half filling fraction.
-        n_particles = n_qubits // 2
-
-    if not (0 <= n_particles <= n_qubits):
-        raise ValueError('n_particles must be between 0 and the number of'
-                         ' spin-orbitals.')
-
-    # Compute appropriate length scale.
-    length_scale = wigner_seitz_length_scale(
-        wigner_seitz_radius, n_particles, dimension)
-
-    grid = Grid(dimension, grid_length, length_scale)
     hamiltonian = normal_ordered(jellium_model(
         grid, spinless=spinless, plane_wave=False))
 
