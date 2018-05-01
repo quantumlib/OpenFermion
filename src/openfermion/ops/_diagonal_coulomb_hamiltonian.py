@@ -18,13 +18,13 @@ import numpy
 
 
 class DiagonalCoulombHamiltonian:
-    """Class for storing Hamiltonians of the form
+    r"""Class for storing Hamiltonians of the form
 
     .. math::
 
         \sum_{p, q} T_{pq} a^\dagger_p a_q +
         \sum_{p, q} V_{pq} a^\dagger_p a_p a^\dagger_q a_q +
-        \\text{constant}
+        \text{constant}
 
     where
 

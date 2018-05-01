@@ -20,7 +20,7 @@ from openfermion.utils import (hermitian_conjugated, number_operator,
 
 def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
                      chemical_potential=0., periodic=True):
-    """Return symbolic representation of a BCS mean-field d-wave Hamiltonian.
+    r"""Return symbolic representation of a BCS mean-field d-wave Hamiltonian.
 
     The Hamiltonians of this model live on a grid of dimensions
     `x_dimension` x `y_dimension`.
@@ -33,25 +33,25 @@ def mean_field_dwave(x_dimension, y_dimension, tunneling, sc_gap,
 
     .. math::
 
-        \\begin{align}
-        H = &- t \sum_{\langle i,j \\rangle} \sum_\sigma
+        \begin{align}
+        H = &- t \sum_{\langle i,j \rangle} \sum_\sigma
                 (a^\dagger_{i, \sigma} a_{j, \sigma} +
                  a^\dagger_{j, \sigma} a_{i, \sigma})
             - \mu \sum_i \sum_{\sigma} a^\dagger_{i, \sigma} a_{i, \sigma}
-            \\\\
-            &- \sum_{\langle i,j \\rangle} \Delta_{ij}
-              (a^\dagger_{i, \\uparrow} a^\dagger_{j, \downarrow} -
-               a^\dagger_{i, \downarrow} a^\dagger_{j, \\uparrow} +
-               a_{j, \downarrow} a_{i, \\uparrow} -
-               a_{j, \\uparrow} a_{i, \downarrow})
-        \\end{align}
+            \\
+            &- \sum_{\langle i,j \rangle} \Delta_{ij}
+              (a^\dagger_{i, \uparrow} a^\dagger_{j, \downarrow} -
+               a^\dagger_{i, \downarrow} a^\dagger_{j, \uparrow} +
+               a_{j, \downarrow} a_{i, \uparrow} -
+               a_{j, \uparrow} a_{i, \downarrow})
+        \end{align}
 
     where
 
-        - The indices :math:`\langle i, j \\rangle` run over pairs
+        - The indices :math:`\langle i, j \rangle` run over pairs
           :math:`i` and :math:`j` of sites that are connected to each other
           in the grid
-        - :math:`\sigma \in \\{\\uparrow, \downarrow\\}` is the spin
+        - :math:`\sigma \in \{\uparrow, \downarrow\}` is the spin
         - :math:`t` is the tunneling amplitude
         - :math:`\Delta_{ij}` is equal to :math:`+\Delta/2` for
           horizontal edges and :math:`-\Delta/2` for vertical edges,
