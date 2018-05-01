@@ -446,42 +446,22 @@ def hypercube_grid_with_given_wigner_seitz_radius_and_filling(
             Specifies the number of particles (rounding down).
         spinless (boolean): Whether to give the system without or with spin.
     """
+    if filling_fraction > 1:
+        raise ValueError("filling_fraction cannot be greater than 1.")
+
     n_qubits = grid_length ** dimension
     if not spinless:
         n_qubits *= 2
 
     n_particles = int(numpy.floor(n_qubits * filling_fraction))
 
+    if not n_particles:
+        raise ValueError(
+            "filling_fraction too low for number of orbitals specified by "
+            "other parameters.")
+
     # Compute appropriate length scale.
     length_scale = wigner_seitz_length_scale(
         wigner_seitz_radius, n_particles, dimension)
 
     return Grid(dimension, grid_length, length_scale)
-
-
-def standardized_dual_basis_jellium_hamiltonian(
-        grid_length, dimension, wigner_seitz_radius=10., n_particles=None,
-        spinless=True):
-    """Return the jellium Hamiltonian in the dual basis in standardized form
-    (normal ordered, compressed, and without constant offset) with the
-    given parameters.
-
-    Args:
-        grid_length (int): The number of spatial orbitals along each
-            dimension.
-        dimension (int): The number of spatial dimensions in the system.
-        wigner_seitz_radius (float): The Wigner-Seitz radius per particle,
-            in Bohr. Defaults to 10.
-        n_particles (int): The number of particles in the system.
-            Defaults to half filling, rounding down, if not specified.
-        spinless (boolean): Whether to generate the Hamiltonian without
-            or with spin. Defaults to True.
-    """
-    grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
-        dimension, grid_length, wigner_seitz_radius=10., spinless=spinless)
-
-    hamiltonian = normal_ordered(jellium_model(
-        grid, spinless=spinless, plane_wave=False))
-
-    hamiltonian.compress()
-    return hamiltonian
