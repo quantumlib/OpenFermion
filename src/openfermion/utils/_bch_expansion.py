@@ -16,7 +16,7 @@ import itertools
 from scipy.misc import comb, factorial
 
 
-def bch_expand(*ops, order=6):
+def bch_expand(*ops, **kwargs):
     """Compute log[e^{x_1} ... e^{x_N}] using the BCH formula.
 
     This implementation is explained in arXiv:1712.01348.
@@ -25,8 +25,9 @@ def bch_expand(*ops, order=6):
         ops: A sequence of operators of the same type for which multiplication
             and addition are supported. For instance, QubitOperators,
             FermionOperators, or Scipy sparse matrices.
-        order(int): The max degree of monomial with respect to X and Y
-            to truncate the BCH expansions.
+        keyword arguments:
+            order(int): The max degree of monomial with respect to X and Y
+                to truncate the BCH expansions. Defaults to 6
 
     Returns:
         The truncated BCH operator.
@@ -35,6 +36,7 @@ def bch_expand(*ops, order=6):
         ValueError: invalid order parameter.
         TypeError: operator types are not all the same.
     """
+    order = kwargs.get('order', 6)
     if (not isinstance(order, int)) or order < 0:
         raise ValueError('Invalid order parameter.')
     if len(set(type(op) for op in ops)) != 1:
