@@ -10,13 +10,13 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from __future__ import absolute_import
+import unittest
+
 import numpy
 from numpy.random import rand, seed
 from numpy.linalg import norm
-import unittest
 
-from openfermion.utils._bch_expansion import *
+from openfermion.utils._bch_expansion import bch_expand
 
 
 def bch_expand_baseline(x, y, order):
@@ -87,8 +87,16 @@ class BCHTest(unittest.TestCase):
             seed(s)
             x = rand(self.dim, self.dim)
             y = rand(self.dim, self.dim)
-            test = bch_expand(x, y, self.test_order)
-            baseline = bch_expand_baseline(x, y, self.test_order)
+            z = rand(self.dim, self.dim)
+
+            test = bch_expand(x, y, order=self.test_order)
+            baseline = bch_expand_baseline(x, y, order=self.test_order)
+            self.assertAlmostEquals(norm(test-baseline), 0.0)
+
+            test = bch_expand(x, y, z, order=self.test_order)
+            baseline = bch_expand_baseline(
+                    x, bch_expand_baseline(y, z, order=self.test_order),
+                    order=self.test_order)
             self.assertAlmostEquals(norm(test-baseline), 0.0)
 
     def test_verification(self):
