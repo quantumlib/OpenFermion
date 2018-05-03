@@ -23,7 +23,8 @@ from ._lcu_util import preprocess_lcu_coefficients_for_reversible_sampling
 
 from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               freeze_orbitals, get_file_path,
-                              hermitian_conjugated, inverse_fourier_transform,
+                              hermitian_conjugated, inline_sum,
+                              inverse_fourier_transform,
                               is_hermitian, is_identity, prune_unused_indices,
                               reorder, up_then_down,
                               load_operator, save_operator)
