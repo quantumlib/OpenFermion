@@ -14,6 +14,8 @@
 from __future__ import absolute_import
 
 from openfermion.ops import QubitOperator
+from openfermion.utils import inline_sum
+from openfermion.transforms._bravyi_kitaev import inline_product
 from openfermion.transforms._fenwick_tree import FenwickTree
 
 
@@ -59,7 +61,7 @@ def bravyi_kitaev_tree(operator, n_qubits=None):
                                  fenwick_tree=fenwick_tree)
         for term in operator.terms
     )
-    return inline_sum(seed=QubitOperator(), summands=transformed_terms)
+    return inline_sum(summands=transformed_terms, seed=QubitOperator())
 
 
 def _transform_operator_term(term, coefficient, fenwick_tree):
@@ -78,8 +80,8 @@ def _transform_operator_term(term, coefficient, fenwick_tree):
         _transform_ladder_operator(ladder_operator, fenwick_tree)
         for ladder_operator in term
     )
-    return inline_product(seed=QubitOperator((), coefficient),
-                          factors=transformed_ladder_ops)
+    return inline_product(factors=transformed_ladder_ops,
+                          seed=QubitOperator((), coefficient))
 
 
 def _transform_ladder_operator(ladder_operator, fenwick_tree):
@@ -122,29 +124,3 @@ def _transform_ladder_operator(ladder_operator, fenwick_tree):
         0.5)
 
     return c_majorana_component + d_majorana_component
-
-
-def inline_sum(seed, summands):
-    """Computes a sum, using the __iadd__ operator.
-    Args:
-        seed (T): The starting total. The zero value.
-        summands (iterable[T]): Values to add (with +=) into the total.
-    Returns:
-        T: The result of adding all the factors into the zero value.
-    """
-    for r in summands:
-        seed += r
-    return seed
-
-
-def inline_product(seed, factors):
-    """Computes a product, using the __imul__ operator.
-    Args:
-        seed (T): The starting total. The unit value.
-        factors (iterable[T]): Values to multiply (with *=) into the total.
-    Returns:
-        T: The result of multiplying all the factors into the unit value.
-    """
-    for r in factors:
-        seed *= r
-    return seed
