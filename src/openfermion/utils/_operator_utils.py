@@ -32,6 +32,19 @@ class OperatorUtilsError(Exception):
     pass
 
 
+def inline_sum(summands, seed):
+    """Computes a sum, using the __iadd__ operator.
+    Args:
+        seed (T): The starting total. The zero value.
+        summands (iterable[T]): Values to add (with +=) into the total.
+    Returns:
+        T: The result of adding all the factors into the zero value.
+    """
+    for r in summands:
+        seed += r
+    return seed
+
+
 def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
     """Fix some orbitals to be occupied and others unoccupied.
 
