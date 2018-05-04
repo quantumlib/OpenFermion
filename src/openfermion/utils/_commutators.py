@@ -25,8 +25,8 @@ def commutator(operator_a, operator_b):
     Args:
         operator_a, operator_b: Operators in commutator. Any operators
             are accepted so long as implicit subtraction and multiplication are
-            supported; e.g. QubitOperators, FermionOperators or Scipy sparse
-            matrices. 2D Numpy arrays are also supported.
+            supported; e.g. QubitOperators, FermionOperators, BosonOperators,
+            or Scipy sparse matrices. 2D Numpy arrays are also supported.
 
     Raises:
         TypeError: operator_a and operator_b are not of the same type.
@@ -48,8 +48,8 @@ def anticommutator(operator_a, operator_b):
     Args:
         operator_a, operator_b: Operators in anticommutator. Any operators
             are accepted so long as implicit addition and multiplication are
-            supported; e.g. QubitOperators, FermionOperators or Scipy sparse
-            matrices. 2D Numpy arrays are also supported.
+            supported; e.g. QubitOperators, FermionOperators, BosonOperators,
+            or Scipy sparse matrices. 2D Numpy arrays are also supported.
 
     Raises:
         TypeError: operator_a and operator_b are not of the same type.
@@ -70,7 +70,8 @@ def double_commutator(op1, op2, op3, indices2=None, indices3=None,
     """Return the double commutator [op1, [op2, op3]].
 
     Args:
-        op1, op2, op3 (FermionOperators): operators for the commutator.
+        op1, op2, op3 (FermionOperators or BosonOperators): operators for
+            the commutator. All three operators must be of the same type.
         indices2, indices3 (set): The indices op2 and op3 act on.
         is_hopping_operator2 (bool): Whether op2 is a hopping operator.
         is_hopping_operator3 (bool): Whether op3 is a hopping operator.

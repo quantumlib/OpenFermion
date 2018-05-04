@@ -24,4 +24,5 @@ from ._boson_operator import (BosonOperator,
                                 normal_ordered as normal_ordered_boson)
 from ._interaction_operator import InteractionOperator
 from ._qubit_operator import QubitOperator
+from ._quad_operator import QuadOperator
 from ._interaction_rdm import InteractionRDM

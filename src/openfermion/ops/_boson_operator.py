@@ -88,7 +88,7 @@ def normal_ordered_term(term, coefficient):
 
 
 def normal_ordered(boson_operator):
-    """Compute and return the normal ordered form of a FermionOperator.
+    """Compute and return the normal ordered form of a BosonOperator.
 
     In our convention, normal ordering implies terms are ordered
     from highest tensor factor (on left) to lowest (on right).
