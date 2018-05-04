@@ -16,10 +16,56 @@ import itertools
 from scipy.misc import comb, factorial
 
 
-def bch_expand(x, y, order=6):
-    """Compute log[e^x e^y] using the Baker-Campbell-Hausdorff formula.
+def bch_expand(*ops, **kwargs):
+    """Compute log[e^{x_1} ... e^{x_N}] using the BCH formula.
 
     This implementation is explained in arXiv:1712.01348.
+
+    Args:
+        ops: A sequence of operators of the same type for which multiplication
+            and addition are supported. For instance, QubitOperators,
+            FermionOperators, or Scipy sparse matrices.
+        keyword arguments:
+            order(int): The max degree of monomial with respect to X and Y
+                to truncate the BCH expansions. Defaults to 6
+
+    Returns:
+        The truncated BCH operator.
+
+    Raises:
+        ValueError: invalid order parameter.
+        TypeError: operator types are not all the same.
+    """
+    order = kwargs.get('order', 6)
+    if (not isinstance(order, int)) or order < 0:
+        raise ValueError('Invalid order parameter.')
+    if len(ops) < 2:
+        raise ValueError('Input must consist of at least 2 operators.')
+    if len(set(type(op) for op in ops)) != 1:
+        raise TypeError('Operators must all be of the same type.')
+
+    return bch_expand_multiple_terms(*ops, **kwargs)
+
+
+def bch_expand_multiple_terms(*ops, **kwargs):
+    order = kwargs.get('order', 6)
+    n_ops = len(ops)
+
+    if n_ops == 1:
+        return ops[0]
+    if n_ops == 2:
+        return bch_expand_two_terms(ops[0], ops[1], order=order)
+    else:
+        left_ops = ops[:n_ops // 2]
+        right_ops = ops[n_ops // 2:]
+        return bch_expand_two_terms(
+                bch_expand_multiple_terms(*left_ops, order=order),
+                bch_expand_multiple_terms(*right_ops, order=order),
+                order=order)
+
+
+def bch_expand_two_terms(x, y, order=6):
+    """Compute log[e^x e^y] using the Baker-Campbell-Hausdorff formula.
 
     Args:
         x: An operator for which multiplication and addition are supported.
@@ -31,17 +77,7 @@ def bch_expand(x, y, order=6):
 
     Returns:
         z: The truncated BCH operator.
-
-    Raises:
-        ValueError: operator x is not same type as operator y.
-        ValueError: invalid order parameter.
-        ValueError: order exceeds maximum order supported.
     """
-    if (not isinstance(order, int)) or order < 0:
-        raise ValueError('Invalid order parameter.')
-    if type(x) != type(y):
-        raise ValueError('Operator x is not same type as operator y.')
-
     z = None
     term_list, coeff_list = generate_nested_commutator(order)
     for bin_str, coeff in zip(term_list, coeff_list):
@@ -152,9 +188,10 @@ def coeff_monomial(split_bin_str, n, l):
     class context:
         coeff = 0
 
-    def depth_first_search(split_bin_str, n, l, sol=[], cur_sum=0):
+    def depth_first_search(split_bin_str, n, l, sol=None, cur_sum=0):
         ''' Partition an integer value of n into l bins each with min 1
         '''
+        sol = sol or []
         cur_idx = len(sol)
         if cur_idx < l:
             m = len(split_bin_str[cur_idx])
