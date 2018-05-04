@@ -39,9 +39,16 @@ def bch_expand(*ops, **kwargs):
     order = kwargs.get('order', 6)
     if (not isinstance(order, int)) or order < 0:
         raise ValueError('Invalid order parameter.')
+    if len(ops) < 2:
+        raise ValueError('Input must consist of at least 2 operators.')
     if len(set(type(op) for op in ops)) != 1:
-        raise ValueError('Operators must all be of the same type.')
+        raise TypeError('Operators must all be of the same type.')
 
+    return bch_expand_multiple_terms(*ops, **kwargs)
+
+
+def bch_expand_multiple_terms(*ops, **kwargs):
+    order = kwargs.get('order', 6)
     n_ops = len(ops)
 
     if n_ops == 1:
@@ -52,8 +59,8 @@ def bch_expand(*ops, **kwargs):
         left_ops = ops[:n_ops // 2]
         right_ops = ops[n_ops // 2:]
         return bch_expand_two_terms(
-                bch_expand(*left_ops, order=order),
-                bch_expand(*right_ops, order=order),
+                bch_expand_multiple_terms(*left_ops, order=order),
+                bch_expand_multiple_terms(*right_ops, order=order),
                 order=order)
 
 

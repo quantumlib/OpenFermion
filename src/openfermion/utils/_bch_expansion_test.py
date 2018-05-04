@@ -101,10 +101,13 @@ class BCHTest(unittest.TestCase):
 
     def test_verification(self):
         """Verify basic sanity checking on inputs"""
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             order = 2
-            _ = bch_expand(1, numpy.ones((2, 2)), order)
+            _ = bch_expand(1, numpy.ones((2, 2)), order=order)
 
         with self.assertRaises(ValueError):
             order = '38'
-            _ = bch_expand(numpy.ones((2, 2)), numpy.ones((2, 2)), order)
+            _ = bch_expand(numpy.ones((2, 2)), numpy.ones((2, 2)), order=order)
+
+        with self.assertRaises(ValueError):
+            _ = bch_expand(1)
