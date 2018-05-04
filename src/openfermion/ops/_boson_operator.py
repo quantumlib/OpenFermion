@@ -137,11 +137,11 @@ class BosonOperator(SymbolicOperator):
     Example:
         .. code-block:: python
 
-            ham = (BosonOperator('0^ 3', .5)
+            H = (BosonOperator('0^ 3', .5)
                    + .5 * BosonOperator('3^ 0'))
             # Equivalently
-            ham2 = BosonOperator('0^ 3', 0.5)
-            ham2 += BosonOperator('3^ 0', 0.5)
+            H2 = BosonOperator('0^ 3', 0.5)
+            H2 += BosonOperator('3^ 0', 0.5)
 
     Note:
         Adding BosonOperator is faster using += (as this

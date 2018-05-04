@@ -22,7 +22,7 @@ import os
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 
 from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
-                             InteractionOperator, InteractionRDM,
+                             InteractionOperator, InteractionRDM, BosonOperator,
                              PolynomialTensor, QubitOperator, normal_ordered)
 
 from scipy.sparse import spmatrix
@@ -157,6 +157,16 @@ def hermitian_conjugated(operator):
                                     (tensor_factor, action) in reversed(term)])
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
+    # Handle BosonOperator
+    elif isinstance(operator, BosonOperator):
+        conjugate_operator = BosonOperator()
+        for term, coefficient in operator.terms.items():
+            conjugate_term = tuple([(tensor_factor, 1 - action) for
+                                    (tensor_factor, action) in reversed(term)])
+            # take into account that different indices commute
+            conjugate_term = tuple(sorted(conjugate_term, key=lambda factor: factor[0]))
+            conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
+
     # Handle QubitOperator
     elif isinstance(operator, QubitOperator):
         conjugate_operator = QubitOperator()
@@ -181,8 +191,8 @@ def hermitian_conjugated(operator):
 
 def is_hermitian(operator):
     """Test if operator is Hermitian."""
-    # Handle FermionOperator
-    if isinstance(operator, FermionOperator):
+    # Handle FermionOperator and BosonOperator
+    if isinstance(operator, (FermionOperator, BosonOperator)):
         return (normal_ordered(operator) ==
                 normal_ordered(hermitian_conjugated(operator)))
 
@@ -280,12 +290,12 @@ def is_identity(operator):
     """Check whether QubitOperator of FermionOperator is identity.
 
     Args:
-        operator: QubitOperator or FermionOperator.
+        operator: QubitOperator, FermionOperator or BosonOperator.
 
     Raises:
         TypeError: Operator of invalid type.
     """
-    if isinstance(operator, (QubitOperator, FermionOperator)):
+    if isinstance(operator, (QubitOperator, FermionOperator, BosonOperator)):
         return list(operator.terms) == [()]
     raise TypeError('Operator of invalid type.')
 
@@ -416,7 +426,7 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
         plain_text: Whether the input file is plain text
 
     Returns:
-        operator: The stored FermionOperator or QubitOperator
+        operator: The stored FermionOperator, BosonOperator, or QubitOperator
 
     Raises:
         TypeError: Operator of invalid type.
@@ -430,6 +440,8 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
 
         if operator_type == 'FermionOperator':
             operator = FermionOperator(operator_terms)
+        elif operator_type == 'BosonOperator':
+            operator = BosonOperator(operator_terms)
         elif operator_type == 'QubitOperator':
             operator = QubitOperator(operator_terms)
         else:
@@ -444,6 +456,10 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
             operator = FermionOperator()
             for term in operator_terms:
                 operator += FermionOperator(term, operator_terms[term])
+        elif operator_type == 'BosonOperator':
+            operator = BosonOperator()
+            for term in operator_terms:
+                operator += BosonOperator(term, operator_terms[term])
         elif operator_type == 'QubitOperator':
             operator = QubitOperator()
             for term in operator_terms:
@@ -459,7 +475,7 @@ def save_operator(operator, file_name=None, data_directory=None,
     """Save FermionOperator or QubitOperator to file.
 
     Args:
-        operator: An instance of FermionOperator or QubitOperator.
+        operator: An instance of FermionOperator, BosonOperator, or QubitOperator.
         file_name: The name of the saved file.
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
@@ -478,6 +494,8 @@ def save_operator(operator, file_name=None, data_directory=None,
 
     if isinstance(operator, FermionOperator):
         operator_type = "FermionOperator"
+    elif isinstance(operator, BosonOperator):
+        operator_type = "BosonOperator"
     elif isinstance(operator, QubitOperator):
         operator_type = "QubitOperator"
     elif (isinstance(operator, InteractionOperator) or
@@ -498,7 +516,7 @@ def save_operator(operator, file_name=None, data_directory=None,
 
 
 def reorder(operator, order_function, num_modes=None, reverse=False):
-    """Changes the fermionic order of the Hamiltonian based on the provided
+    """Changes the ladder operator order of the Hamiltonian based on the provided
     order_function per mode index
 
     Args:

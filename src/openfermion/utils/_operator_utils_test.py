@@ -77,6 +77,12 @@ class OperatorUtilsTest(unittest.TestCase):
     def test_is_identity_double_of_unit_fermionoperator(self):
         self.assertTrue(is_identity(2. * FermionOperator(())))
 
+    def test_is_identity_unit_bosonoperator(self):
+        self.assertTrue(is_identity(BosonOperator(())))
+
+    def test_is_identity_double_of_unit_bosonoperator(self):
+        self.assertTrue(is_identity(2. * BosonOperator(())))
+
     def test_is_identity_unit_qubitoperator(self):
         self.assertTrue(is_identity(QubitOperator(())))
 
@@ -86,11 +92,14 @@ class OperatorUtilsTest(unittest.TestCase):
     def test_not_is_identity_single_term_fermionoperator(self):
         self.assertFalse(is_identity(FermionOperator('1^')))
 
+    def test_not_is_identity_single_term_bosonoperator(self):
+        self.assertFalse(is_identity(BosonOperator('1^')))
+
     def test_not_is_identity_single_term_qubitoperator(self):
         self.assertFalse(is_identity(QubitOperator('X1')))
 
-    def test_not_is_identity_zero_fermionoperator(self):
-        self.assertFalse(is_identity(FermionOperator()))
+    def test_not_is_identity_zero_bosonoperator(self):
+        self.assertFalse(is_identity(BosonOperator()))
 
     def test_not_is_identity_zero_qubitoperator(self):
         self.assertFalse(is_identity(QubitOperator()))
@@ -110,14 +119,25 @@ class OperatorUtilsTest(unittest.TestCase):
         self.assertEqual(reordered.terms,
                          {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
 
-    def test_up_then_down(self):
-        operator = FermionOperator('1^ 2^ 3 4', -3.17)
-        reordered = reorder(operator, up_then_down)
-        reordered = reorder(reordered, up_then_down, reverse=True)
+    def test_reorder_boson(self):
+        shift_by_one = lambda x, y: (x + 1) % y
+        operator = BosonOperator('1^ 2^ 3 4', -3.17)
+        reordered = reorder(operator, shift_by_one)
+        self.assertEqual(reordered.terms,
+                         {((0, 0), (2, 1), (3, 1), (4, 0)): -3.17})
+        reordered = reorder(operator, shift_by_one, reverse=True)
+        self.assertEqual(reordered.terms,
+                         {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
 
-        self.assertEqual(reordered.terms, operator.terms)
-        self.assertEqual(up_then_down(6, 8), 3)
-        self.assertEqual(up_then_down(3, 8), 5)
+    def test_up_then_down(self):
+        for LadderOp in (FermionOperator, BosonOperator):
+            operator = LadderOp('1^ 2^ 3 4', -3.17)
+            reordered = reorder(operator, up_then_down)
+            reordered = reorder(reordered, up_then_down, reverse=True)
+
+            self.assertEqual(reordered.terms, operator.terms)
+            self.assertEqual(up_then_down(6, 8), 3)
+            self.assertEqual(up_then_down(3, 8), 5)
 
 
 class FreezeOrbitalsTest(unittest.TestCase):
@@ -137,10 +157,11 @@ class FreezeOrbitalsTest(unittest.TestCase):
 class PruneUnusedIndicesTest(unittest.TestCase):
 
     def test_prune(self):
-        op = FermionOperator(((1, 1), (8, 1), (3, 0)), 0.5)
-        op = prune_unused_indices(op)
-        expected = FermionOperator(((0, 1), (2, 1), (1, 0)), 0.5)
-        self.assertEqual(expected, op)
+        for LadderOp in (FermionOperator, BosonOperator):
+            op = LadderOp(((1, 1), (8, 1), (3, 0)), 0.5)
+            op = prune_unused_indices(op)
+            expected = LadderOp(((0, 1), (2, 1), (1, 0)), 0.5)
+            self.assertTrue(expected == op)
 
 
 class HermitianConjugatedTest(unittest.TestCase):
@@ -184,9 +205,18 @@ class HermitianConjugatedTest(unittest.TestCase):
         op = hermitian_conjugated(op)
         self.assertEqual(op, FermionOperator())
 
+        op = BosonOperator()
+        op = hermitian_conjugated(op)
+        self.assertEqual(op, BosonOperator())
+
     def test_hermitian_conjugate_simple(self):
         op = FermionOperator('1^')
         op_hc = FermionOperator('1')
+        op = hermitian_conjugated(op)
+        self.assertEqual(op, op_hc)
+
+        op = BosonOperator('1^')
+        op_hc = BosonOperator('1')
         op = hermitian_conjugated(op)
         self.assertEqual(op, op_hc)
 
@@ -196,9 +226,19 @@ class HermitianConjugatedTest(unittest.TestCase):
         op = hermitian_conjugated(op)
         self.assertEqual(op, op_hc)
 
+        op = BosonOperator('1^ 3', 3j)
+        op_hc = -3j * BosonOperator('3^ 1')
+        op = hermitian_conjugated(op)
+        self.assertEqual(op, op_hc)
+
     def test_hermitian_conjugate_notordered(self):
         op = FermionOperator('1 3^ 3 3^', 3j)
         op_hc = -3j * FermionOperator('3 3^ 3 1^')
+        op = hermitian_conjugated(op)
+        self.assertEqual(op, op_hc)
+
+        op = BosonOperator('1 3^ 3 3^', 3j)
+        op_hc = -3j * BosonOperator('3 3^ 3 1^')
         op = hermitian_conjugated(op)
         self.assertEqual(op, op_hc)
 
@@ -211,8 +251,18 @@ class HermitianConjugatedTest(unittest.TestCase):
         op = hermitian_conjugated(op)
         self.assertEqual(op, op_hc)
 
+        op = (BosonOperator() + 2j * BosonOperator('1^ 3') +
+              BosonOperator('3^ 1') * -2j + BosonOperator('2^ 2', 0.1j))
+        op_hc = (BosonOperator() + BosonOperator('1^ 3', 2j) +
+                 BosonOperator('3^ 1', -2j) +
+                 BosonOperator('2^ 2', -0.1j))
+        op = hermitian_conjugated(op)
+        self.assertEqual(op, op_hc)
+
     def test_hermitian_conjugated_empty(self):
         op = FermionOperator()
+        self.assertEqual(op, hermitian_conjugated(op))
+        op = BosonOperator()
         self.assertEqual(op, hermitian_conjugated(op))
 
     def test_hermitian_conjugated_simple(self):
@@ -220,14 +270,26 @@ class HermitianConjugatedTest(unittest.TestCase):
         op_hc = FermionOperator('0^')
         self.assertEqual(op_hc, hermitian_conjugated(op))
 
+        op = BosonOperator('0')
+        op_hc = BosonOperator('0^')
+        self.assertEqual(op_hc, hermitian_conjugated(op))
+
     def test_hermitian_conjugated_complex_const(self):
         op = FermionOperator('2^ 2', 3j)
         op_hc = FermionOperator('2^ 2', -3j)
         self.assertEqual(op_hc, hermitian_conjugated(op))
 
+        op = BosonOperator('2^ 2', 3j)
+        op_hc = BosonOperator('2^ 2', -3j)
+        self.assertEqual(op_hc, hermitian_conjugated(op))
+
     def test_hermitian_conjugated_multiterm(self):
         op = FermionOperator('1^ 2') + FermionOperator('2 3 4')
         op_hc = FermionOperator('2^ 1') + FermionOperator('4^ 3^ 2^')
+        self.assertEqual(op_hc, hermitian_conjugated(op))
+
+        op = BosonOperator('1^ 2') + BosonOperator('2 3 4')
+        op_hc = BosonOperator('2^ 1') + BosonOperator('4^ 3^ 2^')
         self.assertEqual(op_hc, hermitian_conjugated(op))
 
     def test_hermitian_conjugated_semihermitian(self):
@@ -236,6 +298,13 @@ class HermitianConjugatedTest(unittest.TestCase):
         op_hc = (FermionOperator() + FermionOperator('1^ 3', 2j) +
                  FermionOperator('3^ 1', -2j) +
                  FermionOperator('2^ 2', -0.1j))
+        self.assertEqual(op_hc, hermitian_conjugated(op))
+
+        op = (BosonOperator() + 2j * BosonOperator('1^ 3') +
+              BosonOperator('3^ 1') * -2j + BosonOperator('2^ 2', 0.1j))
+        op_hc = (BosonOperator() + BosonOperator('1^ 3', 2j) +
+                 BosonOperator('3^ 1', -2j) +
+                 BosonOperator('2^ 2', -0.1j))
         self.assertEqual(op_hc, hermitian_conjugated(op))
 
     def test_exceptions(self):
@@ -264,6 +333,27 @@ class IsHermitianTest(unittest.TestCase):
 
         op = fermi_hubbard(2, 2, 1., 1.)
         self.assertTrue(is_hermitian(op))
+
+    def test_boson_operator_zero(self):
+        op = BosonOperator()
+        self.assertTrue(is_hermitian(op))
+
+    def test_boson_operator_identity(self):
+        op = BosonOperator(())
+        self.assertTrue(is_hermitian(op))
+
+    def test_boson_operator_nonhermitian(self):
+        op = BosonOperator('0^ 1 2^ 3')
+        self.assertFalse(is_hermitian(op))
+
+    def test_boson_operator_hermitian(self):
+        op = BosonOperator('0^ 1 2^ 3')
+        op += BosonOperator('3^ 2 1^ 0')
+        self.assertTrue(is_hermitian(op))
+
+        # TODO: insert bose_hubbard here
+        # op = fermi_hubbard(2, 2, 1., 1.)
+        # self.assertTrue(is_hermitian(op))
 
     def test_qubit_operator_zero(self):
         op = QubitOperator()
@@ -319,6 +409,9 @@ class SaveLoadOperatorTest(unittest.TestCase):
         self.fermion_term = FermionOperator('1^ 2^ 3 4', -3.17)
         self.fermion_operator = self.fermion_term + hermitian_conjugated(
             self.fermion_term)
+        self.boson_term = BosonOperator('1^ 2^ 3 4', -3.17)
+        self.boson_operator = self.boson_term + hermitian_conjugated(
+            self.boson_term)
         self.qubit_operator = jordan_wigner(self.fermion_operator)
         self.file_name = "test_file"
 
@@ -341,6 +434,21 @@ class SaveLoadOperatorTest(unittest.TestCase):
         loaded_fermion_operator = load_operator(self.file_name,
                                                 plain_text=True)
         self.assertTrue(self.fermion_operator == loaded_fermion_operator)
+
+    def test_save_and_load_boson_operators(self):
+        save_operator(self.boson_operator, self.file_name)
+        loaded_boson_operator = load_operator(self.file_name)
+        self.assertEqual(self.boson_operator.terms,
+                         loaded_boson_operator.terms,
+                         msg=str(self.boson_operator -
+                                 loaded_boson_operator))
+
+    def test_save_and_load_boson_operators_readably(self):
+        save_operator(self.boson_operator, self.file_name,
+                      plain_text=True)
+        loaded_boson_operator = load_operator(self.file_name,
+                                                plain_text=True)
+        self.assertTrue(self.boson_operator == loaded_boson_operator)
 
     def test_save_and_load_qubit_operators(self):
         save_operator(self.qubit_operator, self.file_name)
