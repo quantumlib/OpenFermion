@@ -30,7 +30,9 @@ from ._conversion import (get_diagonal_coulomb_hamiltonian,
                           get_interaction_operator,
                           get_quadratic_hamiltonian,
                           get_molecular_data,
-                          get_sparse_operator)
+                          get_sparse_operator,
+                          get_quad_operator,
+                          get_boson_operator)
 from ._jordan_wigner import jordan_wigner
 from ._projection import (project_onto_sector,
                           projection_error)

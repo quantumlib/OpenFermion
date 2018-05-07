@@ -27,7 +27,11 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
                              PolynomialTensor,
                              QuadraticHamiltonian,
                              QubitOperator,
-                             normal_ordered)
+                             normal_ordered,
+                             normal_ordered_boson,
+                             normal_ordered_quad,
+                             BosonOperator,
+                             QuadOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.utils import (count_qubits,
@@ -411,3 +415,64 @@ def get_molecular_data(interaction_operator,
     molecule.multiplicity = multiplicity
 
     return molecule
+
+
+def get_quad_operator(operator, hbar=1.):
+    """Convert to QuadOperator.
+
+    Args:
+        operator: BosonOperator.
+        hbar (float): the value of hbar used in the definition of the commutator
+            [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+
+    Returns:
+        quad_operator: An instance of the QuadOperator class.
+    """
+    quad_operator = QuadOperator()
+
+    if isinstance(operator, BosonOperator):
+        for term, coefficient in operator.terms.items():
+                tmp = QuadOperator('', coefficient)
+                for i, d in term:
+                    tmp *= (1./numpy.sqrt(2.*hbar)) \
+                        * (QuadOperator(((i, 'q'))) \
+                            + QuadOperator(((i, 'p')), 1j*(-1)**d))
+                quad_operator += tmp
+
+    else:
+        raise TypeError("Only BosonOperator is currently supported for get_quad_operator.")
+
+    return normal_ordered_quad(quad_operator, hbar=hbar)
+
+
+def get_boson_operator(operator, hbar=1.):
+    """Convert to BosonOperator.
+
+    Args:
+        operator: QuadOperator.
+        hbar (float): the value of hbar used in the definition of the commutator
+            [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+
+    Returns:
+        boson_operator: An instance of the BosonOperator class.
+    """
+    boson_operator = BosonOperator()
+
+    if isinstance(operator, QuadOperator):
+        for term, coefficient in operator.terms.items():
+            tmp = BosonOperator('', coefficient)
+            for i, d in term:
+                if d == 'q':
+                    coeff = numpy.sqrt(hbar/2)
+                    sign = 1
+                elif d == 'p':
+                    coeff = -1j*numpy.sqrt(hbar/2)
+                    sign = -1
+
+                tmp *= coeff*(BosonOperator(((i, 0))) + BosonOperator(((i, 1)), sign))
+            boson_operator += tmp
+
+    else:
+        raise TypeError("Only QuadOperator is currently supported for get_boson_operator.")
+
+    return normal_ordered_boson(boson_operator)

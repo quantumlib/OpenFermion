@@ -72,13 +72,8 @@ def normal_ordered_term(term, coefficient):
 
             # Handle case when operator type is the same.
             elif right_operator[1] == left_operator[1]:
-
-                # If same two operators are repeated, evaluate to zero.
-                if right_operator[0] == left_operator[0]:
-                    return ordered_term
-
                 # Swap if same ladder type but lower index on left.
-                elif right_operator[0] > left_operator[0]:
+                if right_operator[0] > left_operator[0]:
                     term[j - 1] = right_operator
                     term[j] = left_operator
 
