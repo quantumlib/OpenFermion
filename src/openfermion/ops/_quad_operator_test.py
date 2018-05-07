@@ -15,115 +15,82 @@ import copy
 import numpy
 import unittest
 
-from openfermion.ops._boson_operator import (BosonOperator,
-                                               BosonOperatorError,
-                                               normal_ordered)
-from openfermion.utils import boson_number_operator
+from openfermion.ops._quad_operator import (QuadOperator,
+                                            QuadOperatorError,
+                                            normal_ordered)
 
 
-class BosonOperatorTest(unittest.TestCase):
+class QuadOperatorTest(unittest.TestCase):
 
     def test_is_normal_ordered_empty(self):
-        op = BosonOperator() * 2
+        op = QuadOperator() * 2
         self.assertTrue(op.is_normal_ordered())
 
     def test_is_normal_ordered_number(self):
-        op = BosonOperator('2^ 2') * -1j
+        op = QuadOperator('q2 p2') * -1j
         self.assertTrue(op.is_normal_ordered())
 
     def test_is_normal_ordered_reversed(self):
-        self.assertFalse(BosonOperator('2 2^').is_normal_ordered())
+        self.assertFalse(QuadOperator('p2 q2').is_normal_ordered())
 
-    def test_is_normal_ordered_create(self):
-        self.assertTrue(BosonOperator('11^').is_normal_ordered())
+    def test_is_normal_ordered_q(self):
+        self.assertTrue(QuadOperator('q11').is_normal_ordered())
 
-    def test_is_normal_ordered_annihilate(self):
-        self.assertTrue(BosonOperator('0').is_normal_ordered())
+    def test_is_normal_ordered_p(self):
+        self.assertTrue(QuadOperator('p0').is_normal_ordered())
 
-    def test_is_normal_ordered_long_not(self):
-        self.assertTrue(BosonOperator('0 5^ 3^ 2^ 1^').is_normal_ordered())
-
-    def test_is_normal_ordered_outoforder(self):
-        self.assertTrue(BosonOperator('0 1').is_normal_ordered())
-
-    def test_is_normal_ordered_long_descending(self):
-        self.assertTrue(BosonOperator('5^ 3^ 2^ 1^ 0').is_normal_ordered())
+    def test_is_normal_ordered_different_indices(self):
+        self.assertTrue(QuadOperator('p0 q5 q3 q2 q1').is_normal_ordered())
 
     def test_is_normal_ordered_multi(self):
-        op = BosonOperator('4 3 2^ 2') + BosonOperator('1 2')
+        op = QuadOperator('p4 p3 q2 p2') + QuadOperator('p1 p2')
         self.assertTrue(op.is_normal_ordered())
 
     def test_is_normal_ordered_multiorder(self):
-        op = BosonOperator('4 3 2 1') + BosonOperator('3 2')
+        op = QuadOperator('p4 p3 p2 p1') + QuadOperator('p3 p2')
         self.assertTrue(op.is_normal_ordered())
 
     def test_normal_ordered_single_term(self):
-        op = BosonOperator('4 3 2 1') + BosonOperator('3 2')
+        op = QuadOperator('p4 p3 p2 p1') + QuadOperator('p3 p2')
         self.assertTrue(op == normal_ordered(op))
 
+        op = QuadOperator('q0 p0') - QuadOperator('p0 q0')
+        expected = QuadOperator('', 2.j)
+        self.assertTrue(expected == normal_ordered(op, hbar=2.))
+
     def test_normal_ordered_two_term(self):
-        op_b = BosonOperator(((2, 0), (4, 0), (2, 1)), 88.)
-        normal_ordered_b = normal_ordered(op_b)
-        expected = (BosonOperator(((4, 0),), 88.) +
-                    BosonOperator(((2, 1), (4, 0), (2, 0)), 88.))
+        op_b = QuadOperator('p0 q0 p3', 88.)
+        normal_ordered_b = normal_ordered(op_b, hbar=2)
+        expected = QuadOperator('p3', -88.*2j) + QuadOperator('q0 p0 p3', 88.0)
         self.assertTrue(normal_ordered_b == expected)
 
-    def test_normal_ordered_number(self):
-        number_op2 = BosonOperator(((2, 1), (2, 0)))
-        self.assertTrue(number_op2 == normal_ordered(number_op2))
-
-    def test_normal_ordered_number_reversed(self):
-        n_term_rev2 = BosonOperator(((2, 0), (2, 1)))
-        number_op2 = boson_number_operator(3, 2)
-        expected = BosonOperator(()) + number_op2
-        self.assertTrue(normal_ordered(n_term_rev2) == expected)
-
     def test_normal_ordered_offsite(self):
-        op = BosonOperator(((3, 1), (2, 0)))
+        op = QuadOperator(((3, 'p'), (2, 'q')))
         self.assertTrue(op == normal_ordered(op))
 
     def test_normal_ordered_offsite_reversed(self):
-        op = BosonOperator(((3, 0), (2, 1)))
-        expected = BosonOperator(((2, 1), (3, 0)))
-        self.assertTrue(expected == normal_ordered(op))
-
-    def test_normal_ordered_double_create(self):
-        op = BosonOperator(((2, 0), (3, 1), (3, 1)))
-        expected = BosonOperator((), 0.0)
-        self.assertTrue(expected == normal_ordered(op))
-
-    def test_normal_ordered_double_create_separated(self):
-        op = BosonOperator(((3, 1), (2, 0), (3, 1)))
-        expected = BosonOperator((), 0.0)
-        self.assertTrue(expected == normal_ordered(op))
-
-    def test_normal_ordered_multi(self):
-        op = BosonOperator(((2, 0), (1, 1), (2, 1)))
-        expected = (BosonOperator(((2, 1), (1, 1), (2, 0))) +
-                    BosonOperator(((1, 1),)))
+        op = QuadOperator(((3, 'q'), (2, 'p')))
+        expected = QuadOperator(((2, 'p'), (3, 'q')))
         self.assertTrue(expected == normal_ordered(op))
 
     def test_normal_ordered_triple(self):
-        op_132 = BosonOperator(((1, 1), (3, 0), (2, 0)))
-        op_123 = BosonOperator(((1, 1), (2, 0), (3, 0)))
-        op_321 = BosonOperator(((3, 0), (2, 0), (1, 1)))
+        op_132 = QuadOperator(((1, 'p'), (3, 'q'), (2, 'q')))
+        op_123 = QuadOperator(((1, 'p'), (2, 'q'), (3, 'q')))
+        op_321 = QuadOperator(((3, 'q'), (2, 'q'), (1, 'p')))
 
         self.assertTrue(op_132 == normal_ordered(op_123))
         self.assertTrue(op_132 == normal_ordered(op_132))
         self.assertTrue(op_132 == normal_ordered(op_321))
 
-    def test_is_boson_preserving_BosonOperator(self):
-        op = BosonOperator()
-        self.assertTrue(op.is_boson_preserving())
+    def test_is_linear_QuadOperator(self):
+        op = QuadOperator()
+        self.assertTrue(op.is_linear())
 
-    def test_is_boson_preserving_number(self):
-        op = boson_number_operator(n_modes=5, mode=3)
-        self.assertTrue(op.is_boson_preserving())
+        op = QuadOperator('q0 p0 p1')
+        self.assertTrue(op.is_linear())
 
-    def test_is_boson_preserving_three(self):
-        op = BosonOperator(((0, 1), (2, 1), (4, 0)))
-        self.assertFalse(op.is_boson_preserving())
+        op = QuadOperator('q0 p0 q0 p0 p1')
+        self.assertTrue(op.is_linear())
 
-    def test_is_boson_preserving_out_of_order(self):
-        op = BosonOperator(((0, 1), (2, 0), (1, 1), (3, 0)))
-        self.assertTrue(op.is_boson_preserving())
+        op = QuadOperator('q0 p0 q0 p0 q0 p1')
+        self.assertFalse(op.is_linear())

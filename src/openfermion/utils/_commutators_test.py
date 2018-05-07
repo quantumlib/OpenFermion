@@ -13,7 +13,9 @@
 """Tests for _commutators.py."""
 import unittest
 
-from openfermion.ops import FermionOperator, QubitOperator
+from openfermion.ops import FermionOperator, QubitOperator, \
+                            BosonOperator, QuadOperator, \
+                            normal_ordered_boson, normal_ordered_quad
 from openfermion.transforms import jordan_wigner
 from openfermion.utils import hermitian_conjugated
 from openfermion.utils._commutators import *
@@ -26,6 +28,12 @@ class CommutatorTest(unittest.TestCase):
         self.fermion_term = FermionOperator('1^ 2^ 3 4', -3.17)
         self.fermion_operator = self.fermion_term + hermitian_conjugated(
             self.fermion_term)
+        self.boson_term = BosonOperator('1^ 2^ 3 4', -3.17)
+        self.boson_operator = self.boson_term + hermitian_conjugated(
+            self.boson_term)
+        self.quad_term = QuadOperator('q0 p0 q1 p0 p0', -3.17)
+        self.quad_operator = self.quad_term + hermitian_conjugated(
+            self.quad_term)
         self.qubit_operator = jordan_wigner(self.fermion_operator)
 
     def test_commutes_identity(self):
@@ -33,20 +41,44 @@ class CommutatorTest(unittest.TestCase):
                          FermionOperator('2^ 3', 2.3))
         self.assertEqual(com, FermionOperator.zero())
 
+        com = commutator(BosonOperator.identity(),
+                         BosonOperator('2^ 3', 2.3))
+        self.assertTrue(com == BosonOperator.zero())
+
+        com = commutator(QuadOperator.identity(),
+                         QuadOperator('q2 p3', 2.3))
+        self.assertTrue(com == QuadOperator.zero())
+
     def test_commutes_no_intersection(self):
         com = commutator(FermionOperator('2^ 3'), FermionOperator('4^ 5^ 3'))
         com = normal_ordered(com)
         self.assertEqual(com, FermionOperator.zero())
+
+        com = commutator(BosonOperator('2^ 3'), BosonOperator('4^ 5^ 3'))
+        com = normal_ordered_boson(com)
+        self.assertTrue(com == BosonOperator.zero())
+
+        com = commutator(QuadOperator('q2 p3'), QuadOperator('q4 q5 p3'))
+        com = normal_ordered_quad(com)
+        self.assertTrue(com == QuadOperator.zero())
 
     def test_commutes_number_operators(self):
         com = commutator(FermionOperator('4^ 3^ 4 3'), FermionOperator('2^ 2'))
         com = normal_ordered(com)
         self.assertEqual(com, FermionOperator.zero())
 
+        com = commutator(BosonOperator('4^ 3^ 4 3'), BosonOperator('2^ 2'))
+        com = normal_ordered_boson(com)
+        self.assertTrue(com == BosonOperator.zero())
+
     def test_commutator_hopping_operators(self):
         com = commutator(3 * FermionOperator('1^ 2'), FermionOperator('2^ 3'))
         com = normal_ordered(com)
         self.assertEqual(com, FermionOperator('1^ 3', 3))
+
+        com = commutator(3 * BosonOperator('1^ 2'), BosonOperator('2^ 3'))
+        com = normal_ordered_boson(com)
+        self.assertTrue(com == BosonOperator('1^ 3', 3))
 
     def test_commutator_hopping_with_single_number(self):
         com = commutator(FermionOperator('1^ 2', 1j), FermionOperator('1^ 1'))
@@ -71,6 +103,49 @@ class CommutatorTest(unittest.TestCase):
         self.assertEqual(commutator(self.qubit_operator, operator_b),
                          (self.qubit_operator * operator_b -
                           operator_b * self.qubit_operator))
+
+    def test_canonical_boson_commutation_relations(self):
+        op_1 = BosonOperator('3')
+        op_1_dag = BosonOperator('3^')
+        op_2 = BosonOperator('4')
+        op_2_dag = BosonOperator('4^')
+        zero = BosonOperator()
+        one = BosonOperator('')
+
+        self.assertTrue(one ==
+            normal_ordered_boson(commutator(op_1, op_1_dag)))
+        self.assertTrue(zero ==
+            normal_ordered_boson(commutator(op_1, op_2)))
+        self.assertTrue(zero ==
+            normal_ordered_boson(commutator(op_1, op_2_dag)))
+        self.assertTrue(zero ==
+            normal_ordered_boson(commutator(op_1_dag, op_2)))
+        self.assertTrue(zero ==
+            normal_ordered_boson(commutator(op_1_dag, op_2_dag)))
+        self.assertTrue(one ==
+            normal_ordered_boson(commutator(op_2, op_2_dag)))
+
+    def test_canonical_quad_commutation_relations(self):
+        q1 = QuadOperator('q3')
+        p1 = QuadOperator('p3')
+        q2 = QuadOperator('q4')
+        p2 = QuadOperator('p4')
+        zero = QuadOperator()
+        one = QuadOperator('')
+        hbar = 2.
+
+        self.assertTrue(1j*hbar*one ==
+            normal_ordered_quad(commutator(q1, p1), hbar))
+        self.assertTrue(zero ==
+            normal_ordered_quad(commutator(q1, q2), hbar))
+        self.assertTrue(zero ==
+            normal_ordered_quad(commutator(q1, p2), hbar))
+        self.assertTrue(zero ==
+            normal_ordered_quad(commutator(p1, q2), hbar))
+        self.assertTrue(zero ==
+            normal_ordered_quad(commutator(p1, p2), hbar))
+        self.assertTrue(1j*hbar*one ==
+            normal_ordered_quad(commutator(q2, p2), hbar))
 
     def test_ndarray_input(self):
         """Test when the inputs are numpy arrays."""

@@ -21,6 +21,83 @@ class QuadOperatorError(Exception):
     pass
 
 
+def normal_ordered_term(term, coefficient, hbar=1.):
+    """Return a normal ordered BosonOperator corresponding to single term.
+
+    Args:
+        term: A tuple of tuples. The first element of each tuple is
+            an integer indicating the mode on which a boson ladder
+            operator acts, starting from zero. The second element of each
+            tuple is an integer, either 1 or 0, indicating whether creation
+            or annihilation acts on that mode.
+        coefficient: The coefficient of the term.
+        hbar (float): the value of hbar used in the definition of the commutator
+            [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+
+    Returns:
+        ordered_term (QuadOperator): The normal ordered form of the input.
+            Note that this might have more terms.
+
+    In our convention, normal ordering implies terms are ordered
+    from highest tensor factor (on left) to lowest (on right).
+    Also, q operators come first.
+    """
+    # Iterate from left to right across operators and reorder to normal
+    # form. Swap terms operators into correct position by moving from
+    # left to right across ladder operators.
+    term = list(term)
+    ordered_term = QuadOperator()
+    for i in range(1, len(term)):
+        for j in range(i, 0, -1):
+            right_operator = term[j]
+            left_operator = term[j - 1]
+
+            # Swap operators if q on right and p on left.
+            # p q -> q p
+            if right_operator[1] == 'q' and not left_operator[1] == 'q':
+                term[j - 1] = right_operator
+                term[j] = left_operator
+
+                # Replace p q with i hbar + q p
+                # if indices are the same.
+                if right_operator[0] == left_operator[0]:
+                    new_term = term[:(j - 1)] + term[(j + 1)::]
+
+                    # Recursively add the processed new term.
+                    ordered_term += normal_ordered_term(
+                        tuple(new_term), -coefficient*1j*hbar)
+
+            # Handle case when operator type is the same.
+            elif right_operator[1] == left_operator[1]:
+
+                # Swap if same type but lower index on left.
+                if right_operator[0] > left_operator[0]:
+                    term[j - 1] = right_operator
+                    term[j] = left_operator
+
+    # Add processed term and return.
+    ordered_term += QuadOperator(tuple(term), coefficient)
+    return ordered_term
+
+
+def normal_ordered(quad_operator, hbar=1.):
+    """Compute and return the normal ordered form of a QuadOperator.
+
+    In our convention, normal ordering implies terms are ordered
+    from highest tensor factor (on left) to lowest (on right).
+    Also, q operators come first.
+
+    Args:
+        quad_operator (QuadOperator): the quadrature operator.
+        hbar (float): the value of hbar used in the definition of the commutator
+            [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+    """
+    ordered_operator = QuadOperator()
+    for term, coefficient in quad_operator.terms.items():
+        ordered_operator += normal_ordered_term(term, coefficient, hbar=hbar)
+    return ordered_operator
+
+
 class QuadOperator(SymbolicOperator):
     """QuadOperator stores a sum of products of canonical quadrature operators.
 
@@ -65,10 +142,6 @@ class QuadOperator(SymbolicOperator):
             H2 = QuadOperator('p0 q3', 0.5)
             H2 += QuadOperator('p3 q0', 0.6)
 
-    Optional arugments:
-        hbar (float): the value of hbar in the definition of the canonical
-            quadrature operators. By default, hbar=1.
-
     Note:
         Adding QuadOperator is faster using += (as this
         is done by in-place addition). Specifying the coefficient
@@ -80,13 +153,23 @@ class QuadOperator(SymbolicOperator):
     action_before_index = True
     different_indices_commute = True
 
-    def __init__(self, term=None, coefficient=1., hbar=1.):
+    def is_normal_ordered(self):
+        """Return whether or not term is in normal order.
+
+        In our convention, q operators come first.
+        Note that unlike the Fermion operator, due to the commutation
+        of quadrature operators with different indices, the QuadOperator
+        sorts quadrature operators by index.
         """
-        Override in-place initialization of SymbolicOperator
-        to take into account optional hbar argument.
-        """
-        super().__init__(term, coefficient)
-        self.hbar = hbar
+        for term in self.terms:
+            for i in range(1, len(term)):
+                for j in range(i, 0, -1):
+                    right_operator = term[j]
+                    left_operator = term[j - 1]
+                    if (right_operator[0] == left_operator[0] and
+                          right_operator[1] == 'q' and left_operator[1] == 'p'):
+                        return False
+        return True
 
     def is_linear(self):
         """Query whether the term is quadratic or lower in the

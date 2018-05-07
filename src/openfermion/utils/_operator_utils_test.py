@@ -83,6 +83,12 @@ class OperatorUtilsTest(unittest.TestCase):
     def test_is_identity_double_of_unit_bosonoperator(self):
         self.assertTrue(is_identity(2. * BosonOperator(())))
 
+    def test_is_identity_unit_quadoperator(self):
+        self.assertTrue(is_identity(QuadOperator(())))
+
+    def test_is_identity_double_of_unit_bosonoperator(self):
+        self.assertTrue(is_identity(2. * QuadOperator(())))
+
     def test_is_identity_unit_qubitoperator(self):
         self.assertTrue(is_identity(QubitOperator(())))
 
@@ -95,11 +101,17 @@ class OperatorUtilsTest(unittest.TestCase):
     def test_not_is_identity_single_term_bosonoperator(self):
         self.assertFalse(is_identity(BosonOperator('1^')))
 
+    def test_not_is_identity_single_term_quadoperator(self):
+        self.assertFalse(is_identity(QuadOperator('q1')))
+
     def test_not_is_identity_single_term_qubitoperator(self):
         self.assertFalse(is_identity(QubitOperator('X1')))
 
     def test_not_is_identity_zero_bosonoperator(self):
         self.assertFalse(is_identity(BosonOperator()))
+
+    def test_not_is_identity_zero_quadoperator(self):
+        self.assertFalse(is_identity(QuadOperator()))
 
     def test_not_is_identity_zero_qubitoperator(self):
         self.assertFalse(is_identity(QubitOperator()))
@@ -128,6 +140,16 @@ class OperatorUtilsTest(unittest.TestCase):
         reordered = reorder(operator, shift_by_one, reverse=True)
         self.assertEqual(reordered.terms,
                          {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
+
+    def test_reorder_quad(self):
+        shift_by_one = lambda x, y: (x + 1) % y
+        operator = QuadOperator('q1 q2 p3 p4', -3.17)
+        reordered = reorder(operator, shift_by_one)
+        self.assertEqual(reordered.terms,
+                         {((0, 'p'), (2, 'q'), (3, 'q'), (4, 'p')): -3.17})
+        reordered = reorder(operator, shift_by_one, reverse=True)
+        self.assertEqual(reordered.terms,
+                         {((0, 'q'), (1, 'q'), (2, 'p'), (3, 'p')): -3.17})
 
     def test_up_then_down(self):
         for LadderOp in (FermionOperator, BosonOperator):
@@ -199,6 +221,35 @@ class HermitianConjugatedTest(unittest.TestCase):
                          hermitian_conjugated(jordan_wigner(ferm_op)))
         self.assertEqual(bravyi_kitaev(hermitian_conjugated(ferm_op)),
                          hermitian_conjugated(bravyi_kitaev(ferm_op)))
+
+    def test_hermitian_conjugated_quad_op(self):
+        """Test conjugating QuadOperator."""
+        op = QuadOperator()
+        op_hc = hermitian_conjugated(op)
+        correct_op = op
+        self.assertTrue(op_hc == correct_op)
+
+        op = QuadOperator('q0 p1', 2.)
+        op_hc = hermitian_conjugated(op)
+        correct_op = op
+        self.assertTrue(op_hc == correct_op)
+
+        op = QuadOperator('q0 p1', 2.j)
+        op_hc = hermitian_conjugated(op)
+        correct_op = QuadOperator('q0 p1', -2.j)
+        self.assertTrue(op_hc == correct_op)
+
+        op = QuadOperator('q0 p1', 2.) + QuadOperator('q4 q5 p7', 3.j)
+        op_hc = hermitian_conjugated(op)
+        correct_op = (QuadOperator('q0 p1', 2.) +
+                      QuadOperator('q4 q5 p7', -3.j))
+        self.assertTrue(op_hc == correct_op)
+
+        op = QuadOperator('q0 p0 q1', 2.) + QuadOperator('q1 p1 p2', 3.j)
+        op_hc = hermitian_conjugated(op)
+        correct_op = (QuadOperator('p0 q0 q1', 2.) +
+                      QuadOperator('p1 q1 p2', -3.j))
+        self.assertTrue(op_hc == correct_op)
 
     def test_hermitian_conjugate_empty(self):
         op = FermionOperator()
@@ -351,6 +402,26 @@ class IsHermitianTest(unittest.TestCase):
         op += BosonOperator('3^ 2 1^ 0')
         self.assertTrue(is_hermitian(op))
 
+    def test_quad_operator_zero(self):
+        op = QuadOperator()
+        self.assertTrue(is_hermitian(op))
+
+    def test_quad_operator_identity(self):
+        op = QuadOperator(())
+        self.assertTrue(is_hermitian(op))
+
+    def test_quad_operator_nonhermitian(self):
+        op = QuadOperator('q0 p1 q1')
+        self.assertFalse(is_hermitian(op))
+
+    def test_quad_operator_hermitian(self):
+        op = QuadOperator('q0 p1 q2 p3')
+        self.assertTrue(is_hermitian(op))
+
+        op = QuadOperator('q0 p0 q1 p1')
+        op += QuadOperator('p0 q0 p1 q1')
+        self.assertTrue(is_hermitian(op))
+
         # TODO: insert bose_hubbard here
         # op = fermi_hubbard(2, 2, 1., 1.)
         # self.assertTrue(is_hermitian(op))
@@ -412,6 +483,9 @@ class SaveLoadOperatorTest(unittest.TestCase):
         self.boson_term = BosonOperator('1^ 2^ 3 4', -3.17)
         self.boson_operator = self.boson_term + hermitian_conjugated(
             self.boson_term)
+        self.quad_term = QuadOperator('q0 p0 q1 p0 p0', -3.17)
+        self.quad_operator = self.quad_term + hermitian_conjugated(
+            self.quad_term)
         self.qubit_operator = jordan_wigner(self.fermion_operator)
         self.file_name = "test_file"
 
@@ -449,6 +523,19 @@ class SaveLoadOperatorTest(unittest.TestCase):
         loaded_boson_operator = load_operator(self.file_name,
                                                 plain_text=True)
         self.assertTrue(self.boson_operator == loaded_boson_operator)
+
+    def test_save_and_load_quad_operators(self):
+        save_operator(self.quad_operator, self.file_name)
+        loaded_quad_operator = load_operator(self.file_name)
+        self.assertEqual(self.quad_operator.terms,
+                         loaded_quad_operator.terms)
+
+    def test_save_and_load_quad_operators_readably(self):
+        save_operator(self.quad_operator, self.file_name,
+                      plain_text=True)
+        loaded_quad_operator = load_operator(self.file_name,
+                                                plain_text=True)
+        self.assertTrue(self.quad_operator == loaded_quad_operator)
 
     def test_save_and_load_qubit_operators(self):
         save_operator(self.qubit_operator, self.file_name)

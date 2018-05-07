@@ -22,7 +22,8 @@ import os
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 
 from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
-                             InteractionOperator, InteractionRDM, BosonOperator,
+                             InteractionOperator, InteractionRDM,
+                             BosonOperator, QuadOperator,
                              PolynomialTensor, QubitOperator, normal_ordered)
 
 from scipy.sparse import spmatrix
@@ -173,6 +174,15 @@ def hermitian_conjugated(operator):
         for term, coefficient in operator.terms.items():
             conjugate_operator.terms[term] = coefficient.conjugate()
 
+    # Handle QuadOperator
+    elif isinstance(operator, QuadOperator):
+        conjugate_operator = QuadOperator()
+        for term, coefficient in operator.terms.items():
+            conjugate_term = reversed(term)
+            # take into account that different indices commute
+            conjugate_term = tuple(sorted(conjugate_term, key=lambda factor: factor[0]))
+            conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
+
     # Handle sparse matrix
     elif isinstance(operator, spmatrix):
         conjugate_operator = operator.getH()
@@ -196,8 +206,8 @@ def is_hermitian(operator):
         return (normal_ordered(operator) ==
                 normal_ordered(hermitian_conjugated(operator)))
 
-    # Handle QubitOperator
-    if isinstance(operator, QubitOperator):
+    # Handle QubitOperator and QuadOperator
+    if isinstance(operator, (QubitOperator, QuadOperator)):
         return operator == hermitian_conjugated(operator)
 
     # Handle sparse matrix
@@ -270,6 +280,9 @@ def eigenspectrum(operator, n_qubits=None):
     WARNING: This function has cubic runtime in dimension of
         Hilbert space operator, which might be exponential.
 
+    NOTE: This function does not currently support
+        QuadOperator and BosonOperator.
+
     Args:
         operator: QubitOperator, InteractionOperator, FermionOperator,
             PolynomialTensor, or InteractionRDM.
@@ -279,6 +292,8 @@ def eigenspectrum(operator, n_qubits=None):
     Returns:
         spectrum: dense numpy array of floats giving eigenspectrum.
     """
+    if isinstance(operator, (QuadOperator, BosonOperator)):
+        raise TypeError('Operator of invalid type.')
     from openfermion.transforms import get_sparse_operator
     from openfermion.utils import sparse_eigenspectrum
     sparse_operator = get_sparse_operator(operator, n_qubits)
@@ -290,12 +305,14 @@ def is_identity(operator):
     """Check whether QubitOperator of FermionOperator is identity.
 
     Args:
-        operator: QubitOperator, FermionOperator or BosonOperator.
+        operator: QubitOperator, FermionOperator,
+            BosonOperator, or QuadOperator.
 
     Raises:
         TypeError: Operator of invalid type.
     """
-    if isinstance(operator, (QubitOperator, FermionOperator, BosonOperator)):
+    if isinstance(operator, (QubitOperator, FermionOperator,
+                             BosonOperator, QuadOperator)):
         return list(operator.terms) == [()]
     raise TypeError('Operator of invalid type.')
 
@@ -426,7 +443,8 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
         plain_text: Whether the input file is plain text
 
     Returns:
-        operator: The stored FermionOperator, BosonOperator, or QubitOperator
+        operator: The stored FermionOperator, BosonOperator,
+            QuadOperator, or QubitOperator
 
     Raises:
         TypeError: Operator of invalid type.
@@ -444,6 +462,8 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
             operator = BosonOperator(operator_terms)
         elif operator_type == 'QubitOperator':
             operator = QubitOperator(operator_terms)
+        elif operator_type == 'QuadOperator':
+            operator = QuadOperator(operator_terms)
         else:
             raise TypeError('Operator of invalid type.')
     else:
@@ -464,6 +484,10 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
             operator = QubitOperator()
             for term in operator_terms:
                 operator += QubitOperator(term, operator_terms[term])
+        elif operator_type == 'QuadOperator':
+            operator = QuadOperator()
+            for term in operator_terms:
+                operator += QuadOperator(term, operator_terms[term])
         else:
             raise TypeError('Operator of invalid type.')
 
@@ -498,6 +522,8 @@ def save_operator(operator, file_name=None, data_directory=None,
         operator_type = "BosonOperator"
     elif isinstance(operator, QubitOperator):
         operator_type = "QubitOperator"
+    elif isinstance(operator, QuadOperator):
+        operator_type = "QuadOperator"
     elif (isinstance(operator, InteractionOperator) or
           isinstance(operator, InteractionRDM)):
         raise NotImplementedError('Not yet implemented for InteractionOperator'
