@@ -85,7 +85,14 @@ def normal_ordered(quad_operator, hbar=1.):
 
     In our convention, normal ordering implies terms are ordered
     from highest tensor factor (on left) to lowest (on right).
-    Also, q operators come first.
+    Also, q operators come before p operators.
+
+    NOTE: This convention is purely chosen as a way to place the quadrature
+    operator on equal footing with the bosonic operator, and provide
+    a 'standard' ordering that takes into account the commutation relations.
+    From a theoretical point of view, it would likely make more
+    sense to use the Weyl symmetric ordering, but this would be slightly
+    more computationally intensive.
 
     Args:
         quad_operator (QuadOperator): the quadrature operator.

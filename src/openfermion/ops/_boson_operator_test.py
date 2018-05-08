@@ -87,16 +87,6 @@ class BosonOperatorTest(unittest.TestCase):
         expected = BosonOperator(((2, 1), (3, 0)))
         self.assertTrue(expected == normal_ordered(op))
 
-    def test_normal_ordered_double_create(self):
-        op = BosonOperator(((2, 0), (3, 1), (3, 1)))
-        expected = BosonOperator((), 0.0)
-        self.assertTrue(expected == normal_ordered(op))
-
-    def test_normal_ordered_double_create_separated(self):
-        op = BosonOperator(((3, 1), (2, 0), (3, 1)))
-        expected = BosonOperator((), 0.0)
-        self.assertTrue(expected == normal_ordered(op))
-
     def test_normal_ordered_multi(self):
         op = BosonOperator(((2, 0), (1, 1), (2, 1)))
         expected = (BosonOperator(((2, 1), (1, 1), (2, 0))) +
