@@ -165,7 +165,8 @@ def hermitian_conjugated(operator):
             conjugate_term = tuple([(tensor_factor, 1 - action) for
                                     (tensor_factor, action) in reversed(term)])
             # take into account that different indices commute
-            conjugate_term = tuple(sorted(conjugate_term, key=lambda factor: factor[0]))
+            conjugate_term = tuple(
+                sorted(conjugate_term, key=lambda factor: factor[0]))
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
     # Handle QubitOperator
@@ -180,7 +181,8 @@ def hermitian_conjugated(operator):
         for term, coefficient in operator.terms.items():
             conjugate_term = reversed(term)
             # take into account that different indices commute
-            conjugate_term = tuple(sorted(conjugate_term, key=lambda factor: factor[0]))
+            conjugate_term = tuple(
+                sorted(conjugate_term, key=lambda factor: factor[0]))
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
     # Handle sparse matrix
@@ -499,7 +501,8 @@ def save_operator(operator, file_name=None, data_directory=None,
     """Save FermionOperator or QubitOperator to file.
 
     Args:
-        operator: An instance of FermionOperator, BosonOperator, or QubitOperator.
+        operator: An instance of FermionOperator, BosonOperator,
+            or QubitOperator.
         file_name: The name of the saved file.
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
@@ -542,8 +545,8 @@ def save_operator(operator, file_name=None, data_directory=None,
 
 
 def reorder(operator, order_function, num_modes=None, reverse=False):
-    """Changes the ladder operator order of the Hamiltonian based on the provided
-    order_function per mode index
+    """Changes the ladder operator order of the Hamiltonian based on the
+    provided order_function per mode index.
 
     Args:
         operator (SymbolicOperator): the operator that will be reordered. must

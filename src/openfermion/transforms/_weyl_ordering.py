@@ -34,8 +34,8 @@ def mccoy(mode, op_a, op_b, m, n):
     new_op = dict()
     for r in range(0, n+1):
         coeff = binom(n, r)/(2**n)
-        new_term = tuple([(mode, op_b)]*r + [(mode, op_a)]*m \
-                    + [(mode, op_b)]*(n-r))
+        new_term = tuple([(mode, op_b)]*r + [(mode, op_a)]*m
+                         + [(mode, op_b)]*(n-r))
         if new_term not in new_op:
             new_op[tuple(new_term)] = coeff
         else:

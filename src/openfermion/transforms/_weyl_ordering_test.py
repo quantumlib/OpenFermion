@@ -73,6 +73,7 @@ class McCoyTest(unittest.TestCase):
                     ((0, self.op_b), (0, self.op_a)): 0.5}
         self.assertEqual(res, expected)
 
+
 class WeylOrderingTest(unittest.TestCase):
 
     def test_weyl_empty(self):
@@ -116,14 +117,14 @@ class WeylOrderingTest(unittest.TestCase):
         op = BosonOperator('0^ 0')
         res = weyl_ordering(op)
         expected = BosonOperator('0^ 0', 0.5) \
-                    + BosonOperator('0 0^', 0.5)
+            + BosonOperator('0 0^', 0.5)
         self.assertTrue(res == expected)
         self.assertTrue(is_hermitian(res))
 
         op = QuadOperator('q0 p0')
         res = weyl_ordering(op)
         expected = QuadOperator('q0 p0', 0.5) \
-                    + QuadOperator('p0 q0', 0.5)
+            + QuadOperator('p0 q0', 0.5)
         self.assertTrue(res == expected)
         self.assertTrue(is_hermitian(res))
 
@@ -141,7 +142,7 @@ class WeylOrderingTest(unittest.TestCase):
         self.assertTrue(is_hermitian(w3))
 
         expected = QuadOperator('q0 q0 p0', 0.5) \
-                    + QuadOperator('p0 q0 q0', 0.5)
+            + QuadOperator('p0 q0 q0', 0.5)
         self.assertTrue(w1 == expected)
         self.assertTrue(w2 == expected)
         self.assertTrue(w3 == expected)
@@ -151,6 +152,6 @@ class WeylOrderingTest(unittest.TestCase):
         op = coeff*QuadOperator('q0 p0')
         res = weyl_ordering(op)
         expected = QuadOperator('q0 p0', 0.5) \
-                    + QuadOperator('p0 q0', 0.5)
+            + QuadOperator('p0 q0', 0.5)
         self.assertTrue(res == coeff*expected)
         self.assertFalse(is_hermitian(res))

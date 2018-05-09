@@ -101,7 +101,7 @@ def normal_ordered(boson_operator):
 
 
 class BosonOperator(SymbolicOperator):
-    """BosonOperator stores a sum of products of bosonic ladder operators.
+    r"""BosonOperator stores a sum of products of bosonic ladder operators.
 
     In OpenFermion, we describe bosonic ladder operators using the shorthand:
     'i^' = b^\dagger_i
@@ -163,7 +163,7 @@ class BosonOperator(SymbolicOperator):
                     right_operator = term[j]
                     left_operator = term[j - 1]
                     if (right_operator[0] == left_operator[0] and
-                          right_operator[1] > left_operator[1]):
+                            right_operator[1] > left_operator[1]):
                         return False
         return True
 

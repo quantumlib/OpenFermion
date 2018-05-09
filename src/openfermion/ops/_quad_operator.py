@@ -9,8 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
-"""Quadrature operator stores a sum of products of canonical quadrature operators."""
+"""QuadOperator stores a sum of products of canonical quadrature operators."""
 import numpy
 
 from future.utils import iteritems
@@ -31,8 +30,8 @@ def normal_ordered_term(term, coefficient, hbar=1.):
             tuple is an integer, either 1 or 0, indicating whether creation
             or annihilation acts on that mode.
         coefficient: The coefficient of the term.
-        hbar (float): the value of hbar used in the definition of the commutator
-            [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+        hbar (float): the value of hbar used in the definition of the
+            commutator [q_i, p_j] = i hbar delta_ij. By default hbar=1.
 
     Returns:
         ordered_term (QuadOperator): The normal ordered form of the input.
@@ -96,8 +95,8 @@ def normal_ordered(quad_operator, hbar=1.):
 
     Args:
         quad_operator (QuadOperator): the quadrature operator.
-        hbar (float): the value of hbar used in the definition of the commutator
-            [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+        hbar (float): the value of hbar used in the definition of the
+            commutator [q_i, p_j] = i hbar delta_ij. By default hbar=1.
     """
     ordered_operator = QuadOperator()
     for term, coefficient in quad_operator.terms.items():
@@ -173,8 +172,9 @@ class QuadOperator(SymbolicOperator):
                 for j in range(i, 0, -1):
                     right_operator = term[j]
                     left_operator = term[j - 1]
-                    if (right_operator[0] == left_operator[0] and
-                          right_operator[1] == 'q' and left_operator[1] == 'p'):
+                    if (right_operator[0] == left_operator[0]
+                            and right_operator[1] == 'q'
+                            and left_operator[1] == 'p'):
                         return False
         return True
 
@@ -192,6 +192,6 @@ class QuadOperator(SymbolicOperator):
                     p_count[operator[0]] = p_count.get(operator[0], 0) + 1
 
             if (any(v > 2 for v in q_count.values()) or
-              any(v > 2 for v in p_count.values())):
+                    any(v > 2 for v in p_count.values())):
                 return False
         return True

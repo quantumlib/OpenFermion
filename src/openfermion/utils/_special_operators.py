@@ -12,8 +12,7 @@
 
 """Commonly used operators (mainly instances of SymbolicOperator)."""
 import numpy
-from openfermion.ops import (FermionOperator,
-                               BosonOperator)
+from openfermion.ops import (FermionOperator, BosonOperator)
 
 
 def up_index(index):

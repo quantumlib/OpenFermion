@@ -13,13 +13,14 @@
 """testing angular momentum generators. _fermion_spin_operators.py"""
 import numpy
 import unittest
-from openfermion.ops import FermionOperator, normal_ordered
+from openfermion.ops import (FermionOperator,
+        normal_ordered, BosonOperator)
 from openfermion.utils import commutator
 from openfermion.utils._special_operators import (
-    majorana_operator, number_operator,
-    s_minus_operator, s_plus_operator, s_squared_operator,
-    sx_operator, sy_operator, sz_operator,
-    up_index, down_index)
+        majorana_operator, number_operator, boson_number_operator,
+        s_minus_operator, s_plus_operator, s_squared_operator,
+        sx_operator, sy_operator, sz_operator,
+        up_index, down_index)
 
 
 class FermionSpinOperatorsTest(unittest.TestCase):
@@ -135,6 +136,9 @@ class NumberOperatorTest(unittest.TestCase):
         op = number_operator(3, 2, 1j)
         self.assertEqual(op, FermionOperator(((2, 1), (2, 0))) * 1j)
 
+        op = boson_number_operator(3, 2, 1j)
+        self.assertTrue(op == BosonOperator(((2, 1), (2, 0))) * 1j)
+
     def test_number_operator_nosite(self):
         op = number_operator(4)
         expected = (FermionOperator(((0, 1), (0, 0))) +
@@ -142,6 +146,13 @@ class NumberOperatorTest(unittest.TestCase):
                     FermionOperator(((2, 1), (2, 0))) +
                     FermionOperator(((3, 1), (3, 0))))
         self.assertEqual(op, expected)
+
+        op = boson_number_operator(4)
+        expected = (BosonOperator(((0, 1), (0, 0))) +
+                    BosonOperator(((1, 1), (1, 0))) +
+                    BosonOperator(((2, 1), (2, 0))) +
+                    BosonOperator(((3, 1), (3, 0))))
+        self.assertTrue(op == expected)
 
 
 class MajoranaOperatorTest(unittest.TestCase):

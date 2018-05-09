@@ -16,8 +16,8 @@ import numpy
 import unittest
 
 from openfermion.ops._boson_operator import (BosonOperator,
-                                               BosonOperatorError,
-                                               normal_ordered)
+                                             BosonOperatorError,
+                                             normal_ordered)
 from openfermion.utils import boson_number_operator
 
 
