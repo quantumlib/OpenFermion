@@ -1163,4 +1163,3 @@ class InnerProductTest(unittest.TestCase):
 
         self.assertAlmostEqual(inner_product(state_1, state_1), 2.)
         self.assertAlmostEqual(inner_product(state_1, state_2), 0.)
-if __name__ == '__main__': unittest.main()
