@@ -203,6 +203,71 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     sparse_operator.eliminate_zeros()
     return sparse_operator
 
+def get_linear_qubit_operator(qubit_operator, n_qubits=None):
+    """ Return a linear operator with matvec defined to avoid instantiating a
+    huge matrix, which requires lots of memory.
+
+    Args:
+      qubit_operator(QubitOperator): A qubit operator to be applied on vectors.
+
+    Returns:
+      linear_operator(LinearOperator): The equivalent operator which is well
+      defined when applying to a vector.
+
+    """
+    if n_qubits is None:
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    n_hilbert = 2 ** n_qubits
+
+    def matvec(vec):
+        if (len(vec) != n_hilbert):
+            raise ValueError('Invalid length of vector specified: %d != %d'
+                             %(len(vec), n_hilbert))
+
+        retvec = numpy.zeros(vec.shape, dtype=complex)
+        # Loop through the terms.
+        for qubit_term in qubit_operator.terms:
+            vec_pairs =  []
+            tensor_factor = 0
+            coefficient = qubit_operator.terms[qubit_term]
+
+            for pauli_operator in qubit_term:
+                # Split vector by half and half for each bit.
+                num_splits = 2 ** (pauli_operator[0] - tensor_factor + 1)
+                if (not vec_pairs):
+                    vec_pairs = [numpy.split(vec, 2)]
+                    num_splits /= 2
+                if (num_splits >= 4):
+                    vec_pairs = [numpy.split(v, num_splits/ 2)
+                                 for vec_pair in vec_pairs for v in vec_pair]
+                    num_splits = 2
+                if (num_splits >= 2):
+                    vec_pairs = [numpy.split(v, 2)
+                                 for vec_pair in vec_pairs for v in vec_pair]
+
+                # There is an non-identity op here, transform the vector.
+                pauli_op = pauli_operator[1]
+                xyz = {
+                    'X' : lambda vec_pairs : [[vec_pair[1], vec_pair[0]]
+                                              for vec_pair in vec_pairs],
+                    'Y' : lambda vec_pairs : [[-1.j* vec_pair[1],
+                                               1.j* vec_pair[0]]
+                                              for vec_pair in vec_pairs],
+                    'Z' : lambda vec_pairs : [[vec_pair[0], -vec_pair[1]]
+                                              for vec_pair in vec_pairs],
+                }
+                vec_pairs = xyz[pauli_operator[1]](vec_pairs)
+                tensor_factor = pauli_operator[0] + 1
+
+            # No need to check tensor_factor, i.e. to deal with bits left.
+            retvec += coefficient * numpy.concatenate(
+                [v for vec_pair in vec_pairs for v in vec_pair])
+        return retvec
+    return scipy.sparse.linalg.LinearOperator((n_hilbert, n_hilbert),
+                                              matvec=matvec, dtype=complex)
 
 def jw_configuration_state(occupied_orbitals, n_qubits):
     """Function to produce a basis state in the occupation number basis.
