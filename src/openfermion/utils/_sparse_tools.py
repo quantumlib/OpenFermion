@@ -231,41 +231,33 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None):
         retvec = numpy.zeros(vec.shape, dtype=complex)
         # Loop through the terms.
         for qubit_term in qubit_operator.terms:
-            vec_pairs = []
+            vecs = [vec]
             tensor_factor = 0
             coefficient = qubit_operator.terms[qubit_term]
 
             for pauli_operator in qubit_term:
                 # Split vector by half and half for each bit.
-                num_splits = 2 ** (pauli_operator[0] - tensor_factor + 1)
-                if not vec_pairs:
-                    vec_pairs = [numpy.split(vec, 2)]
-                    num_splits /= 2
-                if num_splits >= 4:
-                    vec_pairs = [numpy.split(v, num_splits/ 2)
-                                 for vec_pair in vec_pairs for v in vec_pair]
-                    num_splits = 2
+                num_splits = 2 ** (pauli_operator[0] - tensor_factor)
+                if num_splits >= 2:
+                    vecs = [v for iter_v in vecs
+                            for v in numpy.split(iter_v, num_splits)]
+
                 # Note that this is to make sure that XYZ operations always work
                 # on vector pairs.
-                if num_splits >= 2:
-                    vec_pairs = [numpy.split(v, 2)
-                                 for vec_pair in vec_pairs for v in vec_pair]
+                vec_pairs = [numpy.split(v, 2) for v in vecs]
 
                 # There is an non-identity op here, transform the vector.
                 xyz = {
-                    'X' : lambda vec_pairs: [[vec_pair[1], vec_pair[0]]
-                                             for vec_pair in vec_pairs],
-                    'Y' : lambda vec_pairs: [[-1j* vec_pair[1], 1j* vec_pair[0]]
-                                             for vec_pair in vec_pairs],
-                    'Z' : lambda vec_pairs: [[vec_pair[0], -vec_pair[1]]
-                                             for vec_pair in vec_pairs],
+                    'X' : lambda vps: [[vp[1], vp[0]] for vp in vps],
+                    'Y' : lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
+                    'Z' : lambda vps: [[vp[0], -vp[1]] for vp in vps],
                 }
-                vec_pairs = xyz[pauli_operator[1]](vec_pairs)
+                vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs)
+                        for v in vp]
                 tensor_factor = pauli_operator[0] + 1
 
             # No need to check tensor_factor, i.e. to deal with bits left.
-            retvec += coefficient * numpy.concatenate(
-                [v for vec_pair in vec_pairs for v in vec_pair])
+            retvec += coefficient * numpy.concatenate(vecs)
         return retvec
     return scipy.sparse.linalg.LinearOperator((n_hilbert, n_hilbert),
                                               matvec=matvec, dtype=complex)
