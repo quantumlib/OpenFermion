@@ -207,6 +207,21 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None):
     """ Return a linear operator with matvec defined to avoid instantiating a
     huge matrix, which requires lots of memory.
 
+    The idea is that a single i_th qubit operator, O_i, is a 2-by-2 matrix, to
+    be applied on a vector of length n_hilbert / 2^i, performs permutations and/
+    or adds an extra factor for its first half and the second half, e.g. a `Z`
+    operator keeps the first half unchanged, while adds a factor of -1 to the
+    second half, while an `I` keeps it both components unchanged.
+
+    Note that the vector length is n_hilbert / 2^i, therefore when one works on
+    i monotonically (in increasing order), one keeps splitting the vector to the
+    right size and then apply O_i on them independently.
+
+    Also note that operator O_i, is an *envelop operator* for all operators
+    after it, i.e. {O_j | j > i}, which implies that starting with i = 0, one
+    can split the vector, apply O_i, split the resulting vector (cached) again
+    for the next operator.
+
     Args:
       qubit_operator(QubitOperator): A qubit operator to be applied on vectors.
 
@@ -223,7 +238,14 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None):
     n_hilbert = 2 ** n_qubits
 
     def matvec(vec):
-        """matvec for the LinearOperator class."""
+        """matvec for the LinearOperator class.
+
+        Args:
+          vec(numpy.ndarray): 1D numpy array.
+
+        Returns:
+          retvec(numpy.ndarray): same to the shape of input vec.
+        """
         if len(vec) != n_hilbert:
             raise ValueError('Invalid length of vector specified: %d != %d'
                              %(len(vec), n_hilbert))
@@ -237,10 +259,9 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None):
 
             for pauli_operator in qubit_term:
                 # Split vector by half and half for each bit.
-                num_splits = 2 ** (pauli_operator[0] - tensor_factor)
-                if num_splits >= 2:
-                    vecs = [v for iter_v in vecs
-                            for v in numpy.split(iter_v, num_splits)]
+                if pauli_operator[0] > tensor_factor:
+                    vecs = [v for iter_v in vecs for v in numpy.split(
+                        iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
 
                 # Note that this is to make sure that XYZ operations always work
                 # on vector pairs.
