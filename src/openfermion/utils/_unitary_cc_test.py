@@ -286,8 +286,8 @@ class UnitaryCC(unittest.TestCase):
                                                          hf_state)
         ccsd_state_l = scipy.sparse.linalg.expm_multiply(ccsd_sparse_l,
                                                          hf_state)
-        expected_ccsd_energy = ccsd_state_l.getH().dot(
-            self.hamiltonian_matrix.dot(ccsd_state_r))[0, 0]
+        expected_ccsd_energy = ccsd_state_l.conjugate().dot(
+            self.hamiltonian_matrix.dot(ccsd_state_r))
         self.assertAlmostEqual(expected_ccsd_energy, self.molecule.fci_energy)
 
     def test_ucc_h2_singlet(self):
@@ -358,8 +358,8 @@ class UnitaryCC(unittest.TestCase):
                                                          hf_state)
         ccsd_state_l = scipy.sparse.linalg.expm_multiply(ccsd_sparse_l,
                                                          hf_state)
-        expected_ccsd_energy = ccsd_state_l.getH().dot(
-            self.hamiltonian_matrix.dot(ccsd_state_r))[0, 0]
+        expected_ccsd_energy = ccsd_state_l.conjugate().dot(
+            self.hamiltonian_matrix.dot(ccsd_state_r))
         self.assertAlmostEqual(expected_ccsd_energy, self.molecule.fci_energy)
 
     def test_value_error_for_odd_n_qubits(self):
