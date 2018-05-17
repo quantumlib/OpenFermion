@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 """Tests for sparse_tools.py."""
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import numpy
 import unittest
@@ -186,17 +186,15 @@ class JordanWignerSparseTest(unittest.TestCase):
 class ComputationalBasisStateTest(unittest.TestCase):
     def test_computational_basis_state(self):
         comp_basis_state = jw_configuration_state([0, 2, 5], 7)
-        dense_array = comp_basis_state.toarray()
-        self.assertAlmostEqual(dense_array[82, 0], 1.)
-        self.assertAlmostEqual(sum(dense_array), 1.)
+        self.assertAlmostEqual(comp_basis_state[82], 1.)
+        self.assertAlmostEqual(sum(comp_basis_state), 1.)
 
 
 class JWHartreeFockStateTest(unittest.TestCase):
     def test_jw_hartree_fock_state(self):
         hartree_fock_state = jw_hartree_fock_state(3, 7)
-        dense_array = hartree_fock_state.toarray()
-        self.assertAlmostEqual(dense_array[112, 0], 1.)
-        self.assertAlmostEqual(sum(dense_array), 1.)
+        self.assertAlmostEqual(hartree_fock_state[112], 1.)
+        self.assertAlmostEqual(sum(hartree_fock_state), 1.)
 
 
 class JWNumberIndicesTest(unittest.TestCase):
@@ -352,7 +350,8 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
         interaction_restrict = jw_number_restrict_operator(
             interaction_sparse, 2, n_qubits=6)
 
-        dim = 15  # shape of new sparse array
+        dim = 6 * 5 // 2  # shape of new sparse array
+
         # 3^ 2^ 4 1 maps 2**4 + 2 = 18 to 2**3 + 2**2 = 12 and vice versa;
         # in the 2-particle subspace (1, 4) and (2, 3) are 7th and 9th.
         expected = csc_matrix(([-1, -1], ([7, 9], [9, 7])), shape=(dim, dim))
@@ -367,7 +366,8 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
         interaction_restrict = jw_number_restrict_operator(
             interaction_sparse, 2)
 
-        dim = 15  # shape of new sparse array
+        dim = 6 * 5 // 2  # shape of new sparse array
+
         # 3^ 2^ 4 1 maps 2**4 + 2 = 18 to 2**3 + 2**2 = 12 and vice versa;
         # in the 2-particle subspace (1, 4) and (2, 3) are 7th and 9th.
         expected = csc_matrix(([-1, -1], ([7, 9], [9, 7])), shape=(dim, dim))
@@ -424,9 +424,8 @@ class JWNumberRestrictStateTest(unittest.TestCase):
 
         # Create a vector that has entry 1 for every coordinate with
         # the specified particle number, and 0 everywhere else
-        vector = csc_matrix(
-            ([1.] * subspace_dimension, number_indices, [0, 1]),
-            shape=(2 ** n_qubits, 1))
+        vector = numpy.zeros(2**n_qubits, dtype=float)
+        vector[number_indices] = 1
 
         # Restrict the vector
         restricted_vector = jw_number_restrict_state(vector, n_particles)
@@ -454,9 +453,8 @@ class JWSzRestrictStateTest(unittest.TestCase):
 
         # Create a vector that has entry 1 for every coordinate in
         # the specified subspace, and 0 everywhere else
-        vector = csc_matrix(
-            ([1.] * subspace_dimension, sz_indices, [0, 1]),
-            shape=(2 ** n_qubits, 1))
+        vector = numpy.zeros(2**n_qubits, dtype=float)
+        vector[sz_indices] = 1
 
         # Restrict the vector
         restricted_vector = jw_sz_restrict_state(vector, sz_value)
@@ -549,11 +547,8 @@ class JWGetGaussianStateTest(unittest.TestCase):
             # Check that the state obtained using the circuit is a ground state
             difference = (sparse_operator * circuit_state -
                           ground_energy * circuit_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
+            discrepancy = numpy.amax(numpy.abs(difference))
+            self.assertAlmostEqual(discrepancy, 0)
 
     def test_ground_state_particle_nonconserving(self):
         """Test getting the ground state of a Hamiltonian that does not
@@ -577,11 +572,8 @@ class JWGetGaussianStateTest(unittest.TestCase):
             # Check that the state obtained using the circuit is a ground state
             difference = (sparse_operator * circuit_state -
                           ground_energy * circuit_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
+            discrepancy = numpy.amax(numpy.abs(difference))
+            self.assertAlmostEqual(discrepancy, 0)
 
     def test_excited_state_particle_conserving(self):
         """Test getting an excited state of a Hamiltonian that conserves
@@ -613,11 +605,8 @@ class JWGetGaussianStateTest(unittest.TestCase):
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
             difference = (sparse_operator * gaussian_state -
                           energy * gaussian_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
+            discrepancy = numpy.amax(numpy.abs(difference))
+            self.assertAlmostEqual(discrepancy, 0)
 
     def test_excited_state_particle_nonconserving(self):
         """Test getting an excited state of a Hamiltonian that conserves
@@ -649,11 +638,8 @@ class JWGetGaussianStateTest(unittest.TestCase):
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
             difference = (sparse_operator * gaussian_state -
                           energy * gaussian_state)
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
+            discrepancy = numpy.amax(numpy.abs(difference))
+            self.assertAlmostEqual(discrepancy, 0)
 
     def test_bad_input(self):
         """Test bad input."""
@@ -680,21 +666,21 @@ class JWSlaterDeterminantTest(unittest.TestCase):
         """
         slater_determinant_matrix = numpy.array([[1., 1.]]) / numpy.sqrt(2.)
         slater_determinant = jw_slater_determinant(slater_determinant_matrix)
-        self.assertAlmostEqual(slater_determinant[1, 0],
-                               slater_determinant[2, 0])
-        self.assertAlmostEqual(abs(slater_determinant[1, 0]),
+        self.assertAlmostEqual(slater_determinant[1],
+                               slater_determinant[2])
+        self.assertAlmostEqual(abs(slater_determinant[1]),
                                1. / numpy.sqrt(2.))
-        self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
-        self.assertAlmostEqual(abs(slater_determinant[3, 0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[3]), 0.)
 
         slater_determinant_matrix = numpy.array([[1., -1.]]) / numpy.sqrt(2.)
         slater_determinant = jw_slater_determinant(slater_determinant_matrix)
-        self.assertAlmostEqual(slater_determinant[1, 0],
-                               -slater_determinant[2, 0])
-        self.assertAlmostEqual(abs(slater_determinant[1, 0]),
+        self.assertAlmostEqual(slater_determinant[1],
+                               -slater_determinant[2])
+        self.assertAlmostEqual(abs(slater_determinant[1]),
                                1. / numpy.sqrt(2.))
-        self.assertAlmostEqual(abs(slater_determinant[0, 0]), 0.)
-        self.assertAlmostEqual(abs(slater_determinant[3, 0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[0]), 0.)
+        self.assertAlmostEqual(abs(slater_determinant[3]), 0.)
 
 
 class GroundStateTest(unittest.TestCase):
@@ -1178,8 +1164,8 @@ class GetGapTest(unittest.TestCase):
 
 class InnerProductTest(unittest.TestCase):
     def test_inner_product(self):
-        state_1 = csc_matrix(([1., 1.j], ([0, 1], [0, 0])), shape=(2, 1))
-        state_2 = csc_matrix(([1., -1.j], ([0, 1], [0, 0])), shape=(2, 1))
+        state_1 = numpy.array([1., 1.j])
+        state_2 = numpy.array([1., -1.j])
 
         self.assertAlmostEqual(inner_product(state_1, state_1), 2.)
         self.assertAlmostEqual(inner_product(state_1, state_2), 0.)

@@ -294,10 +294,9 @@ def jw_configuration_state(occupied_orbitals, n_qubits):
     Returns:
         basis_vector(sparse): The basis state as a sparse matrix
     """
-    one_index = sum([2 ** (n_qubits - 1 - i) for i in occupied_orbitals])
-    basis_vector = scipy.sparse.csc_matrix(([1.], ([one_index], [0])),
-                                           shape=(2 ** n_qubits, 1),
-                                           dtype=float)
+    one_index = sum(2 ** (n_qubits - 1 - i) for i in occupied_orbitals)
+    basis_vector = numpy.zeros(2 ** n_qubits, dtype=float)
+    basis_vector[one_index] = 1
     return basis_vector
 
 
@@ -739,6 +738,7 @@ def get_density_matrix(states, probabilities):
     density_matrix = scipy.sparse.csc_matrix(
         (n_qubits, n_qubits), dtype=complex)
     for state, probability in zip(states, probabilities):
+        state = scipy.sparse.csc_matrix(state.reshape((len(state), 1)))
         density_matrix = density_matrix + probability * state * state.getH()
     return density_matrix
 
@@ -1207,8 +1207,4 @@ def get_gap(sparse_operator, initial_guess=None):
 
 def inner_product(state_1, state_2):
     """Compute inner product of two states."""
-    product = state_1.getH().dot(state_2)
-    if product.nnz:
-        return product.data[0]
-    else:
-        return 0.
+    return numpy.dot(state_1.conjugate(), state_2)
