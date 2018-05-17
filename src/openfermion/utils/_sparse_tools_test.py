@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 """Tests for sparse_tools.py."""
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import numpy
 import unittest
@@ -276,7 +276,7 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
         interaction_restrict = jw_number_restrict_operator(
             interaction_sparse, 2, n_qubits=6)
 
-        dim = 6 * 5 / 2  # shape of new sparse array
+        dim = 6 * 5 // 2  # shape of new sparse array
         # 3^ 2^ 4 1 maps 2**4 + 2 = 18 to 2**3 + 2**2 = 12 and vice versa;
         # in the 2-particle subspace (1, 4) and (2, 3) are 7th and 9th.
         expected = csc_matrix(([-1, -1], ([7, 9], [9, 7])), shape=(dim, dim))
@@ -291,7 +291,7 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
         interaction_restrict = jw_number_restrict_operator(
             interaction_sparse, 2)
 
-        dim = 6 * 5 / 2  # shape of new sparse array
+        dim = 6 * 5 // 2  # shape of new sparse array
         # 3^ 2^ 4 1 maps 2**4 + 2 = 18 to 2**3 + 2**2 = 12 and vice versa;
         # in the 2-particle subspace (1, 4) and (2, 3) are 7th and 9th.
         expected = csc_matrix(([-1, -1], ([7, 9], [9, 7])), shape=(dim, dim))
