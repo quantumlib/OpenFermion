@@ -696,10 +696,6 @@ class GroundStateTest(unittest.TestCase):
             numpy.absolute(
                 expected_state.T.conj().dot(ground[1]))[0], 1.)
 
-    def test_get_ground_state_nonhermitian(self):
-        with self.assertRaises(ValueError):
-            get_ground_state(get_sparse_operator(1j * QubitOperator('X1')))
-
 
 class ExpectationTest(unittest.TestCase):
     def test_expectation_correct(self):
