@@ -108,6 +108,80 @@ class JordanWignerSparseTest(unittest.TestCase):
             qubit_operator_sparse(QubitOperator('X1')).A,
             expected.A))
 
+    def test_get_linear_qubit_operator_0(self):
+        """Testing with zero term."""
+        qubit_operator = QubitOperator.zero()
+
+        vec = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
+        matvec_expected = numpy.zeros(vec.shape)
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator(qubit_operator, 3) * vec, matvec_expected))
+
+    def test_get_linear_qubit_operator_x(self):
+        vec = numpy.array([1, 2, 3, 4])
+        matvec_expected = numpy.array([2, 1, 4, 3])
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator(QubitOperator('X1')) * vec,
+            matvec_expected))
+
+    def test_get_linear_qubit_operator_y(self):
+        vec = numpy.array([1, 2, 3, 4], dtype=complex)
+        matvec_expected = 1.0j * numpy.array([-2, 1, -4, 3], dtype=complex)
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator(QubitOperator('Y1')) * vec,
+            matvec_expected))
+
+    def test_get_linear_qubit_operator_z(self):
+        vec = numpy.array([1, 2, 3, 4])
+        matvec_expected = numpy.array([1, 2, -3, -4])
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator(QubitOperator('Z0'), 2) * vec,
+            matvec_expected))
+
+    def test_get_linear_qubit_operator_z3(self):
+        vec = numpy.array(
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+        matvec_expected = numpy.array(
+            [1, -2, 3, -4, 5, -6, 7, -8, 9, -10, 11, -12, 13, -14, 15, -16])
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator(QubitOperator('Z3')) * vec,
+            matvec_expected))
+
+    def test_get_linear_qubit_operator_zx(self):
+        """Testing with multiple factors."""
+        vec = numpy.array([1, 2, 3, 4])
+        matvec_expected = numpy.array([2, 1, -4, -3])
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator(QubitOperator('Z0 X1')) * vec,
+            matvec_expected))
+
+    def test_get_linear_qubit_operator_multiple_terms(self):
+        """Testing with multiple terms."""
+        qubit_operator = QubitOperator.identity() + 2 * QubitOperator('Y2') + \
+            QubitOperator(((0, 'Z'), (1, 'X')), 10.0)
+
+        vec = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
+        matvec_expected = 10 * numpy.array([3, 4, 1, 2, -7, -8, -5, -6]) + \
+            2.j * numpy.array([-2, 1, -4, 3, -6, 5, -8, 7], dtype=complex) + vec
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator(qubit_operator) * vec, matvec_expected))
+
+    def test_get_linear_qubit_operator_compare(self):
+        """Compare get_linear_qubit_operator with qubit_operator_sparse."""
+        qubit_operator = QubitOperator('X0 Y1 Z3')
+        mat_expected = qubit_operator_sparse(qubit_operator)
+
+        self.assertTrue(numpy.allclose(numpy.transpose(
+            numpy.array([get_linear_qubit_operator(qubit_operator) * v
+                         for v in numpy.identity(16)])),
+                                       mat_expected.A))
 
 class ComputationalBasisStateTest(unittest.TestCase):
     def test_computational_basis_state(self):
@@ -278,7 +352,7 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
         interaction_restrict = jw_number_restrict_operator(
             interaction_sparse, 2, n_qubits=6)
 
-        dim = 6 * 5 / 2  # shape of new sparse array
+        dim = 15  # shape of new sparse array
         # 3^ 2^ 4 1 maps 2**4 + 2 = 18 to 2**3 + 2**2 = 12 and vice versa;
         # in the 2-particle subspace (1, 4) and (2, 3) are 7th and 9th.
         expected = csc_matrix(([-1, -1], ([7, 9], [9, 7])), shape=(dim, dim))
@@ -293,7 +367,7 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
         interaction_restrict = jw_number_restrict_operator(
             interaction_sparse, 2)
 
-        dim = 6 * 5 / 2  # shape of new sparse array
+        dim = 15  # shape of new sparse array
         # 3^ 2^ 4 1 maps 2**4 + 2 = 18 to 2**3 + 2**2 = 12 and vice versa;
         # in the 2-particle subspace (1, 4) and (2, 3) are 7th and 9th.
         expected = csc_matrix(([-1, -1], ([7, 9], [9, 7])), shape=(dim, dim))
