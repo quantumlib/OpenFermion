@@ -758,9 +758,6 @@ def get_ground_state(sparse_operator, initial_guess=None):
         eigenstate:
             The lowest eigenstate in scipy.sparse csc format.
     """
-    if not is_hermitian(sparse_operator):
-        raise ValueError('sparse_operator must be Hermitian.')
-
     values, vectors = scipy.sparse.linalg.eigsh(
         sparse_operator, k=1, v0=initial_guess, which='SA', maxiter=1e7)
 
