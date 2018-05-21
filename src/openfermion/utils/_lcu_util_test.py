@@ -29,21 +29,21 @@ from openfermion.utils._lcu_util import (
 
 class LambdaNormTest(unittest.TestCase):
 
-    def randomized_test(self):
+    def test_random(self):
 
         # Create random DiagonalCoulombHamiltonian.
-        random.seed(8)
         n_qubits = 8
+        random.seed(n_qubits)
         one_body = numpy.zeros((n_qubits, n_qubits), float)
         two_body = numpy.zeros((n_qubits, n_qubits), float)
         for p in range(8):
             for q in range(p, 8):
-                one_body[p, q] = random.rand()
-                two_body[p, q] = random.rand()
+                one_body[p, q] = random.random()
+                two_body[p, q] = random.random()
         one_body += one_body.T
         two_body += two_body.T
         diagonal_operator = DiagonalCoulombHamiltonian(
-            one_body, two_body, random.rand())
+            one_body, two_body, random.random())
 
         # Compute the lambda norm using expensive (reliable) method.
         qubit_operator = jordan_wigner(diagonal_operator)
