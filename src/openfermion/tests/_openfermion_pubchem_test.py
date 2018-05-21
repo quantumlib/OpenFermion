@@ -11,6 +11,8 @@
 #   limitations under the License.
 
 """Tests _openfermion_pubchem module in openfermion.utils on water."""
+from __future__ import absolute_import
+
 import numpy
 import unittest
 
