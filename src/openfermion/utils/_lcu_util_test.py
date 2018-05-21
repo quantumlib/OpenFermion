@@ -14,14 +14,47 @@
 
 from __future__ import absolute_import, division
 
+import numpy
 import random
 import unittest
 
+from openfermion.ops import DiagonalCoulombHamiltonian
+from openfermion.transforms import jordan_wigner
 from openfermion.utils._lcu_util import (
-    _preprocess_for_efficient_roulette_selection,
+    lambda_norm,
     _discretize_probability_distribution,
-    preprocess_lcu_coefficients_for_reversible_sampling,
-)
+    _preprocess_for_efficient_roulette_selection,
+    preprocess_lcu_coefficients_for_reversible_sampling)
+
+
+class LambdaNormTest(unittest.TestCase):
+
+    def randomized_test(self):
+
+        # Create random DiagonalCoulombHamiltonian.
+        random.seed(8)
+        n_qubits = 8
+        one_body = numpy.zeros((n_qubits, n_qubits), float)
+        two_body = numpy.zeros((n_qubits, n_qubits), float)
+        for p in range(8):
+            for q in range(p, 8):
+                one_body[p, q] = random.rand()
+                two_body[p, q] = random.rand()
+        one_body += one_body.T
+        two_body += two_body.T
+        diagonal_operator = DiagonalCoulombHamiltonian(
+            one_body, two_body, random.rand())
+
+        # Compute the lambda norm using expensive (reliable) method.
+        qubit_operator = jordan_wigner(diagonal_operator)
+        del qubit_operator.terms[()]
+        reliable_norm = qubit_operator.induced_norm()
+
+        # Compute the lambda norm using the method under test.
+        test_norm = lambda_norm(diagonal_operator)
+
+        # Test.
+        self.assertAlmostEqual(test_norm, reliable_norm)
 
 
 class DiscretizeDistributionTest(unittest.TestCase):
@@ -40,6 +73,7 @@ class DiscretizeDistributionTest(unittest.TestCase):
         return numers, denom
 
     def test_fuzz(self):
+        random.seed(8)
         for _ in range(100):
             n = random.randint(1, 50)
             weights = [random.random() for _ in range(n)]
@@ -97,6 +131,7 @@ class PreprocessForEfficientRouletteSelectionTest(unittest.TestCase):
         return alternates, keep_chances
 
     def test_fuzz(self):
+        random.seed(8)
         for _ in range(100):
             n = random.randint(1, 50)
             weights = [random.randint(0, 100) for _ in range(n)]
@@ -172,6 +207,7 @@ class PreprocessLCUCoefficientsForReversibleSamplingTest(unittest.TestCase):
         return alternates, keep_numers, keep_denom
 
     def test_fuzz(self):
+        random.seed(8)
         for _ in range(100):
             n = random.randint(1, 50)
             weights = [random.randint(0, 100) for _ in range(n)]

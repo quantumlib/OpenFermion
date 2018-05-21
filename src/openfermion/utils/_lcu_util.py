@@ -17,6 +17,24 @@ from __future__ import absolute_import, division
 import math
 
 
+def lambda_norm(diagonal_operator):
+    """Computes the lambda norm relevant to LCU algorithms.
+
+    Args:
+        diagonal_operator: instance of DiagonalCoulombHamiltonian.
+
+    Returns:
+        lambda_norm: A float giving the lambda norm.
+    """
+    lambda_norm = 0.
+    n_qubits = diagonal_operator.one_body.shape[0]
+    for p in range(n_qubits):
+        for q in range(n_qubits):
+            lambda_norm += 0.75 * abs(diagonal_operator.two_body[p, q])
+            lambda_norm += abs(diagonal_operator.one_body[p, q])
+    return lambda_norm
+
+
 def _partial_sums(vals):
     """Adds up the items in the input, yielding partial sums along the way."""
     total = 0
