@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests _openfermion_pubchem module in openfermion.utils on water."""
+"""Tests for _openfermion_pubchem.py."""
 from __future__ import absolute_import
 
 import numpy
@@ -19,9 +19,9 @@ import unittest
 from openfermion.utils import geometry_from_pubchem
 
 
-class WaterOpenfermionPubchemTest(unittest.TestCase):
+class OpenFermionPubChemTest(unittest.TestCase):
 
-    def setUp(self):
+    def test_water(self):
         water_geometry = geometry_from_pubchem('water')
         self.water_natoms = len(water_geometry)
         self.water_atoms = [water_atom[0] for water_atom in water_geometry]
@@ -30,19 +30,18 @@ class WaterOpenfermionPubchemTest(unittest.TestCase):
         water_oxygen_coordinate = numpy.array(water_oxygen[1])
         water_hydrogen1_coordinate = numpy.array(water_geometry[0][1])
         water_hydrogen2_coordinate = numpy.array(water_geometry[1][1])
-        water_oxygen_hydrogen1 = water_hydrogen1_coordinate - \
-                                 water_oxygen_coordinate
-        water_oxygen_hydrogen2 = water_hydrogen2_coordinate - \
-                                 water_oxygen_coordinate
+        water_oxygen_hydrogen1 = \
+            water_hydrogen1_coordinate - water_oxygen_coordinate
+        water_oxygen_hydrogen2 = \
+            water_hydrogen2_coordinate - water_oxygen_coordinate
 
         self.water_bond_length_1 = numpy.linalg.norm(water_oxygen_hydrogen1)
         self.water_bond_length_2 = numpy.linalg.norm(water_oxygen_hydrogen2)
-        self.water_bond_angle = numpy.arccos(numpy.dot(water_oxygen_hydrogen1,
-                                          water_oxygen_hydrogen2/
-                                (numpy.linalg.norm(water_oxygen_hydrogen1)*
-                                numpy.linalg.norm(water_oxygen_hydrogen2))))
-
-    def test_openfermion_pubchem(self):
+        self.water_bond_angle = \
+            numpy.arccos(numpy.dot(water_oxygen_hydrogen1,
+                                   water_oxygen_hydrogen2 /
+                                   (numpy.linalg.norm(water_oxygen_hydrogen1) *
+                                    numpy.linalg.norm(water_oxygen_hydrogen2))))
 
         water_natoms = 3
         self.assertEqual(water_natoms, self.water_natoms)
@@ -58,3 +57,15 @@ class WaterOpenfermionPubchemTest(unittest.TestCase):
         water_bond_angle_high = 110 / 360 * 2 * numpy.pi
         self.assertTrue(water_bond_angle_low <= self.water_bond_angle)
         self.assertTrue(water_bond_angle_high >= self.water_bond_angle)
+
+    def test_helium(self):
+        helium_geometry = geometry_from_pubchem('helium')
+        self.helium_natoms = len(helium_geometry)
+
+        helium_natoms = 1
+        self.assertEqual(helium_natoms, self.helium_natoms)
+
+    def test_none(self):
+        none_geometry = geometry_from_pubchem('none')
+
+        self.assertIsNone(none_geometry)
