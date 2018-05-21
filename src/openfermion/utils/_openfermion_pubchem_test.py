@@ -53,8 +53,8 @@ class OpenFermionPubChemTest(unittest.TestCase):
         self.assertTrue(water_bond_length_low <= self.water_bond_length_1)
         self.assertTrue(water_bond_length_high >= self.water_bond_length_1)
 
-        water_bond_angle_low = 100 / 360 * 2 * numpy.pi
-        water_bond_angle_high = 110 / 360 * 2 * numpy.pi
+        water_bond_angle_low = 100. / 360 * 2 * numpy.pi
+        water_bond_angle_high = 110. / 360 * 2 * numpy.pi
         self.assertTrue(water_bond_angle_low <= self.water_bond_angle)
         self.assertTrue(water_bond_angle_high >= self.water_bond_angle)
 
