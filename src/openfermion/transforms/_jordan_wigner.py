@@ -22,8 +22,9 @@ from openfermion.utils import count_qubits
 
 
 def jordan_wigner(operator):
-    """ Apply the Jordan-Wigner transform to a FermionOperator or
-    InteractionOperator to convert to a QubitOperator.
+    """ Apply the Jordan-Wigner transform to a FermionOperator,
+    InteractionOperator, or DiagonalCoulombHamiltonian to convert
+    to a QubitOperator.
 
     Operators are mapped as follows:
     a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
@@ -35,6 +36,10 @@ def jordan_wigner(operator):
     Warning:
         The runtime of this method is exponential in the maximum locality
         of the original FermionOperator.
+
+    Raises:
+        TypeError: Operator must be a FermionOperator,
+            DiagonalCoulombHamiltonian, or InteractionOperator.
     """
     if isinstance(operator, InteractionOperator):
         return jordan_wigner_interaction_op(operator)
@@ -42,7 +47,8 @@ def jordan_wigner(operator):
         return jordan_wigner_diagonal_coulomb_hamiltonian(operator)
 
     if not isinstance(operator, FermionOperator):
-        raise TypeError("operator must be a FermionOperator or "
+        raise TypeError("Operator must be a FermionOperator, "
+                        "DiagonalCoulombHamiltonian, or "
                         "InteractionOperator.")
 
     transformed_operator = QubitOperator()
