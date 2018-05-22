@@ -89,4 +89,4 @@ from ._sparse_tools import (expectation,
                             sparse_eigenspectrum,
                             variance)
 
-from ._openfermion_pubchem import geometry_from_pubchem
+from ._pubchem import geometry_from_pubchem
