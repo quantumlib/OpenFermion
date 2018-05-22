@@ -19,7 +19,8 @@ from ._commutators import anticommutator, commutator, double_commutator
 
 from ._grid import Grid
 
-from ._lcu_util import preprocess_lcu_coefficients_for_reversible_sampling
+from ._lcu_util import (lambda_norm,
+                        preprocess_lcu_coefficients_for_reversible_sampling)
 
 from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               freeze_orbitals, get_file_path,
