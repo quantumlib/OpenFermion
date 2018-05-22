@@ -53,7 +53,13 @@ class LambdaNormTest(unittest.TestCase):
         # Compute the lambda norm using the method under test.
         test_norm = lambda_norm(diagonal_operator)
 
+        # Third norm.
+        third_norm = 0.
+        for term, coefficient in qubit_operator.terms.items():
+            third_norm += abs(coefficient)
+
         # Test.
+        self.assertAlmostEqual(third_norm, reliable_norm)
         self.assertAlmostEqual(test_norm, reliable_norm)
 
 
