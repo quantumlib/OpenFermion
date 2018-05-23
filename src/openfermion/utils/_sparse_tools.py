@@ -225,8 +225,8 @@ def term_on_vec(args):
             vecs = [v for iter_v in vecs for v in numpy.split(
                 iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
 
-        # Note that this is to make sure that XYZ operations always work
-        # on vector pairs.
+        # Note that this is to make sure that XYZ operations always work on
+        # vector pairs.
         vec_pairs = [numpy.split(v, 2) for v in vecs]
 
         # There is an non-identity op here, transform the vector.
@@ -235,13 +235,10 @@ def term_on_vec(args):
             'Y' : lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
             'Z' : lambda vps: [[vp[0], -vp[1]] for vp in vps],
         }
-        vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs)
-                for v in vp]
+        vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs) for v in vp]
         tensor_factor = pauli_operator[0] + 1
 
     # No need to check tensor_factor, i.e. to deal with bits left.
-    print "LXL: "
-    print coefficient * numpy.concatenate(vecs)
     return coefficient * numpy.concatenate(vecs)
 
 def get_linear_qubit_operator(qubit_operator, n_qubits=None, processes=None):
