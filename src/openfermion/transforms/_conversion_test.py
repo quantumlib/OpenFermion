@@ -353,14 +353,16 @@ class GetQuadOperatorTest(unittest.TestCase):
     def test_q_squared(self):
         b = self.hbar*(BosonOperator('0^ 0^') + BosonOperator('0 0') \
             + BosonOperator('') + 2*BosonOperator('0^ 0'))/2
-        q = get_quad_operator(b, hbar=self.hbar)
+        q = normal_ordered_quad(
+            get_quad_operator(b, hbar=self.hbar), hbar=self.hbar)
         expected = QuadOperator('q0 q0')
         self.assertTrue(q == expected)
 
     def test_p_squared(self):
         b = self.hbar*(-BosonOperator('1^ 1^') - BosonOperator('1 1') \
             + BosonOperator('') + 2*BosonOperator('1^ 1'))/2
-        q = get_quad_operator(b, hbar=self.hbar)
+        q = normal_ordered_quad(
+            get_quad_operator(b, hbar=self.hbar), hbar=self.hbar)
         expected = QuadOperator('p1 p1')
         self.assertTrue(q == expected)
 

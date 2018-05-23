@@ -43,12 +43,24 @@ def mccoy(mode, op_a, op_b, m, n):
     return new_op
 
 
-def weyl_ordering(operator):
+def weyl_ordering(operator, ignore_coeff=True, ignore_identity=True):
     """ Apply the Weyl ordering to a BosonOperator or QuadOperator.
 
     The Weyl ordering is performed via McCoy's formula:
 
     q^m p^n -> (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) q^r p^m q^{n-r}
+
+    Args:
+        operator: either a BosonOperator or QuadOperator.
+        ignore_coeff (bool): By default, the coefficients for
+            each term are ignored; S(a q^m p^n) = S(q^m p^n), and
+            the returned operator is always Hermitian.
+            If set to False, then instead the coefficients are taken into
+            account; S(q^m p^n) = a S(q^m p^n). In this case, if
+            a is a complex coefficient, it is not guaranteed that the
+            the returned operator will be Hermitian.
+        ignore_identity (bool): By default, idenitity terms are ignore;
+            S(I) = 0. If set to False, then instead S(I) = I.
 
     Returns:
         transformed_operator: an operator of the same class as in the input.
@@ -60,51 +72,63 @@ def weyl_ordering(operator):
     if isinstance(operator, BosonOperator):
         transformed_operator = BosonOperator()
         for term in operator.terms:
+            if ignore_coeff:
+                coeff = 1
+            else:
+                coeff = operator.terms[term]
+
             # Initialize identity matrix.
-            transformed_term = BosonOperator((), operator.terms[term])
+            transformed_term = BosonOperator('', coeff)
 
-            # convert term into the form \prod_i {bd_i^m b_i^n}
-            modes = dict()
-            for op in term:
-                if op[0] not in modes:
-                    modes[op[0]] = [0, 0]
+            if term:
+                # convert term into the form \prod_i {bd_i^m b_i^n}
+                modes = dict()
+                for op in term:
+                    if op[0] not in modes:
+                        modes[op[0]] = [0, 0]
 
-                modes[op[0]][1-op[1]] += 1
+                    modes[op[0]][1-op[1]] += 1
 
-            # Replace {bd_i^m b_i^n} -> S({bd_i^m b_i^n})
-            for mode, (m, n) in modes.items():
-                qtmp = BosonOperator()
-                qtmp.terms = mccoy(mode, 1, 0, m, n)
-                transformed_term *= qtmp
+                # Replace {bd_i^m b_i^n} -> S({bd_i^m b_i^n})
+                for mode, (m, n) in modes.items():
+                    qtmp = BosonOperator()
+                    qtmp.terms = mccoy(mode, 1, 0, m, n)
+                    transformed_term *= qtmp
 
-        if operator.terms:
-            transformed_operator += transformed_term
+            if term or (not ignore_identity):
+                transformed_operator += transformed_term
 
     elif isinstance(operator, QuadOperator):
         transformed_operator = QuadOperator()
         for term in operator.terms:
+            if ignore_coeff:
+                coeff = 1
+            else:
+                coeff = operator.terms[term]
+
             # Initialize identity matrix.
-            transformed_term = QuadOperator((), operator.terms[term])
+            transformed_term = QuadOperator('', coeff)
 
-            # convert term into the form \prod_i {q_i^m p_i^n}
-            modes = dict()
-            for op in term:
-                if op[0] not in modes:
-                    modes[op[0]] = [0, 0]
+            if term:
+                # convert term into the form \prod_i {q_i^m p_i^n}
+                modes = dict()
+                for op in term:
+                    if op[0] not in modes:
+                        modes[op[0]] = [0, 0]
 
-                if op[1] == 'q':
-                    modes[op[0]][0] += 1
-                elif op[1] == 'p':
-                    modes[op[0]][1] += 1
+                    if op[1] == 'q':
+                        modes[op[0]][0] += 1
+                    elif op[1] == 'p':
+                        modes[op[0]][1] += 1
 
-            # replace {q_i^m p_i^n} -> S({q_i^m p_i^n})
-            for mode, (m, n) in modes.items():
-                qtmp = QuadOperator()
-                qtmp.terms = mccoy(mode, 'q', 'p', m, n)
-                transformed_term *= qtmp
+                # replace {q_i^m p_i^n} -> S({q_i^m p_i^n})
+                for mode, (m, n) in modes.items():
+                    qtmp = QuadOperator()
+                    qtmp.terms = mccoy(mode, 'q', 'p', m, n)
+                    transformed_term *= qtmp
 
-        if operator.terms:
-            transformed_operator += transformed_term
+            if term or (not ignore_identity):
+                transformed_operator += transformed_term
 
     else:
         raise TypeError("operator must be a BosonOperator or "

@@ -178,20 +178,12 @@ class QuadOperator(SymbolicOperator):
                         return False
         return True
 
-    def is_linear(self):
+    def is_gaussian(self):
         """Query whether the term is quadratic or lower in the
         quadrature operators.
         """
         for term in self.terms:
-            q_count = dict()
-            p_count = dict()
-            for operator in term:
-                if operator[1] == 'q':
-                    q_count[operator[0]] = q_count.get(operator[0], 0) + 1
-                elif operator[1] == 'p':
-                    p_count[operator[0]] = p_count.get(operator[0], 0) + 1
-
-            if (any(v > 2 for v in q_count.values()) or
-                    any(v > 2 for v in p_count.values())):
+            if len(term) > 2:
                 return False
+
         return True

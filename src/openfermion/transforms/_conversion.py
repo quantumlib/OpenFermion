@@ -442,7 +442,7 @@ def get_quad_operator(operator, hbar=1.):
     else:
         raise TypeError("Only BosonOperator is currently supported for get_quad_operator.")
 
-    return normal_ordered_quad(quad_operator, hbar=hbar)
+    return quad_operator
 
 
 def get_boson_operator(operator, hbar=1.):
@@ -475,4 +475,4 @@ def get_boson_operator(operator, hbar=1.):
     else:
         raise TypeError("Only QuadOperator is currently supported for get_boson_operator.")
 
-    return normal_ordered_boson(boson_operator)
+    return boson_operator

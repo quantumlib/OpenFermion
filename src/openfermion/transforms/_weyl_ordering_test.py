@@ -83,8 +83,12 @@ class WeylOrderingTest(unittest.TestCase):
 
     def test_weyl_identity(self):
         for op in (BosonOperator, QuadOperator):
-            res = weyl_ordering(op(''))
+            res = weyl_ordering(op(''), ignore_identity=False)
             self.assertTrue(res == op().identity())
+
+        for op in (BosonOperator, QuadOperator):
+            res = weyl_ordering(op(''), ignore_identity=True)
+            self.assertTrue(res == op().zero())
 
     def test_weyl_one_term(self):
         op = BosonOperator('0^')
@@ -150,7 +154,8 @@ class WeylOrderingTest(unittest.TestCase):
     def test_weyl_coefficient(self):
         coeff = 0.5+0.6j
         op = coeff*QuadOperator('q0 p0')
-        res = weyl_ordering(op)
+        res = weyl_ordering(op,
+            ignore_coeff=False)
         expected = QuadOperator('q0 p0', 0.5) \
             + QuadOperator('p0 q0', 0.5)
         self.assertTrue(res == coeff*expected)

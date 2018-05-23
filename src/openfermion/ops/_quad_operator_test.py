@@ -82,15 +82,32 @@ class QuadOperatorTest(unittest.TestCase):
         self.assertTrue(op_132 == normal_ordered(op_132))
         self.assertTrue(op_132 == normal_ordered(op_321))
 
-    def test_is_linear_QuadOperator(self):
+    def test_is_gaussian_QuadOperator(self):
         op = QuadOperator()
         self.assertTrue(op.is_linear())
 
-        op = QuadOperator('q0 p0 p1')
+        op = QuadOperator('')
         self.assertTrue(op.is_linear())
 
-        op = QuadOperator('q0 p0 q0 p0 p1')
-        self.assertTrue(op.is_linear())
+        op1 = QuadOperator('q0')
+        self.assertTrue(op1.is_linear())
 
-        op = QuadOperator('q0 p0 q0 p0 q0 p1')
+        op2 = QuadOperator('q0 q0')
+        self.assertTrue(op2.is_linear())
+
+        op3 = QuadOperator('p0')
+        self.assertTrue(op3.is_linear())
+
+        op4 = QuadOperator('p0 p0')
+        self.assertTrue(op4.is_linear())
+
+        op5 = QuadOperator('q0 p0')
+        self.assertTrue(op5.is_linear())
+
+        op6 = QuadOperator('q0 q0 q0')
+        self.assertFalse(op6.is_linear())
+
+        op = op1 + op2 + op3 + op4 + op5
+        self.assertTrue(op.is_linear())
+        op += op6
         self.assertFalse(op.is_linear())
