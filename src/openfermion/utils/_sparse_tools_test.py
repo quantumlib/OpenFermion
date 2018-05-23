@@ -226,8 +226,6 @@ class JordanWignerSparseTest(unittest.TestCase):
         """Compare get_linear_qubit_operator_diagonal with
             get_linear_qubit_operator."""
         qubit_operator = QubitOperator('Z1 X2 Y5')
-
-        vec = get_linear_qubit_operator_diagonal(qubit_operator)
         vec_expected = numpy.diag(get_linear_qubit_operator(qubit_operator) *
                                   numpy.eye(2 ** 6))
 
@@ -238,8 +236,6 @@ class JordanWignerSparseTest(unittest.TestCase):
         """Compare get_linear_qubit_operator_diagonal with
             get_linear_qubit_operator."""
         qubit_operator = QubitOperator('Z1 Z2 Z5')
-
-        vec = get_linear_qubit_operator_diagonal(qubit_operator)
         vec_expected = numpy.diag(get_linear_qubit_operator(qubit_operator) *
                                   numpy.eye(2 ** 6))
 
