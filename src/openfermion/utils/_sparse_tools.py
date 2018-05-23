@@ -283,6 +283,58 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None):
     return scipy.sparse.linalg.LinearOperator((n_hilbert, n_hilbert),
                                               matvec=matvec, dtype=complex)
 
+
+def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
+    """ Return a linear operator's diagonal elements.
+
+    The main motivation is to use it for Davidson's algorithm, to find out the
+    lowest n eigenvalues and associated eigenvectors.
+
+    Qubit terms with X or Y operators will contribute nothing to the diagonal
+    elements, while I or Z will contribute a factor of 1 or -1 together with
+    the coefficient.
+
+    Args:
+        qubit_operator(QubitOperator): A qubit operator.
+
+    Returns:
+        linear_operator_diagonal(numpy.ndarray): The diagonal elements for
+            get_linear_qubit_operator(qubit_operator).
+    """
+    if n_qubits is None:
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    n_hilbert = 2 ** n_qubits
+    zeros_diagonal = numpy.zeros(n_hilbert)
+    ones_diagonal = numpy.ones(n_hilbert)
+    linear_operator_diagonal = zeros_diagonal
+    # Loop through the terms.
+    for qubit_term in qubit_operator.terms:
+        is_zero = False
+        tensor_factor = 0
+        vecs = [ones_diagonal]
+        for pauli_operator in qubit_term:
+            op = pauli_operator[1]
+            if op in ['X', 'Y']:
+                is_zero = True
+                break
+
+            # Split vector by half and half for each bit.
+            if pauli_operator[0] > tensor_factor:
+                vecs = [v for iter_v in vecs for v in numpy.split(
+                    iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
+
+            vec_pairs = [numpy.split(v, 2) for v in vecs]
+            vecs = [v for vp in vec_pairs for v in (vp[0], -vp[1])]
+            tensor_factor = pauli_operator[0] + 1
+        if not is_zero:
+            linear_operator_diagonal += qubit_operator.terms[qubit_term] * \
+                numpy.concatenate(vecs)
+    return linear_operator_diagonal
+
+
 def jw_configuration_state(occupied_orbitals, n_qubits):
     """Function to produce a basis state in the occupation number basis.
 

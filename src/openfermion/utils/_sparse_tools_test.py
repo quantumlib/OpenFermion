@@ -108,6 +108,16 @@ class JordanWignerSparseTest(unittest.TestCase):
             qubit_operator_sparse(QubitOperator('X1')).A,
             expected.A))
 
+    def test_get_linear_qubit_operator_wrong_n(self):
+        """Testing with wrong n_qubits."""
+        with self.assertRaises(ValueError):
+            get_linear_qubit_operator(QubitOperator('X3'), 1)
+
+    def test_get_linear_qubit_operator_wrong_vec_length(self):
+        """Testing with wrong vector length."""
+        with self.assertRaises(ValueError):
+            get_linear_qubit_operator(QubitOperator('X3')) * numpy.zeros(4)
+
     def test_get_linear_qubit_operator_0(self):
         """Testing with zero term."""
         qubit_operator = QubitOperator.zero()
@@ -182,6 +192,61 @@ class JordanWignerSparseTest(unittest.TestCase):
             numpy.array([get_linear_qubit_operator(qubit_operator) * v
                          for v in numpy.identity(16)])),
                                        mat_expected.A))
+
+    def test_get_linear_qubit_operator_diagonal_wrong_n(self):
+        """Testing with wrong n_qubits."""
+        with self.assertRaises(ValueError):
+            get_linear_qubit_operator_diagonal(QubitOperator('X3'), 1)
+
+    def test_get_linear_qubit_operator_diagonal_0(self):
+        """Testing with zero term."""
+        qubit_operator = QubitOperator.zero()
+        vec_expected = numpy.zeros(8)
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator_diagonal(qubit_operator, 3), vec_expected))
+
+    def test_get_linear_qubit_operator_diagonal_zero(self):
+        """Get zero diagonals from get_linear_qubit_operator_diagonal."""
+        qubit_operator = QubitOperator('X0 Y1')
+        vec_expected = numpy.zeros(4)
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator_diagonal(qubit_operator), vec_expected))
+
+    def test_get_linear_qubit_operator_diagonal_non_zero(self):
+        """Get non zero diagonals from get_linear_qubit_operator_diagonal."""
+        qubit_operator = QubitOperator('Z0 Z2')
+        vec_expected = numpy.array([1, -1, 1, -1, -1, 1, -1, 1])
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator_diagonal(qubit_operator), vec_expected))
+
+    def test_get_linear_qubit_operator_diagonal_cmp_zero(self):
+        """Compare get_linear_qubit_operator_diagonal with
+            get_linear_qubit_operator.
+        """
+        qubit_operator = QubitOperator('Z1 X2 Y5')
+
+        vec = get_linear_qubit_operator_diagonal(qubit_operator)
+        vec_expected = numpy.diag(get_linear_qubit_operator(qubit_operator) * \
+                                  numpy.eye(2 ** 6))
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator_diagonal(qubit_operator), vec_expected))
+
+    def test_get_linear_qubit_operator_diagonal_cmp_non_zero(self):
+        """Compare get_linear_qubit_operator_diagonal with
+            get_linear_qubit_operator.
+        """
+        qubit_operator = QubitOperator('Z1 Z2 Z5')
+
+        vec = get_linear_qubit_operator_diagonal(qubit_operator)
+        vec_expected = numpy.diag(get_linear_qubit_operator(qubit_operator) * \
+                                  numpy.eye(2 ** 6))
+
+        self.assertTrue(numpy.allclose(
+            get_linear_qubit_operator_diagonal(qubit_operator), vec_expected))
 
 class ComputationalBasisStateTest(unittest.TestCase):
     def test_computational_basis_state(self):
