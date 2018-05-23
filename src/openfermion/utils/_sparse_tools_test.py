@@ -108,6 +108,14 @@ class JordanWignerSparseTest(unittest.TestCase):
             qubit_operator_sparse(QubitOperator('X1')).A,
             expected.A))
 
+    def test_get_linear_qubit_operator_wrong_length(self):
+        """Testing exceptions with wrong vector length."""
+        qubit_operator = QubitOperator('X3')
+        vec = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
+
+        with self.assertRaises(ValueError):
+            get_linear_qubit_operator(qubit_operator, 4) * vec
+
     def test_get_linear_qubit_operator_0(self):
         """Testing with zero term."""
         qubit_operator = QubitOperator.zero()
