@@ -330,8 +330,8 @@ def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
             vecs = [v for vp in vec_pairs for v in (vp[0], -vp[1])]
             tensor_factor = pauli_operator[0] + 1
         if not is_zero:
-            linear_operator_diagonal += qubit_operator.terms[qubit_term] * \
-                numpy.concatenate(vecs)
+            linear_operator_diagonal += (qubit_operator.terms[qubit_term] *
+                                         numpy.concatenate(vecs))
     return linear_operator_diagonal
 
 

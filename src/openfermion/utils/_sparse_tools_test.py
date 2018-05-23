@@ -173,12 +173,12 @@ class JordanWignerSparseTest(unittest.TestCase):
 
     def test_get_linear_qubit_operator_multiple_terms(self):
         """Testing with multiple terms."""
-        qubit_operator = QubitOperator.identity() + 2 * QubitOperator('Y2') + \
-            QubitOperator(((0, 'Z'), (1, 'X')), 10.0)
+        qubit_operator = (QubitOperator.identity() + 2 * QubitOperator('Y2') +
+                          QubitOperator(((0, 'Z'), (1, 'X')), 10.0))
 
         vec = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
-        matvec_expected = 10 * numpy.array([3, 4, 1, 2, -7, -8, -5, -6]) + \
-            2.j * numpy.array([-2, 1, -4, 3, -6, 5, -8, 7], dtype=complex) + vec
+        matvec_expected = (10 * numpy.array([3, 4, 1, 2, -7, -8, -5, -6]) +
+                           2j * numpy.array([-2, 1, -4, 3, -6, 5, -8, 7]) + vec)
 
         self.assertTrue(numpy.allclose(
             get_linear_qubit_operator(qubit_operator) * vec, matvec_expected))
@@ -224,12 +224,11 @@ class JordanWignerSparseTest(unittest.TestCase):
 
     def test_get_linear_qubit_operator_diagonal_cmp_zero(self):
         """Compare get_linear_qubit_operator_diagonal with
-            get_linear_qubit_operator.
-        """
+            get_linear_qubit_operator."""
         qubit_operator = QubitOperator('Z1 X2 Y5')
 
         vec = get_linear_qubit_operator_diagonal(qubit_operator)
-        vec_expected = numpy.diag(get_linear_qubit_operator(qubit_operator) * \
+        vec_expected = numpy.diag(get_linear_qubit_operator(qubit_operator) *
                                   numpy.eye(2 ** 6))
 
         self.assertTrue(numpy.allclose(
@@ -237,12 +236,11 @@ class JordanWignerSparseTest(unittest.TestCase):
 
     def test_get_linear_qubit_operator_diagonal_cmp_non_zero(self):
         """Compare get_linear_qubit_operator_diagonal with
-            get_linear_qubit_operator.
-        """
+            get_linear_qubit_operator."""
         qubit_operator = QubitOperator('Z1 Z2 Z5')
 
         vec = get_linear_qubit_operator_diagonal(qubit_operator)
-        vec_expected = numpy.diag(get_linear_qubit_operator(qubit_operator) * \
+        vec_expected = numpy.diag(get_linear_qubit_operator(qubit_operator) *
                                   numpy.eye(2 ** 6))
 
         self.assertTrue(numpy.allclose(
