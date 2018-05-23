@@ -13,7 +13,7 @@
 """This module provides functions to interface with scipy.sparse."""
 from __future__ import absolute_import
 
-from functools import reduce, partial
+from functools import reduce
 from future.utils import iteritems
 
 import itertools
