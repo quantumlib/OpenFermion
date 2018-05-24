@@ -27,7 +27,7 @@ def generate_matrix(dimension):
     rand = numpy.array(numpy.random.rand(dimension, dimension))
 
     numpy.random.seed(dimension)
-    diag = numpy.array(xrange(dimension)) + numpy.random.rand(dimension)
+    diag = numpy.array(range(dimension)) + numpy.random.rand(dimension)
 
     # Makes sure matrix is hermitian, which is symmetric when real.
     matrix = rand + rand.T + diag

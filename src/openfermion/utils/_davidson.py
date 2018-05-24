@@ -117,10 +117,10 @@ class Davidson(object):
         ortho_normals = numpy.copy(vectors)
         count_orthonormals = num_orthonormals
         # Skip unchanged ones.
-        for i in xrange(num_orthonormals, num_vectors):
+        for i in range(num_orthonormals, num_vectors):
             vector_i = vectors[:, i]
             # Makes sure vector_i is orthogonal to all processed vectors.
-            for j in xrange(i):
+            for j in range(i):
                 vector_i -= ortho_normals[:, j] * numpy.dot(ortho_normals[:, j],
                                                             vector_i)
 
@@ -191,7 +191,7 @@ class Davidson(object):
         # Adds new guess vectors for the next iteration for the first n_lowest
         # directions.
         new_directions = []
-        for i in xrange(n_lowest):
+        for i in range(n_lowest):
             new_direction = trial_error[:, i]
             i_trial_error = numpy.max(numpy.abs(new_direction))
             max_trial_error = max(max_trial_error, i_trial_error)
@@ -201,7 +201,7 @@ class Davidson(object):
                 # search for new directions.
                 continue
 
-            for j in xrange(origonal_dimension):
+            for j in range(origonal_dimension):
                 diff_lambda = self.linear_operator_diagonal[j] - trial_lambda[i]
                 if numpy.abs(diff_lambda) > self.eps:
                     new_direction[j] /= diff_lambda
