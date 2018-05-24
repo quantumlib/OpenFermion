@@ -84,30 +84,30 @@ class QuadOperatorTest(unittest.TestCase):
 
     def test_is_gaussian_QuadOperator(self):
         op = QuadOperator()
-        self.assertTrue(op.is_linear())
+        self.assertTrue(op.is_gaussian())
 
         op = QuadOperator('')
-        self.assertTrue(op.is_linear())
+        self.assertTrue(op.is_gaussian())
 
         op1 = QuadOperator('q0')
-        self.assertTrue(op1.is_linear())
+        self.assertTrue(op1.is_gaussian())
 
         op2 = QuadOperator('q0 q0')
-        self.assertTrue(op2.is_linear())
+        self.assertTrue(op2.is_gaussian())
 
         op3 = QuadOperator('p0')
-        self.assertTrue(op3.is_linear())
+        self.assertTrue(op3.is_gaussian())
 
         op4 = QuadOperator('p0 p0')
-        self.assertTrue(op4.is_linear())
+        self.assertTrue(op4.is_gaussian())
 
         op5 = QuadOperator('q0 p0')
-        self.assertTrue(op5.is_linear())
+        self.assertTrue(op5.is_gaussian())
 
         op6 = QuadOperator('q0 q0 q0')
-        self.assertFalse(op6.is_linear())
+        self.assertFalse(op6.is_gaussian())
 
         op = op1 + op2 + op3 + op4 + op5
-        self.assertTrue(op.is_linear())
+        self.assertTrue(op.is_gaussian())
         op += op6
-        self.assertFalse(op.is_linear())
+        self.assertFalse(op.is_gaussian())

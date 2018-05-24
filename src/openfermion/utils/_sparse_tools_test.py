@@ -16,6 +16,7 @@ from __future__ import absolute_import
 import numpy
 import unittest
 
+from numpy.linalg import multi_dot
 from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix
 from scipy.special import comb
@@ -1109,3 +1110,119 @@ class InnerProductTest(unittest.TestCase):
 
         self.assertAlmostEqual(inner_product(state_1, state_1), 2.)
         self.assertAlmostEqual(inner_product(state_1, state_2), 0.)
+
+
+class BosonSparseTest(unittest.TestCase):
+    def setUp(self):
+        self.hbar = 1
+        self.d = 5
+        self.b = numpy.diag(numpy.sqrt(numpy.arange(1, self.d)), 1)
+        self.bd = self.b.conj().T
+        self.q = numpy.sqrt(self.hbar/2)*(self.b + self.bd)
+        self.p = -1j*numpy.sqrt(self.hbar/2)*(self.b - self.bd)
+        self.Id = numpy.identity(self.d)
+
+    def test_boson_ladder_destroy_one_mode(self):
+        b = boson_ladder_sparse(1, 0, 0, self.d).toarray()
+        self.assertTrue(numpy.allclose(b, self.b))
+
+    def test_boson_ladder_create_one_mode(self):
+        bd = boson_ladder_sparse(1, 0, 1, self.d).toarray()
+        self.assertTrue(numpy.allclose(bd, self.bd))
+
+    def test_boson_ladder_single_adjoint(self):
+        b = boson_ladder_sparse(1, 0, 0, self.d).toarray()
+        bd = boson_ladder_sparse(1, 0, 1, self.d).toarray()
+        self.assertTrue(numpy.allclose(b.conj().T, bd))
+
+    def test_boson_ladder_two_mode(self):
+        res = boson_ladder_sparse(2, 0, 0, self.d).toarray()
+        expected = numpy.kron(self.b, self.Id)
+        self.assertTrue(numpy.allclose(res, expected))
+
+        res = boson_ladder_sparse(2, 1, 0, self.d).toarray()
+        expected = numpy.kron(self.Id, self.b)
+        self.assertTrue(numpy.allclose(res, expected))
+
+    def test_single_quad_q_one_mode(self):
+        res = single_quad_op_sparse(1, 0, 'q', self.hbar, self.d).toarray()
+        self.assertTrue(numpy.allclose(res, self.q))
+        self.assertTrue(numpy.allclose(res, res.conj().T))
+
+    def test_single_quad_p_one_mode(self):
+        res = single_quad_op_sparse(1, 0, 'p', self.hbar, self.d).toarray()
+        self.assertTrue(numpy.allclose(res, self.p))
+        self.assertTrue(numpy.allclose(res, res.conj().T))
+
+    def test_single_quad_two_mode(self):
+        res = single_quad_op_sparse(2, 0, 'q', self.hbar, self.d).toarray()
+        expected = numpy.kron(self.q, self.Id)
+        self.assertTrue(numpy.allclose(res, expected))
+
+        res = single_quad_op_sparse(2, 1, 'p', self.hbar, self.d).toarray()
+        expected = numpy.kron(self.Id, self.p)
+        self.assertTrue(numpy.allclose(res, expected))
+
+    def test_boson_operator_sparse_empty(self):
+        for op in (BosonOperator(), QuadOperator()):
+            res = boson_operator_sparse(op, self.d)
+            self.assertEqual(res, numpy.array([[0]]))
+
+    def test_boson_operator_sparse_identity(self):
+        for op in (BosonOperator(''), QuadOperator('')):
+            res = boson_operator_sparse(op, self.d)
+            self.assertEqual(res, numpy.array([[1]]))
+
+    def test_boson_operator_sparse_single(self):
+        op = BosonOperator('0')
+        res = boson_operator_sparse(op, self.d).toarray()
+        self.assertTrue(numpy.allclose(res, self.b))
+
+        op = BosonOperator('0^')
+        res = boson_operator_sparse(op, self.d).toarray()
+        self.assertTrue(numpy.allclose(res, self.bd))
+
+        op = QuadOperator('q0')
+        res = boson_operator_sparse(op, self.d, self.hbar).toarray()
+        self.assertTrue(numpy.allclose(res, self.q))
+
+        op = QuadOperator('p0')
+        res = boson_operator_sparse(op, self.d, self.hbar).toarray()
+        self.assertTrue(numpy.allclose(res, self.p))
+
+    def test_boson_operator_sparse_number(self):
+        op = BosonOperator('0^ 0')
+        res = boson_operator_sparse(op, self.d).toarray()
+        self.assertTrue(numpy.allclose(res, numpy.dot(self.bd, self.b)))
+
+    def test_boson_operator_sparse_multi_mode(self):
+        op = BosonOperator('0^ 1 1^ 2')
+        res = boson_operator_sparse(op, self.d).toarray()
+
+        b0 = boson_ladder_sparse(3, 0, 0, self.d).toarray()
+        b1 = boson_ladder_sparse(3, 1, 0, self.d).toarray()
+        b2 = boson_ladder_sparse(3, 2, 0, self.d).toarray()
+
+        expected = multi_dot([b0.T, b1, b1.T, b2])
+        self.assertTrue(numpy.allclose(res, expected))
+
+        op = QuadOperator('q0 p0 p1')
+        res = boson_operator_sparse(op, self.d, self.hbar).toarray()
+
+        expected = numpy.identity(self.d**2)
+        for term in op.terms:
+            for i, j in term:
+                expected = expected.dot(single_quad_op_sparse(
+                    2, i, j, self.hbar, self.d).toarray())
+        self.assertTrue(numpy.allclose(res, expected))
+
+    def test_boson_operator_sparse_addition(self):
+        op = BosonOperator('0^ 1')
+        op += BosonOperator('0 0^')
+        res = boson_operator_sparse(op, self.d).toarray()
+
+        b0 = boson_ladder_sparse(2, 0, 0, self.d).toarray()
+        b1 = boson_ladder_sparse(2, 1, 0, self.d).toarray()
+
+        expected = numpy.dot(b0.T, b1) + numpy.dot(b0, b0.T)
+        self.assertTrue(numpy.allclose(res, expected))

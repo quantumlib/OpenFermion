@@ -23,7 +23,7 @@ from openfermion.ops import (BosonOperator, QuadOperator,
 from openfermion.utils import hermitian_conjugated, is_hermitian
 
 from openfermion.transforms._weyl_ordering import (
-    mccoy, weyl_ordering)
+    mccoy, symmetric_ordering, weyl_polynomial_quantization)
 
 
 class McCoyTest(unittest.TestCase):
@@ -74,72 +74,107 @@ class McCoyTest(unittest.TestCase):
         self.assertEqual(res, expected)
 
 
-class WeylOrderingTest(unittest.TestCase):
+class WeylQuantizationTest(unittest.TestCase):
 
     def test_weyl_empty(self):
-        for op in (BosonOperator, QuadOperator):
-            res = weyl_ordering(op())
-            self.assertTrue(res == op().zero())
-
-    def test_weyl_identity(self):
-        for op in (BosonOperator, QuadOperator):
-            res = weyl_ordering(op(''), ignore_identity=False)
-            self.assertTrue(res == op().identity())
-
-        for op in (BosonOperator, QuadOperator):
-            res = weyl_ordering(op(''), ignore_identity=True)
-            self.assertTrue(res == op().zero())
+        res = weyl_polynomial_quantization('')
+        self.assertTrue(res == QuadOperator.zero())
 
     def test_weyl_one_term(self):
-        op = BosonOperator('0^')
-        res = weyl_ordering(op)
-        self.assertTrue(res == op)
-
         op = QuadOperator('q0')
-        res = weyl_ordering(op)
+        res = weyl_polynomial_quantization('q0')
         self.assertTrue(res == op)
 
     def test_weyl_one_term_multimode(self):
-        op = BosonOperator('0^ 1^ 2 3')
-        res = weyl_ordering(op)
-        self.assertTrue(res == op)
-
         op = QuadOperator('q0 q1 p2 p3')
-        res = weyl_ordering(op)
+        res = weyl_polynomial_quantization('q0 q1 p2 p3')
         self.assertTrue(res == op)
 
     def test_weyl_two_term_same(self):
-        op = BosonOperator('0^ 0^')
-        res = weyl_ordering(op)
-        self.assertTrue(res == op)
-
         op = QuadOperator('q0 q0')
-        res = weyl_ordering(op)
+        res = weyl_polynomial_quantization('q0^2')
         self.assertTrue(res == op)
 
     def test_weyl_non_hermitian(self):
+        res = weyl_polynomial_quantization('q0 p0')
+        expected = QuadOperator('q0 p0', 0.5) \
+            + QuadOperator('p0 q0', 0.5)
+        self.assertTrue(res == expected)
+        self.assertTrue(is_hermitian(res))
+
+        res = weyl_polynomial_quantization('q0^2 p0')
+        expected = QuadOperator('q0 q0 p0', 0.5) \
+            + QuadOperator('p0 q0 q0', 0.5)
+        self.assertTrue(res == expected)
+        self.assertTrue(is_hermitian(res))
+
+
+class SymmetricOrderingTest(unittest.TestCase):
+
+    def test_symmetric_empty(self):
+        for op in (BosonOperator, QuadOperator):
+            res = symmetric_ordering(op())
+            self.assertTrue(res == op().zero())
+
+    def test_symmetric_identity(self):
+        for op in (BosonOperator, QuadOperator):
+            res = symmetric_ordering(op(''), ignore_identity=False)
+            self.assertTrue(res == op().identity())
+
+        for op in (BosonOperator, QuadOperator):
+            res = symmetric_ordering(op(''), ignore_identity=True)
+            self.assertTrue(res == op().zero())
+
+    def test_symmetric_one_term(self):
+        op = BosonOperator('0^')
+        res = symmetric_ordering(op)
+        self.assertTrue(res == op)
+
+        op = QuadOperator('q0')
+        res = symmetric_ordering(op)
+        self.assertTrue(res == op)
+
+    def test_symmetric_one_term_multimode(self):
+        op = BosonOperator('0^ 1^ 2 3')
+        res = symmetric_ordering(op)
+        self.assertTrue(res == op)
+
+        op = QuadOperator('q0 q1 p2 p3')
+        res = symmetric_ordering(op)
+        self.assertTrue(res == op)
+
+    def test_symmetric_two_term_same(self):
+        op = BosonOperator('0^ 0^')
+        res = symmetric_ordering(op)
+        self.assertTrue(res == op)
+
+        op = QuadOperator('q0 q0')
+        res = symmetric_ordering(op)
+        self.assertTrue(res == op)
+
+    def test_symmetric_non_hermitian(self):
         op = BosonOperator('0^ 0')
-        res = weyl_ordering(op)
+        res = symmetric_ordering(op)
         expected = BosonOperator('0^ 0', 0.5) \
             + BosonOperator('0 0^', 0.5)
         self.assertTrue(res == expected)
         self.assertTrue(is_hermitian(res))
 
         op = QuadOperator('q0 p0')
-        res = weyl_ordering(op)
+        res = symmetric_ordering(op)
         expected = QuadOperator('q0 p0', 0.5) \
             + QuadOperator('p0 q0', 0.5)
         self.assertTrue(res == expected)
         self.assertTrue(is_hermitian(res))
 
-    def test_weyl_non_hermitian_order(self):
+    def test_symmetric_non_hermitian_order(self):
         op1 = QuadOperator('q0 p0 q0')
         op2 = QuadOperator('q0 q0 p0')
         op3 = QuadOperator('p0 q0 q0')
 
-        w1 = weyl_ordering(op1)
-        w2 = weyl_ordering(op2)
-        w3 = weyl_ordering(op3)
+        w1 = symmetric_ordering(op1)
+        w2 = symmetric_ordering(op2)
+        w3 = symmetric_ordering(op3)
 
         self.assertTrue(is_hermitian(w1))
         self.assertTrue(is_hermitian(w2))
@@ -151,11 +186,10 @@ class WeylOrderingTest(unittest.TestCase):
         self.assertTrue(w2 == expected)
         self.assertTrue(w3 == expected)
 
-    def test_weyl_coefficient(self):
+    def test_symmetric_coefficient(self):
         coeff = 0.5+0.6j
         op = coeff*QuadOperator('q0 p0')
-        res = weyl_ordering(op,
-            ignore_coeff=False)
+        res = symmetric_ordering(op, ignore_coeff=False)
         expected = QuadOperator('q0 p0', 0.5) \
             + QuadOperator('p0 q0', 0.5)
         self.assertTrue(res == coeff*expected)

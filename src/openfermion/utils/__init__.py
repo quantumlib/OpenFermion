@@ -68,7 +68,9 @@ from ._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_bound,
     low_depth_second_order_trotter_error_operator)
 
-from ._sparse_tools import (expectation,
+from ._sparse_tools import (boson_ladder_sparse,
+                            boson_operator_sparse,
+                            expectation,
                             expectation_computational_basis_state,
                             get_density_matrix,
                             get_gap,

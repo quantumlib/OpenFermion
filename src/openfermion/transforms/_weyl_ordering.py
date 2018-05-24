@@ -43,12 +43,89 @@ def mccoy(mode, op_a, op_b, m, n):
     return new_op
 
 
-def weyl_ordering(operator, ignore_coeff=True, ignore_identity=True):
-    """ Apply the Weyl ordering to a BosonOperator or QuadOperator.
+def weyl_polynomial_quantization(polynomial):
+    r""" Apply the Weyl quantization to a phase space polynomial.
 
-    The Weyl ordering is performed via McCoy's formula:
+    The Weyl quantization is performed by applying McCoy's formula
+    directly to a polynomial term of the form q^m p^n:
+
+    q^m p^n ->
+        (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) \hat{q}^r \hat{p}^m q^{n-r}
+
+    where q and p are phase space variables, and \hat{q} and \hat{p}
+    are quadrature operators.
+
+    The input is provided in the form of a string, for example
+
+    .. code-block:: python
+
+        weyl_polynomial_quantization('q0^2 p0^3 q1^3')
+
+    where 'q' or 'p' is the phase space quadrature variable, the integer
+    directly following is the mode it is with respect to, and '^2' is the
+    polynomial power.
+
+    Args:
+        polynomial (str): polynomial function of q and p of the form
+            'qi^m pj^n ...' where i,j are the modes, and m, n the powers.
+
+    Returns:
+        QuadOperator: the Weyl quantization of the phase space function.
+
+    Warning:
+        The runtime of this method is exponential in the maximum locality
+        of the original operator.
+    """
+    # construct the equivalent QuadOperator
+    poly = dict()
+
+    if polynomial:
+        for term in polynomial.split():
+            if '^' in term:
+                op, pwr = term.split('^')
+                pwr = int(pwr)
+            else:
+                op = term
+                pwr = 1
+
+            mode = int(op[1:])
+
+            if mode not in poly:
+                poly[mode] = [0, 0]
+
+            if op[0] == 'q':
+                poly[mode][0] += pwr
+            elif op[0] == 'p':
+                poly[mode][1] += pwr
+
+        # replace {q_i^m p_i^n} -> S({q_i^m p_i^n})
+        operator = QuadOperator('')
+        for mode, (m, n) in poly.items():
+            qtmp = QuadOperator()
+            qtmp.terms = mccoy(mode, 'q', 'p', m, n)
+            operator *= qtmp
+    else:
+        operator = QuadOperator.zero()
+
+    return operator
+
+
+def symmetric_ordering(operator, ignore_coeff=True, ignore_identity=True):
+    """ Apply the symmetric ordering to a BosonOperator or QuadOperator.
+
+    The symmetric ordering is performed by applying McCoy's formula
+    directly to polynomial terms of quadrature operators:
 
     q^m p^n -> (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) q^r p^m q^{n-r}
+
+    Note: in general, symmetric ordering is performed on a single term
+    containing the tensor product of various operators. However, this
+    function can also be applied to a sum of these terms, and the symmetric
+    product is distributed over the summed terms.
+
+    In this case, Hermiticity cannot be guaranteed - as such, by default
+    term coefficients and identity operators are ignored. However, this
+    behavior can be modified via keyword arguments describe below if necessary.
 
     Args:
         operator: either a BosonOperator or QuadOperator.
@@ -59,7 +136,7 @@ def weyl_ordering(operator, ignore_coeff=True, ignore_identity=True):
             account; S(q^m p^n) = a S(q^m p^n). In this case, if
             a is a complex coefficient, it is not guaranteed that the
             the returned operator will be Hermitian.
-        ignore_identity (bool): By default, idenitity terms are ignore;
+        ignore_identity (bool): By default, identity terms are ignore;
             S(I) = 0. If set to False, then instead S(I) = I.
 
     Returns:
