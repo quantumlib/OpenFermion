@@ -19,6 +19,8 @@ import scipy
 import scipy.linalg
 import scipy.sparse.linalg
 
+from openfermion.utils._sparse_tools import (get_linear_qubit_operator,
+                                             get_linear_qubit_operator_diagonal)
 
 # Exceptions.
 class DavidsonError(Exception):
@@ -85,16 +87,20 @@ class Davidson(object):
 
             # Deals with new directions to make sure they're orthonormal.
             count_mvs = guess_mv.shape[1]
-            guess_v = self._orthonormalize(guess_v, count_mvs)
-            if guess_v.shape[1] <= count_mvs:
-                raise ValueError(
-                    'Not able to work with new directions: {} vs {}.'.format(
-                        guess_v.shape, count_mvs))
+            guess_v = self.orthonormalize(guess_v, count_mvs)
+            num_trial = 0
+            while guess_v.shape[1] <= count_mvs and num_trial < 3:
+                # No new directions are available, generates random directions.
+                guess_v = numpy.hstack([guess_v,
+                                        numpy.random.rand(guess_mv.shape[0],
+                                                          n_lowest)])
+                guess_v = self.orthonormalize(guess_v, count_mvs)
+                num_trial += 1
             num_iterations += 1
         return success, eigen_values, eigen_vectors
 
 
-    def _orthonormalize(self, vectors, num_orthonormals=1):
+    def orthonormalize(self, vectors, num_orthonormals=1):
         """Orthonormalize vectors, so that they're all normalized and orthogoal.
 
         The first vector is the same to that of vectors, while vector_i is
@@ -114,7 +120,7 @@ class Davidson(object):
             raise ValueError(
                 'vectors is not supposed to be empty: {}.'.format(vectors.shape))
 
-        ortho_normals = numpy.copy(vectors)
+        ortho_normals = vectors
         count_orthonormals = num_orthonormals
         # Skip unchanged ones.
         for i in range(num_orthonormals, num_vectors):
@@ -125,10 +131,10 @@ class Davidson(object):
                                                             vector_i)
 
             # Makes sure vector_i is normalized.
-            v_norm = numpy.linalg.norm(vector_i)
-            if v_norm < self.eps:
+            if numpy.max(numpy.abs(vector_i)) < self.eps:
                 continue
-            ortho_normals[:, count_orthonormals] = vector_i / v_norm
+            ortho_normals[:, count_orthonormals] = (vector_i /
+                                                    numpy.linalg.norm(vector_i))
             count_orthonormals += 1
         return ortho_normals[:, :count_orthonormals]
 
@@ -161,7 +167,7 @@ class Davidson(object):
         if guess_mv is None:
             guess_v = scipy.linalg.orth(guess_v)
             guess_mv = self.linear_operator * guess_v
-        origonal_dimension, dimension = guess_v.shape
+        dimension = guess_v.shape[1]
 
         # Note that getting guess_mv is the most expensive step.
         if guess_mv.shape[1] < dimension:
@@ -175,44 +181,83 @@ class Davidson(object):
         # Note that we don't get the eigenvectors directly, instead we only get
         # a transformation based on the raw vectors, so that mv don't need to be
         # recalculated.
-        trial_lambda, trial_transformation = numpy.linalg.eig(guess_vmv)
+        trial_lambda, trial_transformation = numpy.linalg.eigh(guess_vmv)
 
         # Sorts eigenvalues in ascending order.
         sorted_index = list(reversed(trial_lambda.argsort()[::-1]))
         trial_lambda = trial_lambda[sorted_index]
         trial_transformation = trial_transformation[:, sorted_index]
 
+        if len(trial_lambda) > n_lowest:
+            trial_lambda = trial_lambda[:n_lowest]
+            trial_transformation = trial_transformation[:, :n_lowest]
+
         # Estimates errors based on diagonalization in the smaller space.
         trial_v = numpy.dot(guess_v, trial_transformation)
         trial_mv = numpy.dot(guess_mv, trial_transformation)
-        trial_error = trial_mv - numpy.dot(trial_v, numpy.diag(trial_lambda))
+        trial_error = trial_mv - trial_v * trial_lambda
+
+        new_directions, max_trial_error = self._get_new_directions(trial_error,
+                                                                   trial_lambda)
+        if new_directions:
+            guess_v = numpy.hstack([guess_v, numpy.stack(new_directions).T])
+        return trial_lambda, trial_v, max_trial_error, guess_v, guess_mv
+
+    def _get_new_directions(self, error_v, trial_lambda):
+        """Gets new directions from error vectors.
+
+        Args:
+            error_v(numpy.ndarray(complex)): Error vectors from the guess
+                eigenvalues and associated eigenvectors.
+            trial_lambda(numpy.ndarray(float)): The n_lowest minimal guess
+                eigenvalues.
+
+        Returns:
+            new_directions(numpy.ndarray(complex)): New directions for searching
+                for real eigenvalues and eigenvectors.
+            max_trial_error(float): The max elementwise error for all guess
+                vectors.
+        """
+        n_lowest = error_v.shape[1]
 
         max_trial_error = 0
         # Adds new guess vectors for the next iteration for the first n_lowest
         # directions.
+        origonal_dimension = error_v.shape[0]
+
         new_directions = []
         for i in range(n_lowest):
-            new_direction = trial_error[:, i]
-            i_trial_error = numpy.max(numpy.abs(new_direction))
-            max_trial_error = max(max_trial_error, i_trial_error)
+            new_direction = error_v[:, i]
 
-            if i_trial_error < self.eps:
+            if numpy.max(numpy.abs(new_direction)) < self.eps:
                 # Already converged for this eigenvector, no contribution to
                 # search for new directions.
                 continue
 
+            max_trial_error = max(max_trial_error, numpy.linalg.norm(new_direction))
             for j in range(origonal_dimension):
+                # Makes sure error vectors are bounded.
                 diff_lambda = self.linear_operator_diagonal[j] - trial_lambda[i]
-                if numpy.abs(diff_lambda) > self.eps:
+                if numpy.abs(diff_lambda) > self.eps ** 2:
                     new_direction[j] /= diff_lambda
                 else:
-                    # Makes sure error vectors are bounded.
                     new_direction[j] /= self.eps
             new_directions.append(new_direction)
+        return new_directions, max_trial_error
 
-        if new_directions:
-            guess_v = numpy.hstack([guess_v, numpy.stack(new_directions).T])
-        if len(trial_lambda) > n_lowest:
-            trial_lambda = trial_lambda[:n_lowest]
-            trial_v = trial_v[:, :n_lowest]
-        return trial_lambda, trial_v, max_trial_error, guess_v, guess_mv
+
+class QubitDavidson(Davidson):
+    """Davidson algorithm applied to a QubitOperator."""
+
+    def __init__(self, qubit_operator, n_qubits, eps=1e-6):
+        """
+        Args:
+            qubit_operator(QubitOperator): A qubit operator which is a linear
+                operator as well.
+            n_qubits(int): Number of qubits.
+            eps(float): The max error for eigen vectors' elements during
+                iterations.
+        """
+        super(QubitDavidson, self).__init__(
+            get_linear_qubit_operator(qubit_operator, n_qubits),
+            get_linear_qubit_operator_diagonal(qubit_operator, n_qubits), eps)

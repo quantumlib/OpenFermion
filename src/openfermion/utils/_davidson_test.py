@@ -17,9 +17,11 @@ from __future__ import absolute_import, division
 import unittest
 import numpy
 import numpy.linalg
+import scipy.linalg
 import scipy.sparse.linalg
 
-from openfermion.utils._davidson import *
+from openfermion.ops import QubitOperator
+from openfermion.utils._davidson import Davidson, QubitDavidson
 
 def generate_matrix(dimension):
     """Generates matrix with shape (dimension, dimension)."""
@@ -30,12 +32,17 @@ def generate_matrix(dimension):
     diag = numpy.array(range(dimension)) + numpy.random.rand(dimension)
 
     # Makes sure matrix is hermitian, which is symmetric when real.
-    matrix = rand + rand.T + diag
+    matrix = rand + rand.T + numpy.diag(diag)
     return matrix
+
+def get_difference(linear_operator, eigen_values, eigen_vectors):
+    """Get difference of M * v - lambda v."""
+    return numpy.max(numpy.abs(linear_operator * eigen_vectors -
+                               eigen_vectors * eigen_values))
 
 
 class DavidsonTest(unittest.TestCase):
-    """"Tests for Davidson class."""
+    """"Tests for Davidson class with a real matrix."""
 
     def setUp(self):
         """Sets up all variables needed for Davidson class."""
@@ -46,41 +53,76 @@ class DavidsonTest(unittest.TestCase):
             """Trivial matvec with a numpy matrix."""
             return numpy.dot(matrix, vec)
 
-        self.linear_op = scipy.sparse.linalg.LinearOperator((dimension,
-                                                             dimension),
-                                                            matvec=mat_vec)
+        self.linear_operator = scipy.sparse.linalg.LinearOperator(
+            (dimension, dimension), matvec=mat_vec)
         self.diagonal = numpy.diag(matrix)
         self.eps = 1e-8
 
-        self.davidson = Davidson(self.linear_op, self.diagonal, self.eps)
+        self.davidson = Davidson(linear_operator=self.linear_operator,
+                                 linear_operator_diagonal=self.diagonal,
+                                 eps=self.eps)
         self.matrix = matrix
         self.dimension = dimension
         self.initial_guess = numpy.eye(self.dimension, 10)
 
         self.eigen_values = numpy.array([
-            -2.39931818, -1.22519662, -0.52648639, -0.36372991, 0.58536854,
-            0.82588565, 1.12996448, 1.699007, 1.89728414, 60.31394086,
+            1.15675714, 1.59132505, 2.62268014, 4.44533793, 5.3722743,
+            5.54393114, 7.73652405, 8.50089897, 9.4229309, 15.54405993,
         ])
 
     def test_init(self):
         """Test for __init__()."""
         davidson = self.davidson
 
+        self.assertAlmostEqual(numpy.max(numpy.abs(
+            self.matrix - self.matrix.T)), 0)
+
         self.assertTrue(davidson.linear_operator)
         self.assertTrue(numpy.allclose(davidson.linear_operator_diagonal,
                                        self.diagonal))
         self.assertAlmostEqual(davidson.eps, self.eps, places=8)
 
+    def test_orthonormalize(self):
+        """Test for orthonormalization."""
+        sqrt_half = numpy.sqrt(0.5)
+        expected_array = numpy.array([
+            [sqrt_half, sqrt_half, 0],
+            [sqrt_half, -sqrt_half, 0],
+            [0, 0, 1],
+        ])
+
+        array = numpy.array([[1, 1, 10], [1, -1, 10], [0, 0, 2]], dtype=float)
+        array[:, 0] *= sqrt_half
+        array = self.davidson.orthonormalize(array, 1)
+        self.assertTrue(numpy.allclose(array, expected_array))
+
     def test_with_built_in(self):
-        """Compare with eigen values from built-in functions."""
+        """Compare with eigenvalues from built-in functions."""
         eigen_values, _ = numpy.linalg.eig(self.matrix)
         eigen_values = sorted(eigen_values)
         self.assertTrue(numpy.allclose(eigen_values, self.eigen_values))
+
+        # Checks for eigh() function.
+        eigen_values, eigen_vectors = numpy.linalg.eigh(self.matrix)
+        self.assertAlmostEqual(get_difference(self.davidson.linear_operator,
+                                              eigen_values, eigen_vectors), 0)
 
     def test_get_lowest_n_zero_n(self):
         """Test for get_lowest_n() with invalid n_lowest."""
         with self.assertRaises(ValueError):
             self.davidson.get_lowest_n(0)
+
+    def test_get_lowest_fail(self):
+        """Test for get_lowest_n() with n_lowest = 1."""
+        n_lowest = 1
+        initial_guess = self.initial_guess[:, :n_lowest]
+
+        success, eigen_values, _ = self.davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=2)
+
+        self.assertTrue(not success)
+        self.assertTrue(numpy.allclose(eigen_values,
+                                       numpy.array([1.2563599])))
 
     def test_get_lowest_one(self):
         """Test for get_lowest_n() with n_lowest = 1."""
@@ -88,7 +130,7 @@ class DavidsonTest(unittest.TestCase):
         initial_guess = self.initial_guess[:, :n_lowest]
 
         success, eigen_values, _ = self.davidson.get_lowest_n(
-            n_lowest, initial_guess)
+            n_lowest, initial_guess, max_iterations=10)
 
         self.assertTrue(success)
         self.assertTrue(numpy.allclose(eigen_values,
@@ -100,7 +142,7 @@ class DavidsonTest(unittest.TestCase):
         initial_guess = self.initial_guess[:, :n_lowest]
 
         success, eigen_values, eigen_vectors = self.davidson.get_lowest_n(
-            n_lowest, initial_guess)
+            n_lowest, initial_guess, max_iterations=5)
 
         self.assertTrue(success)
         self.assertTrue(numpy.allclose(eigen_values,
@@ -115,7 +157,7 @@ class DavidsonTest(unittest.TestCase):
         initial_guess = self.initial_guess[:, :n_lowest]
 
         success, eigen_values, _ = self.davidson.get_lowest_n(
-            n_lowest, initial_guess)
+            n_lowest, initial_guess, max_iterations=2)
         self.assertTrue(success)
         self.assertTrue(numpy.allclose(eigen_values, self.eigen_values[:n_lowest]))
 
@@ -125,6 +167,36 @@ class DavidsonTest(unittest.TestCase):
         initial_guess = self.initial_guess[:, :n_lowest]
 
         success, eigen_values, _ = self.davidson.get_lowest_n(
-            n_lowest, initial_guess)
+            n_lowest, initial_guess, max_iterations=1)
         self.assertTrue(success)
         self.assertTrue(numpy.allclose(eigen_values, self.eigen_values[:n_lowest]))
+
+
+class QubitDavidsonTest(unittest.TestCase):
+    """"Tests for QubitDavidson class with a QubitOperator."""
+
+    def setUp(self):
+        """Sets up all variables needed for QubitDavidson class."""
+        self.coefficient = 2
+        self.n_qubits = 12
+
+    def test_get_lowest_zzx(self):
+        """Test for get_lowest_n() for one term only within 10 iterations."""
+        dimension = 2 ** self.n_qubits
+        qubit_operator = QubitOperator('Z0 Z1 X2') * self.coefficient
+        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+
+        n_lowest = 6
+        numpy.random.seed(dimension)
+        initial_guess = numpy.random.rand(dimension, n_lowest)
+        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=10)
+
+        # one half of the eigenvalues is -1 and the other half is +1, together
+        # with the coefficient.
+        expected_eigen_values = -self.coefficient * numpy.ones(n_lowest)
+
+        self.assertTrue(success)
+        self.assertTrue(numpy.allclose(eigen_values, expected_eigen_values))
+        self.assertAlmostEqual(get_difference(davidson.linear_operator,
+                                              eigen_values, eigen_vectors), 0)
