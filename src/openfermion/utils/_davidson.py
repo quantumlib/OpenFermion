@@ -197,13 +197,13 @@ class Davidson(object):
         trial_mv = numpy.dot(guess_mv, trial_transformation)
         trial_error = trial_mv - trial_v * trial_lambda
 
-        new_directions, max_trial_error = self._get_new_directions(trial_error,
-                                                                   trial_lambda)
+        new_directions, max_trial_error = self._get_new_directions(
+            trial_error, trial_lambda, trial_v)
         if new_directions:
             guess_v = numpy.hstack([guess_v, numpy.stack(new_directions).T])
         return trial_lambda, trial_v, max_trial_error, guess_v, guess_mv
 
-    def _get_new_directions(self, error_v, trial_lambda):
+    def _get_new_directions(self, error_v, trial_lambda, trial_v):
         """Gets new directions from error vectors.
 
         Args:
@@ -211,6 +211,8 @@ class Davidson(object):
                 eigenvalues and associated eigenvectors.
             trial_lambda(numpy.ndarray(float)): The n_lowest minimal guess
                 eigenvalues.
+            trial_v(numpy.ndarray(complex)): Guess eigenvectors associated with
+                trial_lambda.
 
         Returns:
             new_directions(numpy.ndarray(complex)): New directions for searching
@@ -227,21 +229,28 @@ class Davidson(object):
 
         new_directions = []
         for i in range(n_lowest):
-            new_direction = error_v[:, i]
+            current_error_v = error_v[:, i]
 
-            if numpy.max(numpy.abs(new_direction)) < self.eps:
+            if numpy.max(numpy.abs(current_error_v)) < self.eps:
                 # Already converged for this eigenvector, no contribution to
                 # search for new directions.
                 continue
 
-            max_trial_error = max(max_trial_error, numpy.linalg.norm(new_direction))
+            max_trial_error = max(max_trial_error, numpy.linalg.norm(current_error_v))
+            diagonal_inverse = numpy.ones(origonal_dimension)
             for j in range(origonal_dimension):
                 # Makes sure error vectors are bounded.
                 diff_lambda = self.linear_operator_diagonal[j] - trial_lambda[i]
-                if numpy.abs(diff_lambda) > self.eps ** 2:
-                    new_direction[j] /= diff_lambda
+                if numpy.abs(diff_lambda) > self.eps:
+                    diagonal_inverse[j] /= diff_lambda
                 else:
-                    new_direction[j] /= self.eps
+                    diagonal_inverse[j] /= self.eps
+            diagonal_inverse_error = diagonal_inverse * current_error_v
+            diagonal_inverse_trial = diagonal_inverse * trial_v[:, i]
+            new_direction = -current_error_v + (trial_v[:, i] * numpy.dot(
+                trial_v[:, i].conj(), diagonal_inverse_error) / numpy.dot(
+                    trial_v[:, i].conj(), diagonal_inverse_trial))
+
             new_directions.append(new_direction)
         return new_directions, max_trial_error
 

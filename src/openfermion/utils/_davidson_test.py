@@ -122,7 +122,7 @@ class DavidsonTest(unittest.TestCase):
 
         self.assertTrue(not success)
         self.assertTrue(numpy.allclose(eigen_values,
-                                       numpy.array([1.2563599])))
+                                       numpy.array([1.41556103])))
 
     def test_get_lowest_one(self):
         """Test for get_lowest_n() with n_lowest = 1."""
@@ -179,6 +179,30 @@ class QubitDavidsonTest(unittest.TestCase):
         """Sets up all variables needed for QubitDavidson class."""
         self.coefficient = 2
         self.n_qubits = 12
+
+    def test_get_lowest_n(self):
+        """Test for get_lowest_n()."""
+        dimension = 2 ** self.n_qubits
+        qubit_operator = QubitOperator.zero()
+        for i in range(min(self.n_qubits, 4)):
+            numpy.random.seed(dimension + i)
+            qubit_operator += QubitOperator(((i, 'Z'),),
+                                                 numpy.random.rand(1)[0])
+        qubit_operator *= self.coefficient
+        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+
+        n_lowest = 6
+        numpy.random.seed(dimension)
+        initial_guess = numpy.random.rand(dimension, n_lowest)
+        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=20)
+
+        expected_eigen_values = -3.80376934 * numpy.ones(n_lowest)
+
+        self.assertTrue(success)
+        self.assertTrue(numpy.allclose(eigen_values, expected_eigen_values))
+        self.assertAlmostEqual(get_difference(davidson.linear_operator,
+                                              eigen_values, eigen_vectors), 0)
 
     def test_get_lowest_zzx(self):
         """Test for get_lowest_n() for one term only within 10 iterations."""
