@@ -15,6 +15,33 @@
 from __future__ import absolute_import, division
 
 import math
+import numpy
+
+
+def lambda_norm(diagonal_operator):
+    """Computes the lambda norm relevant to LCU algorithms.
+
+    Args:
+        diagonal_operator: instance of DiagonalCoulombHamiltonian.
+
+    Returns:
+        lambda_norm: A float giving the lambda norm.
+    """
+    lambda_norm = 0.
+    n_qubits = diagonal_operator.one_body.shape[0]
+    z_vector = numpy.zeros(n_qubits, float)
+    for p in range(n_qubits):
+        for q in range(n_qubits):
+            if p == q:
+                z_vector[p] -= diagonal_operator.one_body[p, p] / 2.
+                z_vector[p] -= diagonal_operator.two_body[p, p] / 2.
+            else:
+                lambda_norm += abs(diagonal_operator.one_body[p, q]) / 2.
+                lambda_norm += abs(diagonal_operator.two_body[p, q]) / 4.
+                z_vector[p] -= diagonal_operator.two_body[p, q] / 4.
+                z_vector[q] -= diagonal_operator.two_body[p, q] / 4.
+    lambda_norm += numpy.sum(numpy.absolute(z_vector))
+    return lambda_norm
 
 
 def _partial_sums(vals):
@@ -151,7 +178,7 @@ def preprocess_lcu_coefficients_for_reversible_sampling(
     unitaries decomposition of the Hamiltonian as probabilities in order to
     decompose them into a list of alternate and keep numerators allowing for
     an efficient preparation method of a state where the computational basis
-    state :math: `|k>` has an amplitude proportional to the coefficient.
+    state :math. `|k>` has an amplitude proportional to the coefficient.
 
     It is guaranteed that following the following sampling process will
     sample each index k with a probability within epsilon of

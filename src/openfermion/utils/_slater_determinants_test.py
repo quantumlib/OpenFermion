@@ -14,6 +14,8 @@
 from __future__ import absolute_import
 import unittest
 
+import numpy
+
 from openfermion.config import EQ_TOLERANCE
 from openfermion.transforms import get_sparse_operator
 from openfermion.utils import (jw_configuration_state,
@@ -66,11 +68,8 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
             # Check that the state obtained using the circuit is a ground state
             difference = sparse_operator * state - ground_energy * state
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
+            discrepancy = numpy.amax(numpy.abs(difference))
+            self.assertAlmostEqual(discrepancy, 0)
 
     def test_ground_state_particle_nonconserving(self):
         """Test getting the ground state preparation circuit for a Hamiltonian
@@ -105,11 +104,8 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
             # Check that the state obtained using the circuit is a ground state
             difference = sparse_operator * state - ground_energy * state
-            discrepancy = 0.
-            if difference.nnz:
-                discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
+            discrepancy = numpy.amax(numpy.abs(difference))
+            self.assertAlmostEqual(discrepancy, 0)
 
     def test_bad_input(self):
         """Test bad input."""

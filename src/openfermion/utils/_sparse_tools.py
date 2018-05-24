@@ -205,6 +205,137 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     sparse_operator.eliminate_zeros()
     return sparse_operator
 
+def get_linear_qubit_operator(qubit_operator, n_qubits=None):
+    """ Return a linear operator with matvec defined to avoid instantiating a
+    huge matrix, which requires lots of memory.
+
+    The idea is that a single i_th qubit operator, O_i, is a 2-by-2 matrix, to
+    be applied on a vector of length n_hilbert / 2^i, performs permutations and/
+    or adds an extra factor for its first half and the second half, e.g. a `Z`
+    operator keeps the first half unchanged, while adds a factor of -1 to the
+    second half, while an `I` keeps it both components unchanged.
+
+    Note that the vector length is n_hilbert / 2^i, therefore when one works on
+    i monotonically (in increasing order), one keeps splitting the vector to the
+    right size and then apply O_i on them independently.
+
+    Also note that operator O_i, is an *envelop operator* for all operators
+    after it, i.e. {O_j | j > i}, which implies that starting with i = 0, one
+    can split the vector, apply O_i, split the resulting vector (cached) again
+    for the next operator.
+
+    Args:
+      qubit_operator(QubitOperator): A qubit operator to be applied on vectors.
+
+    Returns:
+      linear_operator(LinearOperator): The equivalent operator which is well
+      defined when applying to a vector.
+
+    """
+    if n_qubits is None:
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    n_hilbert = 2 ** n_qubits
+
+    def matvec(vec):
+        """matvec for the LinearOperator class.
+
+        Args:
+          vec(numpy.ndarray): 1D numpy array.
+
+        Returns:
+          retvec(numpy.ndarray): same to the shape of input vec.
+        """
+        if len(vec) != n_hilbert:
+            raise ValueError('Invalid length of vector specified: %d != %d'
+                             %(len(vec), n_hilbert))
+
+        retvec = numpy.zeros(vec.shape, dtype=complex)
+        # Loop through the terms.
+        for qubit_term in qubit_operator.terms:
+            vecs = [vec]
+            tensor_factor = 0
+            coefficient = qubit_operator.terms[qubit_term]
+
+            for pauli_operator in qubit_term:
+                # Split vector by half and half for each bit.
+                if pauli_operator[0] > tensor_factor:
+                    vecs = [v for iter_v in vecs for v in numpy.split(
+                        iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
+
+                # Note that this is to make sure that XYZ operations always work
+                # on vector pairs.
+                vec_pairs = [numpy.split(v, 2) for v in vecs]
+
+                # There is an non-identity op here, transform the vector.
+                xyz = {
+                    'X' : lambda vps: [[vp[1], vp[0]] for vp in vps],
+                    'Y' : lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
+                    'Z' : lambda vps: [[vp[0], -vp[1]] for vp in vps],
+                }
+                vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs)
+                        for v in vp]
+                tensor_factor = pauli_operator[0] + 1
+
+            # No need to check tensor_factor, i.e. to deal with bits left.
+            retvec += coefficient * numpy.concatenate(vecs)
+        return retvec
+    return scipy.sparse.linalg.LinearOperator((n_hilbert, n_hilbert),
+                                              matvec=matvec, dtype=complex)
+
+
+def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
+    """ Return a linear operator's diagonal elements.
+
+    The main motivation is to use it for Davidson's algorithm, to find out the
+    lowest n eigenvalues and associated eigenvectors.
+
+    Qubit terms with X or Y operators will contribute nothing to the diagonal
+    elements, while I or Z will contribute a factor of 1 or -1 together with
+    the coefficient.
+
+    Args:
+        qubit_operator(QubitOperator): A qubit operator.
+
+    Returns:
+        linear_operator_diagonal(numpy.ndarray): The diagonal elements for
+            get_linear_qubit_operator(qubit_operator).
+    """
+    if n_qubits is None:
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    n_hilbert = 2 ** n_qubits
+    zeros_diagonal = numpy.zeros(n_hilbert)
+    ones_diagonal = numpy.ones(n_hilbert)
+    linear_operator_diagonal = zeros_diagonal
+    # Loop through the terms.
+    for qubit_term in qubit_operator.terms:
+        is_zero = False
+        tensor_factor = 0
+        vecs = [ones_diagonal]
+        for pauli_operator in qubit_term:
+            op = pauli_operator[1]
+            if op in ['X', 'Y']:
+                is_zero = True
+                break
+
+            # Split vector by half and half for each bit.
+            if pauli_operator[0] > tensor_factor:
+                vecs = [v for iter_v in vecs for v in numpy.split(
+                    iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
+
+            vec_pairs = [numpy.split(v, 2) for v in vecs]
+            vecs = [v for vp in vec_pairs for v in (vp[0], -vp[1])]
+            tensor_factor = pauli_operator[0] + 1
+        if not is_zero:
+            linear_operator_diagonal += (qubit_operator.terms[qubit_term] *
+                                         numpy.concatenate(vecs))
+    return linear_operator_diagonal
+
 
 def jw_configuration_state(occupied_orbitals, n_qubits):
     """Function to produce a basis state in the occupation number basis.
@@ -217,10 +348,9 @@ def jw_configuration_state(occupied_orbitals, n_qubits):
     Returns:
         basis_vector(sparse): The basis state as a sparse matrix
     """
-    one_index = sum([2 ** (n_qubits - 1 - i) for i in occupied_orbitals])
-    basis_vector = scipy.sparse.csc_matrix(([1.], ([one_index], [0])),
-                                           shape=(2 ** n_qubits, 1),
-                                           dtype=float)
+    one_index = sum(2 ** (n_qubits - 1 - i) for i in occupied_orbitals)
+    basis_vector = numpy.zeros(2 ** n_qubits, dtype=float)
+    basis_vector[one_index] = 1
     return basis_vector
 
 
@@ -662,6 +792,7 @@ def get_density_matrix(states, probabilities):
     density_matrix = scipy.sparse.csc_matrix(
         (n_qubits, n_qubits), dtype=complex)
     for state, probability in zip(states, probabilities):
+        state = scipy.sparse.csc_matrix(state.reshape((len(state), 1)))
         density_matrix = density_matrix + probability * state * state.getH()
     return density_matrix
 
@@ -681,9 +812,6 @@ def get_ground_state(sparse_operator, initial_guess=None):
         eigenstate:
             The lowest eigenstate in scipy.sparse csc format.
     """
-    if not is_hermitian(sparse_operator):
-        raise ValueError('sparse_operator must be Hermitian.')
-
     values, vectors = scipy.sparse.linalg.eigsh(
         sparse_operator, k=1, v0=initial_guess, which='SA', maxiter=1e7)
 
@@ -1130,11 +1258,7 @@ def get_gap(sparse_operator, initial_guess=None):
 
 def inner_product(state_1, state_2):
     """Compute inner product of two states."""
-    product = state_1.getH().dot(state_2)
-    if product.nnz:
-        return product.data[0]
-    else:
-        return 0.
+    return numpy.dot(state_1.conjugate(), state_2)
 
 
 def boson_ladder_sparse(n_modes, mode, ladder_type, trunc):

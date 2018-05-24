@@ -19,7 +19,8 @@ from ._commutators import anticommutator, commutator, double_commutator
 
 from ._grid import Grid
 
-from ._lcu_util import preprocess_lcu_coefficients_for_reversible_sampling
+from ._lcu_util import (lambda_norm,
+                        preprocess_lcu_coefficients_for_reversible_sampling)
 
 from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               freeze_orbitals, get_file_path,
@@ -75,6 +76,7 @@ from ._sparse_tools import (boson_ladder_sparse,
                             get_density_matrix,
                             get_gap,
                             get_ground_state,
+                            get_linear_qubit_operator,
                             inner_product,
                             jordan_wigner_sparse,
                             jw_configuration_state,
@@ -89,3 +91,5 @@ from ._sparse_tools import (boson_ladder_sparse,
                             qubit_operator_sparse,
                             sparse_eigenspectrum,
                             variance)
+
+from ._pubchem import geometry_from_pubchem
