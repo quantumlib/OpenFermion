@@ -26,7 +26,7 @@ def generate_matrix(dimension):
     numpy.random.seed(dimension)
     rand = numpy.array(numpy.random.rand(dimension, dimension))
 
-    numpy.random.seed(dimension)
+    numpy.random.seed(dimension * 2)
     diag = numpy.array(range(dimension)) + numpy.random.rand(dimension)
 
     # Makes sure matrix is hermitian, which is symmetric when real.
@@ -58,8 +58,9 @@ class DavidsonTest(unittest.TestCase):
         self.initial_guess = numpy.eye(self.dimension, 10)
 
         self.eigen_values = numpy.array([
-            -2.39763401, -1.21764127, -0.51686198, -0.36457375, 0.58244882,
-            0.82719468, 1.13003449, 1.69418437, 1.90207692, 58.74151042])
+            -2.39931818, -1.22519662, -0.52648639, -0.36372991, 0.58536854,
+            0.82588565, 1.12996448, 1.699007, 1.89728414, 60.31394086,
+        ])
 
     def test_init(self):
         """Test for __init__()."""
