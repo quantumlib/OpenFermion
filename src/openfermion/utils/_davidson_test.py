@@ -56,7 +56,7 @@ class DavidsonTest(unittest.TestCase):
         self.linear_operator = scipy.sparse.linalg.LinearOperator(
             (dimension, dimension), matvec=mat_vec)
         self.diagonal = numpy.diag(matrix)
-        self.eps = 1e-8
+        self.eps = 1e-6
 
         self.davidson = Davidson(linear_operator=self.linear_operator,
                                  linear_operator_diagonal=self.diagonal,
@@ -121,12 +121,22 @@ class DavidsonTest(unittest.TestCase):
         self.assertAlmostEqual(get_difference(self.davidson.linear_operator,
                                               eigen_values, eigen_vectors), 0)
 
-    def test_get_lowest_n_zero_n(self):
+    def test_lowest_invalid_subspace(self):
+        """Test for get_lowest_n() with invalid max_subspace."""
+        with self.assertRaises(ValueError):
+            Davidson(None, numpy.zeros(8), 1)
+
+    def test_lowest_invalid_eps(self):
+        """Test for get_lowest_n() with invalid eps."""
+        with self.assertRaises(ValueError):
+            Davidson(None, numpy.zeros(8), eps=-1e-6)
+
+    def test_lowest_zero_n(self):
         """Test for get_lowest_n() with invalid n_lowest."""
         with self.assertRaises(ValueError):
             self.davidson.get_lowest_n(0)
 
-    def test_get_lowest_n_invalid_shape(self):
+    def test_lowest_invalid_shape(self):
         """Test for get_lowest_n() with invalid dimension for initial guess."""
         with self.assertRaises(ValueError):
             self.davidson.get_lowest_n(1, numpy.ones((self.dimension * 2, 1),
@@ -163,7 +173,15 @@ class DavidsonTest(unittest.TestCase):
                                        self.eigen_values[:n_lowest]))
 
     def test_get_lowest_two(self):
-        """Test for get_lowest_n() with n_lowest = 2."""
+        """Test for get_lowest_n() with n_lowest = 2.
+
+        See the iteration results (eigenvalues and max error) below:
+            [1.87267714 4.06259537] 3.8646520980719212
+            [1.28812931 2.50316266] 1.548676934730246
+            [1.16659255 1.82600658] 0.584638880856119
+            [1.15840263 1.65254981] 0.4016803134102507
+            [1.15675714 1.59132505] 0
+        """
         n_lowest = 2
         initial_guess = self.initial_guess[:, :n_lowest]
 
@@ -174,6 +192,32 @@ class DavidsonTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(eigen_values,
                                        self.eigen_values[:n_lowest]))
         self.assertTrue(numpy.allclose(
+            self.davidson.linear_operator * eigen_vectors,
+            eigen_vectors * eigen_values))
+
+    def test_get_lowest_two_subspace(self):
+        """Test for get_lowest_n() with n_lowest = 2.
+
+        See the iteration results (eigenvalues and max error) below:
+            [1.87267714 4.06259537] 3.8646520980719212
+            [1.28812931 2.50316266] 1.548676934730246
+            [1.16659255 1.82600658] 0.584638880856119
+            [1.15947254 1.69773006] 0.5077687725257688
+            [1.1572995  1.61393264] 0.3318982487563453
+
+        """
+        self.davidson.max_subspace = 8
+        expected_eigen_values = numpy.array([1.1572995, 1.61393264])
+
+        n_lowest = 2
+        initial_guess = self.initial_guess[:, :n_lowest]
+
+        success, eigen_values, eigen_vectors = self.davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=5)
+
+        self.assertTrue(not success)
+        self.assertTrue(numpy.allclose(eigen_values, expected_eigen_values))
+        self.assertFalse(numpy.allclose(
             self.davidson.linear_operator * eigen_vectors,
             eigen_vectors * eigen_values))
 

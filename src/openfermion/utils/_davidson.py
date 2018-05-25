@@ -30,13 +30,15 @@ class DavidsonError(Exception):
 class Davidson(object):
     """Davidson algorithm to get the n states with smallest eigenvalues."""
 
-    def __init__(self, linear_operator, linear_operator_diagonal, eps=1e-6):
+    def __init__(self, linear_operator, linear_operator_diagonal,
+                 max_subspace=100, eps=1e-6):
         """
         Args:
             linear_operator(scipy.sparse.linalg.LinearOperator): The linear
                 operator which defines a dot function when applying on a vector.
             linear_operator_diagonal(numpy.ndarray): The linear operator's
                 diagonal elements.
+            max_subspace(int): Max number of vectors in the auxiliary subspace.
             eps(float): The max error for eigen vector error's elements during
                 iterations: linear_operator * v - v * lambda.
         """
@@ -47,7 +49,12 @@ class Davidson(object):
 
         self.linear_operator = linear_operator
         self.linear_operator_diagonal = linear_operator_diagonal
+        self.max_subspace = min(max_subspace, len(linear_operator_diagonal) + 1)
         self.eps = eps
+
+        if self.max_subspace <= 2 or eps <= 0:
+            raise ValueError('Invalid values for max_subspace and/ or eps: '
+                             '({}, {}).'.format(self.max_subspace, eps))
 
     def get_lowest_n(self, n_lowest=1, initial_guess=None, max_iterations=300):
         """
@@ -72,10 +79,10 @@ class Davidson(object):
         # diagonalization.
 
         # 1. Checks for number of states desired, should be in the range of
-        # [0, dimension].
-        if n_lowest <= 0 or n_lowest > len(self.linear_operator_diagonal):
-            raise ValueError('n_lowest is supposed to be in [{}, {}].'.format(
-                n_lowest, len(self.linear_operator_diagonal)))
+        # [0, max_subspace).
+        if n_lowest <= 0 or n_lowest >= self.max_subspace:
+            raise ValueError('n_lowest {} is supposed to be in [1, {}).'.format(
+                n_lowest, self.max_subspace))
 
         # 2. Checks for initial guess vectors' dimension is the same to that of
         # the operator.
@@ -101,25 +108,35 @@ class Davidson(object):
         guess_v = initial_guess
         guess_mv = None
         while (num_iterations < max_iterations and not success):
-            eigen_values, eigen_vectors, max_trial_error, guess_v, guess_mv = (
-                self._iterate(n_lowest, guess_v, guess_mv))
+            (eigen_values, eigen_vectors, mat_eigen_vectors, max_trial_error,
+             guess_v, guess_mv) = self._iterate(n_lowest, guess_v, guess_mv)
 
             if max_trial_error < self.eps:
                 success = True
                 break
 
             # Deals with new directions to make sure they're orthonormal.
+            # Also makes sure there're new directions added for the next
+            # iteration, if not, add n_lowest random vectors.
             count_mvs = guess_mv.shape[1]
             guess_v = self.orthonormalize(guess_v, count_mvs)
-            num_trial = 0
-            while guess_v.shape[1] <= count_mvs and num_trial < 3:
-                # No new directions are available, generates random directions.
+            if guess_v.shape[1] <= count_mvs:
+                guess_v = self.append_random_vectors(guess_v, n_lowest)
+
+
+            # Limits number of vectors to self.max_subspace, in this case, keep
+            # the following:
+            # 1) first n_lowest eigen_vectors;
+            # 2) first n_lowest matrix multiplication result for eigen_vectors;
+            #
+            # 3) new search directions which will be used for improvement for
+            #    the next iteration.
+            if guess_v.shape[1] >= self.max_subspace:
                 guess_v = numpy.hstack([
-                    guess_v,
-                    (numpy.random.rand(guess_mv.shape[0], n_lowest) +
-                     numpy.random.rand(guess_mv.shape[0], n_lowest) * 1.0j)])
-                guess_v = self.orthonormalize(guess_v, count_mvs)
-                num_trial += 1
+                    eigen_vectors,
+                    guess_v[:, count_mvs:],
+                ])
+                guess_mv = mat_eigen_vectors
             num_iterations += 1
         return success, eigen_values, eigen_vectors
 
@@ -141,7 +158,7 @@ class Davidson(object):
         random_vectors = scipy.linalg.orth(random_vectors)
         return random_vectors
 
-    def append_random_vectors(self, vectors, col):
+    def append_random_vectors(self, vectors, col, max_trial=3):
         """Appends exactly col orthonormal random vectors for vectors.
 
         Assumes vectors is already orthonormal.
@@ -171,7 +188,7 @@ class Davidson(object):
 
             # Checks whether there are any new vectors added successfully.
             if vectors.shape[1] == vector_columns:
-                if (num_trial) > 3:
+                if num_trial > max_trial:
                     # Not able to generate new directions for vectors.
                     break
             else:
@@ -232,6 +249,8 @@ class Davidson(object):
             trial_lambda(numpy.ndarray(float)): The minimal eigenvalues based on
                 guess eigenvectors.
             trial_v(numpy.ndarray(complex)): New guess eigenvectors.
+            trial_mv(numpy.ndarray(complex)): New guess eigenvectors' matrix
+                multiplication result.
             max_trial_error(float): The max elementwise error for all guess
                 vectors.
 
@@ -240,9 +259,6 @@ class Davidson(object):
             guess_mv(numpy.ndarray(complex)): Cached guess vectors which is the
                 matrix product of linear_operator with guess_v.
         """
-        # TODO: optimize for memory usage, so that one can limit max number of
-        # guess vectors to keep.
-
         if guess_mv is None:
             guess_mv = self.linear_operator * guess_v
         dimension = guess_v.shape[1]
@@ -279,7 +295,8 @@ class Davidson(object):
             trial_error, trial_lambda, trial_v)
         if new_directions:
             guess_v = numpy.hstack([guess_v, numpy.stack(new_directions).T])
-        return trial_lambda, trial_v, max_trial_error, guess_v, guess_mv
+        return (trial_lambda, trial_v, trial_mv, max_trial_error,
+                guess_v, guess_mv)
 
     def _get_new_directions(self, error_v, trial_lambda, trial_v):
         """Gets new directions from error vectors.
@@ -336,15 +353,18 @@ class Davidson(object):
 class QubitDavidson(Davidson):
     """Davidson algorithm applied to a QubitOperator."""
 
-    def __init__(self, qubit_operator, n_qubits=None, eps=1e-6):
+    def __init__(self, qubit_operator, n_qubits=None, max_subspace=100,
+                 eps=1e-6):
         """
         Args:
             qubit_operator(QubitOperator): A qubit operator which is a linear
                 operator as well.
             n_qubits(int): Number of qubits.
+            max_subspace(int): Max number of vectors in the auxiliary subspace.
             eps(float): The max error for eigen vectors' elements during
                 iterations.
         """
         super(QubitDavidson, self).__init__(
             get_linear_qubit_operator(qubit_operator, n_qubits),
-            get_linear_qubit_operator_diagonal(qubit_operator, n_qubits), eps)
+            get_linear_qubit_operator_diagonal(qubit_operator, n_qubits),
+            max_subspace=max_subspace, eps=eps)
