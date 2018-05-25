@@ -22,14 +22,13 @@ import scipy.sparse.linalg
 from openfermion.utils._sparse_tools import (get_linear_qubit_operator,
                                              get_linear_qubit_operator_diagonal)
 
-# Exceptions.
 class DavidsonError(Exception):
     """Exceptions."""
     pass
 
 
 class Davidson(object):
-    """Davidson algorithm to get the n states with smallest energies."""
+    """Davidson algorithm to get the n states with smallest eigenvalues."""
 
     def __init__(self, linear_operator, linear_operator_diagonal, eps=1e-6):
         """
@@ -38,8 +37,8 @@ class Davidson(object):
                 operator which defines a dot function when applying on a vector.
             linear_operator_diagonal(numpy.ndarray): The linear operator's
                 diagonal elements.
-            eps(float): The max error for eigen vectors' elements during
-                iterations.
+            eps(float): The max error for eigen vector error's elements during
+                iterations: linear_operator * v - v * lambda.
         """
         if not isinstance(linear_operator, scipy.sparse.linalg.LinearOperator):
             raise ValueError(
@@ -69,9 +68,33 @@ class Davidson(object):
             eigen_vectors(numpy.ndarray[complex]): The smallest n eigenvectors
                   corresponding with those eigen values.
         """
-        if n_lowest <= 0:
-            raise ValueError('n_lowest is supposed to be positive: {}.'.format(
-                n_lowest))
+        # Goes through a few checks and preprocessing before iterative
+        # diagonalization.
+
+        # 1. Checks for number of states desired, should be in the range of
+        # [0, dimension].
+        if n_lowest <= 0 or n_lowest > len(self.linear_operator_diagonal):
+            raise ValueError('n_lowest is supposed to be in [{}, {}].'.format(
+                n_lowest, len(self.linear_operator_diagonal)))
+
+        # 2. Checks for initial guess vectors' dimension is the same to that of
+        # the operator.
+        if initial_guess.shape[0] != len(self.linear_operator_diagonal):
+            raise ValueError('Guess vectors have a different dimension with '
+                             'linear opearator diagonal elements: {} != {}.'
+                             .format(initial_guess.shape[1],
+                                     len(self.linear_operator_diagonal)))
+
+        # 3. Checks for non-trivial (non-zero) initial guesses.
+        if numpy.max(numpy.abs(initial_guess)) < self.eps:
+            raise ValueError('Guess vectors are all zero!'.format(
+                initial_guess.shape))
+        initial_guess = scipy.linalg.orth(initial_guess)
+
+        # 4. Makes sure number of initial guess vector is at least n_lowest.
+        if initial_guess.shape[1] < n_lowest:
+            initial_guess = self.append_random_vectors(
+                initial_guess, n_lowest - initial_guess.shape[1])
 
         success = False
         num_iterations = 0
@@ -100,6 +123,61 @@ class Davidson(object):
             num_iterations += 1
         return success, eigen_values, eigen_vectors
 
+    def _generate_random_vectors(self, col, row=None):
+        """Generates orthonormal random vectors with col columns.
+
+        Args:
+            col(int): Number of columns desired.
+            row(int): Number of rows for the vectors.
+
+        Returns:
+            random_vectors(numpy.ndarray(complex)): Orthonormal random vectors.
+        """
+        if row is None:
+            row = len(self.linear_operator_diagonal)
+
+        random_vectors = (numpy.random.rand(row, col) +
+                          numpy.random.rand(row, col) * 1.0j)
+        random_vectors = scipy.linalg.orth(random_vectors)
+        return random_vectors
+
+    def append_random_vectors(self, vectors, col):
+        """Appends exactly col orthonormal random vectors for vectors.
+
+        Assumes vectors is already orthonormal.
+
+        Args:
+            vectors(numpy.ndarray(complex)): Orthonormal original vectors to be
+                appended.
+            col(int): Number of columns to be appended.
+
+        Returns:
+            vectors(numpy.ndarray(complex)): Orthonormal vectors with n columns.
+        """
+        vector_columns = vectors.shape[1]
+        total_columns = vector_columns + col
+        if total_columns > vectors.shape[0]:
+            raise ValueError(
+                'Asking for too many random vectors: {} > {}.'.format(
+                    total_columns, vectors.shape[0]))
+
+        num_trial = 0
+        while vector_columns < total_columns:
+            num_trial += 1
+
+            vectors = numpy.hstack([vectors, self._generate_random_vectors(
+                total_columns - vector_columns, row=vectors.shape[0])])
+            self.orthonormalize(vectors, vector_columns)
+
+            # Checks whether there are any new vectors added successfully.
+            if vectors.shape[1] == vector_columns:
+                if (num_trial) > 3:
+                    # Not able to generate new directions for vectors.
+                    break
+            else:
+                num_trial = 1
+                vector_columns = vectors.shape[1]
+        return vectors
 
     def orthonormalize(self, vectors, num_orthonormals=1):
         """Orthonormalize vectors, so that they're all normalized and orthogoal.
@@ -166,7 +244,6 @@ class Davidson(object):
         # guess vectors to keep.
 
         if guess_mv is None:
-            guess_v = scipy.linalg.orth(guess_v)
             guess_mv = self.linear_operator * guess_v
         dimension = guess_v.shape[1]
 
@@ -259,7 +336,7 @@ class Davidson(object):
 class QubitDavidson(Davidson):
     """Davidson algorithm applied to a QubitOperator."""
 
-    def __init__(self, qubit_operator, n_qubits, eps=1e-6):
+    def __init__(self, qubit_operator, n_qubits=None, eps=1e-6):
         """
         Args:
             qubit_operator(QubitOperator): A qubit operator which is a linear

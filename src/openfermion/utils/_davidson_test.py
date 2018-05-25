@@ -126,6 +126,18 @@ class DavidsonTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.davidson.get_lowest_n(0)
 
+    def test_get_lowest_n_invalid_shape(self):
+        """Test for get_lowest_n() with invalid dimension for initial guess."""
+        with self.assertRaises(ValueError):
+            self.davidson.get_lowest_n(1, numpy.ones((self.dimension * 2, 1),
+                                                     dtype=complex))
+
+    def test_get_lowest_n_trivial_guess(self):
+        """Test for get_lowest_n() with trivial initial guess."""
+        with self.assertRaises(ValueError):
+            self.davidson.get_lowest_n(1, numpy.zeros((self.dimension, 1),
+                                                      dtype=complex))
+
     def test_get_lowest_fail(self):
         """Test for get_lowest_n() with n_lowest = 1."""
         n_lowest = 1
@@ -219,14 +231,15 @@ class QubitDavidsonTest(unittest.TestCase):
                                               eigen_values, eigen_vectors), 0)
 
     def test_get_lowest_zzx(self):
-        """Test for get_lowest_n() for one term only within 10 iterations."""
+        """Test for get_lowest_n() for one term only within 10 iterations.
+        Also the number of starting vectors is smaller than n_lowest."""
         dimension = 2 ** self.n_qubits
         qubit_operator = QubitOperator('Z0 Z1 X2') * self.coefficient
         davidson = QubitDavidson(qubit_operator, self.n_qubits)
 
         n_lowest = 6
         numpy.random.seed(dimension)
-        initial_guess = numpy.random.rand(dimension, n_lowest)
+        initial_guess = numpy.random.rand(dimension, n_lowest // 2)
         success, eigen_values, eigen_vectors = davidson.get_lowest_n(
             n_lowest, initial_guess, max_iterations=10)
 
