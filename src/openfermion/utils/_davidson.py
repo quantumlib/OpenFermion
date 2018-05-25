@@ -91,9 +91,10 @@ class Davidson(object):
             num_trial = 0
             while guess_v.shape[1] <= count_mvs and num_trial < 3:
                 # No new directions are available, generates random directions.
-                guess_v = numpy.hstack([guess_v,
-                                        numpy.random.rand(guess_mv.shape[0],
-                                                          n_lowest)])
+                guess_v = numpy.hstack([
+                    guess_v,
+                    (numpy.random.rand(guess_mv.shape[0], n_lowest) +
+                     numpy.random.rand(guess_mv.shape[0], n_lowest) * 1.0j)])
                 guess_v = self.orthonormalize(guess_v, count_mvs)
                 num_trial += 1
             num_iterations += 1
@@ -127,8 +128,8 @@ class Davidson(object):
             vector_i = vectors[:, i]
             # Makes sure vector_i is orthogonal to all processed vectors.
             for j in range(i):
-                vector_i -= ortho_normals[:, j] * numpy.dot(ortho_normals[:, j],
-                                                            vector_i)
+                vector_i -= ortho_normals[:, j] * numpy.dot(
+                    ortho_normals[:, j].conj(), vector_i)
 
             # Makes sure vector_i is normalized.
             if numpy.max(numpy.abs(vector_i)) < self.eps:

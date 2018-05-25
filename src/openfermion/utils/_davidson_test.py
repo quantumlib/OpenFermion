@@ -96,6 +96,20 @@ class DavidsonTest(unittest.TestCase):
         array = self.davidson.orthonormalize(array, 1)
         self.assertTrue(numpy.allclose(array, expected_array))
 
+    def test_orthonormalize_complex(self):
+        """Test for orthonormalization with complex matrix."""
+        sqrt_half = numpy.sqrt(0.5)
+        expected_array = numpy.array([
+            [sqrt_half * 1.0j, sqrt_half * 1.0j, 0],
+            [sqrt_half * 1.0j, -sqrt_half * 1.0j, 0],
+            [0, 0, 1],
+        ], dtype=complex)
+
+        array = numpy.array([[1.j, 1.j, 10], [1.j, -1.j, 10], [0, 0, 2]], dtype=complex)
+        array[:, 0] *= sqrt_half
+        array = self.davidson.orthonormalize(array, 1)
+        self.assertTrue(numpy.allclose(array, expected_array))
+
     def test_with_built_in(self):
         """Compare with eigenvalues from built-in functions."""
         eigen_values, _ = numpy.linalg.eig(self.matrix)
@@ -187,7 +201,7 @@ class QubitDavidsonTest(unittest.TestCase):
         for i in range(min(self.n_qubits, 4)):
             numpy.random.seed(dimension + i)
             qubit_operator += QubitOperator(((i, 'Z'),),
-                                                 numpy.random.rand(1)[0])
+                                            numpy.random.rand(1)[0])
         qubit_operator *= self.coefficient
         davidson = QubitDavidson(qubit_operator, self.n_qubits)
 
@@ -213,6 +227,30 @@ class QubitDavidsonTest(unittest.TestCase):
         n_lowest = 6
         numpy.random.seed(dimension)
         initial_guess = numpy.random.rand(dimension, n_lowest)
+        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=10)
+
+        # one half of the eigenvalues is -1 and the other half is +1, together
+        # with the coefficient.
+        expected_eigen_values = -self.coefficient * numpy.ones(n_lowest)
+
+        self.assertTrue(success)
+        self.assertTrue(numpy.allclose(eigen_values, expected_eigen_values))
+        self.assertAlmostEqual(get_difference(davidson.linear_operator,
+                                              eigen_values, eigen_vectors), 0)
+
+    def test_get_lowest_xyz(self):
+        """Test for get_lowest_n() for one term only within 10 iterations."""
+        dimension = 2 ** self.n_qubits
+        qubit_operator = QubitOperator('X0 Y1 Z3') * self.coefficient
+        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+
+        n_lowest = 6
+        # Guess vectors have both real and imaginary parts.
+        numpy.random.seed(dimension)
+        initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
+        numpy.random.seed(dimension * 2)
+        initial_guess += numpy.random.rand(dimension, n_lowest)
         success, eigen_values, eigen_vectors = davidson.get_lowest_n(
             n_lowest, initial_guess, max_iterations=10)
 
