@@ -13,6 +13,8 @@
 """This module is to find lowest eigenvalues with Davidson algorithm."""
 from __future__ import absolute_import
 
+import warnings
+
 import numpy
 import numpy.linalg
 import scipy
@@ -94,13 +96,13 @@ class Davidson(object):
 
         # 3. Checks for non-trivial (non-zero) initial guesses.
         if numpy.max(numpy.abs(initial_guess)) < self.eps:
-            raise ValueError('Guess vectors are all zero!'.format(
+            raise ValueError('Guess vectors are all zero! {}'.format(
                 initial_guess.shape))
         initial_guess = scipy.linalg.orth(initial_guess)
 
         # 4. Makes sure number of initial guess vector is at least n_lowest.
         if initial_guess.shape[1] < n_lowest:
-            initial_guess = self.append_random_vectors(
+            initial_guess = append_random_vectors(
                 initial_guess, n_lowest - initial_guess.shape[1])
 
         success = False
@@ -119,9 +121,9 @@ class Davidson(object):
             # Also makes sure there're new directions added for the next
             # iteration, if not, add n_lowest random vectors.
             count_mvs = guess_mv.shape[1]
-            guess_v = self.orthonormalize(guess_v, count_mvs)
+            guess_v = orthonormalize(guess_v, count_mvs, self.eps)
             if guess_v.shape[1] <= count_mvs:
-                guess_v = self.append_random_vectors(guess_v, n_lowest)
+                guess_v = append_random_vectors(guess_v, n_lowest)
 
 
             # Limits number of vectors to self.max_subspace, in this case, keep
@@ -139,100 +141,6 @@ class Davidson(object):
                 guess_mv = mat_eigen_vectors
             num_iterations += 1
         return success, eigen_values, eigen_vectors
-
-    def _generate_random_vectors(self, col, row=None):
-        """Generates orthonormal random vectors with col columns.
-
-        Args:
-            col(int): Number of columns desired.
-            row(int): Number of rows for the vectors.
-
-        Returns:
-            random_vectors(numpy.ndarray(complex)): Orthonormal random vectors.
-        """
-        if row is None:
-            row = len(self.linear_operator_diagonal)
-
-        random_vectors = (numpy.random.rand(row, col) +
-                          numpy.random.rand(row, col) * 1.0j)
-        random_vectors = scipy.linalg.orth(random_vectors)
-        return random_vectors
-
-    def append_random_vectors(self, vectors, col, max_trial=3):
-        """Appends exactly col orthonormal random vectors for vectors.
-
-        Assumes vectors is already orthonormal.
-
-        Args:
-            vectors(numpy.ndarray(complex)): Orthonormal original vectors to be
-                appended.
-            col(int): Number of columns to be appended.
-
-        Returns:
-            vectors(numpy.ndarray(complex)): Orthonormal vectors with n columns.
-        """
-        vector_columns = vectors.shape[1]
-        total_columns = vector_columns + col
-        if total_columns > vectors.shape[0]:
-            raise ValueError(
-                'Asking for too many random vectors: {} > {}.'.format(
-                    total_columns, vectors.shape[0]))
-
-        num_trial = 0
-        while vector_columns < total_columns:
-            num_trial += 1
-
-            vectors = numpy.hstack([vectors, self._generate_random_vectors(
-                total_columns - vector_columns, row=vectors.shape[0])])
-            self.orthonormalize(vectors, vector_columns)
-
-            # Checks whether there are any new vectors added successfully.
-            if vectors.shape[1] == vector_columns:
-                if num_trial > max_trial:
-                    # Not able to generate new directions for vectors.
-                    break
-            else:
-                num_trial = 1
-                vector_columns = vectors.shape[1]
-        return vectors
-
-    def orthonormalize(self, vectors, num_orthonormals=1):
-        """Orthonormalize vectors, so that they're all normalized and orthogoal.
-
-        The first vector is the same to that of vectors, while vector_i is
-        orthogonal to vector_j, where j < i.
-
-        Args:
-            vectors(numpy.ndarray(complex)): Input vectors to be
-                orthonormalized.
-            num_orthonormals(int): First `num_orthonormals` columns are already
-                orthonormal, so that one doesn't need to make any changes.
-
-        Returns:
-            ortho_normals(numpy.ndarray(complex)): Output orthonormal vectors.
-        """
-        num_vectors = vectors.shape[1]
-        if num_vectors == 0:
-            raise ValueError(
-                'vectors is not supposed to be empty: {}.'.format(vectors.shape))
-
-        ortho_normals = vectors
-        count_orthonormals = num_orthonormals
-        # Skip unchanged ones.
-        for i in range(num_orthonormals, num_vectors):
-            vector_i = vectors[:, i]
-            # Makes sure vector_i is orthogonal to all processed vectors.
-            for j in range(i):
-                vector_i -= ortho_normals[:, j] * numpy.dot(
-                    ortho_normals[:, j].conj(), vector_i)
-
-            # Makes sure vector_i is normalized.
-            if numpy.max(numpy.abs(vector_i)) < self.eps:
-                continue
-            ortho_normals[:, count_orthonormals] = (vector_i /
-                                                    numpy.linalg.norm(vector_i))
-            count_orthonormals += 1
-        return ortho_normals[:, :count_orthonormals]
 
     def _iterate(self, n_lowest, guess_v, guess_mv=None):
         """One iteration with guess vectors.
@@ -368,3 +276,92 @@ class QubitDavidson(Davidson):
             get_linear_qubit_operator(qubit_operator, n_qubits),
             get_linear_qubit_operator_diagonal(qubit_operator, n_qubits),
             max_subspace=max_subspace, eps=eps)
+
+def generate_random_vectors(row, col):
+    """Generates orthonormal random vectors with col columns.
+
+    Args:
+        row(int): Number of rows for the vectors.
+        col(int): Number of columns for the vectors.
+
+    Returns:
+        random_vectors(numpy.ndarray(complex)): Orthonormal random vectors.
+    """
+    random_vectors = (numpy.random.rand(row, col) +
+                      numpy.random.rand(row, col) * 1.0j)
+    random_vectors = scipy.linalg.orth(random_vectors)
+    return random_vectors
+
+
+def append_random_vectors(vectors, col, max_trial=3):
+    """Appends exactly col orthonormal random vectors for vectors.
+
+    Assumes vectors is already orthonormal.
+
+    Args:
+        vectors(numpy.ndarray(complex)): Orthonormal original vectors to be
+            appended.
+        col(int): Number of columns to be appended.
+
+    Returns:
+        vectors(numpy.ndarray(complex)): Orthonormal vectors with n columns.
+    """
+    if col <= 0:
+        return vectors
+
+    vector_columns = vectors.shape[1]
+    total_columns = min(vector_columns + col, vectors.shape[0] + 1)
+
+    num_trial = 0
+    while vector_columns < total_columns:
+        num_trial += 1
+
+        vectors = numpy.hstack([vectors, generate_random_vectors(
+            vectors.shape[0], total_columns - vector_columns)])
+        vectors = orthonormalize(vectors, vector_columns)
+
+        # Checks whether there are any new vectors added successfully.
+        if vectors.shape[1] == vector_columns:
+            if num_trial > max_trial:
+                warnings.warn('Unable to generate specified number of random '
+                              'vectors {}: returning {} in total.'.format(
+                                  col, vector_columns), RuntimeWarning)
+                break
+        else:
+            num_trial = 1
+            vector_columns = vectors.shape[1]
+    return vectors
+
+def orthonormalize(vectors, num_orthonormals=1, eps=1e-6):
+    """Orthonormalize vectors, so that they're all normalized and orthogoal.
+
+    The first vector is the same to that of vectors, while vector_i is
+    orthogonal to vector_j, where j < i.
+
+    Args:
+        vectors(numpy.ndarray(complex)): Input vectors to be
+            orthonormalized.
+        num_orthonormals(int): First `num_orthonormals` columns are already
+            orthonormal, so that one doesn't need to make any changes.
+        eps(float): criterion of elements' max absolute value for zero vectors.
+
+    Returns:
+        ortho_normals(numpy.ndarray(complex)): Output orthonormal vectors.
+    """
+    ortho_normals = vectors
+    count_orthonormals = num_orthonormals
+    # Skip unchanged ones.
+    for i in range(num_orthonormals, vectors.shape[1]):
+        vector_i = vectors[:, i]
+        # Makes sure vector_i is orthogonal to all processed vectors.
+        for j in range(i):
+            vector_i -= ortho_normals[:, j] * numpy.dot(
+                ortho_normals[:, j].conj(), vector_i)
+
+        # Makes sure vector_i is normalized.
+        if numpy.max(numpy.abs(vector_i)) < eps:
+            continue
+        ortho_normals[:, count_orthonormals] = (vector_i /
+                                                numpy.linalg.norm(vector_i))
+        count_orthonormals += 1
+    return ortho_normals[:, :count_orthonormals]

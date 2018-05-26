@@ -21,7 +21,11 @@ import scipy.linalg
 import scipy.sparse.linalg
 
 from openfermion.ops import QubitOperator
-from openfermion.utils._davidson import Davidson, QubitDavidson
+from openfermion.utils._davidson import (
+    Davidson,
+    QubitDavidson,
+    append_random_vectors,
+    orthonormalize)
 
 def generate_matrix(dimension):
     """Generates matrix with shape (dimension, dimension)."""
@@ -82,34 +86,6 @@ class DavidsonTest(unittest.TestCase):
                                        self.diagonal))
         self.assertAlmostEqual(davidson.eps, self.eps, places=8)
 
-    def test_orthonormalize(self):
-        """Test for orthonormalization."""
-        sqrt_half = numpy.sqrt(0.5)
-        expected_array = numpy.array([
-            [sqrt_half, sqrt_half, 0],
-            [sqrt_half, -sqrt_half, 0],
-            [0, 0, 1],
-        ])
-
-        array = numpy.array([[1, 1, 10], [1, -1, 10], [0, 0, 2]], dtype=float)
-        array[:, 0] *= sqrt_half
-        array = self.davidson.orthonormalize(array, 1)
-        self.assertTrue(numpy.allclose(array, expected_array))
-
-    def test_orthonormalize_complex(self):
-        """Test for orthonormalization with complex matrix."""
-        sqrt_half = numpy.sqrt(0.5)
-        expected_array = numpy.array([
-            [sqrt_half * 1.0j, sqrt_half * 1.0j, 0],
-            [sqrt_half * 1.0j, -sqrt_half * 1.0j, 0],
-            [0, 0, 1],
-        ], dtype=complex)
-
-        array = numpy.array([[1.j, 1.j, 10], [1.j, -1.j, 10], [0, 0, 2]], dtype=complex)
-        array[:, 0] *= sqrt_half
-        array = self.davidson.orthonormalize(array, 1)
-        self.assertTrue(numpy.allclose(array, expected_array))
-
     def test_with_built_in(self):
         """Compare with eigenvalues from built-in functions."""
         eigen_values, _ = numpy.linalg.eig(self.matrix)
@@ -121,15 +97,20 @@ class DavidsonTest(unittest.TestCase):
         self.assertAlmostEqual(get_difference(self.davidson.linear_operator,
                                               eigen_values, eigen_vectors), 0)
 
+    def test_lowest_invalid_operator(self):
+        """Test for get_lowest_n() with invalid linear operator."""
+        with self.assertRaises(ValueError):
+            Davidson(None, numpy.zeros(8), 1)
+
     def test_lowest_invalid_subspace(self):
         """Test for get_lowest_n() with invalid max_subspace."""
         with self.assertRaises(ValueError):
-            Davidson(None, numpy.zeros(8), 1)
+            Davidson(self.linear_operator, numpy.zeros(8), 1)
 
     def test_lowest_invalid_eps(self):
         """Test for get_lowest_n() with invalid eps."""
         with self.assertRaises(ValueError):
-            Davidson(None, numpy.zeros(8), eps=-1e-6)
+            Davidson(self.linear_operator, numpy.zeros(8), eps=-1e-6)
 
     def test_lowest_zero_n(self):
         """Test for get_lowest_n() with invalid n_lowest."""
@@ -241,7 +222,6 @@ class DavidsonTest(unittest.TestCase):
         self.assertTrue(success)
         self.assertTrue(numpy.allclose(eigen_values, self.eigen_values[:n_lowest]))
 
-
 class QubitDavidsonTest(unittest.TestCase):
     """"Tests for QubitDavidson class with a QubitOperator."""
 
@@ -319,3 +299,66 @@ class QubitDavidsonTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(eigen_values, expected_eigen_values))
         self.assertAlmostEqual(get_difference(davidson.linear_operator,
                                               eigen_values, eigen_vectors), 0)
+
+
+class DavidsonUtilityTest(unittest.TestCase):
+    """"Tests for utility functions."""
+    def test_append_random_vectors_0(self):
+        """Test append_random_vectors() with too few columns."""
+        vectors = numpy.zeros((10, 2), dtype=complex)
+        self.assertTrue(numpy.allclose(
+            append_random_vectors(vectors, 0), vectors))
+
+    def test_append_random_vectors(self):
+        """Test append_random_vectors()."""
+        row = 10
+        col = 2
+        add = 1
+        vectors = numpy.eye(row, col)
+        new_vectors = append_random_vectors(vectors, add)
+
+        # Identical for the first col columns.
+        self.assertTrue(numpy.allclose(new_vectors[:, :col], vectors))
+
+        # Orthonormal.
+        self.assertTrue(numpy.allclose(
+            numpy.dot(new_vectors.conj().T, new_vectors),
+            numpy.eye(col + add, col + add)))
+
+    def test_append_vectors_big_col(self):
+        """Test append_random_vectors() with too many failed trial."""
+        row = 10
+        vectors = numpy.eye(row, row)
+        new_vectors = append_random_vectors(vectors, 1)
+
+        self.assertTrue(numpy.allclose(new_vectors, vectors))
+
+    def test_orthonormalize(self):
+        """Test for orthonormalization with removing non-independent vectors."""
+        sqrt_half = numpy.sqrt(0.5)
+        expected_array = numpy.array([
+            [sqrt_half, sqrt_half, 0],
+            [sqrt_half, -sqrt_half, 0],
+            [0, 0, 1],
+        ])
+
+        array = numpy.array([[1, 1, 10, 1], [1, -1, 10, 1], [0, 0, 2, 1]],
+                            dtype=float)
+        array[:, 0] *= sqrt_half
+        array = orthonormalize(array, 1)
+        self.assertTrue(numpy.allclose(array, expected_array))
+
+    def test_orthonormalize_complex(self):
+        """Test for orthonormalization with complex matrix."""
+        sqrt_half = numpy.sqrt(0.5)
+        expected_array = numpy.array([
+            [sqrt_half * 1.0j, sqrt_half * 1.0j, 0],
+            [sqrt_half * 1.0j, -sqrt_half * 1.0j, 0],
+            [0, 0, 1],
+        ], dtype=complex)
+
+        array = numpy.array([[1.j, 1.j, 10], [1.j, -1.j, 10], [0, 0, 2]],
+                            dtype=complex)
+        array[:, 0] *= sqrt_half
+        array = orthonormalize(array, 1)
+        self.assertTrue(numpy.allclose(array, expected_array))
