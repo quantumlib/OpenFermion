@@ -291,7 +291,7 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None, processes=None):
                              %(len(vec), n_hilbert))
 
         pool = multiprocessing.Pool(processes)
-        vecs = pool.map(term_on_vec, [(numpy.copy(vec), item[0], item[1])
+        vecs = pool.map(term_on_vec, [(vec, item[0], item[1])
                                       for item in qubit_operator.terms.items()])
         if vecs:
             return reduce(numpy.add, vecs)
