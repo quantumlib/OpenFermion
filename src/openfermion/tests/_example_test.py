@@ -159,6 +159,7 @@ class ExampleTest(unittest.TestCase):
         # Run get_linear_qubit_operator() benchmark.
         n_qubits = 10
         n_terms = 10
-        runtime_operator, runtime_matvec = benchmark_linear_qubit_operator(n_qubits, n_terms)
+        runtime_operator, runtime_matvec = benchmark_linear_qubit_operator(
+            n_qubits, n_terms)
         self.assertLess(runtime_operator, 100)
         self.assertLess(runtime_matvec, 600)

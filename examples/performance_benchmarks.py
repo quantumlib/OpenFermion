@@ -149,9 +149,9 @@ def benchmark_linear_qubit_operator(n_qubits, n_terms):
         2: 'Z',
     }
     qubit_operator = QubitOperator.zero()
-    for _ in xrange(n_terms):
+    for _ in range(n_terms):
         tuples = []
-        for i in xrange(n_qubits):
+        for i in range(n_qubits):
             int_operator = numpy.random.randint(4)
             # 3 is 'I', so just skip.
             if int_operator > 2:
