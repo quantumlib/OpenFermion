@@ -314,7 +314,7 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None, processes=10):
         def chunks(data, size):
             """Splits a map into chunks."""
             it = iter(data)
-            for i in xrange(0, len(data), size):
+            for i in range(0, len(data), size):
                 yield {k:data[k] for k in itertools.islice(it, size)}
 
         pool = multiprocessing.Pool(processes)
