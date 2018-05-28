@@ -308,6 +308,11 @@ class GetQuadOperatorTest(unittest.TestCase):
     def setUp(self):
         self.hbar = 0.5
 
+    def test_invalid_op(self):
+        op = QuadOperator()
+        with self.assertRaises(TypeError):
+            b = get_quad_operator(op)
+
     def test_zero(self):
         b = BosonOperator()
         q = get_quad_operator(b)
@@ -371,6 +376,11 @@ class GetBosonOperatorTest(unittest.TestCase):
 
     def setUp(self):
         self.hbar = 0.5
+
+    def test_invalid_op(self):
+        op = BosonOperator()
+        with self.assertRaises(TypeError):
+            b = get_boson_operator(op)
 
     def test_zero(self):
         q = QuadOperator()

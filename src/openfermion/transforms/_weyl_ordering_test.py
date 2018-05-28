@@ -17,7 +17,8 @@ import unittest
 
 import numpy
 
-from openfermion.ops import (BosonOperator, QuadOperator,
+from openfermion.ops import (FermionOperator, BosonOperator,
+                             QuadOperator,
                              normal_ordered_boson,
                              normal_ordered_quad)
 from openfermion.utils import hermitian_conjugated, is_hermitian
@@ -110,6 +111,11 @@ class WeylQuantizationTest(unittest.TestCase):
 
 
 class SymmetricOrderingTest(unittest.TestCase):
+
+    def test_invalid_op(self):
+        op = FermionOperator()
+        with self.assertRaises(TypeError):
+            res = symmetric_ordering(op)
 
     def test_symmetric_empty(self):
         for op in (BosonOperator, QuadOperator):

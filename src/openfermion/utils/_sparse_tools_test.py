@@ -1229,13 +1229,23 @@ class InnerProductTest(unittest.TestCase):
 
 class BosonSparseTest(unittest.TestCase):
     def setUp(self):
-        self.hbar = 1
+        self.hbar = 1.
         self.d = 5
         self.b = numpy.diag(numpy.sqrt(numpy.arange(1, self.d)), 1)
         self.bd = self.b.conj().T
         self.q = numpy.sqrt(self.hbar/2)*(self.b + self.bd)
         self.p = -1j*numpy.sqrt(self.hbar/2)*(self.b - self.bd)
         self.Id = numpy.identity(self.d)
+
+    def test_boson_ladder_noninteger_trunc(self):
+        with self.assertRaises(ValueError):
+            b = boson_ladder_sparse(1, 0, 0, 0.1)
+
+        with self.assertRaises(ValueError):
+            b = boson_ladder_sparse(1, 0, 0, -1)
+
+        with self.assertRaises(ValueError):
+            b = boson_ladder_sparse(1, 0, 0, 0)
 
     def test_boson_ladder_destroy_one_mode(self):
         b = boson_ladder_sparse(1, 0, 0, self.d).toarray()
@@ -1259,6 +1269,16 @@ class BosonSparseTest(unittest.TestCase):
         expected = numpy.kron(self.Id, self.b)
         self.assertTrue(numpy.allclose(res, expected))
 
+    def test_single_quad_noninteger_trunc(self):
+        with self.assertRaises(ValueError):
+            b = single_quad_op_sparse(1, 0, 'q', self.hbar, 0.1)
+
+        with self.assertRaises(ValueError):
+            b = single_quad_op_sparse(1, 0, 'q', self.hbar, -1)
+
+        with self.assertRaises(ValueError):
+            b = single_quad_op_sparse(1, 0, 'q', self.hbar, 0)
+
     def test_single_quad_q_one_mode(self):
         res = single_quad_op_sparse(1, 0, 'q', self.hbar, self.d).toarray()
         self.assertTrue(numpy.allclose(res, self.q))
@@ -1277,6 +1297,22 @@ class BosonSparseTest(unittest.TestCase):
         res = single_quad_op_sparse(2, 1, 'p', self.hbar, self.d).toarray()
         expected = numpy.kron(self.Id, self.p)
         self.assertTrue(numpy.allclose(res, expected))
+
+    def test_boson_operator_sparse_trunc(self):
+        op = BosonOperator('0')
+        with self.assertRaises(ValueError):
+            b = boson_operator_sparse(op, 0.1)
+
+        with self.assertRaises(ValueError):
+            b = boson_operator_sparse(op, -1)
+
+        with self.assertRaises(ValueError):
+            b = boson_operator_sparse(op, 0)
+
+    def test_boson_operator_invalid_op(self):
+        op = FermionOperator('0')
+        with self.assertRaises(ValueError):
+            b = boson_operator_sparse(op, self.d)
 
     def test_boson_operator_sparse_empty(self):
         for op in (BosonOperator(), QuadOperator()):
