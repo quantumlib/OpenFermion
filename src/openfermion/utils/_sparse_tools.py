@@ -17,6 +17,7 @@ from functools import reduce
 from future.utils import iteritems
 
 import itertools
+import multiprocessing
 import numpy
 import numpy.linalg
 import scipy
@@ -203,7 +204,44 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     sparse_operator.eliminate_zeros()
     return sparse_operator
 
-def get_linear_qubit_operator(qubit_operator, n_qubits=None):
+def term_on_vec(args):
+    """Applies a single qubit term to a vector.
+
+    Args:
+        args(tuple): args is a tuple of numpy.ndarray, a single qubit term and
+            corresponding coefficient from a QubitOperator.
+
+    Returns:
+        numpy.ndarray: a new vector with the same shape to args[0].
+    """
+    vector, qubit_term, coefficient = args
+
+    vecs = [vector]
+    tensor_factor = 0
+
+    for pauli_operator in qubit_term:
+        # Split vector by half and half for each bit.
+        if pauli_operator[0] > tensor_factor:
+            vecs = [v for iter_v in vecs for v in numpy.split(
+                iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
+
+        # Note that this is to make sure that XYZ operations always work on
+        # vector pairs.
+        vec_pairs = [numpy.split(v, 2) for v in vecs]
+
+        # There is an non-identity op here, transform the vector.
+        xyz = {
+            'X' : lambda vps: [[vp[1], vp[0]] for vp in vps],
+            'Y' : lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
+            'Z' : lambda vps: [[vp[0], -vp[1]] for vp in vps],
+        }
+        vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs) for v in vp]
+        tensor_factor = pauli_operator[0] + 1
+
+    # No need to check tensor_factor, i.e. to deal with bits left.
+    return coefficient * numpy.concatenate(vecs)
+
+def get_linear_qubit_operator(qubit_operator, n_qubits=None, processes=None):
     """ Return a linear operator with matvec defined to avoid instantiating a
     huge matrix, which requires lots of memory.
 
@@ -223,12 +261,14 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None):
     for the next operator.
 
     Args:
-      qubit_operator(QubitOperator): A qubit operator to be applied on vectors.
+        qubit_operator(QubitOperator): A qubit operator to apply on vectors.
+        n_qubits(int): Number of qubits.
+        processes(int): Number of processors to use. If processes is None then
+            the number returned by cpu_count() is use
 
     Returns:
-      linear_operator(LinearOperator): The equivalent operator which is well
-      defined when applying to a vector.
-
+        linear_operator(LinearOperator): The equivalent operator which is well
+        defined when applying to a vector.
     """
     if n_qubits is None:
         n_qubits = count_qubits(qubit_operator)
@@ -241,45 +281,21 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None):
         """matvec for the LinearOperator class.
 
         Args:
-          vec(numpy.ndarray): 1D numpy array.
+            vec(numpy.ndarray): 1D numpy array.
 
         Returns:
-          retvec(numpy.ndarray): same to the shape of input vec.
+            numpy.ndarray: with the same shape to that of vec.
         """
         if len(vec) != n_hilbert:
             raise ValueError('Invalid length of vector specified: %d != %d'
                              %(len(vec), n_hilbert))
 
-        retvec = numpy.zeros(vec.shape, dtype=complex)
-        # Loop through the terms.
-        for qubit_term in qubit_operator.terms:
-            vecs = [vec]
-            tensor_factor = 0
-            coefficient = qubit_operator.terms[qubit_term]
-
-            for pauli_operator in qubit_term:
-                # Split vector by half and half for each bit.
-                if pauli_operator[0] > tensor_factor:
-                    vecs = [v for iter_v in vecs for v in numpy.split(
-                        iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
-
-                # Note that this is to make sure that XYZ operations always work
-                # on vector pairs.
-                vec_pairs = [numpy.split(v, 2) for v in vecs]
-
-                # There is an non-identity op here, transform the vector.
-                xyz = {
-                    'X' : lambda vps: [[vp[1], vp[0]] for vp in vps],
-                    'Y' : lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
-                    'Z' : lambda vps: [[vp[0], -vp[1]] for vp in vps],
-                }
-                vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs)
-                        for v in vp]
-                tensor_factor = pauli_operator[0] + 1
-
-            # No need to check tensor_factor, i.e. to deal with bits left.
-            retvec += coefficient * numpy.concatenate(vecs)
-        return retvec
+        pool = multiprocessing.Pool(processes)
+        vecs = pool.map(term_on_vec, [(vec, item[0], item[1])
+                                      for item in qubit_operator.terms.items()])
+        if vecs:
+            return reduce(numpy.add, vecs)
+        return numpy.zeros(vec.shape, dtype=complex)
     return scipy.sparse.linalg.LinearOperator((n_hilbert, n_hilbert),
                                               matvec=matvec, dtype=complex)
 
