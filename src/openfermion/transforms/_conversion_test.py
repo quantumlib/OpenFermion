@@ -18,10 +18,15 @@ import numpy
 import unittest
 
 from openfermion.hamiltonians import fermi_hubbard
-from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
-                             InteractionOperator, QubitOperator, normal_ordered,
-                             BosonOperator, QuadOperator, normal_ordered_boson,
-                             normal_ordered_quad)
+from openfermion.ops import (BosonOperator,
+                             DiagonalCoulombHamiltonian,
+                             FermionOperator,
+                             InteractionOperator,
+                             normal_ordered,
+                             normal_ordered_boson,
+                             normal_ordered_quad,
+                             QuadOperator,
+                             QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
 from openfermion.transforms import *

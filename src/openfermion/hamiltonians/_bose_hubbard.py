@@ -14,7 +14,7 @@
 from __future__ import absolute_import
 
 from openfermion.ops import BosonOperator
-from openfermion.utils import (hermitian_conjugated, boson_number_operator,
+from openfermion.utils import (hermitian_conjugated, number_operator,
                                up_index, down_index)
 
 
@@ -67,7 +67,7 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
     interaction = float(interaction)
     chemical_potential = float(chemical_potential)
 
-    # Initialize fermion operator class.
+    # Initialize boson operator class.
     n_sites = x_dimension * y_dimension
     n_modes = n_sites
 
@@ -77,13 +77,13 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
     for site in range(n_sites):
         # Add local interaction potential.
         if chemical_potential:
-            bose_hubbard_model += boson_number_operator(
-                n_modes, site, -chemical_potential)
+            bose_hubbard_model += number_operator(
+                n_modes, site, -chemical_potential, parity=1)
 
         # Add chemical potential.
         if interaction:
-            int_op = boson_number_operator(n_modes, site, interaction/2) \
-                * (boson_number_operator(n_modes, site)
+            int_op = number_operator(n_modes, site, interaction/2, parity=1) \
+                * (number_operator(n_modes, site, parity=1)
                     - BosonOperator.identity())
             bose_hubbard_model += int_op
 
@@ -101,10 +101,10 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
         # Add transition to neighbor on right.
         if (right_neighbor) % x_dimension or (periodic and x_dimension > 2):
             # Add dipole interaction term.
-            operator_1 = boson_number_operator(
-                n_modes, site, 1.0)
-            operator_2 = boson_number_operator(
-                n_modes, right_neighbor, 1.0)
+            operator_1 = number_operator(
+                n_modes, site, 1.0, parity=1)
+            operator_2 = number_operator(
+                n_modes, right_neighbor, 1.0, parity=1)
             bose_hubbard_model += dipole * operator_1 * operator_2
 
             # Add hopping term.
@@ -117,10 +117,10 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
         # Add transition to neighbor below.
         if site + x_dimension + 1 <= n_sites or (periodic and y_dimension > 2):
             # Add dipole interaction term.
-            operator_1 = boson_number_operator(
-                n_modes, site)
-            operator_2 = boson_number_operator(
-                n_modes, bottom_neighbor)
+            operator_1 = number_operator(
+                n_modes, site, parity=1)
+            operator_2 = number_operator(
+                n_modes, bottom_neighbor, parity=1)
             bose_hubbard_model += dipole * operator_1 * operator_2
 
             # Add hopping term.

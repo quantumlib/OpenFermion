@@ -17,10 +17,11 @@ import unittest
 
 import numpy
 
-from openfermion.ops import (FermionOperator, BosonOperator,
-                             QuadOperator,
+from openfermion.ops import (BosonOperator,
+                             FermionOperator,
                              normal_ordered_boson,
-                             normal_ordered_quad)
+                             normal_ordered_quad,
+                             QuadOperator)
 from openfermion.utils import hermitian_conjugated, is_hermitian
 
 from openfermion.transforms._weyl_ordering import (

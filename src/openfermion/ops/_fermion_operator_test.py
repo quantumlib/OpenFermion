@@ -113,7 +113,7 @@ class FermionOperatorTest(unittest.TestCase):
         self.assertTrue(op.is_molecular_term())
 
     def test_is_molecular_term_number(self):
-        op = number_operator(n_orbitals=5, orbital=3)
+        op = number_operator(5, 3)
         self.assertTrue(op.is_molecular_term())
 
     def test_is_molecular_term_updown(self):

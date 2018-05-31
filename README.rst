@@ -134,6 +134,7 @@ Authors
 `Tarini Hardikar <https://github.com/TariniHardikar>`__ (Dartmouth),
 `Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
+`Josh Izaac <https://github.com/josh146>`__ (Xanadu),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Xinle Liu <https://github.com/sheilaliuxl>`__ (Google),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),

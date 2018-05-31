@@ -18,7 +18,7 @@ import unittest
 from openfermion.ops._boson_operator import (BosonOperator,
                                              BosonOperatorError,
                                              normal_ordered)
-from openfermion.utils import boson_number_operator
+from openfermion.utils import number_operator
 
 
 class BosonOperatorTest(unittest.TestCase):
@@ -74,7 +74,7 @@ class BosonOperatorTest(unittest.TestCase):
 
     def test_normal_ordered_number_reversed(self):
         n_term_rev2 = BosonOperator(((2, 0), (2, 1)))
-        number_op2 = boson_number_operator(3, 2)
+        number_op2 = number_operator(3, 2, parity=1)
         expected = BosonOperator(()) + number_op2
         self.assertTrue(normal_ordered(n_term_rev2) == expected)
 
@@ -107,7 +107,7 @@ class BosonOperatorTest(unittest.TestCase):
         self.assertTrue(op.is_boson_preserving())
 
     def test_is_boson_preserving_number(self):
-        op = boson_number_operator(n_modes=5, mode=3)
+        op = number_operator(n_modes=5, mode=3, parity=1)
         self.assertTrue(op.is_boson_preserving())
 
     def test_is_boson_preserving_three(self):
