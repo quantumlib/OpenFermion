@@ -94,5 +94,10 @@ from ._sparse_tools import (boson_ladder_sparse,
                             variance)
 
 from ._davidson import Davidson, DavidsonOptions, QubitDavidson
+from ._linear_qubit_operator import (
+    ParallelLinearQubitOperator,
+    LinearQubitOperatorOptions,
+    LinearQubitOperator,
+)
 
 from ._pubchem import geometry_from_pubchem

@@ -143,3 +143,56 @@ def test_renormalize():
     for term in op.terms:
         assert op.terms[term] == pytest.approx(1/numpy.sqrt(2.))
     assert op.induced_norm(2) == pytest.approx(1.)
+
+def test_get_operators_empty():
+    operator = QubitOperator.zero()
+
+    operators = operator.get_operators()
+    assert operators == []
+
+def test_get_operators_one():
+    operator = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+
+    operators = operator.get_operators()
+    assert operators == [operator]
+
+def test_get_operators():
+    operator_00 = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+    operator_01 = QubitOperator(((2, 'Z'), (3, 'Y')), 1)
+    sum_operator = operator_00 + operator_01
+
+    operators = sum_operator.get_operators()
+    assert operators in [[operator_00, operator_01],
+                         [operator_01, operator_00]]
+
+def test_get_operator_groups_empty():
+    operator = QubitOperator.zero()
+
+    operators = [op for op in operator.get_operator_groups(1)]
+    assert operators == []
+
+def test_get_operator_groups_one():
+    operator = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+
+    for num_groups in range(3):
+        operators = [op for op in operator.get_operator_groups(num_groups)]
+        assert operators == [operator]
+
+def test_get_operator_groups():
+    operator_00 = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+    operator_01 = QubitOperator(((2, 'Z'), (3, 'Y')), 1)
+    sum_operator = operator_00 + operator_01
+
+    # 1 Group.
+    operator_groups_01 = sum_operator.get_operator_groups(1)
+    assert len(operator_groups_01) == 1
+    assert operator_groups_01[0] == sum_operator
+
+    # 2 Groups.
+    for num_groups in [2, 3, 10]:
+        operator_groups_02 = sum_operator.get_operator_groups(num_groups)
+        assert len(operator_groups_02) == 2
+        assert ((operator_groups_02[0] == operator_00 and
+                 operator_groups_02[1] == operator_01) or
+                (operator_groups_02[0] == operator_01 and
+                 operator_groups_02[1] == operator_00))
