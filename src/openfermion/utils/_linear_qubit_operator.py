@@ -13,6 +13,7 @@
 """LinearQubitOperator is a linear operator from QubitOperator."""
 from __future__ import absolute_import
 
+import functools
 import multiprocessing
 
 import numpy
@@ -169,7 +170,7 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
 
         if not vecs:
             return numpy.zeros(x.shape)
-        return reduce(numpy.add, vecs)
+        return functools.reduce(numpy.add, vecs)
 
 
 def _apply_operator(args):
