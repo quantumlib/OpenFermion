@@ -26,7 +26,8 @@ from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               freeze_orbitals, get_file_path,
                               hermitian_conjugated, inline_sum,
                               inverse_fourier_transform,
-                              is_hermitian, is_identity, prune_unused_indices,
+                              is_hermitian, is_identity,
+                              normal_ordered, prune_unused_indices,
                               reorder, up_then_down,
                               load_operator, save_operator)
 

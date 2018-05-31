@@ -13,9 +13,8 @@
 """testing angular momentum generators. _fermion_spin_operators.py"""
 import numpy
 import unittest
-from openfermion.ops import (FermionOperator,
-        normal_ordered, BosonOperator)
-from openfermion.utils import commutator
+from openfermion.ops import FermionOperator, BosonOperator
+from openfermion.utils import commutator, normal_ordered
 from openfermion.utils._special_operators import (
         majorana_operator, number_operator,
         s_minus_operator, s_plus_operator, s_squared_operator,

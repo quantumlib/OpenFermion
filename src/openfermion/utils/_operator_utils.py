@@ -21,10 +21,14 @@ import os
 
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 
-from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
-                             InteractionOperator, InteractionRDM,
-                             BosonOperator, QuadOperator,
-                             PolynomialTensor, QubitOperator, normal_ordered)
+from openfermion.ops import (BosonOperator,
+                             DiagonalCoulombHamiltonian,
+                             FermionOperator,
+                             InteractionOperator,
+                             InteractionRDM,
+                             QuadOperator,
+                             QubitOperator,
+                             PolynomialTensor)
 
 from scipy.sparse import spmatrix
 
@@ -603,3 +607,192 @@ def up_then_down(mode_idx, num_modes):
         return mode_idx // 2
     else:
         return mode_idx // 2 + halfway
+
+
+def normal_ordered_ladder_term(term, coefficient, parity=-1):
+    """Return a normal ordered FermionOperator or BosonOperator corresponding to single term.
+
+    Args:
+        term (list or tuple): A sequence of tuples. The first element of each
+            tuple is an integer indicating the mode on which a fermion ladder
+            operator acts, starting from zero. The second element of each
+            tuple is an integer, either 1 or 0, indicating whether creation
+            or annihilation acts on that mode.
+        coefficient(complex or float): The coefficient of the term.
+        parity (int): parity=-1 corresponds to a Fermionic term that should be
+            ordered based on the canonical anti-commutation relations.
+            parity=1 corresponds to a Bosonic term that should be ordered based
+            on the canonical commutation relations.
+
+    Returns:
+        ordered_term: An instance of the FermionOperator or BosonOperator class.
+            The normal ordered form of the input.
+            Note that this might have more terms.
+
+    In our convention, normal ordering implies terms are ordered
+    from highest tensor factor (on left) to lowest (on right).
+    Also, ladder operators come first.
+
+    Warning:
+        Even assuming that each creation or annihilation operator appears
+        at most a constant number of times in the original term, the
+        runtime of this method is exponential in the number of qubits.
+    """
+    # Iterate from left to right across operators and reorder to normal
+    # form. Swap terms operators into correct position by moving from
+    # left to right across ladder operators.
+    term = list(term)
+
+    if parity == -1:
+        Op = FermionOperator
+    elif parity == 1:
+        Op = BosonOperator
+
+    ordered_term = Op()
+
+    for i in range(1, len(term)):
+        for j in range(i, 0, -1):
+            right_operator = term[j]
+            left_operator = term[j - 1]
+
+            # Swap operators if raising on right and lowering on left.
+            if right_operator[1] and not left_operator[1]:
+                term[j - 1] = right_operator
+                term[j] = left_operator
+                coefficient *= parity
+
+                # Replace a a^\dagger with 1 + parity*a^\dagger a
+                # if indices are the same.
+                if right_operator[0] == left_operator[0]:
+                    new_term = term[:(j - 1)] + term[(j + 1):]
+
+                    # Recursively add the processed new term.
+                    ordered_term += normal_ordered_ladder_term(
+                        tuple(new_term), parity*coefficient, parity)
+
+            # Handle case when operator type is the same.
+            elif right_operator[1] == left_operator[1]:
+
+                # If same two Fermionic operators are repeated, evaluate to zero.
+                if parity == -1 and right_operator[0] == left_operator[0]:
+                    return ordered_term
+
+                # Swap if same ladder type but lower index on left.
+                elif right_operator[0] > left_operator[0]:
+                    term[j - 1] = right_operator
+                    term[j] = left_operator
+                    coefficient *= parity
+
+    # Add processed term and return.
+    ordered_term += Op(tuple(term), coefficient)
+    return ordered_term
+
+
+def normal_ordered_quad_term(term, coefficient, hbar=1.):
+    """Return a normal ordered QuadOperator corresponding to single term.
+
+    Args:
+        term: A tuple of tuples. The first element of each tuple is
+            an integer indicating the mode on which a boson ladder
+            operator acts, starting from zero. The second element of each
+            tuple is an integer, either 1 or 0, indicating whether creation
+            or annihilation acts on that mode.
+        coefficient: The coefficient of the term.
+        hbar (float): the value of hbar used in the definition of the
+            commutator [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+
+    Returns:
+        ordered_term (QuadOperator): The normal ordered form of the input.
+            Note that this might have more terms.
+
+    In our convention, normal ordering implies terms are ordered
+    from highest tensor factor (on left) to lowest (on right).
+    Also, q operators come first.
+    """
+    # Iterate from left to right across operators and reorder to normal
+    # form. Swap terms operators into correct position by moving from
+    # left to right across ladder operators.
+    term = list(term)
+    ordered_term = QuadOperator()
+    for i in range(1, len(term)):
+        for j in range(i, 0, -1):
+            right_operator = term[j]
+            left_operator = term[j - 1]
+
+            # Swap operators if q on right and p on left.
+            # p q -> q p
+            if right_operator[1] == 'q' and not left_operator[1] == 'q':
+                term[j - 1] = right_operator
+                term[j] = left_operator
+
+                # Replace p q with i hbar + q p
+                # if indices are the same.
+                if right_operator[0] == left_operator[0]:
+                    new_term = term[:(j - 1)] + term[(j + 1)::]
+
+                    # Recursively add the processed new term.
+                    ordered_term += normal_ordered_quad_term(
+                        tuple(new_term), -coefficient*1j*hbar)
+
+            # Handle case when operator type is the same.
+            elif right_operator[1] == left_operator[1]:
+
+                # Swap if same type but lower index on left.
+                if right_operator[0] > left_operator[0]:
+                    term[j - 1] = right_operator
+                    term[j] = left_operator
+
+    # Add processed term and return.
+    ordered_term += QuadOperator(tuple(term), coefficient)
+    return ordered_term
+
+
+def normal_ordered(operator, hbar=1.):
+    r"""Compute and return the normal ordered form of a FermionOperator,
+    BosonOperator, QuadOperator.
+
+    Due to the canonical commutation/anticommutation relations satisfied
+    by these operators, there are multiple forms that the same operator
+    can take. Here, we define the normal ordered form of each operator,
+    providing a distinct representation for distinct operators.
+
+    In our convention, normal ordering implies terms are ordered
+    from highest tensor factor (on left) to lowest (on right). In
+    addition:
+
+    * FermionOperators: a^\dagger comes before a
+    * BosonOperators: b^\dagger comes before b
+    * QuadOperators: q operators come before p operators,
+
+    Args:
+        operator: an instance of the FermionOperator, BosonOperator,
+            or QuadOperator classes.
+        hbar (float): the value of hbar used in the definition of the
+            commutator [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+            This argument only applies when normal ordering QuadOperators.
+    """
+    kwargs = {}
+
+    if isinstance(operator, FermionOperator):
+        ordered_operator = FermionOperator()
+        order_fn = normal_ordered_ladder_term
+        kwargs['parity'] = -1
+
+    elif isinstance(operator, BosonOperator):
+        ordered_operator = BosonOperator()
+        order_fn = normal_ordered_ladder_term
+        kwargs['parity'] = 1
+
+    elif isinstance(operator, QuadOperator):
+        ordered_operator = QuadOperator()
+        order_fn = normal_ordered_quad_term
+        kwargs['hbar'] = hbar
+
+    else:
+        raise TypeError('Can only normal order FermionOperator, '
+                        'BosonOperator, or QuadOperator.')
+
+    for term, coefficient in operator.terms.items():
+        ordered_operator += order_fn(term, coefficient, **kwargs)
+
+    return ordered_operator

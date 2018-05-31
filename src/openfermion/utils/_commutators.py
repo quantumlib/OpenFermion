@@ -16,7 +16,8 @@ from future.utils import itervalues
 
 import numpy
 
-from openfermion.ops import FermionOperator, normal_ordered
+from openfermion.ops import FermionOperator
+from openfermion.utils._operator_utils import normal_ordered
 
 
 def commutator(operator_a, operator_b):

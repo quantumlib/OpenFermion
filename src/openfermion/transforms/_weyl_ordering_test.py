@@ -19,10 +19,9 @@ import numpy
 
 from openfermion.ops import (BosonOperator,
                              FermionOperator,
-                             normal_ordered_boson,
-                             normal_ordered_quad,
                              QuadOperator)
-from openfermion.utils import hermitian_conjugated, is_hermitian
+from openfermion.utils import (hermitian_conjugated,
+                               is_hermitian)
 
 from openfermion.transforms._weyl_ordering import (
     mccoy, symmetric_ordering, weyl_polynomial_quantization)
@@ -195,7 +194,7 @@ class SymmetricOrderingTest(unittest.TestCase):
 
     def test_symmetric_coefficient(self):
         coeff = 0.5+0.6j
-        op = coeff*QuadOperator('q0 p0')
+        op = QuadOperator('q0 p0', coeff)
         res = symmetric_ordering(op, ignore_coeff=False)
         expected = QuadOperator('q0 p0', 0.5) \
             + QuadOperator('p0 q0', 0.5)

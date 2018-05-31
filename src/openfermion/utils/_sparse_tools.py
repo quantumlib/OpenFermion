@@ -26,13 +26,13 @@ import warnings
 
 from openfermion.config import *
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
-                             QubitOperator, normal_ordered, BosonOperator,
+                             QubitOperator, BosonOperator,
                              QuadOperator)
 from openfermion.utils import (Grid, commutator, count_qubits,
                                fourier_transform,
                                gaussian_state_preparation_circuit,
                                hermitian_conjugated, is_hermitian,
-                               number_operator,
+                               normal_ordered, number_operator,
                                slater_determinant_preparation_circuit,
                                up_index, down_index)
 

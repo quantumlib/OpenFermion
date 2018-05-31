@@ -22,9 +22,6 @@ from openfermion.ops import (BosonOperator,
                              DiagonalCoulombHamiltonian,
                              FermionOperator,
                              InteractionOperator,
-                             normal_ordered,
-                             normal_ordered_boson,
-                             normal_ordered_quad,
                              QuadOperator,
                              QubitOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
@@ -290,6 +287,29 @@ class GetSparseOperatorFermionTest(unittest.TestCase):
         self.assertEqual(sparse_operator.shape, (16, 16))
 
 
+class GetSparseOperatorBosonTest(unittest.TestCase):
+    def setUp(self):
+        self.hbar = 1.
+        self.d = 4
+        self.b = numpy.diag(numpy.sqrt(numpy.arange(1, self.d)), 1)
+        self.bd = self.b.conj().T
+        self.q = numpy.sqrt(self.hbar/2)*(self.b + self.bd)
+
+    def test_sparse_matrix_ladder(self):
+        sparse_operator = get_sparse_operator(BosonOperator('0'), trunc=self.d)
+        self.assertTrue(numpy.allclose(sparse_operator.toarray(), self.b))
+        self.assertEqual(sparse_operator.shape, (self.d, self.d))
+
+    def test_sparse_matrix_quad(self):
+        sparse_operator = get_sparse_operator(QuadOperator('q0'), trunc=self.d)
+        self.assertTrue(numpy.allclose(sparse_operator.toarray(), self.q))
+        self.assertEqual(sparse_operator.shape, (self.d, self.d))
+
+    def test_sparse_matrix_error(self):
+        with self.assertRaises(TypeError):
+            _ = get_sparse_operator(1)
+
+
 class GetSparseOperatorDiagonalCoulombHamiltonianTest(unittest.TestCase):
 
     def test_diagonal_coulomb_hamiltonian(self):
@@ -363,7 +383,7 @@ class GetQuadOperatorTest(unittest.TestCase):
     def test_q_squared(self):
         b = self.hbar*(BosonOperator('0^ 0^') + BosonOperator('0 0') \
             + BosonOperator('') + 2*BosonOperator('0^ 0'))/2
-        q = normal_ordered_quad(
+        q = normal_ordered(
             get_quad_operator(b, hbar=self.hbar), hbar=self.hbar)
         expected = QuadOperator('q0 q0')
         self.assertTrue(q == expected)
@@ -371,7 +391,7 @@ class GetQuadOperatorTest(unittest.TestCase):
     def test_p_squared(self):
         b = self.hbar*(-BosonOperator('1^ 1^') - BosonOperator('1 1') \
             + BosonOperator('') + 2*BosonOperator('1^ 1'))/2
-        q = normal_ordered_quad(
+        q = normal_ordered(
             get_quad_operator(b, hbar=self.hbar), hbar=self.hbar)
         expected = QuadOperator('p1 p1')
         self.assertTrue(q == expected)

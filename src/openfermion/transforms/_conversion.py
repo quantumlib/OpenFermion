@@ -27,23 +27,34 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
                              PolynomialTensor,
                              QuadraticHamiltonian,
                              QubitOperator,
-                             normal_ordered,
-                             normal_ordered_boson,
-                             normal_ordered_quad,
                              BosonOperator,
                              QuadOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
-from openfermion.utils import (count_qubits,
+from openfermion.utils import (boson_operator_sparse,
+                               count_qubits,
                                is_hermitian,
                                jordan_wigner_sparse,
+                               normal_ordered,
                                qubit_operator_sparse)
 
 
-def get_sparse_operator(operator, n_qubits=None):
-    """Map an operator to a sparse matrix.
+def get_sparse_operator(operator, n_qubits=None, trunc=None, hbar=1.):
+    r"""Map an operator to a sparse matrix.
 
     If the input is not a QubitOperator, the Jordan-Wigner Transform is used.
+
+    Args:
+        operator: Currently supported operators include:
+            FermionOperator, QubitOperator, DiagonalCoulombHamiltonian,
+            PolynomialTensor, BosonOperator, QuadOperator.
+        n_qubits(int): Number qubits in the system Hilbert space.
+            Applicable only to fermionic systems.
+        trunc (int): The size at which the Fock space should be truncated.
+            Applicable only to bosonic systems.
+        hbar (float): the value of hbar to use in the definition of the
+            canonical commutation relation [q_i, p_j] = \delta_{ij} i hbar.
+            Applicable only to the QuadOperator.
     """
     if isinstance(operator, (DiagonalCoulombHamiltonian, PolynomialTensor)):
         return jordan_wigner_sparse(get_fermion_operator(operator))
@@ -51,6 +62,8 @@ def get_sparse_operator(operator, n_qubits=None):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
         return qubit_operator_sparse(operator, n_qubits)
+    elif isinstance(operator, (BosonOperator, QuadOperator)):
+        return boson_operator_sparse(operator, trunc, hbar)
     else:
         raise TypeError('Failed to convert a {} to a sparse matrix.'.format(
             type(operator).__name__))

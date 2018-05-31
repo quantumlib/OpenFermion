@@ -17,7 +17,8 @@ from math import sqrt, ceil
 from scipy.linalg import expm
 
 from openfermion.config import *
-from openfermion.ops import normal_ordered, QubitOperator
+from openfermion.ops import QubitOperator
+from openfermion.utils._operator_utils import normal_ordered
 
 
 def commutator(op1, op2):

@@ -38,6 +38,7 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
             BosonOperator class.
     """
     tunneling = float(tunneling)
+    local_interaction = float(local_interaction)
     coulomb = float(coulomb)
     chemical_potential = float(chemical_potential)
     magnetic_field = float(magnetic_field)
@@ -70,12 +71,12 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
             hubbard_model += number_operator(
                 n_spin_orbitals, site, -chemical_potential, parity=parity)
 
-            # no Pauli-Exclusion principle, spinless particles interact on-site
-            if parity == 1:
-                int_op = number_operator(n_sites, site, local_interaction, parity=1) \
-                    * (number_operator(n_sites, site, parity=1)
-                        - Op.identity())
-                hubbard_model += int_op
+        # no Pauli-Exclusion principle, spinless particles interact on-site
+        if parity == 1:
+            int_op = number_operator(n_sites, site, local_interaction, parity=1) \
+                * (number_operator(n_sites, site, parity=1)
+                    - Op.identity())
+            hubbard_model += int_op
 
         # With spin, add the chemical potential and magnetic field terms.
         elif not spinless:

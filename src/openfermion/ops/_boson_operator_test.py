@@ -16,8 +16,7 @@ import numpy
 import unittest
 
 from openfermion.ops._boson_operator import (BosonOperator,
-                                             BosonOperatorError,
-                                             normal_ordered)
+                                             BosonOperatorError)
 from openfermion.utils import number_operator
 
 
@@ -56,51 +55,6 @@ class BosonOperatorTest(unittest.TestCase):
     def test_is_normal_ordered_multiorder(self):
         op = BosonOperator('4 3 2 1') + BosonOperator('3 2')
         self.assertTrue(op.is_normal_ordered())
-
-    def test_normal_ordered_single_term(self):
-        op = BosonOperator('4 3 2 1') + BosonOperator('3 2')
-        self.assertTrue(op == normal_ordered(op))
-
-    def test_normal_ordered_two_term(self):
-        op_b = BosonOperator(((2, 0), (4, 0), (2, 1)), 88.)
-        normal_ordered_b = normal_ordered(op_b)
-        expected = (BosonOperator(((4, 0),), 88.) +
-                    BosonOperator(((2, 1), (4, 0), (2, 0)), 88.))
-        self.assertTrue(normal_ordered_b == expected)
-
-    def test_normal_ordered_number(self):
-        number_op2 = BosonOperator(((2, 1), (2, 0)))
-        self.assertTrue(number_op2 == normal_ordered(number_op2))
-
-    def test_normal_ordered_number_reversed(self):
-        n_term_rev2 = BosonOperator(((2, 0), (2, 1)))
-        number_op2 = number_operator(3, 2, parity=1)
-        expected = BosonOperator(()) + number_op2
-        self.assertTrue(normal_ordered(n_term_rev2) == expected)
-
-    def test_normal_ordered_offsite(self):
-        op = BosonOperator(((3, 1), (2, 0)))
-        self.assertTrue(op == normal_ordered(op))
-
-    def test_normal_ordered_offsite_reversed(self):
-        op = BosonOperator(((3, 0), (2, 1)))
-        expected = BosonOperator(((2, 1), (3, 0)))
-        self.assertTrue(expected == normal_ordered(op))
-
-    def test_normal_ordered_multi(self):
-        op = BosonOperator(((2, 0), (1, 1), (2, 1)))
-        expected = (BosonOperator(((2, 1), (1, 1), (2, 0))) +
-                    BosonOperator(((1, 1),)))
-        self.assertTrue(expected == normal_ordered(op))
-
-    def test_normal_ordered_triple(self):
-        op_132 = BosonOperator(((1, 1), (3, 0), (2, 0)))
-        op_123 = BosonOperator(((1, 1), (2, 0), (3, 0)))
-        op_321 = BosonOperator(((3, 0), (2, 0), (1, 1)))
-
-        self.assertTrue(op_132 == normal_ordered(op_123))
-        self.assertTrue(op_132 == normal_ordered(op_132))
-        self.assertTrue(op_132 == normal_ordered(op_321))
 
     def test_is_boson_preserving_BosonOperator(self):
         op = BosonOperator()

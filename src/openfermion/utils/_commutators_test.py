@@ -14,10 +14,9 @@
 import unittest
 
 from openfermion.ops import FermionOperator, QubitOperator, \
-                            BosonOperator, QuadOperator, \
-                            normal_ordered_boson, normal_ordered_quad
+                            BosonOperator, QuadOperator
 from openfermion.transforms import jordan_wigner
-from openfermion.utils import hermitian_conjugated
+from openfermion.utils import hermitian_conjugated, normal_ordered
 from openfermion.utils._commutators import *
 from openfermion.utils._sparse_tools import pauli_matrix_map
 
@@ -55,11 +54,11 @@ class CommutatorTest(unittest.TestCase):
         self.assertEqual(com, FermionOperator.zero())
 
         com = commutator(BosonOperator('2^ 3'), BosonOperator('4^ 5^ 3'))
-        com = normal_ordered_boson(com)
+        com = normal_ordered(com)
         self.assertTrue(com == BosonOperator.zero())
 
         com = commutator(QuadOperator('q2 p3'), QuadOperator('q4 q5 p3'))
-        com = normal_ordered_quad(com)
+        com = normal_ordered(com)
         self.assertTrue(com == QuadOperator.zero())
 
     def test_commutes_number_operators(self):
@@ -68,7 +67,7 @@ class CommutatorTest(unittest.TestCase):
         self.assertEqual(com, FermionOperator.zero())
 
         com = commutator(BosonOperator('4^ 3^ 4 3'), BosonOperator('2^ 2'))
-        com = normal_ordered_boson(com)
+        com = normal_ordered(com)
         self.assertTrue(com == BosonOperator.zero())
 
     def test_commutator_hopping_operators(self):
@@ -77,7 +76,7 @@ class CommutatorTest(unittest.TestCase):
         self.assertEqual(com, FermionOperator('1^ 3', 3))
 
         com = commutator(3 * BosonOperator('1^ 2'), BosonOperator('2^ 3'))
-        com = normal_ordered_boson(com)
+        com = normal_ordered(com)
         self.assertTrue(com == BosonOperator('1^ 3', 3))
 
     def test_commutator_hopping_with_single_number(self):
@@ -113,17 +112,17 @@ class CommutatorTest(unittest.TestCase):
         one = BosonOperator('')
 
         self.assertTrue(one ==
-            normal_ordered_boson(commutator(op_1, op_1_dag)))
+            normal_ordered(commutator(op_1, op_1_dag)))
         self.assertTrue(zero ==
-            normal_ordered_boson(commutator(op_1, op_2)))
+            normal_ordered(commutator(op_1, op_2)))
         self.assertTrue(zero ==
-            normal_ordered_boson(commutator(op_1, op_2_dag)))
+            normal_ordered(commutator(op_1, op_2_dag)))
         self.assertTrue(zero ==
-            normal_ordered_boson(commutator(op_1_dag, op_2)))
+            normal_ordered(commutator(op_1_dag, op_2)))
         self.assertTrue(zero ==
-            normal_ordered_boson(commutator(op_1_dag, op_2_dag)))
+            normal_ordered(commutator(op_1_dag, op_2_dag)))
         self.assertTrue(one ==
-            normal_ordered_boson(commutator(op_2, op_2_dag)))
+            normal_ordered(commutator(op_2, op_2_dag)))
 
     def test_canonical_quad_commutation_relations(self):
         q1 = QuadOperator('q3')
@@ -135,17 +134,17 @@ class CommutatorTest(unittest.TestCase):
         hbar = 2.
 
         self.assertTrue(1j*hbar*one ==
-            normal_ordered_quad(commutator(q1, p1), hbar))
+            normal_ordered(commutator(q1, p1), hbar))
         self.assertTrue(zero ==
-            normal_ordered_quad(commutator(q1, q2), hbar))
+            normal_ordered(commutator(q1, q2), hbar))
         self.assertTrue(zero ==
-            normal_ordered_quad(commutator(q1, p2), hbar))
+            normal_ordered(commutator(q1, p2), hbar))
         self.assertTrue(zero ==
-            normal_ordered_quad(commutator(p1, q2), hbar))
+            normal_ordered(commutator(p1, q2), hbar))
         self.assertTrue(zero ==
-            normal_ordered_quad(commutator(p1, p2), hbar))
+            normal_ordered(commutator(p1, p2), hbar))
         self.assertTrue(1j*hbar*one ==
-            normal_ordered_quad(commutator(q2, p2), hbar))
+            normal_ordered(commutator(q2, p2), hbar))
 
     def test_ndarray_input(self):
         """Test when the inputs are numpy arrays."""

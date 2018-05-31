@@ -25,7 +25,8 @@ from openfermion.transforms import (bravyi_kitaev, jordan_wigner,
                                     get_fermion_operator,
                                     get_interaction_operator,
                                     get_sparse_operator)
-from openfermion.utils import Grid, is_hermitian
+from openfermion.utils import (Grid, is_hermitian,
+                               normal_ordered, number_operator)
 
 from openfermion.utils._operator_utils import *
 
@@ -70,6 +71,12 @@ class OperatorUtilsTest(unittest.TestCase):
                                    qubit_eigenspectrum[i])
             self.assertAlmostEqual(fermion_eigenspectrum[i],
                                    interaction_eigenspectrum[i])
+
+        with self.assertRaises(TypeError):
+            _ = eigenspectrum(BosonOperator())
+
+        with self.assertRaises(TypeError):
+            _ = eigenspectrum(QuadOperator())
 
     def test_is_identity_unit_fermionoperator(self):
         self.assertTrue(is_identity(FermionOperator(())))
@@ -361,6 +368,9 @@ class HermitianConjugatedTest(unittest.TestCase):
     def test_exceptions(self):
         with self.assertRaises(TypeError):
             _ = is_hermitian('a')
+
+        with self.assertRaises(TypeError):
+            _ = hermitian_conjugated(1)
 
 
 class IsHermitianTest(unittest.TestCase):
@@ -656,3 +666,142 @@ class FourierTransformTest(unittest.TestCase):
             h_dual_basis, grid, spinless)
         self.assertEqual(normal_ordered(h_dual_basis_t),
                          normal_ordered(h_plane_wave))
+
+
+class TestNormalOrdering(unittest.TestCase):
+
+    def test_boson_single_term(self):
+        op = BosonOperator('4 3 2 1') + BosonOperator('3 2')
+        self.assertTrue(op == normal_ordered(op))
+
+    def test_boson_two_term(self):
+        op_b = BosonOperator(((2, 0), (4, 0), (2, 1)), 88.)
+        normal_ordered_b = normal_ordered(op_b)
+        expected = (BosonOperator(((4, 0),), 88.) +
+                    BosonOperator(((2, 1), (4, 0), (2, 0)), 88.))
+        self.assertTrue(normal_ordered_b == expected)
+
+    def test_boson_number(self):
+        number_op2 = BosonOperator(((2, 1), (2, 0)))
+        self.assertTrue(number_op2 == normal_ordered(number_op2))
+
+    def test_boson_number_reversed(self):
+        n_term_rev2 = BosonOperator(((2, 0), (2, 1)))
+        number_op2 = number_operator(3, 2, parity=1)
+        expected = BosonOperator(()) + number_op2
+        self.assertTrue(normal_ordered(n_term_rev2) == expected)
+
+    def test_boson_offsite(self):
+        op = BosonOperator(((3, 1), (2, 0)))
+        self.assertTrue(op == normal_ordered(op))
+
+    def test_boson_offsite_reversed(self):
+        op = BosonOperator(((3, 0), (2, 1)))
+        expected = BosonOperator(((2, 1), (3, 0)))
+        self.assertTrue(expected == normal_ordered(op))
+
+    def test_boson_multi(self):
+        op = BosonOperator(((2, 0), (1, 1), (2, 1)))
+        expected = (BosonOperator(((2, 1), (1, 1), (2, 0))) +
+                    BosonOperator(((1, 1),)))
+        self.assertTrue(expected == normal_ordered(op))
+
+    def test_boson_triple(self):
+        op_132 = BosonOperator(((1, 1), (3, 0), (2, 0)))
+        op_123 = BosonOperator(((1, 1), (2, 0), (3, 0)))
+        op_321 = BosonOperator(((3, 0), (2, 0), (1, 1)))
+
+        self.assertTrue(op_132 == normal_ordered(op_123))
+        self.assertTrue(op_132 == normal_ordered(op_132))
+        self.assertTrue(op_132 == normal_ordered(op_321))
+
+    def test_fermion_single_term(self):
+        op = FermionOperator('4 3 2 1') + FermionOperator('3 2')
+        self.assertTrue(op == normal_ordered(op))
+
+    def test_fermion_two_term(self):
+        op_b = FermionOperator(((2, 0), (4, 0), (2, 1)), -88.)
+        normal_ordered_b = normal_ordered(op_b)
+        expected = (FermionOperator(((4, 0),), 88.) +
+                    FermionOperator(((2, 1), (4, 0), (2, 0)), 88.))
+        self.assertTrue(normal_ordered_b == expected)
+
+    def test_fermion_number(self):
+        number_op2 = FermionOperator(((2, 1), (2, 0)))
+        self.assertTrue(number_op2 == normal_ordered(number_op2))
+
+    def test_fermion_number_reversed(self):
+        n_term_rev2 = FermionOperator(((2, 0), (2, 1)))
+        number_op2 = number_operator(3, 2)
+        expected = FermionOperator(()) - number_op2
+        self.assertTrue(normal_ordered(n_term_rev2) == expected)
+
+    def test_fermion_offsite(self):
+        op = FermionOperator(((3, 1), (2, 0)))
+        self.assertTrue(op == normal_ordered(op))
+
+    def test_fermion_offsite_reversed(self):
+        op = FermionOperator(((3, 0), (2, 1)))
+        expected = -FermionOperator(((2, 1), (3, 0)))
+        self.assertTrue(expected == normal_ordered(op))
+
+    def test_fermion_double_create(self):
+        op = FermionOperator(((2, 0), (3, 1), (3, 1)))
+        expected = FermionOperator((), 0.0)
+        self.assertTrue(expected == normal_ordered(op))
+
+    def test_fermion_double_create_separated(self):
+        op = FermionOperator(((3, 1), (2, 0), (3, 1)))
+        expected = FermionOperator((), 0.0)
+        self.assertTrue(expected == normal_ordered(op))
+
+    def test_fermion_multi(self):
+        op = FermionOperator(((2, 0), (1, 1), (2, 1)))
+        expected = (-FermionOperator(((2, 1), (1, 1), (2, 0))) -
+                    FermionOperator(((1, 1),)))
+        self.assertTrue(expected == normal_ordered(op))
+
+    def test_fermion_triple(self):
+        op_132 = FermionOperator(((1, 1), (3, 0), (2, 0)))
+        op_123 = FermionOperator(((1, 1), (2, 0), (3, 0)))
+        op_321 = FermionOperator(((3, 0), (2, 0), (1, 1)))
+
+        self.assertTrue(op_132 == normal_ordered(-op_123))
+        self.assertTrue(op_132 == normal_ordered(op_132))
+        self.assertTrue(op_132 == normal_ordered(op_321))
+
+    def test_quad_single_term(self):
+        op = QuadOperator('p4 p3 p2 p1') + QuadOperator('p3 p2')
+        self.assertTrue(op == normal_ordered(op))
+
+        op = QuadOperator('q0 p0') - QuadOperator('p0 q0')
+        expected = QuadOperator('', 2.j)
+        self.assertTrue(expected == normal_ordered(op, hbar=2.))
+
+    def test_quad_two_term(self):
+        op_b = QuadOperator('p0 q0 p3', 88.)
+        normal_ordered_b = normal_ordered(op_b, hbar=2)
+        expected = QuadOperator('p3', -88.*2j) + QuadOperator('q0 p0 p3', 88.0)
+        self.assertTrue(normal_ordered_b == expected)
+
+    def test_quad_offsite(self):
+        op = QuadOperator(((3, 'p'), (2, 'q')))
+        self.assertTrue(op == normal_ordered(op))
+
+    def test_quad_offsite_reversed(self):
+        op = QuadOperator(((3, 'q'), (2, 'p')))
+        expected = QuadOperator(((2, 'p'), (3, 'q')))
+        self.assertTrue(expected == normal_ordered(op))
+
+    def test_quad_triple(self):
+        op_132 = QuadOperator(((1, 'p'), (3, 'q'), (2, 'q')))
+        op_123 = QuadOperator(((1, 'p'), (2, 'q'), (3, 'q')))
+        op_321 = QuadOperator(((3, 'q'), (2, 'q'), (1, 'p')))
+
+        self.assertTrue(op_132 == normal_ordered(op_123))
+        self.assertTrue(op_132 == normal_ordered(op_132))
+        self.assertTrue(op_132 == normal_ordered(op_321))
+
+    def test_exceptions(self):
+        with self.assertRaises(TypeError):
+            _ = normal_ordered(1)
