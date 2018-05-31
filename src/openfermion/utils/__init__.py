@@ -91,5 +91,10 @@ from ._sparse_tools import (expectation,
                             variance)
 
 from ._davidson import Davidson, QubitDavidson
+from ._linear_qubit_operator import (
+    ParallelLinearQubitOperator,
+    LinearQubitOperatorOptions,
+    LinearQubitOperator,
+)
 
 from ._pubchem import geometry_from_pubchem
