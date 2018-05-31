@@ -243,6 +243,7 @@ class JordanWignerSparseTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(
             get_linear_qubit_operator_diagonal(qubit_operator), vec_expected))
 
+
 class ComputationalBasisStateTest(unittest.TestCase):
     def test_computational_basis_state(self):
         comp_basis_state = jw_configuration_state([0, 2, 5], 7)
@@ -719,7 +720,7 @@ class JWSparseGivensRotationTest(unittest.TestCase):
 class JWSlaterDeterminantTest(unittest.TestCase):
 
     def test_hadamard_transform(self):
-        """Test creating the states
+        r"""Test creating the states
         1 / sqrt(2) (a^\dagger_0 + a^\dagger_1) |vac>
         and
         1 / sqrt(2) (a^\dagger_0 - a^\dagger_1) |vac>.

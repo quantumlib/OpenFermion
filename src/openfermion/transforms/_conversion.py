@@ -100,7 +100,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
 
 
 def get_interaction_operator(fermion_operator, n_qubits=None):
-    """Convert a 2-body fermionic operator to InteractionOperator.
+    r"""Convert a 2-body fermionic operator to InteractionOperator.
 
     This function should only be called on fermionic operators which
     consist of only a_p^\dagger a_q and a_p^\dagger a_q^\dagger a_r a_s
@@ -175,7 +175,7 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
 
 def get_quadratic_hamiltonian(fermion_operator,
                               chemical_potential=0., n_qubits=None):
-    """Convert a quadratic fermionic operator to QuadraticHamiltonian.
+    r"""Convert a quadratic fermionic operator to QuadraticHamiltonian.
 
     This function should only be called on fermionic operators which
     consist of only a_p^\dagger a_q, a_p^\dagger a_q^\dagger, and a_p a_q
@@ -362,11 +362,11 @@ def get_fermion_operator(operator):
         fermion_operator += FermionOperator((), operator.constant)
         for p, q in itertools.product(range(n_qubits), repeat=2):
             fermion_operator += FermionOperator(
-                    ((p, 1), (q, 0)),
-                    operator.one_body[p, q])
+                ((p, 1), (q, 0)),
+                operator.one_body[p, q])
             fermion_operator += FermionOperator(
-                    ((p, 1), (p, 0), (q, 1), (q, 0)),
-                    operator.two_body[p, q])
+                ((p, 1), (p, 0), (q, 1), (q, 0)),
+                operator.two_body[p, q])
 
     return fermion_operator
 
@@ -435,8 +435,9 @@ def get_quad_operator(operator, hbar=1.):
 
     Args:
         operator: BosonOperator.
-        hbar (float): the value of hbar used in the definition of the commutator
-            [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+        hbar (float): the value of hbar used in the definition
+            of the commutator [q_i, p_j] = i hbar delta_ij.
+            By default hbar=1.
 
     Returns:
         quad_operator: An instance of the QuadOperator class.
@@ -445,15 +446,16 @@ def get_quad_operator(operator, hbar=1.):
 
     if isinstance(operator, BosonOperator):
         for term, coefficient in operator.terms.items():
-                tmp = QuadOperator('', coefficient)
-                for i, d in term:
-                    tmp *= (1./numpy.sqrt(2.*hbar)) \
-                        * (QuadOperator(((i, 'q'))) \
-                            + QuadOperator(((i, 'p')), 1j*(-1)**d))
-                quad_operator += tmp
+            tmp = QuadOperator('', coefficient)
+            for i, d in term:
+                tmp *= (1./numpy.sqrt(2.*hbar)) \
+                    * (QuadOperator(((i, 'q')))
+                        + QuadOperator(((i, 'p')), 1j*(-1)**d))
+            quad_operator += tmp
 
     else:
-        raise TypeError("Only BosonOperator is currently supported for get_quad_operator.")
+        raise TypeError("Only BosonOperator is currently "
+                        "supported for get_quad_operator.")
 
     return quad_operator
 
@@ -463,8 +465,9 @@ def get_boson_operator(operator, hbar=1.):
 
     Args:
         operator: QuadOperator.
-        hbar (float): the value of hbar used in the definition of the commutator
-            [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+        hbar (float): the value of hbar used in the definition
+            of the commutator [q_i, p_j] = i hbar delta_ij.
+            By default hbar=1.
 
     Returns:
         boson_operator: An instance of the BosonOperator class.
@@ -482,10 +485,12 @@ def get_boson_operator(operator, hbar=1.):
                     coeff = -1j*numpy.sqrt(hbar/2)
                     sign = -1
 
-                tmp *= coeff*(BosonOperator(((i, 0))) + BosonOperator(((i, 1)), sign))
+                tmp *= coeff*(BosonOperator(((i, 0)))
+                              + BosonOperator(((i, 1)), sign))
             boson_operator += tmp
 
     else:
-        raise TypeError("Only QuadOperator is currently supported for get_boson_operator.")
+        raise TypeError("Only QuadOperator is currently "
+                        "supported for get_boson_operator.")
 
     return boson_operator

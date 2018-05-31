@@ -73,9 +73,10 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
 
         # no Pauli-Exclusion principle, spinless particles interact on-site
         if parity == 1:
-            int_op = number_operator(n_sites, site, local_interaction, parity=1) \
+            int_op = number_operator(
+                n_sites, site, local_interaction, parity=1) \
                 * (number_operator(n_sites, site, parity=1)
-                    - Op.identity())
+                   - Op.identity())
             hubbard_model += int_op
 
         # With spin, add the chemical potential and magnetic field terms.
@@ -89,9 +90,11 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
 
             # Add local pair interaction terms.
             operator_1 = number_operator(
-                n_spin_orbitals, up_index(site), parity=parity) - coulomb_shift
+                n_spin_orbitals, up_index(site), parity=parity) \
+                - coulomb_shift
             operator_2 = number_operator(
-                n_spin_orbitals, down_index(site), parity=parity) - coulomb_shift
+                n_spin_orbitals, down_index(site), parity=parity) \
+                - coulomb_shift
             hubbard_model += coulomb * operator_1 * operator_2
 
         # Index coupled orbitals.
@@ -112,7 +115,8 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
                 operator_1 = number_operator(
                     n_spin_orbitals, site, 1.0, parity=parity) - coulomb_shift
                 operator_2 = number_operator(
-                    n_spin_orbitals, right_neighbor, 1.0, parity=parity) - coulomb_shift
+                    n_spin_orbitals, right_neighbor, 1.0, parity=parity) \
+                    - coulomb_shift
                 hubbard_model += coulomb * operator_1 * operator_2
 
                 # Add hopping term.
@@ -140,7 +144,8 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
                 operator_1 = number_operator(
                     n_spin_orbitals, site, parity=parity) - coulomb_shift
                 operator_2 = number_operator(
-                    n_spin_orbitals, bottom_neighbor, parity=parity) - coulomb_shift
+                    n_spin_orbitals, bottom_neighbor, parity=parity) \
+                    - coulomb_shift
                 hubbard_model += coulomb * operator_1 * operator_2
 
                 # Add hopping term.

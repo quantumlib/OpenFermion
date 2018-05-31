@@ -59,7 +59,7 @@ def kronecker_operators(*args):
 
 
 def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
-    """Make a matrix representation of a fermion ladder operator.
+    r"""Make a matrix representation of a fermion ladder operator.
 
     Operators are mapped as follows:
     a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
@@ -84,7 +84,7 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
 
 
 def jordan_wigner_sparse(fermion_operator, n_qubits=None):
-    """Initialize a Scipy sparse matrix from a FermionOperator.
+    r"""Initialize a Scipy sparse matrix from a FermionOperator.
 
     Operators are mapped as follows:
     a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
@@ -204,6 +204,7 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
         shape=(n_hilbert, n_hilbert)).tocsc(copy=False)
     sparse_operator.eliminate_zeros()
     return sparse_operator
+
 
 def get_linear_qubit_operator(qubit_operator, n_qubits=None):
     """ Return a linear operator with matvec defined to avoid instantiating a

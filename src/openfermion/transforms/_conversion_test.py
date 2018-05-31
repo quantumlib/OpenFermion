@@ -374,23 +374,23 @@ class GetQuadOperatorTest(unittest.TestCase):
         b = BosonOperator('0^ 0') + BosonOperator('0 0^')
         q = get_quad_operator(b, hbar=self.hbar)
         expected = (QuadOperator('q0') - 1j*QuadOperator('p0')) \
-                    * (QuadOperator('q0') + 1j*QuadOperator('p0')) \
-                    + (QuadOperator('q0') + 1j*QuadOperator('p0')) \
-                    * (QuadOperator('q0') - 1j*QuadOperator('p0'))
+            * (QuadOperator('q0') + 1j*QuadOperator('p0')) \
+            + (QuadOperator('q0') + 1j*QuadOperator('p0')) \
+            * (QuadOperator('q0') - 1j*QuadOperator('p0'))
         expected /= 2*self.hbar
         self.assertTrue(q == expected)
 
     def test_q_squared(self):
-        b = self.hbar*(BosonOperator('0^ 0^') + BosonOperator('0 0') \
-            + BosonOperator('') + 2*BosonOperator('0^ 0'))/2
+        b = self.hbar*(BosonOperator('0^ 0^') + BosonOperator('0 0')
+                       + BosonOperator('') + 2*BosonOperator('0^ 0'))/2
         q = normal_ordered(
             get_quad_operator(b, hbar=self.hbar), hbar=self.hbar)
         expected = QuadOperator('q0 q0')
         self.assertTrue(q == expected)
 
     def test_p_squared(self):
-        b = self.hbar*(-BosonOperator('1^ 1^') - BosonOperator('1 1') \
-            + BosonOperator('') + 2*BosonOperator('1^ 1'))/2
+        b = self.hbar*(-BosonOperator('1^ 1^') - BosonOperator('1 1')
+                       + BosonOperator('') + 2*BosonOperator('1^ 1'))/2
         q = normal_ordered(
             get_quad_operator(b, hbar=self.hbar), hbar=self.hbar)
         expected = QuadOperator('p1 p1')
@@ -435,16 +435,16 @@ class GetBosonOperatorTest(unittest.TestCase):
         q = QuadOperator('p2 q0')
         b = get_boson_operator(q, hbar=self.hbar)
         expected = -1j*self.hbar/2 \
-                    * (BosonOperator('0') + BosonOperator('0^')) \
-                    * (BosonOperator('2') - BosonOperator('2^'))
+            * (BosonOperator('0') + BosonOperator('0^')) \
+            * (BosonOperator('2') - BosonOperator('2^'))
         self.assertTrue(b == expected)
 
     def test_two_term(self):
         q = QuadOperator('p0 q0') + QuadOperator('q0 p0')
         b = get_boson_operator(q, hbar=self.hbar)
         expected = -1j*self.hbar/2 \
-                    * ((BosonOperator('0') + BosonOperator('0^')) \
-                    * (BosonOperator('0') - BosonOperator('0^')) \
-                    + (BosonOperator('0') - BosonOperator('0^')) \
-                    * (BosonOperator('0') + BosonOperator('0^')))
+            * ((BosonOperator('0') + BosonOperator('0^'))
+               * (BosonOperator('0') - BosonOperator('0^'))
+               + (BosonOperator('0') - BosonOperator('0^'))
+               * (BosonOperator('0') + BosonOperator('0^')))
         self.assertTrue(b == expected)

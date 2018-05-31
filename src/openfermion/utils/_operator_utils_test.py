@@ -531,7 +531,7 @@ class SaveLoadOperatorTest(unittest.TestCase):
         save_operator(self.boson_operator, self.file_name,
                       plain_text=True)
         loaded_boson_operator = load_operator(self.file_name,
-                                                plain_text=True)
+                                              plain_text=True)
         self.assertTrue(self.boson_operator == loaded_boson_operator)
 
     def test_save_and_load_quad_operators(self):
@@ -544,7 +544,7 @@ class SaveLoadOperatorTest(unittest.TestCase):
         save_operator(self.quad_operator, self.file_name,
                       plain_text=True)
         loaded_quad_operator = load_operator(self.file_name,
-                                                plain_text=True)
+                                             plain_text=True)
         self.assertTrue(self.quad_operator == loaded_quad_operator)
 
     def test_save_and_load_qubit_operators(self):

@@ -111,18 +111,18 @@ class CommutatorTest(unittest.TestCase):
         zero = BosonOperator()
         one = BosonOperator('')
 
-        self.assertTrue(one ==
-            normal_ordered(commutator(op_1, op_1_dag)))
-        self.assertTrue(zero ==
-            normal_ordered(commutator(op_1, op_2)))
-        self.assertTrue(zero ==
-            normal_ordered(commutator(op_1, op_2_dag)))
-        self.assertTrue(zero ==
-            normal_ordered(commutator(op_1_dag, op_2)))
-        self.assertTrue(zero ==
-            normal_ordered(commutator(op_1_dag, op_2_dag)))
-        self.assertTrue(one ==
-            normal_ordered(commutator(op_2, op_2_dag)))
+        self.assertTrue(one == normal_ordered(
+            commutator(op_1, op_1_dag)))
+        self.assertTrue(zero == normal_ordered(
+            commutator(op_1, op_2)))
+        self.assertTrue(zero == normal_ordered(
+            commutator(op_1, op_2_dag)))
+        self.assertTrue(zero == normal_ordered(
+            commutator(op_1_dag, op_2)))
+        self.assertTrue(zero == normal_ordered(
+            commutator(op_1_dag, op_2_dag)))
+        self.assertTrue(one == normal_ordered(
+            commutator(op_2, op_2_dag)))
 
     def test_canonical_quad_commutation_relations(self):
         q1 = QuadOperator('q3')
@@ -133,18 +133,18 @@ class CommutatorTest(unittest.TestCase):
         one = QuadOperator('')
         hbar = 2.
 
-        self.assertTrue(1j*hbar*one ==
-            normal_ordered(commutator(q1, p1), hbar))
-        self.assertTrue(zero ==
-            normal_ordered(commutator(q1, q2), hbar))
-        self.assertTrue(zero ==
-            normal_ordered(commutator(q1, p2), hbar))
-        self.assertTrue(zero ==
-            normal_ordered(commutator(p1, q2), hbar))
-        self.assertTrue(zero ==
-            normal_ordered(commutator(p1, p2), hbar))
-        self.assertTrue(1j*hbar*one ==
-            normal_ordered(commutator(q2, p2), hbar))
+        self.assertTrue(1j*hbar*one == normal_ordered(
+            commutator(q1, p1), hbar))
+        self.assertTrue(zero == normal_ordered(
+            commutator(q1, q2), hbar))
+        self.assertTrue(zero == normal_ordered(
+            commutator(q1, p2), hbar))
+        self.assertTrue(zero == normal_ordered(
+            commutator(p1, q2), hbar))
+        self.assertTrue(zero == normal_ordered(
+            commutator(p1, p2), hbar))
+        self.assertTrue(1j*hbar*one == normal_ordered(
+            commutator(q2, p2), hbar))
 
     def test_ndarray_input(self):
         """Test when the inputs are numpy arrays."""

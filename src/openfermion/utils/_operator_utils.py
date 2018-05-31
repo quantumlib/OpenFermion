@@ -14,10 +14,12 @@
 from __future__ import absolute_import
 from builtins import map, zip
 
+import os
 import copy
 import marshal
+
 import numpy
-import os
+from scipy.sparse import spmatrix
 
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 
@@ -29,8 +31,6 @@ from openfermion.ops import (BosonOperator,
                              QuadOperator,
                              QubitOperator,
                              PolynomialTensor)
-
-from scipy.sparse import spmatrix
 
 
 class OperatorUtilsError(Exception):
@@ -362,7 +362,7 @@ def _fourier_transform_helper(hamiltonian,
 
 
 def fourier_transform(hamiltonian, grid, spinless):
-    """Apply Fourier transform to change hamiltonian in plane wave basis.
+    r"""Apply Fourier transform to change hamiltonian in plane wave basis.
 
     .. math::
 
@@ -414,8 +414,8 @@ def get_file_path(file_name, data_directory):
 
 
 def inverse_fourier_transform(hamiltonian, grid, spinless):
-    """Apply inverse Fourier transform to change hamiltonian in plane wave dual
-    basis.
+    r"""Apply inverse Fourier transform to change hamiltonian in
+    plane wave dual basis.
 
     .. math::
 
@@ -531,10 +531,9 @@ def save_operator(operator, file_name=None, data_directory=None,
         operator_type = "QubitOperator"
     elif isinstance(operator, QuadOperator):
         operator_type = "QuadOperator"
-    elif (isinstance(operator, InteractionOperator) or
-          isinstance(operator, InteractionRDM)):
-        raise NotImplementedError('Not yet implemented for InteractionOperator'
-                                  ' or InteractionRDM.')
+    elif isinstance(operator, (InteractionOperator, InteractionRDM)):
+        raise NotImplementedError('Not yet implemented for '
+                                  'InteractionOperator or InteractionRDM.')
     else:
         raise TypeError('Operator of invalid type.')
 
@@ -603,14 +602,16 @@ def up_then_down(mode_idx, num_modes):
     Returns (int): reordered index of the mode.
     """
     halfway = int(numpy.ceil(num_modes / 2.))
+
     if mode_idx % 2 == 0:
         return mode_idx // 2
-    else:
-        return mode_idx // 2 + halfway
+
+    return mode_idx // 2 + halfway
 
 
 def normal_ordered_ladder_term(term, coefficient, parity=-1):
-    """Return a normal ordered FermionOperator or BosonOperator corresponding to single term.
+    """Return a normal ordered FermionOperator or BosonOperator corresponding
+    to single term.
 
     Args:
         term (list or tuple): A sequence of tuples. The first element of each
@@ -625,7 +626,7 @@ def normal_ordered_ladder_term(term, coefficient, parity=-1):
             on the canonical commutation relations.
 
     Returns:
-        ordered_term: An instance of the FermionOperator or BosonOperator class.
+        ordered_term: a FermionOperator or BosonOperator instance.
             The normal ordered form of the input.
             Note that this might have more terms.
 
@@ -673,7 +674,8 @@ def normal_ordered_ladder_term(term, coefficient, parity=-1):
             # Handle case when operator type is the same.
             elif right_operator[1] == left_operator[1]:
 
-                # If same two Fermionic operators are repeated, evaluate to zero.
+                # If same two Fermionic operators are repeated,
+                # evaluate to zero.
                 if parity == -1 and right_operator[0] == left_operator[0]:
                     return ordered_term
 
