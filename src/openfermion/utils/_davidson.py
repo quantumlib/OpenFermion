@@ -21,8 +21,8 @@ import scipy
 import scipy.linalg
 import scipy.sparse.linalg
 
-from openfermion.utils._sparse_tools import (get_linear_qubit_operator,
-                                             get_linear_qubit_operator_diagonal)
+from openfermion.utils._sparse_tools import get_linear_qubit_operator_diagonal
+from openfermion.utils._linear_qubit_operator import ParallelLinearQubitOperator
 
 class DavidsonError(Exception):
     """Exceptions."""
@@ -273,9 +273,10 @@ class QubitDavidson(Davidson):
                 iterations.
         """
         super(QubitDavidson, self).__init__(
-            get_linear_qubit_operator(qubit_operator, n_qubits),
+            ParallelLinearQubitOperator(qubit_operator, n_qubits),
             get_linear_qubit_operator_diagonal(qubit_operator, n_qubits),
             max_subspace=max_subspace, eps=eps)
+
 
 def generate_random_vectors(row, col):
     """Generates orthonormal random vectors with col columns.
