@@ -327,8 +327,29 @@ class QubitDavidsonTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(numpy.real(eigen_vectors),
                                        eigen_vectors))
 
+    def test_get_lowest_y_real_fail(self):
+        """Test for get_lowest_n() for y with real eigenvectors only."""
+        dimension = 2 ** self.n_qubits
+        qubit_operator = QubitOperator('Y3') * self.coefficient
+        davidson = QubitDavidson(qubit_operator, self.n_qubits, max_subspace=11,
+                                 real_only=True)
+
+        n_lowest = 6
+        # Guess vectors have both real and imaginary parts.
+        numpy.random.seed(dimension)
+        initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
+        numpy.random.seed(dimension * 2)
+        initial_guess += numpy.random.rand(dimension, n_lowest)
+        success, _, eigen_vectors = davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=10)
+
+        self.assertFalse(success)
+
+        # Not real components only.
+        self.assertFalse(numpy.allclose(numpy.real(eigen_vectors),
+                                        eigen_vectors))
     def test_get_lowest_y_real(self):
-        """Test for get_lowest_n() for z with real eigenvectors only."""
+        """Test for get_lowest_n() for y with real eigenvectors only."""
         dimension = 2 ** self.n_qubits
         qubit_operator = QubitOperator('Y3') * self.coefficient
         davidson = QubitDavidson(qubit_operator, self.n_qubits, real_only=True)
@@ -355,7 +376,7 @@ class QubitDavidsonTest(unittest.TestCase):
                                         eigen_vectors))
 
     def test_get_lowest_y_complex(self):
-        """Test for get_lowest_n() for z with real eigenvectors only."""
+        """Test for get_lowest_n() for y with complex eigenvectors."""
         dimension = 2 ** self.n_qubits
         qubit_operator = QubitOperator('Y3') * self.coefficient
         davidson = QubitDavidson(qubit_operator, self.n_qubits, real_only=True)
