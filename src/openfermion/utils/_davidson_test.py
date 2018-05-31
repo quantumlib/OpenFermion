@@ -23,6 +23,7 @@ import scipy.sparse.linalg
 from openfermion.ops import QubitOperator
 from openfermion.utils._davidson import (
     Davidson,
+    DavidsonOptions,
     QubitDavidson,
     append_random_vectors,
     orthonormalize)
@@ -45,6 +46,58 @@ def get_difference(linear_operator, eigen_values, eigen_vectors):
                                eigen_vectors * eigen_values))
 
 
+class DavidsonOptionsTest(unittest.TestCase):
+    """"Tests for DavidsonOptions class."""
+
+    def setUp(self):
+        """Sets up all variables needed for DavidsonOptions class."""
+        self.max_subspace = 10
+        self.max_iterations = 100
+        self.eps = 1e-7
+        self.davidson_options = DavidsonOptions(self.max_subspace,
+                                                self.max_iterations, self.eps)
+
+    def test_init(self):
+        """Tests vars in __init__()."""
+        self.assertEqual(self.davidson_options.max_subspace, self.max_subspace)
+        self.assertEqual(self.davidson_options.max_iterations,
+                         self.max_iterations)
+        self.assertAlmostEqual(self.davidson_options.eps, self.eps, places=8)
+        self.assertFalse(self.davidson_options.real_only)
+
+    def test_set_dimension_small(self):
+        """Tests set_dimension() with a small dimension."""
+        dimension = 6
+        self.davidson_options.set_dimension(dimension)
+        self.assertEqual(self.davidson_options.max_subspace, dimension + 1)
+
+    def test_set_dimension_large(self):
+        """Tests set_dimension() with a large dimension not affecting
+            max_subspace."""
+        self.davidson_options.set_dimension(60)
+        self.assertEqual(self.davidson_options.max_subspace, self.max_subspace)
+
+    def test_invalid_max_subspace(self):
+        """Test for invalid max_subspace."""
+        with self.assertRaises(ValueError):
+            DavidsonOptions(max_subspace=1)
+
+    def test_invalid_max_iterations(self):
+        """Test for invalid max_iterations."""
+        with self.assertRaises(ValueError):
+            DavidsonOptions(max_iterations=0)
+
+    def test_invalid_eps(self):
+        """Test for invalid eps."""
+        with self.assertRaises(ValueError):
+            DavidsonOptions(eps=-1e-6)
+
+    def test_invalid_dimension(self):
+        """Test for invalid dimension."""
+        with self.assertRaises(ValueError):
+            self.davidson_options.set_dimension(0)
+
+
 class DavidsonTest(unittest.TestCase):
     """"Tests for Davidson class with a real matrix."""
 
@@ -60,14 +113,12 @@ class DavidsonTest(unittest.TestCase):
         self.linear_operator = scipy.sparse.linalg.LinearOperator(
             (dimension, dimension), matvec=mat_vec)
         self.diagonal = numpy.diag(matrix)
-        self.eps = 1e-6
 
         self.davidson = Davidson(linear_operator=self.linear_operator,
-                                 linear_operator_diagonal=self.diagonal,
-                                 eps=self.eps)
+                                 linear_operator_diagonal=self.diagonal)
+
         self.matrix = matrix
-        self.dimension = dimension
-        self.initial_guess = numpy.eye(self.dimension, 10)
+        self.initial_guess = numpy.eye(self.matrix.shape[0], 10)
 
         self.eigen_values = numpy.array([
             1.15675714, 1.59132505, 2.62268014, 4.44533793, 5.3722743,
@@ -84,7 +135,11 @@ class DavidsonTest(unittest.TestCase):
         self.assertTrue(davidson.linear_operator)
         self.assertTrue(numpy.allclose(davidson.linear_operator_diagonal,
                                        self.diagonal))
-        self.assertAlmostEqual(davidson.eps, self.eps, places=8)
+
+        # Options default values except max_subspace.
+        self.assertEqual(davidson.options.max_subspace, 11)
+        self.assertAlmostEqual(davidson.options.eps, 1e-6, places=8)
+        self.assertFalse(davidson.options.real_only)
 
     def test_with_built_in(self):
         """Compare with eigenvalues from built-in functions."""
@@ -100,17 +155,7 @@ class DavidsonTest(unittest.TestCase):
     def test_lowest_invalid_operator(self):
         """Test for get_lowest_n() with invalid linear operator."""
         with self.assertRaises(ValueError):
-            Davidson(None, numpy.zeros(8), 1)
-
-    def test_lowest_invalid_subspace(self):
-        """Test for get_lowest_n() with invalid max_subspace."""
-        with self.assertRaises(ValueError):
-            Davidson(self.linear_operator, numpy.zeros(8), 1)
-
-    def test_lowest_invalid_eps(self):
-        """Test for get_lowest_n() with invalid eps."""
-        with self.assertRaises(ValueError):
-            Davidson(self.linear_operator, numpy.zeros(8), eps=-1e-6)
+            Davidson(None, numpy.eye(self.matrix.shape[0], 8))
 
     def test_lowest_zero_n(self):
         """Test for get_lowest_n() with invalid n_lowest."""
@@ -120,14 +165,14 @@ class DavidsonTest(unittest.TestCase):
     def test_lowest_invalid_shape(self):
         """Test for get_lowest_n() with invalid dimension for initial guess."""
         with self.assertRaises(ValueError):
-            self.davidson.get_lowest_n(1, numpy.ones((self.dimension * 2, 1),
-                                                     dtype=complex))
+            self.davidson.get_lowest_n(
+                1, numpy.ones((self.matrix.shape[0] * 2, 1), dtype=complex))
 
     def test_get_lowest_n_trivial_guess(self):
         """Test for get_lowest_n() with trivial initial guess."""
         with self.assertRaises(ValueError):
-            self.davidson.get_lowest_n(1, numpy.zeros((self.dimension, 1),
-                                                      dtype=complex))
+            self.davidson.get_lowest_n(
+                1, numpy.zeros((self.matrix.shape[0], 1), dtype=complex))
 
     def test_get_lowest_fail(self):
         """Test for get_lowest_n() with n_lowest = 1."""
@@ -187,7 +232,7 @@ class DavidsonTest(unittest.TestCase):
             [1.1572995  1.61393264] 0.3318982487563453
 
         """
-        self.davidson.max_subspace = 8
+        self.davidson.options.max_subspace = 8
         expected_eigen_values = numpy.array([1.1572995, 1.61393264])
 
         n_lowest = 2
@@ -304,7 +349,8 @@ class QubitDavidsonTest(unittest.TestCase):
         """Test for get_lowest_n() for z with real eigenvectors only."""
         dimension = 2 ** self.n_qubits
         qubit_operator = QubitOperator('Z3') * self.coefficient
-        davidson = QubitDavidson(qubit_operator, self.n_qubits, real_only=True)
+        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+        davidson.options.real_only = True
 
         n_lowest = 6
         # Guess vectors have both real and imaginary parts.
@@ -331,8 +377,9 @@ class QubitDavidsonTest(unittest.TestCase):
         """Test for get_lowest_n() for y with real eigenvectors only."""
         dimension = 2 ** self.n_qubits
         qubit_operator = QubitOperator('Y3') * self.coefficient
-        davidson = QubitDavidson(qubit_operator, self.n_qubits, max_subspace=11,
-                                 real_only=True)
+        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+        davidson.options.max_subspace = 11
+        davidson.options.real_only = True
 
         n_lowest = 6
         # Guess vectors have both real and imaginary parts.
@@ -352,7 +399,8 @@ class QubitDavidsonTest(unittest.TestCase):
         """Test for get_lowest_n() for y with real eigenvectors only."""
         dimension = 2 ** self.n_qubits
         qubit_operator = QubitOperator('Y3') * self.coefficient
-        davidson = QubitDavidson(qubit_operator, self.n_qubits, real_only=True)
+        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+        davidson.options.real_only = True
 
         n_lowest = 6
         # Guess vectors have both real and imaginary parts.
@@ -379,7 +427,8 @@ class QubitDavidsonTest(unittest.TestCase):
         """Test for get_lowest_n() for y with complex eigenvectors."""
         dimension = 2 ** self.n_qubits
         qubit_operator = QubitOperator('Y3') * self.coefficient
-        davidson = QubitDavidson(qubit_operator, self.n_qubits, real_only=True)
+        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+        davidson.options.real_only = True
 
         n_lowest = 6
         # Guess vectors have both real and imaginary parts.
