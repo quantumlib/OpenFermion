@@ -23,6 +23,7 @@ from openfermion.utils._linear_qubit_operator import (
     LinearQubitOperatorOptions,
     LinearQubitOperator,
 )
+from openfermion.utils._sparse_tools import qubit_operator_sparse
 
 class LinearQubitOperatorOptionsTest(unittest.TestCase):
     """Tests for LinearQubitOperatorOptions class."""
@@ -53,14 +54,12 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 class LinearQubitOperatorTest(unittest.TestCase):
     """Tests for LinearQubitOperator class."""
 
-    def setUp(self):
-        """LinearQubitOperator test set up."""
+    def test_init(self):
+        """Tests __init__()."""
         self.qubit_operator = QubitOperator('Z2')
         self.n_qubits = 3
         self.linear_operator = LinearQubitOperator(self.qubit_operator)
 
-    def test_init(self):
-        """Tests __init__()."""
         self.assertEqual(self.linear_operator.qubit_operator,
                          self.qubit_operator)
         self.assertEqual(self.linear_operator.n_qubits, self.n_qubits)
@@ -69,14 +68,90 @@ class LinearQubitOperatorTest(unittest.TestCase):
         self.assertTrue(isinstance(self.linear_operator,
                                    scipy.sparse.linalg.LinearOperator))
 
-    def test_matvec(self):
-        """Tests _matvec() for matrix multiplication with a vector."""
-        vec = numpy.array(range(2 ** self.n_qubits))
-        expected_matvec = numpy.array([0, -1, 2, -3, 4, -5, 6, -7])
+    def test_matvec_wrong_n(self):
+        """Testing with wrong n_qubits."""
+        with self.assertRaises(ValueError):
+            LinearQubitOperator(QubitOperator('X3'), 1)
 
-        self.assertTrue(numpy.allclose(self.linear_operator * vec,
-                                       expected_matvec))
+    def test_matvec_wrong_vec_length(self):
+        """Testing with wrong vector length."""
+        with self.assertRaises(ValueError):
+            LinearQubitOperator(QubitOperator('X3')) * numpy.zeros(4)
 
+    def test_matvec_0(self):
+        """Testing with zero term."""
+        qubit_operator = QubitOperator.zero()
+
+        vec = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
+        matvec_expected = numpy.zeros(vec.shape)
+
+        self.assertTrue(numpy.allclose(
+            LinearQubitOperator(qubit_operator, 3) * vec, matvec_expected))
+
+    def test_matvec_x(self):
+        vec = numpy.array([1, 2, 3, 4])
+        matvec_expected = numpy.array([2, 1, 4, 3])
+
+        self.assertTrue(numpy.allclose(
+            LinearQubitOperator(QubitOperator('X1')) * vec,
+            matvec_expected))
+
+    def test_matvec_y(self):
+        vec = numpy.array([1, 2, 3, 4], dtype=complex)
+        matvec_expected = 1.0j * numpy.array([-2, 1, -4, 3], dtype=complex)
+
+        self.assertTrue(numpy.allclose(
+            LinearQubitOperator(QubitOperator('Y1')) * vec,
+            matvec_expected))
+
+    def test_matvec_z(self):
+        vec = numpy.array([1, 2, 3, 4])
+        matvec_expected = numpy.array([1, 2, -3, -4])
+
+        self.assertTrue(numpy.allclose(
+            LinearQubitOperator(QubitOperator('Z0'), 2) * vec,
+            matvec_expected))
+
+    def test_matvec_z3(self):
+        vec = numpy.array(
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+        matvec_expected = numpy.array(
+            [1, -2, 3, -4, 5, -6, 7, -8, 9, -10, 11, -12, 13, -14, 15, -16])
+
+        self.assertTrue(numpy.allclose(
+            LinearQubitOperator(QubitOperator('Z3')) * vec,
+            matvec_expected))
+
+    def test_matvec_zx(self):
+        """Testing with multiple factors."""
+        vec = numpy.array([1, 2, 3, 4])
+        matvec_expected = numpy.array([2, 1, -4, -3])
+
+        self.assertTrue(numpy.allclose(
+            LinearQubitOperator(QubitOperator('Z0 X1')) * vec,
+            matvec_expected))
+
+    def test_matvec_multiple_terms(self):
+        """Testing with multiple terms."""
+        qubit_operator = (QubitOperator.identity() + 2 * QubitOperator('Y2') +
+                          QubitOperator(((0, 'Z'), (1, 'X')), 10.0))
+
+        vec = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
+        matvec_expected = (10 * numpy.array([3, 4, 1, 2, -7, -8, -5, -6]) +
+                           2j * numpy.array([-2, 1, -4, 3, -6, 5, -8, 7]) + vec)
+
+        self.assertTrue(numpy.allclose(
+            LinearQubitOperator(qubit_operator) * vec, matvec_expected))
+
+    def test_matvec_compare(self):
+        """Compare LinearQubitOperator with qubit_operator_sparse."""
+        qubit_operator = QubitOperator('X0 Y1 Z3')
+        mat_expected = qubit_operator_sparse(qubit_operator)
+
+        self.assertTrue(numpy.allclose(numpy.transpose(
+            numpy.array([LinearQubitOperator(qubit_operator) * v
+                         for v in numpy.identity(16)])),
+                                       mat_expected.A))
 
 class ParallelLinearQubitOperatorTest(unittest.TestCase):
     """Tests for ParallelLinearQubitOperator class."""

@@ -205,88 +205,6 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     sparse_operator.eliminate_zeros()
     return sparse_operator
 
-
-def get_linear_qubit_operator(qubit_operator, n_qubits=None):
-    """ Return a linear operator with matvec defined to avoid instantiating a
-    huge matrix, which requires lots of memory.
-
-    The idea is that a single i_th qubit operator, O_i, is a 2-by-2 matrix, to
-    be applied on a vector of length n_hilbert / 2^i, performs permutations and/
-    or adds an extra factor for its first half and the second half, e.g. a `Z`
-    operator keeps the first half unchanged, while adds a factor of -1 to the
-    second half, while an `I` keeps it both components unchanged.
-
-    Note that the vector length is n_hilbert / 2^i, therefore when one works on
-    i monotonically (in increasing order), one keeps splitting the vector to the
-    right size and then apply O_i on them independently.
-
-    Also note that operator O_i, is an *envelop operator* for all operators
-    after it, i.e. {O_j | j > i}, which implies that starting with i = 0, one
-    can split the vector, apply O_i, split the resulting vector (cached) again
-    for the next operator.
-
-    Args:
-      qubit_operator(QubitOperator): A qubit operator to be applied on vectors.
-
-    Returns:
-      linear_operator(LinearOperator): The equivalent operator which is well
-      defined when applying to a vector.
-
-    """
-    if n_qubits is None:
-        n_qubits = count_qubits(qubit_operator)
-    if n_qubits < count_qubits(qubit_operator):
-        raise ValueError('Invalid number of qubits specified.')
-
-    n_hilbert = 2 ** n_qubits
-
-    def matvec(vec):
-        """matvec for the LinearOperator class.
-
-        Args:
-          vec(numpy.ndarray): 1D numpy array.
-
-        Returns:
-          retvec(numpy.ndarray): same to the shape of input vec.
-        """
-        if len(vec) != n_hilbert:
-            raise ValueError('Invalid length of vector specified: %d != %d'
-                             %(len(vec), n_hilbert))
-
-        retvec = numpy.zeros(vec.shape, dtype=complex)
-        # Loop through the terms.
-        for qubit_term in qubit_operator.terms:
-            vecs = [vec]
-            tensor_factor = 0
-            coefficient = qubit_operator.terms[qubit_term]
-
-            for pauli_operator in qubit_term:
-                # Split vector by half and half for each bit.
-                if pauli_operator[0] > tensor_factor:
-                    vecs = [v for iter_v in vecs for v in numpy.split(
-                        iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
-
-                # Note that this is to make sure that XYZ operations always work
-                # on vector pairs.
-                vec_pairs = [numpy.split(v, 2) for v in vecs]
-
-                # There is an non-identity op here, transform the vector.
-                xyz = {
-                    'X' : lambda vps: [[vp[1], vp[0]] for vp in vps],
-                    'Y' : lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
-                    'Z' : lambda vps: [[vp[0], -vp[1]] for vp in vps],
-                }
-                vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs)
-                        for v in vp]
-                tensor_factor = pauli_operator[0] + 1
-
-            # No need to check tensor_factor, i.e. to deal with bits left.
-            retvec += coefficient * numpy.concatenate(vecs)
-        return retvec
-    return scipy.sparse.linalg.LinearOperator((n_hilbert, n_hilbert),
-                                              matvec=matvec, dtype=complex)
-
-
 def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
     """ Return a linear operator's diagonal elements.
 
@@ -302,7 +220,7 @@ def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
 
     Returns:
         linear_operator_diagonal(numpy.ndarray): The diagonal elements for
-            get_linear_qubit_operator(qubit_operator).
+            LinearQubitOperator(qubit_operator).
     """
     if n_qubits is None:
         n_qubits = count_qubits(qubit_operator)

@@ -181,7 +181,7 @@ class QubitOperator(SymbolicOperator):
     @staticmethod
     def accumulate(operators, zero=None):
         """Sums over QubitOperators."""
-        total =  zero or QubitOperator.zero()
+        total = zero or QubitOperator.zero()
         for operator in operators:
             total += operator
         return total
