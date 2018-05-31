@@ -11,13 +11,13 @@
 #   limitations under the License.
 
 """Tests the code in the examples directory of the git repo."""
-import nbformat
-import numpy
-import os
 import subprocess
 import sys
 import tempfile
 import unittest
+
+import nbformat
+import numpy
 
 from openfermion.config import THIS_DIRECTORY
 
@@ -125,25 +125,28 @@ class ExampleTest(unittest.TestCase):
         self.assertEqual(errors, [])
 
     def test_performance_benchmarks(self):
+        """Test for performance benchmark functions."""
 
         # Import performance benchmarks and seed random number generator.
         sys.path.append(self.directory)
         from performance_benchmarks import (
-            benchmark_fermion_math_and_normal_order,
+            benchmark_fermion_math_order,
             benchmark_jordan_wigner_sparse,
-            benchmark_molecular_operator_jordan_wigner)
+            benchmark_mo_jordan_wigner,
+            benchmark_linear_qubit_operator,
+        )
         numpy.random.seed(1)
 
         # Run InteractionOperator.jordan_wigner_transform() benchmark.
         n_qubits = 10
-        runtime = benchmark_molecular_operator_jordan_wigner(n_qubits)
+        runtime = benchmark_mo_jordan_wigner(n_qubits)
         self.assertLess(runtime, 600)
 
         # Run benchmark on FermionOperator math and normal-ordering.
         n_qubits = 10
         term_length = 5
         power = 5
-        runtime_math, runtime_normal = benchmark_fermion_math_and_normal_order(
+        runtime_math, runtime_normal = benchmark_fermion_math_order(
             n_qubits, term_length, power)
         self.assertLess(runtime_math, 600)
         self.assertLess(runtime_normal, 600)
@@ -152,3 +155,11 @@ class ExampleTest(unittest.TestCase):
         n_qubits = 10
         runtime = benchmark_jordan_wigner_sparse(n_qubits)
         self.assertLess(runtime, 600)
+
+        # Run get_linear_qubit_operator() benchmark.
+        n_qubits = 10
+        n_terms = 10
+        runtime_operator, runtime_matvec = benchmark_linear_qubit_operator(
+            n_qubits, n_terms)
+        self.assertLess(runtime_operator, 100)
+        self.assertLess(runtime_matvec, 600)

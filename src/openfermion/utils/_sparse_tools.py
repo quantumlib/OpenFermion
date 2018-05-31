@@ -13,24 +13,25 @@
 """This module provides functions to interface with scipy.sparse."""
 from __future__ import absolute_import
 
-from functools import reduce
-from future.utils import iteritems
-
 import itertools
+import multiprocessing
+import warnings
+
+from functools import reduce
+import future.utils
+
 import numpy
 import numpy.linalg
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
-import warnings
 
 from openfermion.config import *
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
                              QubitOperator, normal_ordered)
-from openfermion.utils import (Grid, commutator, count_qubits,
-                               fourier_transform,
+from openfermion.utils import (commutator, count_qubits,
                                gaussian_state_preparation_circuit,
-                               hermitian_conjugated, is_hermitian,
+                               is_hermitian,
                                number_operator,
                                slater_determinant_preparation_circuit,
                                up_index, down_index)
@@ -203,7 +204,69 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     sparse_operator.eliminate_zeros()
     return sparse_operator
 
-def get_linear_qubit_operator(qubit_operator, n_qubits=None):
+def apply_terms_on_vec(args):
+    """Applies qubit terms to a vector.
+
+    For each qubit term, one applies operators sequentially together with its
+    coefficient, and sum them together from multiple terms.
+
+    Args:
+        args(tuple): args is a tuple of qubit terms from a QubitOperator, and a
+            numpy.ndarray vector.
+
+    Returns:
+        sum_vector(numpy.ndarray): a new vector with the same shape to args[1].
+    """
+    qubit_terms, vector = args
+
+    sum_vector = numpy.zeros(vector.shape, dtype=complex)
+    for qubit_term in qubit_terms:
+        vecs = [vector]
+        tensor_factor = 0
+
+        for pauli_operator in qubit_term:
+            # Split vector by half and half for each bit.
+            if pauli_operator[0] > tensor_factor:
+                vecs = [v for iter_v in vecs for v in numpy.split(
+                    iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
+
+            # Note that this is to make sure that XYZ operations always work on
+            # vector pairs.
+            vec_pairs = [numpy.split(v, 2) for v in vecs]
+
+            # There is an non-identity op here, transform the vector.
+            xyz = {
+                'X' : lambda vps: [[vp[1], vp[0]] for vp in vps],
+                'Y' : lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
+                'Z' : lambda vps: [[vp[0], -vp[1]] for vp in vps],
+            }
+            vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs) for v in vp]
+            tensor_factor = pauli_operator[0] + 1
+
+        # No need to check tensor_factor, i.e. to deal with bits left.
+        sum_vector += qubit_terms[qubit_term] * numpy.concatenate(vecs)
+    return sum_vector
+
+def _check_n_qubits(qubit_operator, n_qubits):
+    """Checks if n_qubits is valid given a QubitOperator.
+
+    Args:
+        qubit_operator(QubitOperator): A qubit operator to apply on vectors.
+        n_qubits(int): Number of qubits.
+
+    Returns:
+        n_qubits(int): Number of qubits.
+    """
+    if n_qubits is None:
+        n_qubits = count_qubits(qubit_operator)
+
+    explicit_n_qubits = count_qubits(qubit_operator)
+    if n_qubits < explicit_n_qubits:
+        raise ValueError('Invalid number of qubits specified: {} < {}.'.format(
+            n_qubits, explicit_n_qubits))
+    return n_qubits
+
+def get_linear_qubit_operator(qubit_operator, n_qubits=None, processes=10):
     """ Return a linear operator with matvec defined to avoid instantiating a
     huge matrix, which requires lots of memory.
 
@@ -223,63 +286,44 @@ def get_linear_qubit_operator(qubit_operator, n_qubits=None):
     for the next operator.
 
     Args:
-      qubit_operator(QubitOperator): A qubit operator to be applied on vectors.
+        qubit_operator(QubitOperator): A qubit operator to apply on vectors.
+        n_qubits(int): Number of qubits.
+        processes(int): Number of processors to use.
 
     Returns:
-      linear_operator(LinearOperator): The equivalent operator which is well
-      defined when applying to a vector.
-
+        linear_operator(LinearOperator): The equivalent operator which is well
+        defined when applying to a vector.
     """
-    if n_qubits is None:
-        n_qubits = count_qubits(qubit_operator)
-    if n_qubits < count_qubits(qubit_operator):
-        raise ValueError('Invalid number of qubits specified.')
-
+    n_qubits = _check_n_qubits(qubit_operator, n_qubits)
     n_hilbert = 2 ** n_qubits
+    processes = max(min(processes, len(qubit_operator.terms)), 1)
 
     def matvec(vec):
         """matvec for the LinearOperator class.
 
         Args:
-          vec(numpy.ndarray): 1D numpy array.
+            vec(numpy.ndarray): 1D numpy array.
 
         Returns:
-          retvec(numpy.ndarray): same to the shape of input vec.
+            numpy.ndarray: with the same shape to that of vec.
         """
         if len(vec) != n_hilbert:
             raise ValueError('Invalid length of vector specified: %d != %d'
                              %(len(vec), n_hilbert))
 
-        retvec = numpy.zeros(vec.shape, dtype=complex)
-        # Loop through the terms.
-        for qubit_term in qubit_operator.terms:
-            vecs = [vec]
-            tensor_factor = 0
-            coefficient = qubit_operator.terms[qubit_term]
+        def chunks(data, size):
+            """Splits a map into chunks."""
+            it = iter(data)
+            for i in range(0, len(data), size):
+                yield {k:data[k] for k in itertools.islice(it, size)}
 
-            for pauli_operator in qubit_term:
-                # Split vector by half and half for each bit.
-                if pauli_operator[0] > tensor_factor:
-                    vecs = [v for iter_v in vecs for v in numpy.split(
-                        iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
-
-                # Note that this is to make sure that XYZ operations always work
-                # on vector pairs.
-                vec_pairs = [numpy.split(v, 2) for v in vecs]
-
-                # There is an non-identity op here, transform the vector.
-                xyz = {
-                    'X' : lambda vps: [[vp[1], vp[0]] for vp in vps],
-                    'Y' : lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
-                    'Z' : lambda vps: [[vp[0], -vp[1]] for vp in vps],
-                }
-                vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs)
-                        for v in vp]
-                tensor_factor = pauli_operator[0] + 1
-
-            # No need to check tensor_factor, i.e. to deal with bits left.
-            retvec += coefficient * numpy.concatenate(vecs)
-        return retvec
+        pool = multiprocessing.Pool(processes)
+        vecs = pool.map(apply_terms_on_vec,
+                        [(terms, numpy.copy(vec))
+                         for terms in chunks(qubit_operator.terms, processes)])
+        if vecs:
+            return reduce(numpy.add, vecs)
+        return numpy.zeros(vec.shape, dtype=complex)
     return scipy.sparse.linalg.LinearOperator((n_hilbert, n_hilbert),
                                               matvec=matvec, dtype=complex)
 
@@ -301,14 +345,11 @@ def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
         linear_operator_diagonal(numpy.ndarray): The diagonal elements for
             get_linear_qubit_operator(qubit_operator).
     """
-    if n_qubits is None:
-        n_qubits = count_qubits(qubit_operator)
-    if n_qubits < count_qubits(qubit_operator):
-        raise ValueError('Invalid number of qubits specified.')
-
+    n_qubits = _check_n_qubits(qubit_operator, n_qubits)
     n_hilbert = 2 ** n_qubits
     zeros_diagonal = numpy.zeros(n_hilbert)
     ones_diagonal = numpy.ones(n_hilbert)
+
     linear_operator_diagonal = zeros_diagonal
     # Loop through the terms.
     for qubit_term in qubit_operator.terms:
@@ -953,7 +994,7 @@ def expectation_db_operator_with_pw_basis_state(
     """
     expectation_value = operator.terms.get((), 0.0)
 
-    for single_action, coefficient in iteritems(operator.terms):
+    for single_action, coefficient in future.utils.iteritems(operator.terms):
         if len(single_action) == 2:
             expectation_value += coefficient * (
                 expectation_one_body_db_operator_computational_basis_state(
