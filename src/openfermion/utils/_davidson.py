@@ -33,7 +33,7 @@ class Davidson(object):
     """Davidson algorithm to get the n states with smallest eigenvalues."""
 
     def __init__(self, linear_operator, linear_operator_diagonal,
-                 max_subspace=100, eps=1e-6):
+                 max_subspace=100, eps=1e-6, real_only=False):
         """
         Args:
             linear_operator(scipy.sparse.linalg.LinearOperator): The linear
@@ -43,6 +43,7 @@ class Davidson(object):
             max_subspace(int): Max number of vectors in the auxiliary subspace.
             eps(float): The max error for eigen vector error's elements during
                 iterations: linear_operator * v - v * lambda.
+            real_only(bool): Real eigenvectors or complex ones.
         """
         if not isinstance(linear_operator, scipy.sparse.linalg.LinearOperator):
             raise ValueError(
@@ -53,6 +54,7 @@ class Davidson(object):
         self.linear_operator_diagonal = linear_operator_diagonal
         self.max_subspace = min(max_subspace, len(linear_operator_diagonal) + 1)
         self.eps = eps
+        self.real_only = real_only
 
         if self.max_subspace <= 2 or eps <= 0:
             raise ValueError('Invalid values for max_subspace and/ or eps: '
@@ -94,16 +96,23 @@ class Davidson(object):
                              .format(initial_guess.shape[1],
                                      len(self.linear_operator_diagonal)))
 
-        # 3. Checks for non-trivial (non-zero) initial guesses.
+        # 3. Makes sure real guess vector if real_only is specified.
+        if self.real_only:
+            if not numpy.allclose(numpy.real(initial_guess), initial_guess):
+                warnings.warn('Initial guess is not real only!', RuntimeWarning)
+                initial_guess = numpy.real(initial_guess)
+
+        # 4. Checks for non-trivial (non-zero) initial guesses.
         if numpy.max(numpy.abs(initial_guess)) < self.eps:
             raise ValueError('Guess vectors are all zero! {}'.format(
                 initial_guess.shape))
         initial_guess = scipy.linalg.orth(initial_guess)
 
-        # 4. Makes sure number of initial guess vector is at least n_lowest.
+        # 5. Makes sure number of initial guess vector is at least n_lowest.
         if initial_guess.shape[1] < n_lowest:
             initial_guess = append_random_vectors(
-                initial_guess, n_lowest - initial_guess.shape[1])
+                initial_guess, n_lowest - initial_guess.shape[1],
+                real_only=self.real_only)
 
         success = False
         num_iterations = 0
@@ -117,13 +126,18 @@ class Davidson(object):
                 success = True
                 break
 
+            # Make sure it keeps real components only.
+            if self.real_only:
+                guess_v = numpy.real(guess_v)
+
             # Deals with new directions to make sure they're orthonormal.
             # Also makes sure there're new directions added for the next
             # iteration, if not, add n_lowest random vectors.
             count_mvs = guess_mv.shape[1]
             guess_v = orthonormalize(guess_v, count_mvs, self.eps)
             if guess_v.shape[1] <= count_mvs:
-                guess_v = append_random_vectors(guess_v, n_lowest)
+                guess_v = append_random_vectors(guess_v, n_lowest,
+                                                real_only=self.real_only)
 
 
             # Limits number of vectors to self.max_subspace, in this case, keep
@@ -139,7 +153,21 @@ class Davidson(object):
                     guess_v[:, count_mvs:],
                 ])
                 guess_mv = mat_eigen_vectors
+
+                if self.real_only:
+                    if (not numpy.allclose(numpy.real(guess_v), guess_v) or
+                            not numpy.allclose(numpy.real(guess_mv), guess_mv)):
+                        # Forces recalculation for matrix multiplication with
+                        # vectors.
+                        guess_mv = None
+
             num_iterations += 1
+
+        if (self.real_only and
+                not numpy.allclose(numpy.real(eigen_vectors), eigen_vectors)):
+            warnings.warn('Unable to get real only eigenvectors, return '
+                          'complex vectors instead with success state {}.'
+                          .format(success), RuntimeWarning)
         return success, eigen_values, eigen_vectors
 
     def _iterate(self, n_lowest, guess_v, guess_mv=None):
@@ -262,7 +290,7 @@ class QubitDavidson(Davidson):
     """Davidson algorithm applied to a QubitOperator."""
 
     def __init__(self, qubit_operator, n_qubits=None, max_subspace=100,
-                 eps=1e-6):
+                 eps=1e-6, real_only=False):
         """
         Args:
             qubit_operator(QubitOperator): A qubit operator which is a linear
@@ -271,29 +299,32 @@ class QubitDavidson(Davidson):
             max_subspace(int): Max number of vectors in the auxiliary subspace.
             eps(float): The max error for eigen vectors' elements during
                 iterations.
+            real_only(bool): Real vectors or complex ones.
         """
         super(QubitDavidson, self).__init__(
             get_linear_qubit_operator(qubit_operator, n_qubits),
             get_linear_qubit_operator_diagonal(qubit_operator, n_qubits),
-            max_subspace=max_subspace, eps=eps)
+            max_subspace=max_subspace, eps=eps, real_only=real_only)
 
-def generate_random_vectors(row, col):
+def generate_random_vectors(row, col, real_only=False):
     """Generates orthonormal random vectors with col columns.
 
     Args:
         row(int): Number of rows for the vectors.
         col(int): Number of columns for the vectors.
+        real_only(bool): Real vectors or complex ones.
 
     Returns:
         random_vectors(numpy.ndarray(complex)): Orthonormal random vectors.
     """
-    random_vectors = (numpy.random.rand(row, col) +
-                      numpy.random.rand(row, col) * 1.0j)
+    random_vectors = numpy.random.rand(row, col)
+    if not real_only:
+        random_vectors = random_vectors + numpy.random.rand(row, col) * 1.0j
     random_vectors = scipy.linalg.orth(random_vectors)
     return random_vectors
 
 
-def append_random_vectors(vectors, col, max_trial=3):
+def append_random_vectors(vectors, col, max_trial=3, real_only=False):
     """Appends exactly col orthonormal random vectors for vectors.
 
     Assumes vectors is already orthonormal.
@@ -302,6 +333,7 @@ def append_random_vectors(vectors, col, max_trial=3):
         vectors(numpy.ndarray(complex)): Orthonormal original vectors to be
             appended.
         col(int): Number of columns to be appended.
+        real_only(bool): Real vectors or complex ones.
 
     Returns:
         vectors(numpy.ndarray(complex)): Orthonormal vectors with n columns.
@@ -317,7 +349,7 @@ def append_random_vectors(vectors, col, max_trial=3):
         num_trial += 1
 
         vectors = numpy.hstack([vectors, generate_random_vectors(
-            vectors.shape[0], total_columns - vector_columns)])
+            vectors.shape[0], total_columns - vector_columns, real_only)])
         vectors = orthonormalize(vectors, vector_columns)
 
         # Checks whether there are any new vectors added successfully.

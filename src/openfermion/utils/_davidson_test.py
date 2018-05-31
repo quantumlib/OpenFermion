@@ -300,6 +300,83 @@ class QubitDavidsonTest(unittest.TestCase):
         self.assertAlmostEqual(get_difference(davidson.linear_operator,
                                               eigen_values, eigen_vectors), 0)
 
+    def test_get_lowest_z_real(self):
+        """Test for get_lowest_n() for z with real eigenvectors only."""
+        dimension = 2 ** self.n_qubits
+        qubit_operator = QubitOperator('Z3') * self.coefficient
+        davidson = QubitDavidson(qubit_operator, self.n_qubits, real_only=True)
+
+        n_lowest = 6
+        # Guess vectors have both real and imaginary parts.
+        numpy.random.seed(dimension)
+        initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
+        numpy.random.seed(dimension * 2)
+        initial_guess += numpy.random.rand(dimension, n_lowest)
+        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=10)
+
+        # one half of the eigenvalues is -1 and the other half is +1, together
+        # with the coefficient.
+        expected_eigen_values = -self.coefficient * numpy.ones(n_lowest)
+
+        self.assertTrue(success)
+        self.assertTrue(numpy.allclose(eigen_values, expected_eigen_values))
+        self.assertAlmostEqual(get_difference(davidson.linear_operator,
+                                              eigen_values, eigen_vectors), 0)
+        # Real components only.
+        self.assertTrue(numpy.allclose(numpy.real(eigen_vectors),
+                                       eigen_vectors))
+
+    def test_get_lowest_y_real(self):
+        """Test for get_lowest_n() for z with real eigenvectors only."""
+        dimension = 2 ** self.n_qubits
+        qubit_operator = QubitOperator('Y3') * self.coefficient
+        davidson = QubitDavidson(qubit_operator, self.n_qubits, real_only=True)
+
+        n_lowest = 6
+        # Guess vectors have both real and imaginary parts.
+        numpy.random.seed(dimension)
+        initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
+        numpy.random.seed(dimension * 2)
+        initial_guess += numpy.random.rand(dimension, n_lowest)
+        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=10)
+
+        # one half of the eigenvalues is -1 and the other half is +1, together
+        # with the coefficient.
+        expected_eigen_values = -self.coefficient * numpy.ones(n_lowest)
+
+        self.assertTrue(success)
+        self.assertTrue(numpy.allclose(eigen_values, expected_eigen_values))
+        self.assertAlmostEqual(get_difference(davidson.linear_operator,
+                                              eigen_values, eigen_vectors), 0)
+        # Not real components only.
+        self.assertFalse(numpy.allclose(numpy.real(eigen_vectors),
+                                        eigen_vectors))
+
+    def test_get_lowest_y_complex(self):
+        """Test for get_lowest_n() for z with real eigenvectors only."""
+        dimension = 2 ** self.n_qubits
+        qubit_operator = QubitOperator('Y3') * self.coefficient
+        davidson = QubitDavidson(qubit_operator, self.n_qubits, real_only=True)
+
+        n_lowest = 6
+        # Guess vectors have both real and imaginary parts.
+        numpy.random.seed(dimension)
+        initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
+        numpy.random.seed(dimension * 2)
+        initial_guess += numpy.random.rand(dimension, n_lowest)
+        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=10)
+
+        # one half of the eigenvalues is -1 and the other half is +1, together
+        # with the coefficient.
+        expected_eigen_values = -self.coefficient * numpy.ones(n_lowest)
+
+        self.assertTrue(success)
+        self.assertTrue(numpy.allclose(eigen_values, expected_eigen_values))
+        self.assertAlmostEqual(get_difference(davidson.linear_operator,
+                                              eigen_values, eigen_vectors), 0)
 
 class DavidsonUtilityTest(unittest.TestCase):
     """"Tests for utility functions."""
@@ -324,6 +401,25 @@ class DavidsonUtilityTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(
             numpy.dot(new_vectors.conj().T, new_vectors),
             numpy.eye(col + add, col + add)))
+
+    def test_append_random_vectors_real(self):
+        """Test append_random_vectors()."""
+        row = 10
+        col = 2
+        add = 1
+        vectors = numpy.eye(row, col)
+        new_vectors = append_random_vectors(vectors, add, real_only=True)
+
+        # Identical for the first col columns.
+        self.assertTrue(numpy.allclose(new_vectors[:, :col], vectors))
+
+        # Orthonormal.
+        self.assertTrue(numpy.allclose(
+            numpy.dot(new_vectors.conj().T, new_vectors),
+            numpy.eye(col + add, col + add)))
+
+        # Real.
+        self.assertTrue(numpy.allclose(numpy.real(new_vectors), new_vectors))
 
     def test_append_vectors_big_col(self):
         """Test append_random_vectors() with too many failed trial."""
