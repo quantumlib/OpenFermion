@@ -93,6 +93,6 @@ from ._sparse_tools import (boson_ladder_sparse,
                             sparse_eigenspectrum,
                             variance)
 
-from ._davidson import Davidson, QubitDavidson
+from ._davidson import Davidson, DavidsonOptions, QubitDavidson
 
 from ._pubchem import geometry_from_pubchem
