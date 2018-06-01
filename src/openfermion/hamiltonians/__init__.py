@@ -31,6 +31,6 @@ from ._plane_wave_hamiltonian import (dual_basis_external_potential,
 
 # Imports out of alphabetical order to avoid circular dependancy.
 
-from ._hubbard import fermi_hubbard
+from ._hubbard import bose_hubbard, fermi_hubbard
 
 from ._mean_field_dwave import mean_field_dwave
