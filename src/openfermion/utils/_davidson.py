@@ -331,7 +331,7 @@ class QubitDavidson(Davidson):
             options(DavidsonOptions): Iteration options.
         """
         super(QubitDavidson, self).__init__(
-            generate_linear_qubit_operator(qubit_operator, n_qubits, processes),
+            generate_linear_qubit_operator(qubit_operator, n_qubits, options),
             get_linear_qubit_operator_diagonal(qubit_operator, n_qubits),
             options=options)
 

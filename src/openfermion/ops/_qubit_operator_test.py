@@ -148,14 +148,14 @@ def test_get_operators_empty():
     """Tests get_operators() with zero operator."""
     operator = QubitOperator.zero()
 
-    operators = operator.get_operators()
+    operators = list(operator.get_operators())
     assert operators == []
 
 def test_get_operators_one():
     """Tests get_operators() with an operator with a single term."""
     operator = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
 
-    operators = operator.get_operators()
+    operators = list(operator.get_operators())
     assert operators == [operator]
 
 def test_get_operators():
@@ -164,7 +164,7 @@ def test_get_operators():
     operator_01 = QubitOperator(((2, 'Z'), (3, 'Y')), 1)
     sum_operator = operator_00 + operator_01
 
-    operators = sum_operator.get_operators()
+    operators = list(sum_operator.get_operators())
     assert operators in [[operator_00, operator_01],
                          [operator_01, operator_00]]
 
@@ -172,33 +172,60 @@ def test_get_operator_groups_empty():
     """Tests get_operator_groups() with zero operator."""
     operator = QubitOperator.zero()
 
-    operators = [op for op in operator.get_operator_groups(1)]
+    operators = list(operator.get_operator_groups(1))
     assert operators == []
 
+# Utility functions.
+def generate_operator(begin, end):
+    """Returns a sum of Z operators at qubit [begin, end)."""
+    operator = QubitOperator.zero()
+    for i in range(begin, end):
+        operator += QubitOperator(((i, 'Z'),), 1)
+    return operator
+
+def check_length(operators, lens):
+    """Checks length operator is the same to lens."""
+    if len(operators) != len(lens):
+        return False
+
+    for operator, length in zip(operators, lens):
+        if len(operator.terms) != length:
+            return False
+    return True
+
+def check_sum(operators, operator):
+    """Checks sum of operators matches to operator."""
+    return QubitOperator.accumulate(operators) == operator
+
+# Tests for get_operator_groups().
 def test_get_operator_groups_one():
-    """Tests get_operator_groups() with an operator with a single term."""
-    operator = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+    """Tests get_operator_groups() with one group."""
+    operator = generate_operator(0, 20)
 
-    for num_groups in range(3):
-        operators = [op for op in operator.get_operator_groups(num_groups)]
-        assert operators == [operator]
+    operator_groups = list(operator.get_operator_groups(1))
+    assert len(operator_groups) == 1
+    assert operator_groups[0] == operator
 
-def test_get_operator_groups():
-    """Tests get_operator_groups() with an operator with two terms."""
-    operator_00 = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
-    operator_01 = QubitOperator(((2, 'Z'), (3, 'Y')), 1)
-    sum_operator = operator_00 + operator_01
+def test_get_operator_groups_two():
+    """Tests get_operator_groups() with two groups."""
+    operator = generate_operator(0, 20)
+    operator_groups = list(operator.get_operator_groups(2))
 
-    # 1 Group.
-    operator_groups_01 = sum_operator.get_operator_groups(1)
-    assert len(operator_groups_01) == 1
-    assert operator_groups_01[0] == sum_operator
+    check_length(operator_groups, [10, 10])
+    check_sum(operator_groups, operator)
 
-    # 2 Groups.
-    for num_groups in [2, 3, 10]:
-        operator_groups_02 = sum_operator.get_operator_groups(num_groups)
-        assert len(operator_groups_02) == 2
-        assert ((operator_groups_02[0] == operator_00 and
-                 operator_groups_02[1] == operator_01) or
-                (operator_groups_02[0] == operator_01 and
-                 operator_groups_02[1] == operator_00))
+def test_get_operator_groups_three():
+    """Tests get_operator_groups() with two groups."""
+    operator = generate_operator(0, 20)
+    operator_groups = list(operator.get_operator_groups(3))
+
+    check_length(operator_groups, [7, 7, 6])
+    check_sum(operator_groups, operator)
+
+def test_get_operator_groups_six():
+    """Tests get_operator_groups() with two groups."""
+    operator = generate_operator(0, 20)
+    operator_groups = list(operator.get_operator_groups(6))
+
+    check_length(operator_groups, [4, 4, 3, 3, 3, 3])
+    check_sum(operator_groups, operator)

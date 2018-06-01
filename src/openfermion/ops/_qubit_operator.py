@@ -11,6 +11,7 @@
 #   limitations under the License.
 
 """QubitOperator stores a sum of Pauli operators acting on qubits."""
+import itertools
 import warnings
 
 from openfermion.config import EQ_TOLERANCE
@@ -192,10 +193,8 @@ class QubitOperator(SymbolicOperator):
         Returns:
             operators([QubitOperator]): A list of operators summing up to self.
         """
-        operators = []
-        for term in self.terms:
-            operators.append(QubitOperator(term, self.terms[term]))
-        return operators
+        for term, coefficient in self.terms.items():
+            yield QubitOperator(term, coefficient)
 
     def get_operator_groups(self, num_groups):
         """Gets a list of operators with a few terms.
@@ -211,7 +210,7 @@ class QubitOperator(SymbolicOperator):
             num_groups = 1
 
         operators = self.get_operators()
-        num_groups = min(num_groups, len(operators))
-        return [QubitOperator.accumulate(
-            [operators[j] for j in range(i, len(operators), num_groups)])
-                for i in range(num_groups)]
+        num_groups = min(num_groups, len(self.terms))
+        for i in range(num_groups):
+            yield QubitOperator.accumulate(itertools.islice(
+                operators, len(range(i, len(self.terms), num_groups))))

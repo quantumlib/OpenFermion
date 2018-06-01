@@ -143,8 +143,8 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         self.n_qubits = n_qubits
         self.options = options or LinearQubitOperatorOptions()
 
-        self.qubit_operator_groups = qubit_operator.get_operator_groups(
-            self.options.processes)
+        self.qubit_operator_groups = list(qubit_operator.get_operator_groups(
+            self.options.processes))
         self.linear_operators = [LinearQubitOperator(operator, n_qubits)
                                  for operator in self.qubit_operator_groups]
 
