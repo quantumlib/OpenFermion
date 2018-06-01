@@ -26,7 +26,8 @@ from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               freeze_orbitals, get_file_path,
                               hermitian_conjugated, inline_sum,
                               inverse_fourier_transform,
-                              is_hermitian, is_identity, prune_unused_indices,
+                              is_hermitian, is_identity,
+                              normal_ordered, prune_unused_indices,
                               reorder, up_then_down,
                               load_operator, save_operator)
 
@@ -69,7 +70,9 @@ from ._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_bound,
     low_depth_second_order_trotter_error_operator)
 
-from ._sparse_tools import (expectation,
+from ._sparse_tools import (boson_ladder_sparse,
+                            boson_operator_sparse,
+                            expectation,
                             expectation_computational_basis_state,
                             get_density_matrix,
                             get_gap,

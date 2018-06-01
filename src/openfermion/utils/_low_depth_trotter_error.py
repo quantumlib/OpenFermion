@@ -17,8 +17,8 @@ from future.utils import iteritems, itervalues
 import numpy
 import openfermion.hamiltonians
 
-from openfermion.ops import FermionOperator, normal_ordered
-from openfermion.utils import count_qubits
+from openfermion.ops import FermionOperator
+from openfermion.utils import count_qubits, normal_ordered
 from openfermion.utils._commutators import (
     double_commutator,
     trivially_double_commutes_dual_basis,

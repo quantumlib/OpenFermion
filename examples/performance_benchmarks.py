@@ -16,10 +16,11 @@ import time
 
 from openfermion.ops import (FermionOperator,
                              InteractionOperator,
-                             QubitOperator,
-                             normal_ordered)
+                             QubitOperator)
 from openfermion.transforms import get_fermion_operator, jordan_wigner
-from openfermion.utils import jordan_wigner_sparse, get_linear_qubit_operator
+from openfermion.utils import (jordan_wigner_sparse,
+                               normal_ordered,
+                               get_linear_qubit_operator)
 from openfermion.utils._testing_utils import random_interaction_operator
 
 

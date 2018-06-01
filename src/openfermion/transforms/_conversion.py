@@ -27,19 +27,34 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
                              PolynomialTensor,
                              QuadraticHamiltonian,
                              QubitOperator,
-                             normal_ordered)
+                             BosonOperator,
+                             QuadOperator)
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
-from openfermion.utils import (count_qubits,
+from openfermion.utils import (boson_operator_sparse,
+                               count_qubits,
                                is_hermitian,
                                jordan_wigner_sparse,
+                               normal_ordered,
                                qubit_operator_sparse)
 
 
-def get_sparse_operator(operator, n_qubits=None):
-    """Map an operator to a sparse matrix.
+def get_sparse_operator(operator, n_qubits=None, trunc=None, hbar=1.):
+    r"""Map an operator to a sparse matrix.
 
     If the input is not a QubitOperator, the Jordan-Wigner Transform is used.
+
+    Args:
+        operator: Currently supported operators include:
+            FermionOperator, QubitOperator, DiagonalCoulombHamiltonian,
+            PolynomialTensor, BosonOperator, QuadOperator.
+        n_qubits(int): Number qubits in the system Hilbert space.
+            Applicable only to fermionic systems.
+        trunc (int): The size at which the Fock space should be truncated.
+            Applicable only to bosonic systems.
+        hbar (float): the value of hbar to use in the definition of the
+            canonical commutation relation [q_i, p_j] = \delta_{ij} i hbar.
+            Applicable only to the QuadOperator.
     """
     if isinstance(operator, (DiagonalCoulombHamiltonian, PolynomialTensor)):
         return jordan_wigner_sparse(get_fermion_operator(operator))
@@ -47,6 +62,8 @@ def get_sparse_operator(operator, n_qubits=None):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
         return qubit_operator_sparse(operator, n_qubits)
+    elif isinstance(operator, (BosonOperator, QuadOperator)):
+        return boson_operator_sparse(operator, trunc, hbar)
     else:
         raise TypeError('Failed to convert a {} to a sparse matrix.'.format(
             type(operator).__name__))
@@ -83,7 +100,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
 
 
 def get_interaction_operator(fermion_operator, n_qubits=None):
-    """Convert a 2-body fermionic operator to InteractionOperator.
+    r"""Convert a 2-body fermionic operator to InteractionOperator.
 
     This function should only be called on fermionic operators which
     consist of only a_p^\dagger a_q and a_p^\dagger a_q^\dagger a_r a_s
@@ -158,7 +175,7 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
 
 def get_quadratic_hamiltonian(fermion_operator,
                               chemical_potential=0., n_qubits=None):
-    """Convert a quadratic fermionic operator to QuadraticHamiltonian.
+    r"""Convert a quadratic fermionic operator to QuadraticHamiltonian.
 
     This function should only be called on fermionic operators which
     consist of only a_p^\dagger a_q, a_p^\dagger a_q^\dagger, and a_p a_q
@@ -345,11 +362,11 @@ def get_fermion_operator(operator):
         fermion_operator += FermionOperator((), operator.constant)
         for p, q in itertools.product(range(n_qubits), repeat=2):
             fermion_operator += FermionOperator(
-                    ((p, 1), (q, 0)),
-                    operator.one_body[p, q])
+                ((p, 1), (q, 0)),
+                operator.one_body[p, q])
             fermion_operator += FermionOperator(
-                    ((p, 1), (p, 0), (q, 1), (q, 0)),
-                    operator.two_body[p, q])
+                ((p, 1), (p, 0), (q, 1), (q, 0)),
+                operator.two_body[p, q])
 
     return fermion_operator
 
@@ -411,3 +428,69 @@ def get_molecular_data(interaction_operator,
     molecule.multiplicity = multiplicity
 
     return molecule
+
+
+def get_quad_operator(operator, hbar=1.):
+    """Convert to QuadOperator.
+
+    Args:
+        operator: BosonOperator.
+        hbar (float): the value of hbar used in the definition
+            of the commutator [q_i, p_j] = i hbar delta_ij.
+            By default hbar=1.
+
+    Returns:
+        quad_operator: An instance of the QuadOperator class.
+    """
+    quad_operator = QuadOperator()
+
+    if isinstance(operator, BosonOperator):
+        for term, coefficient in operator.terms.items():
+            tmp = QuadOperator('', coefficient)
+            for i, d in term:
+                tmp *= (1./numpy.sqrt(2.*hbar)) \
+                    * (QuadOperator(((i, 'q')))
+                        + QuadOperator(((i, 'p')), 1j*(-1)**d))
+            quad_operator += tmp
+
+    else:
+        raise TypeError("Only BosonOperator is currently "
+                        "supported for get_quad_operator.")
+
+    return quad_operator
+
+
+def get_boson_operator(operator, hbar=1.):
+    """Convert to BosonOperator.
+
+    Args:
+        operator: QuadOperator.
+        hbar (float): the value of hbar used in the definition
+            of the commutator [q_i, p_j] = i hbar delta_ij.
+            By default hbar=1.
+
+    Returns:
+        boson_operator: An instance of the BosonOperator class.
+    """
+    boson_operator = BosonOperator()
+
+    if isinstance(operator, QuadOperator):
+        for term, coefficient in operator.terms.items():
+            tmp = BosonOperator('', coefficient)
+            for i, d in term:
+                if d == 'q':
+                    coeff = numpy.sqrt(hbar/2)
+                    sign = 1
+                elif d == 'p':
+                    coeff = -1j*numpy.sqrt(hbar/2)
+                    sign = -1
+
+                tmp *= coeff*(BosonOperator(((i, 0)))
+                              + BosonOperator(((i, 1)), sign))
+            boson_operator += tmp
+
+    else:
+        raise TypeError("Only QuadOperator is currently "
+                        "supported for get_boson_operator.")
+
+    return boson_operator

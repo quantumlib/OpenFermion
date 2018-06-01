@@ -12,7 +12,7 @@
 
 """Commonly used operators (mainly instances of SymbolicOperator)."""
 import numpy
-from openfermion.ops import FermionOperator
+from openfermion.ops import (FermionOperator, BosonOperator)
 
 
 def up_index(index):
@@ -291,21 +291,28 @@ def majorana_operator(term=None, coefficient=1.):
         raise ValueError('Operator specified incorrectly.')
 
 
-def number_operator(n_orbitals, orbital=None, coefficient=1.):
-    """Return a number operator.
+def number_operator(n_modes, mode=None, coefficient=1., parity=-1):
+    """Return a fermionic or bosonic number operator.
 
     Args:
-        n_orbitals (int): The number of spin-orbitals in the system.
-        orbital (int, optional): The orbital on which to return the number
+        n_modes (int): The number of modes in the system.
+        mode (int, optional): The mode on which to return the number
             operator. If None, return total number operator on all sites.
         coefficient (float): The coefficient of the term.
+        parity (int): Returns the fermionic number operator if parity=-1 (default),
+            and returns the bosonic number operator if parity=1.
     Returns:
-        operator (FermionOperator)
+        operator (BosonOperator or FermionOperator)
     """
-    if orbital is None:
-        operator = FermionOperator()
-        for spin_orbital in range(n_orbitals):
-            operator += number_operator(n_orbitals, spin_orbital, coefficient)
+    if parity == -1:
+        Op = FermionOperator
+    elif parity == 1:
+        Op = BosonOperator
+
+    if mode is None:
+        operator = Op()
+        for m in range(n_modes):
+            operator += number_operator(n_modes, m, coefficient, parity)
     else:
-        operator = FermionOperator(((orbital, 1), (orbital, 0)), coefficient)
+        operator = Op(((mode, 1), (mode, 0)), coefficient)
     return operator

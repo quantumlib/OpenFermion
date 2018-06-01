@@ -15,8 +15,9 @@ from __future__ import absolute_import
 
 import numpy
 
-from openfermion.ops import FermionOperator, normal_ordered, QubitOperator
+from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.utils._grid import Grid
+from openfermion.utils._operator_utils import normal_ordered
 
 
 def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
