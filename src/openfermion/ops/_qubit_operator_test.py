@@ -198,34 +198,48 @@ def check_sum(operators, operator):
     return QubitOperator.accumulate(operators) == operator
 
 # Tests for get_operator_groups().
+def test_get_operator_groups_zero():
+    """Tests get_operator_groups() with one group."""
+    operator = generate_operator(0, 20)
+    operator_groups = list(operator.get_operator_groups(0))
+
+    # Using 1 group instead.
+    assert check_length(operator_groups, [20])
+    assert check_sum(operator_groups, operator)
+
+    # Not using 0 groups.
+    assert not check_length(operator_groups, [])
+    assert not check_length(operator_groups, [0])
+    assert not check_sum(operator_groups, operator * 2)
+
 def test_get_operator_groups_one():
     """Tests get_operator_groups() with one group."""
     operator = generate_operator(0, 20)
-
     operator_groups = list(operator.get_operator_groups(1))
-    assert len(operator_groups) == 1
-    assert operator_groups[0] == operator
+
+    assert check_length(operator_groups, [20])
+    assert check_sum(operator_groups, operator)
 
 def test_get_operator_groups_two():
     """Tests get_operator_groups() with two groups."""
     operator = generate_operator(0, 20)
     operator_groups = list(operator.get_operator_groups(2))
 
-    check_length(operator_groups, [10, 10])
-    check_sum(operator_groups, operator)
+    assert check_length(operator_groups, [10, 10])
+    assert check_sum(operator_groups, operator)
 
 def test_get_operator_groups_three():
     """Tests get_operator_groups() with two groups."""
     operator = generate_operator(0, 20)
     operator_groups = list(operator.get_operator_groups(3))
 
-    check_length(operator_groups, [7, 7, 6])
-    check_sum(operator_groups, operator)
+    assert check_length(operator_groups, [7, 7, 6])
+    assert check_sum(operator_groups, operator)
 
 def test_get_operator_groups_six():
     """Tests get_operator_groups() with two groups."""
     operator = generate_operator(0, 20)
     operator_groups = list(operator.get_operator_groups(6))
 
-    check_length(operator_groups, [4, 4, 3, 3, 3, 3])
-    check_sum(operator_groups, operator)
+    assert check_length(operator_groups, [4, 4, 3, 3, 3, 3])
+    assert check_sum(operator_groups, operator)
