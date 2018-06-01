@@ -13,8 +13,10 @@
 """This module constructs the uniform electron gas' Hartree-Fock state."""
 from __future__ import absolute_import
 
-from openfermion.ops import FermionOperator, normal_ordered
-from openfermion.utils import count_qubits, inverse_fourier_transform
+from openfermion.ops import FermionOperator
+from openfermion.utils import (count_qubits,
+                               inverse_fourier_transform,
+                               normal_ordered)
 
 from scipy.sparse import csr_matrix, dok_matrix
 

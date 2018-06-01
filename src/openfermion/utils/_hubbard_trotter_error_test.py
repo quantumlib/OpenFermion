@@ -13,12 +13,13 @@
 """Tests for _hubbard_trotter_error.py."""
 import unittest
 
-from openfermion.ops import FermionOperator, normal_ordered
+from openfermion.ops import FermionOperator
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.utils._hubbard_trotter_error import *
 from openfermion.utils._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_bound,
     low_depth_second_order_trotter_error_operator)
+from openfermion.utils._operator_utils import normal_ordered
 
 
 class ErrorOperatorTest(unittest.TestCase):

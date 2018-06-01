@@ -20,8 +20,9 @@ import unittest
 
 from openfermion.config import *
 from openfermion.hamiltonians import MolecularData
-from openfermion.ops import normal_ordered, QubitOperator
+from openfermion.ops import QubitOperator
 from openfermion.transforms import get_sparse_operator
+from openfermion.utils._operator_utils import normal_ordered
 from openfermion.utils._trotter_error import *
 
 
