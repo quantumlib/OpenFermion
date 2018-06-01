@@ -22,7 +22,7 @@ import scipy.linalg
 import scipy.sparse.linalg
 
 from openfermion.utils._sparse_tools import get_linear_qubit_operator_diagonal
-from openfermion.utils._linear_qubit_operator import ParallelLinearQubitOperator
+from openfermion.utils._linear_qubit_operator import generate_linear_qubit_operator
 
 class DavidsonError(Exception):
     """Exceptions."""
@@ -262,7 +262,7 @@ class QubitDavidson(Davidson):
     """Davidson algorithm applied to a QubitOperator."""
 
     def __init__(self, qubit_operator, n_qubits=None, max_subspace=100,
-                 eps=1e-6):
+                 eps=1e-6, processes=10):
         """
         Args:
             qubit_operator(QubitOperator): A qubit operator which is a linear
@@ -273,7 +273,7 @@ class QubitDavidson(Davidson):
                 iterations.
         """
         super(QubitDavidson, self).__init__(
-            ParallelLinearQubitOperator(qubit_operator, n_qubits),
+            generate_linear_qubit_operator(qubit_operator, n_qubits, processes),
             get_linear_qubit_operator_diagonal(qubit_operator, n_qubits),
             max_subspace=max_subspace, eps=eps)
 

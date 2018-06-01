@@ -92,9 +92,10 @@ from ._sparse_tools import (expectation,
 
 from ._davidson import Davidson, QubitDavidson
 from ._linear_qubit_operator import (
-    ParallelLinearQubitOperator,
-    LinearQubitOperatorOptions,
     LinearQubitOperator,
+    LinearQubitOperatorOptions,
+    ParallelLinearQubitOperator,
+    generate_linear_qubit_operator,
 )
 
 from ._pubchem import geometry_from_pubchem

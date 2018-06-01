@@ -177,3 +177,23 @@ def _apply_operator(args):
     """Helper funtion to apply opeartor to a vector."""
     operator, vec = args
     return operator * vec
+
+
+def generate_linear_qubit_operator(qubit_operator, n_qubits=None, options=None):
+    """ Generates a LinearOperator from a QubitOperator.
+
+    Args:
+        qubit_operator(QubitOperator): A qubit operator to be applied on
+            vectors.
+        n_qubits(int): The total number of qubits
+        options(LinearQubitOperatorOptions): Options for the
+            ParallelLinearQubitOperator.
+    Returns:
+        linear_operator(scipy.sparse.linalg.LinearOperator): A linear operator.
+    """
+    if options is None:
+        linear_operator = LinearQubitOperator(qubit_operator, n_qubits)
+    else:
+        linear_operator = ParallelLinearQubitOperator(
+            qubit_operator, n_qubits, options)
+    return linear_operator
