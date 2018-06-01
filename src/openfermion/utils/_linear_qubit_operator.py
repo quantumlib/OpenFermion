@@ -91,11 +91,6 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         Returns:
           retvec(numpy.ndarray): same to the shape of input vector of x.
         """
-        n_hilbert = 2 ** self.n_qubits
-        if len(x) != n_hilbert:
-            raise ValueError('Invalid length of vector specified: %d != %d.'
-                             %(len(x), n_hilbert))
-
         retvec = numpy.zeros(x.shape, dtype=complex)
         # Loop through the terms.
         for qubit_term in self.qubit_operator.terms:
@@ -165,7 +160,7 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         # return self.linear_operator._matvec(x)
         pool = multiprocessing.Pool(self.options.get_processes(
             len(self.linear_operators)))
-        vecs = pool.map(_apply_operator,
+        vecs = pool.map(apply_operator,
                         [(operator, x) for operator in self.linear_operators])
 
         if not vecs:
@@ -173,7 +168,7 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         return functools.reduce(numpy.add, vecs)
 
 
-def _apply_operator(args):
+def apply_operator(args):
     """Helper funtion to apply opeartor to a vector."""
     operator, vec = args
     return operator * vec

@@ -212,6 +212,17 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
                                        self.expected_matvec))
 
 
+    def test_matvec_0(self):
+        """Testing with zero term."""
+        qubit_operator = QubitOperator.zero()
+
+        vec = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
+        matvec_expected = numpy.zeros(vec.shape)
+
+        self.assertTrue(numpy.allclose(
+            ParallelLinearQubitOperator(qubit_operator, 3) * vec,
+            matvec_expected))
+
 class UtilityFunctionTest(unittest.TestCase):
     """Tests for utility functions."""
 
