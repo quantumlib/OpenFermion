@@ -284,7 +284,7 @@ class QubitDavidsonTest(unittest.TestCase):
             qubit_operator += QubitOperator(((i, 'Z'),),
                                             numpy.random.rand(1)[0])
         qubit_operator *= self.coefficient
-        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+        davidson = QubitDavidson(qubit_operator, self.n_qubits, processes=None)
 
         n_lowest = 6
         numpy.random.seed(dimension)
@@ -304,7 +304,7 @@ class QubitDavidsonTest(unittest.TestCase):
         Also the number of starting vectors is smaller than n_lowest."""
         dimension = 2 ** self.n_qubits
         qubit_operator = QubitOperator('Z0 Z1 X2') * self.coefficient
-        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+        davidson = QubitDavidson(qubit_operator, self.n_qubits, processes=None)
 
         n_lowest = 6
         numpy.random.seed(dimension)
@@ -325,7 +325,7 @@ class QubitDavidsonTest(unittest.TestCase):
         """Test for get_lowest_n() for one term only within 10 iterations."""
         dimension = 2 ** self.n_qubits
         qubit_operator = QubitOperator('X0 Y1 Z3') * self.coefficient
-        davidson = QubitDavidson(qubit_operator, self.n_qubits)
+        davidson = QubitDavidson(qubit_operator, self.n_qubits, processes=None)
 
         n_lowest = 6
         # Guess vectors have both real and imaginary parts.

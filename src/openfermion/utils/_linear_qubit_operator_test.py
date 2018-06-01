@@ -19,9 +19,10 @@ import scipy.sparse.linalg
 
 from openfermion.ops import QubitOperator
 from openfermion.utils._linear_qubit_operator import (
-    ParallelLinearQubitOperator,
-    LinearQubitOperatorOptions,
     LinearQubitOperator,
+    LinearQubitOperatorOptions,
+    ParallelLinearQubitOperator,
+    generate_linear_qubit_operator,
 )
 from openfermion.utils._sparse_tools import qubit_operator_sparse
 
@@ -56,16 +57,15 @@ class LinearQubitOperatorTest(unittest.TestCase):
 
     def test_init(self):
         """Tests __init__()."""
-        self.qubit_operator = QubitOperator('Z2')
-        self.n_qubits = 3
-        self.linear_operator = LinearQubitOperator(self.qubit_operator)
+        qubit_operator = QubitOperator('Z2')
+        n_qubits = 3
+        linear_operator = LinearQubitOperator(qubit_operator)
 
-        self.assertEqual(self.linear_operator.qubit_operator,
-                         self.qubit_operator)
-        self.assertEqual(self.linear_operator.n_qubits, self.n_qubits)
+        self.assertEqual(linear_operator.qubit_operator, qubit_operator)
+        self.assertEqual(linear_operator.n_qubits, n_qubits)
 
         # Checks type.
-        self.assertTrue(isinstance(self.linear_operator,
+        self.assertTrue(isinstance(linear_operator,
                                    scipy.sparse.linalg.LinearOperator))
 
     def test_matvec_wrong_n(self):
@@ -76,7 +76,7 @@ class LinearQubitOperatorTest(unittest.TestCase):
     def test_matvec_wrong_vec_length(self):
         """Testing with wrong vector length."""
         with self.assertRaises(ValueError):
-            LinearQubitOperator(QubitOperator('X3')) * numpy.zeros(4)
+            _ = LinearQubitOperator(QubitOperator('X3')) * numpy.zeros(4)
 
     def test_matvec_0(self):
         """Testing with zero term."""
@@ -89,6 +89,7 @@ class LinearQubitOperatorTest(unittest.TestCase):
             LinearQubitOperator(qubit_operator, 3) * vec, matvec_expected))
 
     def test_matvec_x(self):
+        """Testing product with X."""
         vec = numpy.array([1, 2, 3, 4])
         matvec_expected = numpy.array([2, 1, 4, 3])
 
@@ -97,6 +98,7 @@ class LinearQubitOperatorTest(unittest.TestCase):
             matvec_expected))
 
     def test_matvec_y(self):
+        """Testing product with Y."""
         vec = numpy.array([1, 2, 3, 4], dtype=complex)
         matvec_expected = 1.0j * numpy.array([-2, 1, -4, 3], dtype=complex)
 
@@ -105,6 +107,7 @@ class LinearQubitOperatorTest(unittest.TestCase):
             matvec_expected))
 
     def test_matvec_z(self):
+        """Testing product with Z."""
         vec = numpy.array([1, 2, 3, 4])
         matvec_expected = numpy.array([1, 2, -3, -4])
 
@@ -113,6 +116,7 @@ class LinearQubitOperatorTest(unittest.TestCase):
             matvec_expected))
 
     def test_matvec_z3(self):
+        """Testing product with Z^n."""
         vec = numpy.array(
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
         matvec_expected = numpy.array(
@@ -206,3 +210,28 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
 
         self.assertTrue(numpy.allclose(self.linear_operator * self.vec,
                                        self.expected_matvec))
+
+
+class UtilityFunctionTest(unittest.TestCase):
+    """Tests for utility functions."""
+
+    def test_generate_linear_operator(self):
+        """Tests generate_linear_qubit_operator()."""
+        qubit_operator = (QubitOperator('Z3') + QubitOperator('X1') +
+                          QubitOperator('Y0'))
+        n_qubits = 6
+
+        # Checks types.
+        operator = generate_linear_qubit_operator(qubit_operator, n_qubits)
+        self.assertTrue(isinstance(operator, LinearQubitOperator))
+        self.assertFalse(isinstance(operator, ParallelLinearQubitOperator))
+
+        operator_again = generate_linear_qubit_operator(
+            qubit_operator, n_qubits, options=LinearQubitOperatorOptions(2))
+        self.assertTrue(isinstance(operator_again, ParallelLinearQubitOperator))
+        self.assertFalse(isinstance(operator_again, LinearQubitOperator))
+
+        # Checks operators are equivalent.
+        numpy.random.seed(n_qubits)
+        vec = numpy.random.rand(2 ** n_qubits, 1)
+        self.assertTrue(numpy.allclose(operator * vec, operator_again * vec))
