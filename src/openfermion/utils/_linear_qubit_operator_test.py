@@ -22,6 +22,7 @@ from openfermion.utils._linear_qubit_operator import (
     LinearQubitOperator,
     LinearQubitOperatorOptions,
     ParallelLinearQubitOperator,
+    apply_operator,
     generate_linear_qubit_operator,
 )
 from openfermion.utils._sparse_tools import qubit_operator_sparse
@@ -225,6 +226,15 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
 
 class UtilityFunctionTest(unittest.TestCase):
     """Tests for utility functions."""
+
+    def test_apply_operator(self):
+        """Tests apply_operator() since it's executed on other processors."""
+        vec = numpy.array([1, 2, 3, 4])
+        matvec_expected = numpy.array([2, 1, 4, 3])
+
+        self.assertTrue(numpy.allclose(
+            apply_operator((LinearQubitOperator(QubitOperator('X1')), vec)),
+            matvec_expected))
 
     def test_generate_linear_operator(self):
         """Tests generate_linear_qubit_operator()."""
