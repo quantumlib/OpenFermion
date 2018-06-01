@@ -18,9 +18,13 @@ from openfermion.ops import (FermionOperator,
                              InteractionOperator,
                              QubitOperator)
 from openfermion.transforms import get_fermion_operator, jordan_wigner
-from openfermion.utils import (jordan_wigner_sparse,
-                               normal_ordered,
-                               get_linear_qubit_operator)
+from openfermion.utils import (
+    jordan_wigner_sparse,
+    normal_ordered,
+    LinearQubitOperator,
+    LinearQubitOperatorOptions,
+    ParallelLinearQubitOperator,
+)
 from openfermion.utils._testing_utils import random_interaction_operator
 
 
@@ -130,13 +134,14 @@ def benchmark_jordan_wigner_sparse(n_qubits):
     return runtime
 
 
-def benchmark_get_linear_qubit_operator(n_qubits, n_terms):
+def benchmark_linear_qubit_operator(n_qubits, n_terms, processes=None):
     """Test speed with getting a linear operator from a Qubit Operator.
 
     Args:
         n_qubits: The number of qubits, implying the dimension of the operator
             is 2 ** n_qubits.
         n_terms: The number of terms in a qubit operator.
+        processes: The number of processors to use.
 
     Returns:
         runtime_operator: The time it takes to get the linear operator.
@@ -160,9 +165,15 @@ def benchmark_get_linear_qubit_operator(n_qubits, n_terms):
         if tuples:
             qubit_operator += QubitOperator(tuples, 1.00)
 
-    # Gets an instance of LinearOperator.
+    # Gets an instance of (Parallel)LinearQubitOperator.
     start = time.time()
-    linear_operator = get_linear_qubit_operator(qubit_operator)
+    if processes is None:
+        linear_operator = LinearQubitOperator(qubit_operator, n_qubits)
+    else:
+        linear_operator = ParallelLinearQubitOperator(
+            qubit_operator, n_qubits,
+            LinearQubitOperatorOptions(processes=processes))
+
     end = time.time()
     runtime_operator = end - start
 
@@ -203,17 +214,21 @@ def run_jordan_wigner_sparse():
     print('Construction of SparseOperator took {} seconds.\n'.format(
         runtime))
 
-def run_get_linear_qubit_operator():
-    """Run get_linear_qubit_operator benchmark."""
+def run_linear_qubit_operator():
+    """Run linear_qubit_operator benchmark."""
     n_qubits = 20
     n_terms = 10
+    processes = 10
 
-    print('Starting test on get_linear_qubit_operator().')
-    runtime_operator, runtime_matvec = benchmark_get_linear_qubit_operator(
-        n_qubits, n_terms)
-    print('Linear Operator took {} seconds. '
-          'Matrix multiplication took {} seconds.\n'.format(
-              runtime_operator, runtime_matvec))
+    print('Starting test on linear_qubit_operator().')
+    _, runtime_sequential = benchmark_linear_qubit_operator(n_qubits, n_terms)
+    _, runtime_parallel = benchmark_linear_qubit_operator(n_qubits, n_terms,
+                                                          processes)
+    print('LinearQubitOperator took {} seconds, while '
+          'ParallelQubitOperator took {} seconds with '
+          '(n_qubits, n_terms, processes) = ({}, {}, {})\n'.format(
+              runtime_sequential, runtime_parallel,
+              n_qubits, n_terms, processes))
 
 
 # Run benchmarks.
@@ -225,4 +240,4 @@ if __name__ == '__main__':
     run_molecular_operator_jordan_wigner()
     run_fermion_math_and_normal_order()
     run_jordan_wigner_sparse()
-    run_get_linear_qubit_operator()
+    run_linear_qubit_operator()
