@@ -74,6 +74,9 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
         self.assertEqual(pool, self.options.pool)
 
         # Called twice, should be idempotent.
+        self.assertEqual(self.options.get_pool(2), self.options.pool)
+
+        # Same pool even with a different number of processes.
         self.assertEqual(self.options.get_pool(1), self.options.pool)
 
 
