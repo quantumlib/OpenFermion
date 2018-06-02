@@ -14,6 +14,7 @@
 from __future__ import absolute_import
 
 import functools
+import logging
 import multiprocessing
 
 import numpy
@@ -28,20 +29,30 @@ from openfermion.utils import count_qubits
 class LinearQubitOperatorOptions(object):
     """Options for LinearQubitOperator."""
 
-    def __init__(self, processes=10):
+    def __init__(self, processes=10, pool=None):
         """
         Args:
             processes(int): Number of processors to use.
+            pool(multiprocessing.Pool): A pool of workers.
         """
         if processes <= 0:
             raise ValueError('Invalid number of processors specified {} <= 0'
                              .format(processes))
 
         self.processes = min(processes, multiprocessing.cpu_count())
+        self.pool = pool
 
     def get_processes(self, num):
         """Number of real processes to use."""
         return max(min(num, self.processes), 1)
+
+    def get_pool(self, num=None):
+        """Gets a pool of workers to do some parallel work."""
+        if self.pool is None:
+            processes = num or self.get_processes(num)
+            logging.info("Calling multiprocessing.Pool(%d)", processes)
+            self.pool = multiprocessing.Pool(processes)
+        return self.pool
 
 
 class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
@@ -157,14 +168,15 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         Returns:
           retvec(numpy.ndarray): same to the shape of input vector of x.
         """
-        # return self.linear_operator._matvec(x)
-        pool = multiprocessing.Pool(self.options.get_processes(
-            len(self.linear_operators)))
-        vecs = pool.map(apply_operator,
-                        [(operator, x) for operator in self.linear_operators])
-
-        if not vecs:
+        if not self.linear_operators:
             return numpy.zeros(x.shape)
+
+        pool = self.options.get_pool(len(self.linear_operators))
+        vecs = pool.imap_unordered(apply_operator,
+                                   [(operator, x)
+                                    for operator in self.linear_operators])
+        pool.close()
+        pool.join()
         return functools.reduce(numpy.add, vecs)
 
 

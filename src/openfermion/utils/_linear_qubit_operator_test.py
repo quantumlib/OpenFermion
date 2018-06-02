@@ -14,6 +14,7 @@
 from __future__ import absolute_import, division
 
 import unittest
+
 import numpy
 import scipy.sparse.linalg
 
@@ -38,6 +39,7 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
     def test_init(self):
         """Tests __init__()."""
         self.assertEqual(self.options.processes, self.processes)
+        self.assertIsNone(self.options.pool)
 
     def test_get_processes_small(self):
         """Tests get_processes() with a small num."""
@@ -52,6 +54,28 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
         """Tests with invalid processes since it's not positive."""
         with self.assertRaises(ValueError):
             LinearQubitOperatorOptions(0)
+
+    def test_get_pool(self):
+        """Tests get_pool() without a num."""
+        self.assertIsNone(self.options.pool)
+
+        pool = self.options.get_pool()
+        self.assertIsNotNone(pool)
+        self.assertIsNotNone(self.options.pool)
+        self.assertEqual(pool, self.options.pool)
+
+    def test_get_pool_with_num(self):
+        """Tests get_processes() with a num."""
+        self.assertIsNone(self.options.pool)
+
+        pool = self.options.get_pool(2)
+        self.assertIsNotNone(pool)
+        self.assertIsNotNone(self.options.pool)
+        self.assertEqual(pool, self.options.pool)
+
+        # Called twice, should be idempotent.
+        self.assertEqual(self.options.get_pool(1), self.options.pool)
+
 
 class LinearQubitOperatorTest(unittest.TestCase):
     """Tests for LinearQubitOperator class."""
@@ -190,6 +214,7 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         self.assertEqual(self.linear_operator.qubit_operator, self.qubit_operator)
         self.assertEqual(self.linear_operator.n_qubits, self.n_qubits)
         self.assertEqual(self.linear_operator.options.processes, 10)
+        self.assertIsNone(self.linear_operator.options.pool)
 
         # Generated variables.
         self.assertEqual(len(self.linear_operator.qubit_operator_groups), 3)
@@ -209,9 +234,10 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
     def test_matvec(self):
         """Tests _matvec() for matrix multiplication with a vector."""
 
+        self.assertIsNone(self.linear_operator.options.pool)
         self.assertTrue(numpy.allclose(self.linear_operator * self.vec,
                                        self.expected_matvec))
-
+        self.assertIsNotNone(self.linear_operator.options.pool)
 
     def test_matvec_0(self):
         """Testing with zero term."""
@@ -223,6 +249,8 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(
             ParallelLinearQubitOperator(qubit_operator, 3) * vec,
             matvec_expected))
+        self.assertIsNone(self.linear_operator.options.pool)
+
 
 class UtilityFunctionTest(unittest.TestCase):
     """Tests for utility functions."""
