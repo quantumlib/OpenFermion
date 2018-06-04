@@ -1,0 +1,19 @@
+# Hydrogen Fluoride (HF) diatomic calculations at different
+# bond distances are contrained in this file.
+# Calculations in these files contain FCI, MP2,
+# HF, CISD, CCSD and all integerals.
+H1-F1_sto-3g_singlet_0.2.hdf5
+H1-F1_sto-3g_singlet_0.4.hdf5
+H1-F1_sto-3g_singlet_0.6.hdf5
+H1-F1_sto-3g_singlet_0.8.hdf5
+H1-F1_sto-3g_singlet_1.0.hdf5
+H1-F1_sto-3g_singlet_1.2.hdf5
+H1-F1_sto-3g_singlet_1.4.hdf5
+H1-F1_sto-3g_singlet_1.6.hdf5
+H1-F1_sto-3g_singlet_1.8.hdf5
+H1-F1_sto-3g_singlet_2.0.hdf5
+H1-F1_sto-3g_singlet_2.2.hdf5
+H1-F1_sto-3g_singlet_2.4.hdf5
+H1-F1_sto-3g_singlet_2.6.hdf5
+H1-F1_sto-3g_singlet_2.8.hdf5
+H1-F1_sto-3g_singlet_3.0.hdf5

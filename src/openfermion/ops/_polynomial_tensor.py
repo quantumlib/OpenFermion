@@ -9,80 +9,87 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """Base class for representating operators that are polynomials in the
 fermionic ladder operators."""
-from __future__ import absolute_import
+from __future__ import division
 
 import copy
 import itertools
 import numpy
 
-from openfermion.config import *
+from openfermion.config import EQ_TOLERANCE
 
 
 class PolynomialTensorError(Exception):
     pass
 
 
-def one_body_basis_change(one_body_tensor, rotation_matrix):
-    """Change the basis of an 1-body interaction tensor such as the 1-RDM.
+def general_basis_change(general_tensor, rotation_matrix, key):
+    """Change the basis of an general interaction tensor.
 
-    M' = R^T.M.R where R is the rotation matrix, M is the 1-body tensor
-    and M' is the transformed 1-body tensor.
+    M'^{p_1p_2...p_n} = R^{p_1}_{a_1} R^{p_2}_{a_2} ...
+                        R^{p_n}_{a_n} M^{a_1a_2...a_n} R^{p_n}_{a_n}^T ...
+                        R^{p_2}_{a_2}^T R_{p_1}_{a_1}^T
+
+    where R is the rotation matrix, M is the general tensor, M' is the
+    transformed general tensor, and a_k and p_k are indices. The formula uses
+    the Einstein notation (implicit sum over repeated indices).
+
+    In case R is complex, the k-th R in the above formula need to be conjugated
+    if key has a 1 in the k-th place (meaning that the corresponding operator
+    is a creation operator).
 
     Args:
-        one_body_tensor: A square numpy array or matrix containing information
-            about a 1-body interaction tensor such as the 1-RDM.
+        general_tensor: A square numpy array or matrix containing information
+            about a general interaction tensor.
         rotation_matrix: A square numpy array or matrix having dimensions of
-            n_qubits by n_qubits. Assumed to be real and invertible.
+            n_qubits by n_qubits. Assumed to be unitary.
+        key: A tuple indicating the type of general_tensor. Assumed to be
+            non-empty. For example, a tensor storing coefficients of
+            :math:`a^\dagger_p a_q` would have a key of (1, 0) whereas a tensor
+            storing coefficients of :math:`a^\dagger_p a_q a_r a^\dagger_s`
+            would have a key of (1, 0, 0, 1).
 
     Returns:
-        transformed_one_body_tensor: one_body_tensor in the rotated basis.
+        transformed_general_tensor: general_tensor in the rotated basis.
     """
     # If operator acts on spin degrees of freedom, enlarge rotation matrix.
     n_orbitals = rotation_matrix.shape[0]
-    if one_body_tensor.shape[0] == 2 * n_orbitals:
+    if general_tensor.shape[0] == 2 * n_orbitals:
         rotation_matrix = numpy.kron(rotation_matrix, numpy.eye(2))
 
-    # Effect transformation and return.
-    transformed_one_body_tensor = numpy.einsum('qp, qr, rs',
-                                               rotation_matrix,
-                                               one_body_tensor,
-                                               rotation_matrix)
-    return transformed_one_body_tensor
+    order = len(key)
+    if order > 26:
+        raise ValueError('Order exceeds maximum order supported (26).')
 
+    # Do the basis change through a single call of numpy.einsum. For example,
+    # for the (1, 1, 0, 0) tensor, the call is:
+    #     numpy.einsum('abcd,aA,bB,cC,dD',
+    #                  general_tensor,
+    #                  rotation_matrix.conj(),
+    #                  rotation_matrix.conj(),
+    #                  rotation_matrix,
+    #                  rotation_matrix)
 
-def two_body_basis_change(two_body_tensor, rotation_matrix):
-    """Change the basis of 2-body interaction tensor such as 2-RDM.
+    # The 'abcd' part of the subscripts
+    subscripts_first = ''.join(chr(ord('a') + i) for i in range(order))
 
-    Procedure we use is an N^5 transformation which can be expressed as
-    (pq|rs) = \sum_a R^p_a
-    (\sum_b R^q_b (\sum_c R^r_c (\sum_d R^s_d (ab|cd)))).
+    # The 'Aa,Bb,Cc,Dd' part of the subscripts
+    subscripts_rest = ','.join(chr(ord('a') + i) +
+                               chr(ord('A') + i) for i in range(order))
 
-    Args:
-        two_body_tensor: a square rank 4 interaction tensor.
-        rotation_matrix: A square numpy array or matrix having dimensions of
-            n_qubits by n_qubits. Assumed to be real and invertible.
+    subscripts = subscripts_first + ',' + subscripts_rest
 
-    Returns:
-        transformed_two_body_tensor: two_body_tensor matrix in rotated basis.
-    """
-    # If operator acts on spin degrees of freedom, enlarge rotation matrix.
-    n_orbitals = rotation_matrix.shape[0]
-    if two_body_tensor.shape[0] == 2 * n_orbitals:
-        rotation_matrix = numpy.kron(rotation_matrix, numpy.eye(2))
+    # The list of rotation matrices, conjugated as necessary.
+    rotation_matrices = [rotation_matrix.conj() if x else
+                         rotation_matrix for x in key]
 
-    # Effect transformation and return.
-    two_body_tensor = numpy.einsum('prsq', two_body_tensor)
-    first_sum = numpy.einsum('ds, abcd', rotation_matrix, two_body_tensor)
-    second_sum = numpy.einsum('cr, abcs', rotation_matrix, first_sum)
-    third_sum = numpy.einsum('bq, abrs', rotation_matrix, second_sum)
-    transformed_two_body_tensor = numpy.einsum('ap, aqrs',
-                                               rotation_matrix, third_sum)
-    transformed_two_body_tensor = numpy.einsum('psqr',
-                                               transformed_two_body_tensor)
-    return transformed_two_body_tensor
+    # "optimize = True" does greedy optimization, which will be enough here.
+    transformed_general_tensor = numpy.einsum(subscripts,
+                                              general_tensor,
+                                              *rotation_matrices,
+                                              optimize=True)
+    return transformed_general_tensor
 
 
 class PolynomialTensor(object):
@@ -103,12 +110,14 @@ class PolynomialTensor(object):
         n_body_tensors(dict): A dictionary storing the tensors describing
             n-body interactions. The keys are tuples that indicate the
             type of tensor. For instance, n_body_tensors[(1, 0)] would
-            be an (n_qubits x n_qubits x n_qubits x n_qubits) numpy array,
+            be an (n_qubits x n_qubits) numpy array,
             and it could represent the coefficients of terms of the form
             a^\dagger_i a_j, whereas n_body_tensors[(0, 1)] would be
             an array of the same shape, but instead representing terms
             of the form a_i a^\dagger_j.
     """
+
+    __hash__ = None
 
     def __init__(self, n_body_tensors):
         """Initialize the PolynomialTensor class.
@@ -129,7 +138,7 @@ class PolynomialTensor(object):
     @property
     def constant(self):
         """Get the value of the constant term."""
-        return self.n_body_tensors[()]
+        return self.n_body_tensors.get((), 0.)
 
     @constant.setter
     def constant(self, value):
@@ -165,22 +174,31 @@ class PolynomialTensor(object):
             index = tuple([operator[0] for operator in args])
             self.n_body_tensors[key][index] = value
 
-    def __eq__(self, other_operator):
-        if self.n_qubits != other_operator.n_qubits:
+    def __eq__(self, other):
+        if self.n_qubits != other.n_qubits:
             return False
-        if self.n_body_tensors.keys() != other_operator.n_body_tensors.keys():
-            return False
+
         diff = 0.
-        for key in self.n_body_tensors:
-            self_tensor = self.n_body_tensors[key]
-            other_tensor = other_operator.n_body_tensors[key]
-            discrepancy = numpy.amax(
-                              numpy.absolute(self_tensor - other_tensor))
+        self_keys = set(self.n_body_tensors.keys())
+        other_keys = set(other.n_body_tensors.keys())
+
+        for key in (self_keys | other_keys):
+            self_tensor = self.n_body_tensors.get(key)
+            other_tensor = other.n_body_tensors.get(key)
+
+            if self_tensor is not None and other_tensor is not None:
+                discrepancy = numpy.amax(
+                    numpy.absolute(self_tensor - other_tensor))
+            else:
+                tensor = self_tensor if other_tensor is None else other_tensor
+                discrepancy = numpy.amax(numpy.absolute(tensor))
+
             diff = max(diff, discrepancy)
+
         return diff < EQ_TOLERANCE
 
-    def __neq__(self, other_operator):
-        return not (self == other_operator)
+    def __ne__(self, other):
+        return not (self == other)
 
     def __iadd__(self, addend):
         if not issubclass(type(addend), PolynomialTensor):
@@ -189,12 +207,13 @@ class PolynomialTensor(object):
         if self.n_qubits != addend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
-        if self.n_body_tensors.keys() != addend.n_body_tensors.keys():
-            raise TypeError('Invalid tensor type.')
+        for key in addend.n_body_tensors:
+            if key in self.n_body_tensors:
+                self.n_body_tensors[key] = numpy.add(
+                    self.n_body_tensors[key], addend.n_body_tensors[key])
+            else:
+                self.n_body_tensors[key] = addend.n_body_tensors[key]
 
-        for key in self.n_body_tensors:
-            self.n_body_tensors[key] = numpy.add(self.n_body_tensors[key],
-                                                 addend.n_body_tensors[key])
         return self
 
     def __add__(self, addend):
@@ -215,12 +234,13 @@ class PolynomialTensor(object):
         if self.n_qubits != subtrahend.n_qubits:
             raise TypeError('Invalid tensor shape.')
 
-        if self.n_body_tensors.keys() != subtrahend.n_body_tensors.keys():
-            raise TypeError('Invalid tensor type.')
-
-        for key in self.n_body_tensors:
-            self.n_body_tensors[key] = numpy.subtract(
+        for key in subtrahend.n_body_tensors:
+            if key in self.n_body_tensors:
+                self.n_body_tensors[key] = numpy.subtract(
                     self.n_body_tensors[key], subtrahend.n_body_tensors[key])
+            else:
+                self.n_body_tensors[key] = subtrahend.n_body_tensors[key]
+
         return self
 
     def __sub__(self, subtrahend):
@@ -229,24 +249,55 @@ class PolynomialTensor(object):
         return r
 
     def __imul__(self, multiplier):
-        if not issubclass(type(multiplier), PolynomialTensor):
+        if isinstance(multiplier, (int, float, complex)):
+            for key in self.n_body_tensors:
+                self.n_body_tensors[key] *= multiplier
+
+        elif isinstance(multiplier, PolynomialTensor):
+            if self.n_qubits != multiplier.n_qubits:
+                raise TypeError('Invalid tensor shape.')
+            for key in self.n_body_tensors:
+                if key in multiplier.n_body_tensors:
+                    self.n_body_tensors[key] = numpy.multiply(
+                            self.n_body_tensors[key],
+                            multiplier.n_body_tensors[key])
+                elif key == ():
+                    self.constant = 0.
+                else:
+                    self.n_body_tensors[key] = numpy.zeros(
+                            self.n_body_tensors[key].shape)
+        else:
             raise TypeError('Invalid type.')
 
-        if self.n_qubits != multiplier.n_qubits:
-            raise TypeError('Invalid tensor shape.')
-
-        if self.n_body_tensors.keys() != multiplier.n_body_tensors.keys():
-            raise TypeError('Invalid tensor type.')
-
-        for key in self.n_body_tensors:
-            self.n_body_tensors[key] = numpy.multiply(
-                    self.n_body_tensors[key], multiplier.n_body_tensors[key])
         return self
 
     def __mul__(self, multiplier):
         product = copy.deepcopy(self)
         product *= multiplier
         return product
+
+    def __rmul__(self, multiplier):
+        product = copy.deepcopy(self)
+        product *= multiplier
+        return product
+
+    def __itruediv__(self, dividend):
+        if isinstance(dividend, (int, float, complex)):
+            for key in self.n_body_tensors:
+                self.n_body_tensors[key] /= dividend
+        else:
+            raise TypeError('Invalid type.')
+
+        return self
+
+    def __truediv__(self, dividend):
+        quotient = copy.deepcopy(self)
+        quotient /= dividend
+        return quotient
+
+    def __div__(self, divisor):
+        """ For compatibility with Python 2. """
+        return self.__truediv__(divisor)
 
     def __iter__(self):
         """Iterate over non-zero elements of PolynomialTensor."""
@@ -286,12 +337,12 @@ class PolynomialTensor(object):
                 dimensions of n_qubits by n_qubits. Assumed to be real and
                 invertible.
         """
-        if (1, 0) in self.n_body_tensors:
-            self.n_body_tensors[1, 0] = one_body_basis_change(
-                self.n_body_tensors[1, 0], rotation_matrix)
-        if (1, 1, 0, 0) in self.n_body_tensors:
-            self.n_body_tensors[1, 1, 0, 0] = two_body_basis_change(
-                self.n_body_tensors[1, 1, 0, 0], rotation_matrix)
+        for key in self.n_body_tensors:
+            if key == ():
+                pass
+            else:
+                self.n_body_tensors[key] = general_basis_change(
+                    self.n_body_tensors[key], rotation_matrix, key)
 
     def __repr__(self):
         return str(self)

@@ -68,7 +68,8 @@ def bravyi_kitaev_fast_interaction_op(iop):
     For the sake of brevity the reader is encouraged to look up the
     expressions of other terms from the code below. The variables for edge
     operators are chosen according to the nomenclature defined above
-    (B_i and A_ij).
+    (B_i and A_ij). A detailed description of these operators and the terms 
+    of the electronic Hamiltonian are provided in (arXiv 1712.00446).
 
     Args:
         iop (Interaction Operator):
@@ -87,7 +88,6 @@ def bravyi_kitaev_fast_interaction_op(iop):
     # Loop through all indices.
     for p in range(n_qubits):
         for q in range(n_qubits):
-
             # Handle one-body terms.
             coefficient = complex(iop[(p, 1), (q, 0)])
             if coefficient and p >= q:
@@ -108,8 +108,16 @@ def bravyi_kitaev_fast_interaction_op(iop):
                         if len(set([p, q, r, s])) == 4:
                             if min(r, s) < min(p, q):
                                 continue
+                        # Handle case of 3 unique indices
+                        elif len(set([p, q, r, s])) == 3:
+                            transformed_term = two_body(edge_matrix_indices,
+                                                        p, q, r, s)
+                            transformed_term *= .5 * coefficient
+                            qubit_operator += transformed_term
+                            continue
                         elif p != r and q < p:
                                 continue
+
 
                     # Handle the two-body terms.
                     transformed_term = two_body(edge_matrix_indices,
@@ -192,18 +200,6 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
                             edge_matrix[b, a] = bool(complex(
                                 iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
 
-                    # Handle case of two unique indices.
-                    elif len(set([p, q, r, s])) == 2:
-                        if p == s:
-                            a, b = sorted([p, q])
-                            edge_matrix[b, a] = bool(complex(
-                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
-
-                        else:
-                            a, b = sorted([p, q])
-                            edge_matrix[b, a] = bool(complex(
-                                iop[(p, 1), (q, 1), (r, 0), (s, 0)]))
-
     return edge_matrix.transpose()
 
 
@@ -227,7 +223,7 @@ def one_body(edge_matrix_indices, p, q):
         B_a = edge_operator_b(edge_matrix_indices, a)
         B_b = edge_operator_b(edge_matrix_indices, b)
         A_ab = edge_operator_aij(edge_matrix_indices, a, b)
-        qubit_operator += (-1j/2.) * (A_ab * B_b + B_a * A_ab)
+        qubit_operator += -1j / 2. * (A_ab * B_b + B_a * A_ab)
 
     # Handle diagonal terms.
     else:
@@ -261,63 +257,60 @@ def two_body(edge_matrix_indices, p, q, r, s):
         B_s = edge_operator_b(edge_matrix_indices, s)
         A_pq = edge_operator_aij(edge_matrix_indices, p, q)
         A_rs = edge_operator_aij(edge_matrix_indices, r, s)
-        qubit_operator += (1/8.)*A_pq*A_rs*(-1*QubitOperator(()) - B_p*B_q +
-                                            B_p*B_r + B_p*B_s + B_q*B_r +
-                                            B_q*B_s - B_r*B_s +
-                                            B_p*B_q*B_r*B_s)
+        qubit_operator += 1 / 8. * A_pq * A_rs * (
+            -QubitOperator(()) - B_p*B_q + B_p*B_r + B_p*B_s + B_q*B_r +
+            B_q*B_s - B_r*B_s + B_p*B_q*B_r*B_s)
         return qubit_operator
 
     # Handle case of three unique indices.
     elif len(set([p, q, r, s])) == 3:
-
         # Identify equal tensor factors.
         if p == r:
             B_p = edge_operator_b(edge_matrix_indices, p)
             B_q = edge_operator_b(edge_matrix_indices, q)
             B_s = edge_operator_b(edge_matrix_indices, s)
             A_qs = edge_operator_aij(edge_matrix_indices, q, s)
-            qubit_operator += (1j/2.)*(A_qs*B_s + B_q*A_qs)*(
-                                        QubitOperator(()) - B_p)/2.
+            qubit_operator += 1j * (A_qs*B_s + B_q*A_qs) * (
+                QubitOperator(()) - B_p) / 4.
 
         elif p == s:
             B_p = edge_operator_b(edge_matrix_indices, p)
             B_q = edge_operator_b(edge_matrix_indices, q)
             B_r = edge_operator_b(edge_matrix_indices, r)
             A_qr = edge_operator_aij(edge_matrix_indices, q, r)
-            qubit_operator += (-1j/2.)*(A_qr*B_r +
-                                        B_q*A_qr)*(QubitOperator(()) - B_p)/2.
+            qubit_operator += -1j * (A_qr*B_r + B_q*A_qr) * (
+                QubitOperator(()) - B_p) / 4.
 
         elif q == r:
             B_p = edge_operator_b(edge_matrix_indices, p)
             B_q = edge_operator_b(edge_matrix_indices, q)
             B_s = edge_operator_b(edge_matrix_indices, s)
             A_ps = edge_operator_aij(edge_matrix_indices, p, s)
-            qubit_operator += (-1j/2.)*(A_ps*B_s +
-                                        B_p*A_ps)*(QubitOperator(()) - B_q)/2.
+            qubit_operator += -1j * (A_ps*B_s + B_p*A_ps) * (
+                QubitOperator(()) - B_q) / 4.
 
         elif q == s:
             B_p = edge_operator_b(edge_matrix_indices, p)
             B_q = edge_operator_b(edge_matrix_indices, q)
             B_r = edge_operator_b(edge_matrix_indices, r)
             A_pr = edge_operator_aij(edge_matrix_indices, p, r)
-            qubit_operator += (1j/2.)*(A_pr*B_r +
-                                       B_p*A_pr)*(QubitOperator(()) - B_q)/2.
+            qubit_operator += 1j * (A_pr*B_r + B_p*A_pr)*(
+                QubitOperator(()) - B_q) / 4.
 
     # Handle case of two unique indices.
     elif len(set([p, q, r, s])) == 2:
-
         # Get coefficient.
         if p == s:
             B_p = edge_operator_b(edge_matrix_indices, p)
             B_q = edge_operator_b(edge_matrix_indices, q)
-            qubit_operator += (QubitOperator((), 1) -
-                               B_p)*(QubitOperator((), 1) - B_q)/4.
+            qubit_operator += (QubitOperator(()) - B_p) * (
+                QubitOperator(()) - B_q) / 4.
 
         else:
             B_p = edge_operator_b(edge_matrix_indices, p)
             B_q = edge_operator_b(edge_matrix_indices, q)
-            qubit_operator += -1*(QubitOperator((), 1) -
-                                  B_p)*(QubitOperator((), 1) - B_q)/4.
+            qubit_operator += -(QubitOperator(()) - B_p) * (
+                QubitOperator(()) - B_q) / 4.
 
     return qubit_operator
 
@@ -340,7 +333,7 @@ def edge_operator_b(edge_matrix_indices, i):
     operator = tuple()
     for d1 in qubit_position:
         operator += ((int(d1), 'Z'),)
-    B_i += QubitOperator(operator, 1)
+    B_i += QubitOperator(operator)
     return B_i
 
 
@@ -371,8 +364,8 @@ def edge_operator_aij(edge_matrix_indices, i, j):
     qubit_position_j = numpy.array(numpy.where(edge_matrix_indices == j))
     for edge_index in range(numpy.size(qubit_position_j[0, :])):
         if edge_matrix_indices[int(not(qubit_position_j[0, edge_index]))][
-                              qubit_position_j[1, edge_index]] < i:
-            operator += ((int(qubit_position_j[1, edge_index]), 'Z'),)
+                qubit_position_j[1, edge_index]] < i:
+                    operator += ((int(qubit_position_j[1, edge_index]), 'Z'),)
     a_ij += QubitOperator(operator, 1)
     if j < i:
         a_ij = -1*a_ij

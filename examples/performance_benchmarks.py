@@ -16,61 +16,12 @@ import time
 
 from openfermion.ops import (FermionOperator,
                              InteractionOperator,
-                             normal_ordered)
+                             QubitOperator)
 from openfermion.transforms import get_fermion_operator, jordan_wigner
-from openfermion.utils import jordan_wigner_sparse
-
-
-def artificial_molecular_operator(n_qubits):
-    """Make an artificial random InteractionOperator for testing purposes."""
-
-    # Initialize.
-    constant = numpy.random.randn()
-    one_body_coefficients = numpy.zeros((n_qubits, n_qubits), float)
-    two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
-                                         n_qubits, n_qubits), float)
-
-    # Randomly generate the one-body and two-body integrals.
-    for p in range(n_qubits):
-        for q in range(n_qubits):
-
-            # One-body terms.
-            if (p <= p) and (p % 2 == q % 2):
-                one_body_coefficients[p, q] = numpy.random.randn()
-                one_body_coefficients[q, p] = one_body_coefficients[p, q]
-
-            # Keep looping.
-            for r in range(n_qubits):
-                for s in range(n_qubits):
-
-                    # Skip zero terms.
-                    if (p == q) or (r == s):
-                        continue
-
-                    # Identify and skip one of the complex conjugates.
-                    if [p, q, r, s] != [s, r, q, p]:
-                        unique_indices = len(set([p, q, r, s]))
-
-                        # srqp srpq sprq spqr sqpr sqrp
-                        # rsqp rspq rpsq rpqs rqps rqsp.
-                        if unique_indices == 4:
-                            if min(r, s) <= min(p, q):
-                                continue
-
-                        # qqpp.
-                        elif unique_indices == 2:
-                            if q < p:
-                                continue
-
-                    # Add the two-body coefficients.
-                    two_body_coefficients[p, q, r, s] = numpy.random.randn()
-                    two_body_coefficients[s, r, q, p] = two_body_coefficients[
-                        p, q, r, s]
-
-    # Build the molecular operator and return.
-    molecular_operator = InteractionOperator(
-        constant, one_body_coefficients, two_body_coefficients)
-    return molecular_operator
+from openfermion.utils import (jordan_wigner_sparse,
+                               normal_ordered,
+                               get_linear_qubit_operator)
+from openfermion.utils._testing_utils import random_interaction_operator
 
 
 def benchmark_molecular_operator_jordan_wigner(n_qubits):
@@ -85,7 +36,7 @@ def benchmark_molecular_operator_jordan_wigner(n_qubits):
         runtime: The number of seconds required to make the conversion.
     """
     # Get an instance of InteractionOperator.
-    molecular_operator = artificial_molecular_operator(n_qubits)
+    molecular_operator = random_interaction_operator(n_qubits)
 
     # Convert to a qubit operator.
     start = time.time()
@@ -169,7 +120,7 @@ def benchmark_jordan_wigner_sparse(n_qubits):
         runtime: The time in seconds that the benchmark took.
     """
     # Initialize a random FermionOperator.
-    molecular_operator = artificial_molecular_operator(n_qubits)
+    molecular_operator = random_interaction_operator(n_qubits)
     fermion_operator = get_fermion_operator(molecular_operator)
 
     # Map to SparseOperator class.
@@ -179,20 +130,62 @@ def benchmark_jordan_wigner_sparse(n_qubits):
     return runtime
 
 
-# Run benchmarks.
-if __name__ == '__main__':
+def benchmark_get_linear_qubit_operator(n_qubits, n_terms):
+    """Test speed with getting a linear operator from a Qubit Operator.
 
-    # Seed random number generator.
-    numpy.random.seed(8)
+    Args:
+        n_qubits: The number of qubits, implying the dimension of the operator
+            is 2 ** n_qubits.
+        n_terms: The number of terms in a qubit operator.
 
-    # Run InteractionOperator.jordan_wigner_transform() benchmark.
+    Returns:
+        runtime_operator: The time it takes to get the linear operator.
+        runtime_matvec: The time it takes to perform matrix multiplication.
+    """
+    # Generates Qubit Operator with specified number of terms.
+    m = {
+        0: 'X',
+        1: 'Y',
+        2: 'Z',
+    }
+    qubit_operator = QubitOperator.zero()
+    for _ in xrange(n_terms):
+        tuples = []
+        for i in xrange(n_qubits):
+            op = numpy.random.randint(4)
+            # 3 is 'I', so just skip.
+            if op > 2:
+                continue
+            tuples.append((i, m[op]))
+        if tuples:
+            qubit_operator += QubitOperator(tuples, 1.00)
+
+    # Gets an instance of LinearOperator.
+    start = time.time()
+    linear_operator = get_linear_qubit_operator(qubit_operator)
+    end = time.time()
+    runtime_operator = end - start
+
+    vec = numpy.random.rand(2 ** n_qubits)
+    # Performs matrix multiplication.
+    start = time.time()
+    matvec = linear_operator * vec
+    end = time.time()
+    runtime_matvec = end - start
+    return runtime_operator, runtime_matvec
+
+
+# Sets up each benchmark run.
+def run_molecular_operator_jordan_wigner():
+    """Run InteractionOperator.jordan_wigner_transform() benchmark."""
     n_qubits = 18
     print('Starting test on InteractionOperator.jordan_wigner_transform()')
     runtime = benchmark_molecular_operator_jordan_wigner(n_qubits)
     print('InteractionOperator.jordan_wigner_transform() ' +
           'takes {} seconds on {} qubits.\n'.format(runtime, n_qubits))
 
-    # Run benchmark on FermionOperator math and normal-ordering.
+def run_fermion_math_and_normal_order():
+    """Run benchmark on FermionOperator math and normal-ordering."""
     n_qubits = 20
     term_length = 10
     power = 15
@@ -202,9 +195,34 @@ if __name__ == '__main__':
     print('Math took {} seconds. Normal ordering took {} seconds.\n'.format(
         runtime_math, runtime_normal))
 
-    # Run FermionOperator.jordan_wigner_sparse() benchmark.
+def run_jordan_wigner_sparse():
+    """Run FermionOperator.jordan_wigner_sparse() benchmark."""
     n_qubits = 10
     print('Starting test on FermionOperator.jordan_wigner_sparse().')
     runtime = benchmark_jordan_wigner_sparse(n_qubits)
-    print('Construction of SparseOperator took {} seconds.'.format(
+    print('Construction of SparseOperator took {} seconds.\n'.format(
         runtime))
+
+def run_get_linear_qubit_operator():
+    """Run get_linear_qubit_operator benchmark."""
+    n_qubits = 20
+    n_terms = 10
+
+    print('Starting test on get_linear_qubit_operator().')
+    runtime_operator, runtime_matvec = benchmark_get_linear_qubit_operator(
+        n_qubits, n_terms)
+    print('Linear Operator took {} seconds. '
+          'Matrix multiplication took {} seconds.\n'.format(
+              runtime_operator, runtime_matvec))
+
+
+# Run benchmarks.
+if __name__ == '__main__':
+
+    # Seed random number generator.
+    numpy.random.seed(8)
+
+    run_molecular_operator_jordan_wigner()
+    run_fermion_math_and_normal_order()
+    run_jordan_wigner_sparse()
+    run_get_linear_qubit_operator()

@@ -168,7 +168,7 @@ class HydrogenIntegrationTest(unittest.TestCase):
     def test_reverse_jordan_wigner(self):
         fermion_hamiltonian = reverse_jordan_wigner(self.qubit_hamiltonian)
         fermion_hamiltonian = normal_ordered(fermion_hamiltonian)
-        self.assertTrue(self.fermion_hamiltonian.isclose(fermion_hamiltonian))
+        self.assertTrue(self.fermion_hamiltonian == fermion_hamiltonian)
 
     def test_interaction_operator_mapping(self):
 
@@ -176,11 +176,11 @@ class HydrogenIntegrationTest(unittest.TestCase):
         molecular_hamiltonian = get_interaction_operator(
             self.fermion_hamiltonian)
         fermion_hamiltonian = get_fermion_operator(molecular_hamiltonian)
-        self.assertTrue(self.fermion_hamiltonian.isclose(fermion_hamiltonian))
+        self.assertTrue(self.fermion_hamiltonian == fermion_hamiltonian)
 
         # Make sure mapping of InteractionOperator to QubitOperator works.
         qubit_hamiltonian = jordan_wigner(self.molecular_hamiltonian)
-        self.assertTrue(self.qubit_hamiltonian.isclose(qubit_hamiltonian))
+        self.assertTrue(self.qubit_hamiltonian == qubit_hamiltonian)
 
     def test_rdm_numerically(self):
 

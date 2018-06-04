@@ -11,10 +11,9 @@
 #   limitations under the License.
 
 """Tests for interaction_operator.py."""
-from __future__ import absolute_import
+import unittest
 
 import numpy
-import unittest
 
 from openfermion.ops import InteractionOperator
 

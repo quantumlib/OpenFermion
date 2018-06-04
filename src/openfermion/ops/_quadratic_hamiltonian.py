@@ -9,16 +9,17 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
-"""Class and functions to store and manipulate Hamiltonians that are quadratic
-in the fermionic ladder operators."""
-from __future__ import absolute_import
-
+"""Hamiltonians that are quadratic in the fermionic ladder operators."""
 import numpy
 from scipy.linalg import schur
 
 from openfermion.config import EQ_TOLERANCE
-from openfermion.ops import FermionOperator, PolynomialTensor
+from openfermion.ops import PolynomialTensor
+from openfermion.ops._givens_rotations import (
+        fermionic_gaussian_decomposition,
+        givens_decomposition_square,
+        swap_columns,
+        swap_rows)
 
 
 class QuadraticHamiltonianError(Exception):
@@ -26,20 +27,20 @@ class QuadraticHamiltonianError(Exception):
 
 
 class QuadraticHamiltonian(PolynomialTensor):
-    """Class for storing Hamiltonians that are quadratic in the fermionic
+    r"""Class for storing Hamiltonians that are quadratic in the fermionic
     ladder operators. The operators stored in this class take the form
 
     .. math::
 
         \sum_{p, q} (M_{pq} - \mu \delta_{pq}) a^\dagger_p a_q
-        + \\frac12 \sum_{p, q}
-            (\\Delta_{pq} a^\dagger_p a^\dagger_q + \\text{h.c.})
-        + \\text{constant}
+        + \frac12 \sum_{p, q}
+            (\Delta_{pq} a^\dagger_p a^\dagger_q + \text{h.c.})
+        + \text{constant}
 
     where
 
         - :math:`M` is a Hermitian `n_qubits` x `n_qubits` matrix.
-        - :math:`\\Delta` is an antisymmetric `n_qubits` x `n_qubits` matrix.
+        - :math:`\Delta` is an antisymmetric `n_qubits` x `n_qubits` matrix.
         - :math:`\mu` is a real number representing the chemical potential.
         - :math:`\delta_{pq}` is the Kronecker delta symbol.
 
@@ -51,23 +52,24 @@ class QuadraticHamiltonian(PolynomialTensor):
         chemical_potential(float): The chemical potential :math:`\mu`.
     """
 
-    def __init__(self, constant, hermitian_part,
-                 antisymmetric_part=None, chemical_potential=0.):
-        """
+    def __init__(self, hermitian_part, antisymmetric_part=None,
+                 constant=0., chemical_potential=0.):
+        r"""
         Initialize the QuadraticHamiltonian class.
 
         Args:
-            constant(float): A constant term in the operator.
             hermitian_part(ndarray): The matrix :math:`M`, which represents the
                 coefficients of the particle-number-conserving terms.
                 This is an `n_qubits` x `n_qubits` numpy array of complex
                 numbers.
-            antisymmetric_part(ndarray): The matrix :math:`\\Delta`,
+            antisymmetric_part(ndarray): The matrix :math:`\Delta`,
                 which represents the coefficients of the
                 non-particle-number-conserving terms.
                 This is an `n_qubits` x `n_qubits` numpy array of complex
                 numbers.
-            chemical_potential(float): The chemical potential :math:`\mu`.
+            constant(float, optional): A constant term in the operator.
+            chemical_potential(float, optional): The chemical potential
+                :math:`\mu`.
         """
         n_qubits = hermitian_part.shape[0]
 
@@ -76,20 +78,17 @@ class QuadraticHamiltonian(PolynomialTensor):
             combined_hermitian_part = hermitian_part
         else:
             combined_hermitian_part = (
-                    hermitian_part -
-                    chemical_potential * numpy.eye(n_qubits))
+                hermitian_part - chemical_potential * numpy.eye(n_qubits))
 
         # Initialize the PolynomialTensor
         if antisymmetric_part is None:
             super(QuadraticHamiltonian, self).__init__(
-                    {(): constant,
-                     (1, 0): combined_hermitian_part})
+                {(): constant, (1, 0): combined_hermitian_part})
         else:
             super(QuadraticHamiltonian, self).__init__(
-                    {(): constant,
-                     (1, 0): combined_hermitian_part,
-                     (1, 1): .5 * antisymmetric_part,
-                     (0, 0): -.5 * antisymmetric_part.conj()})
+                {(): constant, (1, 0): combined_hermitian_part,
+                 (1, 1): 0.5 * antisymmetric_part,
+                 (0, 0): -0.5 * antisymmetric_part.conj()})
 
         # Add remaining attributes
         self.chemical_potential = chemical_potential
@@ -125,59 +124,69 @@ class QuadraticHamiltonian(PolynomialTensor):
                                       numpy.eye(self.n_qubits))
         self.chemical_potential += chemical_potential
 
-    def orbital_energies(self):
-        """Return the orbital energies.
+    def orbital_energies(self, non_negative=False):
+        r"""Return the orbital energies.
 
         Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
         of the form
 
         .. math::
 
-            \sum_{j} \\varepsilon_j a^\dagger_j a_j + \\text{constant}.
+            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
 
-        We call the :math:`\\varepsilon_j` the orbital energies.
+        We call the :math:`\varepsilon_j` the orbital energies.
         The eigenvalues of the Hamiltonian are sums of subsets of the
         orbital energies (up to the additive constant).
+
+        Args:
+            non_negative(bool): If True, always return a list of orbital
+                energies that are non-negative. This option is ignored if
+                the Hamiltonian does not conserve particle number, in which
+                case the returned orbital energies are always non-negative.
 
         Returns
         -------
         orbital_energies(ndarray)
-            A one-dimensional array containing the :math:`\\varepsilon_j`
+            A one-dimensional array containing the :math:`\varepsilon_j`
         constant(float)
             The constant
         """
-        if self.conserves_particle_number:
+        if self.conserves_particle_number and not non_negative:
             hermitian_matrix = self.combined_hermitian_part
-            orbital_energies, diagonalizing_unitary = numpy.linalg.eigh(
-                    hermitian_matrix)
+            orbital_energies, _ = numpy.linalg.eigh(
+                hermitian_matrix)
             constant = self.constant
         else:
             majorana_matrix, majorana_constant = self.majorana_form()
-            canonical, orthogonal = antisymmetric_canonical_form(
-                    majorana_matrix)
+            canonical, _ = antisymmetric_canonical_form(
+                majorana_matrix)
             orbital_energies = canonical[
-                    range(self.n_qubits),
-                    range(self.n_qubits, 2 * self.n_qubits)]
-            constant = -.5 * numpy.sum(orbital_energies) + majorana_constant
+                range(self.n_qubits), range(self.n_qubits, 2 * self.n_qubits)]
+            constant = -0.5 * numpy.sum(orbital_energies) + majorana_constant
 
         return orbital_energies, constant
 
+    def ground_energy(self):
+        """Return the ground energy."""
+        _, constant = self.orbital_energies(non_negative=True)
+        return constant
+
     def majorana_form(self):
-        """Return the Majorana represention of the Hamiltonian.
+        r"""Return the Majorana represention of the Hamiltonian.
 
         Any quadratic Hamiltonian can be written in the form
 
         .. math::
 
-            \\frac{i}{2} \sum_{j, k} A_{jk} f_j f_k + \\text{constant}
+            \frac{i}{2} \sum_{j, k} A_{jk} f_j f_k + \text{constant}
 
         where the :math:`f_i` are normalized Majorana fermion operators:
 
         .. math::
 
-            f_j = \\frac{1}{\\sqrt{2}} (a^\dagger_j + a_j)
+            f_j = \frac{1}{\sqrt{2}} (a^\dagger_j + a_j)
 
-            f_{j + N} = \\frac{i}{\\sqrt{2}} (a^\dagger_j - a_j)
+            f_{j + N} = \frac{i}{\sqrt{2}} (a^\dagger_j - a_j)
 
         and :math:`A` is a (2 * `n_qubits`) x (2 * `n_qubits`) real
         antisymmetric matrix. This function returns the matrix
@@ -189,115 +198,172 @@ class QuadraticHamiltonian(PolynomialTensor):
         # Compute the Majorana matrix using block matrix manipulations
         majorana_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
         # Set upper left block
-        majorana_matrix[:self.n_qubits, :self.n_qubits] = numpy.real(-.5j * (
-                hermitian_part - hermitian_part.conj() +
-                antisymmetric_part - antisymmetric_part.conj()))
+        majorana_matrix[:self.n_qubits, :self.n_qubits] = numpy.real(-0.5j * (
+            hermitian_part - hermitian_part.conj() +
+            antisymmetric_part - antisymmetric_part.conj()))
         # Set upper right block
-        majorana_matrix[:self.n_qubits, self.n_qubits:] = numpy.real(.5 * (
-                hermitian_part + hermitian_part.conj() -
-                antisymmetric_part - antisymmetric_part.conj()))
+        majorana_matrix[:self.n_qubits, self.n_qubits:] = numpy.real(0.5 * (
+            hermitian_part + hermitian_part.conj() -
+            antisymmetric_part - antisymmetric_part.conj()))
         # Set lower left block
-        majorana_matrix[self.n_qubits:, :self.n_qubits] = numpy.real(-.5 * (
-                hermitian_part + hermitian_part.conj() +
-                antisymmetric_part + antisymmetric_part.conj()))
+        majorana_matrix[self.n_qubits:, :self.n_qubits] = numpy.real(-0.5 * (
+            hermitian_part + hermitian_part.conj() +
+            antisymmetric_part + antisymmetric_part.conj()))
         # Set lower right block
-        majorana_matrix[self.n_qubits:, self.n_qubits:] = numpy.real(-.5j * (
-                hermitian_part - hermitian_part.conj() -
-                antisymmetric_part + antisymmetric_part.conj()))
+        majorana_matrix[self.n_qubits:, self.n_qubits:] = numpy.real(-0.5j * (
+            hermitian_part - hermitian_part.conj() -
+            antisymmetric_part + antisymmetric_part.conj()))
 
         # Compute the constant
-        majorana_constant = (.5 * numpy.real(numpy.trace(hermitian_part)) +
+        majorana_constant = (0.5 * numpy.real(numpy.trace(hermitian_part)) +
                              self.n_body_tensors[()])
 
         return majorana_matrix, majorana_constant
 
+    def diagonalizing_bogoliubov_transform(self):
+        r"""Compute the unitary that diagonalizes a quadratic Hamiltonian.
 
-def majorana_operator(term=None, coefficient=1.):
-    """Initialize a Majorana operator.
+        Any quadratic Hamiltonian can be rewritten in the form
 
-    Args:
-        term(tuple): The first element of the tuple indicates the mode
-            on which the Majorana operator acts, starting from zero.
-            The second element of the tuple is an integer, either 1 or 0,
-            indicating which type of Majorana operator it is:
-                type 1: 1 / sqrt(2) (a^\dagger_j + a_j)
-                type 0: i / sqrt(2) (a^\dagger_j - a_j)
-            where the a^\dagger_j and a_j are the usual fermionic ladder
-            operators.
-            Default will result in the zero operator.
-        coefficient(complex or float, optional): The coefficient of the term.
-            Default value is 1.0.
+        .. math::
 
-    Returns:
-        FermionOperator
-    """
-    if not isinstance(coefficient, (int, float, complex)):
-        raise ValueError('Coefficient must be scalar.')
+            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant},
 
-    if term is None:
-        # Return zero operator
-        return FermionOperator()
-    elif isinstance(term, tuple):
-        mode, operator_type = term
-        if operator_type == 1:
-            majorana_op = FermionOperator(
-                    ((mode, 1),), coefficient / numpy.sqrt(2.))
-            majorana_op += FermionOperator(
-                    ((mode, 0),), coefficient / numpy.sqrt(2.))
-        elif operator_type == 0:
-            majorana_op = FermionOperator(
-                    ((mode, 1),), 1.j * coefficient / numpy.sqrt(2.))
-            majorana_op -= FermionOperator(
-                    ((mode, 0),), 1.j * coefficient / numpy.sqrt(2.))
+        where the :math:`b^\dagger_j` are a new set fermionic creation operators
+        that satisfy the canonical anticommutation relations.
+        The new creation operators are linear combinations of the
+        original ladder operators. In the most general case, creation and
+        annihilation operators are mixed together:
+
+        .. math::
+
+           \begin{pmatrix}
+                b^\dagger_1 \\
+                \vdots \\
+                b^\dagger_N \\
+           \end{pmatrix}
+           = W
+           \begin{pmatrix}
+                a^\dagger_1 \\
+                \vdots \\
+                a^\dagger_N \\
+                a_1 \\
+                \vdots \\
+                a_N
+           \end{pmatrix},
+
+        where :math:`W` is an :math:`N \times (2N)` matrix.
+        However, if the Hamiltonian conserves particle number then
+        creation operators don't need to be mixed with annihilation operators
+        and :math:`W` only needs to be an :math:`N \times N` matrix:
+
+        .. math::
+
+           \begin{pmatrix}
+                b^\dagger_1 \\
+                \vdots \\
+                b^\dagger_N \\
+           \end{pmatrix}
+           = W
+           \begin{pmatrix}
+                a^\dagger_1 \\
+                \vdots \\
+                a^\dagger_N \\
+           \end{pmatrix},
+
+        This method returns the matrix :math:`W`.
+
+        Returns:
+            diagonalizing_unitary (ndarray):
+                A matrix representing the transformation :math:`W` of the
+                fermionic ladder operators. If the Hamiltonian conserves
+                particle number then this is :math:`N \times N`; otherwise
+                it is :math:`N \times 2N`.
+        """
+        if self.conserves_particle_number:
+            _, diagonalizing_unitary_T = numpy.linalg.eigh(
+                    self.combined_hermitian_part)
+            return diagonalizing_unitary_T.T
         else:
-            raise ValueError('Operator specified incorrectly.')
-        return majorana_op
-    # Invalid input.
-    else:
-        raise ValueError('Operator specified incorrectly.')
+            majorana_matrix, _ = self.majorana_form()
 
+            # Get the orthogonal transformation that puts majorana_matrix
+            # into canonical form
+            _, orthogonal = antisymmetric_canonical_form(
+                    majorana_matrix)
 
-def diagonalizing_fermionic_unitary(antisymmetric_matrix):
-    """Compute the unitary that diagonalizes a quadratic Hamiltonian.
+            # Create the matrix that converts between fermionic ladder and
+            # Majorana bases
+            normalized_identity = (numpy.eye(self.n_qubits, dtype=complex) /
+                                   numpy.sqrt(2.))
+            majorana_basis_change = numpy.eye(
+                2 * self.n_qubits, dtype=complex) / numpy.sqrt(2.)
+            majorana_basis_change[self.n_qubits:, self.n_qubits:] *= -1.j
+            majorana_basis_change[:self.n_qubits,
+                                  self.n_qubits:] = normalized_identity
+            majorana_basis_change[self.n_qubits:,
+                                  :self.n_qubits] = 1.j * normalized_identity
 
-    The input matrix represents a quadratic Hamiltonian in the Majorana basis.
-    The output matrix is a unitary that represents a transformation (mixing)
-    of the fermionic ladder operators. We use the convention that the
-    creation operators are listed before the annihilation operators.
-    The returned unitary has additional structure which ensures
-    that the transformed ladder operators also satisfy the fermionic
-    anticommutation relations.
+            # Compute the unitary and return
+            diagonalizing_unitary = majorana_basis_change.T.conj().dot(
+                orthogonal.dot(majorana_basis_change))
 
-    Args:
-        antisymmetric_matrix(ndarray): A (2 * n_qubits) x (2 * n_qubits)
-            antisymmetric matrix representing a quadratic Hamiltonian in the
-            Majorana basis.
-    Returns:
-        diagonalizing_unitary(ndarray): A (2 * n_qubits) x (2 * n_qubits)
-            unitary matrix representing a transformation of the fermionic
-            ladder operators.
-    """
-    m, n = antisymmetric_matrix.shape
-    n_qubits = n // 2
+            return diagonalizing_unitary[:self.n_qubits]
 
-    # Get the orthogonal transformation that puts antisymmetric_matrix
-    # into canonical form
-    canonical, orthogonal = antisymmetric_canonical_form(antisymmetric_matrix)
+    def diagonalizing_circuit(self):
+        r"""Get a circuit for a unitary that diagonalizes this Hamiltonian
 
-    # Create the matrix that converts between fermionic ladder and
-    # Majorana bases
-    normalized_identity = numpy.eye(n_qubits, dtype=complex) / numpy.sqrt(2.)
-    majorana_basis_change = numpy.eye(
-            2 * n_qubits, dtype=complex) / numpy.sqrt(2.)
-    majorana_basis_change[n_qubits:, n_qubits:] *= -1.j
-    majorana_basis_change[:n_qubits, n_qubits:] = normalized_identity
-    majorana_basis_change[n_qubits:, :n_qubits] = 1.j * normalized_identity
+        This circuit performs the transformation to a basis in which the
+        Hamiltonian takes the diagonal form
 
-    # Compute the unitary and return
-    diagonalizing_unitary = majorana_basis_change.T.conj().dot(
-            orthogonal.dot(majorana_basis_change))
+        .. math::
 
-    return diagonalizing_unitary
+            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
+
+        Returns
+        -------
+            circuit_description (list[tuple]):
+                A list of operations describing the circuit. Each operation
+                is a tuple of objects describing elementary operations that
+                can be performed in parallel. Each elementary operation
+                is either the string 'pht' indicating a particle-hole
+                transformation on the last fermionic mode, or a tuple of
+                the form :math:`(i, j, \theta, \varphi)`,
+                indicating a Givens rotation
+                of modes :math:`i` and :math:`j` by angles :math:`\theta`
+                and :math:`\varphi`.
+        """
+        transformation_matrix = self.diagonalizing_bogoliubov_transform()
+
+        if self.conserves_particle_number:
+            # The Hamiltonian conserves particle number, so we don't need
+            # to use the most general procedure.
+            decomposition, _ = givens_decomposition_square(
+                    transformation_matrix)
+            circuit_description = list(reversed(decomposition))
+        else:
+            # The Hamiltonian does not conserve particle number, so we
+            # need to use the most general procedure.
+            # Rearrange the transformation matrix because the circuit generation
+            # routine expects it to describe annihilation operators rather than
+            # creation operators
+            left_block = transformation_matrix[:, :self.n_qubits]
+            right_block = transformation_matrix[:, self.n_qubits:]
+            # Can't use numpy.block because that requires numpy>=1.13.0
+            new_transformation_matrix = numpy.empty(
+                    (self.n_qubits, 2 * self.n_qubits), dtype=complex)
+            new_transformation_matrix[:, :self.n_qubits] = numpy.conjugate(
+                    right_block)
+            new_transformation_matrix[:, self.n_qubits:] = numpy.conjugate(
+                    left_block)
+            # Get the circuit description
+            decomposition, left_decomposition, _, _ = (
+                fermionic_gaussian_decomposition(new_transformation_matrix))
+            # need to use left_diagonal too
+            circuit_description = list(reversed(
+                decomposition + left_decomposition))
+
+        return circuit_description
 
 
 def antisymmetric_canonical_form(antisymmetric_matrix):
@@ -377,23 +443,3 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_rows(diagonal, i, arg_min)
 
     return canonical, orthogonal.T
-
-
-def swap_rows(M, i, j):
-    """Swap rows i and j of matrix M."""
-    if len(M.shape) == 1:
-        M[i], M[j] = M[j], M[i]
-    else:
-        row_i = M[i, :].copy()
-        row_j = M[j, :].copy()
-        M[i, :], M[j, :] = row_j, row_i
-
-
-def swap_columns(M, i, j):
-    """Swap columns i and j of matrix M."""
-    if len(M.shape) == 1:
-        M[i], M[j] = M[j], M[i]
-    else:
-        column_i = M[:, i].copy()
-        column_j = M[:, j].copy()
-        M[:, i], M[:, j] = column_j, column_i

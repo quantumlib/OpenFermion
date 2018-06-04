@@ -25,14 +25,16 @@ import scipy.sparse.linalg
 import warnings
 
 from openfermion.config import *
-from openfermion.ops import (FermionOperator, hermitian_conjugated,
-                             normal_ordered, number_operator,
-                             QuadraticHamiltonian, QubitOperator)
-from openfermion.utils import (commutator, fourier_transform,
-                               gaussian_state_preparation_circuit, Grid)
-from openfermion.hamiltonians._jellium import (momentum_vector,
-                                               position_vector,
-                                               grid_indices)
+from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
+                             QubitOperator, BosonOperator,
+                             QuadOperator)
+from openfermion.utils import (Grid, commutator, count_qubits,
+                               fourier_transform,
+                               gaussian_state_preparation_circuit,
+                               hermitian_conjugated, is_hermitian,
+                               normal_ordered, number_operator,
+                               slater_determinant_preparation_circuit,
+                               up_index, down_index)
 
 
 # Make global definitions.
@@ -57,7 +59,7 @@ def kronecker_operators(*args):
 
 
 def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
-    """Make a matrix representation of a fermion ladder operator.
+    r"""Make a matrix representation of a fermion ladder operator.
 
     Operators are mapped as follows:
     a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
@@ -69,7 +71,7 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
         n_qubits(int): Number qubits in the system Hilbert space.
 
     Returns:
-        The corresponding SparseOperator.
+        The corresponding Scipy sparse matrix.
     """
     parities = tensor_factor * [pauli_z_csc]
     identities = [scipy.sparse.identity(
@@ -82,7 +84,7 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
 
 
 def jordan_wigner_sparse(fermion_operator, n_qubits=None):
-    """Initialize a SparseOperator from a FermionOperator.
+    r"""Initialize a Scipy sparse matrix from a FermionOperator.
 
     Operators are mapped as follows:
     a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
@@ -94,10 +96,9 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
         n_qubits(int): Number of qubits.
 
     Returns:
-        The corresponding SparseOperator.
+        The corresponding Scipy sparse matrix.
     """
     if n_qubits is None:
-        from openfermion.utils import count_qubits
         n_qubits = count_qubits(fermion_operator)
 
     # Create a list of raising and lowering operators for each orbital.
@@ -110,7 +111,7 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
                                                       tensor_factor,
                                                       1))]
 
-    # Construct the SparseOperator.
+    # Construct the Scipy sparse matrix.
     n_hilbert = 2 ** n_qubits
     values_list = [[]]
     row_list = [[]]
@@ -142,22 +143,21 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
 
 
 def qubit_operator_sparse(qubit_operator, n_qubits=None):
-    """Initialize a SparseOperator from a QubitOperator.
+    """Initialize a Scipy sparse matrix from a QubitOperator.
 
     Args:
         qubit_operator(QubitOperator): instance of the QubitOperator class.
         n_qubits (int): Number of qubits.
 
     Returns:
-        The corresponding SparseOperator.
+        The corresponding Scipy sparse matrix.
     """
-    from openfermion.utils import count_qubits
     if n_qubits is None:
         n_qubits = count_qubits(qubit_operator)
     if n_qubits < count_qubits(qubit_operator):
         raise ValueError('Invalid number of qubits specified.')
 
-    # Construct the SparseOperator.
+    # Construct the Scipy sparse matrix.
     n_hilbert = 2 ** n_qubits
     values_list = [[]]
     row_list = [[]]
@@ -206,28 +206,159 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     return sparse_operator
 
 
-def jw_slater_determinant(occupied_orbitals, n_orbitals):
-    """Function to produce a Slater determinant in JW representation.
+def get_linear_qubit_operator(qubit_operator, n_qubits=None):
+    """ Return a linear operator with matvec defined to avoid instantiating a
+    huge matrix, which requires lots of memory.
+
+    The idea is that a single i_th qubit operator, O_i, is a 2-by-2 matrix, to
+    be applied on a vector of length n_hilbert / 2^i, performs permutations and/
+    or adds an extra factor for its first half and the second half, e.g. a `Z`
+    operator keeps the first half unchanged, while adds a factor of -1 to the
+    second half, while an `I` keeps it both components unchanged.
+
+    Note that the vector length is n_hilbert / 2^i, therefore when one works on
+    i monotonically (in increasing order), one keeps splitting the vector to the
+    right size and then apply O_i on them independently.
+
+    Also note that operator O_i, is an *envelop operator* for all operators
+    after it, i.e. {O_j | j > i}, which implies that starting with i = 0, one
+    can split the vector, apply O_i, split the resulting vector (cached) again
+    for the next operator.
+
+    Args:
+      qubit_operator(QubitOperator): A qubit operator to be applied on vectors.
+
+    Returns:
+      linear_operator(LinearOperator): The equivalent operator which is well
+      defined when applying to a vector.
+
+    """
+    if n_qubits is None:
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    n_hilbert = 2 ** n_qubits
+
+    def matvec(vec):
+        """matvec for the LinearOperator class.
+
+        Args:
+          vec(numpy.ndarray): 1D numpy array.
+
+        Returns:
+          retvec(numpy.ndarray): same to the shape of input vec.
+        """
+        if len(vec) != n_hilbert:
+            raise ValueError('Invalid length of vector specified: %d != %d'
+                             %(len(vec), n_hilbert))
+
+        retvec = numpy.zeros(vec.shape, dtype=complex)
+        # Loop through the terms.
+        for qubit_term in qubit_operator.terms:
+            vecs = [vec]
+            tensor_factor = 0
+            coefficient = qubit_operator.terms[qubit_term]
+
+            for pauli_operator in qubit_term:
+                # Split vector by half and half for each bit.
+                if pauli_operator[0] > tensor_factor:
+                    vecs = [v for iter_v in vecs for v in numpy.split(
+                        iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
+
+                # Note that this is to make sure that XYZ operations always work
+                # on vector pairs.
+                vec_pairs = [numpy.split(v, 2) for v in vecs]
+
+                # There is an non-identity op here, transform the vector.
+                xyz = {
+                    'X' : lambda vps: [[vp[1], vp[0]] for vp in vps],
+                    'Y' : lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
+                    'Z' : lambda vps: [[vp[0], -vp[1]] for vp in vps],
+                }
+                vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs)
+                        for v in vp]
+                tensor_factor = pauli_operator[0] + 1
+
+            # No need to check tensor_factor, i.e. to deal with bits left.
+            retvec += coefficient * numpy.concatenate(vecs)
+        return retvec
+    return scipy.sparse.linalg.LinearOperator((n_hilbert, n_hilbert),
+                                              matvec=matvec, dtype=complex)
+
+
+def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
+    """ Return a linear operator's diagonal elements.
+
+    The main motivation is to use it for Davidson's algorithm, to find out the
+    lowest n eigenvalues and associated eigenvectors.
+
+    Qubit terms with X or Y operators will contribute nothing to the diagonal
+    elements, while I or Z will contribute a factor of 1 or -1 together with
+    the coefficient.
+
+    Args:
+        qubit_operator(QubitOperator): A qubit operator.
+
+    Returns:
+        linear_operator_diagonal(numpy.ndarray): The diagonal elements for
+            get_linear_qubit_operator(qubit_operator).
+    """
+    if n_qubits is None:
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    n_hilbert = 2 ** n_qubits
+    zeros_diagonal = numpy.zeros(n_hilbert)
+    ones_diagonal = numpy.ones(n_hilbert)
+    linear_operator_diagonal = zeros_diagonal
+    # Loop through the terms.
+    for qubit_term in qubit_operator.terms:
+        is_zero = False
+        tensor_factor = 0
+        vecs = [ones_diagonal]
+        for pauli_operator in qubit_term:
+            op = pauli_operator[1]
+            if op in ['X', 'Y']:
+                is_zero = True
+                break
+
+            # Split vector by half and half for each bit.
+            if pauli_operator[0] > tensor_factor:
+                vecs = [v for iter_v in vecs for v in numpy.split(
+                    iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
+
+            vec_pairs = [numpy.split(v, 2) for v in vecs]
+            vecs = [v for vp in vec_pairs for v in (vp[0], -vp[1])]
+            tensor_factor = pauli_operator[0] + 1
+        if not is_zero:
+            linear_operator_diagonal += (qubit_operator.terms[qubit_term] *
+                                         numpy.concatenate(vecs))
+    return linear_operator_diagonal
+
+
+def jw_configuration_state(occupied_orbitals, n_qubits):
+    """Function to produce a basis state in the occupation number basis.
 
     Args:
         occupied_orbitals(list): A list of integers representing the indices
-            of the occupied orbitals in the desired Slater determinant
-        n_orbitals(int): The total number of orbitals
+            of the occupied orbitals in the desired basis state
+        n_qubits(int): The total number of qubits
 
     Returns:
-        slater_determinant(sparse): The JW-encoded Slater determinant as a
-            sparse matrix
+        basis_vector(sparse): The basis state as a sparse matrix
     """
-    one_index = sum([2 ** (n_orbitals - 1 - i) for i in occupied_orbitals])
-    slater_determinant = scipy.sparse.csc_matrix(([1.], ([one_index], [0])),
-                                                 shape=(2 ** n_orbitals, 1),
-                                                 dtype=float)
-    return slater_determinant
+    one_index = sum(2 ** (n_qubits - 1 - i) for i in occupied_orbitals)
+    basis_vector = numpy.zeros(2 ** n_qubits, dtype=float)
+    basis_vector[one_index] = 1
+    return basis_vector
 
 
 def jw_hartree_fock_state(n_electrons, n_orbitals):
     """Function to produce Hartree-Fock state in JW representation."""
-    hartree_fock_state = jw_slater_determinant(range(n_electrons), n_orbitals)
+    hartree_fock_state = jw_configuration_state(range(n_electrons),
+                                                n_orbitals)
     return hartree_fock_state
 
 
@@ -247,11 +378,94 @@ def jw_number_indices(n_electrons, n_qubits):
         indices(list): List of indices in a 2^n length array that indicate
             the indices of constant particle number within n_qubits
             in a Jordan-Wigner encoding.
-
     """
     occupations = itertools.combinations(range(n_qubits), n_electrons)
-    indices = [sum([2**n for n in occupation])
+    indices = [sum([2 ** n for n in occupation])
                for occupation in occupations]
+    return indices
+
+
+def jw_sz_indices(sz_value, n_qubits, n_electrons=None):
+    r"""Return the indices of basis vectors with fixed Sz under JW encoding.
+
+    The returned indices label computational basis vectors which lie within
+    the corresponding eigenspace of the Sz operator,
+
+    .. math::
+        \begin{align}
+        S^{z} = \frac{1}{2}\sum_{i = 1}^{n}(n_{i, \alpha} - n_{i, \beta})
+        \end{align}
+
+    Args:
+        sz_value(float): Desired Sz value. Should be an integer or
+            half-integer.
+        n_qubits(int): Number of qubits defining the total state
+        n_electrons(int, optional): Number of particles to restrict the
+            operator to, if such a restriction is desired
+
+    Returns:
+        indices(list): The list of indices
+    """
+    if n_qubits % 2 != 0:
+        raise ValueError('Number of qubits must be even')
+
+    if not (2. * sz_value).is_integer():
+        raise ValueError('Sz value must be an integer or half-integer')
+
+    n_sites = n_qubits // 2
+    sz_integer = int(2. * sz_value)
+    indices = []
+
+    if n_electrons is not None:
+        # Particle number is fixed, so the number of spin-up electrons
+        # (as well as the number of spin-down electrons) is fixed
+        if ((n_electrons + sz_integer) % 2 != 0 or
+                n_electrons < abs(sz_integer)):
+            raise ValueError('The specified particle number and sz value are '
+                             'incompatible.')
+        num_up = (n_electrons + sz_integer) // 2
+        num_down = n_electrons - num_up
+        up_occupations = itertools.combinations(range(n_sites), num_up)
+        down_occupations = list(
+            itertools.combinations(range(n_sites), num_down))
+        # Each arrangement of up spins can be paired with an arrangement
+        # of down spins
+        for up_occupation in up_occupations:
+            up_occupation = [up_index(index) for index in up_occupation]
+            for down_occupation in down_occupations:
+                down_occupation = [down_index(index)
+                                   for index in down_occupation]
+                occupation = up_occupation + down_occupation
+                indices.append(sum(2 ** (n_qubits - 1 - k)
+                               for k in occupation))
+    else:
+        # Particle number is not fixed
+        if sz_integer < 0:
+            # There are more down spins than up spins
+            more_map = down_index
+            less_map = up_index
+        else:
+            # There are at least as many up spins as down spins
+            more_map = up_index
+            less_map = down_index
+        for n in range(abs(sz_integer), n_sites + 1):
+            # Choose n of the 'more' spin and n - abs(sz_integer) of the
+            # 'less' spin
+            more_occupations = itertools.combinations(range(n_sites), n)
+            less_occupations = list(itertools.combinations(
+                                    range(n_sites), n - abs(sz_integer)))
+            # Each arrangement of the 'more' spins can be paired with an
+            # arrangement of the 'less' spin
+            for more_occupation in more_occupations:
+                more_occupation = [more_map(index)
+                                   for index in more_occupation]
+                for less_occupation in less_occupations:
+                    less_occupation = [less_map(index)
+                                       for index in less_occupation]
+                    occupation = more_occupation + less_occupation
+                    indices.append(sum(2 ** (n_qubits - 1 - k)
+                                   for k in occupation))
+
     return indices
 
 
@@ -273,6 +487,73 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
 
     select_indices = jw_number_indices(n_electrons, n_qubits)
     return operator[numpy.ix_(select_indices, select_indices)]
+
+
+def jw_sz_restrict_operator(operator, sz_value,
+                            n_electrons=None, n_qubits=None):
+    """Restrict a Jordan-Wigner encoded operator to a given Sz value
+
+    Args:
+        operator(ndarray or sparse): Numpy operator acting on
+            the space of n_qubits.
+        sz_value(float): Desired Sz value. Should be an integer or
+            half-integer.
+        n_electrons(int, optional): Number of particles to restrict the
+            operator to, if such a restriction is desired.
+        n_qubits(int, optional): Number of qubits defining the total state
+
+    Returns:
+        new_operator(ndarray or sparse): Numpy operator restricted to
+            acting on states with the desired Sz value.
+    """
+    if n_qubits is None:
+        n_qubits = int(numpy.log2(operator.shape[0]))
+
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
+    return operator[numpy.ix_(select_indices, select_indices)]
+
+
+def jw_number_restrict_state(state, n_electrons, n_qubits=None):
+    """Restrict a Jordan-Wigner encoded state to a given particle number
+
+    Args:
+        state(ndarray or sparse): Numpy vector in
+            the space of n_qubits.
+        n_electrons(int): Number of particles to restrict the state to
+        n_qubits(int): Number of qubits defining the total state
+
+    Returns:
+        new_operator(ndarray or sparse): Numpy vector restricted to
+            states with the same particle number. May not be normalized.
+    """
+    if n_qubits is None:
+        n_qubits = int(numpy.log2(state.shape[0]))
+
+    select_indices = jw_number_indices(n_electrons, n_qubits)
+    return state[select_indices]
+
+
+def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None):
+    """Restrict a Jordan-Wigner encoded state to a given Sz value
+
+    Args:
+        state(ndarray or sparse): Numpy vector in
+            the space of n_qubits.
+        sz_value(float): Desired Sz value. Should be an integer or
+            half-integer.
+        n_electrons(int, optional): Number of particles to restrict the
+            operator to, if such a restriction is desired.
+        n_qubits(int, optional): Number of qubits defining the total state
+
+    Returns:
+        new_operator(ndarray or sparse): Numpy vector restricted to
+            states with the desired Sz value. May not be normalized.
+    """
+    if n_qubits is None:
+        n_qubits = int(numpy.log2(state.shape[0]))
+
+    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
+    return state[select_indices]
 
 
 def jw_get_ground_states_by_particle_number(sparse_operator, particle_number,
@@ -359,9 +640,9 @@ def jw_get_ground_states_by_particle_number(sparse_operator, particle_number,
         # Expand this ground state to the whole vector space
         number_indices = jw_number_indices(particle_number, n_qubits)
         expanded_ground_state = scipy.sparse.csc_matrix(
-                (restricted_ground_state.flatten(),
-                 (number_indices, [0] * len(number_indices))),
-                shape=(2 ** n_qubits, 1))
+            (restricted_ground_state.flatten(),
+             (number_indices, [0] * len(number_indices))),
+            shape=(2 ** n_qubits, 1))
         # Add the expanded ground state to the list
         ground_states.append(expanded_ground_state)
 
@@ -401,7 +682,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
         # The ground energy is desired
         if quadratic_hamiltonian.conserves_particle_number:
             num_negative_energies = numpy.count_nonzero(
-                    orbital_energies < -EQ_TOLERANCE)
+                orbital_energies < -EQ_TOLERANCE)
             occupied_orbitals = range(num_negative_energies)
         else:
             occupied_orbitals = []
@@ -409,13 +690,14 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
 
     # Obtain the circuit that prepares the Gaussian state
     circuit_description, start_orbitals = gaussian_state_preparation_circuit(
-            quadratic_hamiltonian, occupied_orbitals)
+        quadratic_hamiltonian, occupied_orbitals)
 
     # Initialize the starting state
-    state = jw_slater_determinant(start_orbitals, n_qubits)
+    state = jw_configuration_state(start_orbitals, n_qubits)
 
     # Apply the circuit
-    particle_hole_transformation = (
+    if not quadratic_hamiltonian.conserves_particle_number:
+        particle_hole_transformation = (
             jw_sparse_particle_hole_transformation_last_mode(n_qubits))
     for parallel_ops in circuit_description:
         for op in parallel_ops:
@@ -424,9 +706,49 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
             else:
                 i, j, theta, phi = op
                 state = jw_sparse_givens_rotation(
-                            i, j, theta, phi, n_qubits).dot(state)
+                    i, j, theta, phi, n_qubits).dot(state)
 
     return energy, state
+
+
+def jw_slater_determinant(slater_determinant_matrix):
+    r"""Obtain a Slater determinant.
+
+    The input is an :math:`N_f \times N` matrix :math:`Q` with orthonormal
+    rows. Such a matrix describes the Slater determinant
+
+    .. math::
+
+        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \text{vac} \rangle,
+
+    where
+
+    .. math::
+
+        b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
+
+    Args:
+        slater_determinant_matrix: The matrix :math:`Q` which describes the
+            Slater determinant to be prepared.
+    Returns:
+        The Slater determinant as a sparse matrix.
+    """
+    circuit_description = slater_determinant_preparation_circuit(
+        slater_determinant_matrix)
+    start_orbitals = range(slater_determinant_matrix.shape[0])
+    n_qubits = slater_determinant_matrix.shape[1]
+
+    # Initialize the starting state
+    state = jw_configuration_state(start_orbitals, n_qubits)
+
+    # Apply the circuit
+    for parallel_ops in circuit_description:
+        for op in parallel_ops:
+            i, j, theta, phi = op
+            state = jw_sparse_givens_rotation(
+                i, j, theta, phi, n_qubits).dot(state)
+
+    return state
 
 
 def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
@@ -443,9 +765,9 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
 
     # Create the two-qubit rotation matrix
     rotation_matrix = scipy.sparse.csc_matrix(
-            ([1., phase * cosine, -phase * sine, sine, cosine, phase],
-             ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
-            shape=(4, 4))
+        ([1., phase * cosine, -phase * sine, sine, cosine, phase],
+         ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
+        shape=(4, 4))
 
     # Initialize identity operators
     left_eye = scipy.sparse.eye(2 ** i, format='csc')
@@ -471,22 +793,18 @@ def get_density_matrix(states, probabilities):
     density_matrix = scipy.sparse.csc_matrix(
         (n_qubits, n_qubits), dtype=complex)
     for state, probability in zip(states, probabilities):
+        state = scipy.sparse.csc_matrix(state.reshape((len(state), 1)))
         density_matrix = density_matrix + probability * state * state.getH()
     return density_matrix
 
 
-def is_hermitian(sparse_operator):
-    """Test if matrix is Hermitian."""
-    difference = sparse_operator - sparse_operator.getH()
-    if difference.nnz:
-        discrepancy = max(map(abs, difference.data))
-        if discrepancy > EQ_TOLERANCE:
-            return False
-    return True
-
-
-def get_ground_state(sparse_operator):
+def get_ground_state(sparse_operator, initial_guess=None):
     """Compute lowest eigenvalue and eigenstate.
+
+    Args:
+        sparse_operator (LinearOperator): Operator to find the ground state of.
+        initial_guess (ndarray): Initial guess for ground state.  A good
+            guess dramatically reduces the cost required to converge.
 
     Returns
     -------
@@ -495,17 +813,14 @@ def get_ground_state(sparse_operator):
         eigenstate:
             The lowest eigenstate in scipy.sparse csc format.
     """
-    if not is_hermitian(sparse_operator):
-        raise ValueError('sparse_operator must be Hermitian.')
-
     values, vectors = scipy.sparse.linalg.eigsh(
-        sparse_operator, 2, which='SA', maxiter=1e7)
+        sparse_operator, k=1, v0=initial_guess, which='SA', maxiter=1e7)
 
     order = numpy.argsort(values)
     values = values[order]
     vectors = vectors[:, order]
     eigenvalue = values[0]
-    eigenstate = scipy.sparse.csc_matrix(vectors[:, 0])
+    eigenstate = vectors[:, 0]
     return eigenvalue, eigenstate.T
 
 
@@ -528,6 +843,7 @@ def expectation(sparse_operator, state):
 
     Args:
         state: scipy.sparse.csc vector representing a pure state,
+            ndarray vector representing a pure state,
             or, a scipy.sparse.csc matrix representing a density matrix.
 
     Returns:
@@ -541,17 +857,39 @@ def expectation(sparse_operator, state):
         product = state * sparse_operator
         expectation = numpy.sum(product.diagonal())
 
-    elif state.shape == (sparse_operator.shape[0], 1):
+    elif (state.shape == (sparse_operator.shape[0], 1) or
+          state.shape == (sparse_operator.shape[0], )):
         # Handle state vector.
-        expectation = state.getH() * sparse_operator * state
-        expectation = expectation[0, 0]
-
+        if scipy.sparse.issparse(state):
+            expectation = (state.getH() * sparse_operator * state)
+        else:
+            expectation = numpy.dot(numpy.conj(state.T),
+                                    sparse_operator.dot(state))
+        if expectation.shape != ():
+            expectation = expectation[0, 0]
     else:
         # Handle exception.
         raise ValueError('Input state has invalid format.')
 
     # Return.
     return expectation
+
+
+def variance(sparse_operator, state):
+    """Compute variance of operator with a state.
+
+    Args:
+        state: scipy.sparse.csc vector representing a pure state,
+            or, a scipy.sparse.csc matrix representing a density matrix.
+
+    Returns:
+        A real float giving the variance.
+
+    Raises:
+        ValueError: Input state has invalid format.
+    """
+    return (expectation(sparse_operator ** 2, state) -
+            expectation(sparse_operator, state) ** 2)
 
 
 def expectation_computational_basis_state(operator, computational_basis_state):
@@ -657,16 +995,16 @@ def expectation_one_body_db_operator_computational_basis_state(
     """
     expectation_value = 0.0
 
-    r_p = position_vector(grid_indices(dual_basis_action[0][0],
-                                       grid, spinless), grid)
-    r_q = position_vector(grid_indices(dual_basis_action[1][0],
-                                       grid, spinless), grid)
+    r_p = grid.position_vector(grid.grid_indices(dual_basis_action[0][0],
+                                                 spinless))
+    r_q = grid.position_vector(grid.grid_indices(dual_basis_action[1][0],
+                                                 spinless))
 
     for orbital in plane_wave_occ_orbitals:
         # If there's spin, p and q have to have the same parity (spin),
         # and the new orbital has to have the same spin as these.
-        k_orbital = momentum_vector(grid_indices(orbital,
-                                                 grid, spinless), grid)
+        k_orbital = grid.momentum_vector(grid.grid_indices(orbital,
+                                                           spinless))
         # The Fourier transform is spin-conserving. This means that p, q,
         # and the new orbital all have to have the same spin (parity).
         if spinless or (dual_basis_action[0][0] % 2 ==
@@ -695,8 +1033,8 @@ def expectation_two_body_db_operator_computational_basis_state(
 
     r = {}
     for i in range(4):
-        r[i] = position_vector(grid_indices(dual_basis_action[i][0], grid,
-                                            spinless), grid)
+        r[i] = grid.position_vector(grid.grid_indices(dual_basis_action[i][0],
+                                                      spinless))
 
     rr = {}
     k_map = {}
@@ -709,7 +1047,7 @@ def expectation_two_body_db_operator_computational_basis_state(
 
     # Pre-computations.
     for o in plane_wave_occ_orbitals:
-        k = momentum_vector(grid_indices(o, grid, spinless), grid)
+        k = grid.momentum_vector(grid.grid_indices(o, spinless))
         for i in range(2):
             for j in range(2, 4):
                 k_map[i][j][o] = k.dot(rr[i][j])
@@ -771,8 +1109,8 @@ def expectation_three_body_db_operator_computational_basis_state(
 
     r = {}
     for i in range(6):
-        r[i] = position_vector(grid_indices(dual_basis_action[i][0], grid,
-                                            spinless), grid)
+        r[i] = grid.position_vector(grid.grid_indices(dual_basis_action[i][0],
+                                                      spinless))
 
     rr = {}
     k_map = {}
@@ -785,7 +1123,7 @@ def expectation_three_body_db_operator_computational_basis_state(
 
     # Pre-computations.
     for o in plane_wave_occ_orbitals:
-        k = momentum_vector(grid_indices(o, grid, spinless), grid)
+        k = grid.momentum_vector(grid.grid_indices(o, spinless))
         for i in range(3):
             for j in range(3, 6):
                 k_map[i][j][o] = k.dot(rr[i][j])
@@ -900,16 +1238,171 @@ def expectation_three_body_db_operator_computational_basis_state(
     return expectation_value
 
 
-def get_gap(sparse_operator):
+def get_gap(sparse_operator, initial_guess=None):
     """Compute gap between lowest eigenvalue and first excited state.
 
+    Args:
+        sparse_operator (LinearOperator): Operator to find the ground state of.
+        initial_guess (ndarray): Initial guess for eigenspace.  A good
+            guess dramatically reduces the cost required to converge.
     Returns: A real float giving eigenvalue gap.
     """
     if not is_hermitian(sparse_operator):
         raise ValueError('sparse_operator must be Hermitian.')
 
     values, _ = scipy.sparse.linalg.eigsh(
-        sparse_operator, 2, which='SA', maxiter=1e7)
+        sparse_operator, k=2, v0=initial_guess, which='SA', maxiter=1e7)
 
     gap = abs(values[1] - values[0])
     return gap
+
+
+def inner_product(state_1, state_2):
+    """Compute inner product of two states."""
+    return numpy.dot(state_1.conjugate(), state_2)
+
+
+def boson_ladder_sparse(n_modes, mode, ladder_type, trunc):
+    r"""Make a matrix representation of a singular bosonic ladder operator
+    in the Fock space.
+
+    Since the bosonic operator lies in an infinite Fock space,
+    a truncation value needs to be provide so that a sparse matrix
+    of finite size can be returned.
+
+    Args:
+        n_modes (int): Number of modes in the system Hilbert space.
+        mode (int): The mode the ladder operator targets.
+        ladder_type (int): This is a nonzero integer. 0 indicates a lowering
+            operator, 1 a raising operator.
+        trunc (int): The size at which the Fock space should be truncated
+            when returning the matrix representing the ladder operator.
+
+    Returns:
+        The corresponding trunc x trunc Scipy sparse matrix.
+    """
+    if trunc < 1 or not isinstance(trunc, int):
+        raise ValueError("Fock space truncation must be a positive integer.")
+
+    if ladder_type:
+        lop = scipy.sparse.spdiags(numpy.sqrt(range(1, trunc)),
+                                   -1, trunc, trunc, format='csc')
+    else:
+        lop = scipy.sparse.spdiags(numpy.sqrt(range(trunc)),
+                                   1, trunc, trunc, format='csc')
+
+    Id = [scipy.sparse.identity(trunc, format='csc', dtype=complex)]
+    operator_list = Id*mode + [lop] + Id*(n_modes - mode - 1)
+    operator = kronecker_operators(operator_list)
+
+    return operator
+
+
+def single_quad_op_sparse(n_modes, mode, quadrature, hbar, trunc):
+    r"""Make a matrix representation of a singular quadrature
+    operator in the Fock space.
+
+    Since the bosonic operators lie in an infinite Fock space,
+    a truncation value needs to be provide so that a sparse matrix
+    of finite size can be returned.
+
+    Args:
+        n_modes (int): Number of modes in the system Hilbert space.
+        mode (int): The mode the ladder operator targets.
+        quadrature (str): 'q' for the canonical position operator,
+            'p' for the canonical moment]um operator.
+        hbar (float): the value of hbar to use in the definition of the
+            canonical commutation relation [q_i, p_j] = \delta_{ij} i hbar.
+        trunc (int): The size at which the Fock space should be truncated
+            when returning the matrix representing the ladder operator.
+
+    Returns:
+        The corresponding trunc x trunc Scipy sparse matrix.
+    """
+    if trunc < 1 or not isinstance(trunc, int):
+        raise ValueError("Fock space truncation must be a positive integer.")
+
+    b = boson_ladder_sparse(1, 0, 0, trunc)
+
+    if quadrature == 'q':
+        op = numpy.sqrt(hbar/2) * (b + b.conj().T)
+    elif quadrature == 'p':
+        op = -1j*numpy.sqrt(hbar/2) * (b - b.conj().T)
+
+    Id = [scipy.sparse.identity(trunc, dtype=complex, format='csc')]
+    operator_list = Id*mode + [op] + Id*(n_modes - mode - 1)
+    operator = kronecker_operators(operator_list)
+
+    return operator
+
+
+def boson_operator_sparse(operator, trunc, hbar=1.):
+    r"""Initialize a Scipy sparse matrix in the Fock space
+    from a bosonic operator.
+
+    Since the bosonic operators lie in an infinite Fock space,
+    a truncation value needs to be provide so that a sparse matrix
+    of finite size can be returned.
+
+    Args:
+        operator: One of either BosonOperator or QuadOperator.
+        trunc (int): The size at which the Fock space should be truncated
+            when returning the matrix representing the ladder operator.
+        hbar (float): the value of hbar to use in the definition of the
+            canonical commutation relation [q_i, p_j] = \delta_{ij} i hbar.
+            This only applies if calcualating the sparse representation of
+            a quadrature operator.
+
+    Returns:
+        The corresponding Scipy sparse matrix of size [trunc, trunc].
+    """
+    if isinstance(operator, QuadOperator):
+        from openfermion.transforms._conversion import get_boson_operator
+        boson_operator = get_boson_operator(operator, hbar)
+    elif isinstance(operator, BosonOperator):
+        boson_operator = operator
+    else:
+        raise ValueError("Only BosonOperator and QuadOperator are supported.")
+
+    if trunc < 1 or not isinstance(trunc, int):
+        raise ValueError("Fock space truncation must be a positive integer.")
+
+    # count the number of modes
+    n_modes = 0
+    for term in boson_operator.terms:
+        for ladder_operator in term:
+            if ladder_operator[0] + 1 > n_modes:
+                n_modes = ladder_operator[0] + 1
+
+    # Construct the Scipy sparse matrix.
+    n_hilbert = trunc ** n_modes
+    values_list = [[]]
+    row_list = [[]]
+    column_list = [[]]
+
+    # Loop through the terms.
+    for term in boson_operator.terms:
+        coefficient = boson_operator.terms[term]
+        term_operator = coefficient*scipy.sparse.identity(
+            n_hilbert, dtype=complex, format='csc')
+
+        for ladder_op in term:
+            # Add actual operator to the list.
+            b = boson_ladder_sparse(n_modes, ladder_op[0], ladder_op[1], trunc)
+            term_operator = term_operator.dot(b)
+
+        # Extract triplets from sparse_term.
+        values_list.append(term_operator.tocoo(copy=False).data)
+        (row, column) = term_operator.nonzero()
+        column_list.append(column)
+        row_list.append(row)
+
+    # Create sparse operator.
+    values_list = numpy.concatenate(values_list)
+    row_list = numpy.concatenate(row_list)
+    column_list = numpy.concatenate(column_list)
+    sparse_operator = scipy.sparse.coo_matrix((
+        values_list, (row_list, column_list)),
+        shape=(n_hilbert, n_hilbert)).tocsc(copy=False)
+    sparse_operator.eliminate_zeros()
+    return sparse_operator

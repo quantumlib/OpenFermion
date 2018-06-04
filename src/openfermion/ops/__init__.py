@@ -10,14 +10,17 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from ._fermion_operator import (FermionOperator,
-                                hermitian_conjugated,
-                                normal_ordered,
-                                number_operator)
-from ._qubit_operator import QubitOperator
-from ._polynomial_tensor import (PolynomialTensor,
-                                 one_body_basis_change,
-                                 two_body_basis_change)
-from ._interaction_operator import InteractionOperator
-from ._interaction_rdm import InteractionRDM
+from ._binary_polynomial import BinaryPolynomial
+from ._diagonal_coulomb_hamiltonian import DiagonalCoulombHamiltonian
+from ._polynomial_tensor import PolynomialTensor, general_basis_change
 from ._quadratic_hamiltonian import QuadraticHamiltonian
+from ._symbolic_operator import SymbolicOperator
+
+# Imports out of alphabetical order to avoid circular dependency.
+from ._binary_code import BinaryCode
+from ._boson_operator import BosonOperator
+from ._fermion_operator import FermionOperator
+from ._interaction_operator import InteractionOperator
+from ._quad_operator import QuadOperator
+from ._qubit_operator import QubitOperator
+from ._interaction_rdm import InteractionRDM

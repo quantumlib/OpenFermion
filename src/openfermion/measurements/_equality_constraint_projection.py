@@ -12,10 +12,11 @@
 
 """Module to reduce operator variance using equality RDM constraints."""
 import numpy
-import scipy
+import scipy.optimize
+import scipy.sparse
 
-from openfermion.ops import FermionOperator, hermitian_conjugated
-from openfermion.utils import count_qubits
+from openfermion.ops import FermionOperator
+from openfermion.utils import count_qubits, hermitian_conjugated
 
 from ._rdm_equality_constraints import two_body_fermion_constraints
 

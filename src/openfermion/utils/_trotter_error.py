@@ -17,8 +17,8 @@ from math import sqrt, ceil
 from scipy.linalg import expm
 
 from openfermion.config import *
-from openfermion.hamiltonians import MolecularData
-from openfermion.ops import normal_ordered, QubitOperator
+from openfermion.ops import QubitOperator
+from openfermion.utils._operator_utils import normal_ordered
 
 
 def commutator(op1, op2):
@@ -156,7 +156,7 @@ def error_bound(terms, tight=False):
                     term_b = terms[beta]
                     coefficient_b, = term_b.terms.values()
                     if not (trivially_commutes(term_a, term_b) or
-                            commutator(term_a, term_b).isclose(zero)):
+                            commutator(term_a, term_b) == zero):
                         error_a += abs(coefficient_b)
 
                 error += 4.0 * abs(coefficient_a) * error_a ** 2
