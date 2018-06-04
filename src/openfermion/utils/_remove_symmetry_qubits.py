@@ -1,30 +1,37 @@
-""" Module to remove two qubits from the problem space
-    using conservation of electron number and conservation
-    of electron spin. As described in arXiv:1701.08213.
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+""" Module to remove two qubits from the problem space using conservation
+    of electron number and conservation of electron spin. As described in
+    arXiv:1701.08213.
 """
 
-
-import openfermion
-from openfermion.ops import FermionOperator, QubitOperator
-from openfermion.transforms import get_fermion_operator, bravyi_kitaev_tree
-from openfermion.utils import reorder, up_then_down, prune_unused_indices
 import numpy
 
+from openfermion.ops import FermionOperator, QubitOperator
+from openfermion.transforms import bravyi_kitaev_tree, get_fermion_operator
+from openfermion.utils import up_then_down, prune_unused_indices, reorder
 
 
-
-
-
-
-def remove_symmetry_qubits(fermion_hamil, active_orbitals, active_electrons):
-    """ Returns the qubit Hamiltonian for the molecular fermionic
-        Hamiltonian supplied, with two qubits removed using conservation
-        of electron spin and number, as described in arXiv:1701.08213.
+def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
+                                      active_electrons):
+    """ Returns the qubit Hamiltonian for the fermionic Hamiltonian
+        supplied, with two qubits removed using conservation of electron
+        spin and number, as described in arXiv:1701.08213.
 
         Args:
-            fermion_hamil: A fermionic molecular hamiltonian obtained
-                           using OpenFermion. An instance of the
-                           FermionOperator class.
+            fermion_hamiltonian: A fermionic molecular hamiltonian
+                                 obtained using OpenFermion. An instance
+                                 of the FermionOperator class.
 
             active_orbitals: Int type object. The number of active orbitals
                              being considered for the molecule.
@@ -36,50 +43,21 @@ def remove_symmetry_qubits(fermion_hamil, active_orbitals, active_electrons):
                               filled).
 
         Returns:
-                qubit_hamil: The qubit Hamiltonian corresponding to
-                             the supplied fermionic Hamiltonian, with
-                             two qubits removed using spin symmetries.
+                qubit_hamiltonian: The qubit Hamiltonian corresponding to
+                                   the supplied fermionic Hamiltonian, with
+                                   two qubits removed using spin symmetries.
+
+        Raises:
+                ValueError if fermion_hamiltonian isn't of the type
+                FermionOperator, or active_orbitals isn't an integer,
+                or active_electrons isn't an integer.
 
         Notes: This function reorders the spin orbitals as all spin-up, then
                all spin-down. It uses the OpenFermion bravyi_kitaev_tree
                mapping, rather than the bravyi-kitaev mapping.
-
     """
-
-    def edit_hamil_for_spin(qubit_hamiltonian, spin_orbital, orbital_parity):
-        """ Removes the Z terms acting on the orbital from the Hamiltonian.
-        """
-
-        new_qubit_dict = {}
-        for key, val in qubit_hamiltonian.terms.items():
-            # If Z acts on the specified orbital, precompute its effect and
-            # remove it from the Hamiltonian.
-            if (spin_orbital-1, 'Z') in key:
-                new_val = val*orbital_parity
-                new_key = tuple(i for i in key if i != (spin_orbital-1, 'Z'))
-                # Make sure to combine terms comprised of the same operators.
-                if new_qubit_dict.get(new_key) is None:
-                    new_qubit_dict[new_key] = new_val
-                else:
-                    old_val = new_qubit_dict.get(new_key)
-                    new_qubit_dict[new_key] = new_val + old_val
-            else:
-                # Make sure to combine terms comprised of the same operators.
-                if new_qubit_dict.get(key) is None:
-                    new_qubit_dict[key] = val
-                else:
-                    old_val = new_qubit_dict.get(key)
-                    new_qubit_dict[key] = val + old_val
-
-        qubit_hamiltonian.terms = new_qubit_dict
-        qubit_hamiltonian.compress()
-
-        return qubit_hamiltonian
-
-
     # Catch errors if inputs are of wrong type.
-    if (type(fermion_hamil) is not
-        openfermion.ops._fermion_operator.FermionOperator):
+    if type(fermion_hamiltonian) is not FermionOperator:
         raise ValueError('Supplied operator should be an instance'
                          'of FermionOperator class')
     if type(active_orbitals) is not int:
@@ -88,9 +66,9 @@ def remove_symmetry_qubits(fermion_hamil, active_orbitals, active_electrons):
         raise ValueError('Number of active electrons should be an integer.')
 
     # Arrange spins up then down, then BK map to qubit Hamiltonian.
-    ferm_hamil_reorder = reorder(fermion_hamil, up_then_down)
-    qubit_hamil = bravyi_kitaev_tree(ferm_hamil_reorder)
-    qubit_hamil.compress()
+    fermion_hamiltonian_reorder = reorder(fermion_hamiltonian, up_then_down)
+    qubit_hamiltonian = bravyi_kitaev_tree(fermion_hamiltonian_reorder)
+    qubit_hamiltonian.compress()
 
     # Allocates the parity factors for the orbitals as in arXiv:1704.05018.
     remainder = active_electrons % 4
@@ -103,16 +81,47 @@ def remove_symmetry_qubits(fermion_hamil, active_orbitals, active_electrons):
     elif remainder == 2:
         parity_final_orb = 1
         parity_middle_orb = -1
-    elif remainder == 3:
+    else:
         parity_final_orb = -1
         parity_middle_orb = 1
 
     # Removes the final qubit, then the middle qubit.
-    qubit_hamil = edit_hamil_for_spin(qubit_hamil, active_orbitals,
-                                      parity_final_orb)
-    qubit_hamil = edit_hamil_for_spin(qubit_hamil, active_orbitals/2,
-                                      parity_middle_orb)
-    qubit_hamil = prune_unused_indices(qubit_hamil)
+    qubit_hamiltonian = edit_hamiltonian_for_spin(qubit_hamiltonian,
+                                                  active_orbitals,
+                                                  parity_final_orb)
+    qubit_hamiltonian = edit_hamiltonian_for_spin(qubit_hamiltonian,
+                                                  active_orbitals/2,
+                                                  parity_middle_orb)
+    qubit_hamiltonian = prune_unused_indices(qubit_hamiltonian)
+
+    return qubit_hamiltonian
 
 
-    return qubit_hamil
+def edit_hamiltonian_for_spin(qubit_hamiltonian, spin_orbital, orbital_parity):
+    """ Removes the Z terms acting on the orbital from the Hamiltonian.
+    """
+    new_qubit_dict = {}
+    for term, coefficient in qubit_hamiltonian.terms.items():
+        # If Z acts on the specified orbital, precompute its effect and
+        # remove it from the Hamiltonian.
+        if (spin_orbital-1, 'Z') in term:
+            new_coefficient = coefficient*orbital_parity
+            new_term = tuple(i for i in term if i != (spin_orbital-1, 'Z'))
+            # Make sure to combine terms comprised of the same operators.
+            if new_qubit_dict.get(new_term) is None:
+                new_qubit_dict[new_term] = new_coefficient
+            else:
+                old_coefficient = new_qubit_dict.get(new_term)
+                new_qubit_dict[new_term] = new_coefficient + old_coefficient
+        else:
+            # Make sure to combine terms comprised of the same operators.
+            if new_qubit_dict.get(term) is None:
+                new_qubit_dict[term] = coefficient
+            else:
+                old_coefficient = new_qubit_dict.get(term)
+                new_qubit_dict[term] = coefficient + old_coefficient
+
+    qubit_hamiltonian.terms = new_qubit_dict
+    qubit_hamiltonian.compress()
+
+    return qubit_hamiltonian
