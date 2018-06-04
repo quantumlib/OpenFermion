@@ -126,3 +126,20 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
 
         max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
         self.assertGreater(max_diff, 0.)
+
+    def test_plane_wave_period_cutoff(self):
+        geometry = [('H', (0,)), ('H', (0.8,))]
+        grid = Grid(dimensions=1, scale=1.1, length=5)
+        period_cutoff = 50.0
+
+        h_1 = plane_wave_hamiltonian(grid, geometry, True, True, False, None)
+        jw_1 = jordan_wigner(h_1)
+        spectrum_1 = eigenspectrum(jw_1)
+
+        h_2 = plane_wave_hamiltonian(grid, geometry, True, True, False, None,
+                                     True, period_cutoff)
+        jw_2 = jordan_wigner(h_2)
+        spectrum_2 = eigenspectrum(jw_2)
+
+        max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
+        self.assertGreater(max_diff, 0.)

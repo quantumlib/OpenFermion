@@ -418,3 +418,20 @@ class JelliumTest(unittest.TestCase):
 
         max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
         self.assertGreater(max_diff, 0.)
+
+    def test_plane_wave_period_cutoff(self):
+        grid = Grid(dimensions=2, length=2, scale=1.0)
+        spinless = True
+        period_cutoff = 0.
+
+        hamiltonian_1 = FermionOperator()
+        jw_1 = jordan_wigner(hamiltonian_1)
+        spectrum_1 = eigenspectrum(jw_1)
+
+        hamiltonian_2 = jellium_model(grid, spinless, True, False, None, True,
+                                      period_cutoff)
+        jw_2 = jordan_wigner(hamiltonian_2)
+        spectrum_2 = eigenspectrum(jw_2)
+
+        max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
+        self.assertGreater(max_diff, 0.)
