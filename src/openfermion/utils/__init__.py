@@ -42,6 +42,9 @@ from ._rdm_mapping_functions import (kronecker_delta,
                                      map_particle_hole_dm_to_one_pdm,
                                      map_particle_hole_dm_to_two_pdm)
 
+from ._remove_symmetry_qubits import (symmetry_conserving_bravyi_kitaev,
+                                      edit_hamiltonian_for_spin)
+
 from ._slater_determinants import (gaussian_state_preparation_circuit,
                                    slater_determinant_preparation_circuit)
 
