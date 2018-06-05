@@ -87,3 +87,19 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
 
         self.assertEqual(number_of_qubits(lih_sto_qbt, lih_sto_numorb),
                          lih_sto_numorb-2)
+
+    # Check ValueErrors arise correctly.
+    def test_errors_reduce_symmetry_qubits(self):
+        # Generate the fermionic Hamiltonians,
+        # number of orbitals and number of electrons.
+        lih_sto_hamil, lih_sto_numorb, lih_sto_numel = LiH_sto3g()
+
+        with self.assertRaises(ValueError):
+            symmetry_conserving_bravyi_kitaev(
+                0, lih_sto_numorb, lih_sto_numel)
+        with self.assertRaises(ValueError):
+            symmetry_conserving_bravyi_kitaev(
+                lih_sto_hamil, 1.5, lih_sto_numel)
+        with self.assertRaises(ValueError):
+            symmetry_conserving_bravyi_kitaev(
+                lih_sto_hamil, lih_sto_numorb, 3.6)
