@@ -31,20 +31,16 @@ def LiH_sto3g():
         the STO-3G basis, at a distance of
         1.45 A.
     """
-    geometry = [('Li', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 1.45))]
-    basis = 'sto3g'
-    charge = 0
-    multiplicity = 1
-
-    LiH_molecule = MolecularData(geometry, basis, multiplicity, charge, "1.45")
-    LiH_molecule.load()
-
-    mol_hamil = LiH_molecule.get_molecular_hamiltonian()
-    num_electrons = calculated_molecule.n_electrons
-    num_orbitals = 2*calculated_molecule.n_orbitals
-    ferm_hamil = get_fermion_operator(mol_hamil)
-
-    return ferm_hamil, num_orbitals, num_electrons
+    geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., 1.45))]
+    molecule = MolecularData(geometry, 'sto-3g', 1,
+                             description="1.45")
+    molecule.load()
+    molecular_hamiltonian = molecule.get_molecular_hamiltonian()
+    hamiltonian = get_fermion_operator(molecular_hamiltonian)
+    num_orbitals = 12
+    num_electrons = 4
+    
+    return hamiltonian, num_orbitals, num_electrons
 
 
 def number_of_qubits(qubit_hamiltonian, unreduced_orbitals):
