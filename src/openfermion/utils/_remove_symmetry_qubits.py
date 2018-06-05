@@ -41,12 +41,13 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
                               is less than the number of electrons in the
                               molecule if some orbitals have been assumed
                               filled).
-
         Returns:
                 qubit_hamiltonian: The qubit Hamiltonian corresponding to
                                    the supplied fermionic Hamiltonian, with
                                    two qubits removed using spin symmetries.
-
+        WARNING: 
+                Reorders orbitals from the default even-odd ordering to all
+                spin-up orbitals, then all spin-down orbitals.
         Raises:
                 ValueError if fermion_hamiltonian isn't of the type
                 FermionOperator, or active_orbitals isn't an integer,
