@@ -22,7 +22,7 @@ from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import eigenspectrum
 
-from openfermion.transforms_remove_symmetry_qubits import (
+from openfermion.transforms._remove_symmetry_qubits import (
     symmetry_conserving_bravyi_kitaev, edit_hamiltonian_for_spin)
 
 
