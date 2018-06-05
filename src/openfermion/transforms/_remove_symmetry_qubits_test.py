@@ -37,8 +37,8 @@ def LiH_sto3g():
     molecule.load()
     molecular_hamiltonian = molecule.get_molecular_hamiltonian()
     hamiltonian = get_fermion_operator(molecular_hamiltonian)
-    num_orbitals = 12
-    num_electrons = 4
+    num_electrons = molecule.n_electrons
+    num_orbitals = 2*molecule.n_orbitals
     
     return hamiltonian, num_orbitals, num_electrons
 
@@ -68,7 +68,7 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
 
         # Use test function to reduce the qubits.
         lih_sto_qbt = (
-            _remove_symmetry_qubits.symmetry_conserving_bravyi_kitaev(
+            symmetry_conserving_bravyi_kitaev(
                 lih_sto_hamil, lih_sto_numorb, lih_sto_numel))
 
         self.assertAlmostEqual(
@@ -82,7 +82,7 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
 
         # Use test function to reduce the qubits.
         lih_sto_qbt = (
-            _remove_symmetry_qubits.symmetry_conserving_bravyi_kitaev(
+            symmetry_conserving_bravyi_kitaev(
                 lih_sto_hamil, lih_sto_numorb, lih_sto_numel))
 
         self.assertEqual(number_of_qubits(lih_sto_qbt, lih_sto_numorb),
