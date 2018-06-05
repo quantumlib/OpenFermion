@@ -47,27 +47,6 @@ def LiH_sto3g():
     return ferm_hamil, num_orbitals, num_electrons
 
 
-def H2_sto3g():
-    """ Generates the Hamiltonian for H_2 in
-        the STO-3G basis, at a distance of
-        0.75 A.
-    """
-    geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.75))]
-    basis = 'sto3g'
-    charge = 0
-    multiplicity = 1
-
-    H2_molecule = MolecularData(geometry, basis, multiplicity, charge, '0.75')
-    H2_molecule.load()
-
-    mol_hamil = H2_molecule.get_molecular_hamiltonian()
-    num_electrons = calculated_molecule.n_electrons
-    num_orbitals = 2*calculated_molecule.n_orbitals
-    ferm_hamil = get_fermion_operator(mol_hamil)
-
-    return ferm_hamil, num_orbitals, num_electrons
-
-
 def number_of_qubits(qubit_hamiltonian, unreduced_orbitals):
     """ Returns the number of qubits that a
         qubit Hamiltonian acts upon.
@@ -89,19 +68,13 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
     def test_energy_reduce_symmetry_qubits(self):
         # Generate the fermionic Hamiltonians,
         # number of orbitals and number of electrons.
-        h2_sto_hamil, h2_sto_numorb, h2_sto_numel = H2_sto3g()
         lih_sto_hamil, lih_sto_numorb, lih_sto_numel = LiH_sto3g()
 
         # Use test function to reduce the qubits.
-        h2_sto_qbt = (
-            _remove_symmetry_qubits.symmetry_conserving_bravyi_kitaev(
-                h2_sto_hamil, h2_sto_numorb, h2_sto_numel))
         lih_sto_qbt = (
             _remove_symmetry_qubits.symmetry_conserving_bravyi_kitaev(
                 lih_sto_hamil, lih_sto_numorb, lih_sto_numel))
 
-        self.assertAlmostEqual(
-            eigenspectrum(h2_sto_qbt)[0], eigenspectrum(h2_sto_hamil)[0])
         self.assertAlmostEqual(
             eigenspectrum(lih_sto_qbt)[0], eigenspectrum(lih_sto_hamil)[0])
 
@@ -109,18 +82,12 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
     def test_orbnum_reduce_symmetry_qubits(self):
         # Generate the fermionic Hamiltonians,
         # number of orbitals and number of electrons.
-        h2_sto_hamil, h2_sto_numorb, h2_sto_numel = H2_sto3g()
         lih_sto_hamil, lih_sto_numorb, lih_sto_numel = LiH_sto3g()
 
         # Use test function to reduce the qubits.
-        h2_sto_qbt = (
-            _remove_symmetry_qubits.symmetry_conserving_bravyi_kitaev(
-                h2_sto_hamil, h2_sto_numorb, h2_sto_numel))
         lih_sto_qbt = (
             _remove_symmetry_qubits.symmetry_conserving_bravyi_kitaev(
                 lih_sto_hamil, lih_sto_numorb, lih_sto_numel))
 
-        self.assertEqual(number_of_qubits(h2_sto_qbt, h2_sto_numorb),
-                         h2_sto_numorb-2)
         self.assertEqual(number_of_qubits(lih_sto_qbt, lih_sto_numorb),
                          lih_sto_numorb-2)
