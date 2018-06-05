@@ -12,7 +12,7 @@
 
 """ Unit tests of remove_symmetry_qubits(). Test that it preserves the
     correct ground state energy, and reduces the number of qubits required
-    by 2.
+    by two.
 """
 
 import unittest
