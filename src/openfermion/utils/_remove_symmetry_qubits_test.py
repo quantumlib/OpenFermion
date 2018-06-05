@@ -22,7 +22,7 @@ from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import eigenspectrum
 
-import _remove_symmetry_qubits
+import _remove_symmetry_qubits.py
 
 
 def LiH_sto3g():
