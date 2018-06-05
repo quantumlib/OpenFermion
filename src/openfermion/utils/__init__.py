@@ -77,7 +77,7 @@ from ._sparse_tools import (boson_ladder_sparse,
                             get_density_matrix,
                             get_gap,
                             get_ground_state,
-                            get_linear_qubit_operator,
+                            get_linear_qubit_operator_diagonal,
                             inner_product,
                             jordan_wigner_sparse,
                             jw_configuration_state,
@@ -94,6 +94,12 @@ from ._sparse_tools import (boson_ladder_sparse,
                             variance)
 
 from ._davidson import Davidson, DavidsonOptions, QubitDavidson
+from ._linear_qubit_operator import (
+    LinearQubitOperator,
+    LinearQubitOperatorOptions,
+    ParallelLinearQubitOperator,
+    generate_linear_qubit_operator,
+)
 
 from ._pubchem import geometry_from_pubchem
 
