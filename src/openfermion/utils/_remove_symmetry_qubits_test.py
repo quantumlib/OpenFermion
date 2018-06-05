@@ -20,7 +20,9 @@ import unittest
 from openfermion.hamiltonians import MolecularData
 from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import get_fermion_operator
-from openfermion.utils import eigenspectrum, remove_symmetry_qubits
+from openfermion.utils import eigenspectrum
+
+import _remove_symmetry_qubits
 
 
 def LiH_sto3g():
