@@ -12,7 +12,7 @@
 
 """ Module to remove two qubits from the problem space using conservation
     of electron number and conservation of electron spin. As described in
-    arXiv:1701.08213.
+    arXiv:1701.08213 and Phys. Rev. X 6, 031007.
 """
 
 import numpy
@@ -26,7 +26,8 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
                                       active_electrons):
     """ Returns the qubit Hamiltonian for the fermionic Hamiltonian
         supplied, with two qubits removed using conservation of electron
-        spin and number, as described in arXiv:1701.08213.
+        spin and number, as described in arXiv:1701.08213 and 
+        Phys. Rev. X 6, 031007.
 
         Args:
             fermion_hamiltonian: A fermionic molecular hamiltonian
