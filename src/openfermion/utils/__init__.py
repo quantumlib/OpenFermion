@@ -102,6 +102,3 @@ from ._linear_qubit_operator import (
 )
 
 from ._pubchem import geometry_from_pubchem
-
-from ._remove_symmetry_qubits import (symmetry_conserving_bravyi_kitaev,
-                                      edit_hamiltonian_for_spin)
