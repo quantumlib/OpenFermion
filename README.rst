@@ -137,6 +137,7 @@ Authors
 `Josh Izaac <https://github.com/josh146>`__ (Xanadu),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
 `Xinle Liu <https://github.com/sheilaliuxl>`__ (Google),
+`Sam McArdle <https://github.com/sammcardle30>`__ (Oxford),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Thomas O'Brien <https://github.com/obriente>`__ (Leiden University),
 `Isil Ozfidan <https://github.com/conta877>`__ (D-Wave Systems),

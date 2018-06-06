@@ -40,3 +40,5 @@ from ._reverse_jordan_wigner import reverse_jordan_wigner
 from ._verstraete_cirac import verstraete_cirac_2d_square
 from ._weyl_ordering import (symmetric_ordering,
                              weyl_polynomial_quantization)
+from ._remove_symmetry_qubits import (symmetry_conserving_bravyi_kitaev,
+                                      edit_hamiltonian_for_spin)
