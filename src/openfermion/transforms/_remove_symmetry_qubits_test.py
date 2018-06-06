@@ -157,6 +157,20 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
         # Generate the fermionic Hamiltonians,
         # number of orbitals and number of electrons.
         lih_sto_hamil, lih_sto_numorb, lih_sto_numel = LiH_sto3g()
+
+        # Use test function to reduce the qubits.
+        lih_sto_qbt = (
+            symmetry_conserving_bravyi_kitaev(
+                lih_sto_hamil, lih_sto_numorb, lih_sto_numel))
+
+        self.assertAlmostEqual(
+            eigenspectrum(lih_sto_qbt)[0], eigenspectrum(lih_sto_hamil)[0])
+
+    # Check that the qubit Hamiltonian acts on two fewer qubits.
+    def test_orbnum_reduce_symmetry_qubits(self):
+        # Generate the fermionic Hamiltonians,
+        # number of orbitals and number of electrons.
+        lih_sto_hamil, lih_sto_numorb, lih_sto_numel = LiH_sto3g()
         lih_reduc_hamil, lih_reduc_numorb, lih_reduc_numel = LiH_reduced()
 
         # Use test function to reduce the qubits.
@@ -167,24 +181,10 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
             symmetry_conserving_bravyi_kitaev(
                 lih_reduc_hamil, lih_reduc_numorb, lih_reduc_numel))
 
-        self.assertAlmostEqual(
-            eigenspectrum(lih_sto_qbt)[0], eigenspectrum(lih_sto_hamil)[0])
-        self.assertAlmostEqual(
-            eigenspectrum(lih_reduc_qbt)[0], eigenspectrum(lih_reduc_hamil)[0])
-
-    # Check that the qubit Hamiltonian acts on two fewer qubits.
-    def test_orbnum_reduce_symmetry_qubits(self):
-        # Generate the fermionic Hamiltonians,
-        # number of orbitals and number of electrons.
-        lih_sto_hamil, lih_sto_numorb, lih_sto_numel = LiH_sto3g()
-
-        # Use test function to reduce the qubits.
-        lih_sto_qbt = (
-            symmetry_conserving_bravyi_kitaev(
-                lih_sto_hamil, lih_sto_numorb, lih_sto_numel))
-
         self.assertEqual(number_of_qubits(lih_sto_qbt, lih_sto_numorb),
                          lih_sto_numorb-2)
+        self.assertEqual(number_of_qubits(lih_reduc_qbt, lih_reduc_numorb),
+                         lih_reduc_numorb-2)
 
     # Check ValueErrors arise correctly.
     def test_errors_reduce_symmetry_qubits(self):
