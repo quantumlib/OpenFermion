@@ -186,6 +186,14 @@ class DavidsonTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(eigen_values,
                                        numpy.array([1.41556103])))
 
+    def test_get_lowest_with_default(self):
+        """Test for get_lowest_n() with default n_lowest = 1."""
+        numpy.random.seed(len(self.eigen_values))
+        success, eigen_values, _ = self.davidson.get_lowest_n()
+
+        self.assertTrue(success)
+        self.assertTrue(numpy.allclose(eigen_values, self.eigen_values[:1]))
+
     def test_get_lowest_one(self):
         """Test for get_lowest_n() with n_lowest = 1."""
         n_lowest = 1
