@@ -13,12 +13,14 @@
 """This module is to find lowest eigenvalues with Davidson algorithm."""
 from __future__ import absolute_import
 
+import logging
 import warnings
 
 import numpy
 import numpy.linalg
 import scipy
 import scipy.linalg
+import scipy.sparse
 import scipy.sparse.linalg
 
 from openfermion.utils._sparse_tools import get_linear_qubit_operator_diagonal
@@ -81,7 +83,9 @@ class Davidson(object):
         if options is None:
             options = DavidsonOptions()
 
-        if not isinstance(linear_operator, scipy.sparse.linalg.LinearOperator):
+        if not isinstance(linear_operator,
+                          (scipy.sparse.linalg.LinearOperator,
+                           scipy.sparse.spmatrix)):
             raise ValueError(
                 'linear_operator is not a LinearOperator: {}.'.format(type(
                     linear_operator)))
@@ -154,6 +158,8 @@ class Davidson(object):
         while (num_iterations < max_iterations and not success):
             (eigen_values, eigen_vectors, mat_eigen_vectors, max_trial_error,
              guess_v, guess_mv) = self._iterate(n_lowest, guess_v, guess_mv)
+            logging.info("Eigenvalues for iteration %d: %s, error is %f.",
+                         num_iterations, eigen_values, max_trial_error)
 
             if max_trial_error < self.options.eps:
                 success = True
@@ -229,13 +235,13 @@ class Davidson(object):
                 matrix product of linear_operator with guess_v.
         """
         if guess_mv is None:
-            guess_mv = self.linear_operator * guess_v
+            guess_mv = self.linear_operator.dot(guess_v)
         dimension = guess_v.shape[1]
 
         # Note that getting guess_mv is the most expensive step.
         if guess_mv.shape[1] < dimension:
-            guess_mv = numpy.hstack([guess_mv, self.linear_operator *
-                                     guess_v[:, guess_mv.shape[1] : dimension]])
+            guess_mv = numpy.hstack([guess_mv, self.linear_operator.dot(
+                guess_v[:, guess_mv.shape[1] : dimension])])
         guess_vmv = numpy.dot(guess_v.conj().T, guess_mv)
 
         # Gets new set of eigenvalues and eigenvectors in the vmv space, with a
@@ -334,6 +340,20 @@ class QubitDavidson(Davidson):
             generate_linear_qubit_operator(qubit_operator, n_qubits, options),
             get_linear_qubit_operator_diagonal(qubit_operator, n_qubits),
             options=options)
+
+
+class SparseDavidson(Davidson):
+    """Davidson algorithm for a sparse matrix."""
+
+    def __init__(self, sparse_matrix, options=None):
+        """
+        Args:
+            sparse_matrix(scipy.sparse.spmatrix): A sparse matrix in scipy.
+            options(DavidsonOptions): Iteration options.
+        """
+        super(SparseDavidson, self).__init__(
+            sparse_matrix, sparse_matrix.diagonal(), options=options)
+
 
 def generate_random_vectors(row, col, real_only=False):
     """Generates orthonormal random vectors with col columns.
