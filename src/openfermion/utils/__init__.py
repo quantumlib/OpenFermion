@@ -93,7 +93,7 @@ from ._sparse_tools import (boson_ladder_sparse,
                             sparse_eigenspectrum,
                             variance)
 
-from ._davidson import Davidson, DavidsonOptions, QubitDavidson
+from ._davidson import Davidson, DavidsonOptions, QubitDavidson, SparseDavidson
 from ._linear_qubit_operator import (
     LinearQubitOperator,
     LinearQubitOperatorOptions,
