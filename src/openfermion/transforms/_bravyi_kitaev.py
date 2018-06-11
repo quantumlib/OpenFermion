@@ -13,7 +13,7 @@
 """Bravyi-Kitaev transform on fermionic operators."""
 
 from openfermion.ops import QubitOperator
-from openfermion.utils import count_qubits
+from openfermion.utils import count_qubits, inline_sum
 
 
 def bravyi_kitaev(operator, n_qubits=None):
@@ -53,7 +53,7 @@ def bravyi_kitaev(operator, n_qubits=None):
                                  n_qubits=n_qubits)
         for term in operator.terms
     )
-    return inline_sum(seed=QubitOperator(), summands=transformed_terms)
+    return inline_sum(summands=transformed_terms, seed=QubitOperator())
 
 
 def _update_set(index, n_qubits):
@@ -121,8 +121,9 @@ def _transform_operator_term(term, coefficient, n_qubits):
         _transform_ladder_operator(ladder_operator, n_qubits)
         for ladder_operator in term
     )
-    return inline_product(seed=QubitOperator((), coefficient),
-                          factors=transformed_ladder_ops)
+    return inline_product(factors=transformed_ladder_ops,
+                          seed=QubitOperator((), coefficient))
+                          
 
 
 def _transform_ladder_operator(ladder_operator, n_qubits):
@@ -162,20 +163,7 @@ def _transform_ladder_operator(ladder_operator, n_qubits):
     return transformed_operator
 
 
-def inline_sum(seed, summands):
-    """Computes a sum, using the __iadd__ operator.
-    Args:
-        seed (T): The starting total. The zero value.
-        summands (iterable[T]): Values to add (with +=) into the total.
-    Returns:
-        T: The result of adding all the factors into the zero value.
-    """
-    for r in summands:
-        seed += r
-    return seed
-
-
-def inline_product(seed, factors):
+def inline_product(factors, seed):
     """Computes a product, using the __imul__ operator.
     Args:
         seed (T): The starting total. The unit value.

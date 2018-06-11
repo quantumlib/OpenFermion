@@ -134,10 +134,13 @@ Authors
 `Tarini Hardikar <https://github.com/TariniHardikar>`__ (Dartmouth),
 `Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
+`Josh Izaac <https://github.com/josh146>`__ (Xanadu),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
+`Xinle Liu <https://github.com/sheilaliuxl>`__ (Google),
+`Sam McArdle <https://github.com/sammcardle30>`__ (Oxford),
+`Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Thomas O'Brien <https://github.com/obriente>`__ (Leiden University),
 `Isil Ozfidan <https://github.com/conta877>`__ (D-Wave Systems),
-`Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Max Radin <https://github.com/max-radin>`__ (UC Santa Barbara),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
 `Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
@@ -148,6 +151,7 @@ Authors
 `Mark Steudtner <https://github.com/msteudtner>`__  (Leiden University),
 `Qiming Sun <https://github.com/sunqm>`__ (Caltech),
 `Wei Sun <https://github.com/Spaceenter>`__ (Google),
+`Daochen Wang <https://github.com/daochenw>`__ (River Lane Research),
 `Chris Winkler <https://github.com/quid256>`__ (University of Chicago) and
 `Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan).
 

@@ -14,7 +14,7 @@
 import unittest
 
 from openfermion.hamiltonians import (
-    jellium_model, standardized_dual_basis_jellium_hamiltonian,
+    jellium_model, hypercube_grid_with_given_wigner_seitz_radius_and_filling,
     wigner_seitz_length_scale)
 from openfermion.utils._low_depth_trotter_error import *
 from openfermion.utils import Grid
@@ -75,8 +75,11 @@ class ErrorBoundTest(unittest.TestCase):
 
     def test_error_bound_using_info_1d(self):
         # Generate the Hamiltonian.
-        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
-            grid_length=4, dimension=1)
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension=1, grid_length=4, wigner_seitz_radius=10.)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
@@ -88,8 +91,11 @@ class ErrorBoundTest(unittest.TestCase):
 
     def test_error_bound_using_info_1d_with_input_ordering(self):
         # Generate the Hamiltonian.
-        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
-            grid_length=4, dimension=1)
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension=1, grid_length=4, wigner_seitz_radius=10.)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
@@ -101,8 +107,11 @@ class ErrorBoundTest(unittest.TestCase):
 
     def test_error_bound_using_info_2d_verbose(self):
         # Generate the Hamiltonian.
-        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
-            grid_length=3, dimension=2)
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension=2, grid_length=3, wigner_seitz_radius=10.)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
@@ -123,13 +132,15 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         wigner_seitz_radius = 10.0
         inverse_filling_fraction = 2
         n_qubits = grid_length ** dimension
-
-        # Compute appropriate length scale.
         n_particles = n_qubits // inverse_filling_fraction
 
         # Generate the Hamiltonian.
-        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
-            grid_length, dimension, wigner_seitz_radius, n_particles)
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension, grid_length, wigner_seitz_radius,
+            1. / inverse_filling_fraction)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
 
         terms = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)[0]
@@ -150,12 +161,13 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         inverse_filling_fraction = 2
         n_qubits = grid_length ** dimension
 
-        # Compute appropriate length scale.
-        n_particles = n_qubits // inverse_filling_fraction
-
         # Generate the Hamiltonian.
-        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
-            grid_length, dimension, wigner_seitz_radius, n_particles)
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension, grid_length, wigner_seitz_radius,
+            1. / inverse_filling_fraction)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
@@ -176,13 +188,14 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         dimension = 1
         wigner_seitz_radius = 10.0
         inverse_filling_fraction = 2
-        n_qubits = grid_length ** dimension
 
-        # Compute appropriate length scale.
-        n_particles = n_qubits // inverse_filling_fraction
-
-        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
-            grid_length, dimension, wigner_seitz_radius, n_particles)
+        # Generate the Hamiltonian.
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension, grid_length, wigner_seitz_radius,
+            1. / inverse_filling_fraction)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
@@ -203,11 +216,13 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         inverse_filling_fraction = 2
         n_qubits = grid_length ** dimension
 
-        # Compute appropriate length scale.
-        n_particles = n_qubits // inverse_filling_fraction
-
-        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
-            grid_length, dimension, wigner_seitz_radius, n_particles)
+        # Generate the Hamiltonian.
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension, grid_length, wigner_seitz_radius,
+            1. / inverse_filling_fraction)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
 
         # Unpack result into terms, indices they act on, and whether they're
         # hopping operators.
@@ -225,8 +240,11 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
         dimension = 1
 
         # Generate the Hamiltonian.
-        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
-            grid_length, dimension)
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension, grid_length, wigner_seitz_radius=10.)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
 
         terms = ordered_low_depth_terms_no_info(hamiltonian)
         FO = FermionOperator
@@ -268,20 +286,15 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
         grid_length = 4
         dimension = 1
         wigner_seitz_radius = 10.0
-        inverse_filling_fraction = 2
-        n_qubits = grid_length ** dimension
 
-        # Compute appropriate length scale.
-        n_particles = n_qubits // inverse_filling_fraction
-        length_scale = wigner_seitz_length_scale(
-            wigner_seitz_radius, n_particles, dimension)
+        # Generate the Hamiltonian.
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension, grid_length, wigner_seitz_radius)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
 
-        hamiltonian = standardized_dual_basis_jellium_hamiltonian(
-            grid_length, dimension)
         terms = ordered_low_depth_terms_no_info(hamiltonian)
         terms_total = sum(terms, FermionOperator.zero())
 
-        grid = Grid(dimension, grid_length, length_scale)
-        hamiltonian = jellium_model(grid, spinless=True, plane_wave=False)
-        hamiltonian = normal_ordered(hamiltonian)
         self.assertTrue(terms_total == hamiltonian)

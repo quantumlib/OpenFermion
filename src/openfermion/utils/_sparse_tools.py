@@ -26,14 +26,16 @@ import warnings
 
 from openfermion.config import *
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
-                             QubitOperator, normal_ordered)
+                             QubitOperator, BosonOperator,
+                             QuadOperator)
 from openfermion.utils import (Grid, commutator, count_qubits,
                                fourier_transform,
                                gaussian_state_preparation_circuit,
                                hermitian_conjugated, is_hermitian,
-                               number_operator,
+                               normal_ordered, number_operator,
                                slater_determinant_preparation_circuit,
                                up_index, down_index)
+
 
 # Make global definitions.
 identity_csc = scipy.sparse.identity(2, format='csc', dtype=complex)
@@ -57,7 +59,7 @@ def kronecker_operators(*args):
 
 
 def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
-    """Make a matrix representation of a fermion ladder operator.
+    r"""Make a matrix representation of a fermion ladder operator.
 
     Operators are mapped as follows:
     a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
@@ -82,7 +84,7 @@ def jordan_wigner_ladder_sparse(n_qubits, tensor_factor, ladder_type):
 
 
 def jordan_wigner_sparse(fermion_operator, n_qubits=None):
-    """Initialize a Scipy sparse matrix from a FermionOperator.
+    r"""Initialize a Scipy sparse matrix from a FermionOperator.
 
     Operators are mapped as follows:
     a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
@@ -203,6 +205,56 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     sparse_operator.eliminate_zeros()
     return sparse_operator
 
+def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
+    """ Return a linear operator's diagonal elements.
+
+    The main motivation is to use it for Davidson's algorithm, to find out the
+    lowest n eigenvalues and associated eigenvectors.
+
+    Qubit terms with X or Y operators will contribute nothing to the diagonal
+    elements, while I or Z will contribute a factor of 1 or -1 together with
+    the coefficient.
+
+    Args:
+        qubit_operator(QubitOperator): A qubit operator.
+
+    Returns:
+        linear_operator_diagonal(numpy.ndarray): The diagonal elements for
+            LinearQubitOperator(qubit_operator).
+    """
+    if n_qubits is None:
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    n_hilbert = 2 ** n_qubits
+    zeros_diagonal = numpy.zeros(n_hilbert)
+    ones_diagonal = numpy.ones(n_hilbert)
+    linear_operator_diagonal = zeros_diagonal
+    # Loop through the terms.
+    for qubit_term in qubit_operator.terms:
+        is_zero = False
+        tensor_factor = 0
+        vecs = [ones_diagonal]
+        for pauli_operator in qubit_term:
+            op = pauli_operator[1]
+            if op in ['X', 'Y']:
+                is_zero = True
+                break
+
+            # Split vector by half and half for each bit.
+            if pauli_operator[0] > tensor_factor:
+                vecs = [v for iter_v in vecs for v in numpy.split(
+                    iter_v, 2 ** (pauli_operator[0] - tensor_factor))]
+
+            vec_pairs = [numpy.split(v, 2) for v in vecs]
+            vecs = [v for vp in vec_pairs for v in (vp[0], -vp[1])]
+            tensor_factor = pauli_operator[0] + 1
+        if not is_zero:
+            linear_operator_diagonal += (qubit_operator.terms[qubit_term] *
+                                         numpy.concatenate(vecs))
+    return linear_operator_diagonal
+
 
 def jw_configuration_state(occupied_orbitals, n_qubits):
     """Function to produce a basis state in the occupation number basis.
@@ -215,10 +267,9 @@ def jw_configuration_state(occupied_orbitals, n_qubits):
     Returns:
         basis_vector(sparse): The basis state as a sparse matrix
     """
-    one_index = sum([2 ** (n_qubits - 1 - i) for i in occupied_orbitals])
-    basis_vector = scipy.sparse.csc_matrix(([1.], ([one_index], [0])),
-                                           shape=(2 ** n_qubits, 1),
-                                           dtype=float)
+    one_index = sum(2 ** (n_qubits - 1 - i) for i in occupied_orbitals)
+    basis_vector = numpy.zeros(2 ** n_qubits, dtype=float)
+    basis_vector[one_index] = 1
     return basis_vector
 
 
@@ -660,6 +711,7 @@ def get_density_matrix(states, probabilities):
     density_matrix = scipy.sparse.csc_matrix(
         (n_qubits, n_qubits), dtype=complex)
     for state, probability in zip(states, probabilities):
+        state = scipy.sparse.csc_matrix(state.reshape((len(state), 1)))
         density_matrix = density_matrix + probability * state * state.getH()
     return density_matrix
 
@@ -679,9 +731,6 @@ def get_ground_state(sparse_operator, initial_guess=None):
         eigenstate:
             The lowest eigenstate in scipy.sparse csc format.
     """
-    if not is_hermitian(sparse_operator):
-        raise ValueError('sparse_operator must be Hermitian.')
-
     values, vectors = scipy.sparse.linalg.eigsh(
         sparse_operator, k=1, v0=initial_guess, which='SA', maxiter=1e7)
 
@@ -1128,8 +1177,150 @@ def get_gap(sparse_operator, initial_guess=None):
 
 def inner_product(state_1, state_2):
     """Compute inner product of two states."""
-    product = state_1.getH().dot(state_2)
-    if product.nnz:
-        return product.data[0]
+    return numpy.dot(state_1.conjugate(), state_2)
+
+
+def boson_ladder_sparse(n_modes, mode, ladder_type, trunc):
+    r"""Make a matrix representation of a singular bosonic ladder operator
+    in the Fock space.
+
+    Since the bosonic operator lies in an infinite Fock space,
+    a truncation value needs to be provide so that a sparse matrix
+    of finite size can be returned.
+
+    Args:
+        n_modes (int): Number of modes in the system Hilbert space.
+        mode (int): The mode the ladder operator targets.
+        ladder_type (int): This is a nonzero integer. 0 indicates a lowering
+            operator, 1 a raising operator.
+        trunc (int): The size at which the Fock space should be truncated
+            when returning the matrix representing the ladder operator.
+
+    Returns:
+        The corresponding trunc x trunc Scipy sparse matrix.
+    """
+    if trunc < 1 or not isinstance(trunc, int):
+        raise ValueError("Fock space truncation must be a positive integer.")
+
+    if ladder_type:
+        lop = scipy.sparse.spdiags(numpy.sqrt(range(1, trunc)),
+                                   -1, trunc, trunc, format='csc')
     else:
-        return 0.
+        lop = scipy.sparse.spdiags(numpy.sqrt(range(trunc)),
+                                   1, trunc, trunc, format='csc')
+
+    Id = [scipy.sparse.identity(trunc, format='csc', dtype=complex)]
+    operator_list = Id*mode + [lop] + Id*(n_modes - mode - 1)
+    operator = kronecker_operators(operator_list)
+
+    return operator
+
+
+def single_quad_op_sparse(n_modes, mode, quadrature, hbar, trunc):
+    r"""Make a matrix representation of a singular quadrature
+    operator in the Fock space.
+
+    Since the bosonic operators lie in an infinite Fock space,
+    a truncation value needs to be provide so that a sparse matrix
+    of finite size can be returned.
+
+    Args:
+        n_modes (int): Number of modes in the system Hilbert space.
+        mode (int): The mode the ladder operator targets.
+        quadrature (str): 'q' for the canonical position operator,
+            'p' for the canonical moment]um operator.
+        hbar (float): the value of hbar to use in the definition of the
+            canonical commutation relation [q_i, p_j] = \delta_{ij} i hbar.
+        trunc (int): The size at which the Fock space should be truncated
+            when returning the matrix representing the ladder operator.
+
+    Returns:
+        The corresponding trunc x trunc Scipy sparse matrix.
+    """
+    if trunc < 1 or not isinstance(trunc, int):
+        raise ValueError("Fock space truncation must be a positive integer.")
+
+    b = boson_ladder_sparse(1, 0, 0, trunc)
+
+    if quadrature == 'q':
+        op = numpy.sqrt(hbar/2) * (b + b.conj().T)
+    elif quadrature == 'p':
+        op = -1j*numpy.sqrt(hbar/2) * (b - b.conj().T)
+
+    Id = [scipy.sparse.identity(trunc, dtype=complex, format='csc')]
+    operator_list = Id*mode + [op] + Id*(n_modes - mode - 1)
+    operator = kronecker_operators(operator_list)
+
+    return operator
+
+
+def boson_operator_sparse(operator, trunc, hbar=1.):
+    r"""Initialize a Scipy sparse matrix in the Fock space
+    from a bosonic operator.
+
+    Since the bosonic operators lie in an infinite Fock space,
+    a truncation value needs to be provide so that a sparse matrix
+    of finite size can be returned.
+
+    Args:
+        operator: One of either BosonOperator or QuadOperator.
+        trunc (int): The size at which the Fock space should be truncated
+            when returning the matrix representing the ladder operator.
+        hbar (float): the value of hbar to use in the definition of the
+            canonical commutation relation [q_i, p_j] = \delta_{ij} i hbar.
+            This only applies if calcualating the sparse representation of
+            a quadrature operator.
+
+    Returns:
+        The corresponding Scipy sparse matrix of size [trunc, trunc].
+    """
+    if isinstance(operator, QuadOperator):
+        from openfermion.transforms._conversion import get_boson_operator
+        boson_operator = get_boson_operator(operator, hbar)
+    elif isinstance(operator, BosonOperator):
+        boson_operator = operator
+    else:
+        raise ValueError("Only BosonOperator and QuadOperator are supported.")
+
+    if trunc < 1 or not isinstance(trunc, int):
+        raise ValueError("Fock space truncation must be a positive integer.")
+
+    # count the number of modes
+    n_modes = 0
+    for term in boson_operator.terms:
+        for ladder_operator in term:
+            if ladder_operator[0] + 1 > n_modes:
+                n_modes = ladder_operator[0] + 1
+
+    # Construct the Scipy sparse matrix.
+    n_hilbert = trunc ** n_modes
+    values_list = [[]]
+    row_list = [[]]
+    column_list = [[]]
+
+    # Loop through the terms.
+    for term in boson_operator.terms:
+        coefficient = boson_operator.terms[term]
+        term_operator = coefficient*scipy.sparse.identity(
+            n_hilbert, dtype=complex, format='csc')
+
+        for ladder_op in term:
+            # Add actual operator to the list.
+            b = boson_ladder_sparse(n_modes, ladder_op[0], ladder_op[1], trunc)
+            term_operator = term_operator.dot(b)
+
+        # Extract triplets from sparse_term.
+        values_list.append(term_operator.tocoo(copy=False).data)
+        (row, column) = term_operator.nonzero()
+        column_list.append(column)
+        row_list.append(row)
+
+    # Create sparse operator.
+    values_list = numpy.concatenate(values_list)
+    row_list = numpy.concatenate(row_list)
+    column_list = numpy.concatenate(column_list)
+    sparse_operator = scipy.sparse.coo_matrix((
+        values_list, (row_list, column_list)),
+        shape=(n_hilbert, n_hilbert)).tocsc(copy=False)
+    sparse_operator.eliminate_zeros()
+    return sparse_operator

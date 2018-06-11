@@ -14,15 +14,13 @@ from ._chemical_series import (make_atomic_ring,
                                make_atomic_lattice,
                                make_atom)
 
-from ._jellium import (dual_basis_kinetic,
-                       dual_basis_potential,
-                       dual_basis_jellium_model,
-                       jellium_model,
-                       jordan_wigner_dual_basis_jellium,
-                       plane_wave_kinetic,
-                       plane_wave_potential,
-                       standardized_dual_basis_jellium_hamiltonian,
-                       wigner_seitz_length_scale)
+from ._jellium import (
+    dual_basis_kinetic, dual_basis_potential,
+    dual_basis_jellium_model, jellium_model,
+    jordan_wigner_dual_basis_jellium,
+    hypercube_grid_with_given_wigner_seitz_radius_and_filling,
+    plane_wave_kinetic, plane_wave_potential,
+    wigner_seitz_length_scale)
 
 from ._molecular_data import MolecularData, periodic_table
 
@@ -33,6 +31,6 @@ from ._plane_wave_hamiltonian import (dual_basis_external_potential,
 
 # Imports out of alphabetical order to avoid circular dependancy.
 
-from ._hubbard import fermi_hubbard
+from ._hubbard import bose_hubbard, fermi_hubbard
 
 from ._mean_field_dwave import mean_field_dwave

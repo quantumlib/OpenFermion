@@ -76,3 +76,12 @@ ENV/
 # mkdocs documentation
 /site
 *.lprof
+
+# cache
+*.pytest_cache/
+
+# swap files
+*.swp
+
+# idea SDK
+.idea/

@@ -16,8 +16,8 @@ from __future__ import absolute_import
 import numpy
 
 from openfermion.config import *
-from openfermion.ops import FermionOperator, normal_ordered
-from openfermion.utils import count_qubits
+from openfermion.ops import FermionOperator
+from openfermion.utils import count_qubits, normal_ordered
 from openfermion.utils._low_depth_trotter_error import stagger_with_info
 
 

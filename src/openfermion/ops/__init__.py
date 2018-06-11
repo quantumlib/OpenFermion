@@ -18,8 +18,9 @@ from ._symbolic_operator import SymbolicOperator
 
 # Imports out of alphabetical order to avoid circular dependency.
 from ._binary_code import BinaryCode
-from ._fermion_operator import (FermionOperator,
-                                normal_ordered)
+from ._boson_operator import BosonOperator
+from ._fermion_operator import FermionOperator
 from ._interaction_operator import InteractionOperator
+from ._quad_operator import QuadOperator
 from ._qubit_operator import QubitOperator
 from ._interaction_rdm import InteractionRDM

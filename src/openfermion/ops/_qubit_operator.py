@@ -11,6 +11,9 @@
 #   limitations under the License.
 
 """QubitOperator stores a sum of Pauli operators acting on qubits."""
+import itertools
+import warnings
+
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import SymbolicOperator
 
@@ -35,6 +38,7 @@ _PAULI_OPERATOR_PRODUCTS = {('I', 'I'): (1., 'I'),
 
 
 class QubitOperatorError(Exception):
+    """Exceptions for QubitOperator class."""
     pass
 
 
@@ -105,67 +109,67 @@ class QubitOperator(SymbolicOperator):
             return self
 
         # Handle QubitOperator.
-        elif isinstance(multiplier, QubitOperator):
-            result_terms = dict()
-            for left_term in self.terms:
-                for right_term in multiplier.terms:
-                    new_coefficient = (self.terms[left_term] *
-                                       multiplier.terms[right_term])
+        if not isinstance(multiplier, QubitOperator):
+            raise TypeError('Cannot in-place multiply term of invalid type to '
+                            'QubitTerm.')
 
-                    # Loop through local operators and create new sorted list
-                    # of representing the product local operator:
-                    product_operators = []
-                    left_operator_index = 0
-                    right_operator_index = 0
-                    n_operators_left = len(left_term)
-                    n_operators_right = len(right_term)
-                    while (left_operator_index < n_operators_left and
-                           right_operator_index < n_operators_right):
-                        (left_qubit, left_loc_op) = (
-                            left_term[left_operator_index])
-                        (right_qubit, right_loc_op) = (
-                            right_term[right_operator_index])
+        result_terms = dict()
+        for left_term in self.terms:
+            for right_term in multiplier.terms:
+                new_coefficient = (self.terms[left_term] *
+                                   multiplier.terms[right_term])
 
-                        # Multiply local operators acting on the same qubit
-                        if left_qubit == right_qubit:
-                            left_operator_index += 1
-                            right_operator_index += 1
-                            (scalar, loc_op) = _PAULI_OPERATOR_PRODUCTS[
-                                (left_loc_op, right_loc_op)]
+                # Loop through local operators and create new sorted list
+                # of representing the product local operator:
+                product_operators = []
+                left_operator_index = 0
+                right_operator_index = 0
+                n_operators_left = len(left_term)
+                n_operators_right = len(right_term)
+                while (left_operator_index < n_operators_left and
+                       right_operator_index < n_operators_right):
+                    (left_qubit, left_loc_op) = (
+                        left_term[left_operator_index])
+                    (right_qubit, right_loc_op) = (
+                        right_term[right_operator_index])
 
-                            # Add new term.
-                            if loc_op != 'I':
-                                product_operators += [(left_qubit, loc_op)]
-                                new_coefficient *= scalar
-                            # Note if loc_op == 'I', then scalar == 1.0
+                    # Multiply local operators acting on the same qubit
+                    if left_qubit == right_qubit:
+                        left_operator_index += 1
+                        right_operator_index += 1
+                        (scalar, loc_op) = _PAULI_OPERATOR_PRODUCTS[
+                            (left_loc_op, right_loc_op)]
 
-                        # If left_qubit > right_qubit, add right_loc_op; else,
-                        # add left_loc_op.
-                        elif left_qubit > right_qubit:
-                            product_operators += [(right_qubit, right_loc_op)]
-                            right_operator_index += 1
-                        else:
-                            product_operators += [(left_qubit, left_loc_op)]
-                            left_operator_index += 1
+                        # Add new term.
+                        if loc_op != 'I':
+                            product_operators += [(left_qubit, loc_op)]
+                            new_coefficient *= scalar
+                        # Note if loc_op == 'I', then scalar == 1.0
 
-                    # Finish the remaining operators:
-                    if left_operator_index == n_operators_left:
-                        product_operators += right_term[
-                            right_operator_index::]
-                    elif right_operator_index == n_operators_right:
-                        product_operators += left_term[left_operator_index::]
-
-                    # Add to result dict
-                    tmp_key = tuple(product_operators)
-                    if tmp_key in result_terms:
-                        result_terms[tmp_key] += new_coefficient
+                    # If left_qubit > right_qubit, add right_loc_op; else,
+                    # add left_loc_op.
+                    elif left_qubit > right_qubit:
+                        product_operators += [(right_qubit, right_loc_op)]
+                        right_operator_index += 1
                     else:
-                        result_terms[tmp_key] = new_coefficient
-            self.terms = result_terms
-            return self
-        else:
-            raise TypeError('Cannot in-place multiply term of invalid type ' +
-                            'to QubitTerm.')
+                        product_operators += [(left_qubit, left_loc_op)]
+                        left_operator_index += 1
+
+                # Finish the remaining operators:
+                if left_operator_index == n_operators_left:
+                    product_operators += right_term[
+                        right_operator_index::]
+                elif right_operator_index == n_operators_right:
+                    product_operators += left_term[left_operator_index::]
+
+                # Add to result dict
+                tmp_key = tuple(product_operators)
+                if tmp_key in result_terms:
+                    result_terms[tmp_key] += new_coefficient
+                else:
+                    result_terms[tmp_key] = new_coefficient
+        self.terms = result_terms
+        return self
 
     def renormalize(self):
         """Fix the trace norm of an operator to 1"""
@@ -174,3 +178,39 @@ class QubitOperator(SymbolicOperator):
             raise ZeroDivisionError('Cannot renormalize empty or zero operator')
         else:
             self /= norm
+
+    @staticmethod
+    def accumulate(operators, zero=None):
+        """Sums over QubitOperators."""
+        total = zero or QubitOperator.zero()
+        for operator in operators:
+            total += operator
+        return total
+
+    def get_operators(self):
+        """Gets a list of operators with a single term.
+
+        Returns:
+            operators([QubitOperator]): A list of operators summing up to self.
+        """
+        for term, coefficient in self.terms.items():
+            yield QubitOperator(term, coefficient)
+
+    def get_operator_groups(self, num_groups):
+        """Gets a list of operators with a few terms.
+        Args:
+            num_groups(int): How many operators to get in the end.
+
+        Returns:
+            operators([QubitOperator]): A list of operators summing up to self.
+        """
+        if num_groups < 1:
+            warnings.warn('Invalid num_groups {} < 1.'.format(num_groups),
+                          RuntimeWarning)
+            num_groups = 1
+
+        operators = self.get_operators()
+        num_groups = min(num_groups, len(self.terms))
+        for i in range(num_groups):
+            yield QubitOperator.accumulate(itertools.islice(
+                operators, len(range(i, len(self.terms), num_groups))))

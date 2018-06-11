@@ -19,12 +19,15 @@ from ._commutators import anticommutator, commutator, double_commutator
 
 from ._grid import Grid
 
-from ._lcu_util import preprocess_lcu_coefficients_for_reversible_sampling
+from ._lcu_util import (lambda_norm,
+                        preprocess_lcu_coefficients_for_reversible_sampling)
 
 from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
                               freeze_orbitals, get_file_path,
-                              hermitian_conjugated, inverse_fourier_transform,
-                              is_hermitian, is_identity, prune_unused_indices,
+                              hermitian_conjugated, inline_sum,
+                              inverse_fourier_transform,
+                              is_hermitian, is_identity,
+                              normal_ordered, prune_unused_indices,
                               reorder, up_then_down,
                               load_operator, save_operator)
 
@@ -67,11 +70,14 @@ from ._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_bound,
     low_depth_second_order_trotter_error_operator)
 
-from ._sparse_tools import (expectation,
+from ._sparse_tools import (boson_ladder_sparse,
+                            boson_operator_sparse,
+                            expectation,
                             expectation_computational_basis_state,
                             get_density_matrix,
                             get_gap,
                             get_ground_state,
+                            get_linear_qubit_operator_diagonal,
                             inner_product,
                             jordan_wigner_sparse,
                             jw_configuration_state,
@@ -86,3 +92,13 @@ from ._sparse_tools import (expectation,
                             qubit_operator_sparse,
                             sparse_eigenspectrum,
                             variance)
+
+from ._davidson import Davidson, DavidsonOptions, QubitDavidson
+from ._linear_qubit_operator import (
+    LinearQubitOperator,
+    LinearQubitOperatorOptions,
+    ParallelLinearQubitOperator,
+    generate_linear_qubit_operator,
+)
+
+from ._pubchem import geometry_from_pubchem

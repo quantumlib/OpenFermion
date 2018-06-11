@@ -21,13 +21,13 @@ from openfermion.config import DATA_DIRECTORY
 from openfermion.hamiltonians import MolecularData, fermi_hubbard
 from openfermion.ops import (FermionOperator,
                              InteractionOperator,
-                             normal_ordered,
                              QubitOperator)
 from openfermion.transforms import (get_diagonal_coulomb_hamiltonian,
                                     get_fermion_operator,
                                     get_interaction_operator,
                                     reverse_jordan_wigner)
-from openfermion.utils import hermitian_conjugated, number_operator
+from openfermion.utils import (hermitian_conjugated, normal_ordered,
+                              number_operator)
 from openfermion.utils._testing_utils import (
         random_interaction_operator,
         random_quadratic_hamiltonian)

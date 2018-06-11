@@ -14,12 +14,11 @@
 import copy
 import numpy
 
+
 from openfermion.ops import (FermionOperator,
                              InteractionOperator,
                              PolynomialTensor,
-                             QubitOperator,
-                             normal_ordered)
-
+                             QubitOperator)
 
 class InteractionRDMError(Exception):
     pass
@@ -90,6 +89,7 @@ class InteractionRDM(PolynomialTensor):
             InteractionRDMError: Observable not contained in 1-RDM or 2-RDM.
         """
         from openfermion.transforms import reverse_jordan_wigner
+        from openfermion.utils._operator_utils import normal_ordered
         qubit_operator_expectations = copy.deepcopy(qubit_operator)
         for qubit_term in qubit_operator_expectations.terms:
             expectation = 0.

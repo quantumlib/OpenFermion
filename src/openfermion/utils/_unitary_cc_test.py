@@ -23,13 +23,13 @@ from numpy.random import randn
 
 from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
-from openfermion.ops import FermionOperator, normal_ordered
+from openfermion.ops import FermionOperator
 from openfermion.transforms import (get_fermion_operator,
                                     get_sparse_operator,
                                     jordan_wigner)
 
 from openfermion.utils import (commutator, count_qubits, expectation,
-                               hermitian_conjugated,
+                               hermitian_conjugated, normal_ordered,
                                jordan_wigner_sparse, jw_hartree_fock_state,
                                s_squared_operator, sz_operator)
 from openfermion.utils._unitary_cc import (uccsd_generator,
@@ -286,8 +286,8 @@ class UnitaryCC(unittest.TestCase):
                                                          hf_state)
         ccsd_state_l = scipy.sparse.linalg.expm_multiply(ccsd_sparse_l,
                                                          hf_state)
-        expected_ccsd_energy = ccsd_state_l.getH().dot(
-            self.hamiltonian_matrix.dot(ccsd_state_r))[0, 0]
+        expected_ccsd_energy = ccsd_state_l.conjugate().dot(
+            self.hamiltonian_matrix.dot(ccsd_state_r))
         self.assertAlmostEqual(expected_ccsd_energy, self.molecule.fci_energy)
 
     def test_ucc_h2_singlet(self):
@@ -358,8 +358,8 @@ class UnitaryCC(unittest.TestCase):
                                                          hf_state)
         ccsd_state_l = scipy.sparse.linalg.expm_multiply(ccsd_sparse_l,
                                                          hf_state)
-        expected_ccsd_energy = ccsd_state_l.getH().dot(
-            self.hamiltonian_matrix.dot(ccsd_state_r))[0, 0]
+        expected_ccsd_energy = ccsd_state_l.conjugate().dot(
+            self.hamiltonian_matrix.dot(ccsd_state_r))
         self.assertAlmostEqual(expected_ccsd_energy, self.molecule.fci_energy)
 
     def test_value_error_for_odd_n_qubits(self):

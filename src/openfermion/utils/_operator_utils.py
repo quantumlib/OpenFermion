@@ -14,22 +14,40 @@
 from __future__ import absolute_import
 from builtins import map, zip
 
+import os
 import copy
 import marshal
+
 import numpy
-import os
+from scipy.sparse import spmatrix
 
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 
-from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
-                             InteractionOperator, InteractionRDM,
-                             PolynomialTensor, QubitOperator, normal_ordered)
-
-from scipy.sparse import spmatrix
+from openfermion.ops import (BosonOperator,
+                             DiagonalCoulombHamiltonian,
+                             FermionOperator,
+                             InteractionOperator,
+                             InteractionRDM,
+                             QuadOperator,
+                             QubitOperator,
+                             PolynomialTensor)
 
 
 class OperatorUtilsError(Exception):
     pass
+
+
+def inline_sum(summands, seed):
+    """Computes a sum, using the __iadd__ operator.
+    Args:
+        seed (T): The starting total. The zero value.
+        summands (iterable[T]): Values to add (with +=) into the total.
+    Returns:
+        T: The result of adding all the factors into the zero value.
+    """
+    for r in summands:
+        seed += r
+    return seed
 
 
 def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
@@ -144,11 +162,32 @@ def hermitian_conjugated(operator):
                                     (tensor_factor, action) in reversed(term)])
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
+    # Handle BosonOperator
+    elif isinstance(operator, BosonOperator):
+        conjugate_operator = BosonOperator()
+        for term, coefficient in operator.terms.items():
+            conjugate_term = tuple([(tensor_factor, 1 - action) for
+                                    (tensor_factor, action) in reversed(term)])
+            # take into account that different indices commute
+            conjugate_term = tuple(
+                sorted(conjugate_term, key=lambda factor: factor[0]))
+            conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
+
     # Handle QubitOperator
     elif isinstance(operator, QubitOperator):
         conjugate_operator = QubitOperator()
         for term, coefficient in operator.terms.items():
             conjugate_operator.terms[term] = coefficient.conjugate()
+
+    # Handle QuadOperator
+    elif isinstance(operator, QuadOperator):
+        conjugate_operator = QuadOperator()
+        for term, coefficient in operator.terms.items():
+            conjugate_term = reversed(term)
+            # take into account that different indices commute
+            conjugate_term = tuple(
+                sorted(conjugate_term, key=lambda factor: factor[0]))
+            conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
     # Handle sparse matrix
     elif isinstance(operator, spmatrix):
@@ -168,13 +207,13 @@ def hermitian_conjugated(operator):
 
 def is_hermitian(operator):
     """Test if operator is Hermitian."""
-    # Handle FermionOperator
-    if isinstance(operator, FermionOperator):
+    # Handle FermionOperator and BosonOperator
+    if isinstance(operator, (FermionOperator, BosonOperator)):
         return (normal_ordered(operator) ==
                 normal_ordered(hermitian_conjugated(operator)))
 
-    # Handle QubitOperator
-    if isinstance(operator, QubitOperator):
+    # Handle QubitOperator and QuadOperator
+    if isinstance(operator, (QubitOperator, QuadOperator)):
         return operator == hermitian_conjugated(operator)
 
     # Handle sparse matrix
@@ -247,6 +286,9 @@ def eigenspectrum(operator, n_qubits=None):
     WARNING: This function has cubic runtime in dimension of
         Hilbert space operator, which might be exponential.
 
+    NOTE: This function does not currently support
+        QuadOperator and BosonOperator.
+
     Args:
         operator: QubitOperator, InteractionOperator, FermionOperator,
             PolynomialTensor, or InteractionRDM.
@@ -256,6 +298,8 @@ def eigenspectrum(operator, n_qubits=None):
     Returns:
         spectrum: dense numpy array of floats giving eigenspectrum.
     """
+    if isinstance(operator, (QuadOperator, BosonOperator)):
+        raise TypeError('Operator of invalid type.')
     from openfermion.transforms import get_sparse_operator
     from openfermion.utils import sparse_eigenspectrum
     sparse_operator = get_sparse_operator(operator, n_qubits)
@@ -267,12 +311,14 @@ def is_identity(operator):
     """Check whether QubitOperator of FermionOperator is identity.
 
     Args:
-        operator: QubitOperator or FermionOperator.
+        operator: QubitOperator, FermionOperator,
+            BosonOperator, or QuadOperator.
 
     Raises:
         TypeError: Operator of invalid type.
     """
-    if isinstance(operator, (QubitOperator, FermionOperator)):
+    if isinstance(operator, (QubitOperator, FermionOperator,
+                             BosonOperator, QuadOperator)):
         return list(operator.terms) == [()]
     raise TypeError('Operator of invalid type.')
 
@@ -316,7 +362,7 @@ def _fourier_transform_helper(hamiltonian,
 
 
 def fourier_transform(hamiltonian, grid, spinless):
-    """Apply Fourier transform to change hamiltonian in plane wave basis.
+    r"""Apply Fourier transform to change hamiltonian in plane wave basis.
 
     .. math::
 
@@ -368,8 +414,8 @@ def get_file_path(file_name, data_directory):
 
 
 def inverse_fourier_transform(hamiltonian, grid, spinless):
-    """Apply inverse Fourier transform to change hamiltonian in plane wave dual
-    basis.
+    r"""Apply inverse Fourier transform to change hamiltonian in
+    plane wave dual basis.
 
     .. math::
 
@@ -403,7 +449,8 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
         plain_text: Whether the input file is plain text
 
     Returns:
-        operator: The stored FermionOperator or QubitOperator
+        operator: The stored FermionOperator, BosonOperator,
+            QuadOperator, or QubitOperator
 
     Raises:
         TypeError: Operator of invalid type.
@@ -417,8 +464,12 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
 
         if operator_type == 'FermionOperator':
             operator = FermionOperator(operator_terms)
+        elif operator_type == 'BosonOperator':
+            operator = BosonOperator(operator_terms)
         elif operator_type == 'QubitOperator':
             operator = QubitOperator(operator_terms)
+        elif operator_type == 'QuadOperator':
+            operator = QuadOperator(operator_terms)
         else:
             raise TypeError('Operator of invalid type.')
     else:
@@ -431,10 +482,18 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
             operator = FermionOperator()
             for term in operator_terms:
                 operator += FermionOperator(term, operator_terms[term])
+        elif operator_type == 'BosonOperator':
+            operator = BosonOperator()
+            for term in operator_terms:
+                operator += BosonOperator(term, operator_terms[term])
         elif operator_type == 'QubitOperator':
             operator = QubitOperator()
             for term in operator_terms:
                 operator += QubitOperator(term, operator_terms[term])
+        elif operator_type == 'QuadOperator':
+            operator = QuadOperator()
+            for term in operator_terms:
+                operator += QuadOperator(term, operator_terms[term])
         else:
             raise TypeError('Operator of invalid type.')
 
@@ -446,7 +505,8 @@ def save_operator(operator, file_name=None, data_directory=None,
     """Save FermionOperator or QubitOperator to file.
 
     Args:
-        operator: An instance of FermionOperator or QubitOperator.
+        operator: An instance of FermionOperator, BosonOperator,
+            or QubitOperator.
         file_name: The name of the saved file.
         data_directory: Optional data directory to change from default data
                         directory specified in config file.
@@ -465,12 +525,15 @@ def save_operator(operator, file_name=None, data_directory=None,
 
     if isinstance(operator, FermionOperator):
         operator_type = "FermionOperator"
+    elif isinstance(operator, BosonOperator):
+        operator_type = "BosonOperator"
     elif isinstance(operator, QubitOperator):
         operator_type = "QubitOperator"
-    elif (isinstance(operator, InteractionOperator) or
-          isinstance(operator, InteractionRDM)):
-        raise NotImplementedError('Not yet implemented for InteractionOperator'
-                                  ' or InteractionRDM.')
+    elif isinstance(operator, QuadOperator):
+        operator_type = "QuadOperator"
+    elif isinstance(operator, (InteractionOperator, InteractionRDM)):
+        raise NotImplementedError('Not yet implemented for '
+                                  'InteractionOperator or InteractionRDM.')
     else:
         raise TypeError('Operator of invalid type.')
 
@@ -485,8 +548,8 @@ def save_operator(operator, file_name=None, data_directory=None,
 
 
 def reorder(operator, order_function, num_modes=None, reverse=False):
-    """Changes the fermionic order of the Hamiltonian based on the provided
-    order_function per mode index
+    """Changes the ladder operator order of the Hamiltonian based on the
+    provided order_function per mode index.
 
     Args:
         operator (SymbolicOperator): the operator that will be reordered. must
@@ -539,7 +602,199 @@ def up_then_down(mode_idx, num_modes):
     Returns (int): reordered index of the mode.
     """
     halfway = int(numpy.ceil(num_modes / 2.))
+
     if mode_idx % 2 == 0:
         return mode_idx // 2
+
+    return mode_idx // 2 + halfway
+
+
+def normal_ordered_ladder_term(term, coefficient, parity=-1):
+    """Return a normal ordered FermionOperator or BosonOperator corresponding
+    to single term.
+
+    Args:
+        term (list or tuple): A sequence of tuples. The first element of each
+            tuple is an integer indicating the mode on which a fermion ladder
+            operator acts, starting from zero. The second element of each
+            tuple is an integer, either 1 or 0, indicating whether creation
+            or annihilation acts on that mode.
+        coefficient(complex or float): The coefficient of the term.
+        parity (int): parity=-1 corresponds to a Fermionic term that should be
+            ordered based on the canonical anti-commutation relations.
+            parity=1 corresponds to a Bosonic term that should be ordered based
+            on the canonical commutation relations.
+
+    Returns:
+        ordered_term: a FermionOperator or BosonOperator instance.
+            The normal ordered form of the input.
+            Note that this might have more terms.
+
+    In our convention, normal ordering implies terms are ordered
+    from highest tensor factor (on left) to lowest (on right).
+    Also, ladder operators come first.
+
+    Warning:
+        Even assuming that each creation or annihilation operator appears
+        at most a constant number of times in the original term, the
+        runtime of this method is exponential in the number of qubits.
+    """
+    # Iterate from left to right across operators and reorder to normal
+    # form. Swap terms operators into correct position by moving from
+    # left to right across ladder operators.
+    term = list(term)
+
+    if parity == -1:
+        Op = FermionOperator
+    elif parity == 1:
+        Op = BosonOperator
+
+    ordered_term = Op()
+
+    for i in range(1, len(term)):
+        for j in range(i, 0, -1):
+            right_operator = term[j]
+            left_operator = term[j - 1]
+
+            # Swap operators if raising on right and lowering on left.
+            if right_operator[1] and not left_operator[1]:
+                term[j - 1] = right_operator
+                term[j] = left_operator
+                coefficient *= parity
+
+                # Replace a a^\dagger with 1 + parity*a^\dagger a
+                # if indices are the same.
+                if right_operator[0] == left_operator[0]:
+                    new_term = term[:(j - 1)] + term[(j + 1):]
+
+                    # Recursively add the processed new term.
+                    ordered_term += normal_ordered_ladder_term(
+                        tuple(new_term), parity*coefficient, parity)
+
+            # Handle case when operator type is the same.
+            elif right_operator[1] == left_operator[1]:
+
+                # If same two Fermionic operators are repeated,
+                # evaluate to zero.
+                if parity == -1 and right_operator[0] == left_operator[0]:
+                    return ordered_term
+
+                # Swap if same ladder type but lower index on left.
+                elif right_operator[0] > left_operator[0]:
+                    term[j - 1] = right_operator
+                    term[j] = left_operator
+                    coefficient *= parity
+
+    # Add processed term and return.
+    ordered_term += Op(tuple(term), coefficient)
+    return ordered_term
+
+
+def normal_ordered_quad_term(term, coefficient, hbar=1.):
+    """Return a normal ordered QuadOperator corresponding to single term.
+
+    Args:
+        term: A tuple of tuples. The first element of each tuple is
+            an integer indicating the mode on which a boson ladder
+            operator acts, starting from zero. The second element of each
+            tuple is an integer, either 1 or 0, indicating whether creation
+            or annihilation acts on that mode.
+        coefficient: The coefficient of the term.
+        hbar (float): the value of hbar used in the definition of the
+            commutator [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+
+    Returns:
+        ordered_term (QuadOperator): The normal ordered form of the input.
+            Note that this might have more terms.
+
+    In our convention, normal ordering implies terms are ordered
+    from highest tensor factor (on left) to lowest (on right).
+    Also, q operators come first.
+    """
+    # Iterate from left to right across operators and reorder to normal
+    # form. Swap terms operators into correct position by moving from
+    # left to right across ladder operators.
+    term = list(term)
+    ordered_term = QuadOperator()
+    for i in range(1, len(term)):
+        for j in range(i, 0, -1):
+            right_operator = term[j]
+            left_operator = term[j - 1]
+
+            # Swap operators if q on right and p on left.
+            # p q -> q p
+            if right_operator[1] == 'q' and not left_operator[1] == 'q':
+                term[j - 1] = right_operator
+                term[j] = left_operator
+
+                # Replace p q with i hbar + q p
+                # if indices are the same.
+                if right_operator[0] == left_operator[0]:
+                    new_term = term[:(j - 1)] + term[(j + 1)::]
+
+                    # Recursively add the processed new term.
+                    ordered_term += normal_ordered_quad_term(
+                        tuple(new_term), -coefficient*1j*hbar)
+
+            # Handle case when operator type is the same.
+            elif right_operator[1] == left_operator[1]:
+
+                # Swap if same type but lower index on left.
+                if right_operator[0] > left_operator[0]:
+                    term[j - 1] = right_operator
+                    term[j] = left_operator
+
+    # Add processed term and return.
+    ordered_term += QuadOperator(tuple(term), coefficient)
+    return ordered_term
+
+
+def normal_ordered(operator, hbar=1.):
+    r"""Compute and return the normal ordered form of a FermionOperator,
+    BosonOperator, QuadOperator.
+
+    Due to the canonical commutation/anticommutation relations satisfied
+    by these operators, there are multiple forms that the same operator
+    can take. Here, we define the normal ordered form of each operator,
+    providing a distinct representation for distinct operators.
+
+    In our convention, normal ordering implies terms are ordered
+    from highest tensor factor (on left) to lowest (on right). In
+    addition:
+
+    * FermionOperators: a^\dagger comes before a
+    * BosonOperators: b^\dagger comes before b
+    * QuadOperators: q operators come before p operators,
+
+    Args:
+        operator: an instance of the FermionOperator, BosonOperator,
+            or QuadOperator classes.
+        hbar (float): the value of hbar used in the definition of the
+            commutator [q_i, p_j] = i hbar delta_ij. By default hbar=1.
+            This argument only applies when normal ordering QuadOperators.
+    """
+    kwargs = {}
+
+    if isinstance(operator, FermionOperator):
+        ordered_operator = FermionOperator()
+        order_fn = normal_ordered_ladder_term
+        kwargs['parity'] = -1
+
+    elif isinstance(operator, BosonOperator):
+        ordered_operator = BosonOperator()
+        order_fn = normal_ordered_ladder_term
+        kwargs['parity'] = 1
+
+    elif isinstance(operator, QuadOperator):
+        ordered_operator = QuadOperator()
+        order_fn = normal_ordered_quad_term
+        kwargs['hbar'] = hbar
+
     else:
-        return mode_idx // 2 + halfway
+        raise TypeError('Can only normal order FermionOperator, '
+                        'BosonOperator, or QuadOperator.')
+
+    for term, coefficient in operator.terms.items():
+        ordered_operator += order_fn(term, coefficient, **kwargs)
+
+    return ordered_operator
