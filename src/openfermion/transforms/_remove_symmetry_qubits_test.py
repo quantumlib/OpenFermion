@@ -18,10 +18,12 @@
 import numpy
 import unittest
 
-from openfermion.hamiltonians import MolecularData
+from openfermion.hamiltonians import fermi_hubbard, MolecularData
 from openfermion.ops import FermionOperator, QubitOperator
-from openfermion.transforms import get_fermion_operator
-from openfermion.utils import eigenspectrum, freeze_orbitals
+from openfermion.transforms import (
+    get_fermion_operator, get_sparse_operator)
+from openfermion.utils import (
+    eigenspectrum, freeze_orbitals, jw_get_ground_states_by_particle_number)
 
 from openfermion.transforms._remove_symmetry_qubits import (
     symmetry_conserving_bravyi_kitaev, edit_hamiltonian_for_spin)
@@ -44,95 +46,24 @@ def LiH_sto3g():
     return hamiltonian, num_orbitals, num_electrons
 
 
-def LiH_reduced():
-    """ Generates the Hamiltonian for LiH in
-        the STO-3G basis, at a distance of
-        1.45 A in a reduced active space.
+def set_1D_hubbard(x_dim):
+    """ Returns a 1D Fermi-Hubbard Hamiltonian.
     """
-    geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., 1.45))]
-    molecule = MolecularData(geometry, 'sto-3g', 1,
-                             description="1.45")
-    molecule.load()
-    molecular_hamiltonian = molecule.get_molecular_hamiltonian()
-    hamiltonian = get_fermion_operator(molecular_hamiltonian)
-    num_electrons = molecule.n_electrons
-    num_orbitals = 2*molecule.n_orbitals
+    y_dim = 1
+    tunneling = 1.0
+    coulomb = 1.0
+    magnetic_field = 0.0
+    chemical_potential = 0.0
+    periodic = False
+    spinless = False
 
-    one_rdm = molecule.cisd_one_rdm
-    diag_rdm, diag_rotation = diagonalise_one_rdm(one_rdm)
-    molecular_hamiltonian.rotate_basis(diag_rotation)
-    hamiltonian = get_fermion_operator(molecular_hamiltonian)
-    occ, virt = restrict_orbitals(diag_rdm)
-    hamiltonian = freeze_orbitals(
-        hamiltonian, occupied=occ, unoccupied=virt, prune=True)
-    # Update the number of electrons and orbitals being considered.
-    num_orbitals = num_orbitals - len(occ) - len(virt)
-    num_electrons = num_electrons - len(occ)
+    num_orbitals = 2*x_dim*y_dim
 
-    return hamiltonian, num_orbitals, num_electrons
+    hubbard_model = fermi_hubbard(
+        x_dim, y_dim, tunneling, coulomb, chemical_potential,
+        magnetic_field, periodic, spinless)
 
-
-def diagonalise_one_rdm(one_rdm):
-    """ Diagonalises the 1-RDM and returns
-        the unitary rotation which diagonalises it.
-    """
-    noon_values, diag_transform = numpy.linalg.eig(one_rdm)
-    # Get the unitary matrix which diagonalises the 1-RDM, and the diagonal
-    # values, which are the natural orbital occupation numbers (NOONs).
-
-    diag_one_rdm = numpy.dot(
-        numpy.linalg.inv(diag_transform), numpy.dot(one_rdm, diag_transform))
-    # Diagonalise the 1-RDM (=P) by doing U^{-1} P U.
-
-    return diag_one_rdm, diag_transform
-
-
-def get_2Darray_min(array, tolerance):
-    """ Returns the minimum element (and its location) larger than
-        a certain tolerance from a 2D array.
-    """
-    min_element = numpy.amax(array)
-    for i in range(len(array)):
-        for j in range(len(array[i])):
-            element = array[i][j]
-            if element < min_element and element >= tolerance:
-                min_element = element
-                row_position = i
-                col_position = j
-
-    return min_element, row_position, col_position
-
-
-def get_2Darray_max(array):
-    """ Returns the maximum element (and its location) larger than
-        a certain tolerance from a 2D array.
-    """
-    max_element = 0
-    for i in range(len(array)):
-        for j in range(len(array[i])):
-            element = array[i][j]
-            if element > max_element:
-                max_element = element
-                row_position = i
-                col_position = j
-
-    return max_element, row_position, col_position
-
-
-def restrict_orbitals(diag_one_rdm):
-    """ Returns arrays of the occupied and virtual orbitals to remove
-        from the Hamiltonian.
-    """
-    tolerance = 0.00001
-    max_noon, max_row, max_col = get_2Darray_max(diag_one_rdm)
-    min_noon, min_row, min_col = get_2Darray_min(diag_one_rdm, tolerance)
-
-    occ_orbs = [2*max_col, (2*max_col+1)]
-    virt_orbs = [2*min_col, (2*min_col+1)]
-    # Consider the NMOs with the largest NOONs to be occupied, and with the
-    # smallest to be unoccupied.
-
-    return occ_orbs, virt_orbs
+    return hubbard_model, num_orbitals
 
 
 def number_of_qubits(qubit_hamiltonian, unreduced_orbitals):
@@ -152,7 +83,7 @@ def number_of_qubits(qubit_hamiltonian, unreduced_orbitals):
 class ReduceSymmetryQubitsTest(unittest.TestCase):
 
     # Check whether fermionic and reduced qubit Hamiltonians
-    # have the same energy.
+    # have the same energy for LiH
     def test_energy_reduce_symmetry_qubits(self):
         # Generate the fermionic Hamiltonians,
         # number of orbitals and number of electrons.
@@ -166,7 +97,8 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
         self.assertAlmostEqual(
             eigenspectrum(lih_sto_qbt)[0], eigenspectrum(lih_sto_hamil)[0])
 
-    # Check that the qubit Hamiltonian acts on two fewer qubits.
+    # Check that the qubit Hamiltonian acts on two fewer qubits
+    # for LiH.
     def test_orbnum_reduce_symmetry_qubits(self):
         # Generate the fermionic Hamiltonians,
         # number of orbitals and number of electrons.
@@ -184,18 +116,33 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
     def test_errors_reduce_symmetry_qubits(self):
         # Generate the fermionic Hamiltonians,
         # number of orbitals and number of electrons.
-        lih_reduc_hamil, lih_reduc_numorb, lih_reduc_numel = LiH_reduced()
-        
-        lih_reduc_qbt = (
-            symmetry_conserving_bravyi_kitaev(
-                lih_reduc_hamil, lih_reduc_numorb, lih_reduc_numel))
+        lih_sto_hamil, lih_sto_numorb, lih_sto_numel = LiH_sto3g()
 
         with self.assertRaises(ValueError):
             symmetry_conserving_bravyi_kitaev(
-                0, lih_reduc_numorb, lih_reduc_numel)
+                0, lih_sto_numorb, lih_sto_numel)
         with self.assertRaises(ValueError):
             symmetry_conserving_bravyi_kitaev(
-                lih_reduc_hamil, 1.5, lih_reduc_numel)
+                lih_sto_hamil, 1.5, lih_sto_numel)
         with self.assertRaises(ValueError):
             symmetry_conserving_bravyi_kitaev(
-                lih_reduc_hamil, lih_reduc_numorb, 3.6)
+                lih_sto_hamil, lih_sto_numorb, 3.6)
+
+    # Check energy is the same for Fermi-Hubbard model.
+    def test_hubbard_reduce_symmetry_qubits(self):
+        for i in range(4):
+            n_sites = i+2
+            n_ferm = n_sites
+            hub_hamil, n_orb = set_1D_hubbard(n_sites)
+
+            # Use test function to reduce the qubits.
+            hub_qbt = (
+                symmetry_conserving_bravyi_kitaev(
+                    hub_hamil, n_orb, n_ferm))
+
+            sparse_op = get_sparse_operator(hub_hamil)
+            ground_energy = jw_get_ground_states_by_particle_number(
+                sparse_op, n_ferm, sparse=True, num_eigs=3)[0]
+
+            self.assertAlmostEqual(
+                eigenspectrum(hub_qbt)[0], ground_energy)
