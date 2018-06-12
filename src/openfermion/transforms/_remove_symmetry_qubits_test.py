@@ -15,18 +15,16 @@
     by two.
 """
 
-import numpy
 import unittest
 
 from openfermion.hamiltonians import fermi_hubbard, MolecularData
-from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import (
     get_fermion_operator, get_sparse_operator)
-from openfermion.utils import (
-    eigenspectrum, freeze_orbitals, jw_get_ground_states_by_particle_number)
+from openfermion.utils import (eigenspectrum,
+                               jw_get_ground_state_at_particle_number)
 
 from openfermion.transforms._remove_symmetry_qubits import (
-    symmetry_conserving_bravyi_kitaev, edit_hamiltonian_for_spin)
+        symmetry_conserving_bravyi_kitaev)
 
 
 def LiH_sto3g():
@@ -72,8 +70,8 @@ def number_of_qubits(qubit_hamiltonian, unreduced_orbitals):
     """
     max_orbital = 0
     for i in range(unreduced_orbitals):
-        for key, val in qubit_hamiltonian.terms.items():
-            if (i, 'X') in key or (i, 'Y') in key or (i, 'Z') in key:
+        for term in qubit_hamiltonian.terms:
+            if (i, 'X') in term or (i, 'Y') in term or (i, 'Z') in term:
                 max_orbital = max_orbital + 1
                 break
 
@@ -141,8 +139,8 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
                     hub_hamil, n_orb, n_ferm))
 
             sparse_op = get_sparse_operator(hub_hamil)
-            ground_energy = jw_get_ground_states_by_particle_number(
-                sparse_op, n_ferm, sparse=True, num_eigs=3)[0]
+            ground_energy, _ = jw_get_ground_state_at_particle_number(
+                    sparse_op, n_ferm)
 
             self.assertAlmostEqual(
                 eigenspectrum(hub_qbt)[0], ground_energy)

@@ -15,8 +15,6 @@ from __future__ import absolute_import
 
 import unittest
 
-import numpy
-
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.transforms import (get_sparse_operator,
                                     verstraete_cirac_2d_square)
@@ -102,18 +100,18 @@ class ExceptionTest(unittest.TestCase):
     def test_verstraete_cirac_2d_square(self):
         ferm_op = fermi_hubbard(3, 2, 1., 0., spinless=True)
         with self.assertRaises(NotImplementedError):
-            operator = verstraete_cirac_2d_square(ferm_op, 3, 2)
+            _ = verstraete_cirac_2d_square(ferm_op, 3, 2)
 
     def test_stabilizer_local_2d_square(self):
         with self.assertRaises(ValueError):
-            index = stabilizer_local_2d_square(0, 2, 4, 4)
+            _ = stabilizer_local_2d_square(0, 2, 4, 4)
 
     def test_coordinates_to_snake_index(self):
         with self.assertRaises(ValueError):
-            index = coordinates_to_snake_index(4, 4, 4, 5)
+            _ = coordinates_to_snake_index(4, 4, 4, 5)
         with self.assertRaises(ValueError):
-            index = coordinates_to_snake_index(4, 4, 5, 4)
+            _ = coordinates_to_snake_index(4, 4, 5, 4)
 
     def test_snake_index_to_coordinates(self):
         with self.assertRaises(ValueError):
-            row, col = snake_index_to_coordinates(20, 4, 5)
+            _ = snake_index_to_coordinates(20, 4, 5)

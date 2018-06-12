@@ -13,9 +13,7 @@
 """Verstraete-Cirac transform on fermionic operators."""
 from __future__ import absolute_import
 
-import itertools
 import networkx
-import numpy
 
 from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import jordan_wigner
@@ -94,8 +92,8 @@ def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,
                 bot_aux = expand_aux_index(bot)
 
                 # Get the column that this edge is on
-                col, row = snake_index_to_coordinates(
-                    top, x_dimension, y_dimension)
+                col, _ = snake_index_to_coordinates(
+                        top, x_dimension, y_dimension)
 
                 # Multiply by a stabilizer. If the column is even, the
                 # stabilizer corresponds to an edge that points down;
