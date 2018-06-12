@@ -11,18 +11,21 @@
 #   limitations under the License.
 
 """Tests the code in the examples directory of the git repo."""
-import nbformat
-import numpy
+
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
 
+import nbformat
+import numpy
+
 from openfermion.config import THIS_DIRECTORY
 
 
 class ExampleTest(unittest.TestCase):
+    """Unit tests for example scripts."""
 
     def setUp(self):
         string_length = len(THIS_DIRECTORY)
@@ -32,6 +35,7 @@ class ExampleTest(unittest.TestCase):
         self.jw_bk_demo = 'jordan_wigner_and_bravyi_kitaev_transforms.ipynb'
 
     def test_demo(self):
+        """Unit test for demo."""
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:
@@ -52,10 +56,10 @@ class ExampleTest(unittest.TestCase):
                         self.directory + self.demo_name]
                 subprocess.check_call(args)
                 output_file.seek(0)
-                nb = nbformat.read(output_file, nbformat.current_nbformat)
+                nb_data = nbformat.read(output_file, nbformat.current_nbformat)
 
             # Parse output and make sure there are no errors.
-            errors = [output for cell in nb.cells if "outputs" in cell for
+            errors = [output for cell in nb_data.cells if "outputs" in cell for
                       output in cell["outputs"] if
                       output.output_type == "error"]
         else:
@@ -63,6 +67,7 @@ class ExampleTest(unittest.TestCase):
         self.assertEqual(errors, [])
 
     def test_binary_code_transforms_demo(self):
+        """Unit test for demo."""
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:
@@ -83,10 +88,10 @@ class ExampleTest(unittest.TestCase):
                         self.directory + self.binary_code_transforms_demo]
                 subprocess.check_call(args)
                 output_file.seek(0)
-                nb = nbformat.read(output_file, nbformat.current_nbformat)
+                nb_data = nbformat.read(output_file, nbformat.current_nbformat)
 
             # Parse output and make sure there are no errors.
-            errors = [output for cell in nb.cells if "outputs" in cell for
+            errors = [output for cell in nb_data.cells if "outputs" in cell for
                       output in cell["outputs"] if
                       output.output_type == "error"]
         else:
@@ -94,6 +99,7 @@ class ExampleTest(unittest.TestCase):
         self.assertEqual(errors, [])
 
     def test_jordan_wigner_and_bravyi_kitaev_transforms_demo(self):
+        """Unit test for demo."""
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:
@@ -114,10 +120,10 @@ class ExampleTest(unittest.TestCase):
                         self.directory + self.jw_bk_demo]
                 subprocess.check_call(args)
                 output_file.seek(0)
-                nb = nbformat.read(output_file, nbformat.current_nbformat)
+                nb_data = nbformat.read(output_file, nbformat.current_nbformat)
 
             # Parse output and make sure there are no errors.
-            errors = [output for cell in nb.cells if "outputs" in cell for
+            errors = [output for cell in nb_data.cells if "outputs" in cell for
                       output in cell["outputs"] if
                       output.output_type == "error"]
         else:
@@ -125,30 +131,36 @@ class ExampleTest(unittest.TestCase):
         self.assertEqual(errors, [])
 
     def test_performance_benchmarks(self):
+        """Unit test for examples/performance_benchmark.py."""
 
         # Import performance benchmarks and seed random number generator.
         sys.path.append(self.directory)
         from performance_benchmarks import (
-            benchmark_fermion_math_and_normal_order,
-            benchmark_jordan_wigner_sparse,
-            benchmark_molecular_operator_jordan_wigner)
+            run_fermion_math_and_normal_order,
+            run_jordan_wigner_sparse,
+            run_molecular_operator_jordan_wigner,
+            run_linear_qubit_operator,
+        )
         numpy.random.seed(1)
 
+        runtime_upper_bound = 600
+
         # Run InteractionOperator.jordan_wigner_transform() benchmark.
-        n_qubits = 10
-        runtime = benchmark_molecular_operator_jordan_wigner(n_qubits)
-        self.assertLess(runtime, 600)
+        runtime = run_molecular_operator_jordan_wigner(n_qubits=10)
+        self.assertLess(runtime, runtime_upper_bound)
 
         # Run benchmark on FermionOperator math and normal-ordering.
-        n_qubits = 10
-        term_length = 5
-        power = 5
-        runtime_math, runtime_normal = benchmark_fermion_math_and_normal_order(
-            n_qubits, term_length, power)
-        self.assertLess(runtime_math, 600)
-        self.assertLess(runtime_normal, 600)
+        runtime_math, runtime_normal = run_fermion_math_and_normal_order(
+            n_qubits=10, term_length=5, power=5)
+        self.assertLess(runtime_math, runtime_upper_bound)
+        self.assertLess(runtime_normal, runtime_upper_bound)
 
         # Run FermionOperator.jordan_wigner_sparse() benchmark.
-        n_qubits = 10
-        runtime = benchmark_jordan_wigner_sparse(n_qubits)
+        runtime = run_jordan_wigner_sparse(n_qubits=10)
         self.assertLess(runtime, 600)
+
+        # Run (Parallel)LinearQubitOperator benchmark.
+        runtime_sequential, runtime_parallel = run_linear_qubit_operator(
+            n_qubits=10, n_terms=10, processes=10)
+        self.assertLess(runtime_sequential, runtime_upper_bound)
+        self.assertLess(runtime_parallel, runtime_upper_bound)

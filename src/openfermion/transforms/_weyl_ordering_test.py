@@ -12,16 +12,10 @@
 
 """Tests  _jordan_wigner.py."""
 from __future__ import absolute_import
-import os
 import unittest
 
-import numpy
-
-from openfermion.ops import (BosonOperator,
-                             FermionOperator,
-                             QuadOperator)
-from openfermion.utils import (hermitian_conjugated,
-                               is_hermitian)
+from openfermion.ops import BosonOperator, FermionOperator, QuadOperator
+from openfermion.utils import is_hermitian
 
 from openfermion.transforms._weyl_ordering import (
     mccoy, symmetric_ordering, weyl_polynomial_quantization)
@@ -115,7 +109,7 @@ class SymmetricOrderingTest(unittest.TestCase):
     def test_invalid_op(self):
         op = FermionOperator()
         with self.assertRaises(TypeError):
-            res = symmetric_ordering(op)
+            _ = symmetric_ordering(op)
 
     def test_symmetric_empty(self):
         for op in (BosonOperator, QuadOperator):

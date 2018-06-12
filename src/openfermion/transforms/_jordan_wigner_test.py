@@ -319,6 +319,9 @@ class InteractionOperatorsJWTest(unittest.TestCase):
         retransformed_test_op = reverse_jordan_wigner(jordan_wigner(
             interaction_op))
 
+        self.assertEqual(normal_ordered(retransformed_test_op),
+                         normal_ordered(test_op))
+
 
 class GetInteractionOperatorTest(unittest.TestCase):
 

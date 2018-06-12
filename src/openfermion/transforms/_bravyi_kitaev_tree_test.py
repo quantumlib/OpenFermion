@@ -11,16 +11,14 @@
 #   limitations under the License.
 
 """Tests for _bravyi_kitaev_tree.py."""
-from __future__ import absolute_import
+
+import unittest
 
 import numpy
-import unittest
 
 from openfermion.ops import (FermionOperator,
                              QubitOperator)
-from openfermion.transforms import (bravyi_kitaev_tree,
-                                    get_sparse_operator,
-                                    jordan_wigner)
+from openfermion.transforms import bravyi_kitaev_tree, jordan_wigner
 from openfermion.utils import eigenspectrum, number_operator
 
 
@@ -38,7 +36,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         n_qubits = 16
         invariant = numpy.log2(n_qubits) + 1
         for index in range(n_qubits):
-            operator = bravyi_kitaev_tree(FermionOperator(((index, 0),)), n_qubits)
+            operator = bravyi_kitaev_tree(
+                    FermionOperator(((index, 0),)), n_qubits)
             qubit_terms = operator.terms.items()  # Get the majorana terms.
 
             for item in qubit_terms:
@@ -119,7 +118,6 @@ class BravyiKitaevTransformTest(unittest.TestCase):
 
     def test_bk_jw_hopping_operator(self):
         # Check if the spectrum fits for a single hoppping operator
-        n_qubits = 5
         ho = FermionOperator(((1, 1), (4, 0))) + FermionOperator(
             ((4, 1), (1, 0)))
         jw_ho = jordan_wigner(ho)
@@ -135,7 +133,6 @@ class BravyiKitaevTransformTest(unittest.TestCase):
     def test_bk_jw_majoranas(self):
         # Check if the Majorana operators have the same spectrum
         # irrespectively of the transform.
-        n_qubits = 7
 
         a = FermionOperator(((1, 0),))
         a_dag = FermionOperator(((1, 1),))
@@ -146,23 +143,19 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         c_spins = [jordan_wigner(c), bravyi_kitaev_tree(c)]
         d_spins = [jordan_wigner(d), bravyi_kitaev_tree(d)]
 
-        c_sparse = [get_sparse_operator(c_spins[0]),
-                    get_sparse_operator(c_spins[1])]
-        d_sparse = [get_sparse_operator(d_spins[0]),
-                    get_sparse_operator(d_spins[1])]
-
         c_spectrum = [eigenspectrum(c_spins[0]),
                       eigenspectrum(c_spins[1])]
         d_spectrum = [eigenspectrum(d_spins[0]),
                       eigenspectrum(d_spins[1])]
 
+        self.assertAlmostEqual(0., numpy.amax(numpy.absolute(c_spectrum[0] -
+                                                             c_spectrum[1])))
         self.assertAlmostEqual(0., numpy.amax(numpy.absolute(d_spectrum[0] -
                                                              d_spectrum[1])))
 
     def test_bk_jw_integration(self):
         # This is a legacy test, which was a minimal failing example when
         # optimization for hermitian operators was used.
-        n_qubits = 4
 
         # Minimal failing example:
         fo = FermionOperator(((3, 1),))
@@ -179,7 +172,6 @@ class BravyiKitaevTransformTest(unittest.TestCase):
     def test_bk_jw_integration_original(self):
         # This is a legacy test, which was an example proposed by Ryan,
         # failing when optimization for hermitian operators was used.
-        n_qubits = 5
         fermion_operator = FermionOperator(((3, 1), (2, 1), (1, 0), (0, 0)),
                                            -4.3)
         fermion_operator += FermionOperator(((3, 1), (1, 0)), 8.17)

@@ -13,8 +13,6 @@
 """Reverse Jordan-Wigner transform on QubitOperators."""
 from __future__ import absolute_import
 
-import copy
-
 from openfermion.ops import (FermionOperator,
                              QubitOperator)
 from openfermion.utils import count_qubits, number_operator

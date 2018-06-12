@@ -15,10 +15,8 @@
     arXiv:1701.08213 and Phys. Rev. X 6, 031007.
 """
 
-import numpy
-
-from openfermion.ops import FermionOperator, QubitOperator
-from openfermion.transforms import bravyi_kitaev_tree, get_fermion_operator
+from openfermion.ops import FermionOperator
+from openfermion.transforms import bravyi_kitaev_tree
 from openfermion.utils import up_then_down, prune_unused_indices, reorder
 
 

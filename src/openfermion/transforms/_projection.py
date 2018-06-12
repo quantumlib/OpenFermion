@@ -10,12 +10,12 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-'''
-Functions to reduce the number of qubits involved
-in modelling a given system
-'''
-from openfermion.ops import QubitOperator
+"""Functions to reduce the number of qubits involved in modeling a given system.
+"""
+
 import numpy
+
+from openfermion.ops import QubitOperator
 
 
 def project_onto_sector(operator, qubits, sectors):
