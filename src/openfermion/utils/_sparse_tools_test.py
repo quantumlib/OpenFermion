@@ -446,7 +446,8 @@ class JWSzRestrictStateTest(unittest.TestCase):
 
 
 class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
-    def test_jw_get_ground_states_by_particle_number_herm_conserving(self):
+
+    def test_jw_get_ground_state_at_particle_number_herm_conserving(self):
         # Initialize a particle-number-conserving Hermitian operator
         ferm_op = FermionOperator('0^ 1') + FermionOperator('1^ 0') + \
             FermionOperator('1^ 2') + FermionOperator('2^ 1') + \
@@ -455,46 +456,64 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
         sparse_operator = get_sparse_operator(jw_hamiltonian)
         n_qubits = 4
 
+        num_op = get_sparse_operator(number_operator(n_qubits))
+
         # Test each possible particle number
         for particle_number in range(n_qubits):
-            # Get the ground energy and ground states at this particle number
-            energy, states = jw_get_ground_states_by_particle_number(
+            # Get the ground energy and ground state at this particle number
+            energy, state = jw_get_ground_state_at_particle_number(
                 sparse_operator, particle_number)
-            # Construct particle number operator
-            num_op = get_sparse_operator(number_operator(n_qubits))
-            # For each vector returned, make sure that it is indeed an
-            # eigenvector of the original operator with the returned eigenvalue
-            # and that it has the correct particle number
-            for vec in states:
-                # Check that it's an eigenvector with the correct eigenvalue
-                op_vec_product = sparse_operator.dot(vec)
-                difference = op_vec_product - energy * vec
-                discrepancy = 0.
-                if difference.nnz:
-                    discrepancy = max(map(abs, difference.data))
-                self.assertAlmostEqual(0., discrepancy)
-                # Check that it has the correct particle number
-                num = expectation(num_op, vec)
-                self.assertAlmostEqual(num, particle_number)
 
-    def test_jw_get_ground_states_by_particle_number_herm_nonconserving(self):
-        # Initialize a non-particle-number-conserving Hermitian operator
-        ferm_op = FermionOperator('0^ 1') + FermionOperator('1^ 0') + \
-            FermionOperator('1^ 2^') + FermionOperator('2 1')
-        jw_hamiltonian = jordan_wigner(ferm_op)
-        sparse_operator = get_sparse_operator(jw_hamiltonian)
+            # Check that it's an eigenvector with the correct eigenvalue
+            self.assertTrue(
+                    numpy.allclose(sparse_operator.dot(state), energy * state))
 
-        with self.assertRaises(ValueError):
-            jw_get_ground_states_by_particle_number(sparse_operator, 0)
+            # Check that it has the correct particle number
+            num = expectation(num_op, state)
+            self.assertAlmostEqual(num, particle_number)
 
-    def test_get_ground_states_by_particle_number_nonhermitian(self):
-        # Initialize a non-Hermitian operator
-        ferm_op = FermionOperator('0^ 1') + FermionOperator('2^ 1')
-        jw_hamiltonian = jordan_wigner(ferm_op)
-        sparse_operator = get_sparse_operator(jw_hamiltonian)
+    def test_jw_get_ground_state_at_particle_number_hubbard(self):
 
-        with self.assertRaises(ValueError):
-            jw_get_ground_states_by_particle_number(sparse_operator, 0)
+        model = fermi_hubbard(2, 2, 1.0, 4.0)
+        sparse_operator = get_sparse_operator(model)
+        n_qubits = count_qubits(model)
+        num_op = get_sparse_operator(number_operator(n_qubits))
+
+        # Test each possible particle number
+        for particle_number in range(n_qubits):
+            # Get the ground energy and ground state at this particle number
+            energy, state = jw_get_ground_state_at_particle_number(
+                sparse_operator, particle_number)
+
+            # Check that it's an eigenvector with the correct eigenvalue
+            self.assertTrue(
+                    numpy.allclose(sparse_operator.dot(state), energy * state))
+
+            # Check that it has the correct particle number
+            num = expectation(num_op, state)
+            self.assertAlmostEqual(num, particle_number)
+
+    def test_jw_get_ground_state_at_particle_number_jellium(self):
+
+        grid = Grid(2, 2, 1.0)
+        model = jellium_model(grid, spinless=True, plane_wave=False)
+        sparse_operator = get_sparse_operator(model)
+        n_qubits = count_qubits(model)
+        num_op = get_sparse_operator(number_operator(n_qubits))
+
+        # Test each possible particle number
+        for particle_number in range(n_qubits):
+            # Get the ground energy and ground state at this particle number
+            energy, state = jw_get_ground_state_at_particle_number(
+                sparse_operator, particle_number)
+
+            # Check that it's an eigenvector with the correct eigenvalue
+            self.assertTrue(
+                    numpy.allclose(sparse_operator.dot(state), energy * state))
+
+            # Check that it has the correct particle number
+            num = expectation(num_op, state)
+            self.assertAlmostEqual(num, particle_number)
 
 
 class JWGetGaussianStateTest(unittest.TestCase):

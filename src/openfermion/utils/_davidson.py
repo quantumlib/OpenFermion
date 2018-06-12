@@ -126,6 +126,10 @@ class Davidson(object):
 
         # 2. Checks for initial guess vectors' dimension is the same to that of
         # the operator.
+        if initial_guess is None:
+            initial_guess = generate_random_vectors(
+                len(self.linear_operator_diagonal), n_lowest,
+                real_only=self.options.real_only)
         if initial_guess.shape[0] != len(self.linear_operator_diagonal):
             raise ValueError('Guess vectors have a different dimension with '
                              'linear opearator diagonal elements: {} != {}.'
