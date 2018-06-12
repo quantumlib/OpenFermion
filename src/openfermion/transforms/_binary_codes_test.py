@@ -18,7 +18,17 @@ from openfermion.transforms import (binary_code_transform, bravyi_kitaev,
                                     get_fermion_operator, jordan_wigner)
 from openfermion.utils import eigenspectrum
 
-from openfermion.transforms._binary_codes import *
+from openfermion.transforms._binary_codes import (
+        bravyi_kitaev_code,
+        checksum_code,
+        interleaved_code,
+        jordan_wigner_code,
+        parity_code,
+        weight_one_segment_code,
+        weight_one_binary_addressing_code,
+        weight_one_segment_code,
+        weight_two_segment_code,
+        linearize_decoder)
 
 
 def lih_hamiltonian():

@@ -15,7 +15,6 @@ import itertools
 
 import numpy
 
-from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
                              InteractionOperator, QubitOperator)
 from openfermion.utils import count_qubits

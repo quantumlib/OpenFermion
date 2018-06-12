@@ -15,7 +15,7 @@ from __future__ import absolute_import
 import unittest
 
 from openfermion.transforms._bravyi_kitaev import _parity_set
-from openfermion.transforms._fenwick_tree import FenwickNode, FenwickTree
+from openfermion.transforms._fenwick_tree import FenwickTree
 
 
 class FenwickTreeTest(unittest.TestCase):
