@@ -174,12 +174,23 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
 
 
 def get_quadratic_hamiltonian(fermion_operator,
-                              chemical_potential=0., n_qubits=None):
+                              chemical_potential=0.,
+                              n_qubits=None,
+                              ignore_incompatible_terms=False):
     r"""Convert a quadratic fermionic operator to QuadraticHamiltonian.
 
-    This function should only be called on fermionic operators which
-    consist of only a_p^\dagger a_q, a_p^\dagger a_q^\dagger, and a_p a_q
-    terms.
+    Args:
+        fermion_operator(FermionOperator): The operator to convert.
+        chemical_potential(float): A chemical potential to include in
+            the returned operator
+        n_qubits(int): Optionally specify the total number of qubits in the
+            system
+        ignore_incompatible_terms(bool): This flag determines the behavior
+            of this method when it encounters terms that are not quadratic
+            that is, terms that are not of the form a^\dagger_p a_q.
+            If set to True, this method will simply ignore those terms.
+            If False, then this method will raise an error if it encounters
+            such a term. The default setting is False.
 
     Returns:
        quadratic_hamiltonian: An instance of the QuadraticHamiltonian class.
@@ -258,7 +269,7 @@ def get_quadratic_hamiltonian(fermion_operator,
                             'to QuadraticHamiltonian (not Hermitian).')
                 antisymmetric_part[p, q] -= .5 * coefficient.conjugate()
                 antisymmetric_part[q, p] += .5 * coefficient.conjugate()
-        else:
+        elif not ignore_incompatible_terms:
             # Operator contains non-quadratic terms
             raise QuadraticHamiltonianError('FermionOperator does not map '
                                             'to QuadraticHamiltonian '
@@ -289,8 +300,23 @@ def get_quadratic_hamiltonian(fermion_operator,
     return quadratic_hamiltonian
 
 
-def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
-    """Convert a FermionOperator to a DiagonalCoulombHamiltonian."""
+def get_diagonal_coulomb_hamiltonian(fermion_operator,
+                                     n_qubits=None,
+                                     ignore_incompatible_terms=False):
+    """Convert a FermionOperator to a DiagonalCoulombHamiltonian.
+    
+    Args:
+        fermion_operator(FermionOperator): The operator to convert.
+        n_qubits(int): Optionally specify the total number of qubits in the
+            system
+        ignore_incompatible_terms(bool): This flag determines the behavior
+            of this method when it encounters terms that are not represented
+            by the DiagonalCoulombHamiltonian class, namely, terms that are
+            not quadratic and not quartic of the form
+            a^\dagger_p a_p a^\dagger_q a_q. If set to True, this method will
+            simply ignore those terms. If False, then this method will raise
+            an error if it encounters such a term. The default setting is False.
+    """
     if not isinstance(fermion_operator, FermionOperator):
         raise TypeError('Input must be a FermionOperator.')
 
@@ -326,12 +352,12 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator, n_qubits=None):
                     coefficient = numpy.real(coefficient)
                     two_body[p, q] = -.5 * coefficient
                     two_body[q, p] = -.5 * coefficient
-                else:
+                elif not ignore_incompatible_terms:
                     raise ValueError('FermionOperator does not map to '
                                      'DiagonalCoulombHamiltonian '
                                      '(contains terms with indices '
                                      '{}).'.format((p, q, r, s)))
-            else:
+            elif not ignore_incompatible_terms:
                 raise ValueError('FermionOperator does not map to '
                                  'DiagonalCoulombHamiltonian (contains terms '
                                  'with action {}.'.format(tuple(actions)))
