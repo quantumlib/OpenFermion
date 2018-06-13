@@ -128,6 +128,10 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
         self.assertGreater(max_diff, 0.)
 
     def test_plane_wave_period_cutoff(self):
+        # TODO: After figuring out the correct formula for period cutoff for
+        #     dual basis, change period_cutoff to default, and change
+        #     h_1 to also accept period_cutoff for real integration test.
+
         geometry = [('H', (0,)), ('H', (0.8,))]
         grid = Grid(dimensions=1, scale=1.1, length=5)
         period_cutoff = 50.0
