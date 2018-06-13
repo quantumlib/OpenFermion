@@ -83,7 +83,7 @@ from ._sparse_tools import (boson_ladder_sparse,
                             jw_configuration_state,
                             jw_hartree_fock_state,
                             jw_get_gaussian_state,
-                            jw_get_ground_states_by_particle_number,
+                            jw_get_ground_state_at_particle_number,
                             jw_number_restrict_operator,
                             jw_number_restrict_state,
                             jw_slater_determinant,
@@ -93,7 +93,7 @@ from ._sparse_tools import (boson_ladder_sparse,
                             sparse_eigenspectrum,
                             variance)
 
-from ._davidson import Davidson, DavidsonOptions, QubitDavidson
+from ._davidson import Davidson, DavidsonOptions, QubitDavidson, SparseDavidson
 from ._linear_qubit_operator import (
     LinearQubitOperator,
     LinearQubitOperatorOptions,

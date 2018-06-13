@@ -100,6 +100,34 @@ class GridTest(unittest.TestCase):
                                       [1, -1], [1, 0], [1, 1]])
         self.assertAlmostEqual(0., numpy.amax(test_output - correct_output))
 
+    def test_grid_indices(self):
+        g1 = Grid(dimensions=2, length=4, scale=1.0)
+        self.assertListEqual(g1.grid_indices(0, spinless=True),
+                             [0, 0])
+
+        for elmt in g1.grid_indices(0, spinless=True):
+            self.assertIsInstance(elmt, int)
+
+        # Check that out-of-range qubit IDs raise correct errors.
+        with self.assertRaises(OrbitalSpecificationError):
+            _ = g1.grid_indices(-1, spinless=True)
+
+        with self.assertRaises(OrbitalSpecificationError):
+            _ = g1.grid_indices(16, spinless=True)
+
+        with self.assertRaises(OrbitalSpecificationError):
+            _ = g1.grid_indices(17, spinless=True)
+
+        # Check that the spinful grid allows appropriate qubit IDs.
+        self.assertListEqual(g1.grid_indices(31, spinless=False),
+                             [3, 3])
+
+        # Check correct ordering of the list output.
+        self.assertListEqual(g1.grid_indices(17, spinless=False),
+                             [0, 2])
+        self.assertListEqual(g1.grid_indices(8, spinless=True),
+                             [0, 2])
+
     def test_initialize(self):
         g1 = Grid(dimensions=3, length=3, scale=1.0)
         scale_matrix = numpy.diag([1.0] * 3)

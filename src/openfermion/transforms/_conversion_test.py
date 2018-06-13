@@ -13,25 +13,33 @@
 """Tests for _conversion.py."""
 from __future__ import absolute_import
 
-import copy
-import numpy
 import unittest
+
+import numpy
 
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops import (BosonOperator,
                              DiagonalCoulombHamiltonian,
                              FermionOperator,
-                             InteractionOperator,
                              QuadOperator,
                              QubitOperator)
+from openfermion.transforms import jordan_wigner
+from openfermion.utils import is_hermitian, normal_ordered
+
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
-from openfermion.transforms import *
-from openfermion.utils import *
 from openfermion.utils._testing_utils import (
         random_hermitian_matrix,
-        random_interaction_operator,
         random_quadratic_hamiltonian)
+
+from openfermion.transforms._conversion import (
+        get_boson_operator,
+        get_diagonal_coulomb_hamiltonian,
+        get_fermion_operator,
+        get_interaction_operator,
+        get_quad_operator,
+        get_quadratic_hamiltonian,
+        get_sparse_operator)
 
 
 class GetInteractionOperatorTest(unittest.TestCase):
@@ -150,6 +158,19 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             get_quadratic_hamiltonian(FermionOperator('3^ 2^'), n_qubits=3)
 
+    def test_ignore_incompatible_terms(self):
+
+        ferm_op = (FermionOperator('0^ 2') + FermionOperator('2^ 0') +
+                   FermionOperator('1^ 0^ 2') + FermionOperator('1^ 0^ 2 1') +
+                   FermionOperator('0^ 0 1^ 1') + FermionOperator('1^ 2^ 1 2'))
+        converted_op = get_quadratic_hamiltonian(
+                ferm_op,
+                ignore_incompatible_terms=True)
+        self.assertTrue(numpy.allclose(converted_op.hermitian_part,
+                        numpy.array([[0, 0, 1],
+                                     [0, 0, 0],
+                                     [1, 0, 0]])))
+
 
 class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
 
@@ -181,6 +202,23 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
                 normal_ordered(
                     get_fermion_operator(
                         get_diagonal_coulomb_hamiltonian(ferm_op))))
+
+    def test_ignore_incompatible_terms(self):
+
+        ferm_op = (FermionOperator('0^ 2') + FermionOperator('2^ 0') +
+                   FermionOperator('1^ 0^ 2') + FermionOperator('1^ 0^ 2 1') +
+                   FermionOperator('0^ 0 1^ 1') + FermionOperator('1^ 2^ 1 2'))
+        converted_op = get_diagonal_coulomb_hamiltonian(
+                ferm_op,
+                ignore_incompatible_terms=True)
+        self.assertTrue(numpy.allclose(converted_op.one_body,
+                        numpy.array([[0, 0, 1],
+                                     [0, 0, 0],
+                                     [1, 0, 0]])))
+        self.assertTrue(numpy.allclose(converted_op.two_body,
+                        numpy.array([[0, 0.5, 0],
+                                     [0.5, 0, -0.5],
+                                     [0, -0.5, 0]])))
 
     def test_exceptions(self):
         op1 = QubitOperator()
@@ -336,7 +374,7 @@ class GetQuadOperatorTest(unittest.TestCase):
     def test_invalid_op(self):
         op = QuadOperator()
         with self.assertRaises(TypeError):
-            b = get_quad_operator(op)
+            _ = get_quad_operator(op)
 
     def test_zero(self):
         b = BosonOperator()
@@ -405,7 +443,7 @@ class GetBosonOperatorTest(unittest.TestCase):
     def test_invalid_op(self):
         op = BosonOperator()
         with self.assertRaises(TypeError):
-            b = get_boson_operator(op)
+            _ = get_boson_operator(op)
 
     def test_zero(self):
         q = QuadOperator()
