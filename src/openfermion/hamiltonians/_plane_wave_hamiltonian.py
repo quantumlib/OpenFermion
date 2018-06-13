@@ -37,8 +37,9 @@ def dual_basis_external_potential(grid, geometry, spinless,
             example is [('H', (0, 0, 0)), ('H', (0, 0, 0.7414))].
             Distances in atomic units. Use atomic symbols to specify atoms.
         spinless (bool): Whether to use the spinless model or not.
-        non_periodic (bool): If the system is non-periodic.
-        period_cutoff (float): Period cutoff.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions)
 
     Returns:
         FermionOperator: The dual basis operator.
@@ -93,8 +94,9 @@ def plane_wave_external_potential(grid, geometry, spinless, e_cutoff=None,
             Distances in atomic units. Use atomic symbols to specify atoms.
         spinless: Bool, whether to use the spinless model or not.
         e_cutoff (float): Energy cutoff.
-        non_periodic (bool): If the system is non-periodic.
-        period_cutoff (float): Period cutoff.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions)
 
     Returns:
         FermionOperator: The plane wave operator.
@@ -125,8 +127,9 @@ def plane_wave_hamiltonian(grid, geometry=None,
             or plane wave dual basis (False).
         include_constant (bool): Whether to include the Madelung constant.
         e_cutoff (float): Energy cutoff.
-        non_periodic (bool): If the system is non-periodic.
-        period_cutoff (float): Period cutoff.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions)
 
     Returns:
         FermionOperator: The hamiltonian.

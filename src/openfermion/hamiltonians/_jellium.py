@@ -97,8 +97,9 @@ def plane_wave_potential(grid, spinless=False, e_cutoff=None,
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
         e_cutoff (float): Energy cutoff.
-        non_periodic (bool): If the system is non-periodic.
-        period_cutoff (float): Period cutoff.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions).
 
     Returns:
         operator (FermionOperator)
@@ -194,8 +195,9 @@ def dual_basis_jellium_model(grid, spinless=False,
         include_constant (bool): Whether to include the Madelung constant.
             Note constant is unsupported for non-uniform, non-cubic cells with
             ions.
-        non_periodic (bool): If the system is non-periodic.
-        period_cutoff (float): Period cutoff.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions).
 
     Returns:
         operator (FermionOperator)
@@ -296,8 +298,9 @@ def dual_basis_potential(grid, spinless=False, non_periodic=False,
     Args:
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
-        non_periodic (bool): If the system is non-periodic.
-        period_cutoff (float): Period cutoff.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions).
 
     Returns:
         operator (FermionOperator)
@@ -320,8 +323,9 @@ def jellium_model(grid, spinless=False, plane_wave=True,
             Note constant is unsupported for non-uniform, non-cubic cells with
             ions.
         e_cutoff (float): Energy cutoff.
-        non_periodic (bool): If the system is non-periodic.
-        period_cutoff (float): Period cutoff.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions).
 
     Returns:
         FermionOperator: The Hamiltonian of the model.
