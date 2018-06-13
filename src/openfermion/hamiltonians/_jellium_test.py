@@ -439,3 +439,8 @@ class JelliumTest(unittest.TestCase):
 
         max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
         self.assertGreater(max_diff, 0.)
+
+        # TODO: This is only for code coverage. Remove after having real
+        #     integration test.
+        hamiltonian_3 = jellium_model(grid, spinless, True, False, None, True)
+        hamiltonian_4 = jellium_model(grid, spinless, False, False, None, True)

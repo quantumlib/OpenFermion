@@ -147,3 +147,8 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
 
         max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
         self.assertGreater(max_diff, 0.)
+
+        # TODO: This is only for code coverage. Remove after having real
+        #     integration test.
+        h_3 = plane_wave_hamiltonian(grid, geometry, True, True, False, None,
+                                     True)
