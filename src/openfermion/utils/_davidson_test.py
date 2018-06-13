@@ -14,10 +14,13 @@
 
 from __future__ import absolute_import, division
 
+import logging
 import unittest
+
 import numpy
 import numpy.linalg
 import scipy.linalg
+import scipy.sparse
 import scipy.sparse.linalg
 
 from openfermion.ops import QubitOperator
@@ -25,6 +28,7 @@ from openfermion.utils._davidson import (
     Davidson,
     DavidsonOptions,
     QubitDavidson,
+    SparseDavidson,
     append_random_vectors,
     orthonormalize)
 
@@ -37,12 +41,28 @@ def generate_matrix(dimension):
     diag = numpy.array(range(dimension)) + numpy.random.rand(dimension)
 
     # Makes sure matrix is hermitian, which is symmetric when real.
-    matrix = rand + rand.T + numpy.diag(diag)
+    matrix = rand + rand.conj().T + numpy.diag(diag)
+    return matrix
+
+def generate_sparse_matrix(dimension, diagonal_factor=30):
+    """Generates a hermitian sparse matrix with specified dimension."""
+    numpy.random.seed(dimension)
+    diagonal = sorted(numpy.array(numpy.random.rand(dimension)))
+
+    numpy.random.seed(dimension - 1)
+    off_diagonal = numpy.array(numpy.random.rand(dimension - 1))
+
+    # Makes sure matrix is hermitian, which is symmetric when real.
+    matrix = numpy.diag(diagonal) * diagonal_factor
+    for row in range(dimension - 2):
+        col = row + 1
+        matrix[row, col] = off_diagonal[row]
+        matrix[col, row] = off_diagonal[row]
     return matrix
 
 def get_difference(linear_operator, eigen_values, eigen_vectors):
     """Get difference of M * v - lambda v."""
-    return numpy.max(numpy.abs(linear_operator * eigen_vectors -
+    return numpy.max(numpy.abs(linear_operator.dot(eigen_vectors) -
                                eigen_vectors * eigen_values))
 
 
@@ -455,6 +475,113 @@ class QubitDavidsonTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(eigen_values, expected_eigen_values))
         self.assertAlmostEqual(get_difference(davidson.linear_operator,
                                               eigen_values, eigen_vectors), 0)
+
+class SparseDavidsonTest(unittest.TestCase):
+    """"Tests for SparseDavidson class with sparse matrices."""
+
+    def setUp(self):
+        """Sets up all variables needed for SparseDavidson class."""
+        logging.basicConfig(level=logging.INFO)
+        self.dimension = 1000
+        self.sparse_matrix = generate_sparse_matrix(self.dimension)
+        self.davidson_options = DavidsonOptions(max_subspace=100,
+                                                max_iterations=50,
+                                                real_only=True)
+
+        # Checks for built-in eigh() function.
+        self.eigen_values, self.eigen_vectors = numpy.linalg.eigh(
+            self.sparse_matrix)
+        self.assertAlmostEqual(get_difference(
+            self.sparse_matrix, self.eigen_values, self.eigen_vectors), 0)
+
+        # Makes sure eigenvalues are sorted.
+        self.eigen_values = sorted(self.eigen_values)
+
+    def test_hermitain(self):
+        """Test matrix used is Hermitian."""
+        self.assertTrue(numpy.allclose(self.sparse_matrix,
+                                       self.sparse_matrix.conj().T))
+
+    def test_get_lowest_n_coo(self):
+        """Test for get_lowest_n() as a coo_matrix."""
+        davidson = SparseDavidson(scipy.sparse.coo_matrix(self.sparse_matrix),
+                                  self.davidson_options)
+
+        n_lowest = 2
+        initial_guess = numpy.eye(self.dimension, n_lowest)
+        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+            n_lowest, initial_guess)
+
+        expected_eigen_values = self.eigen_values[:n_lowest]
+
+        self.assertTrue(success)
+        self.assertLess(
+            numpy.max(numpy.abs(eigen_values - expected_eigen_values)),
+            self.davidson_options.eps)
+        self.assertLess(
+            get_difference(self.sparse_matrix, eigen_values, eigen_vectors),
+            self.davidson_options.eps)
+
+        # Real components only.
+        self.assertTrue(numpy.allclose(numpy.real(eigen_vectors),
+                                       eigen_vectors))
+
+    def test_get_lowest_n_coo_complex(self):
+        """Test for get_lowest_n() as a coo_matrix with real_only=False."""
+        self.davidson_options.real_only = False
+        davidson = SparseDavidson(scipy.sparse.coo_matrix(self.sparse_matrix),
+                                  self.davidson_options)
+
+        n_lowest = 2
+        initial_guess = numpy.eye(self.dimension, n_lowest)
+        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+            n_lowest, initial_guess, max_iterations=30)
+
+        expected_eigen_values = self.eigen_values[:n_lowest]
+
+        self.assertTrue(success)
+        self.assertLess(
+            numpy.max(numpy.abs(eigen_values - expected_eigen_values)),
+            self.davidson_options.eps)
+        self.assertLess(
+            get_difference(self.sparse_matrix, eigen_values, eigen_vectors),
+            self.davidson_options.eps)
+
+        # Real components only.
+        self.assertTrue(numpy.allclose(numpy.real(eigen_vectors),
+                                       eigen_vectors))
+
+
+    def test_get_lowest_n(self):
+        """Test for get_lowest_n() as a other sparse formats."""
+        n_lowest = 2
+        expected_eigen_values = self.eigen_values[:n_lowest]
+        initial_guess = numpy.eye(self.dimension, n_lowest)
+
+        for run_matrix in [
+                scipy.sparse.bsr_matrix(self.sparse_matrix),
+                scipy.sparse.csc_matrix(self.sparse_matrix),
+                scipy.sparse.csr_matrix(self.sparse_matrix),
+                scipy.sparse.dia_matrix(self.sparse_matrix),
+                scipy.sparse.dok_matrix(self.sparse_matrix),
+                scipy.sparse.lil_matrix(self.sparse_matrix),
+        ]:
+            davidson = SparseDavidson(run_matrix, self.davidson_options)
+            success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+                n_lowest, initial_guess)
+
+            self.assertTrue(success)
+            self.assertLess(
+                numpy.max(numpy.abs(eigen_values - expected_eigen_values)),
+                self.davidson_options.eps)
+            self.assertLess(
+                get_difference(self.sparse_matrix, eigen_values, eigen_vectors),
+                self.davidson_options.eps)
+
+            # Real components only.
+            self.assertTrue(numpy.allclose(numpy.real(eigen_vectors),
+                                           eigen_vectors))
+
 
 class DavidsonUtilityTest(unittest.TestCase):
     """"Tests for utility functions."""
