@@ -11,11 +11,8 @@
 #   limitations under the License.
 
 """Weyl ordering on bosonic operators."""
-import itertools
 
-import numpy
 from scipy.special import binom
-
 
 from openfermion.ops import (BosonOperator, QuadOperator)
 

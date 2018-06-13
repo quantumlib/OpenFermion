@@ -269,20 +269,22 @@ class Grid:
             grid_indices (numpy.ndarray[int]):
                 The location of the qubit on the grid.
         """
+        if not (numpy.product(self.length) * (2 - spinless) > qubit_id >= 0):
+            raise OrbitalSpecificationError('Invalid qubit_id provided.')
 
         # Remove spin degree of freedom if it exists.
         orbital_id = qubit_id
+
         if not spinless:
-            if (orbital_id % 2):
-                orbital_id -= 1
-            orbital_id /= 2
+            orbital_id //= 2
 
         # Get grid indices.
         grid_indices = []
         for dimension in range(self.dimensions):
             remainder = (orbital_id %
                          int(numpy.product(self.length[:dimension + 1])))
-            grid_index = remainder // numpy.product(self.length[:dimension])
+            grid_index = (remainder //
+                          int(numpy.product(self.length[:dimension])))
             grid_indices += [grid_index]
         return grid_indices
 
