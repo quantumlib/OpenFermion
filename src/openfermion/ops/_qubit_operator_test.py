@@ -144,6 +144,7 @@ def test_renormalize():
         assert operator.terms[term] == pytest.approx(1/numpy.sqrt(2.))
     assert operator.induced_norm(2) == pytest.approx(1.)
 
+
 def test_get_operators_empty():
     """Tests get_operators() with zero operator."""
     operator = QubitOperator.zero()
@@ -151,12 +152,14 @@ def test_get_operators_empty():
     operators = list(operator.get_operators())
     assert operators == []
 
+
 def test_get_operators_one():
     """Tests get_operators() with an operator with a single term."""
     operator = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
 
     operators = list(operator.get_operators())
     assert operators == [operator]
+
 
 def test_get_operators():
     """Tests get_operators() with an operator with two terms."""
@@ -168,12 +171,14 @@ def test_get_operators():
     assert operators in [[operator_00, operator_01],
                          [operator_01, operator_00]]
 
+
 def test_get_operator_groups_empty():
     """Tests get_operator_groups() with zero operator."""
     operator = QubitOperator.zero()
 
     operators = list(operator.get_operator_groups(1))
     assert operators == []
+
 
 # Utility functions.
 def generate_operator(begin, end):
@@ -182,6 +187,7 @@ def generate_operator(begin, end):
     for i in range(begin, end):
         operator += QubitOperator(((i, 'Z'),), 1)
     return operator
+
 
 def check_length(operators, lens):
     """Checks length operator is the same to lens."""
@@ -193,9 +199,11 @@ def check_length(operators, lens):
             return False
     return True
 
+
 def check_sum(operators, operator):
     """Checks sum of operators matches to operator."""
     return QubitOperator.accumulate(operators) == operator
+
 
 # Tests for get_operator_groups().
 def test_get_operator_groups_zero():
@@ -212,6 +220,7 @@ def test_get_operator_groups_zero():
     assert not check_length(operator_groups, [0])
     assert not check_sum(operator_groups, operator * 2)
 
+
 def test_get_operator_groups_one():
     """Tests get_operator_groups() with one group."""
     operator = generate_operator(0, 20)
@@ -219,6 +228,7 @@ def test_get_operator_groups_one():
 
     assert check_length(operator_groups, [20])
     assert check_sum(operator_groups, operator)
+
 
 def test_get_operator_groups_two():
     """Tests get_operator_groups() with two groups."""
@@ -228,6 +238,7 @@ def test_get_operator_groups_two():
     assert check_length(operator_groups, [10, 10])
     assert check_sum(operator_groups, operator)
 
+
 def test_get_operator_groups_three():
     """Tests get_operator_groups() with two groups."""
     operator = generate_operator(0, 20)
@@ -235,6 +246,7 @@ def test_get_operator_groups_three():
 
     assert check_length(operator_groups, [7, 7, 6])
     assert check_sum(operator_groups, operator)
+
 
 def test_get_operator_groups_six():
     """Tests get_operator_groups() with two groups."""

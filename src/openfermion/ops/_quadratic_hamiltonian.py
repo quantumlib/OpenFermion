@@ -229,8 +229,8 @@ class QuadraticHamiltonian(PolynomialTensor):
 
             \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant},
 
-        where the :math:`b^\dagger_j` are a new set fermionic creation operators
-        that satisfy the canonical anticommutation relations.
+        where the :math:`b^\dagger_j` are a new set fermionic creation
+        operators that satisfy the canonical anticommutation relations.
         The new creation operators are linear combinations of the
         original ladder operators. In the most general case, creation and
         annihilation operators are mixed together:
@@ -344,11 +344,12 @@ class QuadraticHamiltonian(PolynomialTensor):
         else:
             # The Hamiltonian does not conserve particle number, so we
             # need to use the most general procedure.
-            # Rearrange the transformation matrix because the circuit generation
-            # routine expects it to describe annihilation operators rather than
-            # creation operators
+            # Rearrange the transformation matrix because the circuit
+            # generation routine expects it to describe annihilation
+            # operators rather than creation operators.
             left_block = transformation_matrix[:, :self.n_qubits]
             right_block = transformation_matrix[:, self.n_qubits:]
+
             # Can't use numpy.block because that requires numpy>=1.13.0
             new_transformation_matrix = numpy.empty(
                     (self.n_qubits, 2 * self.n_qubits), dtype=complex)
@@ -356,9 +357,11 @@ class QuadraticHamiltonian(PolynomialTensor):
                     right_block)
             new_transformation_matrix[:, self.n_qubits:] = numpy.conjugate(
                     left_block)
+
             # Get the circuit description
             decomposition, left_decomposition, _, _ = (
                 fermionic_gaussian_decomposition(new_transformation_matrix))
+
             # need to use left_diagonal too
             circuit_description = list(reversed(
                 decomposition + left_decomposition))

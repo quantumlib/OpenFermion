@@ -51,6 +51,13 @@ from ._special_operators import (majorana_operator, number_operator,
                                  sx_operator, sy_operator, sz_operator,
                                  up_index, down_index)
 
+from ._testing_utils import (random_antisymmetric_matrix,
+                             random_diagonal_coulomb_hamiltonian,
+                             random_hermitian_matrix,
+                             random_interaction_operator,
+                             random_quadratic_hamiltonian,
+                             random_unitary_matrix)
+
 from ._trotter_error import error_bound, error_operator
 
 from ._trotter_exp_to_qgates import (pauli_exp_to_qasm,
