@@ -23,10 +23,10 @@ def low_rank_two_body_decomposition(fermion_operator,
     """Convert two-body operator into sum of squared one-body operators.
 
     This function decomposes
-    :math: `\sum_{pqrs} h_{pqrs} a^\dagger_p a_q a^\dagger_r a_s
+    :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a_q a^\dagger_r a_s
     = \sum_{l} \lambda_l (\sum_{pq} g_{lpq} a^\dagger_p a_q)^2`
     l is truncated to take max value L so that
-    :math: `\sum_{l=0}^{L-1} |\lambda_l| < x`
+    :math:`\sum_{l=0}^{L-1} |\lambda_l| < x`
 
     Args:
         fermion_operator (FermionOperator): The fermion operator to decompose.
@@ -37,7 +37,7 @@ def low_rank_two_body_decomposition(fermion_operator,
 
     Returns:
         one_body_squares (ndarray of floats): L x N x N array of floats
-            corresponding to the g_{pql} values.
+            corresponding to the value of :math:`\sqrt{\lambda_l} * g_{pql}`.
     """
     # Obtain chemist ordered FermionOperator.
     ordered_operator = chemist_ordered(fermion_operator)
@@ -75,5 +75,6 @@ def low_rank_two_body_decomposition(fermion_operator,
         for p in range(n_qubits):
             for q in range(n_qubits):
                 linear_index = p + n_qubits * q
-                one_body_squares[l, p, q] = left_vector[linear_index]
+                one_body_squares[l, p, q] = (numpy.sqrt(singular_values[l]) *
+                                             left_vector[linear_index])
     return one_body_squares
