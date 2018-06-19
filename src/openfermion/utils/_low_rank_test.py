@@ -14,7 +14,7 @@ import numpy
 import unittest
 
 from openfermion.ops import FermionOperator
-from openfermion.transforms inport get_fermion_operator
+from openfermion.transforms import get_fermion_operator
 from openfermion.utils import (chemist_ordered,
                                low_rank_two_body_decomposition,
                                random_interaction_operator)
@@ -28,9 +28,9 @@ class LowRankTest(unittest.TestCase):
         n_qubits = 6
         random_operator = chemist_ordered(get_fermion_operator(
             random_interaction_operator(n_qubits)))
-        for coefficient, term in random_operator.terms.items():
+        for term, coefficient in random_operator.terms.items():
             if len(term) != 4:
-                del random_operator[term]
+                del random_operator.terms[term]
 
         # Perform low rank decomposition and build operator back.
         one_body_squares = low_rank_two_body_decomposition(random_operator)
@@ -45,6 +45,6 @@ class LowRankTest(unittest.TestCase):
                         term, one_body_squares[l, p, q])
             decomposed_operator += one_body_operator ** 2
 
-      # Test for consistency.
-      difference = decomposed_operator - random_operator
-      self.assertAlmostEqual(0., difference.induced_norm())
+        # Test for consistency.
+        difference = decomposed_operator - random_operator
+        self.assertAlmostEqual(0., difference.induced_norm())

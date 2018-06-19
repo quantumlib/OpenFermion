@@ -22,8 +22,6 @@ from ._grid import Grid
 from ._lcu_util import (lambda_norm,
                         preprocess_lcu_coefficients_for_reversible_sampling)
 
-from ._low_rank import low_rank_two_body_decomposition
-
 from ._operator_utils import (chemist_ordered, count_qubits,
                               eigenspectrum, fourier_transform,
                               freeze_orbitals, get_file_path,
@@ -75,6 +73,8 @@ from ._unitary_cc import (uccsd_convert_amplitude_format,
 
 # Imports out of alphabetical order to avoid circular dependency.
 from ._jellium_hf_state import hartree_fock_state_jellium
+
+from ._low_rank import low_rank_two_body_decomposition
 
 from ._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_bound,

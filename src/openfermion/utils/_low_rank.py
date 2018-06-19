@@ -53,7 +53,7 @@ def low_rank_two_body_decomposition(fermion_operator,
                 for s in range(n_qubits):
                     x = p + n_qubits * q
                     y = r + n_qubits * s
-                    interaction_array(x, y) = ordered_operator.terms.get(
+                    interaction_array[x, y] = ordered_operator.terms.get(
                         ((p, 1), (q, 0), (r, 1), (s, 0)), 0.)
 
     # Perform the SVD.
