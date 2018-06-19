@@ -61,9 +61,12 @@ def low_rank_two_body_decomposition(fermion_operator,
         interaction_array)
 
     # Determine where to truncate.
-    cumulative_sum = numpy.cumsum(singular_values)
-    truncation_error = cumulative_sum[-1] - cumulative_sum
-    max_index = numpy.argmax(truncation_error < truncation_threshold) + 1
+    if truncation_threshold is None:
+        max_index = n_qubits ** 2
+    else:
+        cumulative_sum = numpy.cumsum(singular_values)
+        truncation_error = cumulative_sum[-1] - cumulative_sum
+        max_index = numpy.argmax(truncation_error < truncation_threshold) + 1
 
     # Return one-body squares.
     one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), float)
