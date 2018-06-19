@@ -190,6 +190,22 @@ class ChemistOrderingTest(unittest.TestCase):
         with self.assertRaises(OperatorSpecificationError):
             chemist_operator = chemist_ordered(random_operator)
 
+    def test_form(self):
+        n_qubits = 6
+        random_operator = get_fermion_operator(
+            random_interaction_operator(n_qubits))
+        chemist_operator = chemist_ordered(random_operator)
+        for term, coefficient in chemist_operator.terms.items():
+            if len(term) == 2 or not len(term):
+                pass
+            else:
+                self.assertTrue(term[0][1])
+                self.assertTrue(term[2][1])
+                self.assertFalse(term[1][1])
+                self.assertFalse(term[3][1])
+                self.assertTrue(term[0][0] > term[2][0])
+                self.assertTrue(term[1][0] > term[3][0])
+
 
 class FreezeOrbitalsTest(unittest.TestCase):
 
