@@ -71,10 +71,9 @@ def low_rank_two_body_decomposition(fermion_operator,
     # Return one-body squares.
     one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), float)
     for l in range(max_index):
-        left_vector = left_vectors[l]
+        left_vector = numpy.sqrt(singular_values[l]) * left_vectors[l]
         for p in range(n_qubits):
             for q in range(n_qubits):
                 linear_index = p + n_qubits * q
-                one_body_squares[l, p, q] = (numpy.sqrt(singular_values[l]) *
-                                             left_vector[linear_index])
+                one_body_squares[l, p, q] = left_vector[linear_index]
     return one_body_squares

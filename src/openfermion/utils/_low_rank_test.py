@@ -41,7 +41,7 @@ class LowRankTest(unittest.TestCase):
             for p in range(n_qubits):
                 for q in range(n_qubits):
                     term = ((p, 1), (q, 0))
-                    one_body_operator = FermionOperator(
+                    one_body_operator += FermionOperator(
                         term, one_body_squares[l, p, q])
             decomposed_operator += one_body_operator ** 2
 
