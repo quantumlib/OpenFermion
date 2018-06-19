@@ -17,6 +17,7 @@ from openfermion.ops import FermionOperator
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import (chemist_ordered,
                                low_rank_two_body_decomposition,
+                               normal_ordered,
                                random_interaction_operator)
 
 
@@ -25,7 +26,7 @@ class LowRankTest(unittest.TestCase):
     def test_consistency(self):
 
         # Initialize an operator that is just a two-body operator.
-        n_qubits = 6
+        n_qubits = 4
         random_operator = chemist_ordered(get_fermion_operator(
             random_interaction_operator(n_qubits)))
         for term, coefficient in random_operator.terms.items():
@@ -46,5 +47,5 @@ class LowRankTest(unittest.TestCase):
             decomposed_operator += one_body_operator ** 2
 
         # Test for consistency.
-        difference = decomposed_operator - random_operator
+        difference = normal_ordered(decomposed_operator - random_operator)
         self.assertAlmostEqual(0., difference.induced_norm())
