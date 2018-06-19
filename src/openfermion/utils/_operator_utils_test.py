@@ -26,7 +26,8 @@ from openfermion.transforms import (bravyi_kitaev, jordan_wigner,
                                     get_interaction_operator,
                                     get_sparse_operator)
 from openfermion.utils import (Grid, is_hermitian,
-                               normal_ordered, number_operator)
+                               normal_ordered, number_operator,
+                               random_interaction_operator)
 
 from openfermion.utils._operator_utils import *
 
@@ -167,6 +168,27 @@ class OperatorUtilsTest(unittest.TestCase):
             self.assertEqual(reordered.terms, operator.terms)
             self.assertEqual(up_then_down(6, 8), 3)
             self.assertEqual(up_then_down(3, 8), 5)
+
+
+class ChemistOrderingTest(unittest.TestCase):
+
+    def test_convert_forward_back(self):
+        n_qubits = 6
+        random_operator = get_fermion_operator(
+            random_interaction_operator(n_qubits))
+        chemist_operator = chemist_ordered(random_operator)
+        normalized_chemist = normal_ordered(chemist_operator)
+        difference = normalized_chemist - normal_ordered(random_operator)
+        self.assertAlmostEqual(0., difference.induced_norm())
+
+    def test_exception(self):
+        n_qubits = 6
+        random_operator = get_fermion_operator(
+            random_interaction_operator(n_qubits))
+        bad_term = ((2, 1), (3, 1))
+        random_operator += FermionOperator(bad_term)
+        with self.assertRaises(OperatorSpecificationError):
+            chemist_operator = chemist_ordered(random_operator)
 
 
 class FreezeOrbitalsTest(unittest.TestCase):

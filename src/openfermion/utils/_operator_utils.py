@@ -37,6 +37,54 @@ class OperatorUtilsError(Exception):
     pass
 
 
+class OperatorSpecificationError(Exception):
+    pass
+
+
+def chemist_ordered(fermion_operator):
+    """Puts a two-body fermion operator in chemist ordering.
+
+    The normal ordering convention for chemists is different.
+    Rather than ordering the two-body term as physicists do, as
+    :math: a^\dagger a^\dagger a a
+    the chemist ordering of the two-body term is
+    :math: a^\dagger a a^\dagger a
+
+    TODO: This routine can be made more efficient.
+
+    Args:
+        fermion_operator (FermionOperator): a fermion operator guarenteed to
+            have number conserving one- and two-body fermion terms only.
+    Returns:
+        chemist_ordered_operator (FermionOperator): the input operator
+            ordered in the chemistry convention.
+    Raises:
+        OperatorSpecificationError: Operator is not two-body number conserving.
+    """
+    # Make sure we're dealing with a fermion operator from a molecule.
+    if not fermion_operator.is_two_body_number_conserving():
+        raise OperatorSpecificationError(
+            'Operator is not two-body number conserving.')
+
+    # Normal order and begin looping.
+    normal_ordered_input = normal_ordered(fermion_operator)
+    chemist_ordered_operator = FermionOperator()
+    for term, coefficient in normal_ordered_input.terms.items():
+        if len(term) == 2 or not len(term):
+            chemist_ordered_operator += FermionOperator(term, coefficient)
+        else:
+            # Possibly add new one-body term.
+            if term[1][0] == term[2][0]:
+                new_one_body_term = (term[0], term[3])
+                chemist_ordered_operator += FermionOperator(
+                    new_one_body_term, coefficient)
+            # Reorder two-body term.
+            new_two_body_term = (term[0], term[2], term[1], term[3])
+            chemist_ordered_operator += FermionOperator(
+                new_two_body_term, -coefficient)
+    return chemist_ordered_operator
+
+
 def inline_sum(summands, seed):
     """Computes a sum, using the __iadd__ operator.
     Args:
