@@ -103,7 +103,7 @@ class FermionOperator(SymbolicOperator):
             if len(term) not in (0, 2, 4):
                 return False
 
-            # Make sure term conserves particle number and (optionall) spin.
+            # Make sure term conserves particle number and (optionally) spin.
             spin = 0
             particles = 0
             for operator in term:
