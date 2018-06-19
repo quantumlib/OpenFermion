@@ -17,7 +17,7 @@ import numpy
 from openfermion.transforms import get_fermion_operator
 from openfermion.ops._diagonal_coulomb_hamiltonian import (
         DiagonalCoulombHamiltonian)
-from openfermion.utils._testing_utils import random_diagonal_coulomb_hamiltonian
+from openfermion.utils import random_diagonal_coulomb_hamiltonian
 
 
 class DiagonalCoulombHamiltonianTest(unittest.TestCase):

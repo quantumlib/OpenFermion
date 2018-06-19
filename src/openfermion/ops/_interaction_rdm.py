@@ -20,6 +20,7 @@ from openfermion.ops import (FermionOperator,
                              PolynomialTensor,
                              QubitOperator)
 
+
 class InteractionRDMError(Exception):
     pass
 
@@ -105,7 +106,8 @@ class InteractionRDM(PolynomialTensor):
                 coefficient = reversed_fermion_operators.terms[fermion_term]
 
                 # Handle molecular term.
-                if FermionOperator(fermion_term).is_molecular_term():
+                if FermionOperator(
+                        fermion_term).is_two_body_number_conserving():
                     if not fermion_term:
                         expectation += coefficient
                     else:

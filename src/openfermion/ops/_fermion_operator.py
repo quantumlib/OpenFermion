@@ -87,24 +87,30 @@ class FermionOperator(SymbolicOperator):
                         return False
         return True
 
-    def is_molecular_term(self):
-        """Query whether term has correct form to be from a molecular.
+    def is_two_body_number_conserving(self, check_spin_symmetry=False):
+        """Query whether operator has correct form to be from a molecule.
 
         Require that term is particle-number conserving (same number of
         raising and lowering operators). Require that term has 0, 2 or 4
         ladder operators. Require that term conserves spin (parity of
         raising operators equals parity of lowering operators).
+
+        Args:
+            check_spin_symmetry (bool): Whether to check if
+                operator conserves spin.
         """
         for term in self.terms:
             if len(term) not in (0, 2, 4):
                 return False
 
-            # Make sure term conserves particle number and spin.
+            # Make sure term conserves particle number and (optionall) spin.
             spin = 0
             particles = 0
             for operator in term:
                 particles += (-1) ** operator[1]  # add 1 if create, else -1
                 spin += (-1) ** (operator[0] + operator[1])
-            if not (particles == spin == 0):
+            if particles:
+                return False
+            elif spin and check_spin_symmetry:
                 return False
         return True
