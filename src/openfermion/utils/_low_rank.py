@@ -55,6 +55,8 @@ def low_rank_two_body_decomposition(fermion_operator,
                     y = r + n_qubits * s
                     interaction_array[x, y] = ordered_operator.terms.get(
                         ((p, 1), (q, 0), (r, 1), (s, 0)), 0.)
+    interaction_array = (interaction_array
+                         + numpy.transpose(interaction_array)) / 2.
 
     # Perform the SVD.
     left_vectors, singular_values = numpy.linalg.svd(interaction_array)[:2]
