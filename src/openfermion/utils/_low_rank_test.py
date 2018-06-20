@@ -23,10 +23,46 @@ from openfermion.utils import (chemist_ordered,
 
 class LowRankTest(unittest.TestCase):
 
-    def test_consistency(self):
+    def test_matrix_consistency(self):
 
         # Initialize an operator that is just a two-body operator.
-        n_qubits = 2
+        n_qubits = 4
+        random_operator = chemist_ordered(get_fermion_operator(
+            random_interaction_operator(n_qubits)))
+        for term, coefficient in random_operator.terms.items():
+            if len(term) != 4:
+                del random_operator.terms[term]
+
+        # Initialize (pq|rs) array.
+        interaction_array = numpy.zeros((n_qubits ** 2, n_qubits ** 2), float)
+
+        # Populate interaction array.
+        for p in range(n_qubits):
+            for q in range(n_qubits):
+                for r in range(n_qubits):
+                    for s in range(n_qubits):
+                        x = p + n_qubits * q
+                        y = r + n_qubits * s
+                        interaction_array[x, y] = random_operator.terms.get(
+                            ((p, 1), (q, 0), (r, 1), (s, 0)), 0.)
+        interaction_array = (interaction_array
+                             + numpy.transpose(interaction_array)) / 2.
+
+        # Perform low rank decomposition and build operator back.
+        one_body_squares = low_rank_two_body_decomposition(random_operator)
+        l_max = one_body_squares.shape[0]
+        test_matrix = numpy.zeros((n_qubits ** 2, n_qubits ** 2), complex)
+        for l in range(l_max):
+            vector = one_body_squares[l].reshape((n_qubits ** 2, 1))
+            test_matrix += numpy.dot(vector, vector.transpose())
+        difference = numpy.sum(numpy.absolute(test_matrix - interaction_array))
+        self.assertAlmostEqual(0., difference)
+
+
+    def test_fermion_operator_consistency(self):
+
+        # Initialize an operator that is just a two-body operator.
+        n_qubits = 4
         random_operator = chemist_ordered(get_fermion_operator(
             random_interaction_operator(n_qubits)))
         for term, coefficient in random_operator.terms.items():

@@ -85,4 +85,5 @@ def low_rank_two_body_decomposition(fermion_operator,
             for q in range(n_qubits):
                 linear_index = p + n_qubits * q
                 one_body_squares[l, p, q] = complex(eigenvector[linear_index])
+
     return one_body_squares
