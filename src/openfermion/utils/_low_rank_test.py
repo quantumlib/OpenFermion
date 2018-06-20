@@ -62,7 +62,7 @@ class LowRankTest(unittest.TestCase):
     def test_fermion_operator_consistency(self):
 
         # Initialize an operator that is just a two-body operator.
-        n_qubits = 4
+        n_qubits = 20
         random_operator = chemist_ordered(get_fermion_operator(
             random_interaction_operator(n_qubits)))
         for term, coefficient in random_operator.terms.items():
@@ -84,4 +84,5 @@ class LowRankTest(unittest.TestCase):
 
         # Test for consistency.
         difference = normal_ordered(decomposed_operator - random_operator)
+        print difference
         self.assertAlmostEqual(0., difference.induced_norm())

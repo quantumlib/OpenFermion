@@ -18,6 +18,17 @@ import numpy.linalg
 from openfermion.utils import chemist_ordered, count_qubits
 
 
+def two_body_matricize(fermion_operator):
+    """Convert an InteractionOperator into a square matrix.
+
+    The matrix we will produce stores the values of :math:`h_{pqrs}` from
+    :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a_q a^\dagger_r a_s`
+    as a flattened matrix of dimension N^2 by N^2.
+
+    Args:
+        
+
+
 def low_rank_two_body_decomposition(fermion_operator,
                                     truncation_threshold=None):
     """Convert two-body operator into sum of squared one-body operators.
