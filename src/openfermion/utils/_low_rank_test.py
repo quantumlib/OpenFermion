@@ -26,7 +26,7 @@ class LowRankTest(unittest.TestCase):
     def test_consistency(self):
 
         # Initialize an operator that is just a two-body operator.
-        n_qubits = 4
+        n_qubits = 2
         random_operator = chemist_ordered(get_fermion_operator(
             random_interaction_operator(n_qubits)))
         for term, coefficient in random_operator.terms.items():

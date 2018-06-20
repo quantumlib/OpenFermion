@@ -58,18 +58,14 @@ def low_rank_two_body_decomposition(fermion_operator,
     interaction_array = (interaction_array
                          + numpy.transpose(interaction_array)) / 2.
 
-    # Perform the SVD.
-    #left_vectors, singular_values, right_vectors = numpy.linalg.svd(
-    #    interaction_array)
-
     # Diagonalize.
     eigenvalues, eigenvectors = numpy.linalg.eigh(interaction_array)
     negative_eigenvalues = (eigenvalues < 0)
     eigenvalues = numpy.absolute(eigenvalues)
-    #indices = numpy.argsort(-eigenvalues)
-    #eigenvalues = eigenvalues[indices]
-    #eigenvectors = eigenvectors[:, indices]
-    #negative_eigenvalues = negative_eigenvalues[indices]
+    indices = numpy.argsort(-eigenvalues)
+    eigenvalues = eigenvalues[indices]
+    eigenvectors = eigenvectors[:, indices]
+    negative_eigenvalues = negative_eigenvalues[indices]
 
     # Determine where to truncate.
     if truncation_threshold is None:
@@ -80,7 +76,7 @@ def low_rank_two_body_decomposition(fermion_operator,
         max_index = numpy.argmax(truncation_error < truncation_threshold) + 1
 
     # Return one-body squares.
-    one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), float)
+    one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), complex)
     for l in range(max_index):
         eigenvector = numpy.sqrt(eigenvalues[l]) * eigenvectors[:, l]
         if negative_eigenvalues[l]:
@@ -88,5 +84,5 @@ def low_rank_two_body_decomposition(fermion_operator,
         for p in range(n_qubits):
             for q in range(n_qubits):
                 linear_index = p + n_qubits * q
-                one_body_squares[l, p, q] = eigenvector[linear_index]
+                one_body_squares[l, p, q] = complex(eigenvector[linear_index])
     return one_body_squares
