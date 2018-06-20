@@ -16,6 +16,7 @@ import unittest
 from openfermion.ops import FermionOperator
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import (chemist_ordered,
+                               is_hermitian,
                                low_rank_two_body_decomposition,
                                normal_ordered,
                                random_interaction_operator)

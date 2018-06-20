@@ -85,7 +85,9 @@ def random_interaction_operator(n_qubits, real=True, seed=0):
         two_body_coefficients[q, p, q, p] = coeff
 
     # Generate the rest of the terms.
-    for p, q, r, s in itertools.combinations(range(n_qubits), 4):
+    #for p, q, r, s in itertools.combinations(range(n_qubits), 4):
+    for (p, q), (r, s) in itertools.combinations(
+            itertools.combinations(range(n_qubits), 2), 2):
         coeff = numpy.random.randn()
         if not real:
             coeff += 1.j * numpy.random.randn()
@@ -98,10 +100,6 @@ def random_interaction_operator(n_qubits, real=True, seed=0):
         two_body_coefficients[s, r, p, q] = -coeff.conjugate()
         two_body_coefficients[r, s, q, p] = -coeff.conjugate()
         two_body_coefficients[r, s, p, q] = coeff.conjugate()
-
-    # Make sure it is Hermitian.
-    two_body_coefficients += numpy.conjugate(
-        numpy.transpose(two_body_coefficients))
 
     # Create the InteractionOperator and return.
     interaction_operator = InteractionOperator(
