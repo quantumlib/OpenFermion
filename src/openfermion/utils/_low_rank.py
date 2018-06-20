@@ -59,7 +59,17 @@ def low_rank_two_body_decomposition(fermion_operator,
                          + numpy.transpose(interaction_array)) / 2.
 
     # Perform the SVD.
-    left_vectors, singular_values = numpy.linalg.svd(interaction_array)[:2]
+    #left_vectors, singular_values, right_vectors = numpy.linalg.svd(
+    #    interaction_array)
+
+    # Diagonalize.
+    eigenvalues, eigenvectors = numpy.linalg.eigh(interaction_array)
+    negative_eigenvalues = (eigenvalues < 0)
+    eigenvalues = numpy.absolute(eigenvalues)
+    #indices = numpy.argsort(-eigenvalues)
+    #eigenvalues = eigenvalues[indices]
+    #eigenvectors = eigenvectors[:, indices]
+    #negative_eigenvalues = negative_eigenvalues[indices]
 
     # Determine where to truncate.
     if truncation_threshold is None:
@@ -72,9 +82,11 @@ def low_rank_two_body_decomposition(fermion_operator,
     # Return one-body squares.
     one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), float)
     for l in range(max_index):
-        left_vector = numpy.sqrt(singular_values[l]) * left_vectors[:, l]
+        eigenvector = numpy.sqrt(eigenvalues[l]) * eigenvectors[:, l]
+        if negative_eigenvalues[l]:
+            eigenvector = 1.j * eigenvector
         for p in range(n_qubits):
             for q in range(n_qubits):
                 linear_index = p + n_qubits * q
-                one_body_squares[l, p, q] = left_vector[linear_index]
+                one_body_squares[l, p, q] = eigenvector[linear_index]
     return one_body_squares
