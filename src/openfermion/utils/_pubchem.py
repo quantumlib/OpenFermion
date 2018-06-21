@@ -10,8 +10,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import pubchempy
-
 
 def geometry_from_pubchem(name):
     """Function to extract geometry using the molecule's name from the PubChem
@@ -25,6 +23,7 @@ def geometry_from_pubchem(name):
         geometry: a list of tuples giving the coordinates of each atom with
         distances in Angstrom.
     """
+    import pubchempy
 
     pubchempy_2d_molecule = pubchempy.get_compounds(name, 'name',
                                                     record_type='2d')

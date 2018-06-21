@@ -18,11 +18,29 @@ import sys
 import tempfile
 import unittest
 
-import nbformat
 import numpy
+import pytest
 
 from openfermion.config import THIS_DIRECTORY
 
+
+def _module_import(plug):
+    import sys
+    if sys.version_info >= (3, 4):
+        from importlib import util
+        plug_spec = util.find_spec(plug)
+    else:
+        import pkgutil
+        plug_spec = pkgutil.find_loader(plug)
+    if plug_spec is None:
+        print('no', plug)
+        return False
+    else:
+        print('yes', plug)
+        return True
+
+using_nbconvert = pytest.mark.skipif(_module_import('nbconvert') is False,
+                                     reason='Not detecting module nbconvert. Install package if necessary and add to envvar PYTHONPATH')
 
 class ExampleTest(unittest.TestCase):
     """Unit tests for example scripts."""
@@ -34,8 +52,11 @@ class ExampleTest(unittest.TestCase):
         self.binary_code_transforms_demo = 'binary_code_transforms_demo.ipynb'
         self.jw_bk_demo = 'jordan_wigner_and_bravyi_kitaev_transforms.ipynb'
 
+    @using_nbconvert
     def test_demo(self):
         """Unit test for demo."""
+        import nbformat
+
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:
@@ -66,8 +87,11 @@ class ExampleTest(unittest.TestCase):
             errors = []
         self.assertEqual(errors, [])
 
+    @using_nbconvert
     def test_binary_code_transforms_demo(self):
         """Unit test for demo."""
+        import nbformat
+
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:
@@ -98,8 +122,11 @@ class ExampleTest(unittest.TestCase):
             errors = []
         self.assertEqual(errors, [])
 
+    @using_nbconvert
     def test_jordan_wigner_and_bravyi_kitaev_transforms_demo(self):
         """Unit test for demo."""
+        import nbformat
+
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:

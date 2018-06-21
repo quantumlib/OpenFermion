@@ -19,6 +19,28 @@ import unittest
 from openfermion.utils import geometry_from_pubchem
 
 
+import pytest
+
+def _module_import(plug):
+    import sys
+    if sys.version_info >= (3, 4):
+        from importlib import util
+        plug_spec = util.find_spec(plug)
+    else:
+        import pkgutil
+        plug_spec = pkgutil.find_loader(plug)
+    if plug_spec is None:
+        print('no', plug)
+        return False
+    else:
+        print('yes', plug)
+        return True
+
+
+using_pubchempy = pytest.mark.skipif(_module_import('pubchempy') is False,
+                                     reason='Not detecting module pubchempy. Install package if necessary and add to envvar PYTHONPATH')
+
+@using_pubchempy
 class OpenFermionPubChemTest(unittest.TestCase):
 
     def test_water(self):
