@@ -83,7 +83,7 @@ Circuit compilation and simulation plugins
 
 * `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion>`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
 
-* `SFOpenBoson <https://github.com/XanaduAI/SFOpenBoson>`__ to support integration with `Strawberry Fields <https://www.xanadu.ai/software>`__.
+* `SFOpenBoson <https://github.com/XanaduAI/SFOpenBoson>`__ to support integration with `Strawberry Fields <https://github.com/XanaduAI/strawberryfields>`__.
 
 Electronic structure package plugins
 ------------------------------------
@@ -164,7 +164,7 @@ When using OpenFermion for research projects, please cite:
 
     Jarrod R. McClean, Ian D. Kivlichan, Kevin J. Sung, Damian S. Steiger,
     Yudong Cao, Chengyu Dai, E. Schuyler Fried, Craig Gidney, Brendan Gimby,
-    Thomas Häner, Tarini Hardikar, Vojtĕch Havlíček, Cupjin Huang, Zhang Jiang,
+    Thomas Häner, Tarini Hardikar, Vojtĕch Havlíček, Cupjin Huang, Josh Izaac, Zhang Jiang,
     Matthew Neeley, Thomas O'Brien, Isil Ozfidan, Maxwell D. Radin, Jhonathan Romero,
     Nicholas Rubin, Nicolas P. D. Sawaya, Kanav Setia, Sukin Sim, Mark Steudtner,
     Wei Sun, Fang Zhang and Ryan Babbush.
