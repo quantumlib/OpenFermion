@@ -12,8 +12,11 @@
 
 import itertools
 import numpy
+import os
 import unittest
 
+from openfermion.config import THIS_DIRECTORY
+from openfermion.hamiltonians import MolecularData
 from openfermion.ops import FermionOperator
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import (chemist_ordered,
@@ -121,3 +124,59 @@ class LowRankTest(unittest.TestCase):
         # Test for consistency.
         difference = normal_ordered(decomposed_operator - random_operator)
         self.assertAlmostEqual(0., difference.induced_norm())
+
+    def test_rank_reduction(self):
+
+        # Initialize H2.
+        geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
+        basis = 'sto-3g'
+        multiplicity = 1
+        filename = os.path.join(THIS_DIRECTORY, 'data',
+                                'H2_sto-3g_singlet_0.7414')
+        molecule = MolecularData(
+            geometry, basis, multiplicity, filename=filename)
+        molecule.load()
+
+        # Get molecular Hamiltonian.
+        molecular_hamiltonian = molecule.get_molecular_hamiltonian()
+
+        # Get fermion Hamiltonian.
+        fermion_hamiltonian = normal_ordered(get_fermion_operator(
+            molecular_hamiltonian))
+
+        # Get chemist tensor.
+        constant, one_body_coefficients, chemist_tensor = \
+            get_chemist_two_body_coefficients(fermion_hamiltonian)
+        n_qubits = one_body_coefficients.shape[0]
+
+        # Rank reduce.
+        errors = []
+        for truncation_threshold in [1., 0.1, 0.01, 0.001]:
+
+            # Add back one-body terms and constant.
+            decomposed_operator = FermionOperator((), constant)
+            for p, q in itertools.product(range(n_qubits), repeat=2):
+                term = ((p, 1), (q, 0))
+                coefficient = one_body_coefficients[p, q]
+                decomposed_operator += FermionOperator(term, coefficient)
+
+            # Rank reduce.
+            eigenvalues, one_body_squares = low_rank_two_body_decomposition(
+                chemist_tensor, truncation_threshold)
+
+            # Reassemble FermionOperator.
+            l_max = eigenvalues.size
+            print truncation_threshold, l_max
+            for l in range(l_max):
+                one_body_operator = FermionOperator()
+                for p, q in itertools.product(range(n_qubits), repeat=2):
+                    term = ((p, 1), (q, 0))
+                    coefficient = one_body_squares[l, p, q]
+                    one_body_operator += FermionOperator(term, coefficient)
+                decomposed_operator += eigenvalues[l] * (one_body_operator ** 2)
+
+            # Test for consistency.
+            difference = normal_ordered(
+                decomposed_operator - fermion_hamiltonian)
+            errors += [difference.induced_norm()]
+        self.assertTrue(errors[3] <= errors[2] <= errors[1] <= errors[0])

@@ -157,12 +157,12 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
     if truncation_threshold is None:
         max_index = n_qubits ** 2
     else:
-        cumulative_sum = numpy.cumsum(singular_values)
+        cumulative_sum = numpy.cumsum(numpy.absolute(eigenvalues))
         truncation_error = cumulative_sum[-1] - cumulative_sum
-        max_index = numpy.argmax(truncation_error < truncation_threshold)
+        max_index = numpy.argmax(truncation_error < truncation_threshold) + 1
 
     # Return one-body squares.
-    one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits))
+    one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), complex)
     for l in range(max_index):
         one_body_squares[l] = numpy.reshape(eigenvectors[:, l],
                                             (n_qubits, n_qubits))
