@@ -16,6 +16,7 @@ import itertools
 import numpy
 import numpy.linalg
 
+from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import FermionOperator, InteractionOperator
 from openfermion.utils import count_qubits, normal_ordered
 
@@ -103,155 +104,139 @@ def get_chemist_ordered_two_body_coefficients(two_body_operator):
     return chemist_ordered_two_body_coefficients, one_body_coefficients
 
 
-def low_rank_two_body_decomposition(chemist_ordered_two_body_coefficients):
+def low_rank_two_body_decomposition(chemist_ordered_two_body_coefficients,
+                                    truncation_threshold=None):
     """Convert two-body operator into sum of squared one-body operators.
 
     This function decomposes
     :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a_q a^\dagger_r a_s`
     as :math:`\sum_{l} \lambda_l (\sum_{pq} g_{lpq} a^\dagger_p a_q)^2`
+    l is truncated to take max value L so that
+    :math:`\sum_{l=0}^{L-1} |\lambda_l| < x`
 
     Args:
         chemist_ordered_two_body_coefficients (ndarray): an N x N x N x N
             numpy array giving the :math:`h_{pqrs}` tensor in chemist notation
             so that all symmetries are already unpacked.
-        
-        The fermion operator to decompose.
-            This operator needs to be a two-body number conserviing operator.
-            It might have one-body terms as well but they will be ignored.
-        truncation_threshold (Float): the value of x in the expression above.
-            If None, then L = N ** 2 and no truncation will occur.
+        truncation_threshold (optional Float): the value of x in the expression
+            above. If None, then L = N ** 2 and no truncation will occur.
 
     Returns:
-        singular_values (ndarray of floats): length L array of floats giving
-            the singular values g_{lpq}.
+        eigenvalues (ndarray of floats): length L array giving the g_{lpq}.
         one_body_squares (ndarray of floats): L x N x N array of floats
             corresponding to the value of :math:`\sqrt{\lambda_l} * g_{pql}`.
-        one_body_coefficients (ndarray of floats): N x N array of floats
-            corresponding to left over one-body terms (not squared).
+
+    Raises:
+        TypeError: Invalid two-body coefficient tensor specification.
     """
-    # Obtain chemist ordered FermionOperator.
-    ordered_operator = chemist_ordered(fermion_operator)
+    # Initialize N^2 by N^2 interaction array.
+    n_qubits = chemist_ordered_two_body_coefficients.shape[0]
+    interaction_array = numpy.reshape(chemist_ordered_two_body_coefficients,
+                                      (n_qubits ** 2, n_qubits ** 2))
 
-    # Initialize (pq|rs) array.
-    n_qubits = count_qubits(ordered_operator)
-    one_body_coefficients = numpy.zeros((n_qubits, n_qubits), complex)
-    interaction_array = numpy.zeros((n_qubits ** 2, n_qubits ** 2), complex)
-
-    # Populate interaction array.
-    for p in range(n_qubits):
-        for q in range(n_qubits):
-            for r in range(n_qubits):
-                for s in range(n_qubits):
-                    x = p + n_qubits * q
-                    y = r + n_qubits * s
-                    interaction_array[x, y] = ordered_operator.terms.get(
-                        ((p, 1), (q, 0), (r, 1), (s, 0)), 0.)
-    interaction_array = (interaction_array +
-                         numpy.conjugate(numpy.transpose(interaction_array)))
-    interaction_array /= 2.
+    # Make sure interaction array is symmetric.
+    asymmetry = numpy.amax(numpy.absolute(
+        interaction_array - numpy.transpose(interaction_array)))
+    if asymmetry > EQ_TOLERANCE:
+        raise TypeError('Invalid two-body coefficient tensor specification.')
 
     # Diagonalize.
     eigenvalues, eigenvectors = numpy.linalg.eigh(interaction_array)
-    negative_eigenvalues = (eigenvalues < 0)
-    eigenvalues = numpy.absolute(eigenvalues)
-    indices = numpy.argsort(-eigenvalues)
+
+    # Sort eigenvalues and eigenvectors in descending order by magnitude.
+    indices = numpy.argsort(numpy.absolute(eigenvalues))[::-1]
     eigenvalues = eigenvalues[indices]
     eigenvectors = eigenvectors[:, indices]
-    negative_eigenvalues = negative_eigenvalues[indices]
 
-    # Determine where to truncate.
+    # Optionally truncate.
     if truncation_threshold is None:
         max_index = n_qubits ** 2
     else:
         cumulative_sum = numpy.cumsum(singular_values)
         truncation_error = cumulative_sum[-1] - cumulative_sum
-        max_index = numpy.argmax(truncation_error < truncation_threshold) + 1
+        max_index = numpy.argmax(truncation_error < truncation_threshold)
 
     # Return one-body squares.
-    one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), complex)
+    one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits))
     for l in range(max_index):
-        eigenvector = numpy.sqrt(eigenvalues[l]) * eigenvectors[:, l]
-        if negative_eigenvalues[l]:
-            eigenvector = 1.j * eigenvector
-        for p in range(n_qubits):
-            for q in range(n_qubits):
-                linear_index = p + n_qubits * q
-                one_body_squares[l, p, q] = complex(eigenvector[linear_index])
+        one_body_squares[l] = numpy.reshape(eigenvectors[:, l],
+                                            (n_qubits, n_qubits))
 
-    return one_body_squares
+    return eigenvalues[:max_index], one_body_squares
 
-def low_rank_two_body_decomposition(fermion_operator,
-                                    truncation_threshold=None):
-    """Convert two-body operator into sum of squared one-body operators.
-
-    This function decomposes
-    :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a_q a^\dagger_r a_s
-    = \sum_{l} \lambda_l (\sum_{pq} g_{lpq} a^\dagger_p a_q)^2`
-    l is truncated to take max value L so that
-    :math:`\sum_{l=0}^{L-1} |\lambda_l| < x`
-
-    Args:
-        fermion_operator (FermionOperator): The fermion operator to decompose.
-            This operator needs to be a two-body number conserviing operator.
-            It might have one-body terms as well but they will be ignored.
-        truncation_threshold (Float): the value of x in the expression above.
-            If None, then L = N ** 2 and no truncation will occur.
-
-    Returns:
-        singular_values (ndarray of floats): length L array of floats giving
-            the singular values g_{lpq}.
-        one_body_squares (ndarray of floats): L x N x N array of floats
-            corresponding to the value of :math:`\sqrt{\lambda_l} * g_{pql}`.
-        one_body_coefficients (ndarray of floats): N x N array of floats
-            corresponding to left over one-body terms (not squared).
-    """
-    # Obtain chemist ordered FermionOperator.
-    ordered_operator = chemist_ordered(fermion_operator)
-
-    # Initialize (pq|rs) array.
-    n_qubits = count_qubits(ordered_operator)
-    one_body_coefficients = numpy.zeros((n_qubits, n_qubits), complex)
-    interaction_array = numpy.zeros((n_qubits ** 2, n_qubits ** 2), complex)
-
-    # Populate interaction array.
-    for p in range(n_qubits):
-        for q in range(n_qubits):
-            for r in range(n_qubits):
-                for s in range(n_qubits):
-                    x = p + n_qubits * q
-                    y = r + n_qubits * s
-                    interaction_array[x, y] = ordered_operator.terms.get(
-                        ((p, 1), (q, 0), (r, 1), (s, 0)), 0.)
-    interaction_array = (interaction_array +
-                         numpy.conjugate(numpy.transpose(interaction_array)))
-    interaction_array /= 2.
-
-    # Diagonalize.
-    eigenvalues, eigenvectors = numpy.linalg.eigh(interaction_array)
-    negative_eigenvalues = (eigenvalues < 0)
-    eigenvalues = numpy.absolute(eigenvalues)
-    indices = numpy.argsort(-eigenvalues)
-    eigenvalues = eigenvalues[indices]
-    eigenvectors = eigenvectors[:, indices]
-    negative_eigenvalues = negative_eigenvalues[indices]
-
-    # Determine where to truncate.
-    if truncation_threshold is None:
-        max_index = n_qubits ** 2
-    else:
-        cumulative_sum = numpy.cumsum(singular_values)
-        truncation_error = cumulative_sum[-1] - cumulative_sum
-        max_index = numpy.argmax(truncation_error < truncation_threshold) + 1
-
-    # Return one-body squares.
-    one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), complex)
-    for l in range(max_index):
-        eigenvector = numpy.sqrt(eigenvalues[l]) * eigenvectors[:, l]
-        if negative_eigenvalues[l]:
-            eigenvector = 1.j * eigenvector
-        for p in range(n_qubits):
-            for q in range(n_qubits):
-                linear_index = p + n_qubits * q
-                one_body_squares[l, p, q] = complex(eigenvector[linear_index])
-
-    return one_body_squares
+# To delete.
+#def low_rank_two_body_decomposition(fermion_operator,
+#                                    truncation_threshold=None):
+#    """Convert two-body operator into sum of squared one-body operators.
+#
+#    This function decomposes
+#    :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a_q a^\dagger_r a_s
+#    = \sum_{l} \lambda_l (\sum_{pq} g_{lpq} a^\dagger_p a_q)^2`
+#    l is truncated to take max value L so that
+#    :math:`\sum_{l=0}^{L-1} |\lambda_l| < x`
+#
+#    Args:
+#        fermion_operator (FermionOperator): The fermion operator to decompose.
+#            This operator needs to be a two-body number conserviing operator.
+#            It might have one-body terms as well but they will be ignored.
+#        truncation_threshold (Float): the value of x in the expression above.
+#            If None, then L = N ** 2 and no truncation will occur.
+#
+#    Returns:
+#        singular_values (ndarray of floats): length L array of floats giving
+#            the singular values g_{lpq}.
+#        one_body_squares (ndarray of floats): L x N x N array of floats
+#            corresponding to the value of :math:`\sqrt{\lambda_l} * g_{pql}`.
+#        one_body_coefficients (ndarray of floats): N x N array of floats
+#            corresponding to left over one-body terms (not squared).
+#    """
+#    # Obtain chemist ordered FermionOperator.
+#    ordered_operator = chemist_ordered(fermion_operator)
+#
+#    # Initialize (pq|rs) array.
+#    n_qubits = count_qubits(ordered_operator)
+#    one_body_coefficients = numpy.zeros((n_qubits, n_qubits), complex)
+#    interaction_array = numpy.zeros((n_qubits ** 2, n_qubits ** 2), complex)
+#
+#    # Populate interaction array.
+#    for p in range(n_qubits):
+#        for q in range(n_qubits):
+#            for r in range(n_qubits):
+#                for s in range(n_qubits):
+#                    x = p + n_qubits * q
+#                    y = r + n_qubits * s
+#                    interaction_array[x, y] = ordered_operator.terms.get(
+#                        ((p, 1), (q, 0), (r, 1), (s, 0)), 0.)
+#    interaction_array = (interaction_array +
+#                         numpy.conjugate(numpy.transpose(interaction_array)))
+#    interaction_array /= 2.
+#
+#    # Diagonalize.
+#    eigenvalues, eigenvectors = numpy.linalg.eigh(interaction_array)
+#    negative_eigenvalues = (eigenvalues < 0)
+#    eigenvalues = numpy.absolute(eigenvalues)
+#    indices = numpy.argsort(-eigenvalues)
+#    eigenvalues = eigenvalues[indices]
+#    eigenvectors = eigenvectors[:, indices]
+#    negative_eigenvalues = negative_eigenvalues[indices]
+#
+#    # Determine where to truncate.
+#    if truncation_threshold is None:
+#        max_index = n_qubits ** 2
+#    else:
+#        cumulative_sum = numpy.cumsum(singular_values)
+#        truncation_error = cumulative_sum[-1] - cumulative_sum
+#        max_index = numpy.argmax(truncation_error < truncation_threshold) + 1
+#
+#    # Return one-body squares.
+#    one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), complex)
+#    for l in range(max_index):
+#        eigenvector = numpy.sqrt(eigenvalues[l]) * eigenvectors[:, l]
+#        if negative_eigenvalues[l]:
+#            eigenvector = 1.j * eigenvector
+#        for p in range(n_qubits):
+#            for q in range(n_qubits):
+#                linear_index = p + n_qubits * q
+#                one_body_squares[l, p, q] = complex(eigenvector[linear_index])
+#
+#    return one_body_squares
