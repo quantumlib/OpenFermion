@@ -166,7 +166,6 @@ class LowRankTest(unittest.TestCase):
 
             # Reassemble FermionOperator.
             l_max = eigenvalues.size
-            print truncation_threshold, l_max
             for l in range(l_max):
                 one_body_operator = FermionOperator()
                 for p, q in itertools.product(range(n_qubits), repeat=2):
