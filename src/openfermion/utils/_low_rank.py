@@ -21,7 +21,7 @@ from openfermion.ops import FermionOperator, InteractionOperator
 from openfermion.utils import count_qubits, normal_ordered
 
 
-def get_chemist_ordered_two_body_coefficients(two_body_operator):
+def get_chemist_two_body_coefficients(two_body_operator):
     """Convert a FermionOperator or InteractionOperator to low rank tensor.
 
     In the chemistry convention the Hamiltonian should be expressed as
@@ -40,12 +40,12 @@ def get_chemist_ordered_two_body_coefficients(two_body_operator):
             also needs to be number conserving. There might be a constant.
 
     Returns:
-        chemist_ordered_two_body_coefficients (ndarray): an N x N x N x N
-            numpy array giving the :math:`h_{pqrs}` tensor in chemist notation
-            so that all symmetries are already unpacked.
+        constant: (float): A constant shift.
         one_body_coefficients (ndarray): an N x N array of floats giving
             coefficients of the :math:`a^\dagger_p a_q` terms.
-        constant: (float): A constant shift.
+        chemist_two_body_coefficients (ndarray): an N x N x N x N numpy array
+            giving the :math:`h_{pqrs}` tensor in chemist notation so that all
+            symmetries are already unpacked.
 
     Raises:
         TypeError: Input must be two-body number conserving
@@ -54,22 +54,24 @@ def get_chemist_ordered_two_body_coefficients(two_body_operator):
     # Initialize.
     n_qubits = count_qubits(two_body_operator)
     one_body_coefficients = numpy.zeros((n_qubits, n_qubits), complex)
-    chemist_ordered_two_body_coefficients = numpy.zeros(
+    chemist_two_body_coefficients = numpy.zeros(
         (n_qubits, n_qubits, n_qubits, n_qubits), complex)
 
     # Determine input type and ensure normal order.
     if (isinstance(two_body_operator, FermionOperator) and
             two_body_operator.is_two_body_number_conserving()):
-        ordered_operator = normal_ordered(fermion_operator)
+        ordered_operator = normal_ordered(two_body_operator)
+        constant = ordered_operator.terms[()]
         is_fermion_operator = True
     elif isinstance(two_body_operator, InteractionOperator):
+        constant = two_body_operator.constant
         is_fermion_operator = False
     else:
         raise TypeError('Input must be two-body number conserving ' +
                         'FermionOperator or InteractionOperator.')
 
     # Extract explicit one-body terms.
-    for p,q in itertools.product(range(n_qubits), 2):
+    for p, q in itertools.product(range(n_qubits), repeat=2):
         if is_fermion_operator:
             term = ((p, 1), (q, 0))
             coefficient = ordered_operator.terms.get(term, 0.)
@@ -78,18 +80,20 @@ def get_chemist_ordered_two_body_coefficients(two_body_operator):
         one_body_coefficients[p, q] += coefficient
 
     # Loop through and populate two-body coefficient array.
-    for p,q,r,s in itertools.product(range(n_qubits), 4):
-        if is_fermion_operator:
+    for p, q, r, s in itertools.product(range(n_qubits), repeat=4):
+        if p == q or r == s:
+            continue
+        elif is_fermion_operator:
             term = ((p, 1), (q, 1), (r, 0), (s, 0))
             coefficient = ordered_operator.terms.get(term, 0) / 4.
         else:
-            coefficient = two_body_operator.one_body_tensor[p, q]
+            coefficient = two_body_operator.two_body_tensor[p, q, r, s] / 4.
 
         # Set two-body elements unpacking symmetries as described in docs.
-        chemist_ordered_two_body_coefficients[p, r, q, s] -= coefficient
-        chemist_ordered_two_body_coefficients[q, r, p, s] += coefficient
-        chemist_ordered_two_body_coefficients[p, s, q, r] += coefficient
-        chemist_ordered_two_body_coefficients[q, s, p, r] -= coefficient
+        chemist_two_body_coefficients[p, r, q, s] -= coefficient
+        chemist_two_body_coefficients[q, r, p, s] += coefficient
+        chemist_two_body_coefficients[p, s, q, r] += coefficient
+        chemist_two_body_coefficients[q, s, p, r] -= coefficient
 
         # Account for any one-body terms that might pop out.
         if q == r:
@@ -101,10 +105,11 @@ def get_chemist_ordered_two_body_coefficients(two_body_operator):
         if p == s:
             one_body_coefficients[q, r] += coefficient
 
-    return chemist_ordered_two_body_coefficients, one_body_coefficients
+    return (constant, one_body_coefficients,
+            chemist_two_body_coefficients)
 
 
-def low_rank_two_body_decomposition(chemist_ordered_two_body_coefficients,
+def low_rank_two_body_decomposition(chemist_two_body_coefficients,
                                     truncation_threshold=None):
     """Convert two-body operator into sum of squared one-body operators.
 
@@ -115,7 +120,7 @@ def low_rank_two_body_decomposition(chemist_ordered_two_body_coefficients,
     :math:`\sum_{l=0}^{L-1} |\lambda_l| < x`
 
     Args:
-        chemist_ordered_two_body_coefficients (ndarray): an N x N x N x N
+        chemist_two_body_coefficients (ndarray): an N x N x N x N
             numpy array giving the :math:`h_{pqrs}` tensor in chemist notation
             so that all symmetries are already unpacked.
         truncation_threshold (optional Float): the value of x in the expression
@@ -130,8 +135,8 @@ def low_rank_two_body_decomposition(chemist_ordered_two_body_coefficients,
         TypeError: Invalid two-body coefficient tensor specification.
     """
     # Initialize N^2 by N^2 interaction array.
-    n_qubits = chemist_ordered_two_body_coefficients.shape[0]
-    interaction_array = numpy.reshape(chemist_ordered_two_body_coefficients,
+    n_qubits = chemist_two_body_coefficients.shape[0]
+    interaction_array = numpy.reshape(chemist_two_body_coefficients,
                                       (n_qubits ** 2, n_qubits ** 2))
 
     # Make sure interaction array is symmetric.
