@@ -40,9 +40,5 @@ setup(
     include_package_data=True,
     package_data={
         '': [os.path.join('src', 'openfermion', 'data', '*.hdf5'),
-             os.path.join('src', 'openfermion', 'data', '*.data'),
-             os.path.join('src', 'openfermion', 'data', '*.txt'),
-             os.path.join('src', 'openfermion', 'data', '*.npy'),
-             os.path.join('src', 'openfermion', 'tests', '*.hdf5'),
-             os.path.join('src', 'openfermion', 'tests', '*.py')]
+             os.path.join('src', 'openfermion', 'data', '*.npy')]
     })
