@@ -47,7 +47,13 @@ class ExampleTest(unittest.TestCase):
 
     def setUp(self):
         string_length = len(THIS_DIRECTORY)
-        self.directory = THIS_DIRECTORY[:(string_length - 15)] + 'examples/'
+        examples = THIS_DIRECTORY[:(string_length - 15)] + 'examples/'
+        if os.path.isdir(examples):
+            # source
+            self.directory = examples
+        else:
+            # installed
+            self.directory = THIS_DIRECTORY + '/examples/'
         self.demo_name = 'openfermion_tutorial.ipynb'
         self.binary_code_transforms_demo = 'binary_code_transforms_demo.ipynb'
         self.jw_bk_demo = 'jordan_wigner_and_bravyi_kitaev_transforms.ipynb'
