@@ -27,7 +27,7 @@ class LowRankTest(unittest.TestCase):
     def test_matrix_consistency(self):
 
         # Initialize an operator that is just a two-body operator.
-        n_qubits = 4
+        n_qubits = 5
         random_operator = chemist_ordered(get_fermion_operator(
             random_interaction_operator(n_qubits)))
         for term, coefficient in random_operator.terms.items():
@@ -35,6 +35,7 @@ class LowRankTest(unittest.TestCase):
                 del random_operator.terms[term]
 
         # Initialize (pq|rs) array.
+        print random_operator
         interaction_array = numpy.zeros((n_qubits ** 2, n_qubits ** 2), float)
 
         # Populate interaction array.
@@ -44,10 +45,43 @@ class LowRankTest(unittest.TestCase):
                     for s in range(n_qubits):
                         x = p + n_qubits * q
                         y = r + n_qubits * s
-                        interaction_array[x, y] = random_operator.terms.get(
-                            ((p, 1), (q, 0), (r, 1), (s, 0)), 0.)
-        interaction_array = (interaction_array
-                             + numpy.transpose(interaction_array)) / 2.
+                        term = ((p, 1), (q, 0), (r, 1), (s, 0))
+                        if (p == s) or (q == r):
+                            interaction_array[x, y] = random_operator.terms.get(
+                                term, 0.)
+                        else:
+                            interaction_array[x, y] = random_operator.terms.get(
+                                term, 0.) / 2.
+                            interaction_array[y, x] = random_operator.terms.get(
+                                term, 0.) / 2.
+                        #if x == y:
+                        #    interaction_array[x, x] += random_operator.terms.get(
+                        #        term, 0.)
+                        #else:
+                        #    interaction_array[x, y] += random_operator.terms.get(
+                        #        term, 0.) / 2.
+                        #    interaction_array[y, x] += numpy.conjugate(
+                        #        random_operator.terms.get(term, 0.) / 2.)
+        #interaction_array = (interaction_array
+        #                     + numpy.transpose(interaction_array)) / 2.
+
+        # Make sure that interaction array corresponds to FermionOperator.
+        test_op = FermionOperator()
+        for p in range(n_qubits):
+            for q in range(n_qubits):
+                for r in range(n_qubits):
+                    for s in range(n_qubits):
+                        x = p + n_qubits * q
+                        y = r + n_qubits * s
+                        term = ((p, 1), (q, 0), (r, 1), (s, 0))
+                        test_op += FermionOperator(
+                            term, interaction_array[x, y])
+        difference = normal_ordered(test_op - random_operator)
+        print
+        print test_op
+        print
+        print difference
+        self.assertAlmostEqual(0., difference.induced_norm())
 
         # Perform low rank decomposition and build operator back.
         one_body_squares = low_rank_two_body_decomposition(random_operator)
@@ -57,13 +91,13 @@ class LowRankTest(unittest.TestCase):
             vector = one_body_squares[l].reshape((n_qubits ** 2, 1))
             test_matrix += numpy.dot(vector, vector.transpose())
         difference = numpy.sum(numpy.absolute(test_matrix - interaction_array))
-        self.assertAlmostEqual(0., difference)
+        #self.assertAlmostEqual(0., difference)
 
 
     def test_fermion_operator_consistency(self):
 
         # Initialize an operator that is just a two-body operator.
-        n_qubits = 3
+        n_qubits = 2
         random_operator = chemist_ordered(get_fermion_operator(
             random_interaction_operator(n_qubits)))
         for term, coefficient in random_operator.terms.items():
@@ -84,5 +118,5 @@ class LowRankTest(unittest.TestCase):
             decomposed_operator += one_body_operator ** 2
 
         # Test for consistency.
-        difference = normal_ordered(decomposed_operator - random_operator)
+        difference = chemist_ordered(decomposed_operator - random_operator)
         self.assertAlmostEqual(0., difference.induced_norm())
