@@ -89,13 +89,17 @@ def plane_wave_kinetic(grid, spinless=False, e_cutoff=None):
     return operator
 
 
-def plane_wave_potential(grid, spinless=False, e_cutoff=None):
+def plane_wave_potential(grid, spinless=False, e_cutoff=None,
+                         non_periodic=False, period_cutoff=None):
     """Return the e-e potential operator in the plane wave basis.
 
     Args:
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
         e_cutoff (float): Energy cutoff.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions).
 
     Returns:
         operator (FermionOperator)
@@ -104,6 +108,8 @@ def plane_wave_potential(grid, spinless=False, e_cutoff=None):
     prefactor = 2. * numpy.pi / grid.volume_scale()
     operator = FermionOperator((), 0.0)
     spins = [None] if spinless else [0, 1]
+    if non_periodic and period_cutoff is None:
+      period_cutoff = grid.volume_scale() ** (1. / grid.dimensions)
 
     # Pre-Computations.
     shifted_omega_indices_dict = {}
@@ -145,6 +151,9 @@ def plane_wave_potential(grid, spinless=False, e_cutoff=None):
 
         # Compute coefficient.
         coefficient = prefactor / momenta_squared
+        if non_periodic:
+          coefficient *= 1. - numpy.cos(period_cutoff *
+                                        numpy.sqrt(momenta_squared))
 
         for grid_indices_a in grid.all_points_indices():
             shifted_indices_d = (
@@ -174,7 +183,8 @@ def plane_wave_potential(grid, spinless=False, e_cutoff=None):
 
 def dual_basis_jellium_model(grid, spinless=False,
                              kinetic=True, potential=True,
-                             include_constant=False):
+                             include_constant=False,
+                             non_periodic=False, period_cutoff=None):
     """Return jellium Hamiltonian in the dual basis of arXiv:1706.00023
 
     Args:
@@ -185,6 +195,9 @@ def dual_basis_jellium_model(grid, spinless=False,
         include_constant (bool): Whether to include the Madelung constant.
             Note constant is unsupported for non-uniform, non-cubic cells with
             ions.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions).
 
     Returns:
         operator (FermionOperator)
@@ -194,6 +207,8 @@ def dual_basis_jellium_model(grid, spinless=False,
     position_prefactor = 2. * numpy.pi / grid.volume_scale()
     operator = FermionOperator()
     spins = [None] if spinless else [0, 1]
+    if potential and non_periodic and period_cutoff is None:
+      period_cutoff = grid.volume_scale() ** (1. / grid.dimensions)
 
     # Pre-Computations.
     position_vectors = {}
@@ -276,21 +291,27 @@ def dual_basis_kinetic(grid, spinless=False):
     return dual_basis_jellium_model(grid, spinless, True, False)
 
 
-def dual_basis_potential(grid, spinless=False):
+def dual_basis_potential(grid, spinless=False, non_periodic=False,
+                         period_cutoff=None):
     """Return the potential operator in the dual basis of arXiv:1706.00023
 
     Args:
         grid (Grid): The discretization to use.
         spinless (bool): Whether to use the spinless model or not.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions).
 
     Returns:
         operator (FermionOperator)
     """
-    return dual_basis_jellium_model(grid, spinless, False, True)
+    return dual_basis_jellium_model(grid, spinless, False, True, False,
+                                    non_periodic, period_cutoff)
 
 
 def jellium_model(grid, spinless=False, plane_wave=True,
-                  include_constant=False, e_cutoff=None):
+                  include_constant=False, e_cutoff=None,
+                  non_periodic=False, period_cutoff=None):
     """Return jellium Hamiltonian as FermionOperator class.
 
     Args:
@@ -302,15 +323,21 @@ def jellium_model(grid, spinless=False, plane_wave=True,
             Note constant is unsupported for non-uniform, non-cubic cells with
             ions.
         e_cutoff (float): Energy cutoff.
+        non_periodic (bool): If the system is non-periodic, default to False.
+        period_cutoff (float): Period cutoff, default to
+            grid.volume_scale() ** (1. / grid.dimensions).
 
     Returns:
         FermionOperator: The Hamiltonian of the model.
     """
     if plane_wave:
         hamiltonian = plane_wave_kinetic(grid, spinless, e_cutoff)
-        hamiltonian += plane_wave_potential(grid, spinless, e_cutoff)
+        hamiltonian += plane_wave_potential(grid, spinless, e_cutoff,
+                                            non_periodic, period_cutoff)
     else:
-        hamiltonian = dual_basis_jellium_model(grid, spinless)
+        hamiltonian = dual_basis_jellium_model(grid, spinless, True, True,
+                                               include_constant, non_periodic,
+                                               period_cutoff)
     # Include the Madelung constant if requested.
     if include_constant:
         # TODO: Check for other unit cell shapes
