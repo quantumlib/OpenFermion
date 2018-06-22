@@ -33,14 +33,14 @@ def _module_import(plug):
         import pkgutil
         plug_spec = pkgutil.find_loader(plug)
     if plug_spec is None:
-        print('no', plug)
         return False
     else:
-        print('yes', plug)
         return True
 
-using_nbconvert = pytest.mark.skipif(_module_import('nbconvert') is False,
-                                     reason='Not detecting module nbconvert. Install package if necessary and add to envvar PYTHONPATH')
+using_nbtools = pytest.mark.skipif(not (_module_import('nbconvert') and _module_import('ipykernel')),
+                                reason='Not detecting module nbconvert. Install package if necessary and add to envvar PYTHONPATH')
+using_matplotlib = pytest.mark.skipif(_module_import('matplotlib') is False,
+                                reason='Note detecting module matplotlib. Install package if necessary and add to envvar PYTHONPATH')
 
 class ExampleTest(unittest.TestCase):
     """Unit tests for example scripts."""
@@ -58,7 +58,8 @@ class ExampleTest(unittest.TestCase):
         self.binary_code_transforms_demo = 'binary_code_transforms_demo.ipynb'
         self.jw_bk_demo = 'jordan_wigner_and_bravyi_kitaev_transforms.ipynb'
 
-    @using_nbconvert
+    @using_matplotlib
+    @using_nbtools
     def test_demo(self):
         """Unit test for demo."""
         import nbformat
@@ -93,7 +94,7 @@ class ExampleTest(unittest.TestCase):
             errors = []
         self.assertEqual(errors, [])
 
-    @using_nbconvert
+    @using_nbtools
     def test_binary_code_transforms_demo(self):
         """Unit test for demo."""
         import nbformat
@@ -128,7 +129,7 @@ class ExampleTest(unittest.TestCase):
             errors = []
         self.assertEqual(errors, [])
 
-    @using_nbconvert
+    @using_nbtools
     def test_jordan_wigner_and_bravyi_kitaev_transforms_demo(self):
         """Unit test for demo."""
         import nbformat
