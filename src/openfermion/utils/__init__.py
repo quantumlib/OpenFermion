@@ -22,7 +22,8 @@ from ._grid import Grid
 from ._lcu_util import (lambda_norm,
                         preprocess_lcu_coefficients_for_reversible_sampling)
 
-from ._operator_utils import (count_qubits, eigenspectrum, fourier_transform,
+from ._operator_utils import (chemist_ordered, count_qubits,
+                              eigenspectrum, fourier_transform,
                               freeze_orbitals, get_file_path,
                               hermitian_conjugated, inline_sum,
                               inverse_fourier_transform,
@@ -50,6 +51,13 @@ from ._special_operators import (majorana_operator, number_operator,
                                  s_squared_operator,
                                  sx_operator, sy_operator, sz_operator,
                                  up_index, down_index)
+
+from ._testing_utils import (random_antisymmetric_matrix,
+                             random_diagonal_coulomb_hamiltonian,
+                             random_hermitian_matrix,
+                             random_interaction_operator,
+                             random_quadratic_hamiltonian,
+                             random_unitary_matrix)
 
 from ._trotter_error import error_bound, error_operator
 

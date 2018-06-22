@@ -18,7 +18,8 @@ import scipy.sparse
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import FermionOperator
 from openfermion.transforms import get_fermion_operator, get_sparse_operator
-from openfermion.utils import get_ground_state, majorana_operator, normal_ordered
+from openfermion.utils import (get_ground_state,
+                               majorana_operator, normal_ordered)
 from openfermion.utils._sparse_tools import (
         jw_sparse_givens_rotation,
         jw_sparse_particle_hole_transformation_last_mode)

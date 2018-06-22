@@ -131,7 +131,7 @@ class BinaryCode(object):
 
         Args:
             encoding (np.ndarray or list): nested lists or binary 2D-array
-            decoding (array or list): list of BinaryPolynomial(list-like or str)
+            decoding (array or list): list of BinaryPolynomial (list or str).
 
         Raises:
             TypeError: non-list, array like encoding or decoding, unsuitable

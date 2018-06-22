@@ -53,30 +53,30 @@ class FermionOperatorTest(unittest.TestCase):
         op = FermionOperator('4 3 2 1') + FermionOperator('3 2')
         self.assertTrue(op.is_normal_ordered())
 
-    def test_is_molecular_term_FermionOperator(self):
+    def test_is_two_body_number_conserving_FermionOperator(self):
         op = FermionOperator()
-        self.assertTrue(op.is_molecular_term())
+        self.assertTrue(op.is_two_body_number_conserving())
 
-    def test_is_molecular_term_number(self):
+    def test_is_two_body_number_conserving_number(self):
         op = number_operator(5, 3)
-        self.assertTrue(op.is_molecular_term())
+        self.assertTrue(op.is_two_body_number_conserving())
 
-    def test_is_molecular_term_updown(self):
+    def test_is_two_body_number_conserving_updown(self):
         op = FermionOperator(((2, 1), (4, 0)))
-        self.assertTrue(op.is_molecular_term())
+        self.assertTrue(op.is_two_body_number_conserving())
 
-    def test_is_molecular_term_downup(self):
+    def test_is_two_body_number_conserving_downup(self):
         op = FermionOperator(((2, 0), (4, 1)))
-        self.assertTrue(op.is_molecular_term())
+        self.assertTrue(op.is_two_body_number_conserving())
 
-    def test_is_molecular_term_downup_badspin(self):
+    def test_is_two_body_number_conserving_downup_badspin(self):
         op = FermionOperator(((2, 0), (3, 1)))
-        self.assertFalse(op.is_molecular_term())
+        self.assertFalse(op.is_two_body_number_conserving(True))
 
-    def test_is_molecular_term_three(self):
+    def test_is_two_body_number_conserving_three(self):
         op = FermionOperator(((0, 1), (2, 1), (4, 0)))
-        self.assertFalse(op.is_molecular_term())
+        self.assertFalse(op.is_two_body_number_conserving())
 
-    def test_is_molecular_term_out_of_order(self):
+    def test_is_two_body_number_conserving_out_of_order(self):
         op = FermionOperator(((0, 1), (2, 0), (1, 1), (3, 0)))
-        self.assertTrue(op.is_molecular_term())
+        self.assertTrue(op.is_two_body_number_conserving())

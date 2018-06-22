@@ -23,26 +23,6 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
                              QuadraticHamiltonian)
 
 
-def random_unitary_matrix(n, real=False):
-    """Obtain a random n x n unitary matrix."""
-    if real:
-        rand_mat = numpy.random.randn(n, n)
-    else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
-    Q, R = qr(rand_mat)
-    return Q
-
-
-def random_hermitian_matrix(n, real=False):
-    """Generate a random n x n Hermitian matrix."""
-    if real:
-        rand_mat = numpy.random.randn(n, n)
-    else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
-    hermitian_mat = rand_mat + rand_mat.T.conj()
-    return hermitian_mat
-
-
 def random_antisymmetric_matrix(n, real=False):
     """Generate a random n x n antisymmetric matrix."""
     if real:
@@ -66,29 +46,14 @@ def random_diagonal_coulomb_hamiltonian(n_qubits, real=False):
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
 
 
-def random_quadratic_hamiltonian(n_qubits,
-                                 conserves_particle_number=False,
-                                 real=False):
-    """Generate a random instance of QuadraticHamiltonian.
-
-    Args:
-        n_qubits(int): the number of qubits
-        conserves_particle_number(bool): whether the returned Hamiltonian
-            should conserve particle number
-        real(bool): whether to use only real numbers
-
-    Returns:
-        QuadraticHamiltonian
-    """
-    constant = numpy.random.randn()
-    chemical_potential = numpy.random.randn()
-    hermitian_mat = random_hermitian_matrix(n_qubits, real)
-    if conserves_particle_number:
-        antisymmetric_mat = None
+def random_hermitian_matrix(n, real=False):
+    """Generate a random n x n Hermitian matrix."""
+    if real:
+        rand_mat = numpy.random.randn(n, n)
     else:
-        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
-    return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat,
-                                constant, chemical_potential)
+        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
+    hermitian_mat = rand_mat + rand_mat.T.conj()
+    return hermitian_mat
 
 
 def random_interaction_operator(n_qubits, real=True):
@@ -135,6 +100,41 @@ def random_interaction_operator(n_qubits, real=True):
         constant, one_body_coefficients, two_body_coefficients)
 
     return interaction_operator
+
+
+def random_quadratic_hamiltonian(n_qubits,
+                                 conserves_particle_number=False,
+                                 real=False):
+    """Generate a random instance of QuadraticHamiltonian.
+
+    Args:
+        n_qubits(int): the number of qubits
+        conserves_particle_number(bool): whether the returned Hamiltonian
+            should conserve particle number
+        real(bool): whether to use only real numbers
+
+    Returns:
+        QuadraticHamiltonian
+    """
+    constant = numpy.random.randn()
+    chemical_potential = numpy.random.randn()
+    hermitian_mat = random_hermitian_matrix(n_qubits, real)
+    if conserves_particle_number:
+        antisymmetric_mat = None
+    else:
+        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
+    return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat,
+                                constant, chemical_potential)
+
+
+def random_unitary_matrix(n, real=False):
+    """Obtain a random n x n unitary matrix."""
+    if real:
+        rand_mat = numpy.random.randn(n, n)
+    else:
+        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
+    Q, R = qr(rand_mat)
+    return Q
 
 
 class EqualsTester(object):

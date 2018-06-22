@@ -175,7 +175,8 @@ class QubitOperator(SymbolicOperator):
         """Fix the trace norm of an operator to 1"""
         norm = self.induced_norm(2)
         if norm < EQ_TOLERANCE:
-            raise ZeroDivisionError('Cannot renormalize empty or zero operator')
+            raise ZeroDivisionError(
+                'Cannot renormalize empty or zero operator')
         else:
             self /= norm
 
