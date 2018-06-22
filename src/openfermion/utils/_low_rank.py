@@ -127,9 +127,10 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
             above. If None, then L = N ** 2 and no truncation will occur.
 
     Returns:
-        eigenvalues (ndarray of floats): length L array giving the g_{lpq}.
+        eigenvalues (ndarray of floats): length L array
+            giving the :math:`\lambda_l`.
         one_body_squares (ndarray of floats): L x N x N array of floats
-            corresponding to the value of :math:`\sqrt{\lambda_l} * g_{pql}`.
+            corresponding to the value of :math:`g_{pql}`.
 
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
