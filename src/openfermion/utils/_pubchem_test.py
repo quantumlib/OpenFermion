@@ -30,10 +30,8 @@ def _module_import(plug):
         import pkgutil
         plug_spec = pkgutil.find_loader(plug)
     if plug_spec is None:
-        print('no', plug)
         return False
     else:
-        print('yes', plug)
         return True
 
 
