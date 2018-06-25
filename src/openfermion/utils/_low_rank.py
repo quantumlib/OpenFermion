@@ -37,7 +37,8 @@ def get_chemist_two_body_coefficients(two_body_operator):
         two_body_operator(FermionOperator or InteractionOperator): the term
             to decompose. This operator needs to be a two-body number
             conserving operator. It might also have one-body terms which
-            also needs to be number conserving. There might be a constant.
+            also needs to be number conserving. There could also
+            be a constant in the InteractionOperator or FermionOperator.
 
     Returns:
         constant: (float): A constant shift.
@@ -130,6 +131,7 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
         eigenvalues (ndarray of floats): length L array giving the g_{lpq}.
         one_body_squares (ndarray of floats): L x N x N array of floats
             corresponding to the value of :math:`\sqrt{\lambda_l} * g_{pql}`.
+        truncation_value (float): number indicating value of truncation.
 
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
@@ -156,10 +158,12 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
     # Optionally truncate.
     if truncation_threshold is None:
         max_index = n_qubits ** 2
+        truncation_value = 0.
     else:
         cumulative_sum = numpy.cumsum(numpy.absolute(eigenvalues))
         truncation_error = cumulative_sum[-1] - cumulative_sum
-        max_index = numpy.argmax(truncation_error < truncation_threshold) + 1
+        max_index = numpy.argmax(truncation_error < truncation_threshold)
+        truncation_value = truncation_error[max_index]
 
     # Return one-body squares.
     one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), complex)
@@ -167,4 +171,4 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
         one_body_squares[l] = numpy.reshape(eigenvectors[:, l],
                                             (n_qubits, n_qubits))
 
-    return eigenvalues[:max_index], one_body_squares
+    return eigenvalues[:max_index], one_body_squares, truncation_value

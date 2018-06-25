@@ -14,6 +14,7 @@ import itertools
 import numpy
 import os
 import unittest
+import warnings
 
 from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
@@ -34,6 +35,14 @@ class ChemistTwoBodyTest(unittest.TestCase):
         # Initialize a random InteractionOperator and FermionOperator.
         n_qubits = 4
         random_interaction = random_interaction_operator(n_qubits)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            random_interaction.one_body_tensor[1, 2] *= 1.j
+            random_interaction.one_body_tensor[2, 1] *= -1.j
+            random_interaction.two_body_tensor[0, 1, 2, 3] *= 1.j
+            random_interaction.two_body_tensor[3, 2, 1, 0] *= -1.j
+            random_interaction.two_body_tensor[1, 2, 2, 0] *= 1.j
+            random_interaction.two_body_tensor[0, 2, 2, 1] *= -1.j
         random_fermion = get_fermion_operator(random_interaction)
 
         # Convert to chemist ordered tensor.
@@ -109,8 +118,9 @@ class LowRankTest(unittest.TestCase):
             decomposed_operator += FermionOperator(term, coefficient)
 
         # Perform decomposition.
-        eigenvalues, one_body_squares = low_rank_two_body_decomposition(
-            chemist_tensor)
+        eigenvalues, one_body_squares, trunc_error = \
+            low_rank_two_body_decomposition(chemist_tensor)
+        self.assertFalse(trunc_error)
 
         # Build back two-body component.
         for l in range(n_qubits ** 2):
@@ -161,8 +171,9 @@ class LowRankTest(unittest.TestCase):
                 decomposed_operator += FermionOperator(term, coefficient)
 
             # Rank reduce.
-            eigenvalues, one_body_squares = low_rank_two_body_decomposition(
-                chemist_tensor, truncation_threshold)
+            eigenvalues, one_body_squares, trunc_error = \
+                low_rank_two_body_decomposition(
+                    chemist_tensor, truncation_threshold)
 
             # Reassemble FermionOperator.
             l_max = eigenvalues.size
@@ -172,7 +183,7 @@ class LowRankTest(unittest.TestCase):
                     term = ((p, 1), (q, 0))
                     coefficient = one_body_squares[l, p, q]
                     one_body_operator += FermionOperator(term, coefficient)
-                decomposed_operator += eigenvalues[l] * (one_body_operator ** 2)
+                decomposed_operator += eigenvalues[l] * (one_body_operator**2)
 
             # Test for consistency.
             difference = normal_ordered(
