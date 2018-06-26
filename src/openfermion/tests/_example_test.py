@@ -18,10 +18,18 @@ import sys
 import tempfile
 import unittest
 
-import nbformat
 import numpy
+import pytest
 
 from openfermion.config import THIS_DIRECTORY
+from openfermion.utils import *
+
+
+using_nbtools = pytest.mark.skipif(not (module_importable('nbconvert') and
+                                   module_importable('ipykernel')),
+                                   reason='Not detecting `nbconvert`.')
+using_matplotlib = pytest.mark.skipif(module_importable('matplotlib') is False,
+                                      reason='Not detecting `matplotlib`.')
 
 
 class ExampleTest(unittest.TestCase):
@@ -29,13 +37,23 @@ class ExampleTest(unittest.TestCase):
 
     def setUp(self):
         string_length = len(THIS_DIRECTORY)
-        self.directory = THIS_DIRECTORY[:(string_length - 15)] + 'examples/'
+        examples = THIS_DIRECTORY[:(string_length - 15)] + 'examples/'
+        if os.path.isdir(examples):
+            # source
+            self.directory = examples
+        else:
+            # installed
+            self.directory = THIS_DIRECTORY + '/examples/'
         self.demo_name = 'openfermion_tutorial.ipynb'
         self.binary_code_transforms_demo = 'binary_code_transforms_demo.ipynb'
         self.jw_bk_demo = 'jordan_wigner_and_bravyi_kitaev_transforms.ipynb'
 
+    @using_matplotlib
+    @using_nbtools
     def test_demo(self):
         """Unit test for demo."""
+        import nbformat
+
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:
@@ -66,8 +84,11 @@ class ExampleTest(unittest.TestCase):
             errors = []
         self.assertEqual(errors, [])
 
+    @using_nbtools
     def test_binary_code_transforms_demo(self):
         """Unit test for demo."""
+        import nbformat
+
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:
@@ -98,8 +119,11 @@ class ExampleTest(unittest.TestCase):
             errors = []
         self.assertEqual(errors, [])
 
+    @using_nbtools
     def test_jordan_wigner_and_bravyi_kitaev_transforms_demo(self):
         """Unit test for demo."""
+        import nbformat
+
         # Determine if python 2 or 3 is being used.
         major_version, minor_version = sys.version_info[:2]
         if major_version == 2 or minor_version == 6:

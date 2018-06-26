@@ -14,11 +14,18 @@
 from __future__ import absolute_import
 
 import numpy
+import pytest
 import unittest
 
-from openfermion.utils import geometry_from_pubchem
+from openfermion.utils import (geometry_from_pubchem,
+                               module_importable)
 
 
+using_pubchempy = pytest.mark.skipif(module_importable('pubchempy') is False,
+                                     reason='Not detecting `pubchempy`.')
+
+
+@using_pubchempy
 class OpenFermionPubChemTest(unittest.TestCase):
 
     def test_water(self):
