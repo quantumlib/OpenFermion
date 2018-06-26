@@ -14,29 +14,16 @@
 from __future__ import absolute_import
 
 import numpy
+import pytest
 import unittest
 
-from openfermion.utils import geometry_from_pubchem
+from openfermion.utils import (geometry_from_pubchem,
+                               module_importable)
 
 
-import pytest
+using_pubchempy = pytest.mark.skipif(module_importable('pubchempy') is False,
+                                     reason='Not detecting `pubchempy`.')
 
-def _module_import(plug):
-    import sys
-    if sys.version_info >= (3, 4):
-        from importlib import util
-        plug_spec = util.find_spec(plug)
-    else:
-        import pkgutil
-        plug_spec = pkgutil.find_loader(plug)
-    if plug_spec is None:
-        return False
-    else:
-        return True
-
-
-using_pubchempy = pytest.mark.skipif(_module_import('pubchempy') is False,
-                                     reason='Not detecting module pubchempy. Install package if necessary and add to envvar PYTHONPATH')
 
 @using_pubchempy
 class OpenFermionPubChemTest(unittest.TestCase):

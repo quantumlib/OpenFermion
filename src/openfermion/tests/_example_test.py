@@ -22,25 +22,15 @@ import numpy
 import pytest
 
 from openfermion.config import THIS_DIRECTORY
+from openfermion.utils import *
 
 
-def _module_import(plug):
-    import sys
-    if sys.version_info >= (3, 4):
-        from importlib import util
-        plug_spec = util.find_spec(plug)
-    else:
-        import pkgutil
-        plug_spec = pkgutil.find_loader(plug)
-    if plug_spec is None:
-        return False
-    else:
-        return True
+using_nbtools = pytest.mark.skipif(not (module_importable('nbconvert') and
+                                   module_importable('ipykernel')),
+                                   reason='Not detecting `nbconvert`.')
+using_matplotlib = pytest.mark.skipif(module_importable('matplotlib') is False,
+                                      reason='Not detecting `matplotlib`.')
 
-using_nbtools = pytest.mark.skipif(not (_module_import('nbconvert') and _module_import('ipykernel')),
-                                reason='Not detecting module nbconvert. Install package if necessary and add to envvar PYTHONPATH')
-using_matplotlib = pytest.mark.skipif(_module_import('matplotlib') is False,
-                                reason='Note detecting module matplotlib. Install package if necessary and add to envvar PYTHONPATH')
 
 class ExampleTest(unittest.TestCase):
     """Unit tests for example scripts."""
