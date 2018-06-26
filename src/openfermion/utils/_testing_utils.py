@@ -254,3 +254,26 @@ class _ClassUnknownToSubjects(object):
 
     def __hash__(self):
         return hash(_ClassUnknownToSubjects)
+
+
+def module_importable(module):
+    """Without importing it, returns whether python module is importable.
+
+    Args:
+        module (string): Name of module.
+
+    Returns:
+        bool
+
+    """
+    import sys
+    if sys.version_info >= (3, 4):
+        from importlib import util
+        plug_spec = util.find_spec(module)
+    else:
+        import pkgutil
+        plug_spec = pkgutil.find_loader(module)
+    if plug_spec is None:
+        return False
+    else:
+        return True

@@ -57,7 +57,8 @@ from ._testing_utils import (random_antisymmetric_matrix,
                              random_hermitian_matrix,
                              random_interaction_operator,
                              random_quadratic_hamiltonian,
-                             random_unitary_matrix)
+                             random_unitary_matrix,
+                             module_importable)
 
 from ._trotter_error import error_bound, error_operator
 
