@@ -75,6 +75,9 @@ from ._unitary_cc import (uccsd_convert_amplitude_format,
 # Imports out of alphabetical order to avoid circular dependency.
 from ._jellium_hf_state import hartree_fock_state_jellium
 
+from ._low_rank import (get_chemist_two_body_coefficients,
+                        low_rank_two_body_decomposition)
+
 from ._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_bound,
     low_depth_second_order_trotter_error_operator)
