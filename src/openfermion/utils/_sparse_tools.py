@@ -703,58 +703,63 @@ def sparse_eigenspectrum(sparse_operator):
     return numpy.sort(eigenspectrum)
 
 
-def expectation(sparse_operator, state):
-    """Compute expectation value of operator with a state.
+def expectation(operator, state):
+    """Compute the expectation value of an operator with a state.
 
     Args:
-        state: scipy.sparse.csc vector representing a pure state,
-            ndarray vector representing a pure state,
-            or, a scipy.sparse.csc matrix representing a density matrix.
+        operator(scipy.sparse.spmatrix or scipy.sparse.linalg.LinearOperator):
+            The operator whose expectation value is desired.
+        state(numpy.ndarray or scipy.sparse.spmatrix): A numpy array
+            representing a pure state or a sparse matrix representing a density
+            matrix. If `operator` is a LinearOperator, then this must be a
+            numpy array.
 
     Returns:
-        A real float giving expectation value.
+        A complex number giving the expectation value.
 
     Raises:
         ValueError: Input state has invalid format.
     """
-    # Handle density matrix.
-    if state.shape == sparse_operator.shape:
-        product = state * sparse_operator
+
+    if isinstance(state, scipy.sparse.spmatrix):
+        # Handle density matrix.
+        if isinstance(operator, scipy.sparse.linalg.LinearOperator):
+            raise ValueError('Taking the expectation of a LinearOperator with '
+                             'a density matrix is not supported.')
+        product = state * operator
         expectation = numpy.sum(product.diagonal())
 
-    elif (state.shape == (sparse_operator.shape[0], 1) or
-          state.shape == (sparse_operator.shape[0], )):
+    elif isinstance(state, numpy.ndarray):
         # Handle state vector.
-        if scipy.sparse.issparse(state):
-            expectation = (state.getH() * sparse_operator * state)
-        else:
-            expectation = numpy.dot(numpy.conj(state.T),
-                                    sparse_operator.dot(state))
-        if expectation.shape != ():
-            expectation = expectation[0, 0]
+        expectation = numpy.dot(numpy.conjugate(state), operator * state)
+
     else:
         # Handle exception.
-        raise ValueError('Input state has invalid format.')
+        raise ValueError(
+                'Input state must be a numpy array or a sparse matrix.')
 
     # Return.
     return expectation
 
 
-def variance(sparse_operator, state):
+def variance(operator, state):
     """Compute variance of operator with a state.
 
     Args:
-        state: scipy.sparse.csc vector representing a pure state,
-            or, a scipy.sparse.csc matrix representing a density matrix.
+        operator(scipy.sparse.spmatrix or scipy.sparse.linalg.LinearOperator):
+            The operator whose expectation value is desired.
+        state(numpy.ndarray or scipy.sparse.spmatrix): A numpy array
+            representing a pure state or a sparse matrix representing a density
+            matrix.
 
     Returns:
-        A real float giving the variance.
+        A complex number giving the variance.
 
     Raises:
         ValueError: Input state has invalid format.
     """
-    return (expectation(sparse_operator ** 2, state) -
-            expectation(sparse_operator, state) ** 2)
+    return (expectation(operator ** 2, state) -
+            expectation(operator, state) ** 2)
 
 
 def expectation_computational_basis_state(operator, computational_basis_state):

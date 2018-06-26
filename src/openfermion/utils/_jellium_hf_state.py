@@ -78,9 +78,9 @@ def hartree_fock_state_jellium(grid, n_electrons, spinless=True,
     if plane_wave:
         # In the plane wave basis the HF state is a single determinant.
         hartree_fock_state_index = numpy.sum(2 ** occupied_states)
-        hartree_fock_state = csr_matrix(
-            ([1.0], ([hartree_fock_state_index], [0])),
-            shape=(2 ** count_qubits(hamiltonian), 1))
+        hartree_fock_state = numpy.zeros(2 ** count_qubits(hamiltonian),
+                                         dtype=complex)
+        hartree_fock_state[hartree_fock_state_index] = 1.0
 
     else:
         # Inverse Fourier transform the creation operators for the state to get
@@ -95,16 +95,15 @@ def hartree_fock_state_jellium(grid, n_electrons, spinless=True,
         dual_basis_hf_creation = normal_ordered(
             dual_basis_hf_creation_operator)
 
-        # Initialize the HF state as a sparse matrix.
-        hartree_fock_state = dok_matrix(
-            (2 ** count_qubits(hamiltonian), 1), dtype=complex)
+        # Initialize the HF state.
+        hartree_fock_state = numpy.zeros(2 ** count_qubits(hamiltonian),
+                                         dtype=complex)
 
         # Populate the elements of the HF state in the dual basis.
         for term in dual_basis_hf_creation.terms:
             index = 0
             for operator in term:
                 index += 2 ** operator[0]
-            hartree_fock_state[index, 0] = dual_basis_hf_creation.terms[term]
-        hartree_fock_state = hartree_fock_state.tocsr()
+            hartree_fock_state[index] = dual_basis_hf_creation.terms[term]
 
     return hartree_fock_state
