@@ -709,6 +709,11 @@ class ExpectationTest(unittest.TestCase):
         vector = numpy.array([0., 1.j, 0., 1.j])
         self.assertAlmostEqual(expectation(operator, vector), 2.0)
 
+    def test_expectation_handles_column_vector(self):
+        operator = get_sparse_operator(QubitOperator('X0'), n_qubits=2)
+        vector = numpy.array([[0.], [1.j], [0.], [1.j]])
+        self.assertAlmostEqual(expectation(operator, vector), 2.0)
+
     def test_expectation_correct_zero(self):
         operator = get_sparse_operator(QubitOperator('X0'), n_qubits=2)
         vector = numpy.array([1j, -1j, -1j, -1j])
@@ -716,12 +721,31 @@ class ExpectationTest(unittest.TestCase):
 
 
 class VarianceTest(unittest.TestCase):
-    def test_variance(self):
+
+    def test_variance_row_vector(self):
+
         X = pauli_matrix_map['X']
         Z = pauli_matrix_map['Z']
         zero = numpy.array([1., 0.])
         plus = numpy.array([1., 1.]) / numpy.sqrt(2)
         minus = numpy.array([1., -1.]) / numpy.sqrt(2)
+
+        self.assertAlmostEqual(variance(Z, zero), 0.)
+        self.assertAlmostEqual(variance(X, zero), 1.)
+
+        self.assertAlmostEqual(variance(Z, plus), 1.)
+        self.assertAlmostEqual(variance(X, plus), 0.)
+
+        self.assertAlmostEqual(variance(Z, minus), 1.)
+        self.assertAlmostEqual(variance(X, minus), 0.)
+
+    def test_variance_column_vector(self):
+
+        X = pauli_matrix_map['X']
+        Z = pauli_matrix_map['Z']
+        zero = numpy.array([[1.], [0.]])
+        plus = numpy.array([[1.], [1.]]) / numpy.sqrt(2)
+        minus = numpy.array([[1.], [-1.]]) / numpy.sqrt(2)
 
         self.assertAlmostEqual(variance(Z, zero), 0.)
         self.assertAlmostEqual(variance(X, zero), 1.)

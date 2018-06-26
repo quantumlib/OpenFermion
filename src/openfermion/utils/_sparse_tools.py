@@ -731,7 +731,13 @@ def expectation(operator, state):
 
     elif isinstance(state, numpy.ndarray):
         # Handle state vector.
-        expectation = numpy.dot(numpy.conjugate(state), operator * state)
+        if len(state.shape) == 1:
+            # Row vector
+            expectation = numpy.dot(numpy.conjugate(state), operator * state)
+        else:
+            # Column vector
+            expectation = numpy.dot(numpy.conjugate(state.T),
+                                    operator * state)[0, 0]
 
     else:
         # Handle exception.
