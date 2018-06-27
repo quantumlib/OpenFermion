@@ -92,8 +92,8 @@ class JelliumHartreeFockStateTest(unittest.TestCase):
         for occupied_orbitals in permutations(
                 [1] * n_particles + [0] * (grid_length - n_particles)):
             state_index = numpy.sum(2 ** numpy.array(occupied_orbitals))
-            HF_competitor = csr_matrix(([1.0], ([state_index], [0])),
-                                       shape=(2 ** grid_length, 1))
+            HF_competitor = numpy.zeros(2 ** grid_length)
+            HF_competitor[state_index] = 1.0
 
             self.assertLessEqual(
                 HF_energy, expectation(hamiltonian_sparse, HF_competitor))

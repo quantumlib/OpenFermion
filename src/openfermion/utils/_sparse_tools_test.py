@@ -694,32 +694,58 @@ class GroundStateTest(unittest.TestCase):
 
 
 class ExpectationTest(unittest.TestCase):
-    def test_expectation_correct(self):
+
+    def test_expectation_correct_sparse_matrix(self):
         operator = get_sparse_operator(QubitOperator('X0'), n_qubits=2)
-        vector = csc_matrix(([1j, 1j], ([1, 3], [0, 0])), shape=(4, 1))
+        vector = numpy.array([0., 1.j, 0., 1.j])
+        self.assertAlmostEqual(expectation(operator, vector), 2.0)
+
+        density_matrix = scipy.sparse.csc_matrix(
+                numpy.outer(vector, numpy.conjugate(vector)))
+        self.assertAlmostEqual(expectation(operator, density_matrix), 2.0)
+
+    def test_expectation_correct_linear_operator(self):
+        operator = LinearQubitOperator(QubitOperator('X0'), n_qubits=2)
+        vector = numpy.array([0., 1.j, 0., 1.j])
+        self.assertAlmostEqual(expectation(operator, vector), 2.0)
+
+    def test_expectation_handles_column_vector(self):
+        operator = get_sparse_operator(QubitOperator('X0'), n_qubits=2)
+        vector = numpy.array([[0.], [1.j], [0.], [1.j]])
         self.assertAlmostEqual(expectation(operator, vector), 2.0)
 
     def test_expectation_correct_zero(self):
         operator = get_sparse_operator(QubitOperator('X0'), n_qubits=2)
-        vector = csc_matrix(([1j, -1j, -1j, -1j],
-                             ([0, 1, 2, 3], [0, 0, 0, 0])), shape=(4, 1))
+        vector = numpy.array([1j, -1j, -1j, -1j])
         self.assertAlmostEqual(expectation(operator, vector), 0.0)
-
-    def test_expectation_invalid_state_length(self):
-        operator = get_sparse_operator(QubitOperator('X0'), n_qubits=2)
-        vector = csc_matrix(([1j, -1j, -1j],
-                             ([0, 1, 2], [0, 0, 0])), shape=(3, 1))
-        with self.assertRaises(ValueError):
-            expectation(operator, vector)
 
 
 class VarianceTest(unittest.TestCase):
-    def test_variance(self):
+
+    def test_variance_row_vector(self):
+
         X = pauli_matrix_map['X']
         Z = pauli_matrix_map['Z']
-        zero = csc_matrix(numpy.array([[1.], [0.]]))
-        plus = csc_matrix(numpy.array([[1.], [1.]]) / numpy.sqrt(2))
-        minus = csc_matrix(numpy.array([[1.], [-1.]]) / numpy.sqrt(2))
+        zero = numpy.array([1., 0.])
+        plus = numpy.array([1., 1.]) / numpy.sqrt(2)
+        minus = numpy.array([1., -1.]) / numpy.sqrt(2)
+
+        self.assertAlmostEqual(variance(Z, zero), 0.)
+        self.assertAlmostEqual(variance(X, zero), 1.)
+
+        self.assertAlmostEqual(variance(Z, plus), 1.)
+        self.assertAlmostEqual(variance(X, plus), 0.)
+
+        self.assertAlmostEqual(variance(Z, minus), 1.)
+        self.assertAlmostEqual(variance(X, minus), 0.)
+
+    def test_variance_column_vector(self):
+
+        X = pauli_matrix_map['X']
+        Z = pauli_matrix_map['Z']
+        zero = numpy.array([[1.], [0.]])
+        plus = numpy.array([[1.], [1.]]) / numpy.sqrt(2)
+        minus = numpy.array([[1.], [-1.]]) / numpy.sqrt(2)
 
         self.assertAlmostEqual(variance(Z, zero), 0.)
         self.assertAlmostEqual(variance(X, zero), 1.)
@@ -812,8 +838,8 @@ class ExpectationDualBasisOperatorWithPlaneWaveBasisState(unittest.TestCase):
             hamiltonian, self.n_particles))
         self.hf_state_index1 = numpy.sum(2 ** occupied_states)
 
-        self.hf_state1 = csc_matrix(
-            ([1.0], ([self.hf_state_index1], [0])), shape=(2 ** n_qubits, 1))
+        self.hf_state1 = numpy.zeros(2 ** n_qubits)
+        self.hf_state1[self.hf_state_index1] = 1.0
 
         self.orbital_occupations1 = [digit == '1' for digit in
                                      bin(self.hf_state_index1)[2:]][::-1]
