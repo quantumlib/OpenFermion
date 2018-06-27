@@ -20,12 +20,12 @@ from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
 from openfermion.ops import FermionOperator
 from openfermion.transforms import get_fermion_operator
-from openfermion.utils import (chemist_ordered,
+from openfermion.utils import (chemist_ordered, eigenspectrum,
                                get_chemist_two_body_coefficients,
                                is_hermitian,
                                low_rank_two_body_decomposition,
                                normal_ordered,
-                               one_body_squared_evolution,
+                               prepare_one_body_squared_evolution,
                                random_interaction_operator)
 
 
@@ -195,7 +195,7 @@ class LowRankTest(unittest.TestCase):
     def test_one_body_square_decomposition(self):
 
         # Initialize a random two-body FermionOperator.
-        n_qubits = 4
+        n_qubits = 3
         random_operator = get_fermion_operator(
             random_interaction_operator(n_qubits))
 
@@ -206,10 +206,14 @@ class LowRankTest(unittest.TestCase):
         # Perform decomposition.
         eigenvalues, one_body_squares, trunc_error = \
             low_rank_two_body_decomposition(chemist_tensor)
-        self.assertFalse(trunc_error)
 
         # Build back two-body component.
         for l in range(n_qubits ** 2):
+
+            # Make sure one-body squares are Hermitian.
+            hermitian_discrepancy = numpy.sum(numpy.absolute(
+                one_body_squares[l] - numpy.transpose(one_body_squares[l])))
+            self.assertAlmostEqual(0., hermitian_discrepancy)
 
             # Get the squared one-body operator.
             one_body_operator = FermionOperator()
@@ -220,10 +224,16 @@ class LowRankTest(unittest.TestCase):
             one_body_squared = one_body_operator ** 2
 
             # Get the squared one-body operator via one-body decomposition.
-            density_density_matrx, basis_transformation_matrix = \
+            density_density_matrix, basis_transformation_matrix = \
                 prepare_one_body_squared_evolution(one_body_squares[l])
             two_body_operator = FermionOperator()
             for p, q in itertools.product(range(n_qubits), repeat=2):
                 term = ((p, 1), (p, 0), (q, 1), (q, 0))
-                coefficient = density_density_matrix(p, q)
+                coefficient = density_density_matrix[p, q]
                 two_body_operator += FermionOperator(term, coefficient)
+
+            # Test spectra.
+            one_body_squared_spectrum = eigenspectrum(one_body_squared)
+            two_body_spectrum = eigenspectrum(two_body_operator)
+            difference = two_body_spectrum - one_body_squared_spectrum
+            self.assertAlmostEqual(0., numpy.amax(numpy.absolute(difference)))

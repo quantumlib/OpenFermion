@@ -77,7 +77,7 @@ from ._jellium_hf_state import hartree_fock_state_jellium
 
 from ._low_rank import (get_chemist_two_body_coefficients,
                         low_rank_two_body_decomposition,
-                        one_body_squared_evolution)
+                        prepare_one_body_squared_evolution)
 
 from ._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_bound,
