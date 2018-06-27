@@ -25,6 +25,7 @@ from openfermion.utils import (chemist_ordered,
                                is_hermitian,
                                low_rank_two_body_decomposition,
                                normal_ordered,
+                               one_body_squared_evolution,
                                random_interaction_operator)
 
 
@@ -190,3 +191,39 @@ class LowRankTest(unittest.TestCase):
                 decomposed_operator - fermion_hamiltonian)
             errors += [difference.induced_norm()]
         self.assertTrue(errors[3] <= errors[2] <= errors[1] <= errors[0])
+
+    def test_one_body_square_decomposition(self):
+
+        # Initialize a random two-body FermionOperator.
+        n_qubits = 4
+        random_operator = get_fermion_operator(
+            random_interaction_operator(n_qubits))
+
+        # Convert to chemist tensor.
+        constant, one_body_coefficients, chemist_tensor = \
+            get_chemist_two_body_coefficients(random_operator)
+
+        # Perform decomposition.
+        eigenvalues, one_body_squares, trunc_error = \
+            low_rank_two_body_decomposition(chemist_tensor)
+        self.assertFalse(trunc_error)
+
+        # Build back two-body component.
+        for l in range(n_qubits ** 2):
+
+            # Get the squared one-body operator.
+            one_body_operator = FermionOperator()
+            for p, q in itertools.product(range(n_qubits), repeat=2):
+                term = ((p, 1), (q, 0))
+                coefficient = one_body_squares[l, p, q]
+                one_body_operator += FermionOperator(term, coefficient)
+            one_body_squared = one_body_operator ** 2
+
+            # Get the squared one-body operator via one-body decomposition.
+            density_density_matrx, basis_transformation_matrix = \
+                prepare_one_body_squared_evolution(one_body_squares[l])
+            two_body_operator = FermionOperator()
+            for p, q in itertools.product(range(n_qubits), repeat=2):
+                term = ((p, 1), (p, 0), (q, 1), (q, 0))
+                coefficient = density_density_matrix(p, q)
+                two_body_operator += FermionOperator(term, coefficient)
