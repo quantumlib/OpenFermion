@@ -47,8 +47,8 @@ You might also want to explore the alpha release of the
 `OpenFermion Cloud Library <https://github.com/quantumlib/OpenFermion/tree/master/cloud_library>`__
 where users can share and download precomputed molecular benchmark files.
 
-Check out other `projects and papers using OpenFermion <docs/other_projects.md>`__ for inspiration, and let us know if you've
-been using OpenFermion!
+Check out other `projects and papers using OpenFermion <docs/other_projects.md>`__ for inspiration,
+and let us know if you've been using OpenFermion!
 
 Developer install
 -----------------
