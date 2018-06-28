@@ -94,8 +94,8 @@ class ChemistTwoBodyTest(unittest.TestCase):
 
         # Check for exception.
         with self.assertRaises(TypeError):
-            fo_constant, fo_one_body_coefficients, fo_chemist_tensor = \
-                get_chemist_two_body_coefficients(random_fermion)
+            fo_constant, fo_one_body_coefficients, fo_chemist_tensor = (
+                get_chemist_two_body_coefficients(random_fermion))
 
 
 class LowRankTest(unittest.TestCase):
@@ -108,8 +108,8 @@ class LowRankTest(unittest.TestCase):
             random_interaction_operator(n_qubits))
 
         # Convert to chemist tensor.
-        constant, one_body_coefficients, chemist_tensor = \
-            get_chemist_two_body_coefficients(random_operator)
+        constant, one_body_coefficients, chemist_tensor = (
+            get_chemist_two_body_coefficients(random_operator))
 
         # Build back operator constant and one-body components.
         decomposed_operator = FermionOperator((), constant)
@@ -119,8 +119,8 @@ class LowRankTest(unittest.TestCase):
             decomposed_operator += FermionOperator(term, coefficient)
 
         # Perform decomposition.
-        eigenvalues, one_body_squares, trunc_error = \
-            low_rank_two_body_decomposition(chemist_tensor)
+        eigenvalues, one_body_squares, trunc_error = (
+            low_rank_two_body_decomposition(chemist_tensor))
         self.assertFalse(trunc_error)
 
         # Build back two-body component.
@@ -156,8 +156,8 @@ class LowRankTest(unittest.TestCase):
             molecular_hamiltonian))
 
         # Get chemist tensor.
-        constant, one_body_coefficients, chemist_tensor = \
-            get_chemist_two_body_coefficients(fermion_hamiltonian)
+        constant, one_body_coefficients, chemist_tensor = (
+            get_chemist_two_body_coefficients(fermion_hamiltonian))
         n_qubits = one_body_coefficients.shape[0]
 
         # Rank reduce.
@@ -172,9 +172,9 @@ class LowRankTest(unittest.TestCase):
                 decomposed_operator += FermionOperator(term, coefficient)
 
             # Rank reduce.
-            eigenvalues, one_body_squares, trunc_error = \
+            eigenvalues, one_body_squares, trunc_error = (
                 low_rank_two_body_decomposition(
-                    chemist_tensor, truncation_threshold)
+                    chemist_tensor, truncation_threshold))
 
             # Reassemble FermionOperator.
             l_max = eigenvalues.size
@@ -200,12 +200,12 @@ class LowRankTest(unittest.TestCase):
             random_interaction_operator(n_qubits))
 
         # Convert to chemist tensor.
-        constant, one_body_coefficients, chemist_tensor = \
-            get_chemist_two_body_coefficients(random_operator)
+        constant, one_body_coefficients, chemist_tensor = (
+            get_chemist_two_body_coefficients(random_operator))
 
         # Perform decomposition.
-        eigenvalues, one_body_squares, trunc_error = \
-            low_rank_two_body_decomposition(chemist_tensor)
+        eigenvalues, one_body_squares, trunc_error = (
+            low_rank_two_body_decomposition(chemist_tensor))
 
         # Build back two-body component.
         for l in range(n_qubits ** 2):
@@ -219,8 +219,8 @@ class LowRankTest(unittest.TestCase):
             one_body_squared = one_body_operator ** 2
 
             # Get the squared one-body operator via one-body decomposition.
-            density_density_matrix, basis_transformation_matrix = \
-                prepare_one_body_squared_evolution(one_body_squares[l])
+            density_density_matrix, basis_transformation_matrix = (
+                prepare_one_body_squared_evolution(one_body_squares[l]))
             two_body_operator = FermionOperator()
             for p, q in itertools.product(range(n_qubits), repeat=2):
                 term = ((p, 1), (p, 0), (q, 1), (q, 0))

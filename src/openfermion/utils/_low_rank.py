@@ -199,7 +199,7 @@ def prepare_one_body_squared_evolution(one_body_matrix):
     """
     # Diagonalize the one-body matrix.
     eigenvalues, eigenvectors = numpy.linalg.eig(one_body_matrix)
-    basis_transformation_matrix = eigenvectors.transpose()
+    basis_transformation_matrix = numpy.conjugate(eigenvectors.transpose())
 
     # Obtain the diagonal two-body matrix.
     density_density_matrix = numpy.outer(eigenvalues, eigenvalues)
