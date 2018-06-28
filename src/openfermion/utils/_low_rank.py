@@ -174,3 +174,35 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
                                             (n_qubits, n_qubits))
 
     return eigenvalues[:max_index], one_body_squares, truncation_value
+
+
+def prepare_one_body_squared_evolution(one_body_matrix):
+    """Get Givens angles and DiagonalHamiltonian to simulate squared one-body.
+
+    The goal here will be to prepare to simulate evolution under
+    :math:`(\sum_{pq} h_{pq} a^\dagger_p a_q)^2` by decomposing as
+    :math:`R e^{-i \sum_{pq} V_{pq} n_p n_q} R^\dagger' where
+    :math:`R` is a basis transformation matrix.
+
+    TODO: Add option for truncation based on one-body eigenvalues.
+
+    Args:
+        one_body_matrix (ndarray of floats): an N by N array storing the
+            coefficients of a one-body operator to be squared. For instance,
+            in the above the elements of this matrix are :math:`h_{pq}`.
+
+    Returns:
+        density_density_matrix(ndarray of floats) an N by N array storing
+            the diagonal two-body coefficeints :math:`V_{pq}` above.
+        basis_transformation_matrix (ndarray of floats) an N by N array
+            storing the values of the basis transformation.
+    """
+    # Diagonalize the one-body matrix.
+    eigenvalues, eigenvectors = numpy.linalg.eig(one_body_matrix)
+    basis_transformation_matrix = numpy.conjugate(eigenvectors.transpose())
+
+    # Obtain the diagonal two-body matrix.
+    density_density_matrix = numpy.outer(eigenvalues, eigenvalues)
+
+    # Return.
+    return density_density_matrix, basis_transformation_matrix
