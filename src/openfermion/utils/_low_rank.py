@@ -198,7 +198,7 @@ def prepare_one_body_squared_evolution(one_body_matrix):
             storing the values of the basis transformation.
     """
     # Diagonalize the one-body matrix.
-    eigenvalues, eigenvectors = numpy.linalg.eigh(one_body_matrix)
+    eigenvalues, eigenvectors = numpy.linalg.eig(one_body_matrix)
     basis_transformation_matrix = eigenvectors.transpose()
 
     # Obtain the diagonal two-body matrix.

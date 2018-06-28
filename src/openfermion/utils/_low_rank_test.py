@@ -195,7 +195,7 @@ class LowRankTest(unittest.TestCase):
     def test_one_body_square_decomposition(self):
 
         # Initialize a random two-body FermionOperator.
-        n_qubits = 3
+        n_qubits = 4
         random_operator = get_fermion_operator(
             random_interaction_operator(n_qubits))
 
@@ -209,11 +209,6 @@ class LowRankTest(unittest.TestCase):
 
         # Build back two-body component.
         for l in range(n_qubits ** 2):
-
-            # Make sure one-body squares are Hermitian.
-            hermitian_discrepancy = numpy.sum(numpy.absolute(
-                one_body_squares[l] - numpy.transpose(one_body_squares[l])))
-            self.assertAlmostEqual(0., hermitian_discrepancy)
 
             # Get the squared one-body operator.
             one_body_operator = FermionOperator()
