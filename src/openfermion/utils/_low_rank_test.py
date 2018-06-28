@@ -227,6 +227,18 @@ class LowRankTest(unittest.TestCase):
                 coefficient = density_density_matrix[p, q]
                 two_body_operator += FermionOperator(term, coefficient)
 
+            # Confirm that the rotations diagonalize the one-body squares.
+            hopefully_diagonal = basis_transformation_matrix.dot(
+                numpy.dot(one_body_squares[l],
+                          numpy.transpose(numpy.conjugate(
+                              basis_transformation_matrix))))
+            diagonal = numpy.diag(hopefully_diagonal)
+            difference = hopefully_diagonal - numpy.diag(diagonal)
+            self.assertAlmostEqual(0., numpy.amax(numpy.absolute(difference)))
+            density_density_alternative = numpy.outer(diagonal, diagonal)
+            difference = density_density_alternative - density_density_matrix
+            self.assertAlmostEqual(0., numpy.amax(numpy.absolute(difference)))
+
             # Test spectra.
             one_body_squared_spectrum = eigenspectrum(one_body_squared)
             two_body_spectrum = eigenspectrum(two_body_operator)
