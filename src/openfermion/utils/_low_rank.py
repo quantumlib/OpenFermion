@@ -62,7 +62,7 @@ def get_chemist_two_body_coefficients(two_body_operator):
     if (isinstance(two_body_operator, FermionOperator) and
             two_body_operator.is_two_body_number_conserving()):
         ordered_operator = normal_ordered(two_body_operator)
-        constant = ordered_operator.terms[()]
+        constant = ordered_operator.terms.get((), 0.)
         is_fermion_operator = True
     elif isinstance(two_body_operator, InteractionOperator):
         constant = two_body_operator.constant
