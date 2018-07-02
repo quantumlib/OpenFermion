@@ -123,6 +123,13 @@ class LowRankTest(unittest.TestCase):
             low_rank_two_body_decomposition(chemist_tensor))
         self.assertFalse(trunc_error)
 
+        # Check for exception.
+        with self.assertRaises(ValueError):
+            eigenvalues, one_body_squares, trunc_error = (
+                low_rank_two_body_decomposition(chemist_tensor,
+                                                truncation_threshold=1.,
+                                                final_rank=1))
+
         # Build back two-body component.
         for l in range(n_qubits ** 2):
             one_body_operator = FermionOperator()
@@ -160,7 +167,7 @@ class LowRankTest(unittest.TestCase):
             get_chemist_two_body_coefficients(fermion_hamiltonian))
         n_qubits = one_body_coefficients.shape[0]
 
-        # Rank reduce.
+        # Rank reduce with threshold.
         errors = []
         for truncation_threshold in [1., 0.1, 0.01, 0.001]:
 
@@ -174,7 +181,44 @@ class LowRankTest(unittest.TestCase):
             # Rank reduce.
             eigenvalues, one_body_squares, trunc_error = (
                 low_rank_two_body_decomposition(
-                    chemist_tensor, truncation_threshold))
+                    chemist_tensor,
+                    truncation_threshold=truncation_threshold))
+
+            # Make sure error is below truncation specification.
+            self.assertTrue(trunc_error < truncation_threshold)
+
+            # Reassemble FermionOperator.
+            l_max = eigenvalues.size
+            for l in range(l_max):
+                one_body_operator = FermionOperator()
+                for p, q in itertools.product(range(n_qubits), repeat=2):
+                    term = ((p, 1), (q, 0))
+                    coefficient = one_body_squares[l, p, q]
+                    one_body_operator += FermionOperator(term, coefficient)
+                decomposed_operator += eigenvalues[l] * (one_body_operator**2)
+
+            # Test for consistency.
+            difference = normal_ordered(
+                decomposed_operator - fermion_hamiltonian)
+            errors += [difference.induced_norm()]
+            self.assertTrue(errors[-1] <= trunc_error)
+        self.assertTrue(errors[3] <= errors[2] <= errors[1] <= errors[0])
+
+        # Rank reduce by setting final rank.
+        errors = []
+        for final_rank in [4, 6, 8, 10, 12]:
+
+            # Add back one-body terms and constant.
+            decomposed_operator = FermionOperator((), constant)
+            for p, q in itertools.product(range(n_qubits), repeat=2):
+                term = ((p, 1), (q, 0))
+                coefficient = one_body_coefficients[p, q]
+                decomposed_operator += FermionOperator(term, coefficient)
+
+            # Rank reduce.
+            eigenvalues, one_body_squares, trunc_error = (
+                low_rank_two_body_decomposition(
+                    chemist_tensor, final_rank=final_rank))
 
             # Reassemble FermionOperator.
             l_max = eigenvalues.size

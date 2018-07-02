@@ -127,6 +127,8 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
             so that all symmetries are already unpacked.
         truncation_threshold (optional Float): the value of x in the expression
             above. If None, then L = N ** 2 and no truncation will occur.
+        final_rank (optional float): if provided, this specifies the value of
+            L at which to truncate.
 
     Returns:
         eigenvalues (ndarray of floats): length L array
@@ -135,8 +137,6 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
             corresponding to the value of :math:`g_{pql}`.
         truncation_value (optional float): after truncation, this is the value
             :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
-        final_rank (optional float): if provided, this specifies the value of
-            L at which to truncate.
 
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
@@ -182,7 +182,7 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
     elif truncation_threshold is None:
         max_rank = final_rank
     elif final_rank is None:
-        max_rank = numpy.argmax(truncation_errors < truncation_threshold)
+        max_rank = 1 + numpy.argmax(truncation_errors <= truncation_threshold)
     else:
         raise ValueError(
             'Cannot provide both final_rank and truncation_value.')
