@@ -14,7 +14,6 @@ import itertools
 import numpy
 import os
 import unittest
-import warnings
 
 from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
@@ -35,15 +34,7 @@ class ChemistTwoBodyTest(unittest.TestCase):
 
         # Initialize a random InteractionOperator and FermionOperator.
         n_qubits = 4
-        random_interaction = random_interaction_operator(n_qubits)
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            random_interaction.one_body_tensor[1, 2] *= 1.j
-            random_interaction.one_body_tensor[2, 1] *= -1.j
-            random_interaction.two_body_tensor[0, 1, 2, 3] *= 1.j
-            random_interaction.two_body_tensor[3, 2, 1, 0] *= -1.j
-            random_interaction.two_body_tensor[1, 2, 2, 0] *= 1.j
-            random_interaction.two_body_tensor[0, 2, 2, 1] *= -1.j
+        random_interaction = random_interaction_operator(n_qubits, real=False)
         random_fermion = get_fermion_operator(random_interaction)
 
         # Convert to chemist ordered tensor.
@@ -201,7 +192,8 @@ class LowRankTest(unittest.TestCase):
             difference = normal_ordered(
                 decomposed_operator - fermion_hamiltonian)
             errors += [difference.induced_norm()]
-            self.assertTrue(errors[-1] <= trunc_error)
+            self.assertTrue(errors[-1] <= trunc_error or
+                            abs(errors[-1] - trunc_error) < 1e-6)
         self.assertTrue(errors[3] <= errors[2] <= errors[1] <= errors[0])
 
         # Rank reduce by setting final rank.
