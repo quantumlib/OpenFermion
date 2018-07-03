@@ -111,14 +111,15 @@ def get_chemist_two_body_coefficients(two_body_operator):
 
 
 def low_rank_two_body_decomposition(chemist_two_body_coefficients,
-                                    truncation_threshold=None):
+                                    truncation_threshold=None,
+                                    final_rank=None):
     """Convert two-body operator into sum of squared one-body operators.
 
     This function decomposes
     :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a_q a^\dagger_r a_s`
     as :math:`\sum_{l} \lambda_l (\sum_{pq} g_{lpq} a^\dagger_p a_q)^2`
     l is truncated to take max value L so that
-    :math:`\sum_{l=0}^{L-1} |\lambda_l| < x`
+    :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
 
     Args:
         chemist_two_body_coefficients (ndarray): an N x N x N x N
@@ -126,22 +127,26 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
             so that all symmetries are already unpacked.
         truncation_threshold (optional Float): the value of x in the expression
             above. If None, then L = N ** 2 and no truncation will occur.
+        final_rank (optional int): if provided, this specifies the value of
+            L at which to truncate.
 
     Returns:
         eigenvalues (ndarray of floats): length L array
             giving the :math:`\lambda_l`.
         one_body_squares (ndarray of floats): L x N x N array of floats
             corresponding to the value of :math:`g_{pql}`.
-        truncation_value (float): after truncation, this is the value of
-            :math:`\sum_{l=0}^{L-1} |\lambda_l|`.
+        truncation_value (optional float): after truncation, this is the value
+            :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
 
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
+        ValueError: Cannot provide both final_rank and truncation_value.
     """
     # Initialize N^2 by N^2 interaction array.
     n_qubits = chemist_two_body_coefficients.shape[0]
+    full_rank = n_qubits ** 2
     interaction_array = numpy.reshape(chemist_two_body_coefficients,
-                                      (n_qubits ** 2, n_qubits ** 2))
+                                      (full_rank, full_rank))
 
     # Make sure interaction array is symmetric.
     asymmetry = numpy.amax(numpy.absolute(
@@ -152,28 +157,39 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
     # Diagonalize.
     eigenvalues, eigenvectors = numpy.linalg.eigh(interaction_array)
 
-    # Sort eigenvalues and eigenvectors in descending order by magnitude.
-    indices = numpy.argsort(numpy.absolute(eigenvalues))[::-1]
-    eigenvalues = eigenvalues[indices]
-    eigenvectors = eigenvectors[:, indices]
-
-    # Optionally truncate.
-    if truncation_threshold is None:
-        max_index = n_qubits ** 2
-        truncation_value = 0.
-    else:
-        cumulative_sum = numpy.cumsum(numpy.absolute(eigenvalues))
-        truncation_error = cumulative_sum[-1] - cumulative_sum
-        max_index = numpy.argmax(truncation_error < truncation_threshold)
-        truncation_value = truncation_error[max_index]
-
-    # Return one-body squares.
-    one_body_squares = numpy.zeros((max_index, n_qubits, n_qubits), complex)
-    for l in range(max_index):
+    # Get one-body squares and compute weights.
+    term_weights = numpy.zeros(full_rank)
+    one_body_squares = numpy.zeros((full_rank, n_qubits, n_qubits), complex)
+    for l in range(full_rank):
         one_body_squares[l] = numpy.reshape(eigenvectors[:, l],
                                             (n_qubits, n_qubits))
+        term_weights[l] = abs(eigenvalues[l]) * numpy.sum(
+            numpy.absolute(one_body_squares[l])) ** 2
 
-    return eigenvalues[:max_index], one_body_squares, truncation_value
+    # Sort by weight.
+    indices = numpy.argsort(term_weights)[::-1]
+    eigenvalues = eigenvalues[indices]
+    term_weights = term_weights[indices]
+    one_body_squares = one_body_squares[indices]
+
+    # Determine upper-bound on truncation errors that would occur.
+    cumulative_error_sum = numpy.cumsum(term_weights)
+    truncation_errors = cumulative_error_sum[-1] - cumulative_error_sum
+
+    # Optionally truncate rank and return.
+    if truncation_threshold is None and final_rank is None:
+        max_rank = full_rank
+    elif truncation_threshold is None:
+        max_rank = final_rank
+    elif final_rank is None:
+        max_rank = 1 + numpy.argmax(truncation_errors <= truncation_threshold)
+    else:
+        raise ValueError(
+            'Cannot provide both final_rank and truncation_value.')
+    truncation_value = truncation_errors[max_rank - 1]
+    return (eigenvalues[:max_rank],
+            one_body_squares[:max_rank],
+            truncation_value)
 
 
 def prepare_one_body_squared_evolution(one_body_matrix):
