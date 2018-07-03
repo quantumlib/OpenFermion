@@ -127,7 +127,7 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
             so that all symmetries are already unpacked.
         truncation_threshold (optional Float): the value of x in the expression
             above. If None, then L = N ** 2 and no truncation will occur.
-        final_rank (optional float): if provided, this specifies the value of
+        final_rank (optional int): if provided, this specifies the value of
             L at which to truncate.
 
     Returns:
