@@ -96,7 +96,7 @@ class LowRankTest(unittest.TestCase):
         # Initialize a random two-body FermionOperator.
         n_qubits = 4
         random_operator = get_fermion_operator(
-            random_interaction_operator(n_qubits))
+            random_interaction_operator(n_qubits, real=False))
 
         # Convert to chemist tensor.
         constant, one_body_coefficients, chemist_tensor = (
@@ -233,7 +233,7 @@ class LowRankTest(unittest.TestCase):
         # Initialize a random two-body FermionOperator.
         n_qubits = 4
         random_operator = get_fermion_operator(
-            random_interaction_operator(n_qubits))
+            random_interaction_operator(n_qubits, real=False))
 
         # Convert to chemist tensor.
         constant, one_body_coefficients, chemist_tensor = (
