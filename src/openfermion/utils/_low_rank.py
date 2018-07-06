@@ -124,7 +124,8 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
     Args:
         chemist_two_body_coefficients (ndarray): an N x N x N x N
             numpy array giving the :math:`h_{pqrs}` tensor in chemist notation
-            so that all symmetries are already unpacked.
+            so that all symmetries are already unpacked. At this point we will
+            also require that the matrix is strictly real.
         truncation_threshold (optional Float): the value of x in the expression
             above. If None, then L = N ** 2 and no truncation will occur.
         final_rank (optional int): if provided, this specifies the value of
@@ -148,10 +149,11 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
     interaction_array = numpy.reshape(chemist_two_body_coefficients,
                                       (full_rank, full_rank))
 
-    # Make sure interaction array is symmetric.
-    asymmetry = numpy.amax(numpy.absolute(
-        interaction_array - numpy.transpose(interaction_array)))
-    if asymmetry > EQ_TOLERANCE:
+    # Make sure interaction array is symmetric and real.
+    asymmetry = numpy.sum(numpy.absolute(
+        interaction_array - interaction_array.transpose()))
+    imaginary_norm = numpy.sum(numpy.absolute(interaction_array.imag))
+    if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
         raise TypeError('Invalid two-body coefficient tensor specification.')
 
     # Diagonalize.
