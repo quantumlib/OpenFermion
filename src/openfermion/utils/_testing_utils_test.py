@@ -19,10 +19,12 @@ from openfermion.transforms import get_fermion_operator
 from openfermion.utils import is_hermitian
 from openfermion.utils._testing_utils import (
         EqualsTester,
+        random_antisymmetric_matrix,
         random_diagonal_coulomb_hamiltonian,
+        random_hermitian_matrix,
         random_interaction_operator,
         random_quadratic_hamiltonian,
-        random_interaction_operator)
+        random_unitary_matrix)
 
 
 class EqualsTesterTest(unittest.TestCase):
@@ -242,3 +244,15 @@ class RandomSeedingTest(unittest.TestCase):
                                       op2.combined_hermitian_part)
         numpy.testing.assert_allclose(op1.antisymmetric_part,
                                       op2.antisymmetric_part)
+
+        op1 = random_antisymmetric_matrix(5, seed=24074)
+        op2 = random_antisymmetric_matrix(5, seed=24074)
+        numpy.testing.assert_allclose(op1, op2)
+
+        op1 = random_hermitian_matrix(5, seed=56753)
+        op2 = random_hermitian_matrix(5, seed=56753)
+        numpy.testing.assert_allclose(op1, op2)
+
+        op1 = random_unitary_matrix(5, seed=56486)
+        op2 = random_unitary_matrix(5, seed=56486)
+        numpy.testing.assert_allclose(op1, op2)
