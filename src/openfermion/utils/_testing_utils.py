@@ -23,7 +23,7 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
                              QuadraticHamiltonian)
 
 
-def random_antisymmetric_matrix(n, real=False, seed=0):
+def random_antisymmetric_matrix(n, real=False, seed=None):
     """Generate a random n x n antisymmetric matrix."""
     numpy.random.seed(seed)
     if real:
@@ -34,7 +34,7 @@ def random_antisymmetric_matrix(n, real=False, seed=0):
     return antisymmetric_mat
 
 
-def random_diagonal_coulomb_hamiltonian(n_qubits, real=False, seed=0):
+def random_diagonal_coulomb_hamiltonian(n_qubits, real=False, seed=None):
     """Generate a random instance of DiagonalCoulombHamiltonian.
 
     Args:
@@ -48,7 +48,7 @@ def random_diagonal_coulomb_hamiltonian(n_qubits, real=False, seed=0):
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
 
 
-def random_hermitian_matrix(n, real=False, seed=0):
+def random_hermitian_matrix(n, real=False, seed=None):
     """Generate a random n x n Hermitian matrix."""
     numpy.random.seed(seed)
     if real:
@@ -59,7 +59,7 @@ def random_hermitian_matrix(n, real=False, seed=0):
     return hermitian_mat
 
 
-def random_interaction_operator(n_qubits, real=True, seed=0):
+def random_interaction_operator(n_qubits, real=True, seed=None):
     """Generate a random instance of InteractionOperator."""
     numpy.random.seed(seed)
     if real:
@@ -71,7 +71,7 @@ def random_interaction_operator(n_qubits, real=True, seed=0):
     constant = numpy.random.randn()
 
     # The one-body tensor is a random Hermitian matrix.
-    one_body_coefficients = random_hermitian_matrix(n_qubits, real)
+    one_body_coefficients = random_hermitian_matrix(n_qubits, real, seed=seed)
 
     # Generate random two-body coefficients.
     two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
@@ -85,7 +85,6 @@ def random_interaction_operator(n_qubits, real=True, seed=0):
         two_body_coefficients[q, p, q, p] = coeff
 
     # Generate the rest of the terms.
-    #for p, q, r, s in itertools.combinations(range(n_qubits), 4):
     for (p, q), (r, s) in itertools.combinations(
             itertools.combinations(range(n_qubits), 2), 2):
         coeff = numpy.random.randn()
@@ -110,7 +109,7 @@ def random_interaction_operator(n_qubits, real=True, seed=0):
 
 def random_quadratic_hamiltonian(n_qubits,
                                  conserves_particle_number=False,
-                                 real=False, seed=0):
+                                 real=False, seed=None):
     """Generate a random instance of QuadraticHamiltonian.
 
     Args:
@@ -134,7 +133,7 @@ def random_quadratic_hamiltonian(n_qubits,
                                 constant, chemical_potential)
 
 
-def random_unitary_matrix(n, real=False, seed=0):
+def random_unitary_matrix(n, real=False, seed=None):
     """Obtain a random n x n unitary matrix."""
     numpy.random.seed(seed)
     if real:

@@ -34,7 +34,8 @@ class ChemistTwoBodyTest(unittest.TestCase):
 
         # Initialize a random InteractionOperator and FermionOperator.
         n_qubits = 4
-        random_interaction = random_interaction_operator(n_qubits, real=False)
+        random_interaction = random_interaction_operator(
+                n_qubits, real=False, seed=34281)
         random_fermion = get_fermion_operator(random_interaction)
 
         # Convert to chemist ordered tensor.
@@ -78,7 +79,7 @@ class ChemistTwoBodyTest(unittest.TestCase):
 
         # Initialize a bad FermionOperator.
         n_qubits = 4
-        random_interaction = random_interaction_operator(n_qubits)
+        random_interaction = random_interaction_operator(n_qubits, seed=36229)
         random_fermion = get_fermion_operator(random_interaction)
         bad_term = ((1, 1), (2, 1))
         random_fermion += FermionOperator(bad_term)
@@ -96,7 +97,7 @@ class LowRankTest(unittest.TestCase):
         # Initialize a random two-body FermionOperator.
         n_qubits = 4
         random_operator = get_fermion_operator(
-            random_interaction_operator(n_qubits))
+            random_interaction_operator(n_qubits, seed=28644))
 
         # Convert to chemist tensor.
         constant, one_body_coefficients, chemist_tensor = (
@@ -233,7 +234,7 @@ class LowRankTest(unittest.TestCase):
         # Initialize a random two-body FermionOperator.
         n_qubits = 4
         random_operator = get_fermion_operator(
-            random_interaction_operator(n_qubits))
+            random_interaction_operator(n_qubits, seed=17004))
 
         # Convert to chemist tensor.
         constant, one_body_coefficients, chemist_tensor = (
