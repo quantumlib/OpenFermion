@@ -117,7 +117,8 @@ def random_interaction_operator(n_qubits, real=True, seed=None):
 
 def random_quadratic_hamiltonian(n_qubits,
                                  conserves_particle_number=False,
-                                 real=False, seed=None):
+                                 real=False,
+                                 seed=None):
     """Generate a random instance of QuadraticHamiltonian.
 
     Args:
