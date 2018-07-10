@@ -13,10 +13,16 @@
 import fractions
 import unittest
 
+import numpy
+
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import is_hermitian
-from openfermion.utils._testing_utils import (EqualsTester,
-                                              random_interaction_operator)
+from openfermion.utils._testing_utils import (
+        EqualsTester,
+        random_diagonal_coulomb_hamiltonian,
+        random_interaction_operator,
+        random_quadratic_hamiltonian,
+        random_interaction_operator)
 
 
 class EqualsTesterTest(unittest.TestCase):
@@ -215,3 +221,24 @@ class RandomInteractionOperatorTest(unittest.TestCase):
         iop = random_interaction_operator(n_qubits, False)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
+
+
+class RandomSeedingTest(unittest.TestCase):
+
+    def test_random_operators_are_reproducible(self):
+        op1 = random_diagonal_coulomb_hamiltonian(5, seed=5947)
+        op2 = random_diagonal_coulomb_hamiltonian(5, seed=5947)
+        numpy.testing.assert_allclose(op1.one_body, op2.one_body)
+        numpy.testing.assert_allclose(op1.two_body, op2.two_body)
+
+        op1 = random_interaction_operator(5, seed=8911)
+        op2 = random_interaction_operator(5, seed=8911)
+        numpy.testing.assert_allclose(op1.one_body_tensor, op2.one_body_tensor)
+        numpy.testing.assert_allclose(op1.two_body_tensor, op2.two_body_tensor)
+
+        op1 = random_quadratic_hamiltonian(5, seed=17711)
+        op2 = random_quadratic_hamiltonian(5, seed=17711)
+        numpy.testing.assert_allclose(op1.combined_hermitian_part,
+                                      op2.combined_hermitian_part)
+        numpy.testing.assert_allclose(op1.antisymmetric_part,
+                                      op2.antisymmetric_part)
