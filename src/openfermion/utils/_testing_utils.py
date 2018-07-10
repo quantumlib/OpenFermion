@@ -25,7 +25,9 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
 
 def random_antisymmetric_matrix(n, real=False, seed=None):
     """Generate a random n x n antisymmetric matrix."""
-    numpy.random.seed(seed)
+    if seed is not None:
+        numpy.random.seed(seed)
+
     if real:
         rand_mat = numpy.random.randn(n, n)
     else:
@@ -41,17 +43,20 @@ def random_diagonal_coulomb_hamiltonian(n_qubits, real=False, seed=None):
         n_qubits: The number of qubits
         real: Whether to use only real numbers in the one-body term
     """
-    numpy.random.seed(seed)
-    seed1, seed2 = numpy.random.randint(4294967296, size=2)
-    one_body = random_hermitian_matrix(n_qubits, real=real, seed=seed1)
-    two_body = random_hermitian_matrix(n_qubits, real=True, seed=seed2)
+    if seed is not None:
+        numpy.random.seed(seed)
+
+    one_body = random_hermitian_matrix(n_qubits, real=real)
+    two_body = random_hermitian_matrix(n_qubits, real=True)
     constant = numpy.random.randn()
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
 
 
 def random_hermitian_matrix(n, real=False, seed=None):
     """Generate a random n x n Hermitian matrix."""
-    numpy.random.seed(seed)
+    if seed is not None:
+        numpy.random.seed(seed)
+
     if real:
         rand_mat = numpy.random.randn(n, n)
     else:
@@ -62,7 +67,9 @@ def random_hermitian_matrix(n, real=False, seed=None):
 
 def random_interaction_operator(n_qubits, real=True, seed=None):
     """Generate a random instance of InteractionOperator."""
-    numpy.random.seed(seed)
+    if seed is not None:
+        numpy.random.seed(seed)
+
     if real:
         dtype = float
     else:
@@ -72,8 +79,7 @@ def random_interaction_operator(n_qubits, real=True, seed=None):
     constant = numpy.random.randn()
 
     # The one-body tensor is a random Hermitian matrix.
-    seed1 = numpy.random.randint(4294967296)
-    one_body_coefficients = random_hermitian_matrix(n_qubits, real, seed=seed1)
+    one_body_coefficients = random_hermitian_matrix(n_qubits, real)
 
     # Generate random two-body coefficients.
     two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
@@ -123,23 +129,25 @@ def random_quadratic_hamiltonian(n_qubits,
     Returns:
         QuadraticHamiltonian
     """
-    numpy.random.seed(seed)
+    if seed is not None:
+        numpy.random.seed(seed)
+
     constant = numpy.random.randn()
     chemical_potential = numpy.random.randn()
-    seed1, seed2 = numpy.random.randint(4294967296, size=2)
-    hermitian_mat = random_hermitian_matrix(n_qubits, real, seed=seed1)
+    hermitian_mat = random_hermitian_matrix(n_qubits, real)
     if conserves_particle_number:
         antisymmetric_mat = None
     else:
-        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real,
-                                                        seed=seed2)
+        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
     return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat,
                                 constant, chemical_potential)
 
 
 def random_unitary_matrix(n, real=False, seed=None):
     """Obtain a random n x n unitary matrix."""
-    numpy.random.seed(seed)
+    if seed is not None:
+        numpy.random.seed(seed)
+
     if real:
         rand_mat = numpy.random.randn(n, n)
     else:
