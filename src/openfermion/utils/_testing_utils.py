@@ -42,8 +42,9 @@ def random_diagonal_coulomb_hamiltonian(n_qubits, real=False, seed=None):
         real: Whether to use only real numbers in the one-body term
     """
     numpy.random.seed(seed)
-    one_body = random_hermitian_matrix(n_qubits, real=real)
-    two_body = random_hermitian_matrix(n_qubits, real=True)
+    seed1, seed2 = numpy.random.randint(4294967296, size=2)
+    one_body = random_hermitian_matrix(n_qubits, real=real, seed=seed1)
+    two_body = random_hermitian_matrix(n_qubits, real=True, seed=seed2)
     constant = numpy.random.randn()
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
 
@@ -71,7 +72,8 @@ def random_interaction_operator(n_qubits, real=True, seed=None):
     constant = numpy.random.randn()
 
     # The one-body tensor is a random Hermitian matrix.
-    one_body_coefficients = random_hermitian_matrix(n_qubits, real, seed=seed)
+    seed1 = numpy.random.randint(4294967296)
+    one_body_coefficients = random_hermitian_matrix(n_qubits, real, seed=seed1)
 
     # Generate random two-body coefficients.
     two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
@@ -124,11 +126,13 @@ def random_quadratic_hamiltonian(n_qubits,
     numpy.random.seed(seed)
     constant = numpy.random.randn()
     chemical_potential = numpy.random.randn()
-    hermitian_mat = random_hermitian_matrix(n_qubits, real)
+    seed1, seed2 = numpy.random.randint(4294967296, size=2)
+    hermitian_mat = random_hermitian_matrix(n_qubits, real, seed=seed1)
     if conserves_particle_number:
         antisymmetric_mat = None
     else:
-        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
+        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real,
+                                                        seed=seed2)
     return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat,
                                 constant, chemical_potential)
 
