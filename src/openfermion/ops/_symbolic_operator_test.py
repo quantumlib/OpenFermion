@@ -669,6 +669,18 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertEqual(str(op2), "2 []")
         op3 = DummyOperator1()
         self.assertEqual(str(op3), "0")
+        op4 = (DummyOperator1(((3, 1), (4, 1), (5, 0)), 1.0) +
+               DummyOperator1(((3, 1), (4, 1), (4, 0)), 2.0) +
+               DummyOperator1(((2, 1), (4, 1), (5, 0)), 1.0) +
+               DummyOperator1(((3, 0), (2, 1), (1, 1)), 2.0) +
+               DummyOperator1(((3, 0), (2, 0), (1, 1)), 2.0))
+        self.assertEqual(str(op4).strip(), """
+1.0 [2^ 4^ 5] +
+2.0 [3 2 1^] +
+2.0 [3 2^ 1^] +
+2.0 [3^ 4^ 4] +
+1.0 [3^ 4^ 5]
+""".strip())
 
     def test_rep(self):
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
@@ -928,6 +940,18 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertEqual(str(op), "0.5 [X1 Y3 Z8]")
         op2 = DummyOperator2((), 2)
         self.assertEqual(str(op2), "2 []")
+        op3 =  (DummyOperator2(((3, 'X'), (4, 'Z'), (5, 'Y')), 3.0) +
+                DummyOperator2(((1, 'X'), (4, 'Z'), (4, 'Z')), 2.0) +
+                DummyOperator2(((2, 'Z'), (4, 'Z'), (5, 'X')), 1.0) +
+                DummyOperator2(((3, 'Y'), (2, 'Y'), (1, 'Z')), 2.0) +
+                DummyOperator2(((3, 'Y'), (2, 'Y'), (1, 'Y')), 2.0))
+        self.assertEqual(str(op3).strip(), """
+2.0 [X1 Z4 Z4] +
+2.0 [Y1 Y2 Y3] +
+2.0 [Z1 Y2 Y3] +
+1.0 [Z2 Z4 X5] +
+3.0 [X3 Z4 Y5]
+""".strip())
 
     def test_str_empty(self):
         op = DummyOperator2()
