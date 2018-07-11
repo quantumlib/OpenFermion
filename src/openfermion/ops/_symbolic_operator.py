@@ -266,7 +266,7 @@ class SymbolicOperator(object):
         if not self.terms:
             return '0'
         string_rep = ''
-        for term in self.terms:
+        for term in sorted(self.terms):
             tmp_string = '{} ['.format(self.terms[term])
             for factor in term:
                 index, action = factor
