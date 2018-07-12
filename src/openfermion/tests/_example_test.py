@@ -143,7 +143,7 @@ def canonicalize_printed_line(line):
     """
     prev_end = 0
     result = []
-    for match in re.finditer(r"[0-9]\.[0-9]+", line):
+    for match in re.finditer(r"[0-9]+\.[0-9]+(e-[0-9]+)?", line):
         start = match.start()
         end = match.end()
         result.append(line[prev_end:start])
