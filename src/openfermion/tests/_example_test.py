@@ -14,76 +14,106 @@
 
 import os
 import re
-import subprocess
 import sys
-import tempfile
 import unittest
 
 import nbformat
 import numpy
-import pytest
-
-from openfermion.config import THIS_DIRECTORY
-from openfermion.utils import *
 
 
-def find_examples_jupyter_notebook_paths():
-    examples_folder = os.path.join(
-            os.path.dirname(__file__),  # Start at this file's directory.
-            '..', 'tests',  # Hacky check that we're under tests/.
-            '..', '..', '..', 'examples')
-    for filename in os.listdir(examples_folder):
-        if not filename.endswith('.ipynb'):
-            continue
-        yield os.path.join(examples_folder, filename)
+class ExamplesTest(unittest.TestCase):
 
+    def setUp(self):
 
-@pytest.mark.parametrize('path', find_examples_jupyter_notebook_paths())
-def test_can_run_examples_jupyter_notebook(path):
-    assert_jupyter_notebook_has_working_code_cells(path)
+        self.examples_folder = os.path.join(
+                os.path.dirname(__file__),  # Start at this file's directory.
+                '..', 'tests',  # Hacky check that we're under tests/.
+                '..', '..', '..', 'examples')
 
+    def test_performance_benchmarks(self):
+        """Unit test for examples/performance_benchmark.py."""
 
-def assert_jupyter_notebook_has_working_code_cells(path):
-    """Checks that code cells in a Jupyter notebook actually run in sequence.
+        # Import performance benchmarks and seed random number generator.
+        sys.path.append(self.examples_folder)
+        from performance_benchmarks import (
+            run_fermion_math_and_normal_order,
+            run_jordan_wigner_sparse,
+            run_molecular_operator_jordan_wigner,
+            run_linear_qubit_operator,
+        )
+        numpy.random.seed(1)
 
-    State is kept between code cells. Imports and variables defined in one
-    cell will be visible in later cells.
-    """
+        runtime_upper_bound = 600
 
-    notebook = nbformat.read(path, nbformat.NO_CONVERT)
-    state = {}
+        # Run InteractionOperator.jordan_wigner_transform() benchmark.
+        runtime = run_molecular_operator_jordan_wigner(n_qubits=10)
+        self.assertLess(runtime, runtime_upper_bound)
 
-    for cell in notebook.cells:
-        if cell.cell_type == 'code':
-            assert_code_cell_runs_and_prints_expected(cell, state)
+        # Run benchmark on FermionOperator math and normal-ordering.
+        runtime_math, runtime_normal = run_fermion_math_and_normal_order(
+            n_qubits=10, term_length=5, power=5)
+        self.assertLess(runtime_math, runtime_upper_bound)
+        self.assertLess(runtime_normal, runtime_upper_bound)
 
+        # Run FermionOperator.jordan_wigner_sparse() benchmark.
+        runtime = run_jordan_wigner_sparse(n_qubits=10)
+        self.assertLess(runtime, 600)
 
-def assert_code_cell_runs_and_prints_expected(cell, state):
-    """Executes a code cell and compares captured output to saved output."""
+        # Run (Parallel)LinearQubitOperator benchmark.
+        runtime_sequential, runtime_parallel = run_linear_qubit_operator(
+            n_qubits=10, n_terms=10, processes=10)
+        self.assertLess(runtime_sequential, runtime_upper_bound)
+        self.assertLess(runtime_parallel, runtime_upper_bound)
 
-    if cell.outputs and hasattr(cell.outputs[0], 'text'):
-        expected_outputs = cell.outputs[0].text.strip().split('\n')
-    else:
-        expected_outputs = ['']
-    expected_lines = [canonicalize_printed_line(line)
-                      for line in expected_outputs]
+    def test_can_run_examples_jupyter_notebooks(self):
+        for filename in os.listdir(self.examples_folder):
+            if not filename.endswith('.ipynb'):
+                continue
+            path = os.path.join(self.examples_folder, filename)
+            self.assert_jupyter_notebook_has_working_code_cells(path)
 
-    output_lines = []
+    def assert_jupyter_notebook_has_working_code_cells(self, path):
+        """Checks that code cells in a Jupyter notebook actually run in
+        sequence.
 
-    def print_capture(*values, sep=' '):
-        output_lines.extend(
-                sep.join(str(e) for e in values).split('\n'))
+        State is kept between code cells. Imports and variables defined in one
+        cell will be visible in later cells.
+        """
 
-    state['print'] = print_capture
-    exec(strip_magics_and_shows(cell.source), state)
-    output_lines = '\n'.join(output_lines).strip().split('\n')
+        notebook = nbformat.read(path, nbformat.NO_CONVERT)
+        state = {}
 
-    actual_lines = [canonicalize_printed_line(line) for line in output_lines]
+        for cell in notebook.cells:
+            if cell.cell_type == 'code':
+                self.assert_code_cell_runs_and_prints_expected(cell, state)
 
-    assert len(actual_lines) == len(expected_lines)
+    def assert_code_cell_runs_and_prints_expected(self, cell, state):
+        """Executes a code cell and compares captured output to saved output."""
 
-    for i, line in enumerate(actual_lines):
-        assert line == expected_lines[i]
+        if cell.outputs and hasattr(cell.outputs[0], 'text'):
+            expected_outputs = cell.outputs[0].text.strip().split('\n')
+        else:
+            expected_outputs = ['']
+        expected_lines = [canonicalize_printed_line(line)
+                          for line in expected_outputs]
+
+        output_lines = []
+
+        def print_capture(*values, sep=' '):
+            output_lines.extend(
+                    sep.join(str(e) for e in values).split('\n'))
+
+        state['print'] = print_capture
+        exec(strip_magics_and_shows(cell.source), state)
+        output_lines = '\n'.join(output_lines).strip().split('\n')
+
+        actual_lines = [canonicalize_printed_line(line) for line in
+                        output_lines]
+
+        assert len(actual_lines) == len(expected_lines)
+
+        for i, line in enumerate(actual_lines):
+            assert line == expected_lines[i]
 
 
 def strip_magics_and_shows(text):
@@ -121,46 +151,3 @@ def canonicalize_printed_line(line):
         prev_end = end
     result.append(line[prev_end:])
     return ''.join(result).rstrip()
-
-
-def test_canonicalize_printed_line():
-    x = 'first 20.37378859061888 then 20.37378627319067'
-    assert canonicalize_printed_line(x) == 'first 20.3738 then 20.3738'
-
-
-class PerformanceBenchmarksTest(unittest.TestCase):
-
-    def test_performance_benchmarks(self):
-        """Unit test for examples/performance_benchmark.py."""
-
-        # Import performance benchmarks and seed random number generator.
-        sys.path.append(self.directory)
-        from performance_benchmarks import (
-            run_fermion_math_and_normal_order,
-            run_jordan_wigner_sparse,
-            run_molecular_operator_jordan_wigner,
-            run_linear_qubit_operator,
-        )
-        numpy.random.seed(1)
-
-        runtime_upper_bound = 600
-
-        # Run InteractionOperator.jordan_wigner_transform() benchmark.
-        runtime = run_molecular_operator_jordan_wigner(n_qubits=10)
-        self.assertLess(runtime, runtime_upper_bound)
-
-        # Run benchmark on FermionOperator math and normal-ordering.
-        runtime_math, runtime_normal = run_fermion_math_and_normal_order(
-            n_qubits=10, term_length=5, power=5)
-        self.assertLess(runtime_math, runtime_upper_bound)
-        self.assertLess(runtime_normal, runtime_upper_bound)
-
-        # Run FermionOperator.jordan_wigner_sparse() benchmark.
-        runtime = run_jordan_wigner_sparse(n_qubits=10)
-        self.assertLess(runtime, 600)
-
-        # Run (Parallel)LinearQubitOperator benchmark.
-        runtime_sequential, runtime_parallel = run_linear_qubit_operator(
-            n_qubits=10, n_terms=10, processes=10)
-        self.assertLess(runtime_sequential, runtime_upper_bound)
-        self.assertLess(runtime_parallel, runtime_upper_bound)
