@@ -34,6 +34,8 @@ class BinaryPolynomialTest(unittest.TestCase):
         self.assertEqual(operator1.terms, [(1,)])
         operator1 = BinaryPolynomial('9 w1 w2 + 5')
         self.assertEqual(str(operator1), '[W1 W2] + [1]')
+        operator1 = BinaryPolynomial(u'9 w1 w2 + 5')
+        self.assertEqual(str(operator1), '[W1 W2] + [1]')
 
     def test_none_init(self):
         operator1 = BinaryPolynomial()

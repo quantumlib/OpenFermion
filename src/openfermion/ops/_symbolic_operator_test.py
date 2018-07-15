@@ -90,7 +90,7 @@ class GeneralTest(unittest.TestCase):
 
         op1 = DummyOperator1('0^ 3 5^ 6')
         op2 = op1 + DummyOperator1('8^ 3')
-        op3 = op2 + DummyOperator1('1^ 2 3^ 4 5 ')
+        op3 = op2 + DummyOperator1(u'1^ 2 3^ 4 5 ')
 
         op4 = DummyOperator2('X0 X1 Y3')
         op5 = op4 - DummyOperator2('Z0')

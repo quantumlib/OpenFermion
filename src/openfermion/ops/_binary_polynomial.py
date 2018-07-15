@@ -15,6 +15,7 @@
 import copy
 
 import numpy
+from six import string_types
 
 _SYMBOLIC_ONE = 'one'
 _ACTION = 'W'
@@ -83,7 +84,7 @@ class BinaryPolynomial(object):
         self.terms = []
 
         # long string input
-        if isinstance(term, str) and '+' in term:
+        if isinstance(term, string_types) and '+' in term:
             self._long_string_init(term)
             return
 
@@ -96,7 +97,7 @@ class BinaryPolynomial(object):
             self._parse_sequence(list(term))
 
         # String input
-        elif isinstance(term, str):
+        elif isinstance(term, string_types):
             self.terms.append(tuple(self._parse_string(term)))
 
         elif isinstance(term, (numpy.int32, numpy.int64, int)):
@@ -276,7 +277,7 @@ class BinaryPolynomial(object):
           BinaryPolynomialError: Length of list provided must match the number
                 of qubits indexed in BinaryPolynomial
         """
-        if isinstance(binary_list, str):
+        if isinstance(binary_list, string_types):
             binary_list = list(map(int, list(binary_list)))
 
         all_qubits = self.enumerate_qubits()
