@@ -19,6 +19,7 @@ from openfermion.transforms import get_fermion_operator
 from openfermion.utils import is_hermitian
 from openfermion.utils._testing_utils import (
         EqualsTester,
+        haar_random_vector,
         random_antisymmetric_matrix,
         random_diagonal_coulomb_hamiltonian,
         random_hermitian_matrix,
@@ -223,6 +224,16 @@ class RandomInteractionOperatorTest(unittest.TestCase):
         iop = random_interaction_operator(n_qubits, False)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
+
+
+class HaarRandomVectorTest(unittest.TestCase):
+
+    def test_vector_norm(self):
+        n = 15
+        seed = 8317
+        vector = haar_random_vector(n, seed)
+        norm = vector.dot(numpy.conjugate(vector))
+        self.assertAlmostEqual(1. + 0.j, norm)
 
 
 class RandomSeedingTest(unittest.TestCase):
