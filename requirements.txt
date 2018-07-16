@@ -7,3 +7,4 @@ jupyter
 networkx
 matplotlib
 pubchempy
+six

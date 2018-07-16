@@ -16,6 +16,7 @@ import re
 import warnings
 
 from openfermion.config import EQ_TOLERANCE
+from six import string_types
 
 
 class SymbolicOperatorError(Exception):
@@ -77,7 +78,7 @@ class SymbolicOperator(object):
 
         # Detect if the input is the string representation of a sum of terms;
         # if so, initialization needs to be handled differently
-        if isinstance(term, str) and '[' in term:
+        if isinstance(term, string_types) and '[' in term:
             self._long_string_init(term, coefficient)
             return
 
@@ -90,7 +91,7 @@ class SymbolicOperator(object):
         if isinstance(term, tuple) or isinstance(term, list):
             term = self._parse_sequence(term)
         # String input
-        elif isinstance(term, str):
+        elif isinstance(term, string_types):
             term = self._parse_string(term)
         # Invalid input type
         else:
