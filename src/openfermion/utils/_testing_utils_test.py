@@ -233,7 +233,7 @@ class HaarRandomVectorTest(unittest.TestCase):
         seed = 8317
         vector = haar_random_vector(n, seed)
         norm = vector.dot(numpy.conjugate(vector))
-        self.assertAlmostEqual(1. + 0.j, norm, places=4)
+        self.assertAlmostEqual(1. + 0.j, norm)
 
 
 class RandomSeedingTest(unittest.TestCase):
