@@ -23,6 +23,16 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
                              QuadraticHamiltonian)
 
 
+def haar_random_vector(n, seed=None):
+    """Generate an n dimensional Haar randomd vector."""
+    if seed is not None:
+        numpy.random.seed(seed)
+    vector = numpy.random.randn(n).astype(complex)
+    vector += 1.j * numpy.random.randn(n).astype(complex)
+    normalization = numpy.sqrt(vector.dot(numpy.conjugate(vector)))
+    return vector / normalization
+
+
 def random_antisymmetric_matrix(n, real=False, seed=None):
     """Generate a random n x n antisymmetric matrix."""
     if seed is not None:
