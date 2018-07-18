@@ -193,6 +193,30 @@ class LowRankTest(unittest.TestCase):
             low_rank_spatial_two_body_decomposition(two_body_coefficients))
         self.assertFalse(trunc_error)
 
+        # Check for property errors
+        with self.assertRaises(TypeError):
+            eigenvalues, one_body_squares, trunc_error = (
+                low_rank_spatial_two_body_decomposition(
+                    two_body_coefficients + 0.01j,
+                    truncation_threshold=1.,
+                    final_rank=1))
+
+        # Perform decomposition with threshold
+        test_eigenvalues, one_body_squares, trunc_error, _ = (
+            low_rank_spatial_two_body_decomposition(two_body_coefficients,
+                                                    truncation_threshold=1.0))
+        self.assertTrue(len(test_eigenvalues) < len(eigenvalues))
+        self.assertTrue(len(one_body_squares) == len(test_eigenvalues))
+        self.assertTrue(trunc_error > 0.)
+
+        # Perform decomposition with threshold
+        test_eigenvalues, one_body_squares, trunc_error, _ = (
+            low_rank_spatial_two_body_decomposition(two_body_coefficients,
+                                                    final_rank=1))
+        self.assertTrue(len(test_eigenvalues) == 1)
+        self.assertTrue(len(one_body_squares) == 1)
+        self.assertTrue(trunc_error > 0.)
+
     def test_rank_reduction(self):
 
         # Initialize H2.
