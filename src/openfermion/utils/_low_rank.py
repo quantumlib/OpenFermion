@@ -268,7 +268,7 @@ def low_rank_spatial_two_body_decomposition(two_body_coefficients,
     if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
         raise TypeError('Invalid two-body coefficient tensor specification.')
 
-    # Decompose, first attempt Cholesky with small positive shift
+    # Decompose using LDL decomposition, closely related to Choleksy
     cholesky_vecs, cholesky_diag, _ = scipy.linalg.ldl(interaction_array)
     cholesky_diag = numpy.diag(cholesky_diag)
 
