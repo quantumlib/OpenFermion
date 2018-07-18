@@ -195,9 +195,10 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
             truncation_value)
 
 
-def low_rank_spatial_two_body_decomposition(chemist_two_body_coefficients,
+def low_rank_spatial_two_body_decomposition(two_body_coefficients,
                                             truncation_threshold=None,
-                                            final_rank=None):
+                                            final_rank=None,
+                                            spin_basis=True):
     """Convert spatial two-body operator into sum of squared one-body spin ops.
 
     This function decomposes
@@ -207,9 +208,8 @@ def low_rank_spatial_two_body_decomposition(chemist_two_body_coefficients,
     :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
 
     Args:
-        chemist_two_body_coefficients (ndarray): an N x N x N x N
-            numpy array giving the :math:`h_{pqrs}` tensor in chemist notation
-            at the level of spatial orbitals
+        two_body_coefficients (ndarray): an N x N x N x N
+            numpy array giving the :math:`h_{pqrs}` tensor in physics notation
         truncation_threshold (optional Float): the value of x in the expression
             above. If None, then L = N ** 2 and no truncation will occur.
         final_rank (optional int): if provided, this specifies the value of
@@ -222,13 +222,27 @@ def low_rank_spatial_two_body_decomposition(chemist_two_body_coefficients,
             corresponding to the value of :math:`g_{pql}`.
         truncation_value (optional float): after truncation, this is the value
             :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
+        one_body_correction: One-body
 
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
         ValueError: Cannot provide both final_rank and truncation_value.
     """
+    n_orbitals = two_body_coefficients.shape[0]
+    chemist_two_body_coefficients = numpy.transpose(two_body_coefficients,
+                                                    [0, 3, 1, 2])
+    # If the specification was in spin-orbitals, chop back down to spatial orbs
+    
+
+    # Determine a one body correction in the spin basis from spatial basis
+    one_body_correction = numpy.zeros((2 * n_orbitals, 2 * n_orbitals))
+    for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
+        for sigma, tau in itertools.product(range(2), repeat=2):
+            if (q == r) and (sigma == tau):
+                one_body_correction[2 * p + sigma, 2 * s + tau] -= (
+                    chemist_two_body_coefficients[p, q, r, s])
+
     # Initialize N^2 by N^2 interaction array.
-    n_orbitals = chemist_two_body_coefficients.shape[0]
     full_rank = n_orbitals ** 2
     interaction_array = numpy.reshape(chemist_two_body_coefficients,
                                       (full_rank, full_rank))
@@ -282,9 +296,6 @@ def low_rank_spatial_two_body_decomposition(chemist_two_body_coefficients,
         raise ValueError(
             'Cannot provide both final_rank and truncation_value.')
     truncation_value = truncation_errors[max_rank - 1]
-
-    # Determine a one body correction in the spatial basis
-    
 
     return (cholesky_diag[:max_rank],
             one_body_squares[:max_rank],
