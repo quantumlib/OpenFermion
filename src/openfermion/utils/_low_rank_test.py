@@ -135,6 +135,49 @@ class LowRankTest(unittest.TestCase):
         difference = normal_ordered(decomposed_operator - random_operator)
         self.assertAlmostEqual(0., difference.induced_norm())
 
+    def test_molecule_operator_consistency(self):
+
+        # Initialize a random two-body FermionOperator.
+        n_qubits = 4
+        random_operator = get_fermion_operator(
+            random_interaction_operator(n_qubits, seed=28644))
+
+        # Convert to chemist tensor.
+        constant, one_body_coefficients, chemist_tensor = (
+            get_chemist_two_body_coefficients(random_operator))
+
+        # Build back operator constant and one-body components.
+        decomposed_operator = FermionOperator((), constant)
+        for p, q in itertools.product(range(n_qubits), repeat=2):
+            term = ((p, 1), (q, 0))
+            coefficient = one_body_coefficients[p, q]
+            decomposed_operator += FermionOperator(term, coefficient)
+
+        # Perform decomposition.
+        eigenvalues, one_body_squares, trunc_error = (
+            low_rank_two_body_decomposition(chemist_tensor))
+        self.assertFalse(trunc_error)
+
+        # Check for exception.
+        with self.assertRaises(ValueError):
+            eigenvalues, one_body_squares, trunc_error = (
+                low_rank_two_body_decomposition(chemist_tensor,
+                                                truncation_threshold=1.,
+                                                final_rank=1))
+
+        # Build back two-body component.
+        for l in range(n_qubits ** 2):
+            one_body_operator = FermionOperator()
+            for p, q in itertools.product(range(n_qubits), repeat=2):
+                term = ((p, 1), (q, 0))
+                coefficient = one_body_squares[l, p, q]
+                one_body_operator += FermionOperator(term, coefficient)
+            decomposed_operator += eigenvalues[l] * (one_body_operator ** 2)
+
+        # Test for consistency.
+        difference = normal_ordered(decomposed_operator - random_operator)
+        self.assertAlmostEqual(0., difference.induced_norm())
+
     def test_rank_reduction(self):
 
         # Initialize H2.

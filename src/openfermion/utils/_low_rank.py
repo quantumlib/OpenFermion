@@ -231,8 +231,17 @@ def low_rank_spatial_two_body_decomposition(two_body_coefficients,
     n_orbitals = two_body_coefficients.shape[0]
     chemist_two_body_coefficients = numpy.transpose(two_body_coefficients,
                                                     [0, 3, 1, 2])
+
     # If the specification was in spin-orbitals, chop back down to spatial orbs
-    
+    # assuming a spin-symmetric interaction
+    if spin_basis:
+        n_orbitals = n_orbitals // 2
+        alpha_indices = list(range(0, n_orbitals * 2, 2))
+        beta_indices = list(range(1, n_orbitals * 2, 2))
+
+        chemist_two_body_coefficients = chemist_two_body_coefficients[
+            numpy.ix_(alpha_indices, alpha_indices,
+                      beta_indices, beta_indices)]
 
     # Determine a one body correction in the spin basis from spatial basis
     one_body_correction = numpy.zeros((2 * n_orbitals, 2 * n_orbitals))
@@ -254,7 +263,7 @@ def low_rank_spatial_two_body_decomposition(two_body_coefficients,
     if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
         raise TypeError('Invalid two-body coefficient tensor specification.')
 
-    # Diagonalize.
+    # Decompose, first attempt Cholesky, if that fails fall back to eigh
     try:
         cholesky_vecs, cholesky_diag = scipy.linalg.ldl(interaction_array)
     except:
