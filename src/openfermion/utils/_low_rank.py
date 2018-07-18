@@ -214,6 +214,8 @@ def low_rank_spatial_two_body_decomposition(two_body_coefficients,
             above. If None, then L = N ** 2 and no truncation will occur.
         final_rank (optional int): if provided, this specifies the value of
             L at which to truncate.
+        spin_basis (bool): True if the two-body terms are passed in spin
+            orbital basis.  False if already in spatial orbital basis.
 
     Returns:
         cholesky_diag (ndarray of floats): length L array
@@ -222,7 +224,10 @@ def low_rank_spatial_two_body_decomposition(two_body_coefficients,
             corresponding to the value of :math:`g_{pql}`.
         truncation_value (optional float): after truncation, this is the value
             :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
-        one_body_correction: One-body
+        one_body_correction (ndarray) : One-body correction terms that result
+            from reordering to chemist ordering.  Returned in spin-orbital
+            basis.
+
 
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
@@ -263,12 +268,9 @@ def low_rank_spatial_two_body_decomposition(two_body_coefficients,
     if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
         raise TypeError('Invalid two-body coefficient tensor specification.')
 
-    # Decompose, first attempt Cholesky, if that fails fall back to eigh
-    try:
-        cholesky_vecs, cholesky_diag = scipy.linalg.ldl(interaction_array)
-    except:
-        print("Non-positive interaction matrix, attempting eigendecomp")
-        cholesky_diag, cholesky_vecs = scipy.linalg.eigh(interaction_array)
+    # Decompose, first attempt Cholesky with small positive shift
+    cholesky_vecs, cholesky_diag, _ = scipy.linalg.ldl(interaction_array)
+    cholesky_diag = numpy.diag(cholesky_diag)
 
     # Get one-body squares and compute weights.
     term_weights = numpy.zeros(full_rank)
