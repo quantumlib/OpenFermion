@@ -36,9 +36,9 @@ Circuit compilation and simulation plugins
 
 * `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion>`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
 
-* `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__ to support integration with `ProjectQ <https://projectq.ch>`__.
-
 * `SFOpenBoson <https://github.com/XanaduAI/SFOpenBoson>`__ to support integration with `Strawberry Fields <https://github.com/XanaduAI/strawberryfields>`__.
+
+* `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__ to support integration with `ProjectQ <https://projectq.ch>`__.
 
 Electronic structure package plugins
 ------------------------------------
