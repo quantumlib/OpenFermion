@@ -5,11 +5,18 @@ electronic structure on quantum computers.  If you'd like to include your own
 projects or papers, please contact us or submit a pull request updating this page.
 
 ### Projects
+
 [Hackathon Quantum Autoencoder](https://github.com/hsim13372/QCompress)
 
 The winning project of the Rigetti quantum computing hackathon that combined
 OpenFermion with Rigetti's framework, compressing molecular representations
 with an autoencoder.
+
+[CUSP Implementation](https://github.com/zapatacomputing/cusp_cirq_demo)
+
+Implementation of Compressed Unsupervised State Preparation (CUSP) protocol
+using OpenFermion and Cirq. CUSP uses the quantum autoencoder to synthesize
+more compact circuits to use for algorithms such as VQE.
 
 ### Papers
 
