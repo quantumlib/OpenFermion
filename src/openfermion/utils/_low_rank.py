@@ -15,6 +15,7 @@
 import itertools
 import numpy
 import numpy.linalg
+import scipy.linalg
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import FermionOperator, InteractionOperator
@@ -192,6 +193,125 @@ def low_rank_two_body_decomposition(chemist_two_body_coefficients,
     return (eigenvalues[:max_rank],
             one_body_squares[:max_rank],
             truncation_value)
+
+
+def low_rank_spatial_two_body_decomposition(two_body_coefficients,
+                                            truncation_threshold=None,
+                                            final_rank=None,
+                                            spin_basis=True):
+    """Convert spatial two-body operator into sum of squared one-body spin ops.
+
+    This function decomposes
+    :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a_q a^\dagger_r a_s`
+    as :math:`\sum_{l} \lambda_l (\sum_{pq} g_{lpq} a^\dagger_p a_q)^2`
+    l is truncated to take max value L so that
+    :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
+
+    Args:
+        two_body_coefficients (ndarray): an N x N x N x N
+            numpy array giving the :math:`h_{pqrs}` tensor in physics notation
+        truncation_threshold (optional Float): the value of x in the expression
+            above. If None, then L = N ** 2 and no truncation will occur.
+        final_rank (optional int): if provided, this specifies the value of
+            L at which to truncate.
+        spin_basis (bool): True if the two-body terms are passed in spin
+            orbital basis.  False if already in spatial orbital basis.
+
+    Returns:
+        cholesky_diag (ndarray of floats): length L array
+            giving the :math:`\lambda_l`.
+        one_body_squares (ndarray of floats): L x N x N array of floats
+            corresponding to the value of :math:`g_{pql}`.
+        truncation_value (optional float): after truncation, this is the value
+            :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
+        one_body_correction (ndarray) : One-body correction terms that result
+            from reordering to chemist ordering.  Returned in spin-orbital
+            basis.
+
+
+    Raises:
+        TypeError: Invalid two-body coefficient tensor specification.
+        ValueError: Cannot provide both final_rank and truncation_value.
+    """
+    n_orbitals = two_body_coefficients.shape[0]
+    chemist_two_body_coefficients = numpy.transpose(two_body_coefficients,
+                                                    [0, 3, 1, 2])
+
+    # If the specification was in spin-orbitals, chop back down to spatial orbs
+    # assuming a spin-symmetric interaction
+    if spin_basis:
+        n_orbitals = n_orbitals // 2
+        alpha_indices = list(range(0, n_orbitals * 2, 2))
+        beta_indices = list(range(1, n_orbitals * 2, 2))
+
+        chemist_two_body_coefficients = chemist_two_body_coefficients[
+            numpy.ix_(alpha_indices, alpha_indices,
+                      beta_indices, beta_indices)]
+
+    # Determine a one body correction in the spin basis from spatial basis
+    one_body_correction = numpy.zeros((2 * n_orbitals, 2 * n_orbitals))
+    for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
+        for sigma, tau in itertools.product(range(2), repeat=2):
+            if (q == r) and (sigma == tau):
+                one_body_correction[2 * p + sigma, 2 * s + tau] -= (
+                    chemist_two_body_coefficients[p, q, r, s])
+
+    # Initialize N^2 by N^2 interaction array.
+    full_rank = n_orbitals ** 2
+    interaction_array = numpy.reshape(chemist_two_body_coefficients,
+                                      (full_rank, full_rank))
+
+    # Make sure interaction array is symmetric and real.
+    asymmetry = numpy.sum(numpy.absolute(
+        interaction_array - interaction_array.transpose()))
+    imaginary_norm = numpy.sum(numpy.absolute(interaction_array.imag))
+    if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
+        raise TypeError('Invalid two-body coefficient tensor specification.')
+
+    # Decompose using LDL decomposition, closely related to Choleksy
+    cholesky_vecs, cholesky_diag, _ = scipy.linalg.ldl(interaction_array)
+    cholesky_diag = numpy.diag(cholesky_diag)
+
+    # Get one-body squares and compute weights.
+    term_weights = numpy.zeros(full_rank)
+    one_body_squares = numpy.zeros((full_rank,
+                                    2 * n_orbitals, 2 * n_orbitals), complex)
+    for l in range(full_rank):
+        # Reshape and add spin back in
+        one_body_squares[l] = numpy.kron(
+            numpy.reshape(cholesky_vecs[:, l],
+                          (n_orbitals, n_orbitals)),
+            numpy.eye(2))
+
+        term_weights[l] = abs(cholesky_diag[l]) * numpy.sum(
+            numpy.absolute(one_body_squares[l])) ** 2
+
+    # Sort by weight.
+    indices = numpy.argsort(term_weights)[::-1]
+    cholesky_diag = cholesky_diag[indices]
+    term_weights = term_weights[indices]
+    one_body_squares = one_body_squares[indices]
+
+    # Determine upper-bound on truncation errors that would occur.
+    cumulative_error_sum = numpy.cumsum(term_weights)
+    truncation_errors = cumulative_error_sum[-1] - cumulative_error_sum
+
+    # Optionally truncate rank and return.
+    if truncation_threshold is None and final_rank is None:
+        max_rank = full_rank
+    elif truncation_threshold is None:
+        max_rank = final_rank
+    elif final_rank is None:
+        max_rank = 1 + numpy.argmax(truncation_errors <= truncation_threshold)
+    else:
+        raise ValueError(
+            'Cannot provide both final_rank and truncation_value.')
+    truncation_value = truncation_errors[max_rank - 1]
+
+    return (cholesky_diag[:max_rank],
+            one_body_squares[:max_rank],
+            truncation_value,
+            one_body_correction)
 
 
 def prepare_one_body_squared_evolution(one_body_matrix):

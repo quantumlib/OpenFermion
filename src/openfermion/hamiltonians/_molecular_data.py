@@ -865,25 +865,22 @@ class MolecularData(object):
                 # Continue looping to prepare 2-body coefficients.
                 for r in range(n_qubits // 2):
                     for s in range(n_qubits // 2):
-                        
-                        # Require p,s and q,r to have same spin. Handle mixed
-                        # spins.
-                        two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1,
-                                              2 * s] = (
-                                two_body_integrals[p, q, r, s] / 2.)
-                        two_body_coefficients[2 * p + 1, 2 * q, 2 * r,
-                                              2 * s + 1] = (
-                                two_body_integrals[p, q, r, s] / 2.)
 
-                        # Avoid having two electrons in same orbital. Handle
-                        # same spins.
-                        if p != q and r != s:
-                            two_body_coefficients[2 * p, 2 * q, 2 * r,
-                                                  2 * s] = (
-                                    two_body_integrals[p, q, r, s] / 2.)
-                            two_body_coefficients[2 * p + 1, 2 * q + 1,
-                                                  2 * r + 1, 2 * s + 1] = (
-                                    two_body_integrals[p, q, r, s] / 2.)
+                        # Mixed spin
+                        two_body_coefficients[2 * p, 2 * q + 1,
+                                              2 * r + 1, 2 * s] = (
+                            two_body_integrals[p, q, r, s] / 2.)
+                        two_body_coefficients[2 * p + 1, 2 * q,
+                                              2 * r, 2 * s + 1] = (
+                            two_body_integrals[p, q, r, s] / 2.)
+
+                        # Same spin
+                        two_body_coefficients[2 * p, 2 * q,
+                                              2 * r, 2 * s] = (
+                            two_body_integrals[p, q, r, s] / 2.)
+                        two_body_coefficients[2 * p + 1, 2 * q + 1,
+                                              2 * r + 1, 2 * s + 1] = (
+                            two_body_integrals[p, q, r, s] / 2.)
 
         # Truncate.
         one_body_coefficients[

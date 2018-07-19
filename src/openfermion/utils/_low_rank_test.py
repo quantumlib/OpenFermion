@@ -23,6 +23,7 @@ from openfermion.utils import (chemist_ordered, eigenspectrum,
                                get_chemist_two_body_coefficients,
                                is_hermitian,
                                low_rank_two_body_decomposition,
+                               low_rank_spatial_two_body_decomposition,
                                normal_ordered,
                                prepare_one_body_squared_evolution,
                                random_interaction_operator)
@@ -134,6 +135,87 @@ class LowRankTest(unittest.TestCase):
         # Test for consistency.
         difference = normal_ordered(decomposed_operator - random_operator)
         self.assertAlmostEqual(0., difference.induced_norm())
+
+    def test_spatial_operator_consistency(self):
+
+        # Initialize a random two-body FermionOperator.
+        n_qubits = 4
+        filename = os.path.join(THIS_DIRECTORY, 'data',
+                                'H2_sto-3g_singlet_0.7414')
+        molecule = MolecularData(filename=filename)
+        molecule_interaction = molecule.get_molecular_hamiltonian()
+        molecule_operator = get_fermion_operator(molecule_interaction)
+
+        constant = molecule_interaction.constant
+        one_body_coefficients = molecule_interaction.one_body_tensor[:, :]
+        two_body_coefficients = (
+            molecule_interaction.two_body_tensor[:, :, :, :])
+
+        # Perform decomposition.
+        eigenvalues, one_body_squares, trunc_error, one_body_corrections = (
+            low_rank_spatial_two_body_decomposition(two_body_coefficients))
+        self.assertFalse(trunc_error)
+
+        # Build back operator constant and one-body components.
+        decomposed_operator = FermionOperator((), constant)
+        for p, q in itertools.product(range(n_qubits), repeat=2):
+            term = ((p, 1), (q, 0))
+            coefficient = (one_body_coefficients[p, q] +
+                           one_body_corrections[p, q])
+            decomposed_operator += FermionOperator(term, coefficient)
+
+        # Check for exception.
+        with self.assertRaises(ValueError):
+            eigenvalues, one_body_squares, trunc_error = (
+                low_rank_spatial_two_body_decomposition(
+                    two_body_coefficients,
+                    truncation_threshold=1.,
+                    final_rank=1))
+
+        # Build back two-body component.
+        for l in range(one_body_squares.shape[0]):
+            one_body_operator = FermionOperator()
+            for p, q in itertools.product(range(n_qubits), repeat=2):
+                term = ((p, 1), (q, 0))
+                coefficient = one_body_squares[l, p, q]
+                one_body_operator += FermionOperator(term, coefficient)
+            decomposed_operator += eigenvalues[l] * (one_body_operator ** 2)
+
+        # Test for consistency.
+        difference = normal_ordered(decomposed_operator - molecule_operator)
+        self.assertAlmostEqual(0., difference.induced_norm())
+
+        # Decompose with slightly negative operator that must use eigen
+        molecule = MolecularData(filename=filename)
+        molecule.two_body_integrals[0, 0, 0, 0] -= 1
+
+        eigenvalues, one_body_squares, trunc_error, one_body_corrections = (
+            low_rank_spatial_two_body_decomposition(two_body_coefficients))
+        self.assertFalse(trunc_error)
+
+        # Check for property errors
+        with self.assertRaises(TypeError):
+            eigenvalues, one_body_squares, trunc_error = (
+                low_rank_spatial_two_body_decomposition(
+                    two_body_coefficients + 0.01j,
+                    truncation_threshold=1.,
+                    final_rank=1))
+
+        # Perform decomposition with threshold
+        test_eigenvalues, one_body_squares, trunc_error, _ = (
+            low_rank_spatial_two_body_decomposition(two_body_coefficients,
+                                                    truncation_threshold=1.0))
+        self.assertTrue(len(test_eigenvalues) < len(eigenvalues))
+        self.assertTrue(len(one_body_squares) == len(test_eigenvalues))
+        self.assertTrue(trunc_error > 0.)
+
+        # Perform decomposition with threshold
+        test_eigenvalues, one_body_squares, trunc_error, _ = (
+            low_rank_spatial_two_body_decomposition(two_body_coefficients,
+                                                    final_rank=1))
+        self.assertTrue(len(test_eigenvalues) == 1)
+        self.assertTrue(len(one_body_squares) == 1)
+        self.assertTrue(trunc_error > 0.)
 
     def test_rank_reduction(self):
 
