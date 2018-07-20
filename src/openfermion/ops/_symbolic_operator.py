@@ -542,6 +542,14 @@ class SymbolicOperator(object):
     def __ne__(self, other):
         return not (self == other)
 
+    def __iter__(self):
+        self.term_iterator = iter(self.terms.items())
+        return self
+
+    def __next__(self):
+        term, coefficient = next(self.term_iterator)
+        return self.__class__(term=term, coefficient=coefficient)
+
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
         Eliminates all terms with coefficients close to zero and removes
