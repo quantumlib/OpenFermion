@@ -50,9 +50,9 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
                       FermionOperator('6^ 5^ 4 1', -11.789j))
 
         reference = normal_ordered(commutator(operator_a, operator_b))
-        res = commutator_diagonal_coulomb_operators(operator_a, operator_b)
+        result = commutator_diagonal_coulomb_operators(operator_a, operator_b)
 
-        diff = res - reference
+        diff = result - reference
         self.assertTrue(diff.isclose(FermionOperator.zero()))
 
     def test_nonstandard_second_arg(self):
@@ -83,7 +83,7 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
         operator_b = FermionOperator('0^ 2')
 
         commutator_diagonal_coulomb_operators(operator_a, operator_b,
-                                                 result=result)
+                                              result=result)
 
         self.assertTrue(result.isclose(FermionOperator.zero()))
 
@@ -104,14 +104,14 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             add_to_a_or_b ^= 1
 
         reference = normal_ordered(commutator(part_a, part_b))
-        res = commutator_diagonal_coulomb_operators(part_a, part_b)
+        result = commutator_diagonal_coulomb_operators(part_a, part_b)
 
-        self.assertTrue(res.isclose(reference))
+        self.assertTrue(result.isclose(reference))
 
-        negative_res = commutator_diagonal_coulomb_operators(part_b, part_a)
-        res += negative_res
+        negative = commutator_diagonal_coulomb_operators(part_b, part_a)
+        result += negative
 
-        self.assertTrue(res.isclose(FermionOperator.zero()))
+        self.assertTrue(result.isclose(FermionOperator.zero()))
 
     def test_no_warning_on_nonstandard_input_second_arg(self):
         with warnings.catch_warnings(record=True) as w:
@@ -119,13 +119,13 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             operator_b = FermionOperator('4^ 3^ 4 1')
 
             reference = FermionOperator('4^ 3^ 2^ 4 2 1')
-            res = commutator_diagonal_coulomb_hamiltonians(
+            result = commutator_diagonal_coulomb_operators(
                 operator_a, operator_b)
 
             self.assertFalse(w)
 
             # Result should still be correct even though we hit the warning.
-            self.assertTrue(res.isclose(reference))
+            self.assertTrue(result.isclose(reference))
 
     def test_warning_on_bad_input_first_arg(self):
         with warnings.catch_warnings(record=True) as w:
@@ -133,7 +133,7 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             operator_b = FermionOperator('3^ 2^ 3 2')
 
             reference = normal_ordered(commutator(operator_a, operator_b))
-            res = commutator_diagonal_coulomb_operators(
+            result = commutator_diagonal_coulomb_operators(
                 operator_a, operator_b)
 
             self.assertTrue(len(w) == 1)
@@ -141,9 +141,5 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
                           str(w[-1].message))
 
             # Result should still be correct in this case.
-            diff = res - reference
+            diff = result - reference
             self.assertTrue(diff.isclose(FermionOperator.zero()))
-
-
-if __name__ == '__main__':
-    unittest.main()
