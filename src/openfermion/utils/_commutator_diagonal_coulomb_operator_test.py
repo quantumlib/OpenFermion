@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests for _commutator_diagonal_coulomb_hamiltonian.py"""
+"""Tests for _commutator_diagonal_coulomb_operator.py"""
 
 import unittest
 import warnings
@@ -19,8 +19,8 @@ from future.utils import iteritems
 
 from openfermion import FermionOperator, Grid, jellium_model, normal_ordered
 from openfermion.utils import commutator
-from openfermion.utils._commutator_diagonal_coulomb_hamiltonian import (
-    commutator_diagonal_coulomb_hamiltonians)
+from openfermion.utils._commutator_diagonal_coulomb_operator import (
+    commutator_diagonal_coulomb_operators)
 
 
 class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
@@ -50,7 +50,7 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
                       FermionOperator('6^ 5^ 4 1', -11.789j))
 
         reference = normal_ordered(commutator(operator_a, operator_b))
-        res = commutator_diagonal_coulomb_hamiltonians(operator_a, operator_b)
+        res = commutator_diagonal_coulomb_operators(operator_a, operator_b)
 
         diff = res - reference
         self.assertTrue(diff.isclose(FermionOperator.zero()))
@@ -73,7 +73,7 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
                      FermionOperator('4^ 1^ 3 0', -0.03-0.13j) +
                      FermionOperator('4^ 2^ 1^ 3 2 0', -0.02+0.02j))
 
-        res = commutator_diagonal_coulomb_hamiltonians(operator_a, operator_b)
+        res = commutator_diagonal_coulomb_operators(operator_a, operator_b)
 
         self.assertTrue(res.isclose(reference))
 
@@ -82,7 +82,7 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
         operator_a = FermionOperator('2^ 1')
         operator_b = FermionOperator('0^ 2')
 
-        commutator_diagonal_coulomb_hamiltonians(operator_a, operator_b,
+        commutator_diagonal_coulomb_operators(operator_a, operator_b,
                                                  result=result)
 
         self.assertTrue(result.isclose(FermionOperator.zero()))
@@ -104,11 +104,11 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             add_to_a_or_b ^= 1
 
         reference = normal_ordered(commutator(part_a, part_b))
-        res = commutator_diagonal_coulomb_hamiltonians(part_a, part_b)
+        res = commutator_diagonal_coulomb_operators(part_a, part_b)
 
         self.assertTrue(res.isclose(reference))
 
-        negative_res = commutator_diagonal_coulomb_hamiltonians(part_b, part_a)
+        negative_res = commutator_diagonal_coulomb_operators(part_b, part_a)
         res += negative_res
 
         self.assertTrue(res.isclose(FermionOperator.zero()))
@@ -133,7 +133,7 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             operator_b = FermionOperator('3^ 2^ 3 2')
 
             reference = normal_ordered(commutator(operator_a, operator_b))
-            res = commutator_diagonal_coulomb_hamiltonians(
+            res = commutator_diagonal_coulomb_operators(
                 operator_a, operator_b)
 
             self.assertTrue(len(w) == 1)
@@ -143,3 +143,7 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             # Result should still be correct in this case.
             diff = res - reference
             self.assertTrue(diff.isclose(FermionOperator.zero()))
+
+
+if __name__ == '__main__':
+    unittest.main()
