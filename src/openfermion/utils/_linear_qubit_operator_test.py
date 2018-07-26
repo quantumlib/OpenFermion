@@ -13,6 +13,8 @@
 """Tests for linear_qubit_operator.py."""
 from __future__ import absolute_import, division
 
+import multiprocessing
+
 import unittest
 
 import numpy
@@ -216,8 +218,12 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         """Tests __init__()."""
         self.assertEqual(self.linear_operator.qubit_operator, self.qubit_operator)
         self.assertEqual(self.linear_operator.n_qubits, self.n_qubits)
-        self.assertEqual(self.linear_operator.options.processes, 10)
         self.assertIsNone(self.linear_operator.options.pool)
+
+        cpu_count = multiprocessing.cpu_count()
+        default_processes = min(cpu_count, 10)
+        self.assertEqual(self.linear_operator.options.processes,
+                         default_processes)
 
         # Generated variables.
         self.assertEqual(len(self.linear_operator.qubit_operator_groups), 3)

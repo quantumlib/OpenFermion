@@ -10,37 +10,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests for _qubit_operator.py."""
-
 import numpy
+
 import pytest
 
-from openfermion.ops._qubit_operator import (_PAULI_OPERATOR_PRODUCTS,
-                                             QubitOperator)
-
-
-def test_pauli_operator_product():
-    correct = {('I', 'I'): (1., 'I'),
-               ('I', 'X'): (1., 'X'),
-               ('X', 'I'): (1., 'X'),
-               ('I', 'Y'): (1., 'Y'),
-               ('Y', 'I'): (1., 'Y'),
-               ('I', 'Z'): (1., 'Z'),
-               ('Z', 'I'): (1., 'Z'),
-               ('X', 'X'): (1., 'I'),
-               ('Y', 'Y'): (1., 'I'),
-               ('Z', 'Z'): (1., 'I'),
-               ('X', 'Y'): (1.j, 'Z'),
-               ('X', 'Z'): (-1.j, 'Y'),
-               ('Y', 'X'): (-1.j, 'Z'),
-               ('Y', 'Z'): (1.j, 'X'),
-               ('Z', 'X'): (1.j, 'Y'),
-               ('Z', 'Y'): (-1.j, 'X')}
-    assert _PAULI_OPERATOR_PRODUCTS == correct
+from openfermion.ops._ising_operator import IsingOperator
 
 
 def test_imul_inplace():
-    qubit_op = QubitOperator("X1")
+    qubit_op = IsingOperator("Z1")
     prev_id = id(qubit_op)
     qubit_op *= 3.
     assert id(qubit_op) == prev_id
@@ -49,106 +27,91 @@ def test_imul_inplace():
 @pytest.mark.parametrize("multiplier", [0.5, 0.6j, numpy.float64(2.303),
                                         numpy.complex128(-1j)])
 def test_imul_scalar(multiplier):
-    loc_op = ((1, 'X'), (2, 'Y'))
-    qubit_op = QubitOperator(loc_op)
+    loc_op = ((1, 'Z'), (2, 'Z'))
+    qubit_op = IsingOperator(loc_op)
     qubit_op *= multiplier
     assert qubit_op.terms[loc_op] == pytest.approx(multiplier)
 
 
 def test_imul_qubit_op():
-    op1 = QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.j)
-    op2 = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+    op1 = IsingOperator(((0, 'Z'), (3, 'Z'), (8, 'Z'), (11, 'Z')), 3.j)
+    op2 = IsingOperator(((1, 'Z'), (3, 'Z'), (8, 'Z')), 0.5)
     op1 *= op2
-    correct_term = ((0, 'Y'), (1, 'X'), (3, 'Z'), (11, 'X'))
+    correct_term = ((0, 'Z'), (1, 'Z'), (11, 'Z'))
     assert len(op1.terms) == 1
     assert correct_term in op1.terms
 
 
 def test_imul_qubit_op_2():
-    op3 = QubitOperator(((1, 'Y'), (0, 'X')), -1j)
-    op4 = QubitOperator(((1, 'Y'), (0, 'X'), (2, 'Z')), -1.5)
+    op3 = IsingOperator(((1, 'Z'), (0, 'Z')), -1j)
+    op4 = IsingOperator(((1, 'Z'), (0, 'Z'), (2, 'Z')), -1.5)
     op3 *= op4
     op4 *= op3
     assert ((2, 'Z'),) in op3.terms
     assert op3.terms[((2, 'Z'),)] == 1.5j
-    assert op4.terms[((0, 'X'), (1, 'Y'))] == -2.25j
+    assert op4.terms[((0, 'Z'), (1, 'Z'))] == -2.25j
 
 
 def test_imul_bidir():
-    op_a = QubitOperator(((1, 'Y'), (0, 'X')), -1j)
-    op_b = QubitOperator(((1, 'Y'), (0, 'X'), (2, 'Z')), -1.5)
+    op_a = IsingOperator(((1, 'Z'), (0, 'Z')), -1j)
+    op_b = IsingOperator(((1, 'Z'), (0, 'Z'), (2, 'Z')), -1.5)
     op_a *= op_b
     op_b *= op_a
     assert ((2, 'Z'),) in op_a.terms
     assert op_a.terms[((2, 'Z'),)] == 1.5j
-    assert ((0, 'X'), (1, 'Y')) in op_b.terms
-    assert op_b.terms[((0, 'X'), (1, 'Y'))] == -2.25j
+    assert ((0, 'Z'), (1, 'Z')) in op_b.terms
+    assert op_b.terms[((0, 'Z'), (1, 'Z'))] == -2.25j
 
 
 def test_imul_bad_multiplier():
-    operator = QubitOperator(((1, 'Y'), (0, 'X')), -1j)
+    operator = IsingOperator(((1, 'Z'), (0, 'Z')), -1j)
     with pytest.raises(TypeError):
         operator *= "1"
 
 
 def test_mul_by_scalarzero():
-    operator = QubitOperator(((1, 'Y'), (0, 'X')), -1j) * 0
-    assert ((0, 'X'), (1, 'Y')) in operator.terms
-    assert operator.terms[((0, 'X'), (1, 'Y'))] == pytest.approx(0.0)
+    operator = IsingOperator(((1, 'Z'), (0, 'Z')), -1j) * 0
+    assert ((0, 'Z'), (1, 'Z')) in operator.terms
+    assert operator.terms[((0, 'Z'), (1, 'Z'))] == pytest.approx(0.0)
 
 
 def test_mul_bad_multiplier():
-    operator = QubitOperator(((1, 'Y'), (0, 'X')), -1j)
+    operator = IsingOperator(((1, 'Z'), (0, 'Z')), -1j)
     with pytest.raises(TypeError):
         operator = operator * "0.5"
 
 
 def test_mul_out_of_place():
-    op1 = QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.j)
-    op2 = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+    op1 = IsingOperator(((0, 'Z'), (3, 'Z'), (8, 'Z'), (11, 'Z')), 3.j)
+    op2 = IsingOperator(((1, 'Z'), (3, 'Z'), (8, 'Z')), 0.5)
     op3 = op1 * op2
-    correct_coefficient = 1.j * 3.0j * 0.5
-    correct_term = ((0, 'Y'), (1, 'X'), (3, 'Z'), (11, 'X'))
-    assert op1 == QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.j)
-    assert op2 == QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
-    assert op3 == QubitOperator(correct_term, correct_coefficient)
+    correct_coefficient = 1.5j
+    correct_term = ((0, 'Z'), (1, 'Z'), (11, 'Z'))
+    assert op1 == IsingOperator(((0, 'Z'), (3, 'Z'), (8, 'Z'), (11, 'Z')), 3.j)
+    assert op2 == IsingOperator(((1, 'Z'), (3, 'Z'), (8, 'Z')), 0.5)
+    assert op3 == IsingOperator(correct_term, correct_coefficient)
 
 
 def test_mul_npfloat64():
-    operator = QubitOperator(((1, 'X'), (3, 'Y')), 0.5)
+    operator = IsingOperator(((1, 'Z'), (3, 'Z')), 0.5)
     res = operator * numpy.float64(0.5)
-    assert res == QubitOperator(((1, 'X'), (3, 'Y')), 0.5 * 0.5)
+    assert res == IsingOperator(((1, 'Z'), (3, 'Z')), 0.5 * 0.5)
 
 
 def test_mul_multiple_terms():
-    operator = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
-    operator += QubitOperator(((1, 'Z'), (3, 'X'), (8, 'Z')), 1.2)
-    operator += QubitOperator(((1, 'Z'), (3, 'Y'), (9, 'Z')), 1.4j)
+    operator = IsingOperator(((1, 'Z'), (3, 'Z'), (8, 'Z')), 0.5)
+    operator += IsingOperator(((1, 'Z'), (3, 'Z'), (8, 'Z')), 1.2)
+    operator += IsingOperator(((1, 'Z'), (3, 'Z'), (9, 'Z')), 1.4j)
     res = operator * operator
-    correct = QubitOperator((), 0.5**2 + 1.2**2 + 1.4j**2)
-    correct += QubitOperator(((1, 'Y'), (3, 'Z')),
-                             2j * 1j * 0.5 * 1.2)
+    correct = IsingOperator((), 1.7**2 - 1.4**2)
+    correct += IsingOperator(((8, 'Z'), (9, 'Z')),
+                             2j * 1.7 * 1.4)
     assert res == correct
-
-
-def test_renormalize_error():
-    operator = QubitOperator()
-    with pytest.raises(ZeroDivisionError):
-        operator.renormalize()
-
-
-def test_renormalize():
-    operator = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
-    operator += QubitOperator(((2, 'Z'), (3, 'Y')), 1)
-    operator.renormalize()
-    for term in operator.terms:
-        assert operator.terms[term] == pytest.approx(1/numpy.sqrt(2.))
-    assert operator.induced_norm(2) == pytest.approx(1.)
 
 
 def test_get_operators_empty():
     """Tests get_operators() with zero operator."""
-    operator = QubitOperator.zero()
+    operator = IsingOperator.zero()
 
     operators = list(operator.get_operators())
     assert operators == []
@@ -156,7 +119,7 @@ def test_get_operators_empty():
 
 def test_get_operators_one():
     """Tests get_operators() with an operator with a single term."""
-    operator = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+    operator = IsingOperator(((1, 'Z'), (3, 'Z'), (8, 'Z')), 1)
 
     operators = list(operator.get_operators())
     assert operators == [operator]
@@ -164,8 +127,8 @@ def test_get_operators_one():
 
 def test_get_operators():
     """Tests get_operators() with an operator with two terms."""
-    operator_00 = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
-    operator_01 = QubitOperator(((2, 'Z'), (3, 'Y')), 1)
+    operator_00 = IsingOperator(((1, 'Z'), (3, 'Z'), (8, 'Z')), 1)
+    operator_01 = IsingOperator(((2, 'Z'), (3, 'Z')), 1)
     sum_operator = operator_00 + operator_01
 
     operators = list(sum_operator.get_operators())
@@ -175,7 +138,7 @@ def test_get_operators():
 
 def test_get_operator_groups_empty():
     """Tests get_operator_groups() with zero operator."""
-    operator = QubitOperator.zero()
+    operator = IsingOperator.zero()
 
     operators = list(operator.get_operator_groups(1))
     assert operators == []
@@ -184,9 +147,9 @@ def test_get_operator_groups_empty():
 # Utility functions.
 def generate_operator(begin, end):
     """Returns a sum of Z operators at qubit [begin, end)."""
-    operator = QubitOperator.zero()
+    operator = IsingOperator.zero()
     for i in range(begin, end):
-        operator += QubitOperator(((i, 'Z'),), 1)
+        operator += IsingOperator(((i, 'Z'),), 1)
     return operator
 
 
@@ -203,7 +166,7 @@ def check_length(operators, lens):
 
 def check_sum(operators, operator):
     """Checks sum of operators matches to operator."""
-    return QubitOperator.accumulate(operators) == operator
+    return IsingOperator.accumulate(operators) == operator
 
 
 # Tests for get_operator_groups().
