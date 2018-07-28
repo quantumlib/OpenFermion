@@ -211,7 +211,7 @@ def benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
             commutator using methods restricted to diagonal Coulomb operators.
     """
     hamiltonian = normal_ordered(jellium_model(Grid(2, side_length, 1.),
-                                               plane_wave=False))    
+                                               plane_wave=False))
 
     part_a = FermionOperator.zero()
     part_b = FermionOperator.zero()
@@ -249,6 +249,7 @@ def run_molecular_operator_jordan_wigner(n_qubits=18):
 
     return runtime
 
+
 def run_fermion_math_and_normal_order(n_qubits=20, term_length=10, power=15):
     """Run benchmark on FermionOperator math and normal-ordering."""
     logging.info('Starting test on FermionOperator math and normal ordering.')
@@ -261,6 +262,7 @@ def run_fermion_math_and_normal_order(n_qubits=20, term_length=10, power=15):
 
     return runtime_math, runtime_normal
 
+
 def run_jordan_wigner_sparse(n_qubits=10):
     """Run FermionOperator.jordan_wigner_sparse() benchmark."""
     logging.info('Starting test on FermionOperator.jordan_wigner_sparse().')
@@ -269,6 +271,7 @@ def run_jordan_wigner_sparse(n_qubits=10):
     logging.info('Construction of SparseOperator took %f seconds.\n', runtime)
 
     return runtime
+
 
 def run_linear_qubit_operator(n_qubits=16, n_terms=10, processes=10):
     """Run linear_qubit_operator benchmark."""
@@ -279,11 +282,12 @@ def run_linear_qubit_operator(n_qubits=16, n_terms=10, processes=10):
     _, runtime_parallel = benchmark_linear_qubit_operator(n_qubits, n_terms,
                                                           processes)
     logging.info('LinearQubitOperator took %f seconds, while '
-                 'ParallelQubitOperator took %f seconds with %d processes, and '
-                 'ratio is %.2f.\n', runtime_sequential, runtime_parallel,
+                 'ParallelQubitOperator took %f seconds with %d processes, '
+                 'and ratio is %.2f.\n', runtime_sequential, runtime_parallel,
                  processes, runtime_sequential / runtime_parallel)
 
     return runtime_sequential, runtime_parallel
+
 
 def run_diagonal_commutator(side_length=4):
     """Run commutator_diagonal_coulomb_operators benchmark."""
@@ -299,6 +303,7 @@ def run_diagonal_commutator(side_length=4):
                  runtime_commutator / runtime_diagonal_commutator)
 
     return runtime_commutator, runtime_diagonal_commutator
+
 
 # Run benchmarks.
 if __name__ == '__main__':
