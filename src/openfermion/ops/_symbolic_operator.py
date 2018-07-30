@@ -68,7 +68,6 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
         Returns a tuple of objects representing the possible actions.
         """
-        pass
 
     @abc.abstractproperty
     def action_strings(self):
@@ -77,7 +76,6 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Returns a tuple containing string representations of the possible
         actions, in the same order as the `actions` property.
         """
-        pass
 
     @abc.abstractproperty
     def action_before_index(self):
@@ -90,12 +88,10 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         '0^ 1 2^ 3'. The action comes after the index, so this function
         should return False.
         """
-        pass
 
     @abc.abstractproperty
     def different_indices_commute(self):
         """Whether factors acting on different indices commute."""
-        pass
 
     __hash__ = None
 
