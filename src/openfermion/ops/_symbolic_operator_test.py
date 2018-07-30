@@ -73,6 +73,10 @@ class DummyOperator2(SymbolicOperator):
 class GeneralTest(unittest.TestCase):
     """General tests."""
 
+    def test_symbolic_operator_is_abstract_cant_instantiate(self):
+        with self.assertRaises(TypeError):
+            _ = SymbolicOperator()
+
     def test_init_single_factor(self):
         """Test initialization of the form DummyOperator((index, action))."""
         equals_tester = EqualsTester(self)

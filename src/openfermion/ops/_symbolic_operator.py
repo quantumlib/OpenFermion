@@ -17,12 +17,13 @@ import copy
 import re
 import warnings
 
-from six import string_types
+from six import add_metaclass, string_types
 
 from openfermion.config import EQ_TOLERANCE
 
 
-class SymbolicOperator(metaclass=abc.ABCMeta):
+@add_metaclass(abc.ABCMeta)
+class SymbolicOperator:
     """Base class for FermionOperator and QubitOperator.
 
     A SymbolicOperator stores an object which represents a weighted
