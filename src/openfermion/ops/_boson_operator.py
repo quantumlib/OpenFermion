@@ -12,8 +12,6 @@
 
 """BosonOperator stores a sum of products of bosonic ladder operators."""
 
-import numpy
-
 from openfermion.ops._symbolic_operator import SymbolicOperator
 
 

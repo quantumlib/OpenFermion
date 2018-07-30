@@ -679,11 +679,11 @@ class SymbolicOperatorTest1(unittest.TestCase):
 
     def test_pow_neg_error(self):
         with self.assertRaises(ValueError):
-            DummyOperator1() ** -1
+            _ = DummyOperator1() ** -1
 
     def test_pow_nonint_error(self):
         with self.assertRaises(ValueError):
-            DummyOperator1('3 2^') ** 0.5
+            _ = DummyOperator1('3 2^') ** 0.5
 
     def test_compress_terms(self):
         op = (DummyOperator1('3^ 1', 0.3 + 3e-11j) +

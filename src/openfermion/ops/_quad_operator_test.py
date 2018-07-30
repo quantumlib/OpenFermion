@@ -12,10 +12,7 @@
 
 """Tests for QuadOperator."""
 
-import copy
 import unittest
-
-import numpy
 
 from openfermion.ops._quad_operator import QuadOperator
 

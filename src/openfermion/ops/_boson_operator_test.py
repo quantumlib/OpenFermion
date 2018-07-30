@@ -12,10 +12,7 @@
 
 """Tests for BosonOperator."""
 
-import copy
 import unittest
-
-import numpy
 
 from openfermion.ops._boson_operator import BosonOperator
 from openfermion.utils import number_operator

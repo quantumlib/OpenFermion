@@ -17,8 +17,9 @@ import copy
 import re
 import warnings
 
-from openfermion.config import EQ_TOLERANCE
 from six import string_types
+
+from openfermion.config import EQ_TOLERANCE
 
 
 class SymbolicOperator(metaclass=abc.ABCMeta):

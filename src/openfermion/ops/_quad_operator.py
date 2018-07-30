@@ -12,8 +12,6 @@
 
 """QuadOperator stores a sum of products of canonical quadrature operators."""
 
-import numpy
-
 from openfermion.ops._symbolic_operator import SymbolicOperator
 
 
