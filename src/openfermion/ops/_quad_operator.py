@@ -9,15 +9,12 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 """QuadOperator stores a sum of products of canonical quadrature operators."""
+
 import numpy
 
-from future.utils import iteritems
-from openfermion.ops import SymbolicOperator
-
-
-class QuadOperatorError(Exception):
-    pass
+from openfermion.ops._symbolic_operator import SymbolicOperator
 
 
 class QuadOperator(SymbolicOperator):
@@ -70,10 +67,26 @@ class QuadOperator(SymbolicOperator):
         during initialization is faster than multiplying a QuadOperator
         with a scalar.
     """
-    actions = ('q', 'p')
-    action_strings = ('q', 'p')
-    action_before_index = True
-    different_indices_commute = True
+
+    @property
+    def actions(self):
+        """The allowed actions."""
+        return ('q', 'p')
+
+    @property
+    def action_strings(self):
+        """The string representations of the allowed actions."""
+        return ('q', 'p')
+
+    @property
+    def action_before_index(self):
+        """Whether action comes before index in string representations."""
+        return True
+
+    @property
+    def different_indices_commute(self):
+        """Whether factors acting on different indices commute."""
+        return True
 
     def is_normal_ordered(self):
         """Return whether or not term is in normal order.

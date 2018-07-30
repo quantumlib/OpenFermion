@@ -11,14 +11,10 @@
 #   limitations under the License.
 
 """BosonOperator stores a sum of products of bosonic ladder operators."""
+
 import numpy
 
-from future.utils import iteritems
-from openfermion.ops import SymbolicOperator
-
-
-class BosonOperatorError(Exception):
-    pass
+from openfermion.ops._symbolic_operator import SymbolicOperator
 
 
 class BosonOperator(SymbolicOperator):
@@ -65,10 +61,26 @@ class BosonOperator(SymbolicOperator):
         during initialization is faster than multiplying a BosonOperator
         with a scalar.
     """
-    actions = (1, 0)
-    action_strings = ('^', '')
-    action_before_index = False
-    different_indices_commute = True
+
+    @property
+    def actions(self):
+        """The allowed actions."""
+        return (1, 0)
+
+    @property
+    def action_strings(self):
+        """The string representations of the allowed actions."""
+        return ('^', '')
+
+    @property
+    def action_before_index(self):
+        """Whether action comes before index in string representations."""
+        return False
+
+    @property
+    def different_indices_commute(self):
+        """Whether factors acting on different indices commute."""
+        return True
 
     def is_normal_ordered(self):
         """Return whether or not term is in normal order.

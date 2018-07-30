@@ -24,18 +24,50 @@ from openfermion.ops._symbolic_operator import SymbolicOperator
 
 class DummyOperator1(SymbolicOperator):
     """Subclass of SymbolicOperator created for testing purposes."""
-    actions = (1, 0)
-    action_strings = ('^', '')
-    action_before_index = False
-    different_indices_commute = False
+
+    @property
+    def actions(self):
+        """The allowed actions."""
+        return (1, 0)
+
+    @property
+    def action_strings(self):
+        """The string representations of the allowed actions."""
+        return ('^', '')
+
+    @property
+    def action_before_index(self):
+        """Whether action comes before index in string representations."""
+        return False
+
+    @property
+    def different_indices_commute(self):
+        """Whether factors acting on different indices commute."""
+        return False
 
 
 class DummyOperator2(SymbolicOperator):
     """Subclass of SymbolicOperator created for testing purposes."""
-    actions = ('X', 'Y', 'Z')
-    action_strings = ('X', 'Y', 'Z')
-    action_before_index = True
-    different_indices_commute = True
+
+    @property
+    def actions(self):
+        """The allowed actions."""
+        return ('X', 'Y', 'Z')
+
+    @property
+    def action_strings(self):
+        """The string representations of the allowed actions."""
+        return ('X', 'Y', 'Z')
+
+    @property
+    def action_before_index(self):
+        """Whether action comes before index in string representations."""
+        return True
+
+    @property
+    def different_indices_commute(self):
+        """Whether factors acting on different indices commute."""
+        return True
 
 
 class GeneralTest(unittest.TestCase):
@@ -980,7 +1012,7 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertAlmostEqual(op.induced_norm(2), numpy.sqrt(2.))
 
     def test_tracenorm_zero(self):
-        op = SymbolicOperator()
+        op = DummyOperator2()
         self.assertFalse(op.induced_norm())
 
 

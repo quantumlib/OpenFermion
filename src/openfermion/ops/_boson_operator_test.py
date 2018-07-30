@@ -10,13 +10,14 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests  _fermion_operator.py."""
+"""Tests for BosonOperator."""
+
 import copy
-import numpy
 import unittest
 
-from openfermion.ops._boson_operator import (BosonOperator,
-                                             BosonOperatorError)
+import numpy
+
+from openfermion.ops._boson_operator import BosonOperator
 from openfermion.utils import number_operator
 
 
