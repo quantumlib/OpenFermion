@@ -29,15 +29,20 @@ def rotate_qubit_by_pauli(qop, pauli, angle):
     Returns:
         rotated_op - the rotated QubitOperator following the
             above formula.
+
+    Raises:
+        TypeError: qop must be a QubitOperator
+        TypeError: pauli must be a Pauli Operator (QubitOperator
+            with single term and coefficient equal to 1).
     '''
     pvals = list(pauli.terms.values())
     if type(qop) is not QubitOperator:
-        raise ValueError('This can only rotate QubitOperators')
+        raise TypeError('This can only rotate QubitOperators')
 
     if (type(pauli) is not QubitOperator or
             len(pauli.terms) != 1 or
             pvals[0] != 1):
-        raise ValueError('This can only rotate by Pauli operators')
+        raise TypeError('This can only rotate by Pauli operators')
 
     pqp = pauli * qop * pauli
     even_terms = 0.5 * (qop + pqp)
