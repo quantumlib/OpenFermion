@@ -31,5 +31,5 @@ class UnitaryRotationsTest(unittest.TestCase):
 
         rotated_qop = rotate_qubit_by_pauli(qop, rot_op, numpy.pi/4)
         comp_op = QubitOperator('Z0 Z1', 1)
-        comp_op += QubitOperator('X0 Y1', -1)
+        comp_op += QubitOperator('X0 Y1', 1)
         self.assertEqual(comp_op, rotated_qop)

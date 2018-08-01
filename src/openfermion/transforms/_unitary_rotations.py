@@ -12,22 +12,38 @@
 
 """Functions for unitary transformations of operators"""
 import numpy
+from openfermion.ops import QubitOperator
 
 
 def rotate_qubit_by_pauli(qop, pauli, angle):
     '''
     Performs the rotation e^{-i \theta * P}Qe^{i \theta * P}
     on a qubitoperator Q and a Pauli operator P.
-    Coefficient chosen so that if the magnitude of P is 1,
-    this rotates to PQP.
+
+    Args:
+        qop: the QubitOperator to be rotated
+        pauli: a single Pauli operator - a QubitOperator with
+            a single term, and a coefficient equal to 1.
+        angle: the angle to be rotated by.
+
+    Returns:
+        rotated_op - the rotated QubitOperator following the
+            above formula.
     '''
     pvals = list(pauli.terms.values())
-    if len(pauli.terms) != 1 or pvals[0] != 1:
-        raise ValueError('Must have a real Pauli operator')
+    if type(qop) is not QubitOperator:
+        raise ValueError('This can only rotate QubitOperators')
+
+    if (type(pauli) is not QubitOperator or
+            len(pauli.terms) != 1 or
+            pvals[0] != 1):
+        raise ValueError('This can only rotate by Pauli operators')
 
     pqp = pauli * qop * pauli
     even_terms = 0.5 * (qop + pqp)
     odd_terms = 0.5 * (qop - pqp)
 
-    return even_terms + numpy.cos(2*angle) * odd_terms + \
+    rotated_op = even_terms + numpy.cos(2*angle) * odd_terms + \
         1j * numpy.sin(2*angle) * odd_terms * pauli
+
+    return rotated_op
