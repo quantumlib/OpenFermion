@@ -139,14 +139,3 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
         energy, wavefunction = get_ground_state(sparse_original)
         modified_energy = expectation(sparse_modified, wavefunction)
         self.assertAlmostEqual(modified_energy, energy)
-
-        # Test consistency with cvxopt.
-        scipy_operator = apply_constraints(
-            self.fermion_hamiltonian, self.n_fermions, use_scipy=False)
-
-        # Get norm.
-        scipy_norm = 0.
-        for term, coefficient in scipy_operator.terms.items():
-            if term != ():
-                scipy_norm += abs(coefficient)
-        self.assertAlmostEqual(scipy_norm, modified_norm)
