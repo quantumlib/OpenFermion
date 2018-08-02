@@ -10,13 +10,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests  _fermion_operator.py."""
-import copy
-import numpy
+"""Tests for QuadOperator."""
+
 import unittest
 
-from openfermion.ops._quad_operator import (QuadOperator,
-                                            QuadOperatorError)
+from openfermion.ops._quad_operator import QuadOperator
 
 
 class QuadOperatorTest(unittest.TestCase):
