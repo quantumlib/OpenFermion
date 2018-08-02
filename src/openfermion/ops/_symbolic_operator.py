@@ -543,12 +543,15 @@ class SymbolicOperator(object):
         return not (self == other)
 
     def __iter__(self):
-        self.term_iterator = iter(self.terms.items())
+        self._iter = iter(self.terms.items())
         return self
 
     def __next__(self):
-        term, coefficient = next(self.term_iterator)
+        term, coefficient = next(self._iter)
         return self.__class__(term=term, coefficient=coefficient)
+
+    def next(self):
+        return self.__next__()
 
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
