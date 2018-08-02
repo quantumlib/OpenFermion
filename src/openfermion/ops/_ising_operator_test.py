@@ -28,4 +28,6 @@ class GeneralTest(unittest.TestCase):
         group_2 = [IsingOperator('Z0', 0.2), QubitOperator('Z0', 0.2)]
 
         equals_tester.add_equality_group(*group_1)
+        print(group_2[0] == group_2[1])
+        print(group_2[1] == group_2[0])
         equals_tester.add_equality_group(*group_2)

@@ -552,7 +552,7 @@ class SymbolicOperator:
             other(SymbolicOperator): SymbolicOperator to compare against.
         """
         if not isinstance(other, type(self)):
-            return False
+            return NotImplemented
 
         # terms which are in both:
         for term in set(self.terms).intersection(set(other.terms)):
