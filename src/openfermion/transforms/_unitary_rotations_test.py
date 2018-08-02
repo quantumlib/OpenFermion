@@ -14,6 +14,7 @@
 from __future__ import absolute_import
 from openfermion.transforms import rotate_qubit_by_pauli
 from openfermion.ops import QubitOperator
+from openfermion.ops import FermionOperator
 import numpy
 
 import unittest
@@ -33,3 +34,15 @@ class UnitaryRotationsTest(unittest.TestCase):
         comp_op = QubitOperator('Z0 Z1', 1)
         comp_op += QubitOperator('X0 Y1', 1)
         self.assertEqual(comp_op, rotated_qop)
+
+    def test_exception_Pauli(self):
+        qop = QubitOperator('X0 X1', 1)
+        qop += QubitOperator('Z0 Z1', 1)
+        rot_op = QubitOperator('Z1', 1)
+        rot_op += QubitOperator('Z0', 1)
+        rot_op2 = QubitOperator('Z1', 1)
+        ferm_op = FermionOperator('1^ 2', 1)
+        with self.assertRaises(TypeError):
+            rotate_qubit_by_pauli(qop, rot_op, numpy.pi/4)
+        with self.assertRaises(TypeError):
+            rotate_qubit_by_pauli(ferm_op, rot_op2, numpy.pi/4)
