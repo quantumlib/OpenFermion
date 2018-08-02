@@ -33,7 +33,12 @@ class IsingOperator(QubitOperator):
     See the documentation of SymbolicOperator for more details.
     """
 
-    actions = ('Z',)
-    action_strings = ('Z',)
-    action_before_index = True
-    different_indices_commute = True
+    @property
+    def actions(self):
+        """The allowed actions."""
+        return ('Z',)
+
+    @property
+    def action_strings(self):
+        """The string representations of the allowed actions."""
+        return ('Z',)
