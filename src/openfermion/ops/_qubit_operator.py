@@ -11,10 +11,10 @@
 #   limitations under the License.
 
 """QubitOperator stores a sum of Pauli operators acting on qubits."""
-import warnings
 
-from openfermion.config import EQ_TOLERANCE
-from openfermion.ops import SymbolicOperator
+import numpy
+
+from openfermion.ops._symbolic_operator import SymbolicOperator
 
 
 # Define products of all Pauli operators for symbolic multiplication.
@@ -34,11 +34,6 @@ _PAULI_OPERATOR_PRODUCTS = {('I', 'I'): (1., 'I'),
                             ('Y', 'Z'): (1.j, 'X'),
                             ('Z', 'X'): (1.j, 'Y'),
                             ('Z', 'Y'): (-1.j, 'X')}
-
-
-class QubitOperatorError(Exception):
-    """Exceptions for QubitOperator class."""
-    pass
 
 
 class QubitOperator(SymbolicOperator):
@@ -89,10 +84,26 @@ class QubitOperator(SymbolicOperator):
         during initialization is faster than multiplying a QubitOperator
         with a scalar.
     """
-    actions = ('X', 'Y', 'Z')
-    action_strings = ('X', 'Y', 'Z')
-    action_before_index = True
-    different_indices_commute = True
+
+    @property
+    def actions(self):
+        """The allowed actions."""
+        return ('X', 'Y', 'Z')
+
+    @property
+    def action_strings(self):
+        """The string representations of the allowed actions."""
+        return ('X', 'Y', 'Z')
+
+    @property
+    def action_before_index(self):
+        """Whether action comes before index in string representations."""
+        return True
+
+    @property
+    def different_indices_commute(self):
+        """Whether factors acting on different indices commute."""
+        return True
 
     def __imul__(self, multiplier):
         """
@@ -173,7 +184,7 @@ class QubitOperator(SymbolicOperator):
     def renormalize(self):
         """Fix the trace norm of an operator to 1"""
         norm = self.induced_norm(2)
-        if norm < EQ_TOLERANCE:
+        if numpy.isclose(norm, 0.0):
             raise ZeroDivisionError(
                 'Cannot renormalize empty or zero operator')
         else:
