@@ -33,7 +33,7 @@ class IsingOperator(QubitOperator):
     See the documentation of SymbolicOperator for more details.
     """
 
-    actions = ('Z')
-    action_strings = ('Z')
+    actions = ('Z',)
+    action_strings = ('Z',)
     action_before_index = True
     different_indices_commute = True

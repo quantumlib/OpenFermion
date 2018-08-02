@@ -108,7 +108,7 @@ class QubitOperator(SymbolicOperator):
             return self
 
         # Handle QubitOperator.
-        if not isinstance(multiplier, QubitOperator):
+        if not isinstance(multiplier, self.__class__):
             raise TypeError('Cannot in-place multiply term of invalid type to '
                             'QubitTerm.')
 
