@@ -273,6 +273,11 @@ class SymbolicOperator:
         # Return a tuple
         return tuple(processed_term)
 
+    @property
+    def constant(self):
+        """The value of the constant term."""
+        return self.terms.get((), 0.0)
+
     @classmethod
     def zero(cls):
         """
