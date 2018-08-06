@@ -77,6 +77,13 @@ class GeneralTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             _ = SymbolicOperator()
 
+    def test_symbolic_operator_constant(self):
+        op = DummyOperator1((), 1.723)
+        self.assertEqual(op.constant, 1.723)
+
+        op = DummyOperator1('1^ 4', 0.182)
+        self.assertEqual(op.constant, 0.0)
+
     def test_init_single_factor(self):
         """Test initialization of the form DummyOperator((index, action))."""
         equals_tester = EqualsTester(self)
