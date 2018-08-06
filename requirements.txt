@@ -1,7 +1,6 @@
 numpy>=1.11.0
 scipy>=0.18.0
 h5py>=2.8
-cvxopt
 future
 jupyter
 networkx
