@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Functions to reduce the number of qubits involved in modeling a given system.
+"""Useful miscelaneous functions to transform QubitOperators
 """
 
 import numpy
@@ -35,9 +35,12 @@ def project_onto_sector(operator, qubits, sectors):
 
     Returns:
         projected_operator: the resultant operator
+
+    Raises:
+        TypeError: operator must be a QubitOperator
     '''
     if type(operator) is not QubitOperator:
-        raise ValueError('''Input operator must be a QubitOperator''')
+        raise TypeError('''Input operator must be a QubitOperator''')
 
     projected_operator = QubitOperator()
     for term, factor in operator.terms.items():
@@ -72,9 +75,12 @@ def projection_error(operator, qubits, sectors):
 
     Returns:
         error: the trace norm of the removed term.
+
+    Raises:
+        TypeError: operator must be a QubitOperator
     '''
     if type(operator) is not QubitOperator:
-        raise ValueError('''Input operator must be a QubitOperator''')
+        raise TypeError('''Input operator must be a QubitOperator''')
 
     error = 0
     for term, factor in operator.terms.items():
@@ -86,3 +92,42 @@ def projection_error(operator, qubits, sectors):
             error += abs(factor)**2
 
     return numpy.sqrt(error)
+
+
+def rotate_qubit_by_pauli(qop, pauli, angle):
+    '''
+    Performs the rotation e^{-i \theta * P}Qe^{i \theta * P}
+    on a qubitoperator Q and a Pauli operator P.
+
+    Args:
+        qop: the QubitOperator to be rotated
+        pauli: a single Pauli operator - a QubitOperator with
+            a single term, and a coefficient equal to 1.
+        angle: the angle to be rotated by.
+
+    Returns:
+        rotated_op - the rotated QubitOperator following the
+            above formula.
+
+    Raises:
+        TypeError: qop must be a QubitOperator
+        TypeError: pauli must be a Pauli Operator (QubitOperator
+            with single term and coefficient equal to 1).
+    '''
+    pvals = list(pauli.terms.values())
+    if type(qop) is not QubitOperator:
+        raise TypeError('This can only rotate QubitOperators')
+
+    if (type(pauli) is not QubitOperator or
+            len(pauli.terms) != 1 or
+            pvals[0] != 1):
+        raise TypeError('This can only rotate by Pauli operators')
+
+    pqp = pauli * qop * pauli
+    even_terms = 0.5 * (qop + pqp)
+    odd_terms = 0.5 * (qop - pqp)
+
+    rotated_op = even_terms + numpy.cos(2*angle) * odd_terms + \
+        1j * numpy.sin(2*angle) * odd_terms * pauli
+
+    return rotated_op

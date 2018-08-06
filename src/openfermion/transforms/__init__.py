@@ -34,11 +34,11 @@ from ._conversion import (get_boson_operator,
                           get_sparse_operator,
                           get_quad_operator)
 from ._jordan_wigner import jordan_wigner
-from ._projection import (project_onto_sector,
-                          projection_error)
+from ._qubit_operator_transforms import (project_onto_sector,
+                                         projection_error,
+                                         rotate_qubit_by_pauli)
 from ._reverse_jordan_wigner import reverse_jordan_wigner
 from ._verstraete_cirac import verstraete_cirac_2d_square
-from ._unitary_rotations import rotate_qubit_by_pauli
 from ._weyl_ordering import (symmetric_ordering,
                              weyl_polynomial_quantization)
 from ._remove_symmetry_qubits import (symmetry_conserving_bravyi_kitaev,
