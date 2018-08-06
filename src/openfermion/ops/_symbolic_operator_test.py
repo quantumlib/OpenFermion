@@ -77,6 +77,13 @@ class GeneralTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             _ = SymbolicOperator()
 
+    def test_symbolic_operator_constant(self):
+        op = DummyOperator1((), 1.723)
+        self.assertEqual(op.constant, 1.723)
+
+        op = DummyOperator1('1^ 4', 0.182)
+        self.assertEqual(op.constant, 0.0)
+
     def test_init_single_factor(self):
         """Test initialization of the form DummyOperator((index, action))."""
         equals_tester = EqualsTester(self)
@@ -142,6 +149,18 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(op5.many_body_order(), 3)
         self.assertEqual(op6.many_body_order(), 6)
         self.assertEqual(op7.many_body_order(), 3)
+
+    def test_iter(self):
+        op1 = DummyOperator1('0^ 3 5^ 6')
+        op2 = DummyOperator1('8^ 3')
+        opsum = op1 + op2
+        op_list = []
+        for op_term in opsum:
+            op_list.append(op_term)
+
+        self.assertEqual(len(op_list), 2)
+        self.assertEqual(op_list[0], op1)
+        self.assertEqual(op_list[1], op2)
 
 
 class SymbolicOperatorTest1(unittest.TestCase):

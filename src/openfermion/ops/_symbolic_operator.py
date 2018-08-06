@@ -274,6 +274,11 @@ class SymbolicOperator:
         # Return a tuple
         return tuple(processed_term)
 
+    @property
+    def constant(self):
+        """The value of the constant term."""
+        return self.terms.get((), 0.0)
+
     @classmethod
     def zero(cls):
         """
@@ -573,6 +578,17 @@ class SymbolicOperator:
 
     def __ne__(self, other):
         return not (self == other)
+
+    def __iter__(self):
+        self._iter = iter(self.terms.items())
+        return self
+
+    def __next__(self):
+        term, coefficient = next(self._iter)
+        return self.__class__(term=term, coefficient=coefficient)
+
+    def next(self):
+        return self.__next__()
 
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
