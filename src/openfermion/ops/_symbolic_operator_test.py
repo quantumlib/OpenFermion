@@ -150,6 +150,18 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(op6.many_body_order(), 6)
         self.assertEqual(op7.many_body_order(), 3)
 
+    def test_iter(self):
+        op1 = DummyOperator1('0^ 3 5^ 6')
+        op2 = DummyOperator1('8^ 3')
+        opsum = op1 + op2
+        op_list = []
+        for op_term in opsum:
+            op_list.append(op_term)
+
+        self.assertEqual(len(op_list), 2)
+        self.assertEqual(op_list[0], op1)
+        self.assertEqual(op_list[1], op2)
+
 
 class SymbolicOperatorTest1(unittest.TestCase):
     """Test the subclass DummyOperator1."""
