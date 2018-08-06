@@ -12,11 +12,7 @@
 
 """FermionOperator stores a sum of products of fermionic ladder operators."""
 
-from openfermion.ops import SymbolicOperator
-
-
-class FermionOperatorError(Exception):
-    pass
+from openfermion.ops._symbolic_operator import SymbolicOperator
 
 
 class FermionOperator(SymbolicOperator):
@@ -63,10 +59,26 @@ class FermionOperator(SymbolicOperator):
         during initialization is faster than multiplying a FermionOperator
         with a scalar.
     """
-    actions = (1, 0)
-    action_strings = ('^', '')
-    action_before_index = False
-    different_indices_commute = False
+
+    @property
+    def actions(self):
+        """The allowed actions."""
+        return (1, 0)
+
+    @property
+    def action_strings(self):
+        """The string representations of the allowed actions."""
+        return ('^', '')
+
+    @property
+    def action_before_index(self):
+        """Whether action comes before index in string representations."""
+        return False
+
+    @property
+    def different_indices_commute(self):
+        """Whether factors acting on different indices commute."""
+        return False
 
     def is_normal_ordered(self):
         """Return whether or not term is in normal order.

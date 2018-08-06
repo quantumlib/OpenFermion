@@ -24,22 +24,65 @@ from openfermion.ops._symbolic_operator import SymbolicOperator
 
 class DummyOperator1(SymbolicOperator):
     """Subclass of SymbolicOperator created for testing purposes."""
-    actions = (1, 0)
-    action_strings = ('^', '')
-    action_before_index = False
-    different_indices_commute = False
+
+    @property
+    def actions(self):
+        """The allowed actions."""
+        return (1, 0)
+
+    @property
+    def action_strings(self):
+        """The string representations of the allowed actions."""
+        return ('^', '')
+
+    @property
+    def action_before_index(self):
+        """Whether action comes before index in string representations."""
+        return False
+
+    @property
+    def different_indices_commute(self):
+        """Whether factors acting on different indices commute."""
+        return False
 
 
 class DummyOperator2(SymbolicOperator):
     """Subclass of SymbolicOperator created for testing purposes."""
-    actions = ('X', 'Y', 'Z')
-    action_strings = ('X', 'Y', 'Z')
-    action_before_index = True
-    different_indices_commute = True
+
+    @property
+    def actions(self):
+        """The allowed actions."""
+        return ('X', 'Y', 'Z')
+
+    @property
+    def action_strings(self):
+        """The string representations of the allowed actions."""
+        return ('X', 'Y', 'Z')
+
+    @property
+    def action_before_index(self):
+        """Whether action comes before index in string representations."""
+        return True
+
+    @property
+    def different_indices_commute(self):
+        """Whether factors acting on different indices commute."""
+        return True
 
 
 class GeneralTest(unittest.TestCase):
     """General tests."""
+
+    def test_symbolic_operator_is_abstract_cant_instantiate(self):
+        with self.assertRaises(TypeError):
+            _ = SymbolicOperator()
+
+    def test_symbolic_operator_constant(self):
+        op = DummyOperator1((), 1.723)
+        self.assertEqual(op.constant, 1.723)
+
+        op = DummyOperator1('1^ 4', 0.182)
+        self.assertEqual(op.constant, 0.0)
 
     def test_init_single_factor(self):
         """Test initialization of the form DummyOperator((index, action))."""
@@ -659,11 +702,11 @@ class SymbolicOperatorTest1(unittest.TestCase):
 
     def test_pow_neg_error(self):
         with self.assertRaises(ValueError):
-            DummyOperator1() ** -1
+            _ = DummyOperator1() ** -1
 
     def test_pow_nonint_error(self):
         with self.assertRaises(ValueError):
-            DummyOperator1('3 2^') ** 0.5
+            _ = DummyOperator1('3 2^') ** 0.5
 
     def test_compress_terms(self):
         op = (DummyOperator1('3^ 1', 0.3 + 3e-11j) +
@@ -992,7 +1035,7 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertAlmostEqual(op.induced_norm(2), numpy.sqrt(2.))
 
     def test_tracenorm_zero(self):
-        op = SymbolicOperator()
+        op = DummyOperator2()
         self.assertFalse(op.induced_norm())
 
 
