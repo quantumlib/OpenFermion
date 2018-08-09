@@ -13,13 +13,7 @@
 import numpy
 from scipy.linalg import schur
 
-from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import PolynomialTensor
-from openfermion.ops._givens_rotations import (
-        fermionic_gaussian_decomposition,
-        givens_decomposition_square,
-        swap_columns,
-        swap_rows)
 
 
 class QuadraticHamiltonianError(Exception):
@@ -53,7 +47,7 @@ class QuadraticHamiltonian(PolynomialTensor):
     """
 
     def __init__(self, hermitian_part, antisymmetric_part=None,
-                 constant=0., chemical_potential=0.):
+                 constant=0.0, chemical_potential=0.0):
         r"""
         Initialize the QuadraticHamiltonian class.
 
@@ -116,7 +110,7 @@ class QuadraticHamiltonian(PolynomialTensor):
     def conserves_particle_number(self):
         """Whether this Hamiltonian conserves particle number."""
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part))
-        return discrepancy < EQ_TOLERANCE
+        return numpy.isclose(discrepancy, 0.0)
 
     def add_chemical_potential(self, chemical_potential):
         """Increase (or decrease) the chemical potential by some value."""
@@ -310,64 +304,6 @@ class QuadraticHamiltonian(PolynomialTensor):
 
             return diagonalizing_unitary[:self.n_qubits]
 
-    def diagonalizing_circuit(self):
-        r"""Get a circuit for a unitary that diagonalizes this Hamiltonian
-
-        This circuit performs the transformation to a basis in which the
-        Hamiltonian takes the diagonal form
-
-        .. math::
-
-            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
-
-        Returns
-        -------
-            circuit_description (list[tuple]):
-                A list of operations describing the circuit. Each operation
-                is a tuple of objects describing elementary operations that
-                can be performed in parallel. Each elementary operation
-                is either the string 'pht' indicating a particle-hole
-                transformation on the last fermionic mode, or a tuple of
-                the form :math:`(i, j, \theta, \varphi)`,
-                indicating a Givens rotation
-                of modes :math:`i` and :math:`j` by angles :math:`\theta`
-                and :math:`\varphi`.
-        """
-        transformation_matrix = self.diagonalizing_bogoliubov_transform()
-
-        if self.conserves_particle_number:
-            # The Hamiltonian conserves particle number, so we don't need
-            # to use the most general procedure.
-            decomposition, _ = givens_decomposition_square(
-                    transformation_matrix)
-            circuit_description = list(reversed(decomposition))
-        else:
-            # The Hamiltonian does not conserve particle number, so we
-            # need to use the most general procedure.
-            # Rearrange the transformation matrix because the circuit
-            # generation routine expects it to describe annihilation
-            # operators rather than creation operators.
-            left_block = transformation_matrix[:, :self.n_qubits]
-            right_block = transformation_matrix[:, self.n_qubits:]
-
-            # Can't use numpy.block because that requires numpy>=1.13.0
-            new_transformation_matrix = numpy.empty(
-                    (self.n_qubits, 2 * self.n_qubits), dtype=complex)
-            new_transformation_matrix[:, :self.n_qubits] = numpy.conjugate(
-                    right_block)
-            new_transformation_matrix[:, self.n_qubits:] = numpy.conjugate(
-                    left_block)
-
-            # Get the circuit description
-            decomposition, left_decomposition, _, _ = (
-                fermionic_gaussian_decomposition(new_transformation_matrix))
-
-            # need to use left_diagonal too
-            circuit_description = list(reversed(
-                decomposition + left_decomposition))
-
-        return circuit_description
-
 
 def antisymmetric_canonical_form(antisymmetric_matrix):
     """Compute the canonical form of an antisymmetric matrix.
@@ -401,7 +337,7 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     # Check that input matrix is antisymmetric
     matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
     maxval = numpy.max(numpy.abs(matrix_plus_transpose))
-    if maxval > EQ_TOLERANCE:
+    if not numpy.isclose(maxval, 0.0):
         raise ValueError('The input matrix must be antisymmetric.')
 
     # Compute Schur decomposition
@@ -421,7 +357,7 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
 
     # Now we permute so that the upper right block is non-negative
     for i in range(n):
-        if canonical[i, n + i] < -EQ_TOLERANCE:
+        if canonical[i, n + i] < 0.0:
             swap_rows(canonical, i, n + i)
             swap_columns(canonical, i, n + i)
             swap_columns(orthogonal, i, n + i)
@@ -446,3 +382,23 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_rows(diagonal, i, arg_min)
 
     return canonical, orthogonal.T
+
+
+def swap_rows(M, i, j):
+    """Swap rows i and j of matrix M."""
+    if len(M.shape) == 1:
+        M[i], M[j] = M[j], M[i]
+    else:
+        row_i = M[i, :].copy()
+        row_j = M[j, :].copy()
+        M[i, :], M[j, :] = row_j, row_i
+
+
+def swap_columns(M, i, j):
+    """Swap columns i and j of matrix M."""
+    if len(M.shape) == 1:
+        M[i], M[j] = M[j], M[i]
+    else:
+        column_i = M[:, i].copy()
+        column_j = M[:, j].copy()
+        M[:, i], M[:, j] = column_j, column_i
