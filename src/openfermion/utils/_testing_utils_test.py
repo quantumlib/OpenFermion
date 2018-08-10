@@ -213,15 +213,27 @@ class EqualsTesterTest(unittest.TestCase):
 class RandomInteractionOperatorTest(unittest.TestCase):
 
     def test_hermiticity(self):
-        n_qubits = 5
+        n_orbitals = 5
 
-        # Real case
-        iop = random_interaction_operator(n_qubits, True)
+        # Real, no spin
+        iop = random_interaction_operator(n_orbitals, real=True)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
 
-        # Complex case
-        iop = random_interaction_operator(n_qubits, False)
+        # Real, spin
+        iop = random_interaction_operator(
+                n_orbitals, expand_to_spin=True, real=True)
+        ferm_op = get_fermion_operator(iop)
+        self.assertTrue(is_hermitian(ferm_op))
+
+        # Complex, no spin
+        iop = random_interaction_operator(n_orbitals, real=False)
+        ferm_op = get_fermion_operator(iop)
+        self.assertTrue(is_hermitian(ferm_op))
+
+        # Complex, spin
+        iop = random_interaction_operator(
+                n_orbitals, expand_to_spin=True, real=False)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
 

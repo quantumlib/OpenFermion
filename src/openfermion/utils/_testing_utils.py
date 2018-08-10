@@ -75,7 +75,8 @@ def random_hermitian_matrix(n, real=False, seed=None):
     return hermitian_mat
 
 
-def random_interaction_operator(n_qubits, real=True, seed=None):
+def random_interaction_operator(
+        n_orbitals, expand_to_spin=False, real=True, seed=None):
     """Generate a random instance of InteractionOperator."""
     if seed is not None:
         numpy.random.seed(seed)
@@ -89,14 +90,14 @@ def random_interaction_operator(n_qubits, real=True, seed=None):
     constant = numpy.random.randn()
 
     # The one-body tensor is a random Hermitian matrix.
-    one_body_coefficients = random_hermitian_matrix(n_qubits, real)
+    one_body_coefficients = random_hermitian_matrix(n_orbitals, real)
 
     # Generate random two-body coefficients.
-    two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
-                                         n_qubits, n_qubits), dtype)
+    two_body_coefficients = numpy.zeros((n_orbitals, n_orbitals,
+                                         n_orbitals, n_orbitals), dtype)
 
     # Generate "diagonal" terms, which are necessarily real.
-    for p, q in itertools.combinations(range(n_qubits), 2):
+    for p, q in itertools.combinations(range(n_orbitals), 2):
         coeff = numpy.random.randn()
         two_body_coefficients[p, q, p, q] = coeff
         two_body_coefficients[p, q, q, p] = -coeff
@@ -104,7 +105,7 @@ def random_interaction_operator(n_qubits, real=True, seed=None):
 
     # Generate the rest of the terms.
     for (p, q), (r, s) in itertools.combinations(
-            itertools.combinations(range(n_qubits), 2), 2):
+            itertools.combinations(range(n_orbitals), 2), 2):
         coeff = numpy.random.randn()
         if not real:
             coeff += 1.j * numpy.random.randn()
@@ -118,7 +119,35 @@ def random_interaction_operator(n_qubits, real=True, seed=None):
         two_body_coefficients[r, s, q, p] = -coeff.conjugate()
         two_body_coefficients[r, s, p, q] = coeff.conjugate()
 
-    # Create the InteractionOperator and return.
+    # If requested, expand to spin orbitals.
+    if expand_to_spin:
+        n_spin_orbitals = 2 * n_orbitals
+
+        # Expand one-body tensor
+        one_body_coefficients = numpy.kron(one_body_coefficients, numpy.eye(2))
+
+        # Expand two-body tensor
+        # TODO Do this with kron or einsum
+        new_two_body_coefficients = numpy.zeros((n_spin_orbitals,
+                                                 n_spin_orbitals,
+                                                 n_spin_orbitals,
+                                                 n_spin_orbitals),
+                                                dtype=complex)
+        alpha_indices = list(range(0, n_spin_orbitals, 2))
+        beta_indices = list(range(1, n_spin_orbitals, 2))
+        new_two_body_coefficients[
+                numpy.ix_(alpha_indices,
+                          alpha_indices,
+                          alpha_indices,
+                          alpha_indices)] = two_body_coefficients
+        new_two_body_coefficients[
+                numpy.ix_(beta_indices,
+                          beta_indices,
+                          beta_indices,
+                          beta_indices)] = two_body_coefficients
+        two_body_coefficients = new_two_body_coefficients
+
+    # Create the InteractionOperator.
     interaction_operator = InteractionOperator(
         constant, one_body_coefficients, two_body_coefficients)
 
