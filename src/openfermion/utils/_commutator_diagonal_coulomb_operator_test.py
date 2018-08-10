@@ -18,9 +18,12 @@ import warnings
 from future.utils import iteritems
 
 from openfermion import FermionOperator, Grid, jellium_model, normal_ordered
+from openfermion.transforms import get_fermion_operator
 from openfermion.utils import commutator
 from openfermion.utils._commutator_diagonal_coulomb_operator import (
-    commutator_diagonal_coulomb_operators)
+    commutator_ordered_diagonal_coulomb_with_two_body_operator)
+from openfermion.utils._testing_utils import (
+    random_diagonal_coulomb_hamiltonian)
 
 
 class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
@@ -50,7 +53,8 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
                       FermionOperator('6^ 5^ 4 1', -11.789j))
 
         reference = normal_ordered(commutator(operator_a, operator_b))
-        result = commutator_diagonal_coulomb_operators(operator_a, operator_b)
+        result = commutator_ordered_diagonal_coulomb_with_two_body_operator(
+            operator_a, operator_b)
 
         diff = result - reference
         self.assertTrue(diff.isclose(FermionOperator.zero()))
@@ -73,7 +77,8 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
                      FermionOperator('4^ 1^ 3 0', -0.03-0.13j) +
                      FermionOperator('4^ 2^ 1^ 3 2 0', -0.02+0.02j))
 
-        res = commutator_diagonal_coulomb_operators(operator_a, operator_b)
+        res = commutator_ordered_diagonal_coulomb_with_two_body_operator(
+            operator_a, operator_b)
 
         self.assertTrue(res.isclose(reference))
 
@@ -82,8 +87,8 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
         operator_a = FermionOperator('2^ 1')
         operator_b = FermionOperator('0^ 2')
 
-        commutator_diagonal_coulomb_operators(operator_a, operator_b,
-                                              result=result)
+        commutator_ordered_diagonal_coulomb_with_two_body_operator(
+            operator_a, operator_b, result=result)
 
         self.assertTrue(result.isclose(FermionOperator.zero()))
 
@@ -104,11 +109,13 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             add_to_a_or_b ^= 1
 
         reference = normal_ordered(commutator(part_a, part_b))
-        result = commutator_diagonal_coulomb_operators(part_a, part_b)
+        result = commutator_ordered_diagonal_coulomb_with_two_body_operator(
+            part_a, part_b)
 
         self.assertTrue(result.isclose(reference))
 
-        negative = commutator_diagonal_coulomb_operators(part_b, part_a)
+        negative = commutator_ordered_diagonal_coulomb_with_two_body_operator(
+            part_b, part_a)
         result += negative
 
         self.assertTrue(result.isclose(FermionOperator.zero()))
@@ -119,8 +126,9 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             operator_b = FermionOperator('4^ 3^ 4 1')
 
             reference = FermionOperator('4^ 3^ 2^ 4 2 1')
-            result = commutator_diagonal_coulomb_operators(
-                operator_a, operator_b)
+            result = (
+                commutator_ordered_diagonal_coulomb_with_two_body_operator(
+                    operator_a, operator_b))
 
             self.assertFalse(w)
 
@@ -133,8 +141,9 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             operator_b = FermionOperator('3^ 2^ 3 2')
 
             reference = normal_ordered(commutator(operator_a, operator_b))
-            result = commutator_diagonal_coulomb_operators(
-                operator_a, operator_b)
+            result = (
+                commutator_ordered_diagonal_coulomb_with_two_body_operator(
+                    operator_a, operator_b))
 
             self.assertTrue(len(w) == 1)
             self.assertIn('Defaulted to standard commutator evaluation',
@@ -143,3 +152,15 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
             # Result should still be correct in this case.
             diff = result - reference
             self.assertTrue(diff.isclose(FermionOperator.zero()))
+
+    def test_integration_random_diagonal_coulomb_hamiltonian(self):
+        hamiltonian1 = normal_ordered(get_fermion_operator(
+            random_diagonal_coulomb_hamiltonian(n_qubits=7)))
+        hamiltonian2 = normal_ordered(get_fermion_operator(
+            random_diagonal_coulomb_hamiltonian(n_qubits=7)))
+
+        reference = normal_ordered(commutator(hamiltonian1, hamiltonian2))
+        result = commutator_ordered_diagonal_coulomb_with_two_body_operator(
+            hamiltonian1, hamiltonian2)
+
+        self.assertTrue(result.isclose(reference))

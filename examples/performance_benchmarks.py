@@ -33,7 +33,7 @@ from openfermion.utils import (
     ParallelLinearQubitOperator)
 from openfermion.utils._testing_utils import random_interaction_operator
 from openfermion.utils._commutator_diagonal_coulomb_operator import (
-    commutator_diagonal_coulomb_operators)
+    commutator_ordered_diagonal_coulomb_with_two_body_operator)
 
 
 def benchmark_molecular_operator_jordan_wigner(n_qubits):
@@ -230,7 +230,8 @@ def benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
     runtime_commutator = end - start
 
     start = time.time()
-    _ = commutator_diagonal_coulomb_operators(part_a, part_b)
+    _ = commutator_ordered_diagonal_coulomb_with_two_body_operator(
+        part_a, part_b)
     end = time.time()
     runtime_diagonal_commutator = end - start
 
@@ -292,13 +293,15 @@ def run_linear_qubit_operator(n_qubits=16, n_terms=10, processes=10):
 def run_diagonal_commutator(side_length=4):
     """Run commutator_diagonal_coulomb_operators benchmark."""
 
-    logging.info('Starting test on commutator_diagonal_coulomb_operators().')
+    logging.info(
+        'Starting test on '
+        'commutator_ordered_diagonal_coulomb_with_two_body_operator().')
     runtime_commutator, runtime_diagonal_commutator = (
         benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
             side_length=side_length))
     logging.info('Regular commutator computation took %f seconds, while '
-                 'commutator_diagonal_coulomb_operators took %f seconds. '
-                 'Ratio is %.2f.\n', runtime_commutator,
+                 'commutator_ordered_diagonal_coulomb_with_two_body_operator'
+                 ' took %f seconds. Ratio is %.2f.\n', runtime_commutator,
                  runtime_diagonal_commutator,
                  runtime_commutator / runtime_diagonal_commutator)
 
