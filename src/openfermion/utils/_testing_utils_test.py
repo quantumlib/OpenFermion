@@ -222,7 +222,7 @@ class RandomInteractionOperatorTest(unittest.TestCase):
 
         # Real, spin
         iop = random_interaction_operator(
-                n_orbitals, expand_to_spin=True, real=True)
+                n_orbitals, expand_spin=True, real=True)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
 
@@ -233,7 +233,7 @@ class RandomInteractionOperatorTest(unittest.TestCase):
 
         # Complex, spin
         iop = random_interaction_operator(
-                n_orbitals, expand_to_spin=True, real=False)
+                n_orbitals, expand_spin=True, real=False)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
 

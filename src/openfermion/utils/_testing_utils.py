@@ -76,12 +76,12 @@ def random_hermitian_matrix(n, real=False, seed=None):
 
 
 def random_interaction_operator(
-        n_orbitals, expand_to_spin=False, real=True, seed=None):
+        n_orbitals, expand_spin=False, real=True, seed=None):
     """Generate a random instance of InteractionOperator.
     
     Args:
         n_orbitals: The number of orbitals.
-        expand_to_spin: Whether to expand each orbital symmetrically into two
+        expand_spin: Whether to expand each orbital symmetrically into two
             spin orbitals. Note that if this option is set to True, then
             the total number of orbitals will be doubled.
         real: Whether to use only real numbers.
@@ -129,7 +129,7 @@ def random_interaction_operator(
         two_body_coefficients[r, s, p, q] = coeff.conjugate()
 
     # If requested, expand to spin orbitals.
-    if expand_to_spin:
+    if expand_spin:
         n_spin_orbitals = 2 * n_orbitals
 
         # Expand one-body tensor
