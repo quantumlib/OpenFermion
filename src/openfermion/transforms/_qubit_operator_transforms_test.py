@@ -9,13 +9,16 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-'''Tests for the projection module'''
+'''Tests for the qubit_operator_transforms module'''
 from __future__ import absolute_import
 
 import unittest
+import numpy
 
 from openfermion.ops import QubitOperator
-from openfermion.transforms import project_onto_sector, projection_error
+from openfermion.ops import FermionOperator
+from openfermion.transforms import (
+    project_onto_sector, projection_error, rotate_qubit_by_pauli)
 from openfermion.utils import count_qubits
 
 
@@ -52,3 +55,31 @@ class ProjectionTest(unittest.TestCase):
         self.assertEqual(new_operator.terms[((0, 'X'), (1, 'Z'), (2, 'Z'))],
                          0.5)
         self.assertEqual(error, 0.5)
+
+
+class UnitaryRotationsTest(unittest.TestCase):
+
+    def setup(self):
+        pass
+
+    def test_rotation(self):
+        qop = QubitOperator('X0 X1', 1)
+        qop += QubitOperator('Z0 Z1', 1)
+        rot_op = QubitOperator('Z1', 1)
+
+        rotated_qop = rotate_qubit_by_pauli(qop, rot_op, numpy.pi/4)
+        comp_op = QubitOperator('Z0 Z1', 1)
+        comp_op += QubitOperator('X0 Y1', 1)
+        self.assertEqual(comp_op, rotated_qop)
+
+    def test_exception_Pauli(self):
+        qop = QubitOperator('X0 X1', 1)
+        qop += QubitOperator('Z0 Z1', 1)
+        rot_op = QubitOperator('Z1', 1)
+        rot_op += QubitOperator('Z0', 1)
+        rot_op2 = QubitOperator('Z1', 1)
+        ferm_op = FermionOperator('1^ 2', 1)
+        with self.assertRaises(TypeError):
+            rotate_qubit_by_pauli(qop, rot_op, numpy.pi/4)
+        with self.assertRaises(TypeError):
+            rotate_qubit_by_pauli(ferm_op, rot_op2, numpy.pi/4)
