@@ -77,7 +77,16 @@ def random_hermitian_matrix(n, real=False, seed=None):
 
 def random_interaction_operator(
         n_orbitals, expand_to_spin=False, real=True, seed=None):
-    """Generate a random instance of InteractionOperator."""
+    """Generate a random instance of InteractionOperator.
+    
+    Args:
+        n_orbitals: The number of orbitals.
+        expand_to_spin: Whether to expand each orbital symmetrically into two
+            spin orbitals. Note that if this option is set to True, then
+            the total number of orbitals will be doubled.
+        real: Whether to use only real numbers.
+        seed: A random number generator seed.
+    """
     if seed is not None:
         numpy.random.seed(seed)
 
