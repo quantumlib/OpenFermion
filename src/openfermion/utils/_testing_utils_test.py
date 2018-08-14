@@ -213,17 +213,46 @@ class EqualsTesterTest(unittest.TestCase):
 class RandomInteractionOperatorTest(unittest.TestCase):
 
     def test_hermiticity(self):
-        n_qubits = 5
+        n_orbitals = 5
 
-        # Real case
-        iop = random_interaction_operator(n_qubits, True)
+        # Real, no spin
+        iop = random_interaction_operator(n_orbitals, real=True)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
 
-        # Complex case
-        iop = random_interaction_operator(n_qubits, False)
+        # Real, spin
+        iop = random_interaction_operator(
+                n_orbitals, expand_spin=True, real=True)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
+
+        # Complex, no spin
+        iop = random_interaction_operator(n_orbitals, real=False)
+        ferm_op = get_fermion_operator(iop)
+        self.assertTrue(is_hermitian(ferm_op))
+
+        # Complex, spin
+        iop = random_interaction_operator(
+                n_orbitals, expand_spin=True, real=False)
+        ferm_op = get_fermion_operator(iop)
+        self.assertTrue(is_hermitian(ferm_op))
+
+    def test_expand_spin_norm(self):
+        n_orbitals = 5
+
+        iop_without_spin = random_interaction_operator(
+                n_orbitals, real=True, seed=39460)
+        iop_with_spin = random_interaction_operator(
+                n_orbitals, expand_spin=True, real=True, seed=39460)
+
+        ferm_op_without_spin = get_fermion_operator(iop_without_spin)
+        ferm_op_without_spin.terms[()] = 0.0
+        ferm_op_with_spin = get_fermion_operator(iop_with_spin)
+        ferm_op_with_spin.terms[()] = 0.0
+
+        self.assertAlmostEqual(
+                2.0 * ferm_op_without_spin.induced_norm(1),
+                ferm_op_with_spin.induced_norm(1))
 
 
 class HaarRandomVectorTest(unittest.TestCase):
