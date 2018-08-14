@@ -228,7 +228,6 @@ def low_rank_spatial_two_body_decomposition(two_body_coefficients,
             from reordering to chemist ordering.  Returned in spin-orbital
             basis.
 
-
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
         ValueError: Cannot provide both final_rank and truncation_value.
@@ -328,6 +327,8 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
         one_body_matrix (ndarray of floats): an N by N array storing the
             coefficients of a one-body operator to be squared. For instance,
             in the above the elements of this matrix are :math:`h_{pq}`.
+        spin_basis (bool): Whether the matrix is passed in the
+            spin orbital basis.
 
     Returns:
         density_density_matrix(ndarray of floats) an N by N array storing
