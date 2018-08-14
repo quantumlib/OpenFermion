@@ -22,7 +22,10 @@ from ._jellium import (
     plane_wave_kinetic, plane_wave_potential,
     wigner_seitz_length_scale)
 
-from ._molecular_data import MolecularData, periodic_table
+from ._molecular_data import (
+        MolecularData,
+        load_molecular_hamiltonian,
+        periodic_table)
 
 from ._plane_wave_hamiltonian import (dual_basis_external_potential,
                                       plane_wave_external_potential,
