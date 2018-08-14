@@ -19,7 +19,7 @@ import scipy.linalg
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import FermionOperator, InteractionOperator
-from openfermion.utils import count_qubits, normal_ordered
+from openfermion.utils import count_qubits, is_hermitian, normal_ordered
 
 
 def get_chemist_two_body_coefficients(two_body_operator):
@@ -228,7 +228,6 @@ def low_rank_spatial_two_body_decomposition(two_body_coefficients,
             from reordering to chemist ordering.  Returned in spin-orbital
             basis.
 
-
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
         ValueError: Cannot provide both final_rank and truncation_value.
@@ -314,7 +313,7 @@ def low_rank_spatial_two_body_decomposition(two_body_coefficients,
             one_body_correction)
 
 
-def prepare_one_body_squared_evolution(one_body_matrix):
+def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
     """Get Givens angles and DiagonalHamiltonian to simulate squared one-body.
 
     The goal here will be to prepare to simulate evolution under
@@ -328,6 +327,8 @@ def prepare_one_body_squared_evolution(one_body_matrix):
         one_body_matrix (ndarray of floats): an N by N array storing the
             coefficients of a one-body operator to be squared. For instance,
             in the above the elements of this matrix are :math:`h_{pq}`.
+        spin_basis (bool): Whether the matrix is passed in the
+            spin orbital basis.
 
     Returns:
         density_density_matrix(ndarray of floats) an N by N array storing
@@ -335,9 +336,26 @@ def prepare_one_body_squared_evolution(one_body_matrix):
         basis_transformation_matrix (ndarray of floats) an N by N array
             storing the values of the basis transformation.
     """
+    # If the specification was in spin-orbitals, chop back down to spatial orbs
+    # assuming a spin-symmetric interaction
+    if spin_basis:
+        n_modes = one_body_matrix.shape[0]
+        alpha_indices = list(range(0, n_modes, 2))
+        one_body_matrix = one_body_matrix[
+                numpy.ix_(alpha_indices, alpha_indices)]
+
     # Diagonalize the one-body matrix.
-    eigenvalues, eigenvectors = numpy.linalg.eig(one_body_matrix)
+    if is_hermitian(one_body_matrix):
+        eigenvalues, eigenvectors = numpy.linalg.eigh(one_body_matrix)
+    else:
+        eigenvalues, eigenvectors = numpy.linalg.eig(one_body_matrix)
     basis_transformation_matrix = numpy.conjugate(eigenvectors.transpose())
+
+    # If the specification was in spin-orbitals, expand back
+    if spin_basis:
+        basis_transformation_matrix = numpy.kron(
+                basis_transformation_matrix, numpy.eye(2))
+        eigenvalues = numpy.kron(eigenvalues, numpy.ones(2))
 
     # Obtain the diagonal two-body matrix.
     density_density_matrix = numpy.outer(eigenvalues, eigenvalues)
