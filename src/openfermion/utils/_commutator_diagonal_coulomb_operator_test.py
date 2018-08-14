@@ -83,14 +83,14 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
         self.assertTrue(res.isclose(reference))
 
     def test_add_to_existing_result(self):
-        result = FermionOperator('0^ 1')
+        prior_terms = FermionOperator('0^ 1')
         operator_a = FermionOperator('2^ 1')
         operator_b = FermionOperator('0^ 2')
 
         commutator_ordered_diagonal_coulomb_with_two_body_operator(
-            operator_a, operator_b, result=result)
+            operator_a, operator_b, prior_terms=prior_terms)
 
-        self.assertTrue(result.isclose(FermionOperator.zero()))
+        self.assertTrue(prior_terms.isclose(FermionOperator.zero()))
 
     def test_integration_jellium_hamiltonian_with_negation(self):
         hamiltonian = normal_ordered(

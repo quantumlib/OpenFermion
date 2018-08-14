@@ -18,7 +18,7 @@ from openfermion import FermionOperator, normal_ordered
 
 
 def commutator_ordered_diagonal_coulomb_with_two_body_operator(
-        operator_a, operator_b, result=None):
+        operator_a, operator_b, prior_terms=None):
     """Compute the commutator of two-body operators provided that both are
     normal-ordered and that the first only has diagonal Coulomb interactions.
 
@@ -28,18 +28,18 @@ def commutator_ordered_diagonal_coulomb_with_two_body_operator(
             operators (i^ j) or diagonal Coulomb operators (i^ i or i^ j^ i j).
         operator_b: The second FermionOperator argument of the commutator.
             operator_b can be any arbitrary two-body operator.
-        result (optional): The initial FermionOperator to add to.
+        prior_terms (optional): The initial FermionOperator to add to.
 
     Returns:
-        result: A FermionOperator with the commutator added to it.
+        The commutator, or the commutator added to prior_terms if provided.
 
     Notes:
         The function could be readily extended to the case of arbitrary
         two-body operator_a given that operator_b has the desired form;
         however, the extra check slows it down without desirable added utility.
     """
-    if result is None:
-        result = FermionOperator.zero()
+    if prior_terms is None:
+        prior_terms = FermionOperator.zero()
 
     for term_a in operator_a.terms:
         coeff_a = operator_a.terms[term_a]
@@ -57,18 +57,18 @@ def commutator_ordered_diagonal_coulomb_with_two_body_operator(
                     term_a[0][0] == term_a[2][0] and
                     term_a[1][0] == term_a[3][0]):
                 _commutator_two_body_diagonal_with_two_body(
-                    term_a, term_b, coefficient, result)
+                    term_a, term_b, coefficient, prior_terms)
 
             # Case 2: commutator of a 1-body and a 2-body operator
             elif (len(term_b) == 4 and len(term_a) == 2) or (
                     len(term_a) == 4 and len(term_b) == 2):
                 _commutator_one_body_with_two_body(
-                    term_a, term_b, coefficient, result)
+                    term_a, term_b, coefficient, prior_terms)
 
             # Case 3: both terms are one-body operators (both length 2)
             elif len(term_a) == 2 and len(term_b) == 2:
                 _commutator_one_body_with_one_body(
-                    term_a, term_b, coefficient, result)
+                    term_a, term_b, coefficient, prior_terms)
 
             # Final case (case 4): violation of the input promise. Still
             # compute the commutator, but warn the user.
@@ -80,20 +80,20 @@ def commutator_ordered_diagonal_coulomb_with_two_body_operator(
                 additional.terms[term_b + term_a] = -coefficient
                 additional = normal_ordered(additional)
 
-                result += additional
+                prior_terms += additional
 
-    return result
+    return prior_terms
 
 
 def _commutator_one_body_with_one_body(one_body_action_a, one_body_action_b,
-                                       coefficient, result):
+                                       coefficient, prior_terms):
     """Compute the commutator of two one-body operators specified by actions.
 
     Args:
         one_body_action_a, one_body_action_b (tuple): single terms of one-body
             FermionOperators (i^ j or i^ i).
         coefficient (complex float): coefficient of the commutator.
-        result (FermionOperator): the resultant to which to add the commutator.
+        prior_terms (FermionOperator): prior terms to add the commutator to.
     """
     # In the case that both the creation and annihilation operators of the
     # two actions pair, two new terms must be added.
@@ -104,30 +104,30 @@ def _commutator_one_body_with_one_body(one_body_action_a, one_body_action_b,
         new_one_body_action_b = ((one_body_action_b[0][0], 1),
                                  (one_body_action_b[0][0], 0))
 
-        result.terms[new_one_body_action_a] = (
-            result.terms.get(new_one_body_action_a, 0.0) + coefficient)
-        result.terms[new_one_body_action_b] = (
-            result.terms.get(new_one_body_action_b, 0.0) - coefficient)
+        prior_terms.terms[new_one_body_action_a] = (
+            prior_terms.terms.get(new_one_body_action_a, 0.0) + coefficient)
+        prior_terms.terms[new_one_body_action_b] = (
+            prior_terms.terms.get(new_one_body_action_b, 0.0) - coefficient)
 
     # A single pairing causes the mixed action a[0]^ b[1] to be added
     elif one_body_action_a[1][0] == one_body_action_b[0][0]:
         action_ab = ((one_body_action_a[0][0], 1),
                      (one_body_action_b[1][0], 0))
 
-        result.terms[action_ab] = (
-            result.terms.get(action_ab, 0.0) + coefficient)
+        prior_terms.terms[action_ab] = (
+            prior_terms.terms.get(action_ab, 0.0) + coefficient)
 
     # The other single pairing adds the mixed action b[0]^ a[1]
     elif one_body_action_a[0][0] == one_body_action_b[1][0]:
         action_ba = ((one_body_action_b[0][0], 1),
                      (one_body_action_a[1][0], 0))
 
-        result.terms[action_ba] = (
-            result.terms.get(action_ba, 0.0) - coefficient)
+        prior_terms.terms[action_ba] = (
+            prior_terms.terms.get(action_ba, 0.0) - coefficient)
 
 
 def _commutator_one_body_with_two_body(action_a, action_b,
-                                       coefficient, result):
+                                       coefficient, prior_terms):
     """Compute commutator of action-specified one- and two-body operators.
 
     Args:
@@ -135,7 +135,7 @@ def _commutator_one_body_with_two_body(action_a, action_b,
             two-body, from normal-ordered FermionOperators. It does not matter
             which is one- or two-body so long as only one of each appears.
         coefficient (complex float): coefficient of the commutator.
-        result (FermionOperator): the resultant to which to add the commutator.
+        prior_terms (FermionOperator): prior terms to add the commutator to.
     """
     # Determine which action is 1-body and which is 2-body.
     # Label the creation and annihilation parts of the two terms.
@@ -178,8 +178,8 @@ def _commutator_one_body_with_two_body(action_a, action_b,
 
         # Add the resulting term.
         if new_inner_action[0][0] > new_inner_action[1][0]:
-            result.terms[tuple(new_inner_action)] = (
-                result.terms.get(tuple(new_inner_action), 0.0) +
+            prior_terms.terms[tuple(new_inner_action)] = (
+                prior_terms.terms.get(tuple(new_inner_action), 0.0) +
                 new_coeff)
 
     # If the one-body creation is in the two-body annihilation parts
@@ -199,13 +199,13 @@ def _commutator_one_body_with_two_body(action_a, action_b,
 
         # Add the resulting term.
         if new_action[2][0] > new_action[3][0]:
-            result.terms[tuple(new_action)] = (
-                result.terms.get(tuple(new_action), 0.0) + new_coeff)
+            prior_terms.terms[tuple(new_action)] = (
+                prior_terms.terms.get(tuple(new_action), 0.0) + new_coeff)
 
 
 def _commutator_two_body_diagonal_with_two_body(
         diagonal_coulomb_action, arbitrary_two_body_action,
-        coefficient, result):
+        coefficient, prior_terms):
     """Compute the commutator of two two-body operators specified by actions.
 
     Args:
@@ -216,7 +216,7 @@ def _commutator_two_body_diagonal_with_two_body(
             FermionOperator, in normal-ordered form, i.e. i^ j^ k l with
             i > j, k > l.
         coefficient (complex float): coefficient of the commutator.
-        result (FermionOperator): the resultant to which to add the commutator.
+        prior_terms (FermionOperator): prior terms to add the commutator to.
 
     Notes:
         The function could be readily extended to the case of reversed input
@@ -235,13 +235,15 @@ def _commutator_two_body_diagonal_with_two_body(
     # diagonal_coulomb_action and arbitrary_two_body_action totally pair up.
     if (diagonal_coulomb_action[2][0] == arbitrary_two_body_action[0][0] and
             diagonal_coulomb_action[3][0] == arbitrary_two_body_action[1][0]):
-        result.terms[arbitrary_two_body_action] = (
-            result.terms.get(arbitrary_two_body_action, 0.0) - coefficient)
+        prior_terms.terms[arbitrary_two_body_action] = (
+            prior_terms.terms.get(arbitrary_two_body_action, 0.0) -
+            coefficient)
 
     elif (diagonal_coulomb_action[0][0] == arbitrary_two_body_action[2][0] and
           diagonal_coulomb_action[1][0] == arbitrary_two_body_action[3][0]):
-        result.terms[arbitrary_two_body_action] = (
-            result.terms.get(arbitrary_two_body_action, 0.0) + coefficient)
+        prior_terms.terms[arbitrary_two_body_action] = (
+            prior_terms.terms.get(arbitrary_two_body_action, 0.0) +
+            coefficient)
 
     # Exactly one of diagonal_coulomb_action's creations matches one of
     # arbitrary_two_body_action's annihilations.
@@ -253,7 +255,7 @@ def _commutator_two_body_diagonal_with_two_body(
 
         _add_three_body_term(
             arbitrary_two_body_action, coefficient,
-            diagonal_coulomb_action[1][0], result)
+            diagonal_coulomb_action[1][0], prior_terms)
 
     elif diagonal_coulomb_action[1][0] in arb_2bdy_annihilate:
         # Nothing gets added if there's an unbalanced double creation.
@@ -262,18 +264,18 @@ def _commutator_two_body_diagonal_with_two_body(
             return
 
         _add_three_body_term(arbitrary_two_body_action, coefficient,
-                             diagonal_coulomb_action[0][0], result)
+                             diagonal_coulomb_action[0][0], prior_terms)
 
     elif diagonal_coulomb_action[0][0] in arb_2bdy_create:
         _add_three_body_term(arbitrary_two_body_action, -coefficient,
-                             diagonal_coulomb_action[1][0], result)
+                             diagonal_coulomb_action[1][0], prior_terms)
 
     elif diagonal_coulomb_action[1][0] in arb_2bdy_create:
         _add_three_body_term(arbitrary_two_body_action, -coefficient,
-                             diagonal_coulomb_action[0][0], result)
+                             diagonal_coulomb_action[0][0], prior_terms)
 
 
-def _add_three_body_term(two_body_action, coefficient, mode, result):
+def _add_three_body_term(two_body_action, coefficient, mode, prior_terms):
     new_action = list(two_body_action)
 
     # Insert creation and annihilation operators into the two-body action.
@@ -298,6 +300,6 @@ def _add_three_body_term(two_body_action, coefficient, mode, result):
             new_action[4], new_action[5] = new_action[5], new_action[4]
             coefficient *= -1
 
-    # Add the new normal-ordered term to the result.
-    result.terms[tuple(new_action)] = (
-        result.terms.get(tuple(new_action), 0.0) + coefficient)
+    # Add the new normal-ordered term to the prior terms.
+    prior_terms.terms[tuple(new_action)] = (
+        prior_terms.terms.get(tuple(new_action), 0.0) + coefficient)
