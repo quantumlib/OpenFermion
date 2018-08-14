@@ -339,7 +339,8 @@ class LowRankTest(unittest.TestCase):
 
             # Get the squared one-body operator via one-body decomposition.
             density_density_matrix, basis_transformation_matrix = (
-                prepare_one_body_squared_evolution(one_body_squares[l]))
+                prepare_one_body_squared_evolution(
+                    one_body_squares[l], spin_basis=False))
             two_body_operator = FermionOperator()
             for p, q in itertools.product(range(n_qubits), repeat=2):
                 term = ((p, 1), (p, 0), (q, 1), (q, 0))
