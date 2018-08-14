@@ -933,3 +933,49 @@ class MolecularData(object):
         # Cast to InteractionRDM class.
         rdm = InteractionRDM(one_rdm, two_rdm)
         return rdm
+
+
+def load_molecular_hamiltonian(
+        geometry,
+        basis,
+        multiplicity,
+        description,
+        n_active_electrons=None,
+        n_active_orbitals=None):
+    """Attempt to load a molecular Hamiltonian with the given properties.
+
+    Args:
+        geometry: A list of tuples giving the coordinates of each atom.
+            An example is [('H', (0, 0, 0)), ('H', (0, 0, 0.7414))].
+            Distances in angstrom. Use atomic symbols to
+            specify atoms.
+        basis: A string giving the basis set. An example is 'cc-pvtz'.
+            Only optional if loading from file.
+        multiplicity: An integer giving the spin multiplicity.
+        description: A string giving a description.
+        n_active_electrons: An optional integer specifying the number of
+            electrons desired in the active space.
+        n_active_orbitals: An optional integer specifying the number of
+            spatial orbitals desired in the active space.
+    """
+
+    molecule = MolecularData(
+            geometry, basis, multiplicity, description=description)
+    molecule.load()
+
+    if n_active_electrons is None:
+        n_core_orbitals = 0
+        occupied_indices = None
+    else:
+        n_core_orbitals = (molecule.n_electrons - n_active_electrons) // 2
+        occupied_indices = list(range(n_core_orbitals))
+        
+    if n_active_orbitals is None:
+        active_indices = None
+    else:
+        active_indices = list(range(n_core_orbitals,
+                                    n_core_orbitals + n_active_orbitals))
+
+    return molecule.get_molecular_hamiltonian(
+            occupied_indices=occupied_indices,
+            active_indices=active_indices)
