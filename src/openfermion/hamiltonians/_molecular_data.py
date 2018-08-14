@@ -957,6 +957,9 @@ def load_molecular_hamiltonian(
             electrons desired in the active space.
         n_active_orbitals: An optional integer specifying the number of
             spatial orbitals desired in the active space.
+
+    Returns:
+        The Hamiltonian as an InteractionOperator.
     """
 
     molecule = MolecularData(
