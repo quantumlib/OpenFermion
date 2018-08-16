@@ -95,10 +95,9 @@ def low_rank_two_body_decomposition(two_body_coefficients,
         two_body_coefficients (ndarray): an N x N x N x N
             numpy array giving the :math:`h_{pqrs}` tensor.
             This tensor must be 8-fold symmetric (real integrals).
-        truncation_threshold (optional Float): the value of x in the expression
-            above. If None, then L = N ** 2 and no truncation will occur.
+        truncation_threshold (optional Float): the value of x, above.
         final_rank (optional int): if provided, this specifies the value of
-            L at which to truncate.
+            L at which to truncate. This overrides truncation_threshold.
         spin_basis (bool): True if the two-body terms are passed in spin
             orbital basis.  False if already in spatial orbital basis.
 
@@ -114,7 +113,6 @@ def low_rank_two_body_decomposition(two_body_coefficients,
 
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
-        ValueError: Cannot provide both final_rank and truncation_value.
     """
     # Initialize N^2 by N^2 interaction array.
     one_body_correction, chemist_two_body_coefficients = (
@@ -158,19 +156,11 @@ def low_rank_two_body_decomposition(two_body_coefficients,
     truncation_errors = cumulative_error_sum[-1] - cumulative_error_sum
 
     # Optionally truncate rank and return.
-    if truncation_threshold is None:
-        if final_rank is None:
-            raise ValueError(
-                'Must provide either final_rank or truncation_value.')
-        else:
-            max_rank = final_rank
+    if final_rank is None:
+        max_rank = 1 + numpy.argmax(
+            truncation_errors <= truncation_threshold)
     else:
-        if final_rank is None:
-            max_rank = 1 + numpy.argmax(
-                truncation_errors <= truncation_threshold)
-        else:
-            max_rank = min(1 + numpy.argmax(
-                truncation_errors <= truncation_threshold), final_rank)
+        max_rank = final_rank
     truncation_value = truncation_errors[max_rank - 1]
     return (eigenvalues[:max_rank],
             one_body_squares[:max_rank],
