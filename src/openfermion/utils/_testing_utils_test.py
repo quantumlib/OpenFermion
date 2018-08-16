@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import itertools
 import fractions
 import unittest
 
@@ -237,22 +238,37 @@ class RandomInteractionOperatorTest(unittest.TestCase):
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
 
-    def test_expand_spin_norm(self):
+    def test_symmetry(self):
         n_orbitals = 5
 
-        iop_without_spin = random_interaction_operator(
-                n_orbitals, real=True, seed=39460)
-        iop_with_spin = random_interaction_operator(
-                n_orbitals, expand_spin=True, real=True, seed=39460)
+        # Real.
+        iop = random_interaction_operator(n_orbitals, expand_spin=False,
+                                          real=True)
+        ferm_op = get_fermion_operator(iop)
+        self.assertTrue(is_hermitian(ferm_op))
+        two_body_coefficients = iop.two_body_tensor
+        for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
 
-        ferm_op_without_spin = get_fermion_operator(iop_without_spin)
-        ferm_op_without_spin.terms[()] = 0.0
-        ferm_op_with_spin = get_fermion_operator(iop_with_spin)
-        ferm_op_with_spin.terms[()] = 0.0
+            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
+                                   two_body_coefficients[r, q, p, s])
 
-        self.assertAlmostEqual(
-                2.0 * ferm_op_without_spin.induced_norm(1),
-                ferm_op_with_spin.induced_norm(1))
+            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
+                                   two_body_coefficients[p, s, r, q])
+
+            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
+                                   two_body_coefficients[s, r, q, p])
+
+            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
+                                   two_body_coefficients[q, p, s, r])
+
+            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
+                                   two_body_coefficients[r, s, p, q])
+
+            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
+                                   two_body_coefficients[s, p, q, r])
+
+            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
+                                   two_body_coefficients[q, r, s, p])
 
 
 class HaarRandomVectorTest(unittest.TestCase):
