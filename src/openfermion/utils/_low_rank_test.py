@@ -92,7 +92,7 @@ class LowRankTest(unittest.TestCase):
         random_fermion = get_fermion_operator(random_interaction)
 
         # Decompose.
-        cholesky_diag, one_body_squares, one_body_correction, error = (
+        eigenvalues, one_body_squares, one_body_correction, error = (
             low_rank_two_body_decomposition(
                 random_interaction.two_body_tensor))
         self.assertFalse(error)
@@ -108,7 +108,7 @@ class LowRankTest(unittest.TestCase):
 
         # Check for exception.
         with self.assertRaises(ValueError):
-            cholesky_diag, one_body_squares, one_body_correction, error = (
+            eigenvalues, one_body_squares, one_body_correction, error = (
                 low_rank_two_body_decomposition(
                     random_interaction.two_body_tensor,
                     truncation_threshold=1., final_rank=1))
@@ -120,7 +120,7 @@ class LowRankTest(unittest.TestCase):
                 term = ((p, 1), (q, 0))
                 coefficient = one_body_squares[l, p, q]
                 one_body_operator += FermionOperator(term, coefficient)
-            decomposed_operator += cholesky_diag[l] * (one_body_operator ** 2)
+            decomposed_operator += eigenvalues[l] * (one_body_operator ** 2)
 
         # Test for consistency.
         difference = normal_ordered(decomposed_operator - random_fermion)
@@ -191,7 +191,6 @@ class LowRankTest(unittest.TestCase):
                     two_body_coefficients + 0.01j,
                     truncation_threshold=1.,
                     final_rank=1))
-
 
     def test_rank_reduction(self):
 
@@ -298,13 +297,12 @@ class LowRankTest(unittest.TestCase):
         molecule_interaction = molecule.get_molecular_hamiltonian()
         fermion_operator = get_fermion_operator(molecule_interaction)
 
-        constant = molecule_interaction.constant
         two_body_coefficients = molecule_interaction.two_body_tensor
 
         # Decompose.
-        cholesky_diag, one_body_squares, one_body_correction, error = (
+        eigenvalues, one_body_squares, one_body_correction, error = (
             low_rank_two_body_decomposition(two_body_coefficients))
-        rank = cholesky_diag.size
+        rank = eigenvalues.size
         for l in range(rank):
             one_body_operator = FermionOperator()
             for p, q in itertools.product(range(n_qubits), repeat=2):
@@ -314,8 +312,13 @@ class LowRankTest(unittest.TestCase):
             one_body_squared = one_body_operator ** 2
 
             # Get the squared one-body operator via one-body decomposition.
-            density_density_matrix, basis_transformation_matrix = (
-                prepare_one_body_squared_evolution(one_body_squares[l]))
+            if abs(eigenvalues[l]) < 1e-6:
+                with self.assertRaises(ValueError):
+                    prepare_one_body_squared_evolution(one_body_squares[l])
+                continue
+            else:
+                density_density_matrix, basis_transformation_matrix = (
+                    prepare_one_body_squared_evolution(one_body_squares[l]))
             two_body_operator = FermionOperator()
             for p, q in itertools.product(range(n_qubits), repeat=2):
                 term = ((p, 1), (p, 0), (q, 1), (q, 0))

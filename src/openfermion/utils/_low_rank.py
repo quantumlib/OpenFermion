@@ -103,7 +103,7 @@ def low_rank_two_body_decomposition(two_body_coefficients,
             orbital basis.  False if already in spatial orbital basis.
 
     Returns:
-        cholesky_diag (ndarray of floats): length L array
+        eigenvalues (ndarray of floats): length L array
             giving the :math:`\lambda_l`.
         one_body_squares (ndarray of floats): L x N x N array of floats
             corresponding to the value of :math:`g_{pql}`.
@@ -131,9 +131,8 @@ def low_rank_two_body_decomposition(two_body_coefficients,
     if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
         raise TypeError('Invalid two-body coefficient tensor specification.')
 
-    # Decompose using LDL decomposition, closely related to Choleksy.
-    cholesky_vecs, cholesky_diag, _ = scipy.linalg.ldl(interaction_array)
-    cholesky_diag = numpy.diag(cholesky_diag)
+    # Decompose with exact diagonalization.
+    eigenvalues, eigenvectors = numpy.linalg.eigh(interaction_array)
 
     # Get one-body squares and compute weights.
     term_weights = numpy.zeros(full_rank)
@@ -144,13 +143,13 @@ def low_rank_two_body_decomposition(two_body_coefficients,
     for l in range(full_rank):
         one_body_squares[l] = numpy.kron(
             numpy.reshape(
-                cholesky_vecs[:, l], (n_orbitals, n_orbitals)), numpy.eye(2))
-        term_weights[l] = abs(cholesky_diag[l]) * numpy.sum(
+                eigenvectors[:, l], (n_orbitals, n_orbitals)), numpy.eye(2))
+        term_weights[l] = abs(eigenvalues[l]) * numpy.sum(
             numpy.absolute(one_body_squares[l])) ** 2
 
     # Sort by weight.
     indices = numpy.argsort(term_weights)[::-1]
-    cholesky_diag = cholesky_diag[indices]
+    eigenvalues = eigenvalues[indices]
     term_weights = term_weights[indices]
     one_body_squares = one_body_squares[indices]
 
@@ -170,7 +169,7 @@ def low_rank_two_body_decomposition(two_body_coefficients,
             'Cannot provide both final_rank and truncation_value.')
     truncation_value = truncation_errors[max_rank - 1]
 
-    return (cholesky_diag[:max_rank],
+    return (eigenvalues[:max_rank],
             one_body_squares[:max_rank],
             one_body_correction,
             truncation_value)
@@ -198,6 +197,9 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
             the diagonal two-body coefficeints :math:`V_{pq}` above.
         basis_transformation_matrix (ndarray of floats) an N by N array
             storing the values of the basis transformation.
+
+    Raises:
+        ValueError: one_body_matrix is not Hermitian.
     """
     # If the specification was in spin-orbitals, chop back down to spatial orbs
     # assuming a spin-symmetric interaction
@@ -211,7 +213,7 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
     if is_hermitian(one_body_matrix):
         eigenvalues, eigenvectors = numpy.linalg.eigh(one_body_matrix)
     else:
-        eigenvalues, eigenvectors = numpy.linalg.eig(one_body_matrix)
+        raise ValueError('one_body_matrix is not Hermitian.')
     basis_transformation_matrix = numpy.conjugate(eigenvectors.transpose())
 
     # If the specification was in spin-orbitals, expand back
