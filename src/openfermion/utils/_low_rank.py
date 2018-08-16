@@ -167,29 +167,46 @@ def low_rank_two_body_decomposition(two_body_coefficients,
             one_body_correction,
             truncation_value)
 
-
-def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
+def prepare_one_body_squared_evolution(one_body_matrix,
+                                       truncation_threshold=1e-8,
+                                       final_rank=None,
+                                       spin_basis=True):
     """Get Givens angles and DiagonalHamiltonian to simulate squared one-body.
+    As in arXiv:1808.02625.
 
     The goal here will be to prepare to simulate evolution under
     :math:`(\sum_{pq} h_{pq} a^\dagger_p a_q)^2` by decomposing as
     :math:`R e^{-i \sum_{pq} V_{pq} n_p n_q} R^\dagger' where
     :math:`R` is a basis transformation matrix.
 
-    TODO: Add option for truncation based on one-body eigenvalues.
+    To do this we first diagonalize the squared one-body part, i.e.
+    :math:`\sum_{pq} h_{pq} a^\dagger_p a_q` is represented as
+    :math:`R (\sum_{p=0}^{v-1} f_p n_p) R^\dagger` where v
+    is the number of non-zero eigenvalues in this diagonalization.
+    v might be chosen so that :math:`\sum_{p=0}^{v-1} |f_p| < x`.
+    As with the previous step, the truncation of eigenvalues is optional.
+    When truncating, we make sure that the diagonal form contains
+    the eigenvalues in order, and only decompose the part of the
+    diagonalizing unitary using Givens rotations.
 
     Args:
         one_body_matrix (ndarray of floats): an N by N array storing the
             coefficients of a one-body operator to be squared. For instance,
             in the above the elements of this matrix are :math:`h_{pq}`.
+        truncation_threshold (optional Float): the value of x in the above.
+        final_rank (optional int): if provided, this specifies the value of
+            v at which to truncate. Takes precedence over final_rank.
         spin_basis (bool): Whether the matrix is passed in the
             spin orbital basis.
 
     Returns:
-        density_density_matrix(ndarray of floats) an N by N array storing
+        density_density_matrix(ndarray of floats) a v by v array storing
             the diagonal two-body coefficeints :math:`V_{pq}` above.
-        basis_transformation_matrix (ndarray of floats) an N by N array
-            storing the values of the basis transformation.
+        basis_transformation_matrix (ndarray of floats) a N by N array
+            storing the values of the basis transformation. Only v N
+            coefficients are nonzero.
+        truncation_value (float): after truncation, this is the value
+            :math:`\sum_{p=0}^{v-1} |f_p| < x`.
 
     Raises:
         ValueError: one_body_matrix is not Hermitian.
@@ -207,15 +224,36 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
         eigenvalues, eigenvectors = numpy.linalg.eigh(one_body_matrix)
     else:
         raise ValueError('one_body_matrix is not Hermitian.')
-    basis_transformation_matrix = numpy.conjugate(eigenvectors.transpose())
 
-    # If the specification was in spin-orbitals, expand back
+    # If the specification was in spin-orbitals, expand back.
     if spin_basis:
-        basis_transformation_matrix = numpy.kron(
-                basis_transformation_matrix, numpy.eye(2))
         eigenvalues = numpy.kron(eigenvalues, numpy.ones(2))
+        eigenvectors = numpy.kron(eigenvectors, numpy.eye(2))
+    full_rank = eigenvalues.size
+    print(eigenvalues)
 
-    # Obtain the diagonal two-body matrix.
+    # Sort eigenvalues and vectors.
+    sorted_indices = numpy.argsort(numpy.absolute(eigenvalues))[::-1]
+    eigenvalues = eigenvalues[sorted_indices]
+    eigenvectors = eigenvectors[sorted_indices]
+
+    # Determine upper-bound on truncation errors that would occur.
+    cumulative_error_sum = numpy.cumsum(numpy.absolute(eigenvalues))
+    truncation_errors = cumulative_error_sum[-1] - cumulative_error_sum
+
+    # Optionally truncate rank.
+    if final_rank is None:
+        max_rank = 1 + numpy.argmax(
+            truncation_errors <= truncation_threshold)
+    else:
+        max_rank = final_rank
+    truncation_value = truncation_errors[max_rank - 1]
+    eigenvalues = eigenvalues[:max_rank]
+    if max_rank < full_rank:
+        eigenvectors[:, -(full_rank - max_rank):] *= 0.
+
+    # Obtain the diagonal two-body matrix and basis transformation.
+    basis_transformation_matrix = numpy.conjugate(eigenvectors.transpose())
     density_density_matrix = numpy.outer(eigenvalues, eigenvalues)
 
     # Return.

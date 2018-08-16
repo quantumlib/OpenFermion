@@ -80,7 +80,7 @@ class ChemistTwoBodyTest(unittest.TestCase):
         self.assertAlmostEqual(0., difference.induced_norm())
 
 
-class LowRankTest(unittest.TestCase):
+class FirstDiagonalizationTest(unittest.TestCase):
 
     def test_random_operator_consistency(self):
 
@@ -271,6 +271,9 @@ class LowRankTest(unittest.TestCase):
             errors += [difference.induced_norm()]
         self.assertTrue(errors[3] <= errors[2] <= errors[1] <= errors[0])
 
+
+class SecondDiagonalizationTest(unittest.TestCase):
+
     def test_one_body_square_decomposition(self):
 
         # Initialize H2 InteractionOperator.
@@ -327,3 +330,56 @@ class LowRankTest(unittest.TestCase):
             two_body_spectrum = eigenspectrum(two_body_operator)
             difference = two_body_spectrum - one_body_squared_spectrum
             self.assertAlmostEqual(0., numpy.amax(numpy.absolute(difference)))
+
+    def test_one_body_square_truncation(self):
+
+        # Initialize H2 InteractionOperator.
+        n_qubits = 20
+        n_orbitals = 10
+        filename = os.path.join(THIS_DIRECTORY, 'data',
+                                'H10_sto-3g_ring_0.7414')
+        molecule = MolecularData(filename=filename)
+        molecule_interaction = molecule.get_molecular_hamiltonian()
+        fermion_operator = get_fermion_operator(molecule_interaction)
+
+        two_body_coefficients = molecule_interaction.two_body_tensor
+
+        # Decompose.
+        eigenvalues, one_body_squares, one_body_correction, error = (
+            low_rank_two_body_decomposition(two_body_coefficients))
+        rank = eigenvalues.size
+        for l in range(rank):
+            print(l, eigenvalues[l])
+            one_body_operator = FermionOperator()
+            for p, q in itertools.product(range(n_qubits), repeat=2):
+                term = ((p, 1), (q, 0))
+                coefficient = one_body_squares[l, p, q]
+                one_body_operator += FermionOperator(term, coefficient)
+            one_body_squared = one_body_operator ** 2
+
+            # Get the squared one-body operator via one-body decomposition.
+            if abs(eigenvalues[l]) < 1e-6:
+                with self.assertRaises(ValueError):
+                    prepare_one_body_squared_evolution(one_body_squares[l])
+                continue
+            else:
+                density_density_matrix, basis_transformation_matrix = (
+                    prepare_one_body_squared_evolution(one_body_squares[l]))
+            rotation_rank = density_density_matrix.shape[0]
+            two_body_operator = FermionOperator()
+            for p, q in itertools.product(range(rotation_rank), repeat=2):
+                term = ((p, 1), (p, 0), (q, 1), (q, 0))
+                coefficient = density_density_matrix[p, q]
+                two_body_operator += FermionOperator(term, coefficient)
+
+            # Confirm that the rotations diagonalize the one-body squares.
+            hopefully_diagonal = basis_transformation_matrix.dot(
+                numpy.dot(one_body_squares[l],
+                          numpy.transpose(numpy.conjugate(
+                              basis_transformation_matrix))))
+            diagonal = numpy.diag(hopefully_diagonal)
+            difference = hopefully_diagonal - numpy.diag(diagonal)
+            #self.assertAlmostEqual(0., numpy.amax(numpy.absolute(difference)))
+            density_density_alternative = numpy.outer(diagonal, diagonal)
+            #difference = density_density_alternative - density_density_matrix
+            #self.assertAlmostEqual(0., numpy.amax(numpy.absolute(difference)))
