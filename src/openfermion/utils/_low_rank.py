@@ -80,7 +80,7 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
 
 
 def low_rank_two_body_decomposition(two_body_coefficients,
-                                    truncation_threshold=None,
+                                    truncation_threshold=1e-8,
                                     final_rank=None,
                                     spin_basis=True):
     """Convert two-body operator into sum of squared one-body operators.
@@ -158,17 +158,20 @@ def low_rank_two_body_decomposition(two_body_coefficients,
     truncation_errors = cumulative_error_sum[-1] - cumulative_error_sum
 
     # Optionally truncate rank and return.
-    if truncation_threshold is None and final_rank is None:
-        max_rank = full_rank
-    elif truncation_threshold is None:
-        max_rank = final_rank
-    elif final_rank is None:
-        max_rank = 1 + numpy.argmax(truncation_errors <= truncation_threshold)
+    if truncation_threshold is None:
+        if final_rank is None:
+            raise ValueError(
+                'Must provide either final_rank or truncation_value.')
+        else:
+            max_rank = final_rank
     else:
-        raise ValueError(
-            'Cannot provide both final_rank and truncation_value.')
+        if final_rank is None:
+            max_rank = 1 + numpy.argmax(
+                truncation_errors <= truncation_threshold)
+        else:
+            max_rank = min(1 + numpy.argmax(
+                truncation_errors <= truncation_threshold), final_rank)
     truncation_value = truncation_errors[max_rank - 1]
-
     return (eigenvalues[:max_rank],
             one_body_squares[:max_rank],
             one_body_correction,

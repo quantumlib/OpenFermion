@@ -111,7 +111,7 @@ class LowRankTest(unittest.TestCase):
             eigenvalues, one_body_squares, one_body_correction, error = (
                 low_rank_two_body_decomposition(
                     random_interaction.two_body_tensor,
-                    truncation_threshold=1., final_rank=1))
+                    truncation_threshold=None, final_rank=None))
 
         # Build back two-body component.
         for l in range(n_orbitals ** 2):
@@ -151,7 +151,7 @@ class LowRankTest(unittest.TestCase):
         # Perform decomposition.
         eigenvalues, one_body_squares, one_body_corrections, trunc_error = (
             low_rank_two_body_decomposition(two_body_coefficients))
-        self.assertFalse(trunc_error)
+        self.assertAlmostEqual(trunc_error, 0.)
 
         # Build back operator constant and one-body components.
         decomposed_operator = FermionOperator((), constant)
@@ -182,7 +182,7 @@ class LowRankTest(unittest.TestCase):
 
         eigenvalues, one_body_squares, one_body_corrections, trunc_error = (
             low_rank_two_body_decomposition(two_body_coefficients))
-        self.assertFalse(trunc_error)
+        self.assertAlmostEqual(trunc_error, 0.)
 
         # Check for property errors
         with self.assertRaises(TypeError):
@@ -257,9 +257,10 @@ class LowRankTest(unittest.TestCase):
              trunc_error) = low_rank_two_body_decomposition(
                  two_body_coefficients,
                  final_rank=final_rank)
+            actual_rank = len(test_eigenvalues)
 
             # Make sure error is below truncation specification.
-            self.assertTrue(len(test_eigenvalues) == final_rank)
+            self.assertTrue(actual_rank <= final_rank)
 
             # Build back operator constant and one-body components.
             decomposed_operator = FermionOperator((), constant)
@@ -271,7 +272,7 @@ class LowRankTest(unittest.TestCase):
                 decomposed_operator += FermionOperator(term, coefficient)
 
             # Build back two-body component.
-            for l in range(final_rank):
+            for l in range(actual_rank):
                 one_body_operator = FermionOperator()
                 for p, q in itertools.product(range(n_qubits), repeat=2):
                     term = ((p, 1), (q, 0))
