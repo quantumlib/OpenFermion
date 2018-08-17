@@ -78,7 +78,7 @@ def random_hermitian_matrix(n, real=False, seed=None):
 def random_interaction_operator(
         n_orbitals, expand_spin=False, real=True, seed=None):
     """Generate a random instance of InteractionOperator.
-    
+
     Args:
         n_orbitals: The number of orbitals.
         expand_spin: Whether to expand each orbital symmetrically into two
@@ -104,56 +104,48 @@ def random_interaction_operator(
     # Generate random two-body coefficients.
     two_body_coefficients = numpy.zeros((n_orbitals, n_orbitals,
                                          n_orbitals, n_orbitals), dtype)
-
-    # Generate "diagonal" terms, which are necessarily real.
-    for p, q in itertools.combinations(range(n_orbitals), 2):
+    for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
         coeff = numpy.random.randn()
-        two_body_coefficients[p, q, p, q] = coeff
-        two_body_coefficients[p, q, q, p] = -coeff
-        two_body_coefficients[q, p, q, p] = coeff
-
-    # Generate the rest of the terms.
-    for (p, q), (r, s) in itertools.combinations(
-            itertools.combinations(range(n_orbitals), 2), 2):
-        coeff = numpy.random.randn()
-        if not real:
+        if not real and len(set([p,q,r,s])) >= 3:
             coeff += 1.j * numpy.random.randn()
-        two_body_coefficients[p, q, r, s] = coeff
-        two_body_coefficients[p, q, s, r] = -coeff
-        two_body_coefficients[q, p, r, s] = -coeff
-        two_body_coefficients[q, p, s, r] = coeff
 
+        # Four point symmetry.
+        two_body_coefficients[p, q, r, s] = coeff
+        two_body_coefficients[q, p, s, r] = coeff
         two_body_coefficients[s, r, q, p] = coeff.conjugate()
-        two_body_coefficients[s, r, p, q] = -coeff.conjugate()
-        two_body_coefficients[r, s, q, p] = -coeff.conjugate()
         two_body_coefficients[r, s, p, q] = coeff.conjugate()
+
+        # Eight point symmetry.
+        if real:
+            two_body_coefficients[r, q, p, s] = coeff
+            two_body_coefficients[p, s, r, q] = coeff
+            two_body_coefficients[s, p, q, r] = coeff
+            two_body_coefficients[q, r, s, p] = coeff
 
     # If requested, expand to spin orbitals.
     if expand_spin:
         n_spin_orbitals = 2 * n_orbitals
 
-        # Expand one-body tensor
+        # Expand one-body tensor.
         one_body_coefficients = numpy.kron(one_body_coefficients, numpy.eye(2))
 
-        # Expand two-body tensor
-        # TODO Do this with kron or einsum
-        new_two_body_coefficients = numpy.zeros((n_spin_orbitals,
-                                                 n_spin_orbitals,
-                                                 n_spin_orbitals,
-                                                 n_spin_orbitals),
-                                                dtype=complex)
-        alpha_indices = list(range(0, n_spin_orbitals, 2))
-        beta_indices = list(range(1, n_spin_orbitals, 2))
-        new_two_body_coefficients[
-                numpy.ix_(alpha_indices,
-                          alpha_indices,
-                          alpha_indices,
-                          alpha_indices)] = two_body_coefficients
-        new_two_body_coefficients[
-                numpy.ix_(beta_indices,
-                          beta_indices,
-                          beta_indices,
-                          beta_indices)] = two_body_coefficients
+        # Expand two-body tensor.
+        new_two_body_coefficients = numpy.zeros((
+            n_spin_orbitals, n_spin_orbitals,
+            n_spin_orbitals, n_spin_orbitals), dtype=complex)
+        for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
+            coefficient = two_body_coefficients[p, q, r, s]
+
+            # Mixed spin.
+            new_two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 * s] = (
+                coefficient)
+            new_two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s + 1] = (
+                coefficient)
+
+            # Same spin.
+            new_two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = coefficient
+            new_two_body_coefficients[2 * p + 1, 2 * q + 1,
+                                      2 * r + 1, 2 * s + 1] = coefficient
         two_body_coefficients = new_two_body_coefficients
 
     # Create the InteractionOperator.

@@ -16,17 +16,24 @@ import logging
 
 import numpy
 
-from openfermion.ops import (FermionOperator,
-                             QubitOperator)
-from openfermion.transforms import get_fermion_operator, jordan_wigner
+from future.utils import iteritems
+
+from openfermion import (commutator,
+                         FermionOperator,
+                         Grid,
+                         jellium_model,
+                         jordan_wigner,
+                         normal_ordered,
+                         QubitOperator)
+from openfermion.transforms import get_fermion_operator
 from openfermion.utils import (
     jordan_wigner_sparse,
-    normal_ordered,
     LinearQubitOperator,
     LinearQubitOperatorOptions,
-    ParallelLinearQubitOperator,
-)
+    ParallelLinearQubitOperator)
 from openfermion.utils._testing_utils import random_interaction_operator
+from openfermion.utils._commutator_diagonal_coulomb_operator import (
+    commutator_ordered_diagonal_coulomb_with_two_body_operator)
 
 
 def benchmark_molecular_operator_jordan_wigner(n_qubits):
@@ -187,6 +194,50 @@ def benchmark_linear_qubit_operator(n_qubits, n_terms, processes=None):
     return runtime_operator, runtime_matvec
 
 
+def benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
+        side_length):
+    """Test speed of computing commutators using specialized functions.
+
+    Args:
+        side_length: The side length of the 2D jellium grid. There are
+            side_length ** 2 qubits, and O(side_length ** 4) terms in the
+            Hamiltonian.
+
+    Returns:
+        runtime_commutator: The time it takes to compute a commutator, after
+            partitioning the terms and normal ordering, using the regular
+            commutator function.
+        runtime_diagonal_commutator: The time it takes to compute the same
+            commutator using methods restricted to diagonal Coulomb operators.
+    """
+    hamiltonian = normal_ordered(jellium_model(Grid(2, side_length, 1.),
+                                               plane_wave=False))
+
+    part_a = FermionOperator.zero()
+    part_b = FermionOperator.zero()
+    add_to_a_or_b = 0  # add to a if 0; add to b if 1
+    for term, coeff in iteritems(hamiltonian.terms):
+        # Partition terms in the Hamiltonian into part_a or part_b
+        if add_to_a_or_b:
+            part_a += FermionOperator(term, coeff)
+        else:
+            part_b += FermionOperator(term, coeff)
+        add_to_a_or_b ^= 1
+
+    start = time.time()
+    _ = normal_ordered(commutator(part_a, part_b))
+    end = time.time()
+    runtime_commutator = end - start
+
+    start = time.time()
+    _ = commutator_ordered_diagonal_coulomb_with_two_body_operator(
+        part_a, part_b)
+    end = time.time()
+    runtime_diagonal_commutator = end - start
+
+    return runtime_commutator, runtime_diagonal_commutator
+
+
 # Sets up each benchmark run.
 def run_molecular_operator_jordan_wigner(n_qubits=18):
     """Run InteractionOperator.jordan_wigner_transform() benchmark."""
@@ -198,6 +249,7 @@ def run_molecular_operator_jordan_wigner(n_qubits=18):
                  'seconds.\n', runtime)
 
     return runtime
+
 
 def run_fermion_math_and_normal_order(n_qubits=20, term_length=10, power=15):
     """Run benchmark on FermionOperator math and normal-ordering."""
@@ -211,6 +263,7 @@ def run_fermion_math_and_normal_order(n_qubits=20, term_length=10, power=15):
 
     return runtime_math, runtime_normal
 
+
 def run_jordan_wigner_sparse(n_qubits=10):
     """Run FermionOperator.jordan_wigner_sparse() benchmark."""
     logging.info('Starting test on FermionOperator.jordan_wigner_sparse().')
@@ -219,6 +272,7 @@ def run_jordan_wigner_sparse(n_qubits=10):
     logging.info('Construction of SparseOperator took %f seconds.\n', runtime)
 
     return runtime
+
 
 def run_linear_qubit_operator(n_qubits=16, n_terms=10, processes=10):
     """Run linear_qubit_operator benchmark."""
@@ -229,11 +283,30 @@ def run_linear_qubit_operator(n_qubits=16, n_terms=10, processes=10):
     _, runtime_parallel = benchmark_linear_qubit_operator(n_qubits, n_terms,
                                                           processes)
     logging.info('LinearQubitOperator took %f seconds, while '
-                 'ParallelQubitOperator took %f seconds with %d processes, and '
-                 'ratio is %.2f.\n', runtime_sequential, runtime_parallel,
+                 'ParallelQubitOperator took %f seconds with %d processes, '
+                 'and ratio is %.2f.\n', runtime_sequential, runtime_parallel,
                  processes, runtime_sequential / runtime_parallel)
 
     return runtime_sequential, runtime_parallel
+
+
+def run_diagonal_commutator(side_length=4):
+    """Run commutator_diagonal_coulomb_operators benchmark."""
+
+    logging.info(
+        'Starting test on '
+        'commutator_ordered_diagonal_coulomb_with_two_body_operator().')
+    runtime_commutator, runtime_diagonal_commutator = (
+        benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
+            side_length=side_length))
+    logging.info('Regular commutator computation took %f seconds, while '
+                 'commutator_ordered_diagonal_coulomb_with_two_body_operator'
+                 ' took %f seconds. Ratio is %.2f.\n', runtime_commutator,
+                 runtime_diagonal_commutator,
+                 runtime_commutator / runtime_diagonal_commutator)
+
+    return runtime_commutator, runtime_diagonal_commutator
+
 
 # Run benchmarks.
 if __name__ == '__main__':
@@ -246,3 +319,4 @@ if __name__ == '__main__':
     run_fermion_math_and_normal_order()
     run_jordan_wigner_sparse()
     run_linear_qubit_operator()
+    run_diagonal_commutator()
