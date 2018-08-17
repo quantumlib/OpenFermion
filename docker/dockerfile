@@ -18,29 +18,42 @@ USER root
 
 RUN apt-get update
 
-# Install pip.
-RUN yes | apt-get install wget
-RUN cd /root; wget https://bootstrap.pypa.io/get-pip.py
+# Install utilities
+RUN apt-get install -y bzip2
+RUN apt-get install -y cmake
+RUN apt-get install -y git
+RUN apt-get install -y wget
+RUN apt-get install -y libblas-dev
+RUN apt-get install -y liblapack-dev
 
-# Install Python 3.5
-RUN yes | apt-get install python3.5
-RUN python /root/get-pip.py; rm /root/get-pip.py
+# Install Python 3
+RUN apt-get install -y python3
+
+# Install pip.
+RUN apt-get install -y python3-pip
 
 # Install Psi4.
-RUN cd /root; wget http://vergil.chemistry.gatech.edu/psicode-download/psi4conda-1.2.1-py35-Linux-x86_64.sh
-RUN apt-get install bzip2
-RUN echo '/root/psi4conda' | bash /root/psi4conda-1.2.1-py35-Linux-x86_64.sh
-RUN rm /root/psi4conda-1.2.1-py35-Linux-x86_64.sh
+RUN cd /root; wget http://vergil.chemistry.gatech.edu/psicode-download/psi4conda-1.2.1-py36-Linux-x86_64.sh
+RUN echo '/root/psi4conda' | bash /root/psi4conda-1.2.1-py36-Linux-x86_64.sh
+RUN rm /root/psi4conda-1.2.1-py36-Linux-x86_64.sh
+RUN export PATH=/root/psi4conda/bin:$PATH
 
 # Install PySCF.
 RUN cd /root; git clone https://github.com/sunqm/pyscf
-RUN export PATH=/root/psi4conda/bin:$PATH; yes | apt-get install cmake; cd /root/pyscf/pyscf/lib; mkdir build; cd build; cmake ..; make
+RUN cd /root/pyscf/pyscf/lib; mkdir build; cd build; cmake ..; make
 
 # Install OpenFermion, Cirq, and plugins.
-RUN pip install git+https://github.com/quantumlib/OpenFermion.git
-RUN pip install git+https://github.com/quantumlib/Cirq.git
-RUN pip install git+https://github.com/quantumlib/OpenFermion-Cirq.git
-RUN pip install git+https://github.com/quantumlib/OpenFermion-Psi4.git
-RUN pip install git+https://github.com/quantumlib/OpenFermion-PySCF.git
+RUN pip3 install openfermion
+RUN pip3 install cirq
+RUN pip3 install openfermioncirq
+RUN pip3 install openfermionpsi4
+RUN pip3 install openfermionpyscf
 
-ENTRYPOINT export PATH=/root/psi4conda/bin:$PATH; export PYTHONPATH=/root/pyscf:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH; bash
+# Update paths
+RUN export PATH=/root/psi4conda/bin:$PATH
+RUN export PYTHONPATH=/root/pyscf:$PYTHONPATH
+
+# Make python point to python3
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+ENTRYPOINT bash
