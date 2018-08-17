@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-# Dockerfile for OpenFermion and select plugins.
+# Dockerfile for OpenFermion, Cirq, and select plugins.
 
 FROM ubuntu
 
@@ -22,36 +22,25 @@ RUN apt-get update
 RUN yes | apt-get install wget
 RUN cd /root; wget https://bootstrap.pypa.io/get-pip.py
 
-# Install Python 2.7.
-RUN yes | apt-get install python
+# Install Python 3.5
+RUN yes | apt-get install python3.5
 RUN python /root/get-pip.py; rm /root/get-pip.py
 
-# Install ProjectQ (login to Github might be requested).
-RUN yes | apt-get install git
-RUN cd /root; git clone https://github.com/ProjectQ-Framework/ProjectQ
-RUN pip install -r /root/ProjectQ/requirements.txt
-RUN yes | apt-get install gcc
-RUN yes | apt-get install g++
-RUN yes | apt-get install python-dev
-RUN cd /root/ProjectQ/; python -m pip install -e .
-
-# Install Jupyter notebook.
-RUN yes | apt-get install ipython-notebook
-RUN pip install jupyter
-
 # Install Psi4.
-RUN cd /root; wget http://vergil.chemistry.gatech.edu/psicode-download/psi4conda-1.1-py27-Linux-x86_64.sh
+RUN cd /root; wget http://vergil.chemistry.gatech.edu/psicode-download/psi4conda-1.2.1-py35-Linux-x86_64.sh
 RUN apt-get install bzip2
-RUN echo '/root/psi4conda' | bash /root/psi4conda-1.1-py27-Linux-x86_64.sh
-RUN rm /root/psi4conda-1.1-py27-Linux-x86_64.sh
+RUN echo '/root/psi4conda' | bash /root/psi4conda-1.2.1-py35-Linux-x86_64.sh
+RUN rm /root/psi4conda-1.2.1-py35-Linux-x86_64.sh
 
 # Install PySCF.
 RUN cd /root; git clone https://github.com/sunqm/pyscf
 RUN export PATH=/root/psi4conda/bin:$PATH; yes | apt-get install cmake; cd /root/pyscf/pyscf/lib; mkdir build; cd build; cmake ..; make
 
-# Install OpenFermion and plugins.
-RUN pip install git+https://github.com/quantumlib/OpenFermion-ProjectQ.git
+# Install OpenFermion, Cirq, and plugins.
+RUN pip install git+https://github.com/quantumlib/OpenFermion.git
+RUN pip install git+https://github.com/quantumlib/Cirq.git
+RUN pip install git+https://github.com/quantumlib/OpenFermion-Cirq.git
 RUN pip install git+https://github.com/quantumlib/OpenFermion-Psi4.git
 RUN pip install git+https://github.com/quantumlib/OpenFermion-PySCF.git
 
-ENTRYPOINT export PATH=/root/psi4conda/bin:$PATH; export PYTHONPATH=/root/pyscf:/usr/local/lib/python2.7/dist-packages:$PYTHONPATH; bash
+ENTRYPOINT export PATH=/root/psi4conda/bin:$PATH; export PYTHONPATH=/root/pyscf:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH; bash
