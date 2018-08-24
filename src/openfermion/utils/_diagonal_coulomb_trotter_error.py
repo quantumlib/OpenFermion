@@ -45,7 +45,11 @@ def bit_mask_of_modes_acted_on_by_fermionic_terms(
         for action in actions:
             for single_operator in action:
                 mode = single_operator[0]
-                mask[mode][term_number] = True
+                try:
+                    mask[mode][term_number] = True
+                except IndexError:
+                    raise ValueError('Bad n_qubits: must be greater than '
+                                     'highest mode in any FermionOperator.')
 
     return mask
 

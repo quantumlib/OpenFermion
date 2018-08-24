@@ -1,3 +1,4 @@
+import numpy
 import time
 import unittest
 
@@ -22,8 +23,8 @@ class BreakHamiltonianIntoPotentialKineticArraysTest(unittest.TestCase):
 
     def test_simple_hamiltonian(self):
         hamiltonian = (FermionOperator('3^ 1^ 3 1') +
-                       FermionOperator('1^ 1') - FermionOperator('1^ 2')
-                       - FermionOperator('2^ 1'))
+                       FermionOperator('1^ 1') - FermionOperator('1^ 2') -
+                       FermionOperator('2^ 1'))
 
         potential_terms, kinetic_terms = potential_and_kinetic_terms_as_arrays(
             hamiltonian)
@@ -67,6 +68,66 @@ class BreakHamiltonianIntoPotentialKineticArraysTest(unittest.TestCase):
         self.assertListEqual(list(potential_terms),
                              [FermionOperator.identity()])
         self.assertListEqual(list(kinetic_terms), [])
+
+    def test_zero_hamiltonian(self):
+        potential_terms, kinetic_terms = potential_and_kinetic_terms_as_arrays(
+            FermionOperator.zero())
+
+        self.assertListEqual(list(potential_terms), [])
+        self.assertListEqual(list(kinetic_terms), [])
+
+
+class BitMaskModesActedOnByFermionTermsTest(unittest.TestCase):
+    def test_mask_no_terms(self):
+        mask = bit_mask_of_modes_acted_on_by_fermionic_terms([], n_qubits=2)
+        self.assertTrue(numpy.array_equal(mask, numpy.array([[], []])))
+
+    def test_identity_masks_no_modes(self):
+        mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
+            [FermionOperator.zero()], n_qubits=3)
+
+        self.assertTrue(numpy.array_equal(mask, numpy.zeros((3, 1))))
+
+    def test_mask_single_term(self):
+        mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
+            [FermionOperator('0^ 0')], n_qubits=2)
+        self.assertTrue(numpy.array_equal(mask,
+                                          numpy.array([[True], [False]])))
+
+    def test_mask_hermitian_terms_results_in_duplicated_row(self):
+        mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
+            [FermionOperator('2^ 3'), FermionOperator('3^ 2')], n_qubits=5)
+
+        expected_mask = numpy.array([[False, False],
+                                     [False, False],
+                                     [True, True],
+                                     [True, True],
+                                     [False, False]])
+
+        self.assertTrue(numpy.array_equal(mask, expected_mask))
+
+    def test_mask_n_qubits_too_small_for_term(self):
+        with self.assertRaises(ValueError):
+            mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
+                [FermionOperator('1^ 1')], n_qubits=1)
+
+    def test_mask_long_arbitrary_terms(self):
+        operator1 = FermionOperator('6^ 5^ 4^ 3 2 1', 2.3 - 1.7j)
+        operator2 = FermionOperator('7^ 5^ 1^ 0^', 0.)
+
+        mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
+            [operator1, operator2], n_qubits=8)
+
+        expected_mask = numpy.array([[False, True],
+                                    [True, True],
+                                    [True, False],
+                                    [True, False],
+                                    [True, False],
+                                    [True, True],
+                                    [True, False],
+                                    [False, True]])
+
+        self.assertTrue(numpy.array_equal(mask, expected_mask))
 
 
 if __name__ == '__main__':
