@@ -291,7 +291,3 @@ class SplitOperatorTrotterErrorTest(unittest.TestCase):
             list(VT_error_operator.terms.values())))
 
         self.assertGreater(VT_error_bound, TV_error_bound)
-
-
-if __name__ == '__main__':
-    unittest.main()
