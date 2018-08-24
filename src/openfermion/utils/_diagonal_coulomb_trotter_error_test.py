@@ -1,9 +1,23 @@
-import numpy
-import time
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+"""Tests for _diagonal_coulomb_trotter_error.py."""
+
 import unittest
 
-from openfermion import count_qubits, FermionOperator, Grid, normal_ordered
+import numpy
 
+from openfermion import (
+    commutator, count_qubits, FermionOperator, Grid, normal_ordered)
 from openfermion.hamiltonians import (
     dual_basis_jellium_model,
     fermi_hubbard,
@@ -11,7 +25,8 @@ from openfermion.hamiltonians import (
     jellium_model)
 from openfermion.utils._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_bound,
-    low_depth_second_order_trotter_error_operator)
+    low_depth_second_order_trotter_error_operator,
+    simulation_ordered_grouped_low_depth_terms_with_info)
 from openfermion.utils._diagonal_coulomb_trotter_error import (
     potential_and_kinetic_terms_as_arrays,
     bit_mask_of_modes_acted_on_by_fermionic_terms,
@@ -130,94 +145,153 @@ class BitMaskModesActedOnByFermionTermsTest(unittest.TestCase):
         self.assertTrue(numpy.array_equal(mask, expected_mask))
 
 
+class FermionicSwapNetworkTrotterErrorTest(unittest.TestCase):
+
+    def test_1D_jellium_trotter_error_matches_low_depth_trotter_error(self):
+        hamiltonian = normal_ordered(jellium_model(
+            hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+                1, 5, wigner_seitz_radius=10.,
+                spinless=True), spinless=True, plane_wave=False))
+
+        error_operator = (
+            fermionic_swap_trotter_error_operator_diagonal_two_body(
+                hamiltonian))
+        error_operator.compress()
+
+        # Unpack result into terms, indices they act on, and whether
+        # they're hopping operators.
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
+            hamiltonian)
+        terms, indices, is_hopping = result
+
+        old_error_operator = low_depth_second_order_trotter_error_operator(
+            terms, indices, is_hopping, jellium_only=True)
+
+        old_error_operator -= error_operator
+        self.assertEqual(old_error_operator, FermionOperator.zero())
+
+    def test_hubbard_trotter_error_matches_low_depth_trotter_error(self):
+        hamiltonian = normal_ordered(fermi_hubbard(3, 3, 1., 2.3))
+
+        error_operator = (
+            fermionic_swap_trotter_error_operator_diagonal_two_body(
+                hamiltonian))
+        error_operator.compress()
+
+        # Unpack result into terms, indices they act on, and whether
+        # they're hopping operators.
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
+            hamiltonian)
+        terms, indices, is_hopping = result
+
+        old_error_operator = low_depth_second_order_trotter_error_operator(
+            terms, indices, is_hopping, jellium_only=True)
+
+        old_error_operator -= error_operator
+        self.assertEqual(old_error_operator, FermionOperator.zero())
+
+
+class SplitOperatorTrotterErrorTest(unittest.TestCase):
+
+    def test_split_operator_error_operator_TV_order_against_definition(self):
+        hamiltonian = (normal_ordered(fermi_hubbard(3, 3, 1., 4.0)) -
+                       2.3 * FermionOperator.identity())
+        potential_terms, kinetic_terms = (
+            potential_and_kinetic_terms_as_arrays(hamiltonian))
+        potential = sum(potential_terms, FermionOperator.zero())
+        kinetic = sum(kinetic_terms, FermionOperator.zero())
+
+        error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='T+V'))
+
+        # T-then-V ordered double commutators: [T, [V, T]] + [V, [V, T]] / 2
+        inner_commutator = normal_ordered(commutator(potential, kinetic))
+        error_operator_definition = normal_ordered(
+            commutator(kinetic, inner_commutator))
+        error_operator_definition += normal_ordered(
+            commutator(potential, inner_commutator)) / 2.0
+        error_operator_definition /= 12.0
+
+        self.assertEqual(error_operator, error_operator_definition)
+
+    def test_split_operator_error_operator_VT_order_against_definition(self):
+        hamiltonian = (normal_ordered(fermi_hubbard(3, 3, 1., 4.0)) -
+                       2.3 * FermionOperator.identity())
+        potential_terms, kinetic_terms = (
+            potential_and_kinetic_terms_as_arrays(hamiltonian))
+        potential = sum(potential_terms, FermionOperator.zero())
+        kinetic = sum(kinetic_terms, FermionOperator.zero())
+
+        error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='V+T'))
+
+        # V-then-T ordered double commutators: [V, [T, V]] + [T, [T, V]] / 2
+        inner_commutator = normal_ordered(commutator(kinetic, potential))
+        error_operator_definition = normal_ordered(
+            commutator(potential, inner_commutator))
+        error_operator_definition += normal_ordered(
+            commutator(kinetic, inner_commutator)) / 2.0
+        error_operator_definition /= 12.0
+
+        self.assertEqual(error_operator, error_operator_definition)
+
+    def test_intermediate_interaction_hubbard_TV_order_has_larger_error(self):
+        hamiltonian = normal_ordered(fermi_hubbard(4, 4, 1., 4.0))
+
+        TV_error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='T+V'))
+        TV_error_bound = numpy.sum(numpy.absolute(
+            list(TV_error_operator.terms.values())))
+
+        VT_error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='V+T'))
+        VT_error_bound = numpy.sum(numpy.absolute(
+            list(VT_error_operator.terms.values())))
+
+        self.assertAlmostEqual(TV_error_bound, 1706.66666666666)
+        self.assertAlmostEqual(VT_error_bound, 1365.33333333333)
+
+    def test_strong_interaction_hubbard_VT_order_gives_larger_error(self):
+        hamiltonian = normal_ordered(fermi_hubbard(4, 4, 1., 10.0))
+
+        TV_error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='T+V'))
+        TV_error_bound = numpy.sum(numpy.absolute(
+            list(TV_error_operator.terms.values())))
+
+        VT_error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='V+T'))
+        VT_error_bound = numpy.sum(numpy.absolute(
+            list(VT_error_operator.terms.values())))
+
+        self.assertGreater(VT_error_bound, TV_error_bound)
+
+    def test_jellium_wigner_seitz_10_VT_order_gives_larger_error(self):
+        hamiltonian = normal_ordered(jellium_model(
+            hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+                2, 3, wigner_seitz_radius=10.,
+                spinless=True), spinless=True, plane_wave=False))
+
+        TV_error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='T+V'))
+        TV_error_bound = numpy.sum(numpy.absolute(
+            list(TV_error_operator.terms.values())))
+
+        VT_error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='V+T'))
+        VT_error_bound = numpy.sum(numpy.absolute(
+            list(VT_error_operator.terms.values())))
+
+        self.assertGreater(VT_error_bound, TV_error_bound)
+
+
 if __name__ == '__main__':
     unittest.main()
-    #compare_with_old_code = True
-
-    #dimension = 2
-    #side_length = int(sys.argv[1])
-    #tunneling = 1.0
-    #periodic = True
-
-    #jellium = False
-
-    #coulomb_data_points = numpy.array([4.])
-    #fs_error_bounds = numpy.zeros(len(coulomb_data_points))
-    #fs_n_terms = numpy.zeros(len(coulomb_data_points), dtype=int)
-    #so_error_bounds = numpy.zeros(len(coulomb_data_points))
-    #so_n_terms = numpy.zeros(len(coulomb_data_points), dtype=int)
-
-    #for i, coulomb in enumerate(coulomb_data_points):
-        #print('For 2D Fermi-Hubbard with side length %i, coulomb = %f:' % (
-            #side_length, coulomb))
-
-        #start = time.time()
-        #if jellium:
-            #hamiltonian = normal_ordered(jellium_model(
-                #hypercube_grid_with_given_wigner_seitz_radius_and_filling(
-                    #dimension, side_length, wigner_seitz_radius=10.,
-                    #spinless=True), spinless=True,
-                #plane_wave=False))
-            #order = 'T+V'
-        #else:
-            #hamiltonian = normal_ordered(
-                #fermi_hubbard(side_length, side_length,
-                              #tunneling, coulomb, periodic=periodic))
-            #order = 'V+T'
-
-        #hamiltonian.compress()
-        #print('Got Hamiltonian in %s' % str(time.time() - start))
-
-        #start = time.time()
-        #error_operator = (
-            #split_operator_trotter_error_operator_diagonal_two_body(
-                #hamiltonian, order))
-        #error_operator.compress()
-
-        #so_norm_bound = numpy.sum(numpy.absolute(
-            #list(error_operator.terms.values())))
-
-        #so_n_terms[i] = len(error_operator.terms)
-        #so_error_bounds[i] = so_norm_bound
-        #print('Took ' + str(time.time() - start) +
-              #' to compute SO error operator and info')
-
-        #start = time.time()
-        #error_operator = (
-            #fermionic_swap_trotter_error_operator_diagonal_two_body(
-                #hamiltonian))
-        #error_operator.compress()
-
-        #fs_norm_bound = numpy.sum(numpy.absolute(
-            #list(error_operator.terms.values())))
-
-        #fs_n_terms[i] = len(error_operator.terms)
-        #fs_error_bounds[i] = fs_norm_bound
-        #print('Took ' + str(time.time() - start) +
-              #' to compute FS error operator and info')
-
-        #print('SO mask bound: ' + str(so_norm_bound))
-        #print('FS mask bound: ' + str(fs_norm_bound))
-
-        #if compare_with_old_code:
-            #start = time.time()
-
-            ## Unpack result into terms, indices they act on, and whether
-            ## they're hopping operators.
-            #result = simulation_ordered_grouped_low_depth_terms_with_info(
-                #hamiltonian)
-            #terms, indices, is_hopping = result
-
-            #old_error_operator = low_depth_second_order_trotter_error_operator(
-                #terms, indices, is_hopping, jellium_only=True)
-
-            #print('Regular FS bound: ',
-                  #low_depth_second_order_trotter_error_bound(
-                      #terms, indices, is_hopping, jellium_only=True))
-            #print('Took ' + str(time.time() - start) +
-                  #' to compute FS with old code')
-
-            #old_error_operator -= error_operator
-            #print('Difference between old and new methods:',
-                  #numpy.sum(numpy.absolute(list(
-                      #old_error_operator.terms.values()))))
