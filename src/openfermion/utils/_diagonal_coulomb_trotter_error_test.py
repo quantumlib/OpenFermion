@@ -28,7 +28,7 @@ from openfermion.utils._low_depth_trotter_error import (
     low_depth_second_order_trotter_error_operator,
     simulation_ordered_grouped_low_depth_terms_with_info)
 from openfermion.utils._diagonal_coulomb_trotter_error import (
-    potential_and_kinetic_terms_as_arrays,
+    diagonal_coulomb_potential_and_kinetic_terms_as_arrays,
     bit_mask_of_modes_acted_on_by_fermionic_terms,
     split_operator_trotter_error_operator_diagonal_two_body,
     fermionic_swap_trotter_error_operator_diagonal_two_body)
@@ -41,8 +41,9 @@ class BreakHamiltonianIntoPotentialKineticArraysTest(unittest.TestCase):
                        FermionOperator('1^ 1') - FermionOperator('1^ 2') -
                        FermionOperator('2^ 1'))
 
-        potential_terms, kinetic_terms = potential_and_kinetic_terms_as_arrays(
-            hamiltonian)
+        potential_terms, kinetic_terms = (
+            diagonal_coulomb_potential_and_kinetic_terms_as_arrays(
+                hamiltonian))
 
         potential = sum(potential_terms, FermionOperator.zero())
         kinetic = sum(kinetic_terms, FermionOperator.zero())
@@ -57,8 +58,9 @@ class BreakHamiltonianIntoPotentialKineticArraysTest(unittest.TestCase):
 
         hamiltonian = jellium_model(grid, spinless=True, plane_wave=False)
 
-        potential_terms, kinetic_terms = potential_and_kinetic_terms_as_arrays(
-            hamiltonian)
+        potential_terms, kinetic_terms = (
+            diagonal_coulomb_potential_and_kinetic_terms_as_arrays(
+                hamiltonian))
 
         potential = sum(potential_terms, FermionOperator.zero())
         kinetic = sum(kinetic_terms, FermionOperator.zero())
@@ -77,16 +79,18 @@ class BreakHamiltonianIntoPotentialKineticArraysTest(unittest.TestCase):
         self.assertEqual(kinetic, true_kinetic)
 
     def test_identity_recognized_as_potential_term(self):
-        potential_terms, kinetic_terms = potential_and_kinetic_terms_as_arrays(
-            FermionOperator.identity())
+        potential_terms, kinetic_terms = (
+            diagonal_coulomb_potential_and_kinetic_terms_as_arrays(
+                FermionOperator.identity()))
 
         self.assertListEqual(list(potential_terms),
                              [FermionOperator.identity()])
         self.assertListEqual(list(kinetic_terms), [])
 
     def test_zero_hamiltonian(self):
-        potential_terms, kinetic_terms = potential_and_kinetic_terms_as_arrays(
-            FermionOperator.zero())
+        potential_terms, kinetic_terms = (
+            diagonal_coulomb_potential_and_kinetic_terms_as_arrays(
+                FermionOperator.zero()))
 
         self.assertListEqual(list(potential_terms), [])
         self.assertListEqual(list(kinetic_terms), [])
@@ -197,7 +201,8 @@ class SplitOperatorTrotterErrorTest(unittest.TestCase):
         hamiltonian = (normal_ordered(fermi_hubbard(3, 3, 1., 4.0)) -
                        2.3 * FermionOperator.identity())
         potential_terms, kinetic_terms = (
-            potential_and_kinetic_terms_as_arrays(hamiltonian))
+            diagonal_coulomb_potential_and_kinetic_terms_as_arrays(
+                hamiltonian))
         potential = sum(potential_terms, FermionOperator.zero())
         kinetic = sum(kinetic_terms, FermionOperator.zero())
 
@@ -219,7 +224,8 @@ class SplitOperatorTrotterErrorTest(unittest.TestCase):
         hamiltonian = (normal_ordered(fermi_hubbard(3, 3, 1., 4.0)) -
                        2.3 * FermionOperator.identity())
         potential_terms, kinetic_terms = (
-            potential_and_kinetic_terms_as_arrays(hamiltonian))
+            diagonal_coulomb_potential_and_kinetic_terms_as_arrays(
+                hamiltonian))
         potential = sum(potential_terms, FermionOperator.zero())
         kinetic = sum(kinetic_terms, FermionOperator.zero())
 

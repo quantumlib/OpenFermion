@@ -23,7 +23,20 @@ from openfermion.utils._commutator_diagonal_coulomb_operator import (
     commutator_ordered_diagonal_coulomb_with_two_body_operator)
 
 
-def potential_and_kinetic_terms_as_arrays(hamiltonian):
+def diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian):
+    """Give the potential and kinetic terms of a diagonal Coulomb Hamiltonian
+    as arrays.
+
+    Args:
+        hamiltonian (FermionOperator): The diagonal Coulomb Hamiltonian to
+                                       separate the potential and kinetic terms
+                                       for. Identity is arbitrarily chosen
+                                       to be part of the potential.
+
+    Returns:
+        Tuple of (potential_terms, kinetic_terms). Both elements of the tuple
+        are numpy arrays of FermionOperators.
+    """
     potential = FermionOperator.zero()
     kinetic = FermionOperator.zero()
 
@@ -47,6 +60,22 @@ def potential_and_kinetic_terms_as_arrays(hamiltonian):
 
 def bit_mask_of_modes_acted_on_by_fermionic_terms(
         fermion_term_list, n_qubits=None):
+    """Create a mask of which modes of the system are acted on by which terms.
+
+    Args:
+        fermion_term_list (list of FermionOperators): A list of fermionic terms
+            to calculate the bitmask for.
+        n_qubits (int): The number of qubits (modes) in the system. If not
+                        specified, defaults to the maximum of any term in
+                        fermion_term_list.
+
+    Returns:
+        An n_qubits x len(fermion_term_list) boolean numpy array of whether
+        each term acts on the given mode index.
+
+    Raises:
+        ValueError: if n_qubits is too small for the given terms.
+    """
     if n_qubits is None:
         n_qubits = 0
         for term in fermion_term_list:
@@ -70,13 +99,34 @@ def bit_mask_of_modes_acted_on_by_fermionic_terms(
 
 def split_operator_trotter_error_operator_diagonal_two_body(hamiltonian,
                                                             order):
+    """Compute the split-operator Trotter error of a diagonal two-body
+    Hamiltonian.
+
+    Args:
+        hamiltonian (FermionOperator): The diagonal Coulomb Hamiltonian to
+                                       compute the Trotter error for.
+        order (str): Whether to simulate the split-operator Trotter step
+                     with the kinetic energy T first (order='T+V') or with
+                     the potential energy V first (order='V+T').
+
+    Returns:
+        error_operator: The second-order Trotter error operator.
+
+    Notes:
+        The second-order split-operator Trotter error is calculated from the
+        double commutator [T, [V, T]] + [V, [V, T]] / 2 when T is simulated
+        before V (i.e. exp(-iTt/2) exp(-iVt) exp(-iTt/2)), and from the
+        double commutator [V, [T, V]] + [T, [T, V]] / 2 when V is simulated
+        before T, following Equation 9 of "The Trotter Step Size Required for
+        Accurate Quantum Simulation of Quantum Chemistry" by Poulin et al.
+        The Trotter error operator is then obtained by dividing by 12.
+    """
     n_qubits = count_qubits(hamiltonian)
 
-    potential_terms, kinetic_terms = potential_and_kinetic_terms_as_arrays(
-        hamiltonian)
+    potential_terms, kinetic_terms = (
+        diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian))
     halved_potential_terms = potential_terms / 2.0
     halved_kinetic_terms = kinetic_terms / 2.0
-    del hamiltonian
 
     outer_potential_terms = (halved_potential_terms if order == 'T+V' else
                              potential_terms)
@@ -147,6 +197,23 @@ def split_operator_trotter_error_operator_diagonal_two_body(hamiltonian,
 
 
 def fermionic_swap_trotter_error_operator_diagonal_two_body(hamiltonian):
+    """Compute the fermionic swap network Trotter error of a diagonal
+    two-body Hamiltonian.
+
+    Args:
+        hamiltonian (FermionOperator): The diagonal Coulomb Hamiltonian to
+                                       compute the Trotter error for.
+
+    Returns:
+        error_operator: The second-order Trotter error operator.
+
+    Notes:
+        Follows Equation 9 of Poulin et al.'s work in "The Trotter Step
+        Size Required for Accurate Quantum Simulation of Quantum Chemistry",
+        applied to the "stagger"-based Trotter step for detailed in
+        Kivlichan et al., "Quantum Simulation of Electronic Structure with
+        Linear Depth and Connectivity", arxiv:1711.04789.
+    """
     single_terms = numpy.array(
         simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)[0])
