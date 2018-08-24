@@ -125,9 +125,12 @@ def split_operator_trotter_error_operator_diagonal_two_body(hamiltonian,
 
     potential_terms, kinetic_terms = (
         diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian))
+
+    # Cache halved potential and kinetic terms for the second commutator.
     halved_potential_terms = potential_terms / 2.0
     halved_kinetic_terms = kinetic_terms / 2.0
 
+    # Assign the outer term of the second commutator based on the ordering.
     outer_potential_terms = (halved_potential_terms if order == 'T+V' else
                              potential_terms)
     outer_kinetic_terms = (halved_kinetic_terms if order == 'V+T' else
@@ -218,7 +221,7 @@ def fermionic_swap_trotter_error_operator_diagonal_two_body(hamiltonian):
         simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)[0])
 
-    # Cache the terms in the simulation divided by two.
+    # Cache the halved terms for use in the second commutator.
     halved_single_terms = single_terms / 2.0
 
     term_mode_mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
