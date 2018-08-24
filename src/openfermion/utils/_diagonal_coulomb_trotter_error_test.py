@@ -335,3 +335,23 @@ class SplitOperatorTrotterErrorTest(unittest.TestCase):
             list(VT_error_operator.terms.values())))
 
         self.assertGreater(VT_error_bound, TV_error_bound)
+
+    def test_1d_jellium_wigner_seitz_10_VT_order_gives_larger_error(self):
+        hamiltonian = normal_ordered(jellium_model(
+            hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+                1, 5, wigner_seitz_radius=10.,
+                spinless=True), spinless=True, plane_wave=False))
+
+        TV_error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='T+V'))
+        TV_error_bound = numpy.sum(numpy.absolute(
+            list(TV_error_operator.terms.values())))
+
+        VT_error_operator = (
+            split_operator_trotter_error_operator_diagonal_two_body(
+                hamiltonian, order='V+T'))
+        VT_error_bound = numpy.sum(numpy.absolute(
+            list(VT_error_operator.terms.values())))
+
+        self.assertGreater(VT_error_bound, TV_error_bound)
