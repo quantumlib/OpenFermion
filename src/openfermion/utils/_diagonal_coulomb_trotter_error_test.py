@@ -17,7 +17,12 @@ import unittest
 import numpy
 
 from openfermion import (
-    commutator, count_qubits, FermionOperator, Grid, normal_ordered)
+    commutator,
+    count_qubits,
+    DiagonalCoulombHamiltonian,
+    FermionOperator,
+    Grid,
+    normal_ordered)
 from openfermion.hamiltonians import (
     dual_basis_jellium_model,
     fermi_hubbard,
@@ -94,6 +99,32 @@ class BreakHamiltonianIntoPotentialKineticArraysTest(unittest.TestCase):
 
         self.assertListEqual(list(potential_terms), [])
         self.assertListEqual(list(kinetic_terms), [])
+
+    def test_diagonal_coulomb_hamiltonian_class(self):
+        hamiltonian = DiagonalCoulombHamiltonian(
+            numpy.array([[1, 1], [1, 1]], dtype=float),
+            numpy.array([[0, 1], [1, 0]], dtype=float),
+            constant=2.3)
+
+        potential_terms, kinetic_terms = (
+            diagonal_coulomb_potential_and_kinetic_terms_as_arrays(
+                hamiltonian))
+
+        potential = sum(potential_terms, FermionOperator.zero())
+        kinetic = sum(kinetic_terms, FermionOperator.zero())
+
+        expected_potential = (2.3 * FermionOperator.identity() +
+                              FermionOperator('0^ 0') +
+                              FermionOperator('1^ 1') -
+                              FermionOperator('1^ 0^ 1 0', 2.0))
+        expected_kinetic = FermionOperator('0^ 1') + FermionOperator('1^ 0')
+
+        self.assertEqual(potential, expected_potential)
+        self.assertEqual(kinetic, expected_kinetic)
+
+    def test_type_error_on_bad_input_hamiltonian(self):
+        with self.assertRaises(TypeError):
+            diagonal_coulomb_potential_and_kinetic_terms_as_arrays('oops')
 
 
 class BitMaskModesActedOnByFermionTermsTest(unittest.TestCase):

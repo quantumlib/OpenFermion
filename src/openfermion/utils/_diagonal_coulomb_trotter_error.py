@@ -16,7 +16,10 @@ import numpy
 
 from future.utils import iteritems
 
-from openfermion import count_qubits, FermionOperator
+from openfermion import (count_qubits,
+                         FermionOperator,
+                         get_fermion_operator,
+                         normal_ordered)
 from openfermion.utils._low_depth_trotter_error import (
     simulation_ordered_grouped_low_depth_terms_with_info)
 from openfermion.utils._commutator_diagonal_coulomb_operator import (
@@ -37,6 +40,13 @@ def diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian):
         Tuple of (potential_terms, kinetic_terms). Both elements of the tuple
         are numpy arrays of FermionOperators.
     """
+    if not isinstance(hamiltonian, FermionOperator):
+        try:
+            hamiltonian = normal_ordered(get_fermion_operator(hamiltonian))
+        except TypeError:
+            raise TypeError('hamiltonian must be either a FermionOperator '
+                            'or DiagonalCoulombHamiltonian.')
+
     potential = FermionOperator.zero()
     kinetic = FermionOperator.zero()
 
@@ -214,11 +224,8 @@ def fermionic_swap_trotter_error_operator_diagonal_two_body(hamiltonian):
         error_operator: The second-order Trotter error operator.
 
     Notes:
-        Follows Equation 9 of Poulin et al.'s work in "The Trotter Step
-        Size Required for Accurate Quantum Simulation of Quantum Chemistry",
-        applied to the "stagger"-based Trotter step for detailed in
-        Kivlichan et al., "Quantum Simulation of Electronic Structure with
-        Linear Depth and Connectivity", arxiv:1711.04789.
+        Follows Eq 9 of Poulin et al., arXiv:1406.4920, applied to the
+        Trotter step detailed in Kivlichan et al., arxiv:1711.04789.
     """
     single_terms = numpy.array(
         simulation_ordered_grouped_low_depth_terms_with_info(
