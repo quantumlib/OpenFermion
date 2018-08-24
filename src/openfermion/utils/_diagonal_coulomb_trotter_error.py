@@ -150,6 +150,9 @@ def split_operator_trotter_error_operator_diagonal_two_body(hamiltonian,
             modes_acted_on_by_potential_term.update(
                 set(operator[0] for operator in potential_term_action))
 
+        if not modes_acted_on_by_potential_term:
+            continue
+
         potential_term_mode_mask = numpy.logical_or.reduce(
             [kinetic_mask[mode] for mode in modes_acted_on_by_potential_term])
 
