@@ -148,6 +148,13 @@ class BitMaskModesActedOnByFermionTermsTest(unittest.TestCase):
 
         self.assertTrue(numpy.array_equal(mask, expected_mask))
 
+    def test_bit_mask_n_qubits_not_specified(self):
+        mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
+            [FermionOperator('0^ 0') + FermionOperator('2^ 2')])
+
+        self.assertTrue(numpy.array_equal(mask, numpy.array(
+            [[True], [False], [True]])))
+
 
 class FermionicSwapNetworkTrotterErrorTest(unittest.TestCase):
 
