@@ -212,7 +212,8 @@ def split_operator_trotter_error_operator_diagonal_two_body(hamiltonian,
     return error_operator
 
 
-def fermionic_swap_trotter_error_operator_diagonal_two_body(hamiltonian):
+def fermionic_swap_trotter_error_operator_diagonal_two_body(
+        hamiltonian, external_potential_at_end=False):
     """Compute the fermionic swap network Trotter error of a diagonal
     two-body Hamiltonian.
 
@@ -229,7 +230,8 @@ def fermionic_swap_trotter_error_operator_diagonal_two_body(hamiltonian):
     """
     single_terms = numpy.array(
         simulation_ordered_grouped_low_depth_terms_with_info(
-            hamiltonian)[0])
+            hamiltonian,
+            external_potential_at_end=external_potential_at_end)[0])
 
     # Cache the halved terms for use in the second commutator.
     halved_single_terms = single_terms / 2.0
