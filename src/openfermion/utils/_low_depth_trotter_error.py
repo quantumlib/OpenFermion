@@ -26,8 +26,8 @@ from openfermion.utils._commutators import (
 
 
 def low_depth_second_order_trotter_error_operator(
-        terms, indices=None, is_hopping_operator=None, jellium_only=False,
-        verbose=False):
+        terms, indices=None, is_hopping_operator=None,
+        jellium_only=False, verbose=False):
     """Determine the difference between the exact generator of unitary
     evolution and the approximate generator given by the second-order
     Trotter-Suzuki expansion.
@@ -140,7 +140,7 @@ def low_depth_second_order_trotter_error_bound(
 
 
 def simulation_ordered_grouped_low_depth_terms_with_info(
-        hamiltonian, input_ordering=None):
+        hamiltonian, input_ordering=None, external_potential_at_end=False):
     """Give terms from the dual basis Hamiltonian in simulated order.
 
     Uses the simulation ordering, grouping terms into hopping
@@ -151,6 +151,12 @@ def simulation_ordered_grouped_low_depth_terms_with_info(
     Args:
         hamiltonian (FermionOperator): The Hamiltonian.
         input_ordering (list): The initial Jordan-Wigner canonical order.
+                               If no input ordering is specified, defaults to
+                               [0..n_qubits] where n_qubits is the number of
+                               qubits in the Hamiltonian.
+        external_potential_at_end (bool): Whether to include the rotations from
+            the external potential at the end of the Trotter step, or
+            intersperse them throughout it.
 
     Returns:
         A 3-tuple of terms from the Hamiltonian in order of simulation,
@@ -188,20 +194,42 @@ def simulation_ordered_grouped_low_depth_terms_with_info(
     parity = 0
     while input_ordering != final_ordering:
         results = stagger_with_info(
-            hamiltonian, input_ordering, parity)
-        terms_in_step, indices_in_step, is_hopping_operator_in_step = results
+            hamiltonian, input_ordering, parity,
+            external_potential_at_end)
+        terms_in_layer, indices_in_layer, is_hopping_operator_in_layer = (
+            results)
 
-        ordered_terms.extend(terms_in_step)
-        ordered_indices.extend(indices_in_step)
-        ordered_is_hopping_operator.extend(is_hopping_operator_in_step)
+        ordered_terms.extend(terms_in_layer)
+        ordered_indices.extend(indices_in_layer)
+        ordered_is_hopping_operator.extend(is_hopping_operator_in_layer)
 
         # Alternate even and odd steps of the reversal procedure.
         parity = 1 - parity
 
+    # If all the rotations from the external potential are in the final layer,
+    # i.e. we don't intersperse them throughout the Trotter step.
+    if external_potential_at_end:
+        terms_in_final_layer = []
+        indices_in_final_layer = []
+        is_hopping_operator_in_final_layer = []
+
+        for qubit in range(n_qubits):
+            coeff = hamiltonian.terms.get(((qubit, 1), (qubit, 0)), 0.0)
+            if coeff:
+                terms_in_final_layer.append(
+                    FermionOperator(((qubit, 1), (qubit, 0)), coeff))
+                indices_in_final_layer.append(set((qubit,)))
+                is_hopping_operator_in_final_layer.append(False)
+
+        ordered_terms.extend(terms_in_final_layer)
+        ordered_indices.extend(indices_in_final_layer)
+        ordered_is_hopping_operator.extend(is_hopping_operator_in_final_layer)
+
     return (ordered_terms, ordered_indices, ordered_is_hopping_operator)
 
 
-def stagger_with_info(hamiltonian, input_ordering, parity):
+def stagger_with_info(hamiltonian, input_ordering, parity,
+                      external_potential_at_end=False):
     """Give terms simulated in a single stagger of a Trotter step.
 
     Groups terms into hopping (i^ j + j^ i) and number
@@ -214,6 +242,9 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
         input_ordering (list): The initial Jordan-Wigner canonical order.
         parity (boolean): Whether to determine the terms from the next even
             (False = 0) or odd (True = 1) stagger.
+        external_potential_at_end (bool): Whether to include the rotations from
+            the external potential at the end of the Trotter step, or
+            intersperse them throughout it.
 
     Returns:
         A 3-tuple of terms from the Hamiltonian that are simulated in the
@@ -229,11 +260,10 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
         only hopping terms (i^ j + j^ i) and potential terms which are
         products of at most two number operators (n_i or n_i n_j).
     """
-    terms_in_step = []
-    indices_in_step = []
-    is_hopping_operator_in_step = []
+    terms_in_layer = []
+    indices_in_layer = []
+    is_hopping_operator_in_layer = []
 
-    zero = FermionOperator.zero()
     n_qubits = count_qubits(hamiltonian)
 
     # A single round of odd-even transposition sort.
@@ -256,45 +286,53 @@ def stagger_with_info(hamiltonian, input_ordering, parity):
             hamiltonian.terms.get(
                 ((left, 1), (right, 1), (left, 0), (right, 0)), 0.0))
 
-        # Calculate the left number operator, left^ left.
-        left_number_operator = FermionOperator(
-            ((left, 1), (left, 0)), hamiltonian.terms.get(
-                ((left, 1), (left, 0)), 0.0))
+        if not external_potential_at_end:
+            # Calculate the left number operator, left^ left.
+            left_number_operator = FermionOperator(
+                ((left, 1), (left, 0)), hamiltonian.terms.get(
+                    ((left, 1), (left, 0)), 0.0))
 
-        # Calculate the right number operator, right^ right.
-        right_number_operator = FermionOperator(
-            ((right, 1), (right, 0)), hamiltonian.terms.get(
-                ((right, 1), (right, 0)), 0.0))
+            # Calculate the right number operator, right^ right.
+            right_number_operator = FermionOperator(
+                ((right, 1), (right, 0)), hamiltonian.terms.get(
+                    ((right, 1), (right, 0)), 0.0))
 
-        # Divide single-number terms by n_qubits-1 to avoid over-counting.
-        # Each qubit is swapped n_qubits-1 times total.
-        left_number_operator /= (n_qubits - 1)
-        right_number_operator /= (n_qubits - 1)
+            # Divide single-number terms by n_qubits-1 to avoid over-accounting
+            # for the interspersed rotations. Each qubit is swapped n_qubits-1
+            # times total.
+            left_number_operator /= (n_qubits - 1)
+            right_number_operator /= (n_qubits - 1)
+
+        else:
+            left_number_operator = FermionOperator.zero()
+            right_number_operator = FermionOperator.zero()
 
         # If the overall hopping operator isn't close to zero, append it.
         # Include the indices it acts on and that it's a hopping operator.
         if not (left_hopping_operator +
-                right_hopping_operator) == zero:
-            terms_in_step.append(left_hopping_operator +
-                                 right_hopping_operator)
-            indices_in_step.append(set((left, right)))
-            is_hopping_operator_in_step.append(True)
+                right_hopping_operator) == FermionOperator.zero():
+            terms_in_layer.append(left_hopping_operator +
+                                  right_hopping_operator)
+            indices_in_layer.append(set((left, right)))
+            is_hopping_operator_in_layer.append(True)
 
         # If the overall number operator isn't close to zero, append it.
         # Include the indices it acts on and that it's a number operator.
         if not (two_number_operator + left_number_operator +
-                right_number_operator) == zero:
-            terms_in_step.append(two_number_operator +
-                                 left_number_operator +
-                                 right_number_operator)
-            indices_in_step.append(set((left, right)))
-            is_hopping_operator_in_step.append(False)
+                right_number_operator) == FermionOperator.zero():
+            terms_in_layer.append(two_number_operator +
+                                  left_number_operator +
+                                  right_number_operator)
+            terms_in_layer[-1].compress()
+
+            indices_in_layer.append(set((left, right)))
+            is_hopping_operator_in_layer.append(False)
 
         # Modify the current Jordan-Wigner canonical ordering in-place.
         input_ordering[i], input_ordering[i + 1] = (input_ordering[i + 1],
                                                     input_ordering[i])
 
-    return terms_in_step, indices_in_step, is_hopping_operator_in_step
+    return terms_in_layer, indices_in_layer, is_hopping_operator_in_layer
 
 
 def ordered_low_depth_terms_no_info(hamiltonian):
