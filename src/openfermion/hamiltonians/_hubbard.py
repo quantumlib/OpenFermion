@@ -19,8 +19,8 @@ from openfermion.utils import (hermitian_conjugated, number_operator,
 
 
 def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
-             coulomb, chemical_potential=0., magnetic_field=0.,
-             periodic=True, spinless=False, particle_hole_symmetry=False):
+             coulomb, chemical_potential, magnetic_field,
+             periodic, spinless, particle_hole_symmetry):
     r"""Returns a generic Hubbard-style Hamiltonian, to be used
     by the bose_hubbard and fermi_hubbard wrapper functions.
 
@@ -37,50 +37,40 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
         hubbard_model: An instance of the FermionOperator or
             BosonOperator class.
     """
-    tunneling = float(tunneling)
-    local_interaction = float(local_interaction)
-    coulomb = float(coulomb)
-    chemical_potential = float(chemical_potential)
-    magnetic_field = float(magnetic_field)
 
+    # Select operator class.
     if parity == -1:
         Op = FermionOperator
     elif parity == 1:
         Op = BosonOperator
 
-    # Initialize operator class.
-    n_sites = x_dimension * y_dimension
-    n_spin_orbitals = n_sites
-
-    if not spinless:
-        n_spin_orbitals *= 2
-
-    hubbard_model = Op.zero()
-
-    # Select particle-hole symmetry
+    # Select particle-hole symmetry.
     if particle_hole_symmetry:
         coulomb_shift = Op((), 0.5)
     else:
         coulomb_shift = Op.zero()
 
+    # Initialize operator.
+    n_sites = x_dimension * y_dimension
+    n_spin_orbitals = n_sites * (2 - spinless)
+    hubbard_model = Op.zero()
+
     # Loop through sites and add terms.
     for site in range(n_sites):
-        # Add chemical potential to the spinless case. The magnetic field
-        # doesn't contribute.
-        if spinless and chemical_potential:
+
+        if parity == 1:
+            # no Pauli-Exclusion principle, spinless particles interact on-site
+            hubbard_model += (
+                number_operator(n_sites, site, local_interaction, parity=1)
+                * (number_operator(n_sites, site, parity=1) - Op.identity())
+            )
+
+        if spinless:
+            # Add chemical potential. The magnetic field doesn't contribute.
             hubbard_model += number_operator(
                 n_spin_orbitals, site, -chemical_potential, parity=parity)
-
-        # no Pauli-Exclusion principle, spinless particles interact on-site
-        if parity == 1:
-            int_op = number_operator(
-                n_sites, site, local_interaction, parity=1) \
-                * (number_operator(n_sites, site, parity=1)
-                   - Op.identity())
-            hubbard_model += int_op
-
-        # With spin, add the chemical potential and magnetic field terms.
-        elif not spinless:
+        else:
+            # Add chemical potential and magnetic field terms.
             hubbard_model += number_operator(
                 n_spin_orbitals, up_index(site),
                 -chemical_potential - magnetic_field, parity=parity)
@@ -88,7 +78,7 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
                 n_spin_orbitals, down_index(site),
                 -chemical_potential + magnetic_field, parity=parity)
 
-            # Add local pair interaction terms.
+            # Add local pair Coulomb interaction terms.
             operator_1 = number_operator(
                 n_spin_orbitals, up_index(site), parity=parity) \
                 - coulomb_shift
