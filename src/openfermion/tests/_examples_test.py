@@ -84,18 +84,18 @@ class ExamplesTest(unittest.TestCase):
                         raise
 
 
-def is_matplotlib_cell(cell: nbformat.NotebookNode):
+def is_matplotlib_cell(cell):
     return "%matplotlib" in cell.source
 
 
-def strip_magics_and_shows(text: str) -> str:
+def strip_magics_and_shows(text):
     """Remove Jupyter magics and pyplot show commands."""
     lines = [line for line in text.split('\n')
              if not contains_magic_or_show(line)]
     return '\n'.join(lines)
 
 
-def contains_magic_or_show(line: str) -> bool:
+def contains_magic_or_show(line):
     return (line.strip().startswith('%') or
             'pyplot.show(' in line or
             'plt.show(' in line)
