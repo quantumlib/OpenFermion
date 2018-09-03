@@ -69,85 +69,33 @@ class ExamplesTest(unittest.TestCase):
         for filename in os.listdir(self.examples_folder):
             if not filename.endswith('.ipynb'):
                 continue
+
             path = os.path.join(self.examples_folder, filename)
-            self.assert_jupyter_notebook_has_working_code_cells(path)
+            notebook = nbformat.read(path, nbformat.NO_CONVERT)
+            state = {}
 
-    def assert_jupyter_notebook_has_working_code_cells(self, path):
-        """Checks that code cells in a Jupyter notebook actually run in
-        sequence.
-
-        State is kept between code cells. Imports and variables defined in one
-        cell will be visible in later cells.
-        """
-
-        notebook = nbformat.read(path, nbformat.NO_CONVERT)
-        state = {}
-
-        for cell in notebook.cells:
-            if cell.cell_type == 'code':
-                self.assert_code_cell_runs_and_prints_expected(cell, state)
-
-    def assert_code_cell_runs_and_prints_expected(self, cell, state):
-        """Executes a code cell and compares captured output to saved output."""
-
-        if cell.outputs and hasattr(cell.outputs[0], 'text'):
-            expected_outputs = cell.outputs[0].text.strip().split('\n')
-        else:
-            expected_outputs = ['']
-        expected_lines = [canonicalize_printed_line(line)
-                          for line in expected_outputs]
-
-        output_lines = []
-
-        def print_capture(*values, sep=' '):
-            output_lines.extend(
-                    sep.join(str(e) for e in values).split('\n'))
-
-        state['print'] = print_capture
-        exec(strip_magics_and_shows(cell.source), state)
-        output_lines = '\n'.join(output_lines).strip().split('\n')
-
-        actual_lines = [canonicalize_printed_line(line) for line in
-                        output_lines]
-
-        assert len(actual_lines) == len(expected_lines)
-
-        for i, line in enumerate(actual_lines):
-            assert line == expected_lines[i]
+            for cell in notebook.cells:
+                if cell.cell_type == 'code' and not is_matplotlib_cell(cell):
+                    try:
+                        exec(strip_magics_and_shows(cell.source), state)
+                    # coverage: ignore
+                    except:
+                        print('Failed to run {}.'.format(path))
+                        raise
 
 
-def strip_magics_and_shows(text):
+def is_matplotlib_cell(cell: nbformat.NotebookNode):
+    return "%matplotlib" in cell.source
+
+
+def strip_magics_and_shows(text: str) -> str:
     """Remove Jupyter magics and pyplot show commands."""
     lines = [line for line in text.split('\n')
              if not contains_magic_or_show(line)]
     return '\n'.join(lines)
 
 
-def contains_magic_or_show(line) -> str:
+def contains_magic_or_show(line: str) -> bool:
     return (line.strip().startswith('%') or
             'pyplot.show(' in line or
             'plt.show(' in line)
-
-
-def canonicalize_printed_line(line):
-    """Replace highly precise numbers with less precise numbers.
-
-    This allows the test to pass on machines that perform arithmetic slightly
-    differently.
-
-    Args:
-        line: The line to canonicalize.
-
-    Returns:
-        The canonicalized line.
-    """
-    prev_end = 0
-    result = []
-    for match in re.finditer(r"[0-9]+\.[0-9]+(e-[0-9]+)?", line):
-        start = match.start()
-        end = match.end()
-        result.append(line[prev_end:start])
-        result.append(format(round(float(line[start:end]), 4), '.4f'))
-        prev_end = end
-    result.append(line[prev_end:])
-    return ''.join(result).rstrip()
