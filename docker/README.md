@@ -1,25 +1,28 @@
 # Docker setup for OpenFermion and select plugins
 
-This Docker image will help users to install [OpenFermion](https://github.com/quantumlib/OpenFermion)
-and its available plugins for [ProjectQ](https://github.com/ProjectQ-Framework/ProjectQ),
-[Psi4](https://github.com/quantumlib/OpenFermion-Psi4), and [PySCF](https://github.com/quantumlib/OpenFermion-PySCF).
-Check out Docker's [website](https://www.docker.com/what-container) that describes what a container image is and why it can be so useful.
-The Docker based installation is extremely robust and runs on any operating
-system and so is an ideal solution for anyone having difficulty installing
-OpenFermion (or any of its plugins) using the standard installation.
+This Docker image contains [OpenFermion](https://github.com/quantumlib/OpenFermion)
+and its available plugins for
+[Cirq](https://github.com/quantumlib/Cirq),
+[Psi4](https://github.com/quantumlib/OpenFermion-Psi4), and
+[PySCF](https://github.com/quantumlib/OpenFermion-PySCF).
+Check out Docker's [website](https://www.docker.com/what-container) for a description of
+what a container image is and why it can be so useful.
+The Docker-based installation is extremely robust and runs on any operating
+system, so it is an ideal solution for anyone having difficulty installing
+OpenFermion (or any of its plugins) using the standard procedure.
 
 
 ## What's included?
 
 - Git
-- Python 2.7
+- Python 3
+- [OpenFermion](https://github.com/quantumlib/OpenFermion)
+- [Cirq](https://github.com/quantumlib/Cirq)
 - [Psi4](http://www.psicode.org)
 - [PySCF](https://github.com/sunqm/pyscf)
-- [ProjectQ](https://projectq.ch)
-- [OpenFermion](https://github.com/quantumlib/OpenFermion)
+- [OpenFermion-Cirq](https://github.com/quantumlib/OpenFermion-Cirq)
 - [OpenFermion-Psi4](https://github.com/quantumlib/OpenFermion-Psi4)
 - [OpenFermion-PySCF](https://github.com/quantumlib/OpenFermion-PySCF)
-- [OpenFermion-ProjectQ](https://github.com/quantumlib/OpenFermion-ProjectQ)
 
 
 ## Setting up Docker for the first time
