@@ -1,8 +1,8 @@
 .. image:: https://github.com/quantumlib/openfermion/blob/master/docs/second_logo.svg
 
-OpenFermion is an open source effort for compiling and analyzing quantum
+OpenFermion is an open source library for compiling and analyzing quantum
 algorithms to simulate fermionic systems, including quantum chemistry. Among
-other functionalities, the current version features data structures and tools
+other functionalities, this version features data structures and tools
 for obtaining and manipulating representations of fermionic and qubit
 Hamiltonians. For more information, see our
 `release paper <https://arxiv.org/abs/1710.07629>`__.
@@ -22,6 +22,27 @@ Hamiltonians. For more information, see our
 
 .. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
+Plugins
+=======
+
+OpenFermion relies on modular plugin libraries for significant functionality.
+Specifically, plugins are used to simulate and compile quantum circuits and to perform
+classical electronic structure calculations.
+Follow the links below to learn more!
+
+Circuit compilation and simulation plugins
+------------------------------------------
+* `OpenFermion-Cirq <https://github.com/quantumlib/OpenFermion-Cirq>`__ to support integration with `Cirq <https://github.com/quantumlib/Cirq>`__.
+
+* `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion>`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
+
+* `SFOpenBoson <https://github.com/XanaduAI/SFOpenBoson>`__ to support integration with `Strawberry Fields <https://github.com/XanaduAI/strawberryfields>`__.
+
+Electronic structure package plugins
+------------------------------------
+* `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ to support integration with `Psi4 <http://psicode.org>`__.
+
+* `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__ to support integration with `PySCF <https://github.com/sunqm/pyscf>`__.
 
 Getting started
 ===============
@@ -69,30 +90,6 @@ To install the latest PyPI release as a library (in user mode):
 
   python -m pip install --user openfermion
 
-
-Plugins
-=======
-
-OpenFermion relies on modular plugin libraries for significant functionality.
-Specifically, plugins are used to simulate and compile quantum circuits and to perform
-classical electronic structure calculations.
-Follow the links below to learn more about these useful plugins.
-
-Circuit compilation and simulation plugins
-------------------------------------------
-* `OpenFermion-ProjectQ <http://github.com/quantumlib/OpenFermion-ProjectQ>`__ to support integration with `ProjectQ <https://projectq.ch>`__.
-
-* `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion>`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
-
-* `SFOpenBoson <https://github.com/XanaduAI/SFOpenBoson>`__ to support integration with `Strawberry Fields <https://github.com/XanaduAI/strawberryfields>`__.
-
-Electronic structure package plugins
-------------------------------------
-* `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ to support integration with `Psi4 <http://psicode.org>`__ (recommended).
-
-* `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__ to support integration with `PySCF <https://github.com/sunqm/pyscf>`__.
-
-
 How to contribute
 =================
 
@@ -116,7 +113,6 @@ guide. Just have a look at our code for clues. We mostly follow
 the corresponding `linter <https://pypi.python.org/pypi/pep8>`_ to check for it.
 Code should always come with documentation, which is generated automatically and can be found
 `here <http://openfermion.readthedocs.io/en/latest/openfermion.html>`_.
-
 
 Authors
 =======
@@ -158,7 +154,6 @@ Authors
 `Chris Winkler <https://github.com/quid256>`__ (University of Chicago) and
 `Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan).
 
-
 How to cite
 ===========
 When using OpenFermion for research projects, please cite:
@@ -174,7 +169,6 @@ When using OpenFermion for research projects, please cite:
     `arXiv:1710.07629 <https://arxiv.org/abs/1710.07629>`__. 2017.
 
 We are happy to include future contributors as authors on later releases.
-
 
 Disclaimer
 ==========

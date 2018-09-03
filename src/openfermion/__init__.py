@@ -18,10 +18,10 @@ For more information, examples, or tutorials visit our website:
 www.openfermion.org
 """
 
-from ._version import __version__
-
 from openfermion.hamiltonians import *
 from openfermion.measurements import *
 from openfermion.ops import *
 from openfermion.transforms import *
 from openfermion.utils import *
+
+from ._version import __version__

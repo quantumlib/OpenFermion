@@ -154,6 +154,34 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         hamiltonian = normal_ordered(hamiltonian)
         self.assertTrue(terms_total == hamiltonian)
 
+    def test_sum_of_ordered_terms_equals_full_hamiltonian_rots_at_end(self):
+        grid_length = 4
+        dimension = 2
+        wigner_seitz_radius = 10.0
+        inverse_filling_fraction = 2
+        n_qubits = grid_length ** dimension
+        n_particles = n_qubits // inverse_filling_fraction
+
+        # Generate the Hamiltonian.
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension, grid_length, wigner_seitz_radius,
+            1. / inverse_filling_fraction)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
+
+        terms = simulation_ordered_grouped_low_depth_terms_with_info(
+            hamiltonian, external_potential_at_end=True)[0]
+        terms_total = sum(terms, FermionOperator.zero())
+
+        length_scale = wigner_seitz_length_scale(
+            wigner_seitz_radius, n_particles, dimension)
+
+        grid = Grid(dimension, grid_length, length_scale)
+        hamiltonian = jellium_model(grid, spinless=True, plane_wave=False)
+        hamiltonian = normal_ordered(hamiltonian)
+        self.assertTrue(terms_total == hamiltonian)
+
     def test_correct_indices_terms_with_info(self):
         grid_length = 4
         dimension = 1
@@ -208,6 +236,67 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
             is_hopping_term = not (single_term[1][1] or
                                    single_term[0][0] == single_term[1][0])
             self.assertEqual(is_hopping_term, is_hopping[i])
+
+    def test_correct_indices_terms_with_info_external_pot_at_end(self):
+        grid_length = 4
+        dimension = 1
+        wigner_seitz_radius = 10.0
+        inverse_filling_fraction = 2
+        n_qubits = grid_length ** dimension
+
+        # Generate the Hamiltonian.
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension, grid_length, wigner_seitz_radius,
+            1. / inverse_filling_fraction)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
+
+        # Unpack result into terms, indices they act on, and whether they're
+        # hopping operators.
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
+            hamiltonian, external_potential_at_end=True)
+        terms, indices, is_hopping = result
+
+        for i in range(len(terms)):
+            term = list(terms[i].terms)
+            term_indices = set()
+            for single_term in term:
+                term_indices = term_indices.union(
+                    [single_term[j][0] for j in range(len(single_term))])
+            self.assertEqual(term_indices, indices[i])
+
+        # Last four terms are the rotations
+        self.assertListEqual(indices[-4:], [set([i]) for i in range(4)])
+
+    def test_is_hopping_operator_terms_with_info_external_pot_at_end(self):
+        grid_length = 4
+        dimension = 1
+        wigner_seitz_radius = 10.0
+        inverse_filling_fraction = 2
+
+        # Generate the Hamiltonian.
+        grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
+            dimension, grid_length, wigner_seitz_radius,
+            1. / inverse_filling_fraction)
+        hamiltonian = normal_ordered(jellium_model(grid, spinless=True,
+                                                   plane_wave=False))
+        hamiltonian.compress()
+
+        # Unpack result into terms, indices they act on, and whether they're
+        # hopping operators.
+        result = simulation_ordered_grouped_low_depth_terms_with_info(
+            hamiltonian, external_potential_at_end=True)
+        terms, indices, is_hopping = result
+
+        for i in range(len(terms)):
+            single_term = list(terms[i].terms)[0]
+            is_hopping_term = not (single_term[1][1] or
+                                   single_term[0][0] == single_term[1][0])
+            self.assertEqual(is_hopping_term, is_hopping[i])
+
+        # Last four terms are the rotations
+        self.assertFalse(sum(is_hopping[-4:]))
 
     def test_total_length(self):
         grid_length = 8

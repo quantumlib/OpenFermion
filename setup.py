@@ -19,7 +19,12 @@ from setuptools import setup, find_packages
 exec(open('src/openfermion/_version.py').read())
 
 # Readme file as long_description:
-long_description = io.open('README.rst', encoding='utf-8').read()
+long_description = ('===========\n' +
+                    'OpenFermion\n' +
+                    '===========\n')
+stream = io.open('README.rst', encoding='utf-8')
+stream.readline()
+long_description += stream.read()
 
 # Read in requirements.txt
 requirements = open('requirements.txt').readlines()

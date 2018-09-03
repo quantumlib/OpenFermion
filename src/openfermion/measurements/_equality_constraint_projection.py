@@ -159,14 +159,13 @@ def vector_to_operator(vector, n_orbitals):
     return operator
 
 
-def apply_constraints(operator, n_fermions, use_scipy=True):
+def apply_constraints(operator, n_fermions):
     """Function to use linear programming to apply constraints.
 
     Args:
         operator(FermionOperator): FermionOperator with only 1- and 2-body
             terms that we wish to vectorize.
         n_fermions(int): The number of particles in the simulation.
-        use_scipy(bool): Whether to use scipy (True) or cvxopt (False).
 
     Returns:
         modified_operator(FermionOperator): The operator with reduced norm
@@ -204,41 +203,20 @@ def apply_constraints(operator, n_fermions, use_scipy=True):
 
     # Perform linear programming.
     print('Starting linear programming.')
-    if use_scipy:
-        options = {'maxiter': int(1e6)}
-        bound = n_constraints * [(None, None)] + n_terms * [(0, None)]
-        solution = scipy.optimize.linprog(c=lp_vector,
-                                          A_ub=lp_constraint_matrix.toarray(),
-                                          b_ub=lp_constraint_vector,
-                                          bounds=bound,
-                                          options=options)
+    options = {'maxiter': int(1e6)}
+    bound = n_constraints * [(None, None)] + n_terms * [(0, None)]
+    solution = scipy.optimize.linprog(c=lp_vector,
+                                      A_ub=lp_constraint_matrix.toarray(),
+                                      b_ub=lp_constraint_vector,
+                                      bounds=bound,
+                                      options=options)
 
-        # Analyze results.
-        print(solution['message'])
-        assert solution['success']
-        solution_vector = solution['x']
-        objective = solution['fun'] ** 2
-        print('Program terminated after %i iterations.' % solution['nit'])
-
-    else:
-        # Convert to CVXOpt sparse matrix.
-        from cvxopt import matrix, solvers, spmatrix
-        lp_vector = matrix(lp_vector)
-        lp_constraint_matrix = lp_constraint_matrix.tocoo()
-        lp_constraint_matrix = spmatrix(lp_constraint_matrix.data,
-                                        lp_constraint_matrix.row.tolist(),
-                                        lp_constraint_matrix.col.tolist())
-        lp_constraint_vector = matrix(lp_constraint_vector)
-
-        # Run linear programming.
-        solution = solvers.lp(c=lp_vector,
-                              G=lp_constraint_matrix,
-                              h=lp_constraint_vector,
-                              solver='glpk')
-
-        # Analyze results.
-        print(solution['status'])
-        solution_vector = numpy.array(solution['x']).transpose()[0]
+    # Analyze results.
+    print(solution['message'])
+    assert solution['success']
+    solution_vector = solution['x']
+    objective = solution['fun'] ** 2
+    print('Program terminated after %i iterations.' % solution['nit'])
 
     # Alternative bound.
     residuals = solution_vector[-n_terms:]

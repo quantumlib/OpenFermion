@@ -11,18 +11,19 @@
 #   limitations under the License.
 
 """SymbolicOperator is the base class for FermionOperator and QubitOperator"""
+
+import abc
 import copy
 import re
 import warnings
 
+from six import add_metaclass, string_types
+
 from openfermion.config import EQ_TOLERANCE
 
 
-class SymbolicOperatorError(Exception):
-    pass
-
-
-class SymbolicOperator(object):
+@add_metaclass(abc.ABCMeta)
+class SymbolicOperator:
     """Base class for FermionOperator and QubitOperator.
 
     A SymbolicOperator stores an object which represents a weighted
@@ -44,7 +45,6 @@ class SymbolicOperator(object):
 
     Attributes:
         actions (tuple): A tuple of objects representing the possible actions.
-            This should be defined in the subclass.
             e.g. for FermionOperator, this is (1, 0).
         action_strings (tuple): A tuple of string representations of actions.
             These should be in one-to-one correspondence with actions and
@@ -62,10 +62,42 @@ class SymbolicOperator(object):
             these tuples are collected into a larger tuple which represents
             the term as the product of its factors.
     """
-    actions = ()
-    action_strings = ()
-    action_before_index = False
-    different_indices_commute = False
+
+    @abc.abstractproperty
+    def actions(self):
+        """The allowed actions.
+
+        Returns a tuple of objects representing the possible actions.
+        """
+        pass
+
+    @abc.abstractproperty
+    def action_strings(self):
+        """The string representations of the allowed actions.
+
+        Returns a tuple containing string representations of the possible
+        actions, in the same order as the `actions` property.
+        """
+        pass
+
+    @abc.abstractproperty
+    def action_before_index(self):
+        """Whether action comes before index in string representations.
+
+        Example: For QubitOperator, the actions are ('X', 'Y', 'Z') and
+        the string representations look something like 'X0 Z2 Y3'. So the
+        action comes before the index, and this function should return True.
+        For FermionOperator, the string representations look like
+        '0^ 1 2^ 3'. The action comes after the index, so this function
+        should return False.
+        """
+        pass
+
+    @abc.abstractproperty
+    def different_indices_commute(self):
+        """Whether factors acting on different indices commute."""
+        pass
+
     __hash__ = None
 
     def __init__(self, term=None, coefficient=1.):
@@ -77,7 +109,7 @@ class SymbolicOperator(object):
 
         # Detect if the input is the string representation of a sum of terms;
         # if so, initialization needs to be handled differently
-        if isinstance(term, str) and '[' in term:
+        if isinstance(term, string_types) and '[' in term:
             self._long_string_init(term, coefficient)
             return
 
@@ -90,7 +122,7 @@ class SymbolicOperator(object):
         if isinstance(term, tuple) or isinstance(term, list):
             term = self._parse_sequence(term)
         # String input
-        elif isinstance(term, str):
+        elif isinstance(term, string_types):
             term = self._parse_string(term)
         # Invalid input type
         else:
@@ -240,6 +272,11 @@ class SymbolicOperator(object):
 
         # Return a tuple
         return tuple(processed_term)
+
+    @property
+    def constant(self):
+        """The value of the constant term."""
+        return self.terms.get((), 0.0)
 
     @classmethod
     def zero(cls):
@@ -540,6 +577,17 @@ class SymbolicOperator(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+    def __iter__(self):
+        self._iter = iter(self.terms.items())
+        return self
+
+    def __next__(self):
+        term, coefficient = next(self._iter)
+        return self.__class__(term=term, coefficient=coefficient)
+
+    def next(self):
+        return self.__next__()
 
     def compress(self, abs_tol=EQ_TOLERANCE):
         """

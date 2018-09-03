@@ -289,3 +289,19 @@ class MolecularDataTest(unittest.TestCase):
         correct_name = "Jellium_PlaneWave22_singlet"
         self.assertEqual(jellium_molecule.name, correct_name)
         os.remove("{}.hdf5".format(jellium_filename))
+
+    def test_load_molecular_hamiltonian(self):
+        bond_length = 1.45
+        geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., bond_length))]
+
+        lih_hamiltonian = load_molecular_hamiltonian(
+                geometry, 'sto-3g', 1, format(bond_length), 2, 2)
+        self.assertEqual(count_qubits(lih_hamiltonian), 4)
+
+        lih_hamiltonian = load_molecular_hamiltonian(
+                geometry, 'sto-3g', 1, format(bond_length), 2, 3)
+        self.assertEqual(count_qubits(lih_hamiltonian), 6)
+
+        lih_hamiltonian = load_molecular_hamiltonian(
+                geometry, 'sto-3g', 1, format(bond_length), None, None)
+        self.assertEqual(count_qubits(lih_hamiltonian), 12)

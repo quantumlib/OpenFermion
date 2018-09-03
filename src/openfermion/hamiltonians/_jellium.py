@@ -17,7 +17,6 @@ import numpy
 
 from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.utils._grid import Grid
-from openfermion.utils._operator_utils import normal_ordered
 
 
 def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
@@ -109,7 +108,7 @@ def plane_wave_potential(grid, spinless=False, e_cutoff=None,
     operator = FermionOperator((), 0.0)
     spins = [None] if spinless else [0, 1]
     if non_periodic and period_cutoff is None:
-      period_cutoff = grid.volume_scale() ** (1. / grid.dimensions)
+        period_cutoff = grid.volume_scale() ** (1. / grid.dimensions)
 
     # Pre-Computations.
     shifted_omega_indices_dict = {}
@@ -152,8 +151,8 @@ def plane_wave_potential(grid, spinless=False, e_cutoff=None,
         # Compute coefficient.
         coefficient = prefactor / momenta_squared
         if non_periodic:
-          coefficient *= 1. - numpy.cos(period_cutoff *
-                                        numpy.sqrt(momenta_squared))
+            coefficient *= 1.0 - numpy.cos(
+                    period_cutoff * numpy.sqrt(momenta_squared))
 
         for grid_indices_a in grid.all_points_indices():
             shifted_indices_d = (
@@ -204,11 +203,11 @@ def dual_basis_jellium_model(grid, spinless=False,
     """
     # Initialize.
     n_points = grid.num_points
-    position_prefactor = 2. * numpy.pi / grid.volume_scale()
+    position_prefactor = 2.0 * numpy.pi / grid.volume_scale()
     operator = FermionOperator()
     spins = [None] if spinless else [0, 1]
     if potential and non_periodic and period_cutoff is None:
-      period_cutoff = grid.volume_scale() ** (1. / grid.dimensions)
+        period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
 
     # Pre-Computations.
     position_vectors = {}

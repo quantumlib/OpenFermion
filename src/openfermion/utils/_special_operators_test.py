@@ -160,8 +160,10 @@ class MajoranaOperatorTest(unittest.TestCase):
         # Test 'c' operator
         op1 = majorana_operator((2, 0))
         op2 = majorana_operator('c2')
+        op3 = majorana_operator(u'c2')
         correct = FermionOperator('2^') + FermionOperator('2')
         self.assertEqual(op1, op2)
+        self.assertEqual(op1, op3)
         self.assertEqual(op1, correct)
 
         # Test 'd' operator

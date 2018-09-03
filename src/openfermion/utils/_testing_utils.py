@@ -23,6 +23,16 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
                              QuadraticHamiltonian)
 
 
+def haar_random_vector(n, seed=None):
+    """Generate an n dimensional Haar randomd vector."""
+    if seed is not None:
+        numpy.random.seed(seed)
+    vector = numpy.random.randn(n).astype(complex)
+    vector += 1.j * numpy.random.randn(n).astype(complex)
+    normalization = numpy.sqrt(vector.dot(numpy.conjugate(vector)))
+    return vector / normalization
+
+
 def random_antisymmetric_matrix(n, real=False, seed=None):
     """Generate a random n x n antisymmetric matrix."""
     if seed is not None:
@@ -65,8 +75,18 @@ def random_hermitian_matrix(n, real=False, seed=None):
     return hermitian_mat
 
 
-def random_interaction_operator(n_qubits, real=True, seed=None):
-    """Generate a random instance of InteractionOperator."""
+def random_interaction_operator(
+        n_orbitals, expand_spin=False, real=True, seed=None):
+    """Generate a random instance of InteractionOperator.
+
+    Args:
+        n_orbitals: The number of orbitals.
+        expand_spin: Whether to expand each orbital symmetrically into two
+            spin orbitals. Note that if this option is set to True, then
+            the total number of orbitals will be doubled.
+        real: Whether to use only real numbers.
+        seed: A random number generator seed.
+    """
     if seed is not None:
         numpy.random.seed(seed)
 
@@ -79,36 +99,56 @@ def random_interaction_operator(n_qubits, real=True, seed=None):
     constant = numpy.random.randn()
 
     # The one-body tensor is a random Hermitian matrix.
-    one_body_coefficients = random_hermitian_matrix(n_qubits, real)
+    one_body_coefficients = random_hermitian_matrix(n_orbitals, real)
 
     # Generate random two-body coefficients.
-    two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
-                                         n_qubits, n_qubits), dtype)
-
-    # Generate "diagonal" terms, which are necessarily real.
-    for p, q in itertools.combinations(range(n_qubits), 2):
+    two_body_coefficients = numpy.zeros((n_orbitals, n_orbitals,
+                                         n_orbitals, n_orbitals), dtype)
+    for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
         coeff = numpy.random.randn()
-        two_body_coefficients[p, q, p, q] = coeff
-        two_body_coefficients[p, q, q, p] = -coeff
-        two_body_coefficients[q, p, q, p] = coeff
-
-    # Generate the rest of the terms.
-    for (p, q), (r, s) in itertools.combinations(
-            itertools.combinations(range(n_qubits), 2), 2):
-        coeff = numpy.random.randn()
-        if not real:
+        if not real and len(set([p,q,r,s])) >= 3:
             coeff += 1.j * numpy.random.randn()
-        two_body_coefficients[p, q, r, s] = coeff
-        two_body_coefficients[p, q, s, r] = -coeff
-        two_body_coefficients[q, p, r, s] = -coeff
-        two_body_coefficients[q, p, s, r] = coeff
 
+        # Four point symmetry.
+        two_body_coefficients[p, q, r, s] = coeff
+        two_body_coefficients[q, p, s, r] = coeff
         two_body_coefficients[s, r, q, p] = coeff.conjugate()
-        two_body_coefficients[s, r, p, q] = -coeff.conjugate()
-        two_body_coefficients[r, s, q, p] = -coeff.conjugate()
         two_body_coefficients[r, s, p, q] = coeff.conjugate()
 
-    # Create the InteractionOperator and return.
+        # Eight point symmetry.
+        if real:
+            two_body_coefficients[r, q, p, s] = coeff
+            two_body_coefficients[p, s, r, q] = coeff
+            two_body_coefficients[s, p, q, r] = coeff
+            two_body_coefficients[q, r, s, p] = coeff
+
+    # If requested, expand to spin orbitals.
+    if expand_spin:
+        n_spin_orbitals = 2 * n_orbitals
+
+        # Expand one-body tensor.
+        one_body_coefficients = numpy.kron(one_body_coefficients, numpy.eye(2))
+
+        # Expand two-body tensor.
+        new_two_body_coefficients = numpy.zeros((
+            n_spin_orbitals, n_spin_orbitals,
+            n_spin_orbitals, n_spin_orbitals), dtype=complex)
+        for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
+            coefficient = two_body_coefficients[p, q, r, s]
+
+            # Mixed spin.
+            new_two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 * s] = (
+                coefficient)
+            new_two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s + 1] = (
+                coefficient)
+
+            # Same spin.
+            new_two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = coefficient
+            new_two_body_coefficients[2 * p + 1, 2 * q + 1,
+                                      2 * r + 1, 2 * s + 1] = coefficient
+        two_body_coefficients = new_two_body_coefficients
+
+    # Create the InteractionOperator.
     interaction_operator = InteractionOperator(
         constant, one_body_coefficients, two_body_coefficients)
 
