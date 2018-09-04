@@ -35,7 +35,7 @@ package [Psi4](http://psicode.org).
 
 [OpenFermion-PySCF](http://github.com/quantumlib/OpenFermion-PySCF)
 
-This plugin library integrates OpenFermion with electronic structure package
+This plugin library integrates OpenFermion with the electronic structure package
 [PySCF](https://github.com/sunqm/pyscf).
 
 [OpenFermion-ProjectQ](https://github.com/quantumlib/OpenFermion-ProjectQ) - Deprecated
