@@ -4,7 +4,7 @@ In this document we assemble known libraries, projects and papers that use,
 discuss, or contribute functionality to OpenFermion in order to both provide
 example use cases and document the ways its helping to impact electronic
 structure on quantum computers. If you'd like to include your own projects
-or papers, please contact us or submit a pull request updating this page.
+or papers, please contact us or submit a pull request.
 
 
 ### Libraries
