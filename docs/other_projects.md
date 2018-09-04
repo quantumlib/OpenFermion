@@ -12,7 +12,7 @@ or papers, please contact us or submit a pull request.
 [OpenFermion-Cirq](https://github.com/quantumlib/OpenFermion-Cirq)
 
 This plugin library integrates OpenFermion with Google's
-[Cirq](https://github.com/quantumlib/Cirq>) framework in order to compile
+[Cirq](https://github.com/quantumlib/Cirq) framework in order to compile
 quantum simulation algorithms to NISQ circuits using Cirq.
 
 [Forest-OpenFermion](https://github.com/rigetticomputing/forestopenfermion) 
