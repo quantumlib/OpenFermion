@@ -1,9 +1,10 @@
 ## Libraries, Projects and Papers using OpenFermion
 
-In this document we assemble known libraries, projects and papers that use OpenFermion to
-both provide example use cases and document the ways its helping to impact
-electronic structure on quantum computers.  If you'd like to include your own
-projects or papers, please contact us or submit a pull request updating this page.
+In this document we assemble known libraries, projects and papers that use,
+discuss, or contribute functionality to OpenFermion in order to both provide
+example use cases and document the ways its helping to impact electronic
+structure on quantum computers. If you'd like to include your own projects
+or papers, please contact us or submit a pull request updating this page.
 
 
 ### Libraries
@@ -107,17 +108,13 @@ Kanav Setia and James Whitfield.
 [arXiv:1712.00446](https://arxiv.org/abs/1712.00446). 2017.
 
 ***Application of Fermionic Marginal Constraints to Hybrid Quantum
-Algorithms***. Nicholas C. Rubin, Ryan Babbush and Jarrod McClean.
+Algorithms***. Nicholas Rubin, Ryan Babbush and Jarrod McClean.
 [arXiv:1801.03524](https://arxiv.org/abs/1801.03524). 2018.
 
 ***Cloud Quantum Computing of an Atomic Nucleus***.
 E. Dumitrescu, A. McCaskey, G. Hagen, G. Jansen, T. Morris,
 T. Papenbrock, R. Pooser, D. Dean and P. Lougovski.
 [arXiv:1801.03897](https://arxiv.org/abs/1801.03897). 2018.
-
-***Methods for Classically Simulating Noisy Networked Quantum Architectures***.
-Iskren Vankov, Daniel Mills, Petros Wallden and Elham Kashefi.
-[arXiv:1803.04167](https://arxiv.org/abs/1803.04167). 2018.
 
 ***Quantum Chemistry Calculations on a Trapped-Ion Quantum Simulator***.
 Cornelius Hempel, Christine Maier, Jonathan Romero, Jarrod McClean,
@@ -138,10 +135,6 @@ Reduction***. Matthew Otten and Stephen Gray.
 Ryan Babbush, Craig Gidney, Dominic Berry, Nathan Wiebe, Jarrod McClean,
 Alexandru Paler, Austin Fowler and Hartmut Neven.
 [arXiv:1805.03662](https://arxiv.org/abs/1805.03662). 2018.
-
-***Advantages of a Modular High-Level Quantum Programming Framework***.
-Thomas Häner, Damian Steiger and Matthias Troyer.
-[arXiv:1806.01861](https://arxiv.org/abs/1806.01861).
 
 ***A Universal Quantum Computing Virtual Machine***.
 Qian-Tan Hong, Zi-Yong Ge, Wen Wang, Hai-Feng Lang, Zheng-An Wang, Yi Peng,
