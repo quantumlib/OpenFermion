@@ -13,8 +13,7 @@
 """This module constructs Hamiltonians for the Fermi-Hubbard model."""
 
 from openfermion.ops import FermionOperator, BosonOperator
-from openfermion.utils import (hermitian_conjugated, number_operator,
-                               up_index, down_index)
+from openfermion.utils import number_operator, up_index, down_index
 
 
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
