@@ -94,7 +94,7 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
                 site, x_dimension, y_dimension, periodic)
 
         # Add transition to neighbor on right.
-        if right_neighbor % x_dimension or periodic and x_dimension > 2:
+        if right_neighbor is not None:
             if spinless:
                 # Add Coulomb term.
                 operator_1 = number_operator(
@@ -123,7 +123,7 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
             hubbard_model += hermitian_conjugated(hopping_term)
 
         # Add transition to neighbor below.
-        if site + x_dimension + 1 <= n_sites or periodic and y_dimension > 2:
+        if bottom_neighbor is not None:
             if spinless:
                 # Add Coulomb term.
                 operator_1 = number_operator(
@@ -241,6 +241,11 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
     Returns:
         hubbard_model: An instance of the FermionOperator class.
     """
+    if not spinless:
+        return _spinful_fermi_hubbard_model(
+                x_dimension, y_dimension, tunneling, coulomb,
+                chemical_potential, magnetic_field,
+                periodic, particle_hole_symmetry)
     return _hubbard(-1, x_dimension, y_dimension, tunneling, 0, coulomb,
                     chemical_potential, magnetic_field,
                     periodic, spinless, particle_hole_symmetry)
@@ -298,16 +303,83 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
                     particle_hole_symmetry=False)
 
 
+def _spinful_fermi_hubbard_model(
+        x_dimension, y_dimension, tunneling, coulomb,
+        chemical_potential, magnetic_field,
+        periodic, particle_hole_symmetry):
+
+    # Initialize operator.
+    n_sites = x_dimension * y_dimension
+    n_spin_orbitals = 2 * n_sites
+    hubbard_model = FermionOperator()
+
+    # Loop through sites and add terms.
+    for site in range(n_sites):
+
+        # Get indices of right and bottom neighbors
+        right_neighbor = _right_neighbor(
+                site, x_dimension, y_dimension, periodic)
+        bottom_neighbor = _bottom_neighbor(
+                site, x_dimension, y_dimension, periodic)
+
+        # Add hopping terms with neighbors to the right and bottom.
+        if right_neighbor is not None:
+            hubbard_model += _hopping_term(
+                    up_index(site), up_index(right_neighbor), -tunneling)
+            hubbard_model += _hopping_term(
+                    down_index(site), down_index(right_neighbor), -tunneling)
+        if bottom_neighbor is not None:
+            hubbard_model += _hopping_term(
+                    up_index(site), up_index(bottom_neighbor), -tunneling)
+            hubbard_model += _hopping_term(
+                    down_index(site), down_index(bottom_neighbor), -tunneling)
+
+        # Add local pair Coulomb interaction terms.
+        spin_up_number_operator = number_operator(
+                n_spin_orbitals, up_index(site))
+        spin_down_number_operator = number_operator(
+                n_spin_orbitals, down_index(site))
+        if particle_hole_symmetry:
+            spin_up_number_operator -= FermionOperator((), 0.5)
+            spin_down_number_operator -= FermionOperator((), 0.5)
+        hubbard_model += (
+                coulomb * spin_up_number_operator * spin_down_number_operator)
+
+        # Add chemical potential and magnetic field terms.
+        hubbard_model += number_operator(
+                n_spin_orbitals, up_index(site),
+                -chemical_potential - magnetic_field)
+        hubbard_model += number_operator(
+                n_spin_orbitals, down_index(site),
+                -chemical_potential + magnetic_field)
+
+    return hubbard_model
+
+
+def _hopping_term(i, j, coefficient):
+    hopping_term = FermionOperator(((i, 1), (j, 0)), coefficient)
+    hopping_term += FermionOperator(((j, 1), (i, 0)),
+                                    coefficient.conjugate())
+    return hopping_term
+
+
 def _right_neighbor(site, x_dimension, y_dimension, periodic):
-    right_neighbor = site + 1
-    if periodic and x_dimension > 2 and (site + 1) % x_dimension == 0:
-        right_neighbor -= x_dimension
-    return right_neighbor
+    if x_dimension == 1:
+        return None
+    if (site + 1) % x_dimension == 0:
+        if periodic:
+            return site + 1 - x_dimension
+        else:
+            return None
+    return site + 1
 
 
 def _bottom_neighbor(site, x_dimension, y_dimension, periodic):
-    bottom_neighbor = site + x_dimension
-    if (periodic and y_dimension > 2 and
-            site + x_dimension + 1 > x_dimension*y_dimension):
-        bottom_neighbor -= x_dimension * y_dimension
-    return bottom_neighbor
+    if y_dimension == 1:
+        return None
+    if site + x_dimension + 1 > x_dimension*y_dimension:
+        if periodic:
+            return site + x_dimension - x_dimension*y_dimension
+        else:
+            return None
+    return site + x_dimension
