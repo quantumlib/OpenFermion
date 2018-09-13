@@ -116,6 +116,93 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
                 periodic, particle_hole_symmetry)
 
 
+def _spinful_fermi_hubbard_model(
+        x_dimension, y_dimension, tunneling, coulomb,
+        chemical_potential, magnetic_field,
+        periodic, particle_hole_symmetry):
+
+    # Initialize operator.
+    n_sites = x_dimension * y_dimension
+    n_spin_orbitals = 2 * n_sites
+    hubbard_model = FermionOperator()
+
+    # Loop through sites and add terms.
+    for site in range(n_sites):
+
+        # Get indices of right and bottom neighbors
+        right_neighbor = _right_neighbor(
+                site, x_dimension, y_dimension, periodic)
+        bottom_neighbor = _bottom_neighbor(
+                site, x_dimension, y_dimension, periodic)
+
+        # Add hopping terms with neighbors to the right and bottom.
+        if right_neighbor is not None:
+            hubbard_model += _hopping_term(
+                    up_index(site), up_index(right_neighbor), -tunneling)
+            hubbard_model += _hopping_term(
+                    down_index(site), down_index(right_neighbor), -tunneling)
+        if bottom_neighbor is not None:
+            hubbard_model += _hopping_term(
+                    up_index(site), up_index(bottom_neighbor), -tunneling)
+            hubbard_model += _hopping_term(
+                    down_index(site), down_index(bottom_neighbor), -tunneling)
+
+        # Add local pair Coulomb interaction terms.
+        hubbard_model += _coulomb_interaction_term(
+                n_spin_orbitals, up_index(site), down_index(site), coulomb,
+                particle_hole_symmetry)
+
+        # Add chemical potential and magnetic field terms.
+        hubbard_model += number_operator(
+                n_spin_orbitals, up_index(site),
+                -chemical_potential - magnetic_field)
+        hubbard_model += number_operator(
+                n_spin_orbitals, down_index(site),
+                -chemical_potential + magnetic_field)
+
+    return hubbard_model
+
+
+def _spinless_fermi_hubbard_model(
+        x_dimension, y_dimension, tunneling, coulomb,
+        chemical_potential, magnetic_field,
+        periodic, particle_hole_symmetry):
+
+    # Initialize operator.
+    n_sites = x_dimension * y_dimension
+    hubbard_model = FermionOperator()
+
+    # Loop through sites and add terms.
+    for site in range(n_sites):
+
+        # Get indices of right and bottom neighbors
+        right_neighbor = _right_neighbor(
+                site, x_dimension, y_dimension, periodic)
+        bottom_neighbor = _bottom_neighbor(
+                site, x_dimension, y_dimension, periodic)
+
+        # Add terms that couple with neighbors to the right and bottom.
+        if right_neighbor is not None:
+            # Add hopping term
+            hubbard_model += _hopping_term(site, right_neighbor, -tunneling)
+            # Add local Coulomb interaction term
+            hubbard_model += _coulomb_interaction_term(
+                    n_sites, site, right_neighbor, coulomb,
+                    particle_hole_symmetry)
+        if bottom_neighbor is not None:
+            # Add hopping term
+            hubbard_model += _hopping_term(site, bottom_neighbor, -tunneling)
+            # Add local Coulomb interaction term
+            hubbard_model += _coulomb_interaction_term(
+                    n_sites, site, bottom_neighbor, coulomb,
+                    particle_hole_symmetry)
+
+        # Add chemical potential. The magnetic field doesn't contribute.
+        hubbard_model += number_operator(n_sites, site, -chemical_potential)
+
+    return hubbard_model
+
+
 def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
                  chemical_potential=0., dipole=0., periodic=True):
     r"""Return symbolic representation of a Bose-Hubbard Hamiltonian.
@@ -204,93 +291,6 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
         # Add chemical potential.
         hubbard_model += number_operator(
                 n_sites, site, -chemical_potential, parity=1)
-
-    return hubbard_model
-
-
-def _spinful_fermi_hubbard_model(
-        x_dimension, y_dimension, tunneling, coulomb,
-        chemical_potential, magnetic_field,
-        periodic, particle_hole_symmetry):
-
-    # Initialize operator.
-    n_sites = x_dimension * y_dimension
-    n_spin_orbitals = 2 * n_sites
-    hubbard_model = FermionOperator()
-
-    # Loop through sites and add terms.
-    for site in range(n_sites):
-
-        # Get indices of right and bottom neighbors
-        right_neighbor = _right_neighbor(
-                site, x_dimension, y_dimension, periodic)
-        bottom_neighbor = _bottom_neighbor(
-                site, x_dimension, y_dimension, periodic)
-
-        # Add hopping terms with neighbors to the right and bottom.
-        if right_neighbor is not None:
-            hubbard_model += _hopping_term(
-                    up_index(site), up_index(right_neighbor), -tunneling)
-            hubbard_model += _hopping_term(
-                    down_index(site), down_index(right_neighbor), -tunneling)
-        if bottom_neighbor is not None:
-            hubbard_model += _hopping_term(
-                    up_index(site), up_index(bottom_neighbor), -tunneling)
-            hubbard_model += _hopping_term(
-                    down_index(site), down_index(bottom_neighbor), -tunneling)
-
-        # Add local pair Coulomb interaction terms.
-        hubbard_model += _coulomb_interaction_term(
-                n_spin_orbitals, up_index(site), down_index(site), coulomb,
-                particle_hole_symmetry)
-
-        # Add chemical potential and magnetic field terms.
-        hubbard_model += number_operator(
-                n_spin_orbitals, up_index(site),
-                -chemical_potential - magnetic_field)
-        hubbard_model += number_operator(
-                n_spin_orbitals, down_index(site),
-                -chemical_potential + magnetic_field)
-
-    return hubbard_model
-
-
-def _spinless_fermi_hubbard_model(
-        x_dimension, y_dimension, tunneling, coulomb,
-        chemical_potential, magnetic_field,
-        periodic, particle_hole_symmetry):
-
-    # Initialize operator.
-    n_sites = x_dimension * y_dimension
-    hubbard_model = FermionOperator()
-
-    # Loop through sites and add terms.
-    for site in range(n_sites):
-
-        # Get indices of right and bottom neighbors
-        right_neighbor = _right_neighbor(
-                site, x_dimension, y_dimension, periodic)
-        bottom_neighbor = _bottom_neighbor(
-                site, x_dimension, y_dimension, periodic)
-
-        # Add terms that couple with neighbors to the right and bottom.
-        if right_neighbor is not None:
-            # Add hopping term
-            hubbard_model += _hopping_term(site, right_neighbor, -tunneling)
-            # Add local Coulomb interaction term
-            hubbard_model += _coulomb_interaction_term(
-                    n_sites, site, right_neighbor, coulomb,
-                    particle_hole_symmetry)
-        if bottom_neighbor is not None:
-            # Add hopping term
-            hubbard_model += _hopping_term(site, bottom_neighbor, -tunneling)
-            # Add local Coulomb interaction term
-            hubbard_model += _coulomb_interaction_term(
-                    n_sites, site, bottom_neighbor, coulomb,
-                    particle_hole_symmetry)
-
-        # Add chemical potential. The magnetic field doesn't contribute.
-        hubbard_model += number_operator(n_sites, site, -chemical_potential)
 
     return hubbard_model
 
