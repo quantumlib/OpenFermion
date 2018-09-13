@@ -88,18 +88,13 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
             hubbard_model += coulomb * operator_1 * operator_2
 
         # Index coupled orbitals.
-        right_neighbor = site + 1
-        bottom_neighbor = site + x_dimension
-
-        # Account for periodic boundaries.
-        if periodic:
-            if (x_dimension > 2) and ((site + 1) % x_dimension == 0):
-                right_neighbor -= x_dimension
-            if (y_dimension > 2) and (site + x_dimension + 1 > n_sites):
-                bottom_neighbor -= x_dimension * y_dimension
+        right_neighbor = _right_neighbor(
+                site, x_dimension, y_dimension, periodic)
+        bottom_neighbor = _bottom_neighbor(
+                site, x_dimension, y_dimension, periodic)
 
         # Add transition to neighbor on right.
-        if (right_neighbor) % x_dimension or (periodic and x_dimension > 2):
+        if right_neighbor % x_dimension or periodic and x_dimension > 2:
             if spinless:
                 # Add Coulomb term.
                 operator_1 = number_operator(
@@ -128,7 +123,7 @@ def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
             hubbard_model += hermitian_conjugated(hopping_term)
 
         # Add transition to neighbor below.
-        if site + x_dimension + 1 <= n_sites or (periodic and y_dimension > 2):
+        if site + x_dimension + 1 <= n_sites or periodic and y_dimension > 2:
             if spinless:
                 # Add Coulomb term.
                 operator_1 = number_operator(
@@ -301,3 +296,18 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
                     chemical_potential, magnetic_field=0,
                     periodic=periodic, spinless=True,
                     particle_hole_symmetry=False)
+
+
+def _right_neighbor(site, x_dimension, y_dimension, periodic):
+    right_neighbor = site + 1
+    if periodic and x_dimension > 2 and (site + 1) % x_dimension == 0:
+        right_neighbor -= x_dimension
+    return right_neighbor
+
+
+def _bottom_neighbor(site, x_dimension, y_dimension, periodic):
+    bottom_neighbor = site + x_dimension
+    if (periodic and y_dimension > 2 and
+            site + x_dimension + 1 > x_dimension*y_dimension):
+        bottom_neighbor -= x_dimension * y_dimension
+    return bottom_neighbor
