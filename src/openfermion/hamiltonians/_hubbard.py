@@ -218,10 +218,10 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
 
     .. math::
 
-        H = - t \sum_{\langle i, j \rangle} b_i^\dagger b_{j + 1}
-         + \frac{U}{2} \sum_{k=1}^{N-1} b_k^\dagger b_k (b_k^\dagger b_k - 1)
-         - \mu \sum_{k=1}^N b_k^\dagger b_k
-         + V \sum_{\langle i, j \rangle} b_i^\dagger b_i b_j^\dagger b_j.
+        H = - t \sum_{\langle i, j \rangle} (b_i^\dagger b_j + b_j^\dagger b_i)
+         + V \sum_{\langle i, j \rangle} b_i^\dagger b_i b_j^\dagger b_j
+         + \frac{U}{2} \sum_i b_i^\dagger b_i (b_i^\dagger b_i - 1)
+         - \mu \sum_i b_i^\dagger b_i.
 
     where
 
