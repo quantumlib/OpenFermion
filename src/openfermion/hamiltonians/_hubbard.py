@@ -241,14 +241,16 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
     Returns:
         hubbard_model: An instance of the FermionOperator class.
     """
-    if not spinless:
+    if spinless:
+        return _spinless_fermi_hubbard_model(
+                x_dimension, y_dimension, tunneling, coulomb,
+                chemical_potential, magnetic_field,
+                periodic, particle_hole_symmetry)
+    else:
         return _spinful_fermi_hubbard_model(
                 x_dimension, y_dimension, tunneling, coulomb,
                 chemical_potential, magnetic_field,
                 periodic, particle_hole_symmetry)
-    return _hubbard(-1, x_dimension, y_dimension, tunneling, 0, coulomb,
-                    chemical_potential, magnetic_field,
-                    periodic, spinless, particle_hole_symmetry)
 
 
 def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
@@ -335,15 +337,9 @@ def _spinful_fermi_hubbard_model(
                     down_index(site), down_index(bottom_neighbor), -tunneling)
 
         # Add local pair Coulomb interaction terms.
-        spin_up_number_operator = number_operator(
-                n_spin_orbitals, up_index(site))
-        spin_down_number_operator = number_operator(
-                n_spin_orbitals, down_index(site))
-        if particle_hole_symmetry:
-            spin_up_number_operator -= FermionOperator((), 0.5)
-            spin_down_number_operator -= FermionOperator((), 0.5)
-        hubbard_model += (
-                coulomb * spin_up_number_operator * spin_down_number_operator)
+        hubbard_model += _coulomb_interaction_term(
+                n_spin_orbitals, up_index(site), down_index(site), coulomb,
+                particle_hole_symmetry)
 
         # Add chemical potential and magnetic field terms.
         hubbard_model += number_operator(
@@ -356,11 +352,61 @@ def _spinful_fermi_hubbard_model(
     return hubbard_model
 
 
+def _spinless_fermi_hubbard_model(
+        x_dimension, y_dimension, tunneling, coulomb,
+        chemical_potential, magnetic_field,
+        periodic, particle_hole_symmetry):
+
+    # Initialize operator.
+    n_sites = x_dimension * y_dimension
+    hubbard_model = FermionOperator()
+
+    # Loop through sites and add terms.
+    for site in range(n_sites):
+
+        # Get indices of right and bottom neighbors
+        right_neighbor = _right_neighbor(
+                site, x_dimension, y_dimension, periodic)
+        bottom_neighbor = _bottom_neighbor(
+                site, x_dimension, y_dimension, periodic)
+
+        # Add terms that couple with neighbors to the right and bottom.
+        if right_neighbor is not None:
+            # Add hopping term
+            hubbard_model += _hopping_term(site, right_neighbor, -tunneling)
+            # Add local Coulomb interaction term
+            hubbard_model += _coulomb_interaction_term(
+                    n_sites, site, right_neighbor, coulomb,
+                    particle_hole_symmetry)
+        if bottom_neighbor is not None:
+            # Add hopping term
+            hubbard_model += _hopping_term(site, bottom_neighbor, -tunneling)
+            # Add local Coulomb interaction term
+            hubbard_model += _coulomb_interaction_term(
+                    n_sites, site, bottom_neighbor, coulomb,
+                    particle_hole_symmetry)
+
+        # Add chemical potential. The magnetic field doesn't contribute.
+        hubbard_model += number_operator(n_sites, site, -chemical_potential)
+
+    return hubbard_model
+
+
 def _hopping_term(i, j, coefficient):
     hopping_term = FermionOperator(((i, 1), (j, 0)), coefficient)
     hopping_term += FermionOperator(((j, 1), (i, 0)),
                                     coefficient.conjugate())
     return hopping_term
+
+
+def _coulomb_interaction_term(
+        n_sites, i, j, coefficient, particle_hole_symmetry):
+    number_operator_i = number_operator(n_sites, i)
+    number_operator_j = number_operator(n_sites, j)
+    if particle_hole_symmetry:
+        number_operator_i -= FermionOperator((), 0.5)
+        number_operator_j -= FermionOperator((), 0.5)
+    return coefficient * number_operator_i * number_operator_j
 
 
 def _right_neighbor(site, x_dimension, y_dimension, periodic):
