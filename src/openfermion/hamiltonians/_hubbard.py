@@ -11,147 +11,10 @@
 #   limitations under the License.
 
 """This module constructs Hamiltonians for the Fermi-Hubbard model."""
-from __future__ import absolute_import
 
 from openfermion.ops import FermionOperator, BosonOperator
 from openfermion.utils import (hermitian_conjugated, number_operator,
                                up_index, down_index)
-
-
-def _hubbard(parity, x_dimension, y_dimension, tunneling, local_interaction,
-             coulomb, chemical_potential, magnetic_field,
-             periodic, spinless, particle_hole_symmetry):
-    r"""Returns a generic Hubbard-style Hamiltonian, to be used
-    by the bose_hubbard and fermi_hubbard wrapper functions.
-
-    See the corresponding bose_hubbard and fermi_hubbard for descriptions
-    of the various arguments.
-
-    Args:
-        parity (int): parity=-1 returns the output as an instance
-            of the FermionOperator class. Alternatively, parity=1
-            returns the output as an instance of the BosonOperator
-            class
-
-    Returns:
-        hubbard_model: An instance of the FermionOperator or
-            BosonOperator class.
-    """
-
-    # Select operator class.
-    if parity == -1:
-        Op = FermionOperator
-    elif parity == 1:
-        Op = BosonOperator
-
-    # Select particle-hole symmetry.
-    if particle_hole_symmetry:
-        coulomb_shift = Op((), 0.5)
-    else:
-        coulomb_shift = Op.zero()
-
-    # Initialize operator.
-    n_sites = x_dimension * y_dimension
-    n_spin_orbitals = n_sites * (2 - spinless)
-    hubbard_model = Op.zero()
-
-    # Loop through sites and add terms.
-    for site in range(n_sites):
-
-        if parity == 1:
-            # no Pauli-Exclusion principle, spinless particles interact on-site
-            hubbard_model += (
-                number_operator(n_sites, site, local_interaction, parity=1)
-                * (number_operator(n_sites, site, parity=1) - Op.identity())
-            )
-
-        if spinless:
-            # Add chemical potential. The magnetic field doesn't contribute.
-            hubbard_model += number_operator(
-                n_spin_orbitals, site, -chemical_potential, parity=parity)
-        else:
-            # Add chemical potential and magnetic field terms.
-            hubbard_model += number_operator(
-                n_spin_orbitals, up_index(site),
-                -chemical_potential - magnetic_field, parity=parity)
-            hubbard_model += number_operator(
-                n_spin_orbitals, down_index(site),
-                -chemical_potential + magnetic_field, parity=parity)
-
-            # Add local pair Coulomb interaction terms.
-            operator_1 = number_operator(
-                n_spin_orbitals, up_index(site), parity=parity) \
-                - coulomb_shift
-            operator_2 = number_operator(
-                n_spin_orbitals, down_index(site), parity=parity) \
-                - coulomb_shift
-            hubbard_model += coulomb * operator_1 * operator_2
-
-        # Index coupled orbitals.
-        right_neighbor = _right_neighbor(
-                site, x_dimension, y_dimension, periodic)
-        bottom_neighbor = _bottom_neighbor(
-                site, x_dimension, y_dimension, periodic)
-
-        # Add transition to neighbor on right.
-        if right_neighbor is not None:
-            if spinless:
-                # Add Coulomb term.
-                operator_1 = number_operator(
-                    n_spin_orbitals, site, 1.0, parity=parity) - coulomb_shift
-                operator_2 = number_operator(
-                    n_spin_orbitals, right_neighbor, 1.0, parity=parity) \
-                    - coulomb_shift
-                hubbard_model += coulomb * operator_1 * operator_2
-
-                # Add hopping term.
-                operators = ((site, 1), (right_neighbor, 0))
-
-            else:
-                # Add hopping term.
-                operators = ((up_index(site), 1),
-                             (up_index(right_neighbor), 0))
-                hopping_term = Op(operators, -tunneling)
-                hubbard_model += hopping_term
-                hubbard_model += hermitian_conjugated(hopping_term)
-
-                operators = ((down_index(site), 1),
-                             (down_index(right_neighbor), 0))
-
-            hopping_term = Op(operators, -tunneling)
-            hubbard_model += hopping_term
-            hubbard_model += hermitian_conjugated(hopping_term)
-
-        # Add transition to neighbor below.
-        if bottom_neighbor is not None:
-            if spinless:
-                # Add Coulomb term.
-                operator_1 = number_operator(
-                    n_spin_orbitals, site, parity=parity) - coulomb_shift
-                operator_2 = number_operator(
-                    n_spin_orbitals, bottom_neighbor, parity=parity) \
-                    - coulomb_shift
-                hubbard_model += coulomb * operator_1 * operator_2
-
-                # Add hopping term.
-                operators = ((site, 1), (bottom_neighbor, 0))
-
-            else:
-                # Add hopping term.
-                operators = ((up_index(site), 1),
-                             (up_index(bottom_neighbor), 0))
-                hopping_term = Op(operators, -tunneling)
-                hubbard_model += hopping_term
-                hubbard_model += hermitian_conjugated(hopping_term)
-
-                operators = ((down_index(site), 1),
-                             (down_index(bottom_neighbor), 0))
-
-            hopping_term = Op(operators, -tunneling)
-            hubbard_model += hopping_term
-            hubbard_model += hermitian_conjugated(hopping_term)
-
-    return hubbard_model
 
 
 def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
@@ -298,11 +161,51 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
     Returns:
         bose_hubbard_model: An instance of the BosonOperator class.
     """
-    return _hubbard(1, x_dimension, y_dimension, tunneling,
-                    interaction/2., dipole,
-                    chemical_potential, magnetic_field=0,
-                    periodic=periodic, spinless=True,
-                    particle_hole_symmetry=False)
+
+    # Initialize operator.
+    n_sites = x_dimension * y_dimension
+    hubbard_model = BosonOperator()
+
+    # Loop through sites and add terms.
+    for site in range(n_sites):
+
+        # Get indices of right and bottom neighbors
+        right_neighbor = _right_neighbor(
+                site, x_dimension, y_dimension, periodic)
+        bottom_neighbor = _bottom_neighbor(
+                site, x_dimension, y_dimension, periodic)
+
+        # Add terms that couple with neighbors to the right and bottom.
+        if right_neighbor is not None:
+            # Add hopping term
+            hubbard_model += _hopping_term(
+                    site, right_neighbor, -tunneling, bosonic=True)
+            # Add local Coulomb interaction term
+            hubbard_model += _coulomb_interaction_term(
+                    n_sites, site, right_neighbor, dipole,
+                    particle_hole_symmetry=False,
+                    bosonic=True)
+        if bottom_neighbor is not None:
+            # Add hopping term
+            hubbard_model += _hopping_term(
+                    site, bottom_neighbor, -tunneling, bosonic=True)
+            # Add local Coulomb interaction term
+            hubbard_model += _coulomb_interaction_term(
+                    n_sites, site, bottom_neighbor, dipole,
+                    particle_hole_symmetry=False,
+                    bosonic=True)
+
+        # Add on-site interaction.
+        hubbard_model += (
+            number_operator(n_sites, site, 0.5 * interaction, parity=1)
+            * (number_operator(n_sites, site, parity=1) - BosonOperator(()))
+        )
+
+        # Add chemical potential.
+        hubbard_model += number_operator(
+                n_sites, site, -chemical_potential, parity=1)
+
+    return hubbard_model
 
 
 def _spinful_fermi_hubbard_model(
@@ -392,20 +295,21 @@ def _spinless_fermi_hubbard_model(
     return hubbard_model
 
 
-def _hopping_term(i, j, coefficient):
-    hopping_term = FermionOperator(((i, 1), (j, 0)), coefficient)
-    hopping_term += FermionOperator(((j, 1), (i, 0)),
-                                    coefficient.conjugate())
+def _hopping_term(i, j, coefficient, bosonic=False):
+    op_class = BosonOperator if bosonic else FermionOperator
+    hopping_term = op_class(((i, 1), (j, 0)), coefficient)
+    hopping_term += op_class(((j, 1), (i, 0)), coefficient.conjugate())
     return hopping_term
 
 
 def _coulomb_interaction_term(
-        n_sites, i, j, coefficient, particle_hole_symmetry):
-    number_operator_i = number_operator(n_sites, i)
-    number_operator_j = number_operator(n_sites, j)
+        n_sites, i, j, coefficient, particle_hole_symmetry, bosonic=False):
+    op_class = BosonOperator if bosonic else FermionOperator
+    number_operator_i = number_operator(n_sites, i, parity=2*bosonic - 1)
+    number_operator_j = number_operator(n_sites, j, parity=2*bosonic - 1)
     if particle_hole_symmetry:
-        number_operator_i -= FermionOperator((), 0.5)
-        number_operator_j -= FermionOperator((), 0.5)
+        number_operator_i -= op_class((), 0.5)
+        number_operator_j -= op_class((), 0.5)
     return coefficient * number_operator_i * number_operator_j
 
 
