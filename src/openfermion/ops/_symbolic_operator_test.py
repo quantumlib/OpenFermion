@@ -718,23 +718,33 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertTrue(op_compressed == op)
 
     def test_str(self):
+
         op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         self.assertEqual(str(op), "0.5 [1^ 3 8^]")
-        op2 = DummyOperator1((), 2)
-        self.assertEqual(str(op2), "2 []")
-        op3 = DummyOperator1()
-        self.assertEqual(str(op3), "0")
-        op4 = (DummyOperator1(((3, 1), (4, 1), (5, 0)), 1.0) +
-               DummyOperator1(((3, 1), (4, 1), (4, 0)), 2.0) +
-               DummyOperator1(((2, 1), (4, 1), (5, 0)), 1.0) +
-               DummyOperator1(((3, 0), (2, 1), (1, 1)), 2.0) +
-               DummyOperator1(((3, 0), (2, 0), (1, 1)), 2.0))
-        self.assertEqual(str(op4).strip(), """
+
+        op = DummyOperator1((), 2)
+        self.assertEqual(str(op), "2 []")
+
+        op = DummyOperator1()
+        self.assertEqual(str(op), "0")
+
+        op = (DummyOperator1(((3, 1), (4, 1), (5, 0)), 1.0) +
+              DummyOperator1(((3, 1), (4, 1), (4, 0)), 2.0) +
+              DummyOperator1(((2, 1), (4, 1), (5, 0)), 1.0) +
+              DummyOperator1(((3, 0), (2, 1), (1, 1)), 2.0) +
+              DummyOperator1(((3, 0), (2, 0), (1, 1)), 2.0))
+        self.assertEqual(str(op).strip(), """
 1.0 [2^ 4^ 5] +
 2.0 [3 2 1^] +
 2.0 [3 2^ 1^] +
 2.0 [3^ 4^ 4] +
 1.0 [3^ 4^ 5]
+""".strip())
+
+        op = (DummyOperator1(((3, 1), (4, 1), (5, 0)), 0.0) +
+              DummyOperator1(((3, 1), (4, 1), (4, 0)), 2.0))
+        self.assertEqual(str(op).strip(), """
+2.0 [3^ 4^ 4]
 """.strip())
 
     def test_rep(self):
