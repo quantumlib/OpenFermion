@@ -67,9 +67,9 @@ def fermi_hubbard(x_dimension, y_dimension, tunneling, coulomb,
 
     .. math::
 
-        H = - t \sum_{k=1}^{N-1} (a_k^\dagger a_{k + 1} + a_{k+1}^\dagger a_k)
-            + U \sum_{k=1}^{N-1} a_k^\dagger a_k a_{k+1}^\dagger a_{k+1}
-            - \mu \sum_{k=1}^N a_k^\dagger a_k.
+        H = - t \sum_{\langle i, j \rangle} (a^\dagger_i a_j + a^\dagger_j a_i)
+            + U \sum_{\langle i, j \rangle} a^\dagger_i a_i a^\dagger_j a_j
+            - \mu \sum_i a_i^\dagger a_i.
 
     Args:
         x_dimension (int): The width of the grid.
