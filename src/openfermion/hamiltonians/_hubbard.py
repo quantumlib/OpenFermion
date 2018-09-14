@@ -135,6 +135,13 @@ def _spinful_fermi_hubbard_model(
         bottom_neighbor = _bottom_neighbor(
                 site, x_dimension, y_dimension, periodic)
 
+        # Avoid double-counting edges when one of the dimensions is 2
+        # and the system is periodic
+        if x_dimension == 2 and periodic and site % 2 == 1:
+            right_neighbor = None
+        if y_dimension == 2 and periodic and site >= x_dimension:
+            bottom_neighbor = None
+
         # Add hopping terms with neighbors to the right and bottom.
         if right_neighbor is not None:
             hubbard_model += _hopping_term(
@@ -180,6 +187,13 @@ def _spinless_fermi_hubbard_model(
                 site, x_dimension, y_dimension, periodic)
         bottom_neighbor = _bottom_neighbor(
                 site, x_dimension, y_dimension, periodic)
+
+        # Avoid double-counting edges when one of the dimensions is 2
+        # and the system is periodic
+        if x_dimension == 2 and periodic and site % 2 == 1:
+            right_neighbor = None
+        if y_dimension == 2 and periodic and site >= x_dimension:
+            bottom_neighbor = None
 
         # Add terms that couple with neighbors to the right and bottom.
         if right_neighbor is not None:
@@ -261,6 +275,13 @@ def bose_hubbard(x_dimension, y_dimension, tunneling, interaction,
                 site, x_dimension, y_dimension, periodic)
         bottom_neighbor = _bottom_neighbor(
                 site, x_dimension, y_dimension, periodic)
+
+        # Avoid double-counting edges when one of the dimensions is 2
+        # and the system is periodic
+        if x_dimension == 2 and periodic and site % 2 == 1:
+            right_neighbor = None
+        if y_dimension == 2 and periodic and site >= x_dimension:
+            bottom_neighbor = None
 
         # Add terms that couple with neighbors to the right and bottom.
         if right_neighbor is not None:
