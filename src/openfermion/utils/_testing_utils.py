@@ -155,17 +155,21 @@ def random_interaction_operator(
     return interaction_operator
 
 
-def random_quadratic_hamiltonian(n_qubits,
+def random_quadratic_hamiltonian(n_orbitals,
                                  conserves_particle_number=False,
                                  real=False,
+                                 expand_spin=False,
                                  seed=None):
     """Generate a random instance of QuadraticHamiltonian.
 
     Args:
-        n_qubits(int): the number of qubits
+        n_orbitals(int): the number of orbitals
         conserves_particle_number(bool): whether the returned Hamiltonian
             should conserve particle number
         real(bool): whether to use only real numbers
+        expand_spin: Whether to expand each orbital symmetrically into two
+            spin orbitals. Note that if this option is set to True, then
+            the total number of orbitals will be doubled.
 
     Returns:
         QuadraticHamiltonian
@@ -175,11 +179,18 @@ def random_quadratic_hamiltonian(n_qubits,
 
     constant = numpy.random.randn()
     chemical_potential = numpy.random.randn()
-    hermitian_mat = random_hermitian_matrix(n_qubits, real)
+    hermitian_mat = random_hermitian_matrix(n_orbitals, real)
+
     if conserves_particle_number:
         antisymmetric_mat = None
     else:
-        antisymmetric_mat = random_antisymmetric_matrix(n_qubits, real)
+        antisymmetric_mat = random_antisymmetric_matrix(n_orbitals, real)
+
+    if expand_spin:
+        hermitian_mat = numpy.kron(hermitian_mat, numpy.eye(2))
+        if antisymmetric_mat is not None:
+            antisymmetric_mat = numpy.kron(antisymmetric_mat, numpy.eye(2))
+
     return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat,
                                 constant, chemical_potential)
 

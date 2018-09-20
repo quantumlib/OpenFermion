@@ -174,8 +174,8 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         self.assertTrue(
             normal_ordered(majorana_op) == fermion_operator)
 
-    def test_diagonalizing_bogoliubov_transform(self):
-        """Test getting the diagonalizing Bogoliubov transformation."""
+    def test_diagonalizing_bogoliubov_transform_non_particle_conserving(self):
+        """Test non-particle-conserving diagonalizing Bogoliubov transform."""
         hermitian_part = self.quad_ham_npc.combined_hermitian_part
         antisymmetric_part = self.quad_ham_npc.antisymmetric_part
         block_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits),
@@ -223,6 +223,37 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         for i in numpy.ndindex((self.n_qubits, self.n_qubits)):
             self.assertAlmostEqual(identity[i], constraint_matrix_1[i])
             self.assertAlmostEqual(0., constraint_matrix_2[i])
+
+    def test_diagonalizing_bogoliubov_transform_particle_conserving(self):
+        """Test particle-conserving diagonalizing Bogoliubov transform."""
+
+        # Spin-symmetric
+        quad_ham = random_quadratic_hamiltonian(
+                5, conserves_particle_number=True, expand_spin=True)
+        orbital_energies, _ = quad_ham.orbital_energies()
+
+        transformation_matrix = quad_ham.diagonalizing_bogoliubov_transform(
+                spin_symmetry=True)
+        numpy.testing.assert_allclose(
+                transformation_matrix.dot(
+                    quad_ham.combined_hermitian_part.T.dot(
+                        transformation_matrix.T.conj())),
+                numpy.diag(orbital_energies),
+                atol=1e-7)
+
+        # Not spin-symmetric
+        quad_ham = random_quadratic_hamiltonian(
+                5, conserves_particle_number=True, expand_spin=False)
+        orbital_energies, _ = quad_ham.orbital_energies()
+
+        transformation_matrix = quad_ham.diagonalizing_bogoliubov_transform(
+                spin_symmetry=False)
+        numpy.testing.assert_allclose(
+                transformation_matrix.dot(
+                    quad_ham.combined_hermitian_part.T.dot(
+                        transformation_matrix.T.conj())),
+                numpy.diag(orbital_energies),
+                atol=1e-7)
 
 
 class DiagonalizingCircuitTest(unittest.TestCase):

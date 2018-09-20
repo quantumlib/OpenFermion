@@ -9,12 +9,14 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 """Hamiltonians that are quadratic in the fermionic ladder operators."""
+
 import numpy
 from scipy.linalg import schur
 
-from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import PolynomialTensor
+from openfermion.ops._indexing import down_index, up_index
 from openfermion.ops._givens_rotations import (
         fermionic_gaussian_decomposition,
         givens_decomposition_square,
@@ -53,7 +55,7 @@ class QuadraticHamiltonian(PolynomialTensor):
     """
 
     def __init__(self, hermitian_part, antisymmetric_part=None,
-                 constant=0., chemical_potential=0.):
+                 constant=0.0, chemical_potential=0.0):
         r"""
         Initialize the QuadraticHamiltonian class.
 
@@ -116,7 +118,7 @@ class QuadraticHamiltonian(PolynomialTensor):
     def conserves_particle_number(self):
         """Whether this Hamiltonian conserves particle number."""
         discrepancy = numpy.max(numpy.abs(self.antisymmetric_part))
-        return discrepancy < EQ_TOLERANCE
+        return numpy.isclose(discrepancy, 0.0)
 
     def add_chemical_potential(self, chemical_potential):
         """Increase (or decrease) the chemical potential by some value."""
@@ -220,7 +222,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         return majorana_matrix, majorana_constant
 
-    def diagonalizing_bogoliubov_transform(self):
+    def diagonalizing_bogoliubov_transform(self, spin_symmetry=False):
         r"""Compute the unitary that diagonalizes a quadratic Hamiltonian.
 
         Any quadratic Hamiltonian can be rewritten in the form
@@ -273,6 +275,11 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         This method returns the matrix :math:`W`.
 
+        Args:
+            spin_symmetry (bool): Whether to assume that the Hamiltonian
+                includes a spin degree of freedom and that spin-up modes
+                do not interact with spin-down modes.
+
         Returns:
             diagonalizing_unitary (ndarray):
                 A matrix representing the transformation :math:`W` of the
@@ -280,35 +287,65 @@ class QuadraticHamiltonian(PolynomialTensor):
                 particle number then this is :math:`N \times N`; otherwise
                 it is :math:`N \times 2N`.
         """
+        n_modes = self.combined_hermitian_part.shape[0]
+        if spin_symmetry and n_modes % 2:
+            raise ValueError(
+                'Spin symmetry was specified but Hamiltonian contains '
+                'an odd number of modes'
+            )
+
         if self.conserves_particle_number:
+            return self._particle_conserving_bogoliubov_transform(spin_symmetry)
+        else:
+            return self._non_particle_conserving_bogoliubov_transform(
+                    spin_symmetry)
+
+    def _particle_conserving_bogoliubov_transform(self, spin_symmetry):
+        n_modes = self.combined_hermitian_part.shape[0]
+        if spin_symmetry:
+            n_sites = n_modes // 2
+            diagonalizing_unitary = numpy.zeros(
+                    (n_modes, n_modes), dtype=complex)
+            for index_map in (up_index, down_index):
+                spin_indices = [index_map(i) for i in range(n_sites)]
+                spin_matrix = self.combined_hermitian_part[
+                        numpy.ix_(spin_indices, spin_indices)]
+                _, spin_transform_T = numpy.linalg.eigh(spin_matrix)
+                diagonalizing_unitary[
+                        numpy.ix_(spin_indices, spin_indices)
+                        ] = spin_transform_T.T
+            return diagonalizing_unitary
+        else:
             _, diagonalizing_unitary_T = numpy.linalg.eigh(
                     self.combined_hermitian_part)
             return diagonalizing_unitary_T.T
-        else:
-            majorana_matrix, _ = self.majorana_form()
 
-            # Get the orthogonal transformation that puts majorana_matrix
-            # into canonical form
-            _, orthogonal = antisymmetric_canonical_form(
-                    majorana_matrix)
+    def _non_particle_conserving_bogoliubov_transform(self, spin_symmetry):
+        # TODO implement spin symmetric case
+        majorana_matrix, _ = self.majorana_form()
 
-            # Create the matrix that converts between fermionic ladder and
-            # Majorana bases
-            normalized_identity = (numpy.eye(self.n_qubits, dtype=complex) /
-                                   numpy.sqrt(2.))
-            majorana_basis_change = numpy.eye(
-                2 * self.n_qubits, dtype=complex) / numpy.sqrt(2.)
-            majorana_basis_change[self.n_qubits:, self.n_qubits:] *= -1.j
-            majorana_basis_change[:self.n_qubits,
-                                  self.n_qubits:] = normalized_identity
-            majorana_basis_change[self.n_qubits:,
-                                  :self.n_qubits] = 1.j * normalized_identity
+        # Get the orthogonal transformation that puts majorana_matrix
+        # into canonical form
+        _, orthogonal = antisymmetric_canonical_form(
+                majorana_matrix)
 
-            # Compute the unitary and return
-            diagonalizing_unitary = majorana_basis_change.T.conj().dot(
-                orthogonal.dot(majorana_basis_change))
+        # Create the matrix that converts between fermionic ladder and
+        # Majorana bases
+        normalized_identity = (numpy.eye(self.n_qubits, dtype=complex) /
+                               numpy.sqrt(2.))
+        majorana_basis_change = numpy.eye(
+            2 * self.n_qubits, dtype=complex) / numpy.sqrt(2.)
+        majorana_basis_change[self.n_qubits:, self.n_qubits:] *= -1.j
+        majorana_basis_change[:self.n_qubits,
+                              self.n_qubits:] = normalized_identity
+        majorana_basis_change[self.n_qubits:,
+                              :self.n_qubits] = 1.j * normalized_identity
 
-            return diagonalizing_unitary[:self.n_qubits]
+        # Compute the unitary and return
+        diagonalizing_unitary = majorana_basis_change.T.conj().dot(
+            orthogonal.dot(majorana_basis_change))
+
+        return diagonalizing_unitary[:self.n_qubits]
 
     def diagonalizing_circuit(self):
         r"""Get a circuit for a unitary that diagonalizes this Hamiltonian
@@ -401,7 +438,7 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     # Check that input matrix is antisymmetric
     matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
     maxval = numpy.max(numpy.abs(matrix_plus_transpose))
-    if maxval > EQ_TOLERANCE:
+    if not numpy.isclose(maxval, 0.0):
         raise ValueError('The input matrix must be antisymmetric.')
 
     # Compute Schur decomposition
@@ -421,7 +458,7 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
 
     # Now we permute so that the upper right block is non-negative
     for i in range(n):
-        if canonical[i, n + i] < -EQ_TOLERANCE:
+        if canonical[i, n + i] < 0.0:
             swap_rows(canonical, i, n + i)
             swap_columns(canonical, i, n + i)
             swap_columns(orthogonal, i, n + i)
