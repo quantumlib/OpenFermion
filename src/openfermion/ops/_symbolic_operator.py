@@ -18,6 +18,7 @@ import itertools
 import re
 import warnings
 
+import numpy
 from six import add_metaclass, string_types
 
 from openfermion.config import EQ_TOLERANCE
@@ -304,8 +305,10 @@ class SymbolicOperator:
         if not self.terms:
             return '0'
         string_rep = ''
-        for term in sorted(self.terms):
-            tmp_string = '{} ['.format(self.terms[term])
+        for term, coeff in sorted(self.terms.items()):
+            if numpy.isclose(coeff, 0.0):
+                continue
+            tmp_string = '{} ['.format(coeff)
             for factor in term:
                 index, action = factor
                 action_string = self.action_strings[self.actions.index(action)]
