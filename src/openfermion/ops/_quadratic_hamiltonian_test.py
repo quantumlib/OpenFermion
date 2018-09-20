@@ -190,7 +190,7 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         block_matrix[self.n_qubits:, self.n_qubits:] = (
             -antisymmetric_part.conj())
 
-        transformation_matrix = (
+        _, transformation_matrix, _ = (
                 self.quad_ham_npc.diagonalizing_bogoliubov_transform())
         left_block = transformation_matrix[:, :self.n_qubits]
         right_block = transformation_matrix[:, self.n_qubits:]
@@ -237,8 +237,10 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         orbital_energies, _ = quad_ham.orbital_energies()
 
         for spin_sector in range(2):
-            transformation_matrix = quad_ham.diagonalizing_bogoliubov_transform(
-                    spin_sector=spin_sector)
+            _, transformation_matrix, _ = (
+                    quad_ham.diagonalizing_bogoliubov_transform(
+                        spin_sector=spin_sector)
+            )
             index_map = (up_index, down_index)[spin_sector]
             spin_indices = [index_map(i) for i in range(5)]
             spin_matrix = quad_ham.combined_hermitian_part[
@@ -255,7 +257,8 @@ class QuadraticHamiltonianTest(unittest.TestCase):
                 5, conserves_particle_number=True, expand_spin=False)
         orbital_energies, _ = quad_ham.orbital_energies()
 
-        transformation_matrix = quad_ham.diagonalizing_bogoliubov_transform()
+        _, transformation_matrix, _ = (
+                quad_ham.diagonalizing_bogoliubov_transform())
         numpy.testing.assert_allclose(
                 transformation_matrix.dot(
                     quad_ham.combined_hermitian_part.T.dot(

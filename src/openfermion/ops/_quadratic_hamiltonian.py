@@ -283,6 +283,8 @@ class QuadraticHamiltonian(PolynomialTensor):
                 do not interact with spin-down modes.
 
         Returns:
+            orbital_energies(ndarray)
+                A one-dimensional array containing the :math:`\varepsilon_j`
             diagonalizing_unitary (ndarray):
                 A matrix representing the transformation :math:`W` of the
                 fermionic ladder operators. If the Hamiltonian conserves
@@ -290,6 +292,8 @@ class QuadraticHamiltonian(PolynomialTensor):
                 it is :math:`N \times 2N`. If spin sector is specified,
                 then `N` here represents the number of spatial orbitals
                 rather than spin orbitals.
+            constant(float)
+                The constant
         """
         n_modes = self.combined_hermitian_part.shape[0]
         if spin_sector is not None and n_modes % 2:
@@ -320,16 +324,20 @@ class QuadraticHamiltonian(PolynomialTensor):
                     numpy.ix_(spin_indices, spin_indices)]
         else:
             matrix = self.combined_hermitian_part
-        _, diagonalizing_unitary_T = numpy.linalg.eigh(matrix)
-        return diagonalizing_unitary_T.T
+
+        orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(matrix)
+
+        return orbital_energies, diagonalizing_unitary_T.T, self.constant
 
     def _non_particle_conserving_bogoliubov_transform(self, spin_sector):
-        majorana_matrix, _ = self.majorana_form()
+        majorana_matrix, majorana_constant = self.majorana_form()
 
         # Get the orthogonal transformation that puts majorana_matrix
         # into canonical form
-        _, orthogonal = antisymmetric_canonical_form(
-                majorana_matrix)
+        canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
+        orbital_energies = canonical[
+            range(self.n_qubits), range(self.n_qubits, 2 * self.n_qubits)]
+        constant = -0.5 * numpy.sum(orbital_energies) + majorana_constant
 
         # Create the matrix that converts between fermionic ladder and
         # Majorana bases
@@ -347,7 +355,7 @@ class QuadraticHamiltonian(PolynomialTensor):
         diagonalizing_unitary = majorana_basis_change.T.conj().dot(
             orthogonal.dot(majorana_basis_change))
 
-        return diagonalizing_unitary[:self.n_qubits]
+        return orbital_energies, diagonalizing_unitary[:self.n_qubits], constant
 
     def diagonalizing_circuit(self):
         r"""Get a circuit for a unitary that diagonalizes this Hamiltonian
@@ -372,7 +380,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                 of modes :math:`i` and :math:`j` by angles :math:`\theta`
                 and :math:`\varphi`.
         """
-        transformation_matrix = self.diagonalizing_bogoliubov_transform()
+        _, transformation_matrix, _ = self.diagonalizing_bogoliubov_transform()
 
         if self.conserves_particle_number:
             # The Hamiltonian conserves particle number, so we don't need
