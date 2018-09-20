@@ -17,8 +17,7 @@ from __future__ import division
 import itertools
 
 import numpy
-from openfermion.ops import FermionOperator, QubitOperator
-from openfermion.utils import up_index, down_index
+from openfermion.ops import FermionOperator, QubitOperator, down_index, up_index
 
 
 def uccsd_generator(single_amplitudes, double_amplitudes, anti_hermitian=True):
