@@ -12,7 +12,6 @@
 
 """This module contains functions for compiling circuits to prepare
 Slater determinants and fermionic Gaussian states."""
-from __future__ import absolute_import
 
 import numpy
 

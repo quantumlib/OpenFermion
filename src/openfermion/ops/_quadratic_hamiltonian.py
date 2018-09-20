@@ -222,7 +222,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         return majorana_matrix, majorana_constant
 
-    def diagonalizing_bogoliubov_transform(self, spin_symmetry=False):
+    def diagonalizing_bogoliubov_transform(self, spin_sector=None):
         r"""Compute the unitary that diagonalizes a quadratic Hamiltonian.
 
         Any quadratic Hamiltonian can be rewritten in the form
@@ -276,8 +276,10 @@ class QuadraticHamiltonian(PolynomialTensor):
         This method returns the matrix :math:`W`.
 
         Args:
-            spin_symmetry (bool): Whether to assume that the Hamiltonian
-                includes a spin degree of freedom and that spin-up modes
+            spin_sector (optional str): An optional integer specifying
+                a spin sector to restrict to: 0 for up-spin and 1 for
+                down-spin. Should only be specified if the Hamiltonian
+                includes a spin degree of freedom and spin-up modes
                 do not interact with spin-down modes.
 
         Returns:
@@ -285,43 +287,43 @@ class QuadraticHamiltonian(PolynomialTensor):
                 A matrix representing the transformation :math:`W` of the
                 fermionic ladder operators. If the Hamiltonian conserves
                 particle number then this is :math:`N \times N`; otherwise
-                it is :math:`N \times 2N`.
+                it is :math:`N \times 2N`. If spin sector is specified,
+                then `N` here represents the number of spatial orbitals
+                rather than spin orbitals.
         """
         n_modes = self.combined_hermitian_part.shape[0]
-        if spin_symmetry and n_modes % 2:
+        if spin_sector is not None and n_modes % 2:
             raise ValueError(
-                'Spin symmetry was specified but Hamiltonian contains '
-                'an odd number of modes'
-            )
+                    'Spin sector was specified but Hamiltonian contains '
+                    'an odd number of modes'
+                    )
 
         if self.conserves_particle_number:
-            return self._particle_conserving_bogoliubov_transform(spin_symmetry)
+            return self._particle_conserving_bogoliubov_transform(spin_sector)
         else:
+            # TODO implement this
+            if spin_sector is not None:
+                raise NotImplementedError(
+                        'Specifying spin sector for non-particle-conserving '
+                        'Hamiltonians is not yet supported.'
+                        )
             return self._non_particle_conserving_bogoliubov_transform(
-                    spin_symmetry)
+                    spin_sector)
 
-    def _particle_conserving_bogoliubov_transform(self, spin_symmetry):
+    def _particle_conserving_bogoliubov_transform(self, spin_sector):
         n_modes = self.combined_hermitian_part.shape[0]
-        if spin_symmetry:
+        if spin_sector is not None:
+            index_map = (up_index, down_index)[spin_sector]
             n_sites = n_modes // 2
-            diagonalizing_unitary = numpy.zeros(
-                    (n_modes, n_modes), dtype=complex)
-            for index_map in (up_index, down_index):
-                spin_indices = [index_map(i) for i in range(n_sites)]
-                spin_matrix = self.combined_hermitian_part[
-                        numpy.ix_(spin_indices, spin_indices)]
-                _, spin_transform_T = numpy.linalg.eigh(spin_matrix)
-                diagonalizing_unitary[
-                        numpy.ix_(spin_indices, spin_indices)
-                        ] = spin_transform_T.T
-            return diagonalizing_unitary
+            spin_indices = [index_map(i) for i in range(n_sites)]
+            matrix = self.combined_hermitian_part[
+                    numpy.ix_(spin_indices, spin_indices)]
         else:
-            _, diagonalizing_unitary_T = numpy.linalg.eigh(
-                    self.combined_hermitian_part)
-            return diagonalizing_unitary_T.T
+            matrix = self.combined_hermitian_part
+        _, diagonalizing_unitary_T = numpy.linalg.eigh(matrix)
+        return diagonalizing_unitary_T.T
 
-    def _non_particle_conserving_bogoliubov_transform(self, spin_symmetry):
-        # TODO implement spin symmetric case
+    def _non_particle_conserving_bogoliubov_transform(self, spin_sector):
         majorana_matrix, _ = self.majorana_form()
 
         # Get the orthogonal transformation that puts majorana_matrix

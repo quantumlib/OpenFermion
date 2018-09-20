@@ -30,6 +30,7 @@ from openfermion.utils._testing_utils import (random_antisymmetric_matrix,
 from openfermion.ops._quadratic_hamiltonian import (
         QuadraticHamiltonian,
         antisymmetric_canonical_form)
+from openfermion.ops._indexing import down_index, up_index
 
 
 class QuadraticHamiltonianTest(unittest.TestCase):
@@ -232,22 +233,26 @@ class QuadraticHamiltonianTest(unittest.TestCase):
                 5, conserves_particle_number=True, expand_spin=True)
         orbital_energies, _ = quad_ham.orbital_energies()
 
-        transformation_matrix = quad_ham.diagonalizing_bogoliubov_transform(
-                spin_symmetry=True)
-        numpy.testing.assert_allclose(
-                transformation_matrix.dot(
-                    quad_ham.combined_hermitian_part.T.dot(
-                        transformation_matrix.T.conj())),
-                numpy.diag(orbital_energies),
-                atol=1e-7)
+        for spin_sector in range(2):
+            transformation_matrix = quad_ham.diagonalizing_bogoliubov_transform(
+                    spin_sector=spin_sector)
+            index_map = (up_index, down_index)[spin_sector]
+            spin_indices = [index_map(i) for i in range(5)]
+            spin_matrix = quad_ham.combined_hermitian_part[
+                    numpy.ix_(spin_indices, spin_indices)]
+            numpy.testing.assert_allclose(
+                    transformation_matrix.dot(
+                        spin_matrix.T.dot(
+                            transformation_matrix.T.conj())),
+                    numpy.diag(orbital_energies[spin_indices]),
+                    atol=1e-7)
 
         # Not spin-symmetric
         quad_ham = random_quadratic_hamiltonian(
                 5, conserves_particle_number=True, expand_spin=False)
         orbital_energies, _ = quad_ham.orbital_energies()
 
-        transformation_matrix = quad_ham.diagonalizing_bogoliubov_transform(
-                spin_symmetry=False)
+        transformation_matrix = quad_ham.diagonalizing_bogoliubov_transform()
         numpy.testing.assert_allclose(
                 transformation_matrix.dot(
                     quad_ham.combined_hermitian_part.T.dot(
