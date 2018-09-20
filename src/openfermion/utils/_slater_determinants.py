@@ -69,8 +69,9 @@ def gaussian_state_preparation_circuit(
             desired, i.e., the orbitals with negative energies are filled.
         spin_sector (optional str): An optional integer specifying
             a spin sector to restrict to: 0 for spin-up and 1 for
-            spin-down. If specified, the returned circuit acts only on modes
-            with the specified spin. Should only be specified if the Hamiltonian
+            spin-down. If specified, the returned circuit acts on modes
+            indexed by spatial indices (rather than spin indices).
+            Should only be specified if the Hamiltonian
             includes a spin degree of freedom and spin-up modes
             do not interact with spin-down modes.
 
