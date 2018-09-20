@@ -277,8 +277,8 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         Args:
             spin_sector (optional str): An optional integer specifying
-                a spin sector to restrict to: 0 for up-spin and 1 for
-                down-spin. Should only be specified if the Hamiltonian
+                a spin sector to restrict to: 0 for spin-up and 1 for
+                spin-down. Should only be specified if the Hamiltonian
                 includes a spin degree of freedom and spin-up modes
                 do not interact with spin-down modes.
 
