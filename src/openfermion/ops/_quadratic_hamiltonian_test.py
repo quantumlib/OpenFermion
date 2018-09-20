@@ -263,6 +263,16 @@ class QuadraticHamiltonianTest(unittest.TestCase):
                 numpy.diag(orbital_energies),
                 atol=1e-7)
 
+    def test_diagonalizing_bogoliubov_transform_exceptions(self):
+        quad_ham = random_quadratic_hamiltonian(5)
+        with self.assertRaises(ValueError):
+            _ = quad_ham.diagonalizing_bogoliubov_transform(spin_sector=0)
+
+        quad_ham = random_quadratic_hamiltonian(
+                5, conserves_particle_number=False, expand_spin=True)
+        with self.assertRaises(NotImplementedError):
+            _ = quad_ham.diagonalizing_bogoliubov_transform(spin_sector=0)
+
 
 class DiagonalizingCircuitTest(unittest.TestCase):
 
