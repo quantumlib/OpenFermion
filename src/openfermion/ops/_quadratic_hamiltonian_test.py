@@ -9,28 +9,31 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 """Tests for quadratic_hamiltonian.py."""
+
 import unittest
 
 import numpy
 import scipy.sparse
 
-from openfermion.config import EQ_TOLERANCE
-from openfermion.ops import FermionOperator
-from openfermion.transforms import get_fermion_operator, get_sparse_operator
-from openfermion.utils import (get_ground_state,
-                               majorana_operator, normal_ordered)
+from openfermion import (
+        FermionOperator,
+        QuadraticHamiltonian,
+        get_fermion_operator,
+        get_ground_state,
+        get_sparse_operator,
+        majorana_operator,
+        normal_ordered,
+        random_antisymmetric_matrix,
+        random_hermitian_matrix,
+        random_quadratic_hamiltonian)
+
+from openfermion.ops._indexing import down_index, up_index
+from openfermion.ops._quadratic_hamiltonian import antisymmetric_canonical_form
 from openfermion.utils._sparse_tools import (
         jw_sparse_givens_rotation,
         jw_sparse_particle_hole_transformation_last_mode)
-from openfermion.utils._testing_utils import (random_antisymmetric_matrix,
-                                              random_hermitian_matrix,
-                                              random_quadratic_hamiltonian)
-
-from openfermion.ops._quadratic_hamiltonian import (
-        QuadraticHamiltonian,
-        antisymmetric_canonical_form)
-from openfermion.ops._indexing import down_index, up_index
 
 
 class QuadraticHamiltonianTest(unittest.TestCase):
@@ -130,7 +133,7 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         orbital_energies, constant = self.quad_ham_pc.orbital_energies()
         # Test the ground energy
         energy = numpy.sum(
-            orbital_energies[orbital_energies < -EQ_TOLERANCE]) + constant
+            orbital_energies[orbital_energies < 0.0]) + constant
         self.assertAlmostEqual(energy, self.pc_ground_energy)
 
         # Test the non-particle-number-conserving case
@@ -291,8 +294,7 @@ class DiagonalizingCircuitTest(unittest.TestCase):
             discrepancy = 0.
             if difference.nnz:
                 discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
+            numpy.testing.assert_allclose(discrepancy, 0.0, atol=1e-7)
 
             # Check that the eigenvalues are in the expected order
             orbital_energies, constant = (
@@ -333,8 +335,7 @@ class DiagonalizingCircuitTest(unittest.TestCase):
             discrepancy = 0.
             if difference.nnz:
                 discrepancy = max(abs(difference.data))
-
-            self.assertTrue(discrepancy < EQ_TOLERANCE)
+            numpy.testing.assert_allclose(discrepancy, 0.0, atol=1e-7)
 
             # Check that the eigenvalues are in the expected order
             orbital_energies, constant = (
@@ -351,8 +352,8 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
     def test_equality(self):
         """Test that the decomposition is valid."""
         n = 7
-        rand_mat = numpy.random.randn(2 * n, 2 * n)
-        antisymmetric_matrix = rand_mat - rand_mat.T
+        antisymmetric_matrix = random_antisymmetric_matrix(
+                2*n, real=True, seed=9799)
         canonical, orthogonal = antisymmetric_canonical_form(
             antisymmetric_matrix)
         result_matrix = orthogonal.dot(antisymmetric_matrix.dot(orthogonal.T))
@@ -363,15 +364,15 @@ class AntisymmetricCanonicalFormTest(unittest.TestCase):
         """Test that the returned canonical matrix has the right form."""
         n = 7
         # Obtain a random antisymmetric matrix
-        rand_mat = numpy.random.randn(2 * n, 2 * n)
-        antisymmetric_matrix = rand_mat - rand_mat.T
+        antisymmetric_matrix = random_antisymmetric_matrix(
+                2*n, real=True, seed=29206)
         canonical, _ = antisymmetric_canonical_form(antisymmetric_matrix)
         for i in range(2 * n):
             for j in range(2 * n):
                 if i < n and j == n + i:
-                    self.assertTrue(canonical[i, j] > -EQ_TOLERANCE)
+                    self.assertTrue(canonical[i, j] >= 0.0)
                 elif i >= n and j == i - n:
-                    self.assertTrue(canonical[i, j] < EQ_TOLERANCE)
+                    self.assertTrue(canonical[i, j] < 0.0)
                 else:
                     self.assertAlmostEqual(canonical[i, j], 0.)
 
