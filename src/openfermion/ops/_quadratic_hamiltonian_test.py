@@ -239,6 +239,29 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         quad_ham = get_quadratic_hamiltonian(
                 reorder(get_fermion_operator(quad_ham), up_then_down))
 
+        orbital_energies, transformation_matrix, _ = (
+                quad_ham.diagonalizing_bogoliubov_transform()
+        )
+        max_upper_right = numpy.max(numpy.abs(transformation_matrix[:5, 5:]))
+        max_lower_left = numpy.max(numpy.abs(transformation_matrix[5:, :5]))
+
+        numpy.testing.assert_allclose(
+                orbital_energies[:5], orbital_energies[5:])
+        numpy.testing.assert_allclose(
+                transformation_matrix.dot(
+                    quad_ham.combined_hermitian_part.T.dot(
+                        transformation_matrix.T.conj())),
+                numpy.diag(orbital_energies),
+                atol=1e-7)
+        numpy.testing.assert_allclose(max_upper_right, 0.0)
+        numpy.testing.assert_allclose(max_lower_left, 0.0)
+
+        # Specific spin sector
+        quad_ham = random_quadratic_hamiltonian(
+                5, conserves_particle_number=True, expand_spin=True)
+        quad_ham = get_quadratic_hamiltonian(
+                reorder(get_fermion_operator(quad_ham), up_then_down))
+
         for spin_sector in range(2):
             orbital_energies, transformation_matrix, _ = (
                     quad_ham.diagonalizing_bogoliubov_transform(

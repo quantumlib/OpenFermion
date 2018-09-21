@@ -324,10 +324,30 @@ class QuadraticHamiltonian(PolynomialTensor):
             spin_indices = [index_map(i) for i in range(n_sites)]
             matrix = self.combined_hermitian_part[
                     numpy.ix_(spin_indices, spin_indices)]
+            orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(
+                    matrix)
         else:
             matrix = self.combined_hermitian_part
 
-        orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(matrix)
+            if _is_spin_block_diagonal(matrix):
+                up_block = matrix[:n_modes//2, :n_modes//2]
+                down_block = matrix[n_modes//2:, n_modes//2:]
+
+                up_orbital_energies, up_diagonalizing_unitary_T = (
+                        numpy.linalg.eigh(up_block))
+                down_orbital_energies, down_diagonalizing_unitary_T = (
+                        numpy.linalg.eigh(down_block))
+
+                orbital_energies = numpy.concatenate(
+                    (up_orbital_energies, down_orbital_energies))
+                diagonalizing_unitary_T = numpy.block([
+                    [up_diagonalizing_unitary_T,
+                        numpy.zeros((n_modes//2, n_modes//2))],
+                    [numpy.zeros((n_modes//2, n_modes//2)),
+                        down_diagonalizing_unitary_T]])
+            else:
+                orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(
+                        matrix)
 
         return orbital_energies, diagonalizing_unitary_T.T, self.constant
 
@@ -495,3 +515,13 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_rows(diagonal, i, arg_min)
 
     return canonical, orthogonal.T
+
+
+def _is_spin_block_diagonal(matrix) -> bool:
+    n = matrix.shape[0]
+    if n % 2:
+        return False
+    max_upper_right = numpy.max(numpy.abs(matrix[:n//2, n//2:]))
+    max_lower_left = numpy.max(numpy.abs(matrix[n//2:, :n//2]))
+    return (numpy.isclose(max_upper_right, 0.0)
+            and numpy.isclose(max_lower_left, 0.0))
