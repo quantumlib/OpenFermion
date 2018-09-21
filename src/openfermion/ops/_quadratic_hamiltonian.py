@@ -517,7 +517,7 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     return canonical, orthogonal.T
 
 
-def _is_spin_block_diagonal(matrix) -> bool:
+def _is_spin_block_diagonal(matrix):
     n = matrix.shape[0]
     if n % 2:
         return False
