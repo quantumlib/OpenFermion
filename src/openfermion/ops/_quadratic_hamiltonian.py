@@ -12,6 +12,8 @@
 
 """Hamiltonians that are quadratic in the fermionic ladder operators."""
 
+import warnings
+
 import numpy
 from scipy.linalg import schur
 
@@ -125,52 +127,12 @@ class QuadraticHamiltonian(PolynomialTensor):
                                       numpy.eye(self.n_qubits))
         self.chemical_potential += chemical_potential
 
-    def orbital_energies(self, non_negative=False):
-        r"""Return the orbital energies.
-
-        Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
-        of the form
-
-        .. math::
-
-            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
-
-        We call the :math:`\varepsilon_j` the orbital energies.
-        The eigenvalues of the Hamiltonian are sums of subsets of the
-        orbital energies (up to the additive constant).
-
-        Args:
-            non_negative(bool): If True, always return a list of orbital
-                energies that are non-negative. This option is ignored if
-                the Hamiltonian does not conserve particle number, in which
-                case the returned orbital energies are always non-negative.
-
-        Returns
-        -------
-        orbital_energies(ndarray)
-            A one-dimensional array containing the :math:`\varepsilon_j`
-        constant(float)
-            The constant
-        """
-        if self.conserves_particle_number and not non_negative:
-            hermitian_matrix = self.combined_hermitian_part
-            orbital_energies, _ = numpy.linalg.eigh(
-                hermitian_matrix)
-            constant = self.constant
-        else:
-            majorana_matrix, majorana_constant = self.majorana_form()
-            canonical, _ = antisymmetric_canonical_form(
-                majorana_matrix)
-            orbital_energies = canonical[
-                range(self.n_qubits), range(self.n_qubits, 2 * self.n_qubits)]
-            constant = -0.5 * numpy.sum(orbital_energies) + majorana_constant
-
-        return orbital_energies, constant
-
     def ground_energy(self):
         """Return the ground energy."""
-        _, constant = self.orbital_energies(non_negative=True)
-        return constant
+        orbital_energies, _, constant = (
+                self.diagonalizing_bogoliubov_transform())
+        return numpy.sum(orbital_energies[
+            numpy.where(orbital_energies < 0.0)[0]]) + constant
 
     def majorana_form(self):
         r"""Return the Majorana represention of the Hamiltonian.
@@ -324,10 +286,30 @@ class QuadraticHamiltonian(PolynomialTensor):
             spin_indices = [index_map(i) for i in range(n_sites)]
             matrix = self.combined_hermitian_part[
                     numpy.ix_(spin_indices, spin_indices)]
+            orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(
+                    matrix)
         else:
             matrix = self.combined_hermitian_part
 
-        orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(matrix)
+            if _is_spin_block_diagonal(matrix):
+                up_block = matrix[:n_modes//2, :n_modes//2]
+                down_block = matrix[n_modes//2:, n_modes//2:]
+
+                up_orbital_energies, up_diagonalizing_unitary_T = (
+                        numpy.linalg.eigh(up_block))
+                down_orbital_energies, down_diagonalizing_unitary_T = (
+                        numpy.linalg.eigh(down_block))
+
+                orbital_energies = numpy.concatenate(
+                    (up_orbital_energies, down_orbital_energies))
+                diagonalizing_unitary_T = numpy.block([
+                    [up_diagonalizing_unitary_T,
+                        numpy.zeros((n_modes//2, n_modes//2))],
+                    [numpy.zeros((n_modes//2, n_modes//2)),
+                        down_diagonalizing_unitary_T]])
+            else:
+                orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(
+                        matrix)
 
         return orbital_energies, diagonalizing_unitary_T.T, self.constant
 
@@ -417,6 +399,44 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         return circuit_description
 
+    # DEPRECATED FUNCTIONS
+    # ====================
+    def orbital_energies(self, non_negative=False):
+        r"""Return the orbital energies.
+
+        Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
+        of the form
+
+        .. math::
+
+            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
+
+        We call the :math:`\varepsilon_j` the orbital energies.
+        The eigenvalues of the Hamiltonian are sums of subsets of the
+        orbital energies (up to the additive constant).
+
+        Args:
+            non_negative(bool): If True, always return a list of orbital
+                energies that are non-negative. This option is ignored if
+                the Hamiltonian does not conserve particle number, in which
+                case the returned orbital energies are always non-negative.
+
+        Returns
+        -------
+        orbital_energies(ndarray)
+            A one-dimensional array containing the :math:`\varepsilon_j`
+        constant(float)
+            The constant
+        """
+        warnings.warn('The method `orbital_energies` is deprecated. '
+                      'Use the method `diagonalizing_bogoliubov_transform` '
+                      'instead.', DeprecationWarning)
+
+        orbital_energies, _, constant = (
+                self.diagonalizing_bogoliubov_transform())
+
+        return orbital_energies, constant
+
 
 def antisymmetric_canonical_form(antisymmetric_matrix):
     """Compute the canonical form of an antisymmetric matrix.
@@ -495,3 +515,13 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
             swap_rows(diagonal, i, arg_min)
 
     return canonical, orthogonal.T
+
+
+def _is_spin_block_diagonal(matrix) -> bool:
+    n = matrix.shape[0]
+    if n % 2:
+        return False
+    max_upper_right = numpy.max(numpy.abs(matrix[:n//2, n//2:]))
+    max_lower_left = numpy.max(numpy.abs(matrix[n//2:, :n//2]))
+    return (numpy.isclose(max_upper_right, 0.0)
+            and numpy.isclose(max_lower_left, 0.0))

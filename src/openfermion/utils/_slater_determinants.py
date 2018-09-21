@@ -105,8 +105,7 @@ def gaussian_state_preparation_circuit(
         if occupied_orbitals is None:
             # The ground state is desired, so we fill the orbitals that have
             # negative energy
-            num_negative_energies = numpy.count_nonzero(orbital_energies < 0.0)
-            occupied_orbitals = range(num_negative_energies)
+            occupied_orbitals = numpy.where(orbital_energies < 0.0)[0]
 
         # Get the unitary rows which represent the Slater determinant
         slater_determinant_matrix = transformation_matrix[occupied_orbitals]
