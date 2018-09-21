@@ -16,7 +16,6 @@ import numpy
 from scipy.linalg import schur
 
 from openfermion.ops import PolynomialTensor
-from openfermion.ops._indexing import down_index, up_index
 from openfermion.ops._givens_rotations import (
         fermionic_gaussian_decomposition,
         givens_decomposition_square,
@@ -280,7 +279,9 @@ class QuadraticHamiltonian(PolynomialTensor):
                 a spin sector to restrict to: 0 for spin-up and 1 for
                 spin-down. Should only be specified if the Hamiltonian
                 includes a spin degree of freedom and spin-up modes
-                do not interact with spin-down modes.
+                do not interact with spin-down modes. If specified,
+                the modes are assumed to be ordered so that spin-up orbitals
+                come before spin-down orbitals.
 
         Returns:
             orbital_energies(ndarray)
@@ -317,8 +318,9 @@ class QuadraticHamiltonian(PolynomialTensor):
     def _particle_conserving_bogoliubov_transform(self, spin_sector):
         n_modes = self.combined_hermitian_part.shape[0]
         if spin_sector is not None:
-            index_map = (up_index, down_index)[spin_sector]
             n_sites = n_modes // 2
+            def index_map(i):
+                return i + spin_sector*n_sites
             spin_indices = [index_map(i) for i in range(n_sites)]
             matrix = self.combined_hermitian_part[
                     numpy.ix_(spin_indices, spin_indices)]

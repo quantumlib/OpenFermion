@@ -22,14 +22,16 @@ from openfermion import (
         QuadraticHamiltonian,
         get_fermion_operator,
         get_ground_state,
+        get_quadratic_hamiltonian,
         get_sparse_operator,
         majorana_operator,
         normal_ordered,
         random_antisymmetric_matrix,
         random_hermitian_matrix,
-        random_quadratic_hamiltonian)
+        random_quadratic_hamiltonian,
+        reorder,
+        up_then_down)
 
-from openfermion.ops._indexing import down_index, up_index
 from openfermion.ops._quadratic_hamiltonian import antisymmetric_canonical_form
 from openfermion.utils._sparse_tools import (
         jw_sparse_givens_rotation,
@@ -234,14 +236,16 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         # Spin-symmetric
         quad_ham = random_quadratic_hamiltonian(
                 5, conserves_particle_number=True, expand_spin=True)
-        orbital_energies, _ = quad_ham.orbital_energies()
+        quad_ham = get_quadratic_hamiltonian(
+                reorder(get_fermion_operator(quad_ham), up_then_down))
 
         for spin_sector in range(2):
-            _, transformation_matrix, _ = (
+            orbital_energies, transformation_matrix, _ = (
                     quad_ham.diagonalizing_bogoliubov_transform(
                         spin_sector=spin_sector)
             )
-            index_map = (up_index, down_index)[spin_sector]
+            def index_map(i):
+                return i + spin_sector*5
             spin_indices = [index_map(i) for i in range(5)]
             spin_matrix = quad_ham.combined_hermitian_part[
                     numpy.ix_(spin_indices, spin_indices)]
@@ -249,7 +253,7 @@ class QuadraticHamiltonianTest(unittest.TestCase):
                     transformation_matrix.dot(
                         spin_matrix.T.dot(
                             transformation_matrix.T.conj())),
-                    numpy.diag(orbital_energies[spin_indices]),
+                    numpy.diag(orbital_energies),
                     atol=1e-7)
 
         # Not spin-symmetric
