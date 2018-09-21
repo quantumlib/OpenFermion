@@ -113,7 +113,7 @@ def gaussian_state_preparation_circuit(
         # Get the circuit description
         circuit_description = slater_determinant_preparation_circuit(
             slater_determinant_matrix)
-        start_orbitals = occupied_orbitals
+        start_orbitals = range(len(occupied_orbitals))
     else:
         # TODO implement this
         if spin_sector is not None:
