@@ -259,7 +259,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             quadratic_hamiltonian = random_quadratic_hamiltonian(n)
 
             # Get the diagonalizing transformation
-            transformation_matrix = (
+            _, transformation_matrix, _ = (
                 quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
             left_block = transformation_matrix[:, :n]
             right_block = transformation_matrix[:, n:]

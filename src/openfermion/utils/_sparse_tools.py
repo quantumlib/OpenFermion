@@ -26,11 +26,10 @@ import scipy.sparse.linalg
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
                              QubitOperator, BosonOperator,
-                             QuadOperator)
+                             QuadOperator, up_index, down_index)
 from openfermion.utils import (count_qubits, gaussian_state_preparation_circuit,
                                is_hermitian,
-                               slater_determinant_preparation_circuit,
-                               up_index, down_index)
+                               slater_determinant_preparation_circuit)
 
 
 # Make global definitions.

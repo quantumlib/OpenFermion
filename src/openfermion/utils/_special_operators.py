@@ -11,9 +11,11 @@
 #   limitations under the License.
 
 """Commonly used operators (mainly instances of SymbolicOperator)."""
+
 import numpy
-from openfermion.ops import (FermionOperator, BosonOperator)
 from six import string_types
+
+from openfermion.ops import BosonOperator, FermionOperator, down_index, up_index
 
 
 def up_index(index):

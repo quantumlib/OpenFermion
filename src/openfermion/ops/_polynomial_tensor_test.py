@@ -429,7 +429,8 @@ class PolynomialTensorTest(unittest.TestCase):
         orbital_energies, constant = quad_ham.orbital_energies()
 
         # Rotate a basis where the Hamiltonian is diagonal
-        diagonalizing_unitary = quad_ham.diagonalizing_bogoliubov_transform()
+        _, diagonalizing_unitary, _ = (
+                quad_ham.diagonalizing_bogoliubov_transform())
         quad_ham.rotate_basis(diagonalizing_unitary.T)
 
         # Check that the rotated Hamiltonian is diagonal with the correct
