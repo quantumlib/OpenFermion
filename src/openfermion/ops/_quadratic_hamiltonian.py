@@ -129,8 +129,10 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     def ground_energy(self):
         """Return the ground energy."""
-        _, constant = self.orbital_energies(non_negative=True)
-        return constant
+        orbital_energies, _, constant = (
+                self.diagonalizing_bogoliubov_transform())
+        return numpy.sum(orbital_energies[
+            numpy.where(orbital_energies < 0.0)[0]]) + constant
 
     def majorana_form(self):
         r"""Return the Majorana represention of the Hamiltonian.
