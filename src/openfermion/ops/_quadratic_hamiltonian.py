@@ -12,6 +12,8 @@
 
 """Hamiltonians that are quadratic in the fermionic ladder operators."""
 
+import warnings
+
 import numpy
 from scipy.linalg import schur
 
@@ -124,48 +126,6 @@ class QuadraticHamiltonian(PolynomialTensor):
         self.n_body_tensors[1, 0] -= (chemical_potential *
                                       numpy.eye(self.n_qubits))
         self.chemical_potential += chemical_potential
-
-    def orbital_energies(self, non_negative=False):
-        r"""Return the orbital energies.
-
-        Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
-        of the form
-
-        .. math::
-
-            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
-
-        We call the :math:`\varepsilon_j` the orbital energies.
-        The eigenvalues of the Hamiltonian are sums of subsets of the
-        orbital energies (up to the additive constant).
-
-        Args:
-            non_negative(bool): If True, always return a list of orbital
-                energies that are non-negative. This option is ignored if
-                the Hamiltonian does not conserve particle number, in which
-                case the returned orbital energies are always non-negative.
-
-        Returns
-        -------
-        orbital_energies(ndarray)
-            A one-dimensional array containing the :math:`\varepsilon_j`
-        constant(float)
-            The constant
-        """
-        if self.conserves_particle_number and not non_negative:
-            hermitian_matrix = self.combined_hermitian_part
-            orbital_energies, _ = numpy.linalg.eigh(
-                hermitian_matrix)
-            constant = self.constant
-        else:
-            majorana_matrix, majorana_constant = self.majorana_form()
-            canonical, _ = antisymmetric_canonical_form(
-                majorana_matrix)
-            orbital_energies = canonical[
-                range(self.n_qubits), range(self.n_qubits, 2 * self.n_qubits)]
-            constant = -0.5 * numpy.sum(orbital_energies) + majorana_constant
-
-        return orbital_energies, constant
 
     def ground_energy(self):
         """Return the ground energy."""
@@ -436,6 +396,44 @@ class QuadraticHamiltonian(PolynomialTensor):
                 decomposition + left_decomposition))
 
         return circuit_description
+
+    # DEPRECATED FUNCTIONS
+    # ====================
+    def orbital_energies(self, non_negative=False):
+        r"""Return the orbital energies.
+
+        Any quadratic Hamiltonian is unitarily equivalent to a Hamiltonian
+        of the form
+
+        .. math::
+
+            \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
+
+        We call the :math:`\varepsilon_j` the orbital energies.
+        The eigenvalues of the Hamiltonian are sums of subsets of the
+        orbital energies (up to the additive constant).
+
+        Args:
+            non_negative(bool): If True, always return a list of orbital
+                energies that are non-negative. This option is ignored if
+                the Hamiltonian does not conserve particle number, in which
+                case the returned orbital energies are always non-negative.
+
+        Returns
+        -------
+        orbital_energies(ndarray)
+            A one-dimensional array containing the :math:`\varepsilon_j`
+        constant(float)
+            The constant
+        """
+        warnings.warn('The method `orbital_energies` is deprecated. '
+                      'Use the method `diagonalizing_bogoliubov_transform` '
+                      'instead.', DeprecationWarning)
+
+        orbital_energies, _, constant = (
+                self.diagonalizing_bogoliubov_transform())
+
+        return orbital_energies, constant
 
 
 def antisymmetric_canonical_form(antisymmetric_matrix):
