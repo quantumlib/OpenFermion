@@ -155,10 +155,10 @@ class FermiHubbardModel:
     """
 
 
-    def __init__(self, lattice, *,
+    def __init__(self, lattice,
                  tunneling_parameters=None,
                  interaction_parameters=None,
-                 potential_parameters=None,
+                 potential_parameters=None
                  ):
         """A Hubbard model defined on a lattice.
 
