@@ -188,7 +188,7 @@ class HubbardSquareLattice(HubbardLattice):
     There are two types of edges: 'onsite' and 'neighbor'.
     """
 
-    def __init__(self, x_dimension, y_dimension, *,
+    def __init__(self, x_dimension, y_dimension,
                  n_dofs=1, spinless=False, periodic=True):
         """
         Args:
@@ -264,7 +264,6 @@ class HubbardSquareLattice(HubbardLattice):
 
     # neighbor counting and iteration
 
-    @property
     def n_neighbor_pairs(self, ordered=True):
         """Number of neighboring (unordered) pairs of sites."""
         n_horizontal_edges_per_y = (

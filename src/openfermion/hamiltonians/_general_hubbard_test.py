@@ -130,7 +130,7 @@ def test_fermi_hubbard_square_lattice_random_parameters(lattice, parameters):
             assert False
     edge_type_to_n_site_pairs = {
             'onsite': lattice.n_sites, 
-            'neighbor': lattice.n_neighbor_pairs}
+            'neighbor': lattice.n_neighbor_pairs(False)}
     for (term_type, parameter), n_terms in terms_per_parameter.items():
         if term_type == 'potential':
             assert n_terms == lattice.n_sites * lattice.n_spin_values
