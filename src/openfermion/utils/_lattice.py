@@ -241,7 +241,7 @@ class HubbardSquareLattice(HubbardLattice):
 
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, ','.join((
+        return '{}({})'.format(self.__class__.__name__, ', '.join((
             ('x_dimension={}'.format(self.x_dimension)),
             ('y_dimension={}'.format(self.y_dimension)),
             ('n_dofs={}'.format(self.n_dofs)),

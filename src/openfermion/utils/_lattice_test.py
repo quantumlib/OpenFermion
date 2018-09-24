@@ -135,3 +135,47 @@ def test_hubbard_square_lattice_2x2():
         assert lattice.n_sites == 4
         assert len(tuple(lattice.neighbors_iter(False))) == 4
         assert len(tuple(lattice.neighbors_iter())) == 8
+
+@pytest.mark.parametrize('kwargs', [{
+    'x_dimension': random.randrange(1, 10),
+    'y_dimension': random.randrange(1, 10),
+    'n_dofs': random.randrange(1, 10),
+    'spinless': random.choice((True, False)),
+    'periodic': random.choice((True, False))
+    } for _ in range(5)])
+def test_hubbard_square_lattice_repr(kwargs):
+    lattice = HubbardSquareLattice(**kwargs)
+    params = ('x_dimension', 'y_dimension', 'n_dofs', 'spinless', 'periodic')
+    param_template = ', '.join('{0}={{{0}}}'.format(param) for param in params)
+    param_str = param_template.format(**kwargs)
+    assert repr(lattice) == 'HubbardSquareLattice({})'.format(param_str)
+
+
+def test_spin_pairs_iter():
+    spinful_lattice = HubbardSquareLattice(3, 3)
+
+    with pytest.raises(ValueError):
+        spinful_lattice.spin_pairs_iter(10)
+
+    assert (tuple(spinful_lattice.spin_pairs_iter(SpinPairs.ALL, True)) == 
+            ((0, 0), (0, 1), (1, 0), (1, 1)))
+    assert (tuple(spinful_lattice.spin_pairs_iter(SpinPairs.ALL, False)) ==
+            ((0, 0), (0, 1), (1, 1)))
+    assert (tuple(spinful_lattice.spin_pairs_iter(SpinPairs.SAME, True)) ==
+            tuple(spinful_lattice.spin_pairs_iter(SpinPairs.SAME, False)) ==
+            ((0, 0), (1, 1)))
+    assert (tuple(spinful_lattice.spin_pairs_iter(SpinPairs.DIFF, True)) ==
+            ((0, 1), (1, 0)))
+    assert (tuple(spinful_lattice.spin_pairs_iter(SpinPairs.DIFF, False)) ==
+            ((0, 1),))
+
+    spinless_lattice = HubbardSquareLattice(3, 3, spinless=True)
+    assert (tuple(spinless_lattice.spin_pairs_iter(SpinPairs.ALL, True)) ==
+            tuple(spinless_lattice.spin_pairs_iter(SpinPairs.ALL, False)) ==
+            tuple(spinless_lattice.spin_pairs_iter(SpinPairs.SAME, True)) ==
+            tuple(spinless_lattice.spin_pairs_iter(SpinPairs.SAME, False)) ==
+            ((0, 0),))
+    assert (tuple(spinless_lattice.spin_pairs_iter(SpinPairs.DIFF, True)) ==
+            tuple(spinless_lattice.spin_pairs_iter(SpinPairs.DIFF, False)) ==
+            tuple())
+
