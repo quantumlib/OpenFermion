@@ -60,7 +60,7 @@ def test_fermi_hubbard_square_special_general_equivalance(
     print(len(hubbard_model_general.terms))
     assert hubbard_model_special == hubbard_model_general
 
-def random_parameters(lattice, probability):
+def random_parameters(lattice, probability=0.5):
     parameters = {}
 
     parameters['tunneling_parameters'] = [
@@ -85,6 +85,28 @@ def random_parameters(lattice, probability):
     
     return parameters
 
+def test_fermi_hubbard_default_parameters():
+    lattice = HubbardSquareLattice(3, 3)
+    model = FermiHubbardModel(lattice)
+    assert model.tunneling_parameters == []
+    assert model.interaction_parameters == []
+    assert model.potential_parameters == []
+
+def test_fermi_hubbard_bad_parameters():
+    lattice = HubbardSquareLattice(3, 3)
+    with pytest.raises(ValueError):
+        tunneling_parameters = [('onsite', (0, 0), 1)]
+        FermiHubbardModel(lattice, tunneling_parameters=tunneling_parameters)
+
+    with pytest.raises(ValueError):
+        FermiHubbardModel(lattice, interaction_parameters=[(0, 0)])
+    with pytest.raises(ValueError):
+        FermiHubbardModel(lattice, interaction_parameters=[(0,) * 5])
+    with pytest.raises(ValueError):
+        interaction_parameters = [('onsite', (0, 0), 1, SpinPairs.SAME)]
+        FermiHubbardModel(lattice, interaction_parameters=interaction_parameters)
+
+
 lattices = [HubbardSquareLattice(random.randrange(3, 10), random.randrange(3, 10),
                                  periodic=periodic, spinless=spinless)
     for periodic in (False, True)
@@ -92,7 +114,7 @@ lattices = [HubbardSquareLattice(random.randrange(3, 10), random.randrange(3, 10
     for _ in range(2)
     ]
 @pytest.mark.parametrize('lattice,parameters', [
-    (lattice, random_parameters(lattice, 0.5))
+    (lattice, random_parameters(lattice))
     for lattice in lattices
     for _ in range(2)
     ])

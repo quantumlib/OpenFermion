@@ -205,7 +205,7 @@ class FermiHubbardModel:
             if ((parameter.edge_type in self.lattice.onsite_edge_types) and 
                 (len(set(parameter.dofs)) == 1)):
                 raise ValueError('Invalid onsite tunneling parameter between '
-                                 'same dof ({}).'.format(parameter.dof))
+                                 'same dof {}.'.format(parameter.dofs))
             parsed_parameters.append(parameter)
         return parsed_parameters
 
@@ -234,7 +234,7 @@ class FermiHubbardModel:
 
     def parse_potential_parameters(self, parameters):
         if parameters is None:
-            return {}
+            return []
         parsed_parameters = []
         for parameter in parameters:
             parameter = PotentialParameter(*parameter)
