@@ -219,7 +219,8 @@ class FermiHubbardModel:
                 raise ValueError('len(parameter) not in (3, 4)')
             spin_pairs = (SpinPairs.ALL if len(parameter) < 4 
                                         else parameter[-1])
-            parameter = InteractionParameter(*parameter[:3], spin_pairs)
+            parameter = InteractionParameter(*parameter[:3],
+                                             spin_pairs=spin_pairs)
             self.lattice.validate_edge_type(parameter.edge_type)
             self.lattice.validate_dofs(parameter.dofs, 2)
             if ((len(set(parameter.dofs)) == 1) and 
