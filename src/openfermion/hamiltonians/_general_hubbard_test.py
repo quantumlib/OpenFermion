@@ -55,9 +55,6 @@ def test_fermi_hubbard_square_special_general_equivalance(
             x_dimension, y_dimension, tunneling, coulomb,
             chemical_potential=chemical_potential, spinless=spinless,
             periodic=periodic)
-    print(x_dimension, y_dimension)
-    print(len(hubbard_model_special.terms))
-    print(len(hubbard_model_general.terms))
     assert hubbard_model_special == hubbard_model_general
 
 def random_parameters(lattice, probability=0.5):
