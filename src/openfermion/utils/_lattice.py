@@ -47,19 +47,16 @@ class HubbardLattice:
     @abc.abstractproperty
     def n_dofs(self):
         """The number of degrees of freedom per site (and spin if applicable)."""
-        pass
 
 
     @abc.abstractproperty
     def n_sites(self):
         """The number of sites in the lattice."""
-        pass
 
 
     @abc.abstractproperty
     def spinless(self):
         """Whether or not the fermion has spin (False if so)."""
-        pass
 
 
     @abc.abstractproperty
@@ -68,19 +65,16 @@ class HubbardLattice:
 
         Examples include 'onsite', 'neighbor', 'next_neighbor', etc.
         """
-        pass
 
 
     @abc.abstractproperty
     def onsite_edge_types(self):
         """The edge types that connect sites to themselves."""
-        pass
 
 
     @abc.abstractmethod
     def site_pairs_iter(self, edge_type, ordered=True):
         """Iterable over pairs of sites corresponding to the given edge type."""
-        pass
     
 
     # properties
