@@ -131,22 +131,21 @@ def test_fermi_hubbard_square_lattice_random_parameters(lattice, parameters):
                 parameter = (edge_type, dofs, -coefficient)
                 assert parameter in parameters['tunneling_parameters']
                 terms_per_parameter['tunneling', parameter] += 1
-            elif len(term) == 4 and len(spin_orbitals) == 2:
+            else:
+                assert len(term) == 4
                 spin_pairs = (SpinPairs.ALL if lattice.spinless else 
                            (SpinPairs.SAME if s == ss else SpinPairs.DIFF))
                 parameter = (edge_type, dofs, coefficient, spin_pairs)
                 assert parameter in parameters['interaction_parameters']
                 terms_per_parameter['interaction', parameter] += 1
-            else:
-                assert False
-        elif len(term) == 2 and len(spin_orbitals) == 1:
+        else:
+            assert len(term) == 2
+            assert len(spin_orbitals) == 1
             spin_orbital = spin_orbitals.pop()
             _, dof, _ = lattice.from_spin_orbital_index(spin_orbital)
             parameter = (dof, -coefficient)
             assert parameter in parameters['potential_parameters']
             terms_per_parameter['potential', parameter] += 1
-        else:
-            assert False
     edge_type_to_n_site_pairs = {
             'onsite': lattice.n_sites, 
             'neighbor': lattice.n_neighbor_pairs(False)}
@@ -157,19 +156,17 @@ def test_fermi_hubbard_square_lattice_random_parameters(lattice, parameters):
         n_site_pairs = edge_type_to_n_site_pairs[parameter[0]]
         if term_type == 'tunneling':
             assert n_terms == 2 * n_site_pairs * lattice.n_spin_values
-        elif term_type == 'interaction':
+        else:
+            assert term_type == 'interaction'
             parameter = InteractionParameter(*parameter)
             expected_n_terms = n_site_pairs
             if parameter.edge_type == 'neighbor':
                 expected_n_terms *= len(set(parameter.dofs))
             if not lattice.spinless:
-                if parameter.spin_pairs == SpinPairs.ALL:
-                    expected_n_terms *= 4
-                elif (parameter.edge_type == 'onsite' and 
+                assert parameter.spin_pairs != SpinPairs.ALL
+                if (parameter.edge_type == 'onsite' and 
                       parameter.spin_pairs == SpinPairs.DIFF):
                     expected_n_terms *= len(set(parameter.dofs))
                 else:
                     expected_n_terms *= 2
             assert n_terms == expected_n_terms
-        else:
-            assert False
