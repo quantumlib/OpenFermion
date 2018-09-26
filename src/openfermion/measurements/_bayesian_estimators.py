@@ -626,8 +626,7 @@ class BayesEstimator(ProbabilityDist):
 
             # Prevent numerical errors
             for j in range(len(temp_ae)):
-                if temp_ae[j] < 0:
-                    temp_ae[j] = 0
+                temp_ae[j] = max(temp_ae[j], 0)
             temp_ae = temp_ae / sum(temp_ae)
 
         self._amplitude_estimates = temp_ae
