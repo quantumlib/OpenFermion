@@ -23,7 +23,7 @@ import warnings
 from openfermion.config import EQ_TOLERANCE
 
 
-class ProbabilityDist:
+class ProbabilityDist(object):
     '''
     Stores a estimate of multiple phases
     $P(\phi_j)=p_0+\sum_{r=0}^N (p_{2j}cos(r*\phi_j)+p_{2j-1}sin(r*\phi_j))$
@@ -790,7 +790,7 @@ class BayesDepolarizingEstimator(BayesEstimator):
                            (-1)**mr * 0.5 * epsilon_B))
 
 
-class TimeSeriesEstimator:
+class TimeSeriesEstimator(object):
 
     def __init__(self,
                  max_experiment_length,
