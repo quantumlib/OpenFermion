@@ -73,8 +73,8 @@ class ProbabilityDist(object):
         self._amplitude_guess = amplitude_guess
         self._amplitude_vars = amplitude_vars
 
-        if any([self._amplitude_guess[j] -
-                self._amplitude_guess[j+1] < EQ_TOLERANCE
+        if any([np.abs(self._amplitude_guess[j] -
+                self._amplitude_guess[j+1]) < EQ_TOLERANCE
                 for j in range(num_vectors - 1)]):
             raise ValueError('''Starting amplitudes must be different.''')
 
@@ -657,22 +657,6 @@ class BayesEstimator(ProbabilityDist):
             warnings.warn('''The amplitude update failed. This estimation
                 should probably no longer be trusted.''')
 
-    def gen_distribution(self, experiment_data):
-        '''
-        Generates the posterior distribution estimate
-        of the eigenspectrum of the wavefunction.
-
-        Args:
-            experiment_data: list of dictionaries containing
-                data for each round of the experiment.
-        Returns:
-            distribution: the Fourier vector containing
-                the predicted diagonal of the post-experiment
-                density matrix.
-        '''
-        return np.dot(self._calc_vectors(experiment_data),
-                      self._amplitude_estimates)
-
     def estimate(self):
         '''
         Returns:
@@ -725,7 +709,7 @@ class BayesDepolarizingEstimator(BayesEstimator):
         Returns:
             epsilon_D: the probability of failure during this experiment.
         '''
-        epsilon_D = 1 - np.exp(-n / self.K1)
+        epsilon_D = 1 - np.exp(-n / self.Kerr)
         return epsilon_D
 
     def _epsilon_B_function(self):
@@ -739,7 +723,7 @@ class BayesDepolarizingEstimator(BayesEstimator):
             epsilon_B: the probability of failure at the end of this
                 experiment.
         '''
-        epsilon_B = 1 - np.exp(-1 / self.Kerr)
+        epsilon_B = 1 - np.exp(-1 / self.K1)
         return epsilon_B
 
     def _vector_product(self, vectors, round_data):
@@ -980,8 +964,7 @@ class TimeSeriesEstimator(object):
             singular_values = np.linalg.svd(self._F0)[1]
             self._num_freqs = sum(singular_values >
                                   self._singular_values_cutoff)
-            if self._num_freqs > self._num_freqs_max:
-                self._num_freqs = self._num_freqs_max
+            assert self._num_freqs <= self._num_freqs_max
 
     def _get_amplitudes(self):
         '''

@@ -14,6 +14,7 @@
 import numpy
 import unittest
 from numpy import pi
+import warnings
 
 from ._qpe_estimators import (
     ProbabilityDist,
@@ -21,6 +22,30 @@ from ._qpe_estimators import (
     BayesDepolarizingEstimator,
     TimeSeriesEstimator,
     TimeSeriesMultiRoundEstimator)
+
+
+class IteratingSampler:
+
+    def __init__(
+            self, max_experiments_per_round, angles, random_state):
+        self.angles = angles
+        self.num_angles = len(angles)
+        self.max_experiments_per_round = max_experiments_per_round
+        self.n_next_round = 1
+        self.parity = 0
+        self.random_state = random_state
+
+    def sample(self, **kwargs):
+        experiment = [{
+            'num_rotations': self.n_next_round,
+            'final_rotation': self.angles[self.parity]
+        }]
+        self.n_next_round = self.n_next_round %\
+            self.max_experiments_per_round
+        if self.n_next_round == 0:
+            self.parity = 1 - self.parity
+        self.n_next_round += 1
+        return experiment
 
 
 class ProbabilityDistTest(unittest.TestCase):
@@ -40,6 +65,29 @@ class ProbabilityDistTest(unittest.TestCase):
         self.assertEqual(len(pd._matrices[0]), 2)
         self.assertEqual(len(pd._amplitude_estimates), 1)
         self.assertEqual(pd._fourier_vectors.shape, (21, 1))
+        self.assertAlmostEqual(pd._Holevo_variances(maxvar=1)[0], 1)
+
+    def test_raises_errors(self):
+
+        with self.assertRaises(ValueError):
+            ProbabilityDist(num_vectors=1,
+                            vector_guess=numpy.array([[1, 0], [1, 0]]),
+                            amplitude_guess=[1],
+                            amplitude_vars=[[1]],
+                            num_freqs=10,
+                            max_n=1)
+        with self.assertRaises(ValueError):
+            ProbabilityDist(num_vectors=1,
+                            amplitude_guess=[1, 0],
+                            amplitude_vars=[[1]],
+                            num_freqs=10,
+                            max_n=1)
+        with self.assertRaises(ValueError):
+            ProbabilityDist(num_vectors=2,
+                            amplitude_guess=[0.5, 0.5],
+                            amplitude_vars=[[1]],
+                            num_freqs=10,
+                            max_n=1)
 
     def test_init_dist(self):
 
@@ -131,6 +179,18 @@ class BayesEstimatorTest(unittest.TestCase):
         self.assertEqual(be.amplitudes_history, [])
         self.assertEqual(be.log_Bayes_factor, 0)
 
+    def test_warning(self):
+        be = BayesEstimator(num_vectors=1,
+                            amplitude_guess=[1],
+                            amplitude_vars=[[1]],
+                            num_freqs=10,
+                            max_n=1,
+                            store_history=True)
+
+        with warnings.catch_warnings(record=True) as w:
+            be.update([])
+            assert len(w) == 1
+
     def test_update(self):
         be = BayesEstimator(num_vectors=1,
                             amplitude_guess=[1],
@@ -187,13 +247,15 @@ class BayesEstimatorTest(unittest.TestCase):
                             amplitude_vars=[[0.1, -0.09], [-0.09, 0.1]],
                             num_freqs=10,
                             max_n=1,
-                            amplitude_approx_cutoff=15)
+                            amplitude_approx_cutoff=15,
+                            full_update_with_failure=True)
         be2 = BayesEstimator(num_vectors=2,
                              amplitude_guess=[0.9, 0.1],
                              amplitude_vars=[[0.1, -0.09], [-0.09, 0.1]],
                              num_freqs=10,
                              max_n=1,
                              amplitude_approx_cutoff=10)
+
         test_experiment = [{
             'final_rotation': -numpy.pi/4,
             'measurement': 0,
@@ -210,17 +272,84 @@ class BayesEstimatorTest(unittest.TestCase):
             'num_rotations': 2
         }]
 
-        for j in range(5):
-            be.update(test_experiment)
-            be2.update(test_experiment)
-            be.update(test_experiment2)
-            be2.update(test_experiment2)
-            be.update(test_experiment3)
-            be2.update(test_experiment3)
+        with warnings.catch_warnings() as w:
+            warnings.simplefilter("ignore")
+            for j in range(5):
+                be.update(test_experiment)
+                be2.update(test_experiment)
+                be.update(test_experiment2)
+                be2.update(test_experiment2)
+                be.update(test_experiment3)
+                be2.update(test_experiment3)
 
         self.assertTrue(
             numpy.sum(numpy.abs(
                 be._amplitude_estimates-be2._amplitude_estimates)) < 1e-3)
+
+    def test_full(self):
+
+        def do_experiment(ev, experiment, random_state):
+            for round_data in experiment:
+                n = round_data['num_rotations']
+                beta = round_data['final_rotation']
+                p0 = numpy.cos(n*ev/2 + beta/2)**2
+                if p0 > random_state.uniform(0, 1):
+                    round_data['measurement'] = 0
+                else:
+                    round_data['measurement'] = 1
+
+        angles = [0, numpy.pi/2]
+        random_state = numpy.random.RandomState(seed=42)
+        ev = random_state.uniform(-numpy.pi, numpy.pi)
+        sampler = IteratingSampler(50, angles, random_state)
+        estimator = BayesEstimator(num_vectors=1, max_n=50,
+                                   amplitude_guess=[1],
+                                   amplitude_vars=[[1]],
+                                   num_freqs=1000*2,
+                                   amplitude_approx_cutoff=100)
+        for j in range(1000):
+            experiment = sampler.sample()
+            do_experiment(ev, experiment, random_state)
+            estimator.update(experiment)
+
+        self.assertTrue(numpy.abs(ev-estimator.estimate()[0]) < 1e-1)
+
+    def test_depol_failure(self):
+
+        def do_experiment_depol(ev, experiment, random_state, T2):
+            for round_data in experiment:
+                n = round_data['num_rotations']
+                beta = round_data['final_rotation']
+                p_noerr = numpy.exp(-n/T2)
+                if p_noerr > random_state.uniform(0, 1):
+                    p0 = numpy.cos(n*ev/2 + beta/2)**2
+                else:
+                    p0 = 0.5
+                if p0 > random_state.uniform(0, 1):
+                    round_data['measurement'] = 0
+                else:
+                    round_data['measurement'] = 1
+                round_data['true_measurement'] = round_data['measurement']
+
+        angles = [0, numpy.pi/2]
+        random_state = numpy.random.RandomState(seed=42)
+        ev = random_state.uniform(-numpy.pi, numpy.pi)
+        sampler = IteratingSampler(50, angles, random_state)
+        estimator = BayesEstimator(num_vectors=1, max_n=10,
+                                   amplitude_guess=[1],
+                                   amplitude_vars=[[1]],
+                                   num_freqs=1000*5,
+                                   amplitude_approx_cutoff=100)
+
+        with warnings.catch_warnings(record=True) as w:
+            for j in range(1000):
+                experiment = sampler.sample()
+                do_experiment_depol(ev, experiment, random_state, T2=20)
+                estimator.update(experiment)
+            self.assertGreater(len(w), 1)
+
+        if numpy.isfinite(estimator.estimate()[0]):
+            self.assertGreater(numpy.abs(ev-estimator.estimate()[0]), 1e-1)
 
 
 class BayesDepolarizingEstimatorTest(unittest.TestCase):
@@ -267,6 +396,40 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
         self.assertAlmostEqual(updated_vectors[3], 0)
         self.assertAlmostEqual(updated_vectors[4], 0.5*(1-epsilon_D))
 
+    def test_full(self):
+
+        def do_experiment_depol(ev, experiment, random_state, T2):
+            for round_data in experiment:
+                n = round_data['num_rotations']
+                beta = round_data['final_rotation']
+                p_noerr = numpy.exp(-n/T2)
+                if p_noerr > random_state.uniform(0, 1):
+                    p0 = numpy.cos(n*ev/2 + beta/2)**2
+                else:
+                    p0 = 0.5
+                if p0 > random_state.uniform(0, 1):
+                    round_data['measurement'] = 0
+                else:
+                    round_data['measurement'] = 1
+                round_data['true_measurement'] = round_data['measurement']
+
+        angles = [0, numpy.pi/2]
+        random_state = numpy.random.RandomState(seed=42)
+        ev = random_state.uniform(-numpy.pi, numpy.pi)
+        sampler = IteratingSampler(10, angles, random_state)
+        estimator = BayesDepolarizingEstimator(num_vectors=1, max_n=10,
+                                               amplitude_guess=[1],
+                                               amplitude_vars=[[1]],
+                                               num_freqs=1000*5,
+                                               amplitude_approx_cutoff=100,
+                                               Kerr=20)
+        for j in range(1000):
+            experiment = sampler.sample()
+            do_experiment_depol(ev, experiment, random_state, T2=20)
+            estimator.update(experiment)
+
+        self.assertLess(numpy.abs(ev-estimator.estimate()[0]), 2e-1)
+
 
 class TimeSeriesEstimatorTest(unittest.TestCase):
     def setup(self):
@@ -290,8 +453,10 @@ class TimeSeriesEstimatorTest(unittest.TestCase):
                 'measurement': 0,
                 'final_rotation': numpy.pi/2}]
             estimator.update(experiment_data)
-        estimator.estimate(return_amplitudes=False)
-        angles, amplitudes = estimator.estimate(return_amplitudes=True)
+        with warnings.catch_warnings() as w:
+            warnings.simplefilter('ignore')
+            estimator.estimate(return_amplitudes=False)
+            angles, amplitudes = estimator.estimate(return_amplitudes=True)
         self.assertEqual(len(angles), 2)
         self.assertEqual(len(amplitudes), 2)
 
