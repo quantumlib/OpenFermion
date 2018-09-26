@@ -50,9 +50,6 @@ class IteratingSampler:
 
 class ProbabilityDistTest(unittest.TestCase):
 
-    def setup(self):
-        pass
-
     def test_basic_initialization(self):
         pd = ProbabilityDist(num_vectors=1,
                              amplitude_guess=[1],
@@ -149,10 +146,11 @@ class ProbabilityDistTest(unittest.TestCase):
         pd.p_vecs = [test_vec]
 
         ml = pd._mlikelihood(test_vec2)
+        init_l = pd._init_mlikelihood(test_vec2)
         sd = pd._single_diff(test_vec2, test_vec)
         jt = pd._jacobian_term(test_vec2, test_vec)
 
-        self.assertAlmostEqual(ml, -numpy.log(0.9))
+        self.assertAlmostEqual(ml-init_l, -numpy.log(0.9))
         self.assertAlmostEqual(
             numpy.sum(numpy.abs(sd + 1/0.9*test_vec2)), 0)
         self.assertAlmostEqual(
@@ -162,9 +160,6 @@ class ProbabilityDistTest(unittest.TestCase):
 
 
 class BayesEstimatorTest(unittest.TestCase):
-
-    def setup(self):
-        pass
 
     def test_init(self):
         be = BayesEstimator(num_vectors=1,
@@ -189,7 +184,7 @@ class BayesEstimatorTest(unittest.TestCase):
 
         with warnings.catch_warnings(record=True) as w:
             be.update([])
-            assert len(w) == 1
+            self.assertEqual(len(w), 1)
 
     def test_update(self):
         be = BayesEstimator(num_vectors=1,
@@ -240,6 +235,44 @@ class BayesEstimatorTest(unittest.TestCase):
                 be.update(test_experiment3)
 
         self.assertEqual(be.estimate(), -numpy.pi/2)
+
+    def test_update_warnings(self):
+
+        be = BayesEstimator(num_vectors=1,
+                            amplitude_guess=[1],
+                            amplitude_vars=numpy.array([[1]]),
+                            num_freqs=10,
+                            max_n=1)
+
+        mock_result = numpy.array([[-1, 0], [0, 0]])
+
+        def mock_function(**kwargs):
+            return mock_result
+        be._calc_vectors = mock_function
+        with warnings.catch_warnings(record=True) as w:
+            self.assertFalse(be.update([]))
+            self.assertEqual(len(w), 2)
+
+        be = BayesEstimator(num_vectors=1,
+                            amplitude_guess=[1],
+                            amplitude_vars=numpy.array([[1]]),
+                            num_freqs=10,
+                            max_n=1)
+
+        test_experiment1 = [{
+            'final_rotation': numpy.pi/2,
+            'measurement': 0,
+            'num_rotations': 1
+        }]
+
+        def mock_function(**kwargs):
+            pass
+        be._update_amplitudes = mock_function
+        be._amplitude_estimates = numpy.array([-1])
+        with warnings.catch_warnings(record=True) as w:
+            be.update(test_experiment1)
+            self.assertFalse(be.update(test_experiment1))
+            self.assertEqual(len(w), 2)
 
     def test_amplitude_approx_update(self):
         be = BayesEstimator(num_vectors=2,
@@ -351,10 +384,46 @@ class BayesEstimatorTest(unittest.TestCase):
         if numpy.isfinite(estimator.estimate()[0]):
             self.assertGreater(numpy.abs(ev-estimator.estimate()[0]), 1e-1)
 
+    def test_depol_failure_fullupdate(self):
+
+        def do_experiment_depol(ev, experiment, random_state, T2):
+            for round_data in experiment:
+                n = round_data['num_rotations']
+                beta = round_data['final_rotation']
+                p_noerr = numpy.exp(-n/T2)
+                if p_noerr > random_state.uniform(0, 1):
+                    p0 = numpy.cos(n*ev/2 + beta/2)**2
+                else:
+                    p0 = 0.5
+                if p0 > random_state.uniform(0, 1):
+                    round_data['measurement'] = 0
+                else:
+                    round_data['measurement'] = 1
+                round_data['true_measurement'] = round_data['measurement']
+
+        angles = [0, numpy.pi/2]
+        random_state = numpy.random.RandomState(seed=42)
+        ev = random_state.uniform(-numpy.pi, numpy.pi)
+        sampler = IteratingSampler(50, angles, random_state)
+        estimator = BayesEstimator(num_vectors=1, max_n=10,
+                                   amplitude_guess=[1],
+                                   amplitude_vars=[[1]],
+                                   num_freqs=1000*5,
+                                   amplitude_approx_cutoff=100,
+                                   full_update_with_failure=True)
+
+        with warnings.catch_warnings(record=True) as w:
+            for j in range(1000):
+                experiment = sampler.sample()
+                do_experiment_depol(ev, experiment, random_state, T2=20)
+                estimator.update(experiment)
+            self.assertGreater(len(w), 1)
+
+        if numpy.isfinite(estimator.estimate()[0]):
+            self.assertGreater(numpy.abs(ev-estimator.estimate()[0]), 1e-1)
+
 
 class BayesDepolarizingEstimatorTest(unittest.TestCase):
-    def setup(self):
-        pass
 
     def test_epsilons(self):
         estimator = BayesDepolarizingEstimator(
@@ -432,8 +501,6 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
 
 
 class TimeSeriesEstimatorTest(unittest.TestCase):
-    def setup(self):
-        pass
 
     def test_running(self):
         estimator = TimeSeriesEstimator(
@@ -468,7 +535,7 @@ class TimeSeriesEstimatorTest(unittest.TestCase):
             automatic_average=True,
             store_history=True)
         estimator._function_estimate = numpy.array([1]*21)
-        estimator._update_flag=True
+        estimator._update_flag = True
         angles, amplitudes = estimator.estimate(return_amplitudes=True)
         self.assertEqual(len(angles), 1)
         self.assertEqual(len(amplitudes), 1)
@@ -506,8 +573,6 @@ class TimeSeriesEstimatorTest(unittest.TestCase):
 
 
 class TimeSeriesMultiRoundEstimatorTest(unittest.TestCase):
-    def setup(self):
-        pass
 
     def test_running(self):
         estimator = TimeSeriesMultiRoundEstimator(

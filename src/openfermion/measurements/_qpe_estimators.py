@@ -298,7 +298,8 @@ class ProbabilityDist(object):
         # generating the observed measurements
 
         return -sum([np.log(p_vec.dot(a_vec[:len(p_vec)]))
-                    for p_vec in self._p_vecs])
+                    for p_vec in self._p_vecs]) +\
+            self._init_mlikelihood(a_vec)
 
     def _diff_mlikelihood(self, a_vec):
         # The derivative of the above function
@@ -330,9 +331,10 @@ class ProbabilityDist(object):
 
     def _init_mlikelihood(self, a_vec):
         # A normal distributed initial guess at the amplitudes
-        return np.dot(0.5*(a_vec-self._amplitude_guess)[np.newaxis, :],
-                      np.dot(self._inv_covar_mat,
-                             (a_vec-self._amplitude_guess)[:, np.newaxis]))
+        return np.dot(
+            0.5*(a_vec-self._amplitude_guess)[np.newaxis, :],
+            np.dot(self._inv_covar_mat,
+                   (a_vec-self._amplitude_guess)[:, np.newaxis])).item()
 
     def _dinit_mlikelihood(self, a_vec):
         # The derivative of the above likelihood function
@@ -482,17 +484,6 @@ class BayesEstimator(ProbabilityDist):
         # Getting the integral of these functions from -pi,pi is trivial.
         normalization = sum(temp_vectors[0, :]*self._amplitude_estimates)
 
-        # Sanity check - the normalization should never be negative here
-        if normalization < 0:
-            warnings.warn('''Negative normalization. amplitudes are {}
-                          and vector coefficients are {}. I will reject the
-                          result of this update unless force_accept=True
-                          but this could imply a previous failure in
-                          estimating.'''.format(
-                            self._amplitude_estimates, temp_vectors[0, :]))
-            if force_accept is not True:
-                return False
-
         # Go through set of vectors, update one at a time
         new_vectors = np.zeros(temp_vectors.shape)
         for j in range(self._num_vectors):
@@ -519,6 +510,7 @@ class BayesEstimator(ProbabilityDist):
                     return False
 
         # Success! Update our distributions
+        old_fourier_vectors = self._fourier_vectors
         self._fourier_vectors = new_vectors
         self.log_Bayes_factor += np.log(normalization)
         self.num_dsets += 1
@@ -529,6 +521,7 @@ class BayesEstimator(ProbabilityDist):
         self._p_vecs.append(np.copy(temp_vectors[0, :]))
 
         # Update amplitudes
+        old_amplitudes = np.array(self._amplitude_estimates)
         if self.num_dsets > self._amplitude_approx_cutoff:
             self._update_amplitudes_approx()
         elif self.num_dsets == self._amplitude_approx_cutoff:
@@ -536,6 +529,17 @@ class BayesEstimator(ProbabilityDist):
             self._update_amplitudes()
         else:
             self._update_amplitudes()
+
+        if any(self._amplitude_estimates < 0):
+            warnings.warn('''Im getting negative amplitudes for
+                the distribution - amplitudes = {}. I will reject
+                this update unless force_accept=True, but this
+                could indicate a previous failure in estimation.
+                '''.format(self._amplitude_estimates))
+            if force_accept is not True:
+                self._amplitude_estimates = old_amplitudes
+                self._fourier_vectors = old_fourier_vectors
+                return False
 
         # Store data if required
         if self._store_history:
@@ -593,11 +597,9 @@ class BayesEstimator(ProbabilityDist):
         if self._num_vectors == 1:
             self._amplitude_estimates = np.array([1])
             return
-        try:
-            self._jacobian += self._jacobian_term(
-                self._p_vecs[-1], self._amplitude_estimates)
-        except:
-            self._calculate_jacobian()
+
+        self._jacobian += self._jacobian_term(
+            self._p_vecs[-1], self._amplitude_estimates)
 
         d_amp = np.dot(
             self._projector, np.dot(
