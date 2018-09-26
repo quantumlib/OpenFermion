@@ -411,19 +411,20 @@ class BayesEstimator(ProbabilityDist):
         self._full_update_with_failure = full_update_with_failure
         self._store_history = store_history
 
-        super().__init__(amplitude_guess=amplitude_guess,
-                         amplitude_vars=amplitude_vars,
-                         num_vectors=num_vectors,
-                         num_freqs=num_freqs,
-                         max_n=max_n,
-                         vector_guess=vector_guess)
+        super(BayesEstimator, self).__init__(
+            amplitude_guess=amplitude_guess,
+            amplitude_vars=amplitude_vars,
+            num_vectors=num_vectors,
+            num_freqs=num_freqs,
+            max_n=max_n,
+            vector_guess=vector_guess)
 
     def reset(self):
         '''
         Resets estimator to initial state.
         '''
 
-        super().reset()
+        super(BayesEstimator, self).reset()
 
         # The following stores the history of the estimator
         # for analysis purposes
@@ -711,7 +712,7 @@ class BayesDepolarizingEstimator(BayesEstimator):
         self.K1 = K1
         self.Kerr = Kerr
 
-        super().__init__(**kwargs)
+        super(BayesDepolarizingEstimator, self).__init__(**kwargs)
 
     def _epsilon_D_function(self, n):
         '''
@@ -1047,7 +1048,8 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
 
     def __init__(self, **kwargs):
 
-        super().__init__(depolarizing_noise=True, **kwargs)
+        super(TimeSeriesMultiRoundEstimator, self).__init__(
+            depolarizing_noise=True, **kwargs)
 
         self._choose_vec = np.array([
             sp.special.comb(self._max_experiment_length, k)
