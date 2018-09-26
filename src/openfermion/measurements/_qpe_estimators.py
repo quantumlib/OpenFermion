@@ -290,8 +290,8 @@ class ProbabilityDist:
             cos_matrix, sin_matrix = self._make_matrix(n)
 
         return 0.5*vectors +\
-            0.25*cos(beta)*cos_matrix @ vectors +\
-            0.25*sin(beta)*sin_matrix @ vectors
+            0.25*cos(beta)*cos_matrix.dot(vectors) +\
+            0.25*sin(beta)*sin_matrix.dot(vectors)
 
     def _mlikelihood(self, a_vec):
         # Calculates the negative likelihood of a set of amplitudes
@@ -309,7 +309,7 @@ class ProbabilityDist:
     def _single_diff(self, p_vec, a_vec):
         # The first derivative of a single term in the
         # likelihood function.
-        return -p_vec / (p_vec @ a_vec[:len(p_vec)])
+        return -p_vec / np.dot(p_vec, a_vec[:len(p_vec)])
 
     def _jacobian_term(self, p_vec, a_vec):
         # The second derivative of the above function,
@@ -330,13 +330,13 @@ class ProbabilityDist:
 
     def _init_mlikelihood(self, a_vec):
         # A normal distributed initial guess at the amplitudes
-        return 0.5*(a_vec-self._amplitude_guess)[np.newaxis, :] @\
-            self._inv_covar_mat @\
-            (a_vec-self._amplitude_guess)[:, np.newaxis]
+        return np.dot(0.5*(a_vec-self._amplitude_guess)[np.newaxis, :],
+                      np.dot(self._inv_covar_mat,
+                             (a_vec-self._amplitude_guess)[:, np.newaxis]))
 
     def _dinit_mlikelihood(self, a_vec):
         # The derivative of the above likelihood function
-        return self._inv_covar_mat @ (a_vec-self._amplitude_guess)
+        return np.dot(self._inv_covar_mat, (a_vec-self._amplitude_guess))
 
     def _jinit_mlikelihood(self):
         # The jacobian of the above likelihood function
@@ -598,9 +598,10 @@ class BayesEstimator(ProbabilityDist):
         except:
             self._calculate_jacobian()
 
-        d_amp = (
-            self._projector @ np.linalg.inv(self._jacobian) @
-            self._single_diff(self._p_vecs[-1], self._amplitude_estimates))
+        d_amp = np.dot(
+            self._projector, np.dot(
+                np.linalg.inv(self._jacobian),
+                self._single_diff(self._p_vecs[-1], self._amplitude_estimates)))
 
         temp_ae = self._amplitude_estimates - d_amp
 
@@ -767,7 +768,7 @@ class BayesDepolarizingEstimator(BayesEstimator):
         n = round_data['num_rotations']
         try:
             mr = round_data['true_measurement']
-        except:
+        except KeyError:
             mr = round_data['measurement']
 
         # Get the correct cos matrix
@@ -782,8 +783,8 @@ class BayesDepolarizingEstimator(BayesEstimator):
 
         return ((1 - epsilon_D) * (
                 0.5*vectors +
-                0.25*cos(beta)*cos_matrix @ vectors +
-                0.25*sin(beta)*sin_matrix @ vectors) +
+                0.25*cos(beta)*cos_matrix.dot(vectors) +
+                0.25*sin(beta)*sin_matrix.dot(vectors)) +
                 vectors * (0.5*epsilon_D +
                            (-1)**mr * 0.5 * epsilon_B))
 
@@ -1224,7 +1225,8 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
         for j in range(self._num_freqs):
             w_mat = np.diag(1/self._F1std[:, j])
             new_column = sp.linalg.lstsq(
-                w_mat @ self._F0, w_mat @ self._F1[:, j])[0]
+                np.dot(w_mat, self._F0),
+                np.dot(w_mat, self._F1[:, j]))[0]
             TT_columns.append(new_column)
         self._TT_matrix = np.array(TT_columns)
 
