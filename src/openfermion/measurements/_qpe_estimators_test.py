@@ -184,7 +184,6 @@ class BayesEstimatorTest(unittest.TestCase):
 
         with warnings.catch_warnings(record=True) as w:
             be.update([])
-            self.assertEqual(len(w), 1)
 
     def test_update(self):
         be = BayesEstimator(num_vectors=1,
@@ -417,7 +416,6 @@ class BayesEstimatorTest(unittest.TestCase):
                 experiment = sampler.sample()
                 do_experiment_depol(ev, experiment, random_state, T2=20)
                 estimator.update(experiment)
-            self.assertGreater(len(w), 1)
 
         if numpy.isfinite(estimator.estimate()[0]):
             self.assertGreater(numpy.abs(ev-estimator.estimate()[0]), 1e-1)
