@@ -17,3 +17,6 @@ from ._equality_constraint_projection import (apply_constraints,
 
 from ._rdm_equality_constraints import (one_body_fermion_constraints,
                                         two_body_fermion_constraints)
+
+from ._time_series_estimators import (TimeSeriesEstimator,
+                                      TimeSeriesMultiRoundEstimator)
