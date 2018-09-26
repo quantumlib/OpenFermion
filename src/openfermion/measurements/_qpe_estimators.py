@@ -1047,7 +1047,7 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
 
     def __init__(self, **kwargs):
 
-        super().__init__(**kwargs, depolarizing_noise=True)
+        super().__init__(depolarizing_noise=True, **kwargs)
 
         self._choose_vec = np.array([
             sp.special.comb(self._max_experiment_length, k)
