@@ -304,7 +304,7 @@ class BayesEstimatorTest(unittest.TestCase):
 
         with warnings.catch_warnings() as w:
             warnings.simplefilter("ignore")
-            for j in range(5):
+            for j in range(6):
                 be.update(test_experiment)
                 be2.update(test_experiment)
                 be.update(test_experiment2)
@@ -377,42 +377,6 @@ class BayesEstimatorTest(unittest.TestCase):
                 do_experiment_depol(ev, experiment, random_state, T2=20)
                 estimator.update(experiment)
             self.assertGreater(len(w), 1)
-
-        self.assertFalse(numpy.isfinite(estimator.estimate()[0]))
-
-    def test_depol_failure_fullupdate(self):
-
-        def do_experiment_depol(ev, experiment, random_state, T2):
-            for round_data in experiment:
-                n = round_data['num_rotations']
-                beta = round_data['final_rotation']
-                p_noerr = numpy.exp(-n/T2)
-                if p_noerr > random_state.uniform(0, 1):
-                    p0 = numpy.cos(n*ev/2 + beta/2)**2
-                else:
-                    p0 = 0.5
-                if p0 > random_state.uniform(0, 1):
-                    round_data['measurement'] = 0
-                else:
-                    round_data['measurement'] = 1
-                round_data['true_measurement'] = round_data['measurement']
-
-        angles = [0, numpy.pi/2]
-        random_state = numpy.random.RandomState(seed=42)
-        ev = random_state.uniform(-numpy.pi, numpy.pi)
-        sampler = IteratingSampler(50, angles, random_state)
-        estimator = BayesEstimator(num_vectors=1, max_n=10,
-                                   amplitude_guess=[1],
-                                   amplitude_vars=[[1]],
-                                   num_freqs=1000*5,
-                                   amplitude_approx_cutoff=100,
-                                   full_update_with_failure=True)
-
-        with warnings.catch_warnings(record=True) as w:
-            for j in range(1000):
-                experiment = sampler.sample()
-                do_experiment_depol(ev, experiment, random_state, T2=20)
-                estimator.update(experiment)
 
         self.assertFalse(numpy.isfinite(estimator.estimate()[0]))
 
