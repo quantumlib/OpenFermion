@@ -45,12 +45,11 @@ class FermiHubbardModel:
 
     The general (AKA 'multiband') Fermi-Hubbard model has `k` degrees of
     freedom per site in a lattice.
-    The lattice can have periodic boundary conditions or not.
     For a lattice with `n` sites, there are `N = k * n` spatial orbitals.
-    In the standard Fermi-Hubbard model (which we call the "spinful" model),
-    there is room for an "up" fermion and a "down" fermion at each site on the
-    grid, for a total of `2N` spin-orbitals; in the spinless model, there is
-    only one spin-orbital per site for a total of `N`.
+    Additionally, in what we call the "spinful" model each spatial orbital is
+    associated with "up" and "down" spin orbitals, for a total of `2N` spin
+    orbitals; in the spinless model, there is only one spin-orbital per site
+    for a total of `N`.
 
     For a lattice with only one type of site and edges from each site only to
     itself and its neighbors, the Hamiltonian for the spinful model has the
@@ -101,7 +100,7 @@ class FermiHubbardModel:
 
     where
 
-        - The indices :math:`(i, j)` and :math:`{i, j}` run over ordered and
+        - The indices :math:`(i, j)` and :math:`\{i, j\}` run over ordered and
           unordered pairs, respectively of sites :math:`i` and :math:`j` of
           neighboring sites in the lattice,
         - :math:`a` and :math:`b` index degrees of freedom on each site,
