@@ -159,7 +159,7 @@ class FermiHubbardModel:
                  interaction_parameters=None,
                  potential_parameters=None
                  ):
-        """A Hubbard model defined on a lattice.
+        r"""A Hubbard model defined on a lattice.
 
         Args:
             lattice (HubbardLattice): The lattice on which the model is defined.
@@ -172,14 +172,66 @@ class FermiHubbardModel:
 
         Each group of parameters is specified as an iterable of tuples.
 
-        Each tunneling parameter is a tuple (edge_type, dofs, coefficient).
+        Each tunneling parameter is a tuple ``(edge_type, dofs, coefficient)``.
 
-        Each interaction parameter is a tuple (edge_type, dofs,
-        coefficient, spin_pairs). The final spin_pairs element is
-        optional, and will default to SpinPairs.ALL. In any case, it is
+        In the spinful, model, the tunneling parameter corresponds to the terms
+
+        .. math::
+
+            t \sum_{(i, j) \in E^{(\mathrm{edge type})}} 
+            \sum_{\sigma}
+            \left(a_{i, a, \sigma}^{\dagger} a_{j, b, \sigma} 
+            + a_{j, b, \sigma}^{\dagger} a_{i, a, \sigma}\right)
+
+        and in the spinless model to 
+
+        .. math::
+
+            -t \sum_{(i, j) \in E^{(\mathrm{edge type})}} 
+            \left(a_{i, a}^{\dagger} a_{j, b} 
+            + a_{j, b}^{\dagger} a_{i, a}\right),
+
+        where 
+
+            - :math:`(a, b)` is the pair of degrees of freedom given by ``dofs``;
+            - :math:`E^{(\mathrm{edge type})}` is the set of ordered pairs of
+              site indices returned by ``lattice.site_pairs_iter(edge_type, a !=
+              b)``; and
+            - :math:`t` is the ``coefficient``.
+
+        Each interaction parameter is a tuple ``(edge_type, dofs,
+        coefficient, spin_pairs)``. The final ``spin_pairs`` element is
+        optional, and will default to ``SpinPairs.ALL``. In any case, it is
         ignored for spinless lattices.
 
-        Each potential parameter is a tuple (dof, coefficient).
+        For example, in the spinful model if `dofs` indicates distinct degrees of freedom then the parameter corresponds to the terms
+
+        .. math::
+
+            U \sum_{(i, j) \in E^{(\mathrm{edge type})}} \sum_{(\sigma, \sigma')}
+            n_{i, a, \sigma} n_{j, b, \sigma'}
+
+        where 
+
+            - :math:`(a, b)` is the pair of degrees of freedom given by ``dofs``;
+            - :math:`E^{(\mathrm{edge type})}` is the set of ordered pairs of
+              site indices returned by ``lattice.site_pairs_iter(edge_type)``;
+            - :math:`U` is the ``coefficient``; and
+            - :math:`(\sigma, \sigma')` runs over
+                - all four possible pairs of spins if `spin_pairs == SpinPairs.ALL`,
+                - :math:`\{(\uparrow, \downarrow), (\downarrow, \uparrow)\}` if `spin_pairs == SpinPairs.DIFF`, and 
+                - :math:`\{(\uparrow, \uparrow), (\downarrow, \downarrow)\}' if 'spin_pairs == SpinPairs.SAME`.
+
+        Each potential parameter is a tuple ``(dof, coefficient)``. For example, in the spinful model, it corresponds to the terms
+
+        .. math::
+            -\mu \sum_{i} \sum_{\sigma} n_{i, a, \sigma},
+
+        where 
+
+            - :math:`i` runs over the sites of the lattice;
+            - :math:`a` is the degree of freedom ``dof``; and
+            - :math:`\mu` is the ``coefficient``.
         """
 
         self.lattice = lattice
@@ -264,7 +316,7 @@ class FermiHubbardModel:
                 for s, ss in self.lattice.spin_pairs_iter(
                         SpinPairs.DIFF if same_spatial_orbital
                         else param.spin_pairs,
-                        (a, r) != (aa, rr)):
+                        not same_spatial_orbital):
                     i = self.lattice.to_spin_orbital_index(r, a, s)
                     j = self.lattice.to_spin_orbital_index(rr, aa, ss)
                     terms += interaction_operator(i, j, param.coefficient)
