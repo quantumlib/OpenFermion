@@ -75,3 +75,11 @@ class InteractionOperatorTest(unittest.TestCase):
         for key in interaction_operator.unique_iter():
             got_str += '{}\n'.format(interaction_operator[key])
         self.assertEqual(want_str, got_str)
+
+    def test_addition(self):
+        interaction_op = InteractionOperator(0, numpy.ones((3, 3)), numpy.ones((3, 3, 3, 3)))
+        summed_op = interaction_op + interaction_op
+        self.assertTrue(numpy.array_equal(summed_op.one_body_tensor,
+                                          summed_op.n_body_tensors[(1, 0)]))
+        self.assertTrue(numpy.array_equal(summed_op.two_body_tensor,
+                                          summed_op.n_body_tensors[(1, 1, 0, 0)]))
