@@ -44,8 +44,26 @@ class InteractionRDM(PolynomialTensor):
         """
         super(InteractionRDM, self).__init__(
             {(1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor})
-        self.one_body_tensor = self.n_body_tensors[1, 0]
-        self.two_body_tensor = self.n_body_tensors[1, 1, 0, 0]
+
+    @property
+    def one_body_tensor(self):
+        """The value of the one-body tensor."""
+        return self.n_body_tensors[1, 0]
+
+    @one_body_tensor.setter
+    def one_body_tensor(self, value):
+        """Set the value of the one-body tensor."""
+        self.n_body_tensors[1, 0] = value
+
+    @property
+    def two_body_tensor(self):
+        """The value of the two-body tensor."""
+        return self.n_body_tensors[1, 1, 0, 0]
+
+    @two_body_tensor.setter
+    def two_body_tensor(self, value):
+        """Set the value of the two-body tensor."""
+        self.n_body_tensors[1, 1, 0, 0] = value
 
     def expectation(self, operator):
         """Return expectation value of an InteractionRDM with an operator.
