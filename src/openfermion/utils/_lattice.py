@@ -263,17 +263,27 @@ class HubbardSquareLattice(HubbardLattice):
 
     # neighbor counting and iteration
 
-    def n_neighbor_pairs(self, ordered=True):
-        """Number of neighboring (unordered) pairs of sites."""
+    def n_horizontal_neighbor_pairs(self, ordered=True):
+        """Number of horizontally neighboring (unordered) pairs of sites."""
         n_horizontal_edges_per_y = (
                 self.x_dimension - 
                 (self.x_dimension <= 2 or not self.periodic))
+        return (self.y_dimension * n_horizontal_edges_per_y * 
+                (2 if ordered else 1))
+
+
+    def n_vertical_neighbor_pairs(self, ordered=True):
+        """Number of vertically neighboring (unordered) pairs of sites."""
         n_vertical_edges_per_x = (
                 self.y_dimension - 
                 (self.y_dimension <= 2 or not self.periodic))
-        return ((self.y_dimension * n_horizontal_edges_per_y + 
-                 self.x_dimension * n_vertical_edges_per_x) * 
+        return (self.x_dimension * n_vertical_edges_per_x * 
                 (2 if ordered else 1))
+
+    def n_neighbor_pairs(self, ordered=True):
+        """Number of neighboring (unordered) pairs of sites."""
+        return (self.n_horizontal_neighbor_pairs(ordered) + 
+                self.n_vertical_neighbor_pairs(ordered))
     
 
     def neighbors_iter(self, ordered=True):
