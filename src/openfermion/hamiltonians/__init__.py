@@ -14,6 +14,8 @@ from ._chemical_series import (make_atomic_ring,
                                make_atomic_lattice,
                                make_atom)
 
+from ._general_hubbard import FermiHubbardModel
+
 from ._jellium import (
     dual_basis_kinetic, dual_basis_potential,
     dual_basis_jellium_model, jellium_model,
