@@ -12,7 +12,7 @@
 
 """
 Classes for time series estimators for quantum phase estimation.
-Estimators described in arXiv:XXXX.XXXX
+Estimators described in arXiv:1809.09697, in particular in Sec.II.A.
 """
 
 import numpy as np
@@ -20,7 +20,13 @@ import scipy as sp
 
 
 class TimeSeriesEstimator(object):
-
+    '''
+    Time-series estimator: a QPE estimator based on a time-series
+        analysis of g(k)=sum_jA_je^{i*k*phi_j}, where
+        A_j=|<phi_j|Psi>|^2 is the probabilistic overlap
+        with the starting state |Psi>, and phi_j is the unitary
+        eigenvalue U|phi_j>=e^{i*phi_j}|phi_j>.
+    '''
     def __init__(self,
                  max_experiment_length,
                  num_freqs_max,
@@ -28,21 +34,14 @@ class TimeSeriesEstimator(object):
                  singular_values_cutoff=1e-12,
                  store_history=False,
                  automatic_average=False):
-
         '''
-        Time-series estimator: a QPE estimator based on a time-series
-            analysis of g(k)=\sum_jA_je^{ik\phi_j}, where
-            A_j=|<\phi_j|\Psi>|^2 is the probabilistic overlap
-            with the starting state |\Psi>, and \phi_j is the unitary
-            eigenvalue U|\phi_j>=e^{i\phi_j}|\phi_j>.
-
         Args:
             max_experiment_length: the largest number (K) of unitary operations
                 to be performed during the experiment. At least two experiments
                 must be made at each k=1,...,K, with two different values
                 of the final rotation beta (not separated by pi), in order to
                 obtain an estimate from this estimator.
-            num_freqs_max: the maximum number of eigenvalues \phi_j to
+            num_freqs_max: the maximum number of eigenvalues phi_j to
                 estimate. Must be less than max_experiment_length without
                 depolarizing noise and less than max_experiment_length/2 with.
             depolarizing_noise: whether or not to account for depolarizing
@@ -55,11 +54,10 @@ class TimeSeriesEstimator(object):
             automatic_average: whether to reestimate the eigenvalues whenever
                 new data is added.
         '''
-
         if num_freqs_max * (1+depolarizing_noise) > max_experiment_length:
             raise ValueError('''Maximum experiment length of {}
                              is too short to estimate {} frequencies'''.format(
-                                max_experiment_length, num_freqs_max))
+                                 max_experiment_length, num_freqs_max))
 
         self._max_experiment_length = max_experiment_length
         self._num_freqs_max = num_freqs_max
@@ -67,6 +65,7 @@ class TimeSeriesEstimator(object):
         self._singular_values_cutoff = singular_values_cutoff
         self._automatic_average = automatic_average
         self._store_history = store_history
+
         self.reset()
 
     def reset(self):
@@ -152,7 +151,6 @@ class TimeSeriesEstimator(object):
         '''
         Calculates the estimate of the function from the individual counts
         '''
-
         function_real = self._re_est/self._re_abs
         function_imag = self._im_est/self._im_abs
 
@@ -166,31 +164,29 @@ class TimeSeriesEstimator(object):
 
         self._update_flag = True
 
-    def _make_Hankel_matrices(self):
+    def _make_hankel_matrices(self):
         '''
         Makes the two Hankel matrices
         '''
-
         if self._update_flag is False:
             self._update_function()
 
-        F0 = sp.linalg.hankel(
+        hankel0 = sp.linalg.hankel(
             c=self._function_estimate[:self._num_freqs],
             r=self._function_estimate[self._num_freqs-1:-1])
 
-        F1 = sp.linalg.hankel(
+        hankel1 = sp.linalg.hankel(
             c=self._function_estimate[1:self._num_freqs+1],
             r=self._function_estimate[self._num_freqs:])
 
-        self._F0 = F0.T
-        self._F1 = F1.T
+        self._hankel0 = hankel0.T
+        self._hankel1 = hankel1.T
 
     def _make_translation_matrix(self):
         '''
         Makes the (transposed) translation matrix from the two Hankel matrices.
         '''
-
-        self._TT_matrix = sp.linalg.lstsq(self._F0, self._F1)[0]
+        self._shift_matrix = sp.linalg.lstsq(self._hankel0, self._hankel1)[0]
 
     def _get_num_frequencies(self):
         '''
@@ -202,11 +198,10 @@ class TimeSeriesEstimator(object):
         shouldn't be trusted (in general we advise not trusting
         any results with amplitude estimate below 1/max_experiment_length)
         '''
-
         self._num_freqs = self._num_freqs_max
         if self._singular_values_cutoff > 0:
-            self._make_Hankel_matrices()
-            singular_values = np.linalg.svd(self._F0)[1]
+            self._make_hankel_matrices()
+            singular_values = np.linalg.svd(self._hankel0)[1]
             self._num_freqs = sum(singular_values >
                                   self._singular_values_cutoff)
             assert self._num_freqs <= self._num_freqs_max
@@ -216,7 +211,6 @@ class TimeSeriesEstimator(object):
         Obtains the amplitudes of the problem by a least squares fit
         of the target function to the estimated function.
         '''
-
         if self._depolarizing_noise is True:
             self._generation_matrix = np.array([
                 [np.exp(1j*k*angle) for angle in self.angles]
@@ -242,25 +236,23 @@ class TimeSeriesEstimator(object):
             amplitudes(optional): The corresponding amplitude estimates
         '''
         self._get_num_frequencies()
-        self._make_Hankel_matrices()
+        self._make_hankel_matrices()
         self._make_translation_matrix()
-        self.angles = np.angle(np.linalg.eigvals(self._TT_matrix.T))
+        self.angles = np.angle(np.linalg.eigvals(self._shift_matrix.T))
         self._get_amplitudes()
-        self.amplitudes, self.angles = zip(*sorted(zip(
-            self.amplitudes, self.angles),
-            key=lambda x: np.real(x[0]), reverse=True))
+        self.amplitudes, self.angles = zip(
+            *sorted(zip(self.amplitudes, self.angles),
+                    key=lambda x: np.real(x[0]), reverse=True))
 
         if self._store_history:
             self.average_history.append(np.array(self.angles))
 
         if return_amplitudes:
             return self.angles, self.amplitudes
-        else:
-            return self.angles
+        return self.angles
 
 
 class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
-
     '''
     Time series estimator for multi-round QPE experiments.
     Generates g(k) from a specific set of multi-round experiments
@@ -273,7 +265,6 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
     final rotation). Unfortunately this doesn't seem very easily
     generalizeable.
     '''
-
     def __init__(self, **kwargs):
 
         super(TimeSeriesMultiRoundEstimator, self).__init__(
@@ -287,9 +278,8 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
         '''
         Resets estimator for new experiment
         '''
-
         self._hamming_mat = np.zeros([self._max_experiment_length//2+1,
-                                     self._max_experiment_length//2+1])
+                                      self._max_experiment_length//2+1])
         self._function_estimate = np.zeros(self._max_experiment_length + 1)
         self._num_experiments = 0
         self._num_freqs = self._num_freqs_max
@@ -311,7 +301,6 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
         Returns:
             success of update (always True for this estimator)
         '''
-
         if len(experiment_data) != self._max_experiment_length:
             raise NotImplementedError('''Estimator only accepts
                                     experiments of length {}'''.format(
@@ -323,11 +312,11 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
                                     must have final rotation of 0.''')
 
         hw0 = sum([round_data['measurement']
-                  for round_data in experiment_data
-                  if round_data['final_rotation'] == 0])
+                   for round_data in experiment_data
+                   if round_data['final_rotation'] == 0])
         hw1 = sum([round_data['measurement']
-                  for round_data in experiment_data
-                  if round_data['final_rotation'] != 0])
+                   for round_data in experiment_data
+                   if round_data['final_rotation'] != 0])
 
         self._hamming_mat[hw0, hw1] += 1
         self._num_experiments += 1
@@ -381,9 +370,9 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
         and output.
 
         Args:
-            R,l,m: see arXiv:XXXX.XXXX for details
+            R,l,m: see arXiv:1809.09697 for details
         Returns:
-            calculation of eq.XXX from arXiv:XXXX.XXXX.
+            calculation of subterms in eq.25 of arXiv:1809.09697.
         '''
         res = 0
         for p in range(0, l//2 + 1):
@@ -394,7 +383,7 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
     def _update_function(self):
         '''
         Calculates the estimate of the function g(k) from the input counts,
-        following eq.XXX of arXiv:XXXX.XXXX.
+        following eq.25 of arXiv:1809.09697.
         '''
         hamming_mat = self._hamming_mat / self._num_experiments
         hamming_mat_var =\
@@ -420,52 +409,49 @@ class TimeSeriesMultiRoundEstimator(TimeSeriesEstimator):
 
         self._function_std = np.sqrt(function_var)
 
-    def _make_Hankel_matrices(self):
+    def _make_hankel_matrices(self):
         '''
         Makes the two Hankel matrices and stores them,
         along with the standard deviation in the target Hankel matrix.
         '''
-
         if self._update_flag is False:
             self._update_function()
 
-        F0 = sp.linalg.hankel(
+        hankel0 = sp.linalg.hankel(
             c=self._function_estimate[:self._num_freqs],
             r=self._function_estimate[self._num_freqs-1:-1])
 
-        F1 = sp.linalg.hankel(
+        hankel1 = sp.linalg.hankel(
             c=self._function_estimate[1:self._num_freqs+1],
             r=self._function_estimate[self._num_freqs:])
 
-        F1std = sp.linalg.hankel(
+        hankel1_std = sp.linalg.hankel(
             c=self._function_std[1:self._num_freqs+1],
             r=self._function_std[self._num_freqs:])
 
-        self._F0 = F0.T
-        self._F1 = F1.T
-        self._F1std = F1std.T
+        self._hankel0 = hankel0.T
+        self._hankel1 = hankel1.T
+        self._hankel1_std = hankel1_std.T
 
     def _make_translation_matrix(self):
         '''
         Makes the (transposed) translation matrix from the two Hankel matrices.
-        Weights according to the standard deviation of F1.
+        Weights according to the standard deviation of hankel1.
         '''
-
-        TT_columns = []
+        shift_columns = []
         for j in range(self._num_freqs):
-            w_mat = np.diag(1/self._F1std[:, j])
+            w_mat = np.diag(1/self._hankel1_std[:, j])
             new_column = sp.linalg.lstsq(
-                np.dot(w_mat, self._F0),
-                np.dot(w_mat, self._F1[:, j]))[0]
-            TT_columns.append(new_column)
-        self._TT_matrix = np.array(TT_columns)
+                np.dot(w_mat, self._hankel0),
+                np.dot(w_mat, self._hankel1[:, j]))[0]
+            shift_columns.append(new_column)
+        self._shift_matrix = np.array(shift_columns)
 
     def _get_amplitudes(self):
         '''
         Obtains the amplitudes of the problem by a least squares fit
         of the target function to the estimated function.
         '''
-
         self._generation_matrix = np.array([
             [np.exp(1j*k*angle) for angle in self.angles]
             for k in range(0, self._max_experiment_length//2+1)])
