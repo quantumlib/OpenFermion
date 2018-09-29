@@ -59,17 +59,18 @@ def test_fermi_hubbard_square_special_general_equivalance(
 
 def random_parameters(lattice, probability=0.5):
     parameters = {}
+    edge_types = ('onsite', 'neighbor')
 
     parameters['tunneling_parameters'] = [
             (edge_type, dofs, random.uniform(-1, 1))
-            for edge_type in lattice.edge_types
+            for edge_type in edge_types
             for dofs in lattice.dof_pairs_iter(edge_type == 'onsite')
             if random.random() <= probability]
 
     possible_spin_pairs = (SpinPairs.ALL,) if lattice.spinless else (SpinPairs.SAME, SpinPairs.DIFF)
     parameters['interaction_parameters'] = [
             (edge_type, dofs, random.uniform(-1, 1), spin_pairs)
-            for edge_type in lattice.edge_types
+            for edge_type in edge_types
             for spin_pairs in possible_spin_pairs
             for dofs in lattice.dof_pairs_iter(edge_type == 'onsite' and 
                                                spin_pairs in (SpinPairs.ALL, SpinPairs.SAME))
