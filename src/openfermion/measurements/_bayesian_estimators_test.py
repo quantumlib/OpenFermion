@@ -17,7 +17,7 @@ from numpy import pi
 import warnings
 
 from ._bayesian_estimators import (
-    ProbabilityDist,
+    FourierProbabilityDist,
     BayesEstimator,
     BayesDepolarizingEstimator)
 
@@ -46,79 +46,79 @@ class IteratingSampler:
         return experiment
 
 
-class ProbabilityDistTest(unittest.TestCase):
+class FourierProbabilityDistTest(unittest.TestCase):
 
     def test_basic_initialization(self):
-        pd = ProbabilityDist(num_vectors=1,
-                             amplitude_guess=[1],
-                             amplitude_vars=[[1]],
-                             num_freqs=10,
-                             max_n=1)
+        pd = FourierProbabilityDist(num_vectors=1,
+                                    amplitude_guess=[1],
+                                    amplitude_vars=[[1]],
+                                    num_freqs=10,
+                                    max_n=1)
         self.assertEqual(pd._num_freqs, 10)
         self.assertEqual(pd._num_vectors, 1)
         self.assertEqual(len(pd._matrices), 1)
         self.assertEqual(len(pd._matrices[0]), 2)
         self.assertEqual(len(pd._amplitude_estimates), 1)
         self.assertEqual(pd._fourier_vectors.shape, (21, 1))
-        self.assertAlmostEqual(pd._Holevo_variances(maxvar=1)[0], 1)
+        self.assertAlmostEqual(pd._holevo_variances(maxvar=1)[0], 1)
 
     def test_raises_errors(self):
 
         with self.assertRaises(ValueError):
-            ProbabilityDist(num_vectors=1,
-                            vector_guess=numpy.array([[1, 0], [1, 0]]),
-                            amplitude_guess=[1],
-                            amplitude_vars=[[1]],
-                            num_freqs=10,
-                            max_n=1)
+            FourierProbabilityDist(num_vectors=1,
+                                   vector_guess=numpy.array([[1, 0], [1, 0]]),
+                                   amplitude_guess=[1],
+                                   amplitude_vars=[[1]],
+                                   num_freqs=10,
+                                   max_n=1)
         with self.assertRaises(ValueError):
-            ProbabilityDist(num_vectors=1,
-                            amplitude_guess=[1, 0],
-                            amplitude_vars=[[1]],
-                            num_freqs=10,
-                            max_n=1)
+            FourierProbabilityDist(num_vectors=1,
+                                   amplitude_guess=[1, 0],
+                                   amplitude_vars=[[1]],
+                                   num_freqs=10,
+                                   max_n=1)
         with self.assertRaises(ValueError):
-            ProbabilityDist(num_vectors=2,
-                            amplitude_guess=[0.5, 0.5],
-                            amplitude_vars=[[1]],
-                            num_freqs=10,
-                            max_n=1)
+            FourierProbabilityDist(num_vectors=2,
+                                   amplitude_guess=[0.5, 0.5],
+                                   amplitude_vars=[[1]],
+                                   num_freqs=10,
+                                   max_n=1)
 
     def test_init_dist(self):
 
         vector_guess = numpy.zeros([21, 1])
         vector_guess[0, 0] = 1
         vector_guess[2, 0] = 1  # cos wave
-        pd = ProbabilityDist(num_vectors=1,
-                             amplitude_guess=[1],
-                             amplitude_vars=[[1]],
-                             num_freqs=10,
-                             max_n=1,
-                             vector_guess=vector_guess)
+        pd = FourierProbabilityDist(num_vectors=1,
+                                    amplitude_guess=[1],
+                                    amplitude_vars=[[1]],
+                                    num_freqs=10,
+                                    max_n=1,
+                                    vector_guess=vector_guess)
         x_vec = numpy.linspace(-pi, pi, 11)
         dist = pd.get_real_dist(x_vec)
         dist_comp = (1 + numpy.cos(x_vec)) / (2*pi)
         self.assertAlmostEqual(numpy.sum(numpy.abs(dist-dist_comp)), 0)
 
-    def test_Holevo(self):
+    def test_holevo(self):
         vector_guess = numpy.zeros([21, 1])
         vector_guess[0, 0] = 1
         vector_guess[2, 0] = 1  # sine wave
-        pd = ProbabilityDist(num_vectors=1,
-                             amplitude_guess=[1],
-                             amplitude_vars=[[1]],
-                             num_freqs=10,
-                             max_n=1,
-                             vector_guess=vector_guess)
-        self.assertEqual(pd._Holevo_centers(), 0)
-        self.assertEqual(pd._Holevo_variances()[0], 3)
+        pd = FourierProbabilityDist(num_vectors=1,
+                                    amplitude_guess=[1],
+                                    amplitude_vars=[[1]],
+                                    num_freqs=10,
+                                    max_n=1,
+                                    vector_guess=vector_guess)
+        self.assertEqual(pd._holevo_centers(), 0)
+        self.assertEqual(pd._holevo_variances()[0], 3)
 
     def test_vector_product(self):
-        pd = ProbabilityDist(num_vectors=1,
-                             amplitude_guess=[1],
-                             amplitude_vars=[[1]],
-                             num_freqs=10,
-                             max_n=1)
+        pd = FourierProbabilityDist(num_vectors=1,
+                                    amplitude_guess=[1],
+                                    amplitude_vars=[[1]],
+                                    num_freqs=10,
+                                    max_n=1)
 
         round_data = {
             'final_rotation': 0,
@@ -133,11 +133,11 @@ class ProbabilityDistTest(unittest.TestCase):
         self.assertAlmostEqual(numpy.sum(numpy.abs(res-res_comp)), 0)
 
     def test_diffs(self):
-        pd = ProbabilityDist(num_vectors=2,
-                             amplitude_guess=[0.9, 0.1],
-                             amplitude_vars=[[0.3, -0.29], [-0.29, 0.3]],
-                             num_freqs=10,
-                             max_n=1)
+        pd = FourierProbabilityDist(num_vectors=2,
+                                    amplitude_guess=[0.9, 0.1],
+                                    amplitude_vars=[[0.3, -0.29], [-0.29, 0.3]],
+                                    num_freqs=10,
+                                    max_n=1)
 
         test_vec = numpy.array([0.9, 0.1])
         test_vec2 = numpy.array([1, 0])
@@ -168,9 +168,9 @@ class BayesEstimatorTest(unittest.TestCase):
                             store_history=True)
         self.assertEqual(be.averages, [])
         self.assertEqual(be.variances, [])
-        self.assertEqual(be.log_Bayes_factor_history, [])
+        self.assertEqual(be.log_bayes_factor_history, [])
         self.assertEqual(be.amplitudes_history, [])
-        self.assertEqual(be.log_Bayes_factor, 0)
+        self.assertEqual(be.log_bayes_factor, 0)
 
     def test_warning(self):
         be = BayesEstimator(num_vectors=1,
@@ -198,7 +198,7 @@ class BayesEstimatorTest(unittest.TestCase):
         self.assertEqual(be.update(test_experiment), True)
 
         self.assertEqual(be.averages, [numpy.pi/4])
-        self.assertEqual(be.log_Bayes_factor, numpy.log(0.5))
+        self.assertEqual(be.log_bayes_factor, numpy.log(0.5))
 
     def test_estimation(self):
         be = BayesEstimator(num_vectors=1,
@@ -390,11 +390,11 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
             amplitude_vars=numpy.array([[1]]),
             num_freqs=1000,
             max_n=1,
-            K1=1,
-            Kerr=1)
-        self.assertAlmostEqual(estimator._epsilon_D_function(2),
+            k_1=1,
+            k_err=1)
+        self.assertAlmostEqual(estimator._epsilon_d_function(2),
                                1-numpy.exp(-2))
-        self.assertAlmostEqual(estimator._epsilon_B_function(),
+        self.assertAlmostEqual(estimator._epsilon_b_function(),
                                1-numpy.exp(-1))
 
     def test_vector_product(self):
@@ -404,8 +404,8 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
             amplitude_vars=numpy.array([[1]]),
             num_freqs=1000,
             max_n=1,
-            K1=1,
-            Kerr=1)
+            k_1=1,
+            k_err=1)
 
         vectors = numpy.zeros(2001)
         vectors[0] = 1
@@ -449,7 +449,7 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
                                                amplitude_vars=[[1]],
                                                num_freqs=1000*5,
                                                amplitude_approx_cutoff=100,
-                                               Kerr=20)
+                                               k_err=20)
         for j in range(1000):
             experiment = sampler.sample()
             do_experiment_depol(ev, experiment, random_state, T2=20)
