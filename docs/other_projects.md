@@ -153,6 +153,6 @@ Ryan Babbush and Garnet Chan.
 Sam McArdle, Suguru Endo, Alán Aspuru-Guzik, Simon Benjamin and Xiao Yuan.
 [arXiv:1808.10402](https://arxiv.org/abs/1808.10402). 2018.
 
-***Quantum Phase Estimation for Noisy, Smalle-Scale Experiment***.
+***Quantum Phase Estimation for Noisy, Small-Scale Experiments***.
 Thomas O'Brien, Brian Tarasinski and Barbara Terhal.
 [arXiv:1809.09697](https://arxiv.org/abs/1809.09697). 2018.
