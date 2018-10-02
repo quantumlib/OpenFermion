@@ -27,20 +27,27 @@ PotentialParameter = namedtuple('PotentialParameter',
                                 ('dof', 'coefficient'))
 
 
-def number_operator(i, coefficient=1.):
-    return FermionOperator(((i, 1), (i, 0)), coefficient)
+def number_operator(i, coefficient=1., phs=False):
+    op = FermionOperator(((i, 1), (i, 0)), coefficient)
+    if phs:
+        op -= FermionOperator((), 0.5)
+    return op
 
 
-def interaction_operator(i, j, coefficient=1.):
-    return number_operator(i, coefficient) * number_operator(j)
+def interaction_operator(i, j, coefficient=1., phs=False):
+    return (number_operator(i, coefficient, phs=phs) * 
+            number_operator(j, phs=phs))
 
 
-def tunneling_operator(i, j, coefficient):
+def tunneling_operator(i, j, coefficient=1.):
     return (FermionOperator(((i, 1), (j, 0)), coefficient) + 
             FermionOperator(((j, 1), (i, 0)), coefficient.conjugate()))
 
-def field_operator(i, coefficient=1.):
-    return number_operator(i, coefficient) - number_operator(i + 1, coefficient)
+
+def field_operator(i, coefficient=1., phs=False):
+    return (number_operator(i, coefficient, phs=phs) -
+            number_operator(i + 1, coefficient, phs=phs))
+
 
 class FermiHubbardModel:
     r"""A general, parameterized Fermi-Hubbard model.
@@ -164,7 +171,8 @@ class FermiHubbardModel:
                  tunneling_parameters=None,
                  interaction_parameters=None,
                  potential_parameters=None,
-                 magnetic_field=0
+                 magnetic_field=0,
+                 phs=False
                  ):
         r"""A Hubbard model defined on a lattice.
 
@@ -177,6 +185,8 @@ class FermiHubbardModel:
             potential_parameters (Iterable[Tuple[int, Number]], optional): The
                 potential parameters.
             magnetic_field (Number, optional): The magnetic field.
+            phs: If true, each number operator :math:`n` is replaced with
+                :math:`n - 1/2`.
 
         Each group of parameters is specified as an iterable of tuples.
 
@@ -253,7 +263,7 @@ class FermiHubbardModel:
         self.potential_parameters = self.parse_potential_parameters(
                 potential_parameters)
         self.magnetic_field = magnetic_field
-
+        self.phs = phs
 
 
     def parse_tunneling_parameters(self, parameters):
@@ -330,7 +340,8 @@ class FermiHubbardModel:
                         not same_spatial_orbital):
                     i = self.lattice.to_spin_orbital_index(r, a, s)
                     j = self.lattice.to_spin_orbital_index(rr, aa, ss)
-                    terms += interaction_operator(i, j, param.coefficient)
+                    terms += interaction_operator(i, j, param.coefficient, 
+                                                  phs=self.phs)
         return terms
 
 
@@ -341,8 +352,10 @@ class FermiHubbardModel:
                 for spin_index in self.lattice.spin_indices:
                     i = self.lattice.to_spin_orbital_index(
                             site_index, param.dof, spin_index)
-                    terms += number_operator(i, -param.coefficient)
+                    terms += number_operator(i, -param.coefficient, 
+                                             phs=self.phs)
         return terms
+
 
     def field_terms(self):
         terms = FermionOperator()
@@ -351,7 +364,7 @@ class FermiHubbardModel:
         for site_index in self.lattice.site_indices:
             for dof in self.lattice.dof_indices:
                 i = self.lattice.to_spin_orbital_index(site_index, dof, 0)
-                terms += field_operator(i, -self.magnetic_field)
+                terms += field_operator(i, -self.magnetic_field, phs=self.phs)
         return terms
 
 
