@@ -152,3 +152,7 @@ Ryan Babbush and Garnet Chan.
 ***Quantum Computational Chemistry***.
 Sam McArdle, Suguru Endo, Alán Aspuru-Guzik, Simon Benjamin and Xiao Yuan.
 [arXiv:1808.10402](https://arxiv.org/abs/1808.10402). 2018.
+
+***Quantum Phase Estimation for Noisy, Smalle-Scale Experiment***.
+Thomas O'Brien, Brian Tarasinski and Barbara Terhal.
+[arXiv:1809.09697](https://arxiv.org/abs/1809.09697). 2018.
