@@ -79,8 +79,12 @@ def random_parameters(lattice, probability=0.5):
             (dof, random.uniform(-1, 1))
             for dof in lattice.dof_indices
             if random.random() <= probability]
+
+    if random.random() <= probability:
+        parameters['magnetic_field'] = random.uniform(-1, 1)
     
     return parameters
+
 
 def test_fermi_hubbard_default_parameters():
     lattice = HubbardSquareLattice(3, 3)
@@ -88,6 +92,8 @@ def test_fermi_hubbard_default_parameters():
     assert model.tunneling_parameters == []
     assert model.interaction_parameters == []
     assert model.potential_parameters == []
+    assert model.magnetic_field == 0
+
 
 def test_fermi_hubbard_bad_parameters():
     lattice = HubbardSquareLattice(3, 3)
@@ -142,8 +148,16 @@ def test_fermi_hubbard_square_lattice_random_parameters(lattice, parameters):
             assert len(term) == 2
             assert len(spin_orbitals) == 1
             spin_orbital = spin_orbitals.pop()
-            _, dof, _ = lattice.from_spin_orbital_index(spin_orbital)
-            parameter = (dof, -coefficient)
+            _, dof, spin_index = lattice.from_spin_orbital_index(spin_orbital)
+            potential_coefficient = -coefficient
+            if not lattice.spinless:
+                spin = (-1) ** spin_index
+                potential_coefficient -= (
+                        ((-1) ** spin_index) * 
+                         parameters.get('magnetic_field', 0))
+            if not potential_coefficient:
+                continue
+            parameter = (dof, potential_coefficient)
             assert parameter in parameters['potential_parameters']
             terms_per_parameter['potential', parameter] += 1
     edge_type_to_n_site_pairs = {
