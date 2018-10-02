@@ -99,7 +99,8 @@ def test_hubbard_square_lattice_dof_validation(n_dofs):
 
 def test_hubbard_square_lattice_edge_types():
     lattice = HubbardSquareLattice(3, 3)
-    assert lattice.edge_types == ('onsite', 'neighbor')
+    assert sorted(lattice.edge_types) == sorted((
+            'onsite', 'neighbor', 'vertical_neighbor', 'horizontal_neighbor'))
     lattice.validate_edge_type('onsite')
     lattice.validate_edge_type('neighbor')
     with pytest.raises(ValueError):
