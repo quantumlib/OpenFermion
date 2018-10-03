@@ -196,7 +196,10 @@ class BayesEstimatorTest(unittest.TestCase):
             'num_rotations': 1
         }]
         self.assertEqual(be.update(test_experiment), True)
-
+        self.assertEqual(len(be.estimate_amplitudes()), 1)
+        evs, amplitudes = be.estimate(return_amplitudes=True)
+        self.assertEqual(len(evs), 1)
+        self.assertEqual(len(amplitudes), 1)
         self.assertEqual(be.averages, [numpy.pi/4])
         self.assertEqual(be.log_bayes_factor, numpy.log(0.5))
 

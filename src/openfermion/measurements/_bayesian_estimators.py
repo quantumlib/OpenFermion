@@ -670,12 +670,16 @@ class BayesEstimator(FourierProbabilityDist):
             warnings.warn('''The amplitude update failed. This estimation
                 should probably no longer be trusted.''')
 
-    def estimate(self):
+    def estimate(self, return_amplitudes=False):
         '''
         Returns:
             the best current estimate of the eigenvalues
         '''
-        return self._holevo_centers()
+        eigenvalues = self._holevo_centers()
+        if return_amplitudes:
+            amplitudes = self.estimate_amplitudes()
+            return eigenvalues, amplitudes
+        return eigenvalues
 
     def estimate_variance(self):
         '''
@@ -684,6 +688,13 @@ class BayesEstimator(FourierProbabilityDist):
             estimate of the eigenvalues.
         '''
         return self._holevo_variances()
+
+    def estimate_amplitudes(self):
+        '''
+        Returns:
+            a copy of the estimated amplitudes.
+        '''
+        return numpy.array(self._amplitude_estimates)
 
 
 class BayesDepolarizingEstimator(BayesEstimator):
