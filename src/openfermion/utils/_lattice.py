@@ -11,9 +11,14 @@
 #   limitations under the License.
 
 import abc
-from enum import Enum
+from enum import Enum, IntEnum
 import itertools
 from six import add_metaclass
+
+
+class Spin(IntEnum):
+    UP = 0
+    DOWN = 1
 
 
 class SpinPairs(Enum):
