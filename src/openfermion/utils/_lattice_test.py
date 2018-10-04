@@ -20,7 +20,7 @@ from openfermion.utils import (HubbardSquareLattice, SpinPairs, Spin)
 
 def test_spin():
     lattice = HubbardSquareLattice(3, 3)
-    assert lattice.spin_indices == (Spin.UP, Spin.DOWN)
+    assert tuple(lattice.spin_indices) == (Spin.UP, Spin.DOWN)
 
 @pytest.mark.parametrize(
         "x_dimension,y_dimension,n_dofs,spinless,periodic",
