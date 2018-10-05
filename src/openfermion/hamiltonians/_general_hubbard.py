@@ -44,6 +44,8 @@ def tunneling_operator(i, j, coefficient=1.):
     return (FermionOperator(((i, 1), (j, 0)), coefficient) + 
             FermionOperator(((j, 1), (i, 0)), coefficient.conjugate()))
 
+def number_difference_operator(i, j, coefficient=1.):
+    return number_operator(i, coefficient) - number_operator(j, coefficient)
 
 def number_difference_operator(i, j, coefficient=1.):
     return number_operator(i, coefficient) - number_operator(j, coefficient)
@@ -340,7 +342,7 @@ class FermiHubbardModel:
                         not same_spatial_orbital):
                     i = self.lattice.to_spin_orbital_index(r, a, s)
                     j = self.lattice.to_spin_orbital_index(rr, aa, ss)
-                    terms += interaction_operator(i, j, param.coefficient, i
+                    terms += interaction_operator(i, j, param.coefficient,
                             particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
 
@@ -356,6 +358,17 @@ class FermiHubbardModel:
                             particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
 
+
+    def field_terms(self):
+        terms = FermionOperator()
+        if self.lattice.spinless or not self.magnetic_field:
+            return terms
+        for site_index in self.lattice.site_indices:
+            for dof in self.lattice.dof_indices:
+                i = self.lattice.to_spin_orbital_index(site_index, dof, Spin.UP)
+                j = self.lattice.to_spin_orbital_index(site_index, dof, Spin.DOWN)
+                terms += number_difference_operator(i, j, -self.magnetic_field)
+        return terms
 
     def field_terms(self):
         terms = FermionOperator()
