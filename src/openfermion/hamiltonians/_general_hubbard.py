@@ -39,7 +39,7 @@ def tunneling_operator(i, j, coefficient):
     return (FermionOperator(((i, 1), (j, 0)), coefficient) + 
             FermionOperator(((j, 1), (i, 0)), coefficient.conjugate()))
 
-def difference_operator(i, j, coefficient=1.):
+def number_difference_operator(i, j, coefficient=1.):
     return number_operator(i, coefficient) - number_operator(j, coefficient)
 
 class FermiHubbardModel:
@@ -352,7 +352,7 @@ class FermiHubbardModel:
             for dof in self.lattice.dof_indices:
                 i = self.lattice.to_spin_orbital_index(site_index, dof, Spin.UP)
                 j = self.lattice.to_spin_orbital_index(site_index, dof, Spin.DOWN)
-                terms += difference_operator(i, j, -self.magnetic_field)
+                terms += number_difference_operator(i, j, -self.magnetic_field)
         return terms
 
 
