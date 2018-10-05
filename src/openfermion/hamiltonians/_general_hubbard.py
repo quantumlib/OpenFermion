@@ -27,16 +27,17 @@ PotentialParameter = namedtuple('PotentialParameter',
                                 ('dof', 'coefficient'))
 
 
-def number_operator(i, coefficient=1., phs=False):
+def number_operator(i, coefficient=1., particle_hole_symmetry=False):
     op = FermionOperator(((i, 1), (i, 0)), coefficient)
-    if phs:
+    if particle_hole_symmetry:
         op -= FermionOperator((), 0.5)
     return op
 
 
-def interaction_operator(i, j, coefficient=1., phs=False):
-    return (number_operator(i, coefficient, phs=phs) * 
-            number_operator(j, phs=phs))
+def interaction_operator(i, j, coefficient=1., particle_hole_symmetry=False):
+    return (number_operator(i, coefficient, 
+                            particle_hole_symmetry=particle_hole_symmetry) * 
+            number_operator(j, particle_hole_symmetry=particle_hole_symmetry))
 
 
 def tunneling_operator(i, j, coefficient=1.):
@@ -171,7 +172,7 @@ class FermiHubbardModel:
                  interaction_parameters=None,
                  potential_parameters=None,
                  magnetic_field=0,
-                 phs=False
+                 particle_hole_symmetry=False
                  ):
         r"""A Hubbard model defined on a lattice.
 
@@ -184,8 +185,8 @@ class FermiHubbardModel:
             potential_parameters (Iterable[Tuple[int, Number]], optional): The
                 potential parameters.
             magnetic_field (Number, optional): The magnetic field. Default is 0.
-            phs: If true, each number operator :math:`n` is replaced with
-                :math:`n - 1/2`.
+            particle_hole_symmetry: If true, each number operator :math:`n` is
+                replaced with :math:`n - 1/2`.
 
         Each group of parameters is specified as an iterable of tuples.
 
@@ -262,7 +263,7 @@ class FermiHubbardModel:
         self.potential_parameters = self.parse_potential_parameters(
                 potential_parameters)
         self.magnetic_field = magnetic_field
-        self.phs = phs
+        self.particle_hole_symmetry = particle_hole_symmetry
 
 
     def parse_tunneling_parameters(self, parameters):
@@ -339,8 +340,8 @@ class FermiHubbardModel:
                         not same_spatial_orbital):
                     i = self.lattice.to_spin_orbital_index(r, a, s)
                     j = self.lattice.to_spin_orbital_index(rr, aa, ss)
-                    terms += interaction_operator(i, j, param.coefficient, 
-                                                  phs=self.phs)
+                    terms += interaction_operator(i, j, param.coefficient, i
+                            particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
 
 
@@ -352,7 +353,7 @@ class FermiHubbardModel:
                     i = self.lattice.to_spin_orbital_index(
                             site_index, param.dof, spin_index)
                     terms += number_operator(i, -param.coefficient, 
-                                             phs=self.phs)
+                            particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
 
 
