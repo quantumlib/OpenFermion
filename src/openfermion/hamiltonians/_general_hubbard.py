@@ -16,7 +16,7 @@
 from collections import namedtuple
 
 from openfermion.ops import FermionOperator
-from openfermion.utils import SpinPairs
+from openfermion.utils import (SpinPairs, Spin)
 
 TunnelingParameter = namedtuple('TunnelingParameter',
                                 ('edge_type', 'dofs', 'coefficient'))
@@ -44,9 +44,8 @@ def tunneling_operator(i, j, coefficient=1.):
             FermionOperator(((j, 1), (i, 0)), coefficient.conjugate()))
 
 
-def field_operator(i, coefficient=1., phs=False):
-    return (number_operator(i, coefficient, phs=phs) -
-            number_operator(i + 1, coefficient, phs=phs))
+def number_difference_operator(i, j, coefficient=1.):
+    return number_operator(i, coefficient) - number_operator(j, coefficient)
 
 
 class FermiHubbardModel:
@@ -184,7 +183,7 @@ class FermiHubbardModel:
                 Number, int?]], optional): The interaction parameters.
             potential_parameters (Iterable[Tuple[int, Number]], optional): The
                 potential parameters.
-            magnetic_field (Number, optional): The magnetic field.
+            magnetic_field (Number, optional): The magnetic field. Default is 0.
             phs: If true, each number operator :math:`n` is replaced with
                 :math:`n - 1/2`.
 
@@ -363,8 +362,9 @@ class FermiHubbardModel:
             return terms
         for site_index in self.lattice.site_indices:
             for dof in self.lattice.dof_indices:
-                i = self.lattice.to_spin_orbital_index(site_index, dof, 0)
-                terms += field_operator(i, -self.magnetic_field, phs=self.phs)
+                i = self.lattice.to_spin_orbital_index(site_index, dof, Spin.UP)
+                j = self.lattice.to_spin_orbital_index(site_index, dof, Spin.DOWN)
+                terms += number_difference_operator(i, j, -self.magnetic_field)
         return terms
 
 
