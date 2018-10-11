@@ -47,9 +47,6 @@ def tunneling_operator(i, j, coefficient=1.):
 def number_difference_operator(i, j, coefficient=1.):
     return number_operator(i, coefficient) - number_operator(j, coefficient)
 
-def number_difference_operator(i, j, coefficient=1.):
-    return number_operator(i, coefficient) - number_operator(j, coefficient)
-
 
 class FermiHubbardModel:
     r"""A general, parameterized Fermi-Hubbard model.
@@ -358,17 +355,6 @@ class FermiHubbardModel:
                             particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
 
-
-    def field_terms(self):
-        terms = FermionOperator()
-        if self.lattice.spinless or not self.magnetic_field:
-            return terms
-        for site_index in self.lattice.site_indices:
-            for dof in self.lattice.dof_indices:
-                i = self.lattice.to_spin_orbital_index(site_index, dof, Spin.UP)
-                j = self.lattice.to_spin_orbital_index(site_index, dof, Spin.DOWN)
-                terms += number_difference_operator(i, j, -self.magnetic_field)
-        return terms
 
     def field_terms(self):
         terms = FermionOperator()
