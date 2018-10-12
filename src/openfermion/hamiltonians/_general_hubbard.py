@@ -16,7 +16,7 @@
 from collections import namedtuple
 
 from openfermion.ops import FermionOperator
-from openfermion.utils import SpinPairs
+from openfermion.utils import (SpinPairs, Spin)
 
 TunnelingParameter = namedtuple('TunnelingParameter',
                                 ('edge_type', 'dofs', 'coefficient'))
@@ -39,6 +39,8 @@ def tunneling_operator(i, j, coefficient):
     return (FermionOperator(((i, 1), (j, 0)), coefficient) + 
             FermionOperator(((j, 1), (i, 0)), coefficient.conjugate()))
 
+def number_difference_operator(i, j, coefficient=1.):
+    return number_operator(i, coefficient) - number_operator(j, coefficient)
 
 class FermiHubbardModel:
     r"""A general, parameterized Fermi-Hubbard model.
@@ -96,6 +98,9 @@ class FermiHubbardModel:
             \\
             &- \sum_{a} \mu_a
                \sum_i \sum_{\sigma} n_{i, a, \sigma}
+            \\
+            &- h \sum_{i} \sum_{a}
+                \left(n_{i, a, \uparrow} - n_{i, a, \downarrow}\right)
         \end{align}
 
     where
@@ -115,7 +120,8 @@ class FermiHubbardModel:
         - :math:`U_{a, b}^{(\mathrm{nghbr, \pm})}` is the Coulomb potential
           betwen spin orbitals on neighborings sites with the same (+) or
           different (-) spins,
-        - :math:`\mu_{a}` is the chemical potential.
+        - :math:`\mu_{a}` is the chemical potential, and
+        - :math:`h` is the magnetic field.
 
     One can also construct the Hamiltonian for the spinless model, which
     has the form
@@ -157,7 +163,8 @@ class FermiHubbardModel:
     def __init__(self, lattice,
                  tunneling_parameters=None,
                  interaction_parameters=None,
-                 potential_parameters=None
+                 potential_parameters=None,
+                 magnetic_field=0
                  ):
         r"""A Hubbard model defined on a lattice.
 
@@ -169,6 +176,7 @@ class FermiHubbardModel:
                 Number, int?]], optional): The interaction parameters.
             potential_parameters (Iterable[Tuple[int, Number]], optional): The
                 potential parameters.
+            magnetic_field (Number, optional): The magnetic field. Default is 0.
 
         Each group of parameters is specified as an iterable of tuples.
 
@@ -232,6 +240,8 @@ class FermiHubbardModel:
             - :math:`i` runs over the sites of the lattice;
             - :math:`a` is the degree of freedom ``dof``; and
             - :math:`\mu` is the ``coefficient``.
+
+        In the spinless model, the magnetic field is ignored.
         """
 
         self.lattice = lattice
@@ -242,6 +252,7 @@ class FermiHubbardModel:
                 interaction_parameters)
         self.potential_parameters = self.parse_potential_parameters(
                 potential_parameters)
+        self.magnetic_field = magnetic_field
 
 
 
@@ -333,8 +344,20 @@ class FermiHubbardModel:
                     terms += number_operator(i, -param.coefficient)
         return terms
 
+    def field_terms(self):
+        terms = FermionOperator()
+        if self.lattice.spinless or not self.magnetic_field:
+            return terms
+        for site_index in self.lattice.site_indices:
+            for dof in self.lattice.dof_indices:
+                i = self.lattice.to_spin_orbital_index(site_index, dof, Spin.UP)
+                j = self.lattice.to_spin_orbital_index(site_index, dof, Spin.DOWN)
+                terms += number_difference_operator(i, j, -self.magnetic_field)
+        return terms
+
 
     def hamiltonian(self):
         return (self.tunneling_terms() + 
                 self.interaction_terms() + 
-                self.potential_terms())
+                self.potential_terms() +
+                self.field_terms())
