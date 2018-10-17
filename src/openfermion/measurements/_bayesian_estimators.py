@@ -399,7 +399,7 @@ class BayesEstimator(FourierProbabilityDist):
                  num_freqs=1000,
                  max_n=1,
                  vector_guess=None,
-                 full_update_with_failure=True,
+                 full_update_with_failure=False,
                  store_history=True,
                  amplitude_approx_cutoff=100):
 
