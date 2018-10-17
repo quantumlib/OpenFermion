@@ -10,10 +10,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-'''
-Classes for estimators for quantum phase estimation. Estimators described
-in arXiv:1809.09697 (in particular in App.C and App.C.1)
-'''
+"""
+Classes for Bayesian estimators for quantum phase estimation.
+Estimators described in arXiv:1809.09697 (in particular in App.C and App.C.1)
+"""
 import warnings
 import numpy
 from numpy import cos, sin, pi
@@ -22,11 +22,11 @@ from openfermion.config import EQ_TOLERANCE
 
 
 class FourierProbabilityDist(object):
-    '''
+    """
     Stores a estimate of multiple phases in the form arXiv:1809.09697 App.C.
     In particular, stores the Fourier representation as a sum of sine and
     cosine waves (Eq. (C1)), and provides methods for manipulation of these.
-    '''
+    """
 
     def __init__(self,
                  amplitude_guess=None,
@@ -35,23 +35,24 @@ class FourierProbabilityDist(object):
                  num_freqs=1000,
                  max_n=1,
                  vector_guess=None):
-        '''
+        """
         Args:
-            amplitude_guess: estimates for amplitudes of different
+            amplitude_guess (numpy array or list):
+                estimates for amplitudes of different
                 eigenstates in the initial state.
-            amplitude_vars: variance on the amplitude estimates
-            num_vectors: number of phases to estimate
-            num_freqs: number of frequencies in Fourier representation.
-            max_n: maximum number of unitary evolutions before measurement.
+            amplitude_vars (numpy array or list): variance on the amplitude estimates
+            num_vectors (int): number of phases to estimate
+            num_freqs (int): number of frequencies in Fourier representation.
+            max_n (int): maximum number of unitary evolutions before measurement.
                 dictates how many matrices for updates are made and stored.
-            vector_guess: a prior estimate of the phases. If none,
+            vector_guess (numpy array): a prior estimate of the phases. If none,
                 assumes flat.
 
         Raises:
             ValueError: if prior distribution does not have required shape.
             ValueError: if insufficient amplitude guesses are given.
             ValueError: if starting amplitudes do not break symmetry.
-        '''
+        """
 
         # Store size data
         self._num_vectors = num_vectors
@@ -98,9 +99,9 @@ class FourierProbabilityDist(object):
         self.reset()
 
     def reset(self):
-        '''
+        """
         Resets the distribution.
-        '''
+        """
         if self._vector_guess is not None:
             self._fourier_vectors = numpy.array(self._vector_guess)
         else:
@@ -117,14 +118,14 @@ class FourierProbabilityDist(object):
             numpy.array(self._amplitude_vars))
 
     def get_real_dist(self, x_vec=numpy.linspace(-pi, pi, 101)):
-        '''
+        """
         Generates the real distribution over a sequence of points
 
         Args:
-            x_vec: the points at which the distribution is generated
+            x_vec (numpy array or list): the points at which the distribution is generated
         Returns:
-            y_vecs: the value of the distributions at the given x points.
-        '''
+            y_vecs (list): the value of the distributions at the given x points.
+        """
 
         # Init storage to return
         y_vecs = []
@@ -142,15 +143,15 @@ class FourierProbabilityDist(object):
         return y_vecs
 
     def _holevo_centers(self, vectors=None):
-        '''
+        """
         Gets the Holevo average phase from a distribution.
         Args:
-            vectors: vectors to calculate the average of. If None,
+            vectors (numpy array): vectors to calculate the average of. If None,
                 defaults to the vectors stored in the class.
         Returns:
-            centers: the corresponding average angle of the
+            centers (numpy array): the corresponding average angle of the
                 distribution.
-        '''
+        """
         if vectors is None:
             vectors = self._fourier_vectors
 
@@ -158,17 +159,17 @@ class FourierProbabilityDist(object):
         return centers
 
     def _holevo_variances(self, vectors=None, maxvar=4*numpy.pi**2/12):
-        '''
+        """
         Gets the Holevo variance from a distribution
 
         Args:
-            vectors: Fourier vectors to calculate the variance of.
+            vectors (numpy array): Fourier vectors to calculate the variance of.
                 If none, defaults to the vectors stored in the class.
-            maxvar: The maximum allowed variance. Defaults to the
+            maxvar (float): The maximum allowed variance. Defaults to the
                 maximum of a uniform distribution on [-pi,pi].
         Returns:
-            variances: The Holevo variances of each vector.
-        '''
+            variances (list): The Holevo variances of each vector.
+        """
         variances = []
 
         if vectors is None:
@@ -186,11 +187,12 @@ class FourierProbabilityDist(object):
         return variances
 
     def _make_matrices(self):
-        ''' Function to make the matrices that define multiplication
+        """
+        Function to make the matrices that define multiplication
         by sin(theta) and cos(theta). We store these as sparse matrices
         in CSR format, and initialize them in (row,col,data) format.
         We assume here that self.max_n is less than self.num_freqs.
-        '''
+        """
 
         # self._matrices[n][a] contains matrix M^a(n+1)
         # following our paper
@@ -208,15 +210,20 @@ class FourierProbabilityDist(object):
             self._matrices.append([cos_matrix, sin_matrix])
 
     def _make_matrix(self, nrot):
-        '''
+        """
         Makes matrices that sends a Fourier representation of p(phi)
         to the Fourier representation of cos^2(n*phi/2+beta/2)*p(phi).
 
         See App. C in arXiv:1809.09697
 
         Args:
-            nrot: the number of rotations n in the above formula.
-        '''
+            nrot (n): the number of rotations n in the above formula.
+        Returns:
+            cos_matrix (scipy.sparse.csr_matrix) matrix for multiplication
+                by cos(phi)
+            sin_matrix (scipy.sparse.csr_matrix) matrix for multiplication
+                by sin(phi)
+        """
 
         # Initialize with terms for when j = 0
         data_cos = [2]
@@ -277,14 +284,14 @@ class FourierProbabilityDist(object):
         return cos_matrix, sin_matrix
 
     def _vector_product(self, vectors, round_data):
-        '''
+        """
         Calculates cos^2(n*phi/2+beta/2)P(phi) for an input
         n, beta and P(phi).
 
         Args:
-            vectors: the input vectors to be multiplied
+            vectors (numpy array): the input vectors to be multiplied
 
-            round_data: dictionary containing data about rotation
+            round_data (dict): data about this round in the experiment.
                 in particular, round data needs 'num_rotations',
                 'final_rotation', and 'measurement'.
 
@@ -292,7 +299,7 @@ class FourierProbabilityDist(object):
             updated vectors: the vector representation
                 of P_{k,beta}(m|phi_j)P_{prior}(phi_j) for each
                 input vector P_{prior}(phi_j)
-        '''
+        """
 
         # Extract the pieces we want from the round_data
         beta = round_data['final_rotation']
@@ -336,10 +343,8 @@ class FourierProbabilityDist(object):
             numpy.dot(p_vec, a_vec[:len(p_vec)]) ** 2
 
     def _calculate_jacobian(self):
-        '''
-        Recalculates the Jacobian based on all previously
-        calculated p_vecs.
-        '''
+        # Recalculates the Jacobian based on all previously
+        # calculated p_vecs.
         self._jacobian = sum(
             [self._jacobian_term(p_vec, self._amplitude_estimates)
              for p_vec in self._p_vecs]) + self._jinit_mlikelihood()
@@ -366,15 +371,15 @@ class FourierProbabilityDist(object):
             1/num_vectors * numpy.ones([num_vectors, num_vectors])
 
     def _make_dist(self, vector, angle):
-        '''
+        """
         converts a frequency vector into a function evaluated at theta
         Args:
-            vector: a fourier vector P(phi)
-            angle: the angle to evaluate P at
+            vector (numpy array): a fourier vector P(phi)
+            angle (float): the angle to evaluate P at
 
         Returns:
-            P(angle)
-        '''
+            (float) P(angle)
+        """
         res = vector[0]
         for j in range(1, self._num_freqs):
             res += vector[2*j-1] * sin(j*angle)
@@ -383,9 +388,9 @@ class FourierProbabilityDist(object):
 
 
 class BayesEstimator(FourierProbabilityDist):
-    '''
-    Class to estimate a QPE experiment in the absence of error
-    '''
+    """
+    Class to estimate a QPE experiment in the absence of error.
+    """
 
     def __init__(self,
                  amplitude_guess=None,
@@ -398,30 +403,30 @@ class BayesEstimator(FourierProbabilityDist):
                  store_history=True,
                  amplitude_approx_cutoff=100):
 
-        '''
+        """
         Args:
-            amplitude_guess: estimates for amplitudes of different
+            amplitude_guess (numpy array): estimates for amplitudes of different
                 eigenstates in the initial state ($A_j$)
-            amplitude_vars: variance on the amplitude estimates
-            num_vectors: number of phases to estimate
-            num_freqs: number of frequencies in Fourier representation.
-            max_n: maximum number of unitary evolutions before measurement.
+            amplitude_vars (numpy array): variance on the amplitude estimates
+            num_vectors (int): number of phases to estimate
+            num_freqs (int): number of frequencies in Fourier representation.
+            max_n (int): maximum number of unitary evolutions before measurement.
                 dictates how many matrices for updates are made and stored.
-            vector_guess: a prior estimate of the phases. If none,
+            vector_guess (numpy array): a prior estimate of the phases. If none,
                 assumes flat.
-            full_update_with_failure: chooses whether to perform
+            full_update_with_failure (bool): chooses whether to perform
                 a full single step of SLSQP whenever the amplitude
                 optimization returns an unphysical result (negative
                 amplitude squared), or to just enforce physicality
                 by hand.
-            store_history: whether to store the history of
+            store_history (bool): whether to store the history of
                 estimated values of the estimator. This is only
                 a few numbers per update, but it could be costly.
-            amplitude_approx_cutoff: a cutoff between estimating the amplitudes
+            amplitude_approx_cutoff (int): a cutoff between estimating the amplitudes
                 via full SLSQP and approximating with single steps of Newton's
                 method. Increasing may lead to higher accuracy,
                 decreasing will lead to faster runtimes.
-        '''
+        """
         self._amplitude_approx_cutoff = amplitude_approx_cutoff
         self._full_update_with_failure = full_update_with_failure
         self._store_history = store_history
@@ -435,9 +440,9 @@ class BayesEstimator(FourierProbabilityDist):
             vector_guess=vector_guess)
 
     def reset(self):
-        '''
+        """
         Resets estimator to initial state.
-        '''
+        """
 
         super(BayesEstimator, self).reset()
 
@@ -454,29 +459,29 @@ class BayesEstimator(FourierProbabilityDist):
         self.num_dsets = 0
 
     def update(self, experiment_data, force_accept=False):
-        '''
+        """
         Performs the expected Bayesian update, and stores result.
 
         Args:
-            experiment_data: a list of dictionaries, containing
-                the data from each round of the experiment. Each round requires
+            experiment_data (list of dictionaries):
+                data from each round of the experiment. Each round requires
                 entries: 'num_rotations', 'measurement', and 'final_rotation'.
 
-            force_accept: whether to insist that the estimator
+            force_accept (bool): whether to insist that the estimator
                 accepts this update, even when the result doesn't seem
                 physical (due to numerical error or experimental error
                 the estimator may think some experiments are so unlikely
                 they couldn't have occurred).
 
         Returns:
-            success: boolean value determining whether or not the update
+            success (bool): whether or not the update
                 was successful.
 
         Raises:
             warnings: if the resulting distribution does not seem
                 correct and force_accept=False, will reject the update,
                 warn the user, and return False.
-        '''
+        """
         if not experiment_data:
             warnings.warn('This doesnt seem to be an experiment')
 
@@ -563,7 +568,7 @@ class BayesEstimator(FourierProbabilityDist):
         return True
 
     def _calc_vectors(self, experiment_data):
-        '''
+        """
         Every update takes the form P(m|phi,A)=sum_jA_jp(m|phi_j).
         This function should return the set of p(m|phi_j)
         distributions in vector form.
@@ -574,9 +579,9 @@ class BayesEstimator(FourierProbabilityDist):
         cos^2(phi + beta)
 
         Args:
-            experiment_data: list of dictionaries containing data from each
+            experiment_data (list of dictionaries): data from each
                 QPE round in the experiment.
-        '''
+        """
 
         # Copy vectors
         temp_vectors = self._fourier_vectors.copy()
@@ -599,11 +604,11 @@ class BayesEstimator(FourierProbabilityDist):
         return temp_vectors
 
     def _update_amplitudes_approx(self):
-        '''
+        """
         Updates amplitudes approximately via Newton's method.
         To be used after ~100 amplitude estimates or so, when
         the approximation is close
-        '''
+        """
         if self._num_vectors == 1:
             self._amplitude_estimates = numpy.array([1])
             return
@@ -648,12 +653,12 @@ class BayesEstimator(FourierProbabilityDist):
         self._amplitude_estimates = temp_ae
 
     def _update_amplitudes(self):
-        '''
+        """
         Amplitudes are updated as the maximum likelihood estimator.
         We want to use the SLSQP function from scipy as it both
         takes constraints and bounds, and uses a Jacobian which
         we can calculate trivially.
-        '''
+        """
         if self._num_vectors == 1:
             self._amplitude_estimates = numpy.array([1])
             return
@@ -674,10 +679,10 @@ class BayesEstimator(FourierProbabilityDist):
                 should probably no longer be trusted.''')
 
     def estimate(self, return_amplitudes=False):
-        '''
+        """
         Returns:
-            the best current estimate of the eigenvalues
-        '''
+            (numpy array) the best current estimate of the eigenvalues
+        """
         eigenvalues = self._holevo_centers()
         if return_amplitudes:
             amplitudes = self.estimate_amplitudes()
@@ -685,18 +690,18 @@ class BayesEstimator(FourierProbabilityDist):
         return eigenvalues
 
     def estimate_variance(self):
-        '''
+        """
         Returns:
-            the estimated variance in the best current
+            (numpy array) the estimated variance in the best current
             estimate of the eigenvalues.
-        '''
+        """
         return self._holevo_variances()
 
     def estimate_amplitudes(self):
-        '''
+        """
         Returns:
-            a copy of the estimated amplitudes.
-        '''
+            (numpy array) a copy of the estimated amplitudes.
+        """
         return numpy.array(self._amplitude_estimates)
 
 
@@ -710,66 +715,67 @@ class BayesDepolarizingEstimator(BayesEstimator):
                  k_1=numpy.inf,
                  k_err=numpy.inf,
                  **kwargs):
-        '''
+        """
         Args:
-            k1: T1/t', where t' is the length of time
+            k1 (float): T1/t', where t' is the length of time
                 over which the system can decay.
-            kerr: Terr/T_U, where T_u is the length of
+            kerr (float): Terr/T_U, where T_u is the length of
                 a single unitary circuit, and Terr is
                 the coherence time of the system.
-        '''
+        """
         self.k_1 = k_1
         self.k_err = k_err
 
         super(BayesDepolarizingEstimator, self).__init__(**kwargs)
 
     def _epsilon_d_function(self, nrot):
-        '''
+        """
         epsilon d is the depolarizing channel - an n-dependent
         probability of failing and returning a completely random
         result.
 
         Args:
-            n: the number of unitary rotations performed
+            n (int): the number of unitary rotations performed
         Returns:
-            epsilon_d: the probability of failure during this experiment.
-        '''
+            epsilon_d (float): the probability of failure during this experiment.
+        """
         epsilon_d = 1 - numpy.exp(-nrot / self.k_err)
         return epsilon_d
 
     def _epsilon_b_function(self):
-        '''
+        """
         epsilon_b is the T1 channel - an n-indepnedent probability
         of the ancilla failing and returning 0. This decay can only occur
         at the end of the experiment (as T1 decay while the ancilla is
         in a coherent state will result in a random result being returned).
 
         Returns:
-            epsilon_b: the probability of failure at the end of this
+            epsilon_b (float): the probability of failure at the end of this
                 experiment.
-        '''
+        """
         epsilon_b = 1 - numpy.exp(-1 / self.k_1)
         return epsilon_b
 
     def _vector_product(self, vectors, round_data):
-        '''
+        """
         Calculates cos^2(n*phi/2+beta/2)P(phi) for an input
         n, beta and P(phi).
 
         Args:
-            vectors: the input vectors to be multiplied
+            vectors (numpy array): the input vectors to be multiplied
 
-            round_data: dictionary containing data about rotation
-                in particular, round data needs 'num_rotations',
+            round_data (list of dictionaries): dictionary containing data
+                about rotation,
+                In particular, round data needs 'num_rotations',
                 'final_rotation', and 'measurement'.
                 Can contain additional value of 'true_measurement'
                 in case ancilla qubits are not reset between rounds.
 
         Returns:
-            updated vectors: the vector representation
+            updated vectors (numpy array): the vector representation
                 of P_{k,beta}(m|phi_j)P_{prior}(phi_j) for each
                 input vector P_{prior}(phi_j)
-        '''
+        """
 
         # Extract the pieces we want from the round_data
         beta = round_data['final_rotation']
