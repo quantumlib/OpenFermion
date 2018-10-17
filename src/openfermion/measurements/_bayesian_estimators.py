@@ -79,8 +79,8 @@ class FourierProbabilityDist(object):
         self._amplitude_guess = amplitude_guess
         self._amplitude_vars = amplitude_vars
 
-        if any([numpy.abs(self._amplitude_guess[j] -
-                          self._amplitude_guess[j+1]) < EQ_TOLERANCE
+        if any([numpy.isclose(self._amplitude_guess[j],
+                              self._amplitude_guess[j+1])
                 for j in range(num_vectors - 1)]):
             raise ValueError('''Starting amplitudes must be different.''')
 
@@ -394,7 +394,7 @@ class BayesEstimator(FourierProbabilityDist):
                  num_freqs=1000,
                  max_n=1,
                  vector_guess=None,
-                 full_update_with_failure=False,
+                 full_update_with_failure=True,
                  store_history=True,
                  amplitude_approx_cutoff=100):
 
@@ -620,7 +620,7 @@ class BayesEstimator(FourierProbabilityDist):
         temp_ae = self._amplitude_estimates - d_amp
 
         # Check that we fit within the boundaries of
-        # A_i > 0 for each i.
+        # A_i >= 0 for each i.
         if min(temp_ae) < 0:
 
             # We have two options here - either repeat the costly
@@ -633,8 +633,11 @@ class BayesEstimator(FourierProbabilityDist):
                 return
 
             # Projecting onto the allowed space
-            d_amp = d_amp / numpy.max(
-                numpy.abs(d_amp / self._amplitude_estimates))
+            dampen_factor = 1
+            for d, a in zip(d_amp, self._amplitude_estimates):
+                if d != 0 and numpy.abs(a / d) < dampen_factor:
+                    dampen_factor = numpy.abs(a / d)
+            d_amp = d_amp * dampen_factor
             temp_ae = self._amplitude_estimates - d_amp
 
             # Prevent numerical errors
