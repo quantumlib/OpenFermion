@@ -20,4 +20,7 @@ from ._rdm_equality_constraints import (one_body_fermion_constraints,
 
 from ._bayesian_estimators import (BayesDepolarizingEstimator,
                                    BayesEstimator,
-                                   FourierProbabilityDist)
+                                   FourierProbabilityDist,)
+
+from ._data_containers import (QPEExperimentData,
+                               QPERoundData)

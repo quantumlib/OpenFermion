@@ -302,9 +302,9 @@ class FourierProbabilityDist(object):
         """
 
         # Extract the pieces we want from the round_data
-        beta = round_data['final_rotation']
-        meas = round_data['measurement']
-        nrot = round_data['num_rotations']
+        beta = round_data.final_rotation
+        meas = round_data.measurement
+        nrot = round_data.num_rotations
 
         # Get the matrices for multiplication
         if nrot <= self._max_n:
@@ -482,8 +482,8 @@ class BayesEstimator(FourierProbabilityDist):
                 correct and force_accept=False, will reject the update,
                 warn the user, and return False.
         """
-        if not experiment_data:
-            warnings.warn('This doesnt seem to be an experiment')
+        if not experiment_data.rounds:
+            warnings.warn('This experiment seems to be empty')
 
         # Get set of products of P_prior(phi_j)p(m,phi_j)
         temp_vectors = self._calc_vectors(experiment_data=experiment_data)
@@ -587,7 +587,7 @@ class BayesEstimator(FourierProbabilityDist):
         temp_vectors = self._fourier_vectors.copy()
 
         # Loop over updates
-        for round_data in experiment_data:
+        for round_data in experiment_data.rounds:
 
             # Update vectors
             temp_vectors = self._vector_product(vectors=temp_vectors,
@@ -778,13 +778,13 @@ class BayesDepolarizingEstimator(BayesEstimator):
         """
 
         # Extract the pieces we want from the round_data
-        beta = round_data['final_rotation']
-        meas = round_data['measurement']
-        nrot = round_data['num_rotations']
-        try:
-            meas_real = round_data['true_measurement']
-        except KeyError:
-            meas_real = round_data['measurement']
+        beta = round_data.final_rotation
+        meas = round_data.measurement
+        nrot = round_data.num_rotations
+        if round_data.true_measurement:
+            meas_real = round_data.true_measurement
+        else:
+            meas_real = round_data.measurement
 
         # Get the correct cos matrix
         if nrot < self._max_n:

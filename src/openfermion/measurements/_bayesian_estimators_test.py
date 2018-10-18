@@ -17,10 +17,12 @@ from numpy import pi
 import warnings
 
 from ._bayesian_estimators import (
-    FourierProbabilityDist,
+    BayesDepolarizingEstimator,
     BayesEstimator,
-    BayesDepolarizingEstimator)
-
+    FourierProbabilityDist)
+from ._data_containers import(
+    QPEExperimentData,
+    QPERoundData)
 
 class IteratingSampler:
 
@@ -120,11 +122,10 @@ class FourierProbabilityDistTest(unittest.TestCase):
                                     num_freqs=10,
                                     max_n=1)
 
-        round_data = {
-            'final_rotation': 0,
-            'measurement': 0,
-            'num_rotations': 1
-        }
+        round_data = QPERoundData(
+            final_rotation=0,
+            measurement=0,
+            num_rotations=1)
 
         res = pd._vector_product(pd._fourier_vectors, round_data)
         res_comp = numpy.zeros([21, 1])
@@ -181,7 +182,7 @@ class BayesEstimatorTest(unittest.TestCase):
                             store_history=True)
 
         with warnings.catch_warnings(record=True) as w:
-            be.update([])
+            be.update(QPEExperimentData())
 
     def test_update(self):
         be = BayesEstimator(num_vectors=1,
@@ -190,11 +191,11 @@ class BayesEstimatorTest(unittest.TestCase):
                             num_freqs=10,
                             max_n=1,
                             store_history=True)
-        test_experiment = [{
+        test_experiment = QPEExperimentData([{
             'final_rotation': -numpy.pi/4,
             'measurement': 0,
             'num_rotations': 1
-        }]
+        }])
         self.assertEqual(be.update(test_experiment), True)
         self.assertEqual(len(be.estimate_amplitudes()), 1)
         evs, amplitudes = be.estimate(return_amplitudes=True)
@@ -210,21 +211,21 @@ class BayesEstimatorTest(unittest.TestCase):
                             num_freqs=1000,
                             max_n=1)
 
-        test_experiment1 = [{
+        test_experiment1 = QPEExperimentData([{
             'final_rotation': numpy.pi/2,
             'measurement': 0,
             'num_rotations': 1
-        }]
-        test_experiment2 = [{
+        }])
+        test_experiment2 = QPEExperimentData([{
             'final_rotation': 0,
             'measurement': 0,
             'num_rotations': 1
-        }]
-        test_experiment3 = [{
+        }])
+        test_experiment3 = QPEExperimentData([{
             'final_rotation': 0,
             'measurement': 1,
             'num_rotations': 1
-        }]
+        }])
         num2 = 0
         for j in range(100):
             be.update(test_experiment1)
@@ -250,7 +251,7 @@ class BayesEstimatorTest(unittest.TestCase):
             return mock_result
         be._calc_vectors = mock_function
         with warnings.catch_warnings(record=True) as w:
-            self.assertFalse(be.update([]))
+            self.assertFalse(be.update(QPEExperimentData()))
             self.assertEqual(len(w), 2)
 
         be = BayesEstimator(num_vectors=1,
@@ -259,11 +260,11 @@ class BayesEstimatorTest(unittest.TestCase):
                             num_freqs=10,
                             max_n=1)
 
-        test_experiment1 = [{
+        test_experiment1 = QPEExperimentData([{
             'final_rotation': numpy.pi/2,
             'measurement': 0,
             'num_rotations': 1
-        }]
+        }])
 
         def mock_function(**kwargs):
             pass
@@ -289,21 +290,21 @@ class BayesEstimatorTest(unittest.TestCase):
                              max_n=1,
                              amplitude_approx_cutoff=10)
 
-        test_experiment = [{
+        test_experiment = QPEExperimentData([{
             'final_rotation': -numpy.pi/4,
             'measurement': 0,
             'num_rotations': 1
-        }]
-        test_experiment2 = [{
+        }])
+        test_experiment2 = QPEExperimentData([{
             'final_rotation': numpy.pi/4,
             'measurement': 0,
             'num_rotations': 2
-        }]
-        test_experiment3 = [{
+        }])
+        test_experiment3 = QPEExperimentData([{
             'final_rotation': 0,
             'measurement': 0,
             'num_rotations': 2
-        }]
+        }])
 
         with warnings.catch_warnings() as w:
             warnings.simplefilter("ignore")
@@ -343,7 +344,7 @@ class BayesEstimatorTest(unittest.TestCase):
         for j in range(1000):
             experiment = sampler.sample()
             do_experiment(ev, experiment, random_state)
-            estimator.update(experiment)
+            estimator.update(QPEExperimentData(experiment))
 
         self.assertTrue(numpy.abs(ev-estimator.estimate()[0]) < 1e-1)
 
@@ -378,7 +379,7 @@ class BayesEstimatorTest(unittest.TestCase):
             for j in range(1000):
                 experiment = sampler.sample()
                 do_experiment_depol(ev, experiment, random_state, T2=20)
-                estimator.update(experiment)
+                estimator.update(QPEExperimentData(experiment))
             self.assertGreater(len(w), 1)
 
         self.assertFalse(numpy.isfinite(estimator.estimate()[0]))
@@ -412,11 +413,10 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
 
         vectors = numpy.zeros(2001)
         vectors[0] = 1
-        round_data = {
-            'measurement': 0,
-            'num_rotations': 2,
-            'final_rotation': 0
-        }
+        round_data = QPERoundData(
+            measurement= 0,
+            num_rotations= 2,
+            final_rotation= 0)
         updated_vectors = estimator._vector_product(vectors, round_data)
         epsilon_D = 1-numpy.exp(-2)
         epsilon_B = 1-numpy.exp(-1)
@@ -456,6 +456,6 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
         for j in range(1000):
             experiment = sampler.sample()
             do_experiment_depol(ev, experiment, random_state, T2=20)
-            estimator.update(experiment)
+            estimator.update(QPEExperimentData(experiment))
 
         self.assertLess(numpy.abs(ev-estimator.estimate()[0]), 2e-1)
