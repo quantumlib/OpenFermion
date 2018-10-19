@@ -33,13 +33,19 @@ class QPERoundData(object):
                  true_measurement=None):
         """
         Args:
-            nrot (int): the number of rotations performed in this round
-            finrot (float): the final rotation performed on the ancilla qubit
+            num_rotations (int): the number of rotations performed in this round
+            final_rotation (float): the final rotation performed on the ancilla qubit
                 in this round.
-            msmt (bool): the measurement observed in this round
-            tmsmt (bool): if the ancilla is not reset between rounds, the
-                'true' measurement (in this case msmt is calculated as the
-                difference between the tmsmt of different rounds).
+            measurement (bool): the measurement observed in this round
+            true_measurement (bool, optional): the 'true measurement' in each round:
+                In some physical setups where ancilla reset is costly, one can perform
+                QPE without resetting the ancilla qubit between rounds. In this case,
+                if a string of measurements t_r is obtained for round r=1,2,... the
+                'measurement' required by QPE for round r is m_r=t_r-t_{r-1}
+                (with m_0=0). In the absence of errors the actual value of the t_r
+                strings is not of interest, but T1 noise on the ancilla qubit affects
+                the t_r values instead of the m_r values. This can be corrected for
+                in some QPE estimators, which in turn require the value of t_r.
         """
         self.num_rotations = num_rotations
         self.final_rotation = final_rotation
@@ -67,8 +73,7 @@ class QPEExperimentData(object):
         as stated in the arguments
 
         Args (accepted in order):
-            rounds: list of RoundData objects or lists of dicts
-                to be converted to RoundData objects.
+            rounds: list of RoundData objects.
 
             list_num_rotations (list of integers),
             list_final_rotation (list of floats),
@@ -78,8 +83,6 @@ class QPEExperimentData(object):
         """
 
         if rounds:
-            if type(rounds[0]) is dict:
-                rounds = [QPERoundData(**r) for r in rounds]
             self.rounds = rounds
         elif list_num_rotations:
             if list_true_measurement:
