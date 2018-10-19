@@ -45,17 +45,6 @@ class QPEExperimentDataTest(unittest.TestCase):
         self.assertEqual(ed.rounds[0].final_rotation, 0)
         self.assertEqual(ed.rounds[0].measurement, 0)
 
-    def test_init_dict(self):
-        rd = {
-            'num_rotations': 1,
-            'final_rotation': 0,
-            'measurement': 0}
-        ed = QPEExperimentData(rounds=[rd])
-        self.assertEqual(len(ed.rounds), 1)
-        self.assertEqual(ed.rounds[0].num_rotations, 1)
-        self.assertEqual(ed.rounds[0].final_rotation, 0)
-        self.assertEqual(ed.rounds[0].measurement, 0)
-
     def test_init_list(self):
         nrot_list = [1]
         frot_list = [0]
