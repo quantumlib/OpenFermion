@@ -62,41 +62,13 @@ class QPEExperimentData(object):
     Attributes:
         rounds: list of RoundData objects
     """
-    def __init__(self,
-            rounds=None,
-            list_num_rotations=None,
-            list_final_rotation=None,
-            list_measurement=None,
-            list_true_measurement=None):
+    def __init__(self, rounds=None):
         """
-        Initialization can be performed in one of two ways:
-        as stated in the arguments
-
         Args (accepted in order):
             rounds: list of RoundData objects.
-
-            list_num_rotations (list of integers),
-            list_final_rotation (list of floats),
-            list_measurement (list of booleans),
-            tmsmt_list(optional) (list of booleans):
-                experimental parameters (see RoundData class for description).
         """
 
         if rounds:
             self.rounds = rounds
-        elif list_num_rotations:
-            if list_true_measurement:
-                self.rounds = [QPERoundData(nrot,finrot,msmt,tmsmt)
-                               for nrot, finrot, msmt, tmsmt in zip(
-                                list_num_rotations,
-                                list_final_rotation,
-                                list_measurement,
-                                list_true_measurement)]
-            else:
-                self.rounds = [QPERoundData(nrot,finrot,msmt)
-                               for nrot, finrot, msmt in zip(
-                                list_num_rotations,
-                                list_final_rotation,
-                                list_measurement)]
         else:  # Empty experiment
             self.rounds = []
