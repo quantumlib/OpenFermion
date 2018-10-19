@@ -170,7 +170,7 @@ class FermiHubbardModel:
                  tunneling_parameters=None,
                  interaction_parameters=None,
                  potential_parameters=None,
-                 magnetic_field=0,
+                 magnetic_field=0.,
                  particle_hole_symmetry=False
                  ):
         r"""A Hubbard model defined on a lattice.
