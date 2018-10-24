@@ -23,9 +23,21 @@ from openfermion.config import EQ_TOLERANCE
 
 class FourierProbabilityDist(object):
     """
-    Stores a estimate of multiple phases in the form arXiv:1809.09697 App.C.
-    In particular, stores the Fourier representation as a sum of sine and
-    cosine waves (Eq. (C1)), and provides methods for manipulation of these.
+    Stores a multivariant Fourier representation of a function linear
+    in its dependent variables.
+
+    f(phi_0,phi_1,...) = 
+        sum_j A_j sum_n (c_{j,2n} cos(n*phi_j) +
+                         c_{j,2n-1} sin(n*phi_j))
+
+    In particular, this class stores values of A_j, c_{j,2n},
+    c_{j,2n+1} from the above equation.
+
+    It also provides routines for multiplying f by functions of the form
+    cos^2(n*phi_j + beta), and for calculating maximum-likelihood
+    distributions of the A_j variables.
+
+    More details can be found in arXiv:1809.09697, Appendix C.
     """
 
     def __init__(self,
@@ -38,15 +50,20 @@ class FourierProbabilityDist(object):
         """
         Args:
             amplitude_guess (numpy array or list):
-                estimates for amplitudes of different
-                eigenstates in the initial state.
-            amplitude_vars (numpy array or list): variance on the amplitude estimates
-            num_vectors (int): number of phases to estimate
-            num_freqs (int): number of frequencies in Fourier representation.
-            max_n (int): maximum number of unitary evolutions before measurement.
-                dictates how many matrices for updates are made and stored.
-            vector_guess (numpy array): a prior estimate of the phases. If none,
-                assumes flat.
+                estimates for the amplitude of the jth component of
+                the estimated function.
+            amplitude_vars (numpy array or list): variance on the
+                guess in amplitude_guess.
+            num_vectors (int): number of phases phi_j to estimate
+            num_freqs (int): number of wave components cos(n*phi_j)
+                to store coefficients for (this provides a cut-off to
+                the sensitivity of the function).
+            max_n (int): the maximum n to be used when multiplying
+                the stored function by matrices of the form
+                cos(n*phi_j + beta).
+            vector_guess (numpy array): a prior estimate of the function,
+                given in terms of the Fourier components c_{j,n}.
+                If None, estimated as a flat function over [-pi,pi].
 
         Raises:
             ValueError: if prior distribution does not have required shape.
@@ -117,15 +134,19 @@ class FourierProbabilityDist(object):
         self._inv_covar_mat = numpy.linalg.inv(
             numpy.array(self._amplitude_vars))
 
-    def get_real_dist(self, x_vec=numpy.linspace(-pi, pi, 101)):
+    def get_real_dist(self, x_vec=None):
         """
         Generates the real distribution over a sequence of points
 
         Args:
-            x_vec (numpy array or list): the points at which the distribution is generated
+            x_vec (numpy array or list): the points at which the distribution is generated.
+                If None, defaults to 101 points between -pi and pi.
         Returns:
             y_vecs (list): the value of the distributions at the given x points.
         """
+        # Set default x vector
+        if x_vec is None:
+            x_vec = numpy.linspace(-pi, pi, 101)
 
         # Init storage to return
         y_vecs = []
