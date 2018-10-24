@@ -116,30 +116,48 @@ class FourierProbabilityDistTest(unittest.TestCase):
         self.assertEqual(pd._holevo_centers(), 0)
         self.assertEqual(pd._holevo_variances()[0], 3)
 
+
+class BayesEstimatorTest(unittest.TestCase):
+
+    def test_init(self):
+        be = BayesEstimator(num_vectors=1,
+                            amplitude_guess=[1],
+                            amplitude_vars=[[1]],
+                            num_freqs=10,
+                            max_n=1,
+                            store_history=True)
+        self.assertEqual(be.averages, [])
+        self.assertEqual(be.variances, [])
+        self.assertEqual(be.log_bayes_factor_history, [])
+        self.assertEqual(be.amplitudes_history, [])
+        self.assertEqual(be.log_bayes_factor, 0)
+
     def test_vector_product(self):
-        pd = FourierProbabilityDist(num_vectors=1,
-                                    amplitude_guess=[1],
-                                    amplitude_vars=[[1]],
-                                    num_freqs=10,
-                                    max_n=1)
+        pd = BayesEstimator(num_vectors=1,
+                            amplitude_guess=[1],
+                            amplitude_vars=[[1]],
+                            num_freqs=10,
+                            max_n=1)
 
         round_data = QPERoundData(
             final_rotation=0,
             measurement=0,
             num_rotations=1)
 
-        res = pd._vector_product(pd._fourier_vectors, round_data)
+        res = pd._vector_product(
+            pd._probability_dist._fourier_vectors,
+            round_data)
         res_comp = numpy.zeros([21, 1])
         res_comp[0] = 0.5
         res_comp[2] = 0.5
         self.assertAlmostEqual(numpy.sum(numpy.abs(res-res_comp)), 0)
 
     def test_diffs(self):
-        pd = FourierProbabilityDist(num_vectors=2,
-                                    amplitude_guess=[0.9, 0.1],
-                                    amplitude_vars=[[0.3, -0.29], [-0.29, 0.3]],
-                                    num_freqs=10,
-                                    max_n=1)
+        pd = BayesEstimator(num_vectors=2,
+                            amplitude_guess=[0.9, 0.1],
+                            amplitude_vars=[[0.3, -0.29], [-0.29, 0.3]],
+                            num_freqs=10,
+                            max_n=1)
 
         test_vec = numpy.array([0.9, 0.1])
         test_vec2 = numpy.array([1, 0])
@@ -157,22 +175,6 @@ class FourierProbabilityDistTest(unittest.TestCase):
             numpy.sum(numpy.abs(
                 numpy.dot(test_vec2[:, numpy.newaxis],
                           test_vec2[numpy.newaxis, :]) / 0.81 - jt)), 0)
-
-
-class BayesEstimatorTest(unittest.TestCase):
-
-    def test_init(self):
-        be = BayesEstimator(num_vectors=1,
-                            amplitude_guess=[1],
-                            amplitude_vars=[[1]],
-                            num_freqs=10,
-                            max_n=1,
-                            store_history=True)
-        self.assertEqual(be.averages, [])
-        self.assertEqual(be.variances, [])
-        self.assertEqual(be.log_bayes_factor_history, [])
-        self.assertEqual(be.amplitudes_history, [])
-        self.assertEqual(be.log_bayes_factor, 0)
 
     def test_warning(self):
         be = BayesEstimator(num_vectors=1,
@@ -270,7 +272,7 @@ class BayesEstimatorTest(unittest.TestCase):
         def mock_function(**kwargs):
             pass
         be._update_amplitudes = mock_function
-        be._amplitude_estimates = numpy.array([-1])
+        be._probability_dist._amplitude_estimates = numpy.array([-1])
         with warnings.catch_warnings(record=True) as w:
             be.update(test_experiment1)
             self.assertFalse(be.update(test_experiment1))
@@ -319,7 +321,8 @@ class BayesEstimatorTest(unittest.TestCase):
 
         self.assertTrue(
             numpy.sum(numpy.abs(
-                be._amplitude_estimates-be2._amplitude_estimates)) < 1e-3)
+                be._probability_dist._amplitude_estimates-
+                be2._probability_dist._amplitude_estimates)) < 1e-3)
 
     def test_full(self):
 

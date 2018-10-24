@@ -78,7 +78,7 @@ class FourierProbabilityDist(object):
         if amplitude_guess is None:
             amplitude_guess = [1]
         if amplitude_vars is None:
-            amplitude_vars = [[1]]
+            amplitude_vars = [[0]]
 
         # Store prior information
         if vector_guess is not None and (
@@ -96,6 +96,8 @@ class FourierProbabilityDist(object):
 
         self._amplitude_guess = amplitude_guess
         self._amplitude_vars = amplitude_vars
+        self._amplitude_estimates = None
+        self._fourier_vectors = None
 
         if any([numpy.isclose(self._amplitude_guess[j],
                               self._amplitude_guess[j+1])
@@ -105,14 +107,8 @@ class FourierProbabilityDist(object):
         # Store max_n
         self._max_n = max_n
 
-        # Set un-created variables to be made elsewhere in the class to None
-        self._jacobian = None
-        self._amplitude_estimates = None
-        self._fourier_vectors = None
-
         # Create matrices for multiplication
         self._make_matrices()
-        self._make_projector()
         self.reset()
 
     def reset(self):
@@ -128,11 +124,7 @@ class FourierProbabilityDist(object):
             for j in range(self._num_vectors):
                 self._fourier_vectors[0, j] = 1
 
-        # Initialize p_vec with some information to break the symmetry
-        self._p_vecs = [numpy.array(self._amplitude_guess)]
         self._amplitude_estimates = numpy.array(self._amplitude_guess)
-        self._inv_covar_mat = numpy.linalg.inv(
-            numpy.array(self._amplitude_vars))
 
     def get_real_dist(self, x_vec=None):
         """
@@ -304,93 +296,6 @@ class FourierProbabilityDist(object):
 
         return cos_matrix, sin_matrix
 
-    def _vector_product(self, vectors, round_data):
-        """
-        Calculates cos^2(n*phi/2+beta/2)P(phi) for an input
-        n, beta and P(phi).
-
-        Args:
-            vectors (numpy array): the input vectors to be multiplied
-
-            round_data (dict): data about this round in the experiment.
-                in particular, round data needs 'num_rotations',
-                'final_rotation', and 'measurement'.
-
-        Returns:
-            updated vectors: the vector representation
-                of P_{k,beta}(m|phi_j)P_{prior}(phi_j) for each
-                input vector P_{prior}(phi_j)
-        """
-
-        # Extract the pieces we want from the round_data
-        beta = round_data.final_rotation
-        meas = round_data.measurement
-        nrot = round_data.num_rotations
-
-        # Get the matrices for multiplication
-        if nrot <= self._max_n:
-            cos_matrix = self._matrices[nrot-1][0]
-            sin_matrix = self._matrices[nrot-1][1]
-        else:
-            cos_matrix, sin_matrix = self._make_matrix(nrot)
-
-        return 0.5 * vectors +\
-            0.25 * cos(beta - meas * pi) * cos_matrix.dot(vectors) +\
-            0.25 * sin(beta - meas * pi) * sin_matrix.dot(vectors)
-
-    def _mlikelihood(self, a_vec):
-        # Calculates the negative likelihood of a set of amplitudes
-        # generating the observed measurements
-        return -sum([numpy.log(p_vec.dot(a_vec[:len(p_vec)]))
-                     for p_vec in self._p_vecs]) +\
-            self._init_mlikelihood(a_vec)
-
-    def _diff_mlikelihood(self, a_vec):
-        # The derivative of the above function
-        return -sum([p_vec/(p_vec.dot(a_vec[:len(p_vec)]))
-                     for p_vec in self._p_vecs]) +\
-            self._dinit_mlikelihood(a_vec)
-
-    def _single_diff(self, p_vec, a_vec):
-        # The first derivative of a single term in the
-        # likelihood function.
-        return -p_vec / numpy.dot(p_vec, a_vec[:len(p_vec)])
-
-    def _jacobian_term(self, p_vec, a_vec):
-        # The second derivative of the above function,
-        # evaluated for a single p vector - to evaluate
-        # and store
-        return numpy.dot(p_vec[:, numpy.newaxis], p_vec[numpy.newaxis, :]) /\
-            numpy.dot(p_vec, a_vec[:len(p_vec)]) ** 2
-
-    def _calculate_jacobian(self):
-        # Recalculates the Jacobian based on all previously
-        # calculated p_vecs.
-        self._jacobian = sum(
-            [self._jacobian_term(p_vec, self._amplitude_estimates)
-             for p_vec in self._p_vecs]) + self._jinit_mlikelihood()
-
-    def _init_mlikelihood(self, a_vec):
-        # A normal distributed initial guess at the amplitudes
-        return numpy.dot(
-            0.5*(a_vec-self._amplitude_guess)[numpy.newaxis, :],
-            numpy.dot(self._inv_covar_mat,
-                      (a_vec-self._amplitude_guess)[:, numpy.newaxis])).item()
-
-    def _dinit_mlikelihood(self, a_vec):
-        # The derivative of the above likelihood function
-        return numpy.dot(self._inv_covar_mat, (a_vec-self._amplitude_guess))
-
-    def _jinit_mlikelihood(self):
-        # The jacobian of the above likelihood function
-        return self._inv_covar_mat
-
-    def _make_projector(self):
-        # Calculates the projector onto the plane sum_j|a_j|^2=0
-        num_vectors = self._num_vectors
-        self._projector = numpy.identity(num_vectors) -\
-            1/num_vectors * numpy.ones([num_vectors, num_vectors])
-
     def _make_dist(self, vector, angle):
         """
         converts a frequency vector into a function evaluated at theta
@@ -408,7 +313,7 @@ class FourierProbabilityDist(object):
         return res / (2*pi)
 
 
-class BayesEstimator(FourierProbabilityDist):
+class BayesEstimator(object):
     """
     Class to estimate a QPE experiment in the absence of error.
     """
@@ -451,8 +356,7 @@ class BayesEstimator(FourierProbabilityDist):
         self._amplitude_approx_cutoff = amplitude_approx_cutoff
         self._full_update_with_failure = full_update_with_failure
         self._store_history = store_history
-
-        super(BayesEstimator, self).__init__(
+        self._probability_dist = FourierProbabilityDist(
             amplitude_guess=amplitude_guess,
             amplitude_vars=amplitude_vars,
             num_vectors=num_vectors,
@@ -460,12 +364,18 @@ class BayesEstimator(FourierProbabilityDist):
             max_n=max_n,
             vector_guess=vector_guess)
 
+        self._make_projector()
+        # Set un-created variables to be made elsewhere in the class to None
+        self._jacobian = None
+
+        self.reset()
+
     def reset(self):
         """
         Resets estimator to initial state.
         """
 
-        super(BayesEstimator, self).reset()
+        self._probability_dist.reset()
 
         # The following stores the history of the estimator
         # for analysis purposes
@@ -478,6 +388,12 @@ class BayesEstimator(FourierProbabilityDist):
 
         self.log_bayes_factor = 0
         self.num_dsets = 0
+
+        self._inv_covar_mat = numpy.linalg.inv(
+            numpy.array(self._probability_dist._amplitude_vars))
+
+        # Initialize p_vec with some information to break the symmetry
+        self._p_vecs = [numpy.array(self._probability_dist._amplitude_guess)]
 
     def update(self, experiment_data, force_accept=False):
         """
@@ -520,25 +436,26 @@ class BayesEstimator(FourierProbabilityDist):
                 return False
 
         # Getting the integral of these functions from -pi,pi is trivial.
-        normalization = sum(temp_vectors[0, :]*self._amplitude_estimates)
+        normalization = sum(temp_vectors[0, :] *
+                            self._probability_dist._amplitude_estimates)
 
         # Go through set of vectors, update one at a time
         new_vectors = numpy.zeros(temp_vectors.shape)
-        for j in range(self._num_vectors):
+        for j in range(self._probability_dist._num_vectors):
 
             # Calculation the contribution of this wavefunction to the estimate
             overlap = temp_vectors[0, j]
-            norm_factor = overlap * self._amplitude_estimates[j]
+            norm_factor = overlap * self._probability_dist._amplitude_estimates[j]
 
             # Update vectors
             new_vectors[:, j] = (((normalization - norm_factor) *
-                                  self._fourier_vectors[:, j]) +
-                                 (self._amplitude_estimates[j] *
+                                  self._probability_dist._fourier_vectors[:, j]) +
+                                 (self._probability_dist._amplitude_estimates[j] *
                                   temp_vectors[:, j])) / normalization
 
         # Check that we still have a positive variance with these
         # new vectors - otherwise throw them out.
-        for var in self._holevo_variances(vectors=new_vectors):
+        for var in self._probability_dist._holevo_variances(vectors=new_vectors):
             if var < -EQ_TOLERANCE:
                 warnings.warn('''Some variances in the new distribution
                     are negative - var={}. I will reject the result of this
@@ -548,8 +465,8 @@ class BayesEstimator(FourierProbabilityDist):
                     return False
 
         # Success! Update our distributions
-        old_fourier_vectors = self._fourier_vectors
-        self._fourier_vectors = new_vectors
+        old_fourier_vectors = self._probability_dist._fourier_vectors
+        self._probability_dist._fourier_vectors = new_vectors
         self.log_bayes_factor += numpy.log(normalization)
         self.num_dsets += 1
 
@@ -558,8 +475,11 @@ class BayesEstimator(FourierProbabilityDist):
         # Important to copy temp_vectors to prevent memory leak.
         self._p_vecs.append(numpy.copy(temp_vectors[0, :]))
 
+        # Store amplitudes in case we need to reset
+        old_amplitudes = numpy.array(
+            self._probability_dist._amplitude_estimates)
+
         # Update amplitudes
-        old_amplitudes = numpy.array(self._amplitude_estimates)
         if self.num_dsets > self._amplitude_approx_cutoff:
             self._update_amplitudes_approx()
         elif self.num_dsets == self._amplitude_approx_cutoff:
@@ -568,15 +488,15 @@ class BayesEstimator(FourierProbabilityDist):
         else:
             self._update_amplitudes()
 
-        if any(self._amplitude_estimates < 0):
+        if any(self._probability_dist._amplitude_estimates < 0):
             warnings.warn('''Im getting negative amplitudes for
                 the distribution - amplitudes = {}. I will reject
                 this update unless force_accept=True, but this
                 could indicate a previous failure in estimation.
-                '''.format(self._amplitude_estimates))
+                '''.format(self._probability_dist._amplitude_estimates))
             if force_accept is not True:
-                self._amplitude_estimates = old_amplitudes
-                self._fourier_vectors = old_fourier_vectors
+                self._probability_dist._amplitude_estimates = old_amplitudes
+                self._probability_dist._fourier_vectors = old_fourier_vectors
                 return False
 
         # Store data if required
@@ -584,7 +504,8 @@ class BayesEstimator(FourierProbabilityDist):
             self.averages.append(self.estimate())
             self.variances.append(self.estimate_variance())
             self.log_bayes_factor_history.append(self.log_bayes_factor)
-            self.amplitudes_history.append(self._amplitude_estimates)
+            self.amplitudes_history.append(
+                self._probability_dist._amplitude_estimates)
 
         return True
 
@@ -605,14 +526,14 @@ class BayesEstimator(FourierProbabilityDist):
         """
 
         # Copy vectors
-        temp_vectors = self._fourier_vectors.copy()
+        temp_vectors = self._probability_dist._fourier_vectors.copy()
 
         # Loop over updates
         for round_data in experiment_data.rounds:
 
             # Update vectors
-            temp_vectors = self._vector_product(vectors=temp_vectors,
-                                                round_data=round_data)
+            temp_vectors = self._vector_product(
+                vectors=temp_vectors, round_data=round_data)
 
             # the zeroth coefficient of any distribution is always decreased
             # by multiplication by cos^2(theta), but should always be positive.
@@ -620,9 +541,45 @@ class BayesEstimator(FourierProbabilityDist):
             # it's the result of numerical error and should be dropped.
             for j in range(temp_vectors.shape[1]):
                 if temp_vectors[0, j] <= 0:
-                    temp_vectors[:, j] = numpy.zeros((self._num_freqs*2+1))
+                    temp_vectors[:, j] = numpy.zeros((
+                        self._probability_dist._num_freqs*2+1))
 
         return temp_vectors
+
+    def _vector_product(self, vectors, round_data):
+        """
+        Calculates cos^2(n*phi/2+beta/2)P(phi) for an input
+        n, beta and P(phi).
+
+        Args:
+            vectors (numpy array): the input vectors to be multiplied
+
+            round_data (dict): data about this round in the experiment.
+                in particular, round data needs 'num_rotations',
+                'final_rotation', and 'measurement'.
+
+        Returns:
+            updated vectors: the vector representation
+                of P_{k,beta}(m|phi_j)P_{prior}(phi_j) for each
+                input vector P_{prior}(phi_j)
+        """
+
+        # Extract the pieces we want from the round_data
+        beta = round_data.final_rotation
+        meas = round_data.measurement
+        nrot = round_data.num_rotations
+
+        # Get the matrices for multiplication
+        if nrot <= self._probability_dist._max_n:
+            cos_matrix = self._probability_dist._matrices[nrot-1][0]
+            sin_matrix = self._probability_dist._matrices[nrot-1][1]
+        else:
+            cos_matrix, sin_matrix =\
+                self._probability_dist._make_matrix(nrot)
+
+        return 0.5 * vectors +\
+            0.25 * cos(beta - meas * pi) * cos_matrix.dot(vectors) +\
+            0.25 * sin(beta - meas * pi) * sin_matrix.dot(vectors)
 
     def _update_amplitudes_approx(self):
         """
@@ -630,20 +587,22 @@ class BayesEstimator(FourierProbabilityDist):
         To be used after ~100 amplitude estimates or so, when
         the approximation is close
         """
-        if self._num_vectors == 1:
-            self._amplitude_estimates = numpy.array([1])
+        if self._probability_dist._num_vectors == 1:
+            self._probability_dist._amplitude_estimates = numpy.array([1])
             return
 
         self._jacobian += self._jacobian_term(
-            self._p_vecs[-1], self._amplitude_estimates)
+            self._p_vecs[-1],
+            self._probability_dist._amplitude_estimates)
 
         d_amp = numpy.dot(
             self._projector, numpy.dot(
                 numpy.linalg.inv(self._jacobian),
                 self._single_diff(
-                    self._p_vecs[-1], self._amplitude_estimates)))
+                    self._p_vecs[-1],
+                    self._probability_dist._amplitude_estimates)))
 
-        temp_ae = self._amplitude_estimates - d_amp
+        temp_ae = self._probability_dist._amplitude_estimates - d_amp
 
         # Check that we fit within the boundaries of
         # A_i >= 0 for each i.
@@ -660,18 +619,18 @@ class BayesEstimator(FourierProbabilityDist):
 
             # Projecting onto the allowed space
             dampen_factor = 1
-            for d, a in zip(d_amp, self._amplitude_estimates):
+            for d, a in zip(d_amp, self._probability_dist._amplitude_estimates):
                 if d != 0 and numpy.abs(a / d) < dampen_factor:
                     dampen_factor = numpy.abs(a / d)
             d_amp = d_amp * dampen_factor
-            temp_ae = self._amplitude_estimates - d_amp
+            temp_ae = self._probability_dist._amplitude_estimates - d_amp
 
             # Prevent numerical errors
             for j, val in enumerate(temp_ae):
                 temp_ae[j] = max(val, 0)
             temp_ae = temp_ae / sum(temp_ae)
 
-        self._amplitude_estimates = temp_ae
+        self._probability_dist._amplitude_estimates = temp_ae
 
     def _update_amplitudes(self):
         """
@@ -680,21 +639,22 @@ class BayesEstimator(FourierProbabilityDist):
         takes constraints and bounds, and uses a Jacobian which
         we can calculate trivially.
         """
-        if self._num_vectors == 1:
-            self._amplitude_estimates = numpy.array([1])
+        if self._probability_dist._num_vectors == 1:
+            self._probability_dist._amplitude_estimates = numpy.array([1])
             return
 
         res = optimize.minimize(
             fun=self._mlikelihood,
             method='SLSQP',
-            x0=self._amplitude_estimates,
+            x0=self._probability_dist._amplitude_estimates,
             jac=self._diff_mlikelihood,
-            bounds=[(0, 1) for _ in range(self._num_vectors)],
+            bounds=[(0, 1) for _ in range(
+                self._probability_dist._num_vectors)],
             constraints={'type': 'eq',
                          'fun': lambda x: 1-sum(x)})
 
         if res['success']:
-            self._amplitude_estimates = res['x']
+            self._probability_dist._amplitude_estimates = res['x']
         else:
             warnings.warn('''The amplitude update failed. This estimation
                 should probably no longer be trusted.''')
@@ -704,7 +664,7 @@ class BayesEstimator(FourierProbabilityDist):
         Returns:
             (numpy array) the best current estimate of the eigenvalues
         """
-        eigenvalues = self._holevo_centers()
+        eigenvalues = self._probability_dist._holevo_centers()
         if return_amplitudes:
             amplitudes = self.estimate_amplitudes()
             return eigenvalues, amplitudes
@@ -716,14 +676,73 @@ class BayesEstimator(FourierProbabilityDist):
             (numpy array) the estimated variance in the best current
             estimate of the eigenvalues.
         """
-        return self._holevo_variances()
+        return self._probability_dist._holevo_variances()
 
     def estimate_amplitudes(self):
         """
         Returns:
             (numpy array) a copy of the estimated amplitudes.
         """
-        return numpy.array(self._amplitude_estimates)
+        return numpy.array(self._probability_dist._amplitude_estimates)
+
+    def _mlikelihood(self, a_vec):
+        # Calculates the negative likelihood of a set of amplitudes
+        # generating the observed measurements
+        return -sum([numpy.log(p_vec.dot(a_vec[:len(p_vec)]))
+                     for p_vec in self._p_vecs]) +\
+            self._init_mlikelihood(a_vec)
+
+    def _diff_mlikelihood(self, a_vec):
+        # The derivative of the above function
+        return -sum([p_vec/(p_vec.dot(a_vec[:len(p_vec)]))
+                     for p_vec in self._p_vecs]) +\
+            self._dinit_mlikelihood(a_vec)
+
+    def _single_diff(self, p_vec, a_vec):
+        # The first derivative of a single term in the
+        # likelihood function.
+        return -p_vec / numpy.dot(p_vec, a_vec[:len(p_vec)])
+
+    def _jacobian_term(self, p_vec, a_vec):
+        # The second derivative of the above function,
+        # evaluated for a single p vector - to evaluate
+        # and store
+        return numpy.dot(p_vec[:, numpy.newaxis], p_vec[numpy.newaxis, :]) /\
+            numpy.dot(p_vec, a_vec[:len(p_vec)]) ** 2
+
+    def _calculate_jacobian(self):
+        # Recalculates the Jacobian based on all previously
+        # calculated p_vecs.
+        self._jacobian = sum(
+            [self._jacobian_term(
+                p_vec,
+                self._probability_dist._amplitude_estimates)
+             for p_vec in self._p_vecs]) + self._jinit_mlikelihood()
+
+    def _init_mlikelihood(self, a_vec):
+        # A normal distributed initial guess at the amplitudes
+        return numpy.dot(
+            0.5*(a_vec-self._probability_dist._amplitude_guess)[
+                numpy.newaxis, :],
+            numpy.dot(self._inv_covar_mat,
+                      (a_vec-self._probability_dist._amplitude_guess)[
+                        :, numpy.newaxis])).item()
+
+    def _dinit_mlikelihood(self, a_vec):
+        # The derivative of the above likelihood function
+        return numpy.dot(
+            self._inv_covar_mat,
+            (a_vec-self._probability_dist._amplitude_guess))
+
+    def _jinit_mlikelihood(self):
+        # The jacobian of the above likelihood function
+        return self._inv_covar_mat
+
+    def _make_projector(self):
+        # Calculates the projector onto the plane sum_j|a_j|^2=0
+        num_vectors = self._probability_dist._num_vectors
+        self._projector = numpy.identity(num_vectors) -\
+            1/num_vectors * numpy.ones([num_vectors, num_vectors])
 
 
 class BayesDepolarizingEstimator(BayesEstimator):
@@ -808,11 +827,12 @@ class BayesDepolarizingEstimator(BayesEstimator):
             meas_real = round_data.measurement
 
         # Get the correct cos matrix
-        if nrot < self._max_n:
-            cos_matrix = self._matrices[nrot-1][0]
-            sin_matrix = self._matrices[nrot-1][1]
+        if nrot < self._probability_dist._max_n:
+            cos_matrix = self._probability_dist._matrices[nrot-1][0]
+            sin_matrix = self._probability_dist._matrices[nrot-1][1]
         else:
-            cos_matrix, sin_matrix = self._make_matrix(nrot)
+            cos_matrix, sin_matrix =\
+                self._probability_dist._make_matrix(nrot)
 
         epsilon_d = self._epsilon_d_function(nrot)
         epsilon_b = self._epsilon_b_function()
