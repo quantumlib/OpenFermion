@@ -25,9 +25,8 @@ class FourierProbabilityDist(object):
     """
     Stores a multivariant Fourier representation of a periodic function:
 
-    f(phi_0,phi_1,...) = 
-        sum_j A_j sum_n (c_{j,2n} cos(n*phi_j) +
-                         c_{j,2n-1} sin(n*phi_j))
+    f(phi_0,phi_1,...) = sum_j A_j f_j
+    f_j = sum_n (c_{j,2n} cos(n*phi_j) + c_{j,2n-1} sin(n*phi_j))
 
     In particular, this class stores values of A_j, c_{j,2n},
     c_{j,2n+1} from the above equation.
@@ -57,8 +56,8 @@ class FourierProbabilityDist(object):
             num_freqs (int): number of wave components cos(n*phi_j)
                 to store coefficients for (this provides a cut-off to
                 the sensitivity of the function).
-            max_n (int): the maximum n to be used when multiplying
-                the stored function by matrices of the form
+            max_n (int): the maximum n required by the user in
+                multiplying the stored function functions of the form
                 cos(n*phi_j + beta).
             vector_guess (numpy array): a prior estimate of the function,
                 given in terms of the Fourier components c_{j,n}.
@@ -133,7 +132,8 @@ class FourierProbabilityDist(object):
             x_vec (numpy array or list): the points at which the distribution is generated.
                 If None, defaults to 101 points between -pi and pi.
         Returns:
-            y_vecs (list): the value of the distributions at the given x points.
+            y_vecs (numpy array): the value of each distribution at the given x points.
+                y_vecs[j,k] = f_j(x_vec[k])
         """
         # Set default x vector
         if x_vec is None:
@@ -152,7 +152,7 @@ class FourierProbabilityDist(object):
             # Store and plot data
             y_vecs.append(y_vec)
 
-        return y_vecs
+        return numpy.array(y_vecs)
 
     def _holevo_centers(self, vectors=None):
         """
