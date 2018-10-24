@@ -23,8 +23,7 @@ from openfermion.config import EQ_TOLERANCE
 
 class FourierProbabilityDist(object):
     """
-    Stores a multivariant Fourier representation of a function linear
-    in its dependent variables.
+    Stores a multivariant Fourier representation of a periodic function:
 
     f(phi_0,phi_1,...) = 
         sum_j A_j sum_n (c_{j,2n} cos(n*phi_j) +

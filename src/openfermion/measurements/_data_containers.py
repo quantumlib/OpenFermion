@@ -17,11 +17,11 @@ Classes to store experimental data for postprocessing.
 class QPERoundData(object):
     """ Results from a single round in a QPE experiment.
     Attributes:
-        nrot (int): the number of rotations performed in this round
-        finrot (float): the final rotation performed on the ancilla qubit
+        num_rotations (int): the number of rotations performed in this round
+        final_rotation (float): the final rotation performed on the ancilla qubit
             in this round.
-        msmt (bool): the measurement observed in this round
-        tmsmt (bool): if the ancilla is not reset between rounds, the
+        measurement (bool): the measurement observed in this round
+        true_measurement (bool): if the ancilla is not reset between rounds, the
             'true' measurement (in this case msmt is calculated as the
             difference between the tmsmt of different rounds).
     """
