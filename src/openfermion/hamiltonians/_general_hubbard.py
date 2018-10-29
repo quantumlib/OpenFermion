@@ -178,12 +178,12 @@ class FermiHubbardModel:
         Args:
             lattice (HubbardLattice): The lattice on which the model is defined.
             tunneling_parameters (Iterable[Tuple[Hashable, Tuple[int, int],
-                Number]], optional): The tunneling parameters.
+                float]], optional): The tunneling parameters.
             interaction_parameters (Iterable[Tuple[Hashable, Tuple[int, int],
-                Number, int?]], optional): The interaction parameters.
-            potential_parameters (Iterable[Tuple[int, Number]], optional): The
+                float, int?]], optional): The interaction parameters.
+            potential_parameters (Iterable[Tuple[int, float]], optional): The
                 potential parameters.
-            magnetic_field (Number, optional): The magnetic field. Default is 0.
+            magnetic_field (float, optional): The magnetic field. Default is 0.
             particle_hole_symmetry: If true, each number operator :math:`n` is
                 replaced with :math:`n - 1/2`.
 
