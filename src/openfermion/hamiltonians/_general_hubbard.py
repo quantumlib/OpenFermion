@@ -27,20 +27,26 @@ PotentialParameter = namedtuple('PotentialParameter',
                                 ('dof', 'coefficient'))
 
 
-def number_operator(i, coefficient=1.):
-    return FermionOperator(((i, 1), (i, 0)), coefficient)
+def number_operator(i, coefficient=1., particle_hole_symmetry=False):
+    op = FermionOperator(((i, 1), (i, 0)), coefficient)
+    if particle_hole_symmetry:
+        op -= FermionOperator((), 0.5)
+    return op
 
 
-def interaction_operator(i, j, coefficient=1.):
-    return number_operator(i, coefficient) * number_operator(j)
+def interaction_operator(i, j, coefficient=1., particle_hole_symmetry=False):
+    return (number_operator(i, coefficient, 
+                            particle_hole_symmetry=particle_hole_symmetry) * 
+            number_operator(j, particle_hole_symmetry=particle_hole_symmetry))
 
 
-def tunneling_operator(i, j, coefficient):
+def tunneling_operator(i, j, coefficient=1.):
     return (FermionOperator(((i, 1), (j, 0)), coefficient) + 
             FermionOperator(((j, 1), (i, 0)), coefficient.conjugate()))
 
 def number_difference_operator(i, j, coefficient=1.):
     return number_operator(i, coefficient) - number_operator(j, coefficient)
+
 
 class FermiHubbardModel:
     r"""A general, parameterized Fermi-Hubbard model.
@@ -164,19 +170,22 @@ class FermiHubbardModel:
                  tunneling_parameters=None,
                  interaction_parameters=None,
                  potential_parameters=None,
-                 magnetic_field=0
+                 magnetic_field=0.,
+                 particle_hole_symmetry=False
                  ):
         r"""A Hubbard model defined on a lattice.
 
         Args:
             lattice (HubbardLattice): The lattice on which the model is defined.
             tunneling_parameters (Iterable[Tuple[Hashable, Tuple[int, int],
-                Number]], optional): The tunneling parameters.
+                float]], optional): The tunneling parameters.
             interaction_parameters (Iterable[Tuple[Hashable, Tuple[int, int],
-                Number, int?]], optional): The interaction parameters.
-            potential_parameters (Iterable[Tuple[int, Number]], optional): The
+                float, int?]], optional): The interaction parameters.
+            potential_parameters (Iterable[Tuple[int, float]], optional): The
                 potential parameters.
-            magnetic_field (Number, optional): The magnetic field. Default is 0.
+            magnetic_field (float, optional): The magnetic field. Default is 0.
+            particle_hole_symmetry: If true, each number operator :math:`n` is
+                replaced with :math:`n - 1/2`.
 
         Each group of parameters is specified as an iterable of tuples.
 
@@ -253,7 +262,7 @@ class FermiHubbardModel:
         self.potential_parameters = self.parse_potential_parameters(
                 potential_parameters)
         self.magnetic_field = magnetic_field
-
+        self.particle_hole_symmetry = particle_hole_symmetry
 
 
     def parse_tunneling_parameters(self, parameters):
@@ -330,7 +339,8 @@ class FermiHubbardModel:
                         not same_spatial_orbital):
                     i = self.lattice.to_spin_orbital_index(r, a, s)
                     j = self.lattice.to_spin_orbital_index(rr, aa, ss)
-                    terms += interaction_operator(i, j, param.coefficient)
+                    terms += interaction_operator(i, j, param.coefficient,
+                            particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
 
 
@@ -341,8 +351,10 @@ class FermiHubbardModel:
                 for spin_index in self.lattice.spin_indices:
                     i = self.lattice.to_spin_orbital_index(
                             site_index, param.dof, spin_index)
-                    terms += number_operator(i, -param.coefficient)
+                    terms += number_operator(i, -param.coefficient, 
+                            particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
+
 
     def field_terms(self):
         terms = FermionOperator()
