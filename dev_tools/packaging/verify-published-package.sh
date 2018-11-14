@@ -82,6 +82,7 @@ for PYTHON_VERSION in python2 python3; do
     "${tmp_dir}/${PYTHON_VERSION}/bin/python" -c "import openfermion; print(openfermion.QubitOperator((1, 'X')))"
 
     # Run tests.
+    echo Installing pytest
     "${tmp_dir}/${PYTHON_VERSION}/bin/pip" install --quiet pytest
     PY_VER=$(ls "${tmp_dir}/${PYTHON_VERSION}/lib")
     echo Running tests
