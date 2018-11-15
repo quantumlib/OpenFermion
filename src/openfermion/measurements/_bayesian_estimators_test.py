@@ -99,7 +99,7 @@ class BayesEstimatorTest(unittest.TestCase):
         sd = pd._single_diff(test_vec2, test_vec)
         jt = pd._jacobian_term(test_vec2, test_vec)
 
-        self.assertAlmostEqual(ml-init_l, -numpy.log(0.9))
+        self.assertAlmostEqual(ml-init_l, 0)
         self.assertAlmostEqual(
             numpy.sum(numpy.abs(sd + 1/0.9*test_vec2)), 0)
         self.assertAlmostEqual(

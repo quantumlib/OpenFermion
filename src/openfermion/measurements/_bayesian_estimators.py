@@ -102,7 +102,7 @@ class BayesEstimator(object):
             numpy.array(self._probability_dist._amplitude_vars))
 
         # Initialize p_vec with some information to break the symmetry
-        self._p_vecs = [numpy.array(self._probability_dist._amplitude_guess)]
+        self._p_vecs = []
 
     def update(self, experiment_data, force_accept=False):
         """
