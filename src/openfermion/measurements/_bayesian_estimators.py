@@ -19,8 +19,13 @@ import numpy
 from numpy import cos, sin, pi
 from scipy import optimize
 from openfermion.config import EQ_TOLERANCE
-from ._probability_distributions import FourierProbabilityDist
+from ._probability_distributions import (
+    FourierProbabilityDist,
+    make_fourier_matrices,
+    make_fourier_matrix)
 
+# TODO - shift p_vec functions to probability_distributions,
+# check if tests pass.
 
 class BayesEstimator(object):
     """
@@ -28,8 +33,8 @@ class BayesEstimator(object):
     """
 
     def __init__(self,
-                 amplitude_guess=None,
-                 amplitude_vars=None,
+                 init_amplitude_guess=None,
+                 init_amplitude_vars=None,
                  num_vectors=1,
                  num_freqs=1000,
                  max_n=1,
@@ -40,9 +45,9 @@ class BayesEstimator(object):
 
         """
         Args:
-            amplitude_guess (numpy array): estimates for amplitudes of different
+            init_amplitude_guess (numpy array): estimates for amplitudes of different
                 eigenstates in the initial state ($A_j$)
-            amplitude_vars (numpy array): variance on the amplitude estimates
+            init_amplitude_vars (numpy array): variance on the amplitude estimates
             num_vectors (int): number of phases to estimate
             num_freqs (int): number of frequencies in Fourier representation.
             max_n (int): maximum number of unitary evolutions before measurement.
@@ -66,16 +71,15 @@ class BayesEstimator(object):
         self._full_update_with_failure = full_update_with_failure
         self._store_history = store_history
         self._probability_dist = FourierProbabilityDist(
-            amplitude_guess=amplitude_guess,
-            amplitude_vars=amplitude_vars,
+            init_amplitude_guess=init_amplitude_guess,
+            init_amplitude_vars=init_amplitude_vars,
             num_vectors=num_vectors,
             num_freqs=num_freqs,
-            max_n=max_n,
             vector_guess=vector_guess)
 
         self._make_projector()
-        # Set un-created variables to be made elsewhere in the class to None
-        self._jacobian = None
+        self._max_n = max_n
+        self._matrices = make_fourier_matrices(max_n, num_freqs)
 
         self.reset()
 
@@ -84,7 +88,12 @@ class BayesEstimator(object):
         Resets estimator to initial state.
         """
 
-        self._probability_dist.reset()
+        self._probability_dist = FourierProbabilityDist(
+            init_amplitude_guess=self._probability_dist._init_amplitude_guess,
+            init_amplitude_vars=self._probability_dist._init_amplitude_vars,
+            num_vectors=self._probability_dist._num_vectors,
+            num_freqs=self._probability_dist._num_freqs,
+            vector_guess=self._probability_dist._vector_guess)
 
         # The following stores the history of the estimator
         # for analysis purposes
@@ -97,12 +106,6 @@ class BayesEstimator(object):
 
         self.log_bayes_factor = 0
         self.num_dsets = 0
-
-        self._inv_covar_mat = numpy.linalg.inv(
-            numpy.array(self._probability_dist._amplitude_vars))
-
-        # Initialize p_vec with some information to break the symmetry
-        self._p_vecs = []
 
     def update(self, experiment_data, force_accept=False):
         """
@@ -182,7 +185,8 @@ class BayesEstimator(object):
         # Store the probabilities of each vector to have contributed
         # to the observed experiment, to assist in amplitude updates.
         # Important to copy temp_vectors to prevent memory leak.
-        self._p_vecs.append(numpy.copy(temp_vectors[0, :]))
+        self._probability_dist._p_vecs.append(
+            numpy.copy(temp_vectors[0, :]))
 
         # Store amplitudes in case we need to reset
         old_amplitudes = numpy.array(
@@ -192,7 +196,7 @@ class BayesEstimator(object):
         if self.num_dsets > self._amplitude_approx_cutoff:
             self._update_amplitudes_approx()
         elif self.num_dsets == self._amplitude_approx_cutoff:
-            self._calculate_jacobian()
+            self._probability_dist._calculate_jacobian()
             self._update_amplitudes()
         else:
             self._update_amplitudes()
@@ -279,12 +283,13 @@ class BayesEstimator(object):
         nrot = round_data.num_rotations
 
         # Get the matrices for multiplication
-        if nrot <= self._probability_dist._max_n:
-            cos_matrix = self._probability_dist._matrices[nrot-1][0]
-            sin_matrix = self._probability_dist._matrices[nrot-1][1]
+        if nrot <= self._max_n:
+            cos_matrix = self._matrices[nrot-1][0]
+            sin_matrix = self._matrices[nrot-1][1]
         else:
             cos_matrix, sin_matrix =\
-                self._probability_dist._make_matrix(nrot)
+                make_fourier_matrix(
+                    nrot, self._probability_dist._num_freqs)
 
         return 0.5 * vectors +\
             0.25 * cos(beta - meas * pi) * cos_matrix.dot(vectors) +\
@@ -300,15 +305,16 @@ class BayesEstimator(object):
             self._probability_dist._amplitude_estimates = numpy.array([1])
             return
 
-        self._jacobian += self._jacobian_term(
-            self._p_vecs[-1],
-            self._probability_dist._amplitude_estimates)
+        self._probability_dist._jacobian +=\
+            self._probability_dist._jacobian_term(
+                self._probability_dist._p_vecs[-1],
+                self._probability_dist._amplitude_estimates)
 
         d_amp = numpy.dot(
             self._projector, numpy.dot(
-                numpy.linalg.inv(self._jacobian),
-                self._single_diff(
-                    self._p_vecs[-1],
+                numpy.linalg.inv(self._probability_dist._jacobian),
+                self._probability_dist._single_diff(
+                    self._probability_dist._p_vecs[-1],
                     self._probability_dist._amplitude_estimates)))
 
         temp_ae = self._probability_dist._amplitude_estimates - d_amp
@@ -323,7 +329,7 @@ class BayesEstimator(object):
             # Repeat full update
             if self._full_update_with_failure:
                 self._update_amplitudes()
-                self._calculate_jacobian()
+                self._probability_dist._calculate_jacobian()
                 return
 
             # Projecting onto the allowed space
@@ -353,10 +359,10 @@ class BayesEstimator(object):
             return
 
         res = optimize.minimize(
-            fun=self._mlikelihood,
+            fun=self._probability_dist._mlikelihood,
             method='SLSQP',
             x0=self._probability_dist._amplitude_estimates,
-            jac=self._diff_mlikelihood,
+            jac=self._probability_dist._diff_mlikelihood,
             bounds=[(0, 1) for _ in range(
                 self._probability_dist._num_vectors)],
             constraints={'type': 'eq',
@@ -393,59 +399,6 @@ class BayesEstimator(object):
             (numpy array) a copy of the estimated amplitudes.
         """
         return numpy.array(self._probability_dist._amplitude_estimates)
-
-    def _mlikelihood(self, a_vec):
-        # Calculates the negative likelihood of a set of amplitudes
-        # generating the observed measurements
-        return -sum([numpy.log(p_vec.dot(a_vec[:len(p_vec)]))
-                     for p_vec in self._p_vecs]) +\
-            self._init_mlikelihood(a_vec)
-
-    def _diff_mlikelihood(self, a_vec):
-        # The derivative of the above function
-        return -sum([p_vec/(p_vec.dot(a_vec[:len(p_vec)]))
-                     for p_vec in self._p_vecs]) +\
-            self._dinit_mlikelihood(a_vec)
-
-    def _single_diff(self, p_vec, a_vec):
-        # The first derivative of a single term in the
-        # likelihood function.
-        return -p_vec / numpy.dot(p_vec, a_vec[:len(p_vec)])
-
-    def _jacobian_term(self, p_vec, a_vec):
-        # The second derivative of the above function,
-        # evaluated for a single p vector - to evaluate
-        # and store
-        return numpy.dot(p_vec[:, numpy.newaxis], p_vec[numpy.newaxis, :]) /\
-            numpy.dot(p_vec, a_vec[:len(p_vec)]) ** 2
-
-    def _calculate_jacobian(self):
-        # Recalculates the Jacobian based on all previously
-        # calculated p_vecs.
-        self._jacobian = sum(
-            [self._jacobian_term(
-                p_vec,
-                self._probability_dist._amplitude_estimates)
-             for p_vec in self._p_vecs]) + self._jinit_mlikelihood()
-
-    def _init_mlikelihood(self, a_vec):
-        # A normal distributed initial guess at the amplitudes
-        return numpy.dot(
-            0.5*(a_vec-self._probability_dist._amplitude_guess)[
-                numpy.newaxis, :],
-            numpy.dot(self._inv_covar_mat,
-                      (a_vec-self._probability_dist._amplitude_guess)[
-                        :, numpy.newaxis])).item()
-
-    def _dinit_mlikelihood(self, a_vec):
-        # The derivative of the above likelihood function
-        return numpy.dot(
-            self._inv_covar_mat,
-            (a_vec-self._probability_dist._amplitude_guess))
-
-    def _jinit_mlikelihood(self):
-        # The jacobian of the above likelihood function
-        return self._inv_covar_mat
 
     def _make_projector(self):
         # Calculates the projector onto the plane sum_j|a_j|^2=0
@@ -536,12 +489,13 @@ class BayesDepolarizingEstimator(BayesEstimator):
             meas_real = round_data.measurement
 
         # Get the correct cos matrix
-        if nrot < self._probability_dist._max_n:
-            cos_matrix = self._probability_dist._matrices[nrot-1][0]
-            sin_matrix = self._probability_dist._matrices[nrot-1][1]
+        if nrot < self._max_n:
+            cos_matrix = self._matrices[nrot-1][0]
+            sin_matrix = self._matrices[nrot-1][1]
         else:
             cos_matrix, sin_matrix =\
-                self._probability_dist._make_matrix(nrot)
+                make_fourier_matrix(
+                    nrot, self._probability_dist._num_freqs)
 
         epsilon_d = self._epsilon_d_function(nrot)
         epsilon_b = self._epsilon_b_function()

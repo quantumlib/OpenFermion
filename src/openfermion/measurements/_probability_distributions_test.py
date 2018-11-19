@@ -21,14 +21,11 @@ class FourierProbabilityDistTest(unittest.TestCase):
 
     def test_basic_initialization(self):
         pd = FourierProbabilityDist(num_vectors=1,
-                                    amplitude_guess=[1],
-                                    amplitude_vars=[[1]],
-                                    num_freqs=10,
-                                    max_n=1)
+                                    init_amplitude_guess=[1],
+                                    init_amplitude_vars=[[1]],
+                                    num_freqs=10)
         self.assertEqual(pd._num_freqs, 10)
         self.assertEqual(pd._num_vectors, 1)
-        self.assertEqual(len(pd._matrices), 1)
-        self.assertEqual(len(pd._matrices[0]), 2)
         self.assertEqual(len(pd._amplitude_estimates), 1)
         self.assertEqual(pd._fourier_vectors.shape, (21, 1))
         self.assertAlmostEqual(pd._holevo_variances(maxvar=1)[0], 1)
@@ -38,22 +35,19 @@ class FourierProbabilityDistTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             FourierProbabilityDist(num_vectors=1,
                                    vector_guess=numpy.array([[1, 0], [1, 0]]),
-                                   amplitude_guess=[1],
-                                   amplitude_vars=[[1]],
-                                   num_freqs=10,
-                                   max_n=1)
+                                   init_amplitude_guess=[1],
+                                   init_amplitude_vars=[[1]],
+                                   num_freqs=10)
         with self.assertRaises(ValueError):
             FourierProbabilityDist(num_vectors=1,
-                                   amplitude_guess=[1, 0],
-                                   amplitude_vars=[[1]],
-                                   num_freqs=10,
-                                   max_n=1)
+                                   init_amplitude_guess=[1, 0],
+                                   init_amplitude_vars=[[1]],
+                                   num_freqs=10)
         with self.assertRaises(ValueError):
             FourierProbabilityDist(num_vectors=2,
-                                   amplitude_guess=[0.5, 0.5],
-                                   amplitude_vars=[[1]],
-                                   num_freqs=10,
-                                   max_n=1)
+                                   init_amplitude_guess=[0.5, 0.5],
+                                   init_amplitude_vars=[[1]],
+                                   num_freqs=10)
 
     def test_init_dist(self):
 
@@ -61,10 +55,9 @@ class FourierProbabilityDistTest(unittest.TestCase):
         vector_guess[0, 0] = 1
         vector_guess[2, 0] = 1  # cos wave
         pd = FourierProbabilityDist(num_vectors=1,
-                                    amplitude_guess=[1],
-                                    amplitude_vars=[[1]],
+                                    init_amplitude_guess=[1],
+                                    init_amplitude_vars=[[1]],
                                     num_freqs=10,
-                                    max_n=1,
                                     vector_guess=vector_guess)
         x_vec = numpy.linspace(-pi, pi, 11)
         dist = pd.get_real_dist(x_vec)
@@ -76,10 +69,9 @@ class FourierProbabilityDistTest(unittest.TestCase):
         vector_guess[0, 0] = 1
         vector_guess[2, 0] = 1  # sine wave
         pd = FourierProbabilityDist(num_vectors=1,
-                                    amplitude_guess=[1],
-                                    amplitude_vars=[[1]],
+                                    init_amplitude_guess=[1],
+                                    init_amplitude_vars=[[1]],
                                     num_freqs=10,
-                                    max_n=1,
                                     vector_guess=vector_guess)
         self.assertEqual(pd._holevo_centers(), 0)
         self.assertEqual(pd._holevo_variances()[0], 3)

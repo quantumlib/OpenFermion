@@ -52,8 +52,8 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_init(self):
         be = BayesEstimator(num_vectors=1,
-                            amplitude_guess=[1],
-                            amplitude_vars=[[1]],
+                            init_amplitude_guess=[1],
+                            init_amplitude_vars=[[1]],
                             num_freqs=10,
                             max_n=1,
                             store_history=True)
@@ -65,8 +65,8 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_vector_product(self):
         pd = BayesEstimator(num_vectors=1,
-                            amplitude_guess=[1],
-                            amplitude_vars=[[1]],
+                            init_amplitude_guess=[1],
+                            init_amplitude_vars=[[1]],
                             num_freqs=10,
                             max_n=1)
 
@@ -85,8 +85,8 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_diffs(self):
         pd = BayesEstimator(num_vectors=2,
-                            amplitude_guess=[0.9, 0.1],
-                            amplitude_vars=[[0.3, -0.29], [-0.29, 0.3]],
+                            init_amplitude_guess=[0.9, 0.1],
+                            init_amplitude_vars=[[0.3, -0.29], [-0.29, 0.3]],
                             num_freqs=10,
                             max_n=1)
 
@@ -94,10 +94,10 @@ class BayesEstimatorTest(unittest.TestCase):
         test_vec2 = numpy.array([1, 0])
         pd.p_vecs = [test_vec]
 
-        ml = pd._mlikelihood(test_vec2)
-        init_l = pd._init_mlikelihood(test_vec2)
-        sd = pd._single_diff(test_vec2, test_vec)
-        jt = pd._jacobian_term(test_vec2, test_vec)
+        ml = pd._probability_dist._mlikelihood(test_vec2)
+        init_l = pd._probability_dist._init_mlikelihood(test_vec2)
+        sd = pd._probability_dist._single_diff(test_vec2, test_vec)
+        jt = pd._probability_dist._jacobian_term(test_vec2, test_vec)
 
         self.assertAlmostEqual(ml-init_l, 0)
         self.assertAlmostEqual(
@@ -109,8 +109,8 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_warning(self):
         be = BayesEstimator(num_vectors=1,
-                            amplitude_guess=[1],
-                            amplitude_vars=[[1]],
+                            init_amplitude_guess=[1],
+                            init_amplitude_vars=[[1]],
                             num_freqs=10,
                             max_n=1,
                             store_history=True)
@@ -120,8 +120,8 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_update(self):
         be = BayesEstimator(num_vectors=1,
-                            amplitude_guess=[1],
-                            amplitude_vars=[[1]],
+                            init_amplitude_guess=[1],
+                            init_amplitude_vars=[[1]],
                             num_freqs=10,
                             max_n=1,
                             store_history=True)
@@ -140,8 +140,8 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_estimation(self):
         be = BayesEstimator(num_vectors=1,
-                            amplitude_guess=[1],
-                            amplitude_vars=numpy.array([[1]]),
+                            init_amplitude_guess=[1],
+                            init_amplitude_vars=numpy.array([[1]]),
                             num_freqs=1000,
                             max_n=1)
 
@@ -174,8 +174,8 @@ class BayesEstimatorTest(unittest.TestCase):
     def test_update_warnings(self):
 
         be = BayesEstimator(num_vectors=1,
-                            amplitude_guess=[1],
-                            amplitude_vars=numpy.array([[1]]),
+                            init_amplitude_guess=[1],
+                            init_amplitude_vars=numpy.array([[1]]),
                             num_freqs=10,
                             max_n=1)
 
@@ -189,8 +189,8 @@ class BayesEstimatorTest(unittest.TestCase):
             self.assertEqual(len(w), 2)
 
         be = BayesEstimator(num_vectors=1,
-                            amplitude_guess=[1],
-                            amplitude_vars=numpy.array([[1]]),
+                            init_amplitude_guess=[1],
+                            init_amplitude_vars=numpy.array([[1]]),
                             num_freqs=10,
                             max_n=1)
 
@@ -211,15 +211,15 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_amplitude_approx_update(self):
         be = BayesEstimator(num_vectors=2,
-                            amplitude_guess=[0.9, 0.1],
-                            amplitude_vars=[[0.1, -0.09], [-0.09, 0.1]],
+                            init_amplitude_guess=[0.9, 0.1],
+                            init_amplitude_vars=[[0.1, -0.09], [-0.09, 0.1]],
                             num_freqs=10,
                             max_n=1,
                             amplitude_approx_cutoff=15,
                             full_update_with_failure=True)
         be2 = BayesEstimator(num_vectors=2,
-                             amplitude_guess=[0.9, 0.1],
-                             amplitude_vars=[[0.1, -0.09], [-0.09, 0.1]],
+                             init_amplitude_guess=[0.9, 0.1],
+                             init_amplitude_vars=[[0.1, -0.09], [-0.09, 0.1]],
                              num_freqs=10,
                              max_n=1,
                              amplitude_approx_cutoff=10)
@@ -272,8 +272,8 @@ class BayesEstimatorTest(unittest.TestCase):
         ev = random_state.uniform(-numpy.pi, numpy.pi)
         sampler = IteratingSampler(50, angles, random_state)
         estimator = BayesEstimator(num_vectors=1, max_n=50,
-                                   amplitude_guess=[1],
-                                   amplitude_vars=[[1]],
+                                   init_amplitude_guess=[1],
+                                   init_amplitude_vars=[[1]],
                                    num_freqs=1000*2,
                                    amplitude_approx_cutoff=100)
         for j in range(1000):
@@ -305,8 +305,8 @@ class BayesEstimatorTest(unittest.TestCase):
         ev = random_state.uniform(-numpy.pi, numpy.pi)
         sampler = IteratingSampler(50, angles, random_state)
         estimator = BayesEstimator(num_vectors=1, max_n=10,
-                                   amplitude_guess=[1],
-                                   amplitude_vars=[[1]],
+                                   init_amplitude_guess=[1],
+                                   init_amplitude_vars=[[1]],
                                    num_freqs=1000*5,
                                    amplitude_approx_cutoff=100)
 
@@ -325,8 +325,8 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
     def test_epsilons(self):
         estimator = BayesDepolarizingEstimator(
             num_vectors=1,
-            amplitude_guess=[1],
-            amplitude_vars=numpy.array([[1]]),
+            init_amplitude_guess=[1],
+            init_amplitude_vars=numpy.array([[1]]),
             num_freqs=1000,
             max_n=1,
             k_1=1,
@@ -339,8 +339,8 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
     def test_vector_product(self):
         estimator = BayesDepolarizingEstimator(
             num_vectors=1,
-            amplitude_guess=[1],
-            amplitude_vars=numpy.array([[1]]),
+            init_amplitude_guess=[1],
+            init_amplitude_vars=numpy.array([[1]]),
             num_freqs=1000,
             max_n=1,
             k_1=1,
@@ -383,8 +383,8 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
         ev = random_state.uniform(-numpy.pi, numpy.pi)
         sampler = IteratingSampler(10, angles, random_state)
         estimator = BayesDepolarizingEstimator(num_vectors=1, max_n=10,
-                                               amplitude_guess=[1],
-                                               amplitude_vars=[[1]],
+                                               init_amplitude_guess=[1],
+                                               init_amplitude_vars=[[1]],
                                                num_freqs=1000*5,
                                                amplitude_approx_cutoff=100,
                                                k_err=20)
