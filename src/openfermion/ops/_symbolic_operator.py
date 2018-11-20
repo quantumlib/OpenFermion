@@ -129,6 +129,9 @@ class SymbolicOperator:
         else:
             raise ValueError('term specified incorrectly.')
 
+        # Simplify the term
+        coefficient, term = self._simplify(term, coefficient=coefficient)
+
         # Add the term to the dictionary
         self.terms[term] = coefficient
 
@@ -165,8 +168,9 @@ class SymbolicOperator:
                             'Invalid coefficient {}.'.format(coef_string))
             coef *= coefficient
 
-            # Parse the term and add it to the dict
+            # Parse the term, simpify it and add to the dict
             term = self._parse_string(match[1])
+            coef, term = self._simplify(term, coefficient=coef)
             if term not in self.terms:
                 self.terms[term] = coef
             else:
@@ -189,6 +193,12 @@ class SymbolicOperator:
                              'The index should be a non-negative '
                              'integer.'.format(factor))
 
+    def _simplify(self, term, coefficient=1.0):
+        """Simplifies a term."""
+        if self.different_indices_commute:
+            term = sorted(term, key=lambda factor: factor[0])
+        return coefficient, tuple(term)
+
     def _parse_sequence(self, term):
         """Parse a term given as a sequence type (i.e., list, tuple, etc.).
 
@@ -206,11 +216,6 @@ class SymbolicOperator:
             # Check that all factors in the term are valid
             for factor in term:
                 self._validate_factor(factor)
-
-            # If factors with different indices commute, sort the factors
-            # by index
-            if self.different_indices_commute:
-                term = sorted(term, key=lambda factor: factor[0])
 
             # Return a tuple
             return tuple(term)
@@ -264,12 +269,6 @@ class SymbolicOperator:
 
             # Add the factor to the list as a tuple
             processed_term.append((index, action))
-
-        # If factors with different indices commute, sort the factors
-        # by index
-        if self.different_indices_commute:
-            processed_term = sorted(processed_term,
-                                    key=lambda factor: factor[0])
 
         # Return a tuple
         return tuple(processed_term)
@@ -343,16 +342,20 @@ class SymbolicOperator:
             result_terms = dict()
             for left_term in self.terms:
                 for right_term in multiplier.terms:
-                    new_coefficient = (self.terms[left_term] *
-                                       multiplier.terms[right_term])
-                    product_operators = left_term + right_term
+                    left_coefficient = self.terms[left_term]
+                    right_coefficient = multiplier.terms[right_term]
+
+                    new_coefficient = left_coefficient * right_coefficient
+                    new_term = left_term + right_term
+
+                    new_coefficient, new_term = self._simplify(
+                            new_term, coefficient=new_coefficient)
 
                     # Update result dict.
-                    product_operators = tuple(product_operators)
-                    if product_operators in result_terms:
-                        result_terms[product_operators] += new_coefficient
+                    if new_term in result_terms:
+                        result_terms[new_term] += new_coefficient
                     else:
-                        result_terms[product_operators] = new_coefficient
+                        result_terms[new_term] = new_coefficient
             self.terms = result_terms
             return self
 

@@ -139,6 +139,7 @@ Authors
 `Sam McArdle <https://github.com/sammcardle30>`__ (Oxford),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Thomas O'Brien <https://github.com/obriente>`__ (Leiden University),
+`Bryan O'Gorman <https://ti.arc.nasa.gov/profile/bogorman>`__ (UC Berkeley, NASA),
 `Isil Ozfidan <https://github.com/conta877>`__ (D-Wave Systems),
 `Max Radin <https://github.com/max-radin>`__ (UC Santa Barbara),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
