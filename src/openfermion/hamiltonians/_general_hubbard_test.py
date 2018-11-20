@@ -25,36 +25,38 @@ from openfermion.hamiltonians._general_hubbard import InteractionParameter
 
 def fermi_hubbard_from_general(x_dimension, y_dimension, tunneling, coulomb,
                   chemical_potential=0.,
-                  periodic=True, spinless=False):
+                  periodic=True, spinless=False, magnetic_field=0):
     lattice = HubbardSquareLattice(x_dimension, y_dimension, 
                              periodic=periodic, spinless=spinless)
     interaction_edge_type = 'neighbor' if spinless else 'onsite'
     model = FermiHubbardModel(lattice, 
             tunneling_parameters=(('neighbor', (0, 0), tunneling),),
             interaction_parameters=((interaction_edge_type, (0, 0), coulomb),),
-            potential_parameters=((0, chemical_potential),))
+            potential_parameters=((0, chemical_potential),),
+            magnetic_field=magnetic_field)
     return model.hamiltonian()
 
 
 @pytest.mark.parametrize(
         'x_dimension,y_dimension,tunneling,coulomb,' + 
-        'chemical_potential,spinless,periodic',
+        'chemical_potential,spinless,periodic,magnetic_field',
         itertools.product(
             range(1, 4), range(1, 4),
             (random.uniform(0, 2.),), (random.uniform(0, 2.),),
-            (random.uniform(0, 2.),), (True, False), (True, False))
+            (random.uniform(0, 2.),), (True, False), (True, False),
+            (random.uniform(-1, 1),))
         )
-def test_fermi_hubbard_square_special_general_equivalance(
+def test_fermi_hubbard_square_special_general_equivalence(
         x_dimension, y_dimension, tunneling, coulomb,
-        chemical_potential, spinless, periodic):
+        chemical_potential, spinless, periodic, magnetic_field):
     hubbard_model_special = fermi_hubbard(
             y_dimension, x_dimension, tunneling, coulomb,
             chemical_potential=chemical_potential, spinless=spinless,
-            periodic=periodic)
+            periodic=periodic, magnetic_field=magnetic_field)
     hubbard_model_general = fermi_hubbard_from_general(
             x_dimension, y_dimension, tunneling, coulomb,
             chemical_potential=chemical_potential, spinless=spinless,
-            periodic=periodic)
+            periodic=periodic, magnetic_field=magnetic_field)
     assert hubbard_model_special == hubbard_model_general
 
 def random_parameters(lattice, probability=0.5, distinguish_edges=False):
@@ -81,8 +83,12 @@ def random_parameters(lattice, probability=0.5, distinguish_edges=False):
             (dof, random.uniform(-1, 1))
             for dof in lattice.dof_indices
             if random.random() <= probability]
+
+    if random.random() <= probability:
+        parameters['magnetic_field'] = random.uniform(-1, 1)
     
     return parameters
+
 
 def test_fermi_hubbard_default_parameters():
     lattice = HubbardSquareLattice(3, 3)
@@ -90,6 +96,8 @@ def test_fermi_hubbard_default_parameters():
     assert model.tunneling_parameters == []
     assert model.interaction_parameters == []
     assert model.potential_parameters == []
+    assert model.magnetic_field == 0
+
 
 def test_fermi_hubbard_bad_parameters():
     lattice = HubbardSquareLattice(3, 3)
@@ -151,8 +159,16 @@ def test_fermi_hubbard_square_lattice_random_parameters(
             assert len(term) == 2
             assert len(spin_orbitals) == 1
             spin_orbital = spin_orbitals.pop()
-            _, dof, _ = lattice.from_spin_orbital_index(spin_orbital)
-            parameter = (dof, -coefficient)
+            _, dof, spin_index = lattice.from_spin_orbital_index(spin_orbital)
+            potential_coefficient = -coefficient
+            if not lattice.spinless:
+                spin = (-1) ** spin_index
+                potential_coefficient -= (
+                        ((-1) ** spin_index) * 
+                         parameters.get('magnetic_field', 0))
+            if not potential_coefficient:
+                continue
+            parameter = (dof, potential_coefficient)
             assert parameter in parameters['potential_parameters']
             terms_per_parameter['potential', parameter] += 1
     edge_type_to_n_site_pairs = {

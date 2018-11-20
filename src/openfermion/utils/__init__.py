@@ -19,7 +19,7 @@ from ._commutators import anticommutator, commutator, double_commutator
 
 from ._grid import Grid
 
-from ._lattice import (HubbardSquareLattice, SpinPairs)
+from ._lattice import (HubbardSquareLattice, SpinPairs, Spin)
 
 from ._lcu_util import (lambda_norm,
                         preprocess_lcu_coefficients_for_reversible_sampling)

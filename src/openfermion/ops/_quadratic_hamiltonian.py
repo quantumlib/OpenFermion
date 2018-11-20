@@ -302,11 +302,12 @@ class QuadraticHamiltonian(PolynomialTensor):
 
                 orbital_energies = numpy.concatenate(
                     (up_orbital_energies, down_orbital_energies))
-                diagonalizing_unitary_T = numpy.block([
-                    [up_diagonalizing_unitary_T,
-                        numpy.zeros((n_modes//2, n_modes//2))],
-                    [numpy.zeros((n_modes//2, n_modes//2)),
-                        down_diagonalizing_unitary_T]])
+                diagonalizing_unitary_T = numpy.zeros(
+                        (n_modes, n_modes), dtype=complex)
+                diagonalizing_unitary_T[
+                        :n_modes//2, :n_modes//2] = up_diagonalizing_unitary_T
+                diagonalizing_unitary_T[
+                        n_modes//2:, n_modes//2:] = down_diagonalizing_unitary_T
             else:
                 orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(
                         matrix)

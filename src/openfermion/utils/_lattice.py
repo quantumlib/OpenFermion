@@ -11,9 +11,14 @@
 #   limitations under the License.
 
 import abc
-from enum import Enum
+from enum import Enum, IntEnum
 import itertools
 from six import add_metaclass
+
+
+class Spin(IntEnum):
+    UP = 0
+    DOWN = 1
 
 
 class SpinPairs(Enum):
@@ -42,6 +47,9 @@ class HubbardLattice:
     And the following methods:
         site_pairs_iter(edge_type: Hashable) -> Iterable[Tuple[int, int]]: Iterable
             over pairs of sites corresponding to the given edge type.
+
+    For 'spinful' lattices, the ``spin_indices`` ``0`` and ``1`` correspond to
+    'up' and 'down', respectively.
     """
 
     @abc.abstractproperty
