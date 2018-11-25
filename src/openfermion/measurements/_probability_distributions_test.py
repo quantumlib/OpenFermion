@@ -21,8 +21,6 @@ class FourierProbabilityDistTest(unittest.TestCase):
 
     def test_basic_initialization(self):
         pd = FourierProbabilityDist(num_vectors=1,
-                                    init_amplitude_guess=[1],
-                                    init_amplitude_vars=[[1]],
                                     num_freqs=10)
         self.assertEqual(pd._num_freqs, 10)
         self.assertEqual(pd._num_vectors, 1)
@@ -60,6 +58,7 @@ class FourierProbabilityDistTest(unittest.TestCase):
                                     num_freqs=10,
                                     vector_guess=vector_guess)
         x_vec = numpy.linspace(-pi, pi, 11)
+        dist = pd.get_real_dist()
         dist = pd.get_real_dist(x_vec)
         dist_comp = (1 + numpy.cos(x_vec)) / (2*pi)
         self.assertAlmostEqual(numpy.sum(numpy.abs(dist-dist_comp)), 0)

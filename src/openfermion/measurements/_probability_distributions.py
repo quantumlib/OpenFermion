@@ -16,6 +16,7 @@ of random variables.
 import numpy
 from scipy import sparse
 from numpy import cos, sin, pi
+from openfermion.config import EQ_TOLERANCE
 
 
 class FourierProbabilityDist(object):
@@ -83,7 +84,7 @@ class FourierProbabilityDist(object):
         if init_amplitude_guess is None:
             init_amplitude_guess = [1]
         if init_amplitude_vars is None:
-            init_amplitude_vars = [[0]]
+            init_amplitude_vars = [[EQ_TOLERANCE]]
 
         if num_vectors != len(init_amplitude_guess):
             raise ValueError('''I need {} amplitudes, but you have
