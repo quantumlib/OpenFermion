@@ -14,6 +14,7 @@
 
 import numpy
 
+from openfermion.ops._ising_operator import IsingOperator
 from openfermion.ops._symbolic_operator import SymbolicOperator
 
 
@@ -36,7 +37,7 @@ _PAULI_OPERATOR_PRODUCTS = {('I', 'I'): (1., 'I'),
                             ('Z', 'Y'): (-1.j, 'X')}
 
 
-class QubitOperator(SymbolicOperator):
+class QubitOperator(IsingOperator):
     """
     A sum of terms acting on qubits, e.g., 0.5 * 'X0 X5' + 0.3 * 'Z1 Z2'.
 
@@ -95,22 +96,13 @@ class QubitOperator(SymbolicOperator):
         """The string representations of the allowed actions."""
         return ('X', 'Y', 'Z')
 
-    @property
-    def action_before_index(self):
-        """Whether action comes before index in string representations."""
-        return True
-
-    @property
-    def different_indices_commute(self):
-        """Whether factors acting on different indices commute."""
-        return True
-
     def __imul__(self, multiplier):
         """
-        Override in-place multiply of SymbolicOperator
+        Override in-place multiply of IsingOperator
 
         Args:
-          multiplier(complex float, or QubitOperator): multiplier
+          multiplier (complex float, IsingOperator, or QubitOperator):
+              multiplier
         """
         # Handle scalars.
         if isinstance(multiplier, (int, float, complex)):
@@ -119,9 +111,9 @@ class QubitOperator(SymbolicOperator):
             return self
 
         # Handle QubitOperator.
-        if not isinstance(multiplier, self.__class__):
-            raise TypeError('Cannot in-place multiply term of invalid type to '
-                            'QubitTerm.')
+        if not isinstance(multiplier, (self.__class__, IsingOperator)):
+            raise TypeError('Cannot in-place multiply QubitOperator by '
+                            'multiplier of type {}'.format(type(multiplier)))
 
         result_terms = dict()
         for left_term in self.terms:

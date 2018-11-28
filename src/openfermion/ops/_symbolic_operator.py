@@ -559,7 +559,7 @@ class SymbolicOperator:
         Args:
             other(SymbolicOperator): SymbolicOperator to compare against.
         """
-        if not isinstance(other, type(self)):
+        if not isinstance(self, type(other)):
             return NotImplemented
 
         # terms which are in both:
