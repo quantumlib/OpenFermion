@@ -15,7 +15,14 @@ import unittest
 from openfermion.utils._testing_utils import EqualsTester
 
 from openfermion.ops._ising_operator import IsingOperator
-from openfermion.ops._qubit_operator import QubitOperator
+
+def test_properties():
+    operator = IsingOperator()
+    assert operator.actions == ('Z',)
+    assert operator.action_strings == ('Z',)
+    assert operator.action_before_index
+    assert operator.different_indices_commute
+
 
 class GeneralTest(unittest.TestCase):
     """General tests."""
@@ -24,6 +31,6 @@ class GeneralTest(unittest.TestCase):
         equals_tester = EqualsTester(self)
 
         group = [IsingOperator('Z0 Z3'), 
-                   IsingOperator([(0, 'Z'), (3, 'Z')])]
+                 IsingOperator([(0, 'Z'), (3, 'Z')])]
 
         equals_tester.add_equality_group(*group)
