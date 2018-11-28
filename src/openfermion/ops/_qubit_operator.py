@@ -14,7 +14,6 @@
 
 import numpy
 
-from openfermion.ops._ising_operator import IsingOperator
 from openfermion.ops._symbolic_operator import SymbolicOperator
 
 
@@ -37,7 +36,7 @@ _PAULI_OPERATOR_PRODUCTS = {('I', 'I'): (1., 'I'),
                             ('Z', 'Y'): (-1.j, 'X')}
 
 
-class QubitOperator(IsingOperator):
+class QubitOperator(SymbolicOperator):
     """
     A sum of terms acting on qubits, e.g., 0.5 * 'X0 X5' + 0.3 * 'Z1 Z2'.
 
