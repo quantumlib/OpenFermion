@@ -53,37 +53,10 @@ class IsingOperator(SymbolicOperator):
         """Whether factors acting on different indices commute."""
         return True
 
-    def __imul__(self, multiplier):
-        """
-        Override in-place multiply of SymbolicOperator
-
-        Args:
-          multiplier(complex float, or IsingOperator): multiplier
-        """
-        # Handle scalars.
-        if isinstance(multiplier, (int, float, complex)):
-            for term in self.terms:
-                self.terms[term] *= multiplier
-            return self
-
-        # Handle SymbolicOperator.
-        if not isinstance(multiplier, self.__class__):
-            raise TypeError('Cannot in-place multiply IsingOperator by '
-                            'multiplier of type {}.'.format(type(multiplier)))
-
-        product_terms = dict()
-        term_pairs = product(self.terms.items(), multiplier.terms.items())
-        for ((left_factors, left_coefficient),
-             (right_factors, right_coefficient)) in term_pairs:
-            powers = defaultdict(int)
-            for factor in chain(left_factors, right_factors):
-                powers[factor[0]] += 1
-            odd_powers = sorted(i for i, p in powers.items() if p % 2)
-            product_factors = tuple((i, 'Z') for i in odd_powers)
-            product_coefficient = left_coefficient * right_coefficient
-            if product_factors in product_terms:
-                product_terms[product_factors] += product_coefficient
-            else:
-                product_terms[product_factors] = product_coefficient
-        self.terms = product_terms
-        return self
+    def _simplify(self, term, coefficient=1.0):
+        powers = defaultdict(int)
+        for factor in term:
+            powers[factor[0]] += 1
+        odd_powers = sorted(i for i, p in powers.items() if p % 2)
+        new_term = tuple((i, 'Z') for i in odd_powers)
+        return coefficient, new_term
