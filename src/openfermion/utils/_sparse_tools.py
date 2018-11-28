@@ -26,11 +26,10 @@ import scipy.sparse.linalg
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
                              QubitOperator, BosonOperator,
-                             QuadOperator)
+                             QuadOperator, up_index, down_index)
 from openfermion.utils import (count_qubits, gaussian_state_preparation_circuit,
                                is_hermitian,
-                               slater_determinant_preparation_circuit,
-                               up_index, down_index)
+                               slater_determinant_preparation_circuit)
 
 
 # Make global definitions.
@@ -299,7 +298,8 @@ def jw_number_indices(n_electrons, n_qubits):
     return indices
 
 
-def jw_sz_indices(sz_value, n_qubits, n_electrons=None):
+def jw_sz_indices(sz_value, n_qubits, n_electrons=None,
+                  up_index=up_index, down_index=down_index):
     r"""Return the indices of basis vectors with fixed Sz under JW encoding.
 
     The returned indices label computational basis vectors which lie within
@@ -316,6 +316,10 @@ def jw_sz_indices(sz_value, n_qubits, n_electrons=None):
         n_qubits(int): Number of qubits defining the total state
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired
+        up_index (Callable, optional): Function that maps a spatial index
+            to the index of the corresponding up site
+        down_index (Callable, optional): Function that maps a spatial index
+            to the index of the corresponding down site
 
     Returns:
         indices(list): The list of indices
@@ -404,7 +408,10 @@ def jw_number_restrict_operator(operator, n_electrons, n_qubits=None):
 
 
 def jw_sz_restrict_operator(operator, sz_value,
-                            n_electrons=None, n_qubits=None):
+                            n_electrons=None,
+                            n_qubits=None,
+                            up_index=up_index,
+                            down_index=down_index):
     """Restrict a Jordan-Wigner encoded operator to a given Sz value
 
     Args:
@@ -415,6 +422,10 @@ def jw_sz_restrict_operator(operator, sz_value,
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired.
         n_qubits(int, optional): Number of qubits defining the total state
+        up_index (Callable, optional): Function that maps a spatial index
+            to the index of the corresponding up site
+        down_index (Callable, optional): Function that maps a spatial index
+            to the index of the corresponding down site
 
     Returns:
         new_operator(ndarray or sparse): Numpy operator restricted to
@@ -423,7 +434,11 @@ def jw_sz_restrict_operator(operator, sz_value,
     if n_qubits is None:
         n_qubits = int(numpy.log2(operator.shape[0]))
 
-    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
+    select_indices = jw_sz_indices(
+            sz_value, n_qubits,
+            n_electrons=n_electrons,
+            up_index=up_index,
+            down_index=down_index)
     return operator[numpy.ix_(select_indices, select_indices)]
 
 
@@ -447,7 +462,11 @@ def jw_number_restrict_state(state, n_electrons, n_qubits=None):
     return state[select_indices]
 
 
-def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None):
+def jw_sz_restrict_state(state, sz_value,
+                         n_electrons=None,
+                         n_qubits=None,
+                         up_index=up_index,
+                         down_index=down_index):
     """Restrict a Jordan-Wigner encoded state to a given Sz value
 
     Args:
@@ -458,6 +477,10 @@ def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None):
         n_electrons(int, optional): Number of particles to restrict the
             operator to, if such a restriction is desired.
         n_qubits(int, optional): Number of qubits defining the total state
+        up_index (Callable, optional): Function that maps a spatial index
+            to the index of the corresponding up site
+        down_index (Callable, optional): Function that maps a spatial index
+            to the index of the corresponding down site
 
     Returns:
         new_operator(ndarray or sparse): Numpy vector restricted to
@@ -466,7 +489,11 @@ def jw_sz_restrict_state(state, sz_value, n_electrons=None, n_qubits=None):
     if n_qubits is None:
         n_qubits = int(numpy.log2(state.shape[0]))
 
-    select_indices = jw_sz_indices(sz_value, n_qubits, n_electrons=n_electrons)
+    select_indices = jw_sz_indices(
+            sz_value, n_qubits,
+            n_electrons=n_electrons,
+            up_index=up_index,
+            down_index=down_index)
     return state[select_indices]
 
 

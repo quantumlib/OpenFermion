@@ -19,6 +19,8 @@ from ._commutators import anticommutator, commutator, double_commutator
 
 from ._grid import Grid
 
+from ._lattice import (HubbardSquareLattice, SpinPairs, Spin)
+
 from ._lcu_util import (lambda_norm,
                         preprocess_lcu_coefficients_for_reversible_sampling)
 
@@ -49,8 +51,7 @@ from ._slater_determinants import (gaussian_state_preparation_circuit,
 from ._special_operators import (majorana_operator, number_operator,
                                  s_minus_operator, s_plus_operator,
                                  s_squared_operator,
-                                 sx_operator, sy_operator, sz_operator,
-                                 up_index, down_index)
+                                 sx_operator, sy_operator, sz_operator)
 
 from ._testing_utils import (haar_random_vector,
                              random_antisymmetric_matrix,

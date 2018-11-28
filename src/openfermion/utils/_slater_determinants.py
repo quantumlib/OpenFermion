@@ -12,18 +12,18 @@
 
 """This module contains functions for compiling circuits to prepare
 Slater determinants and fermionic Gaussian states."""
-from __future__ import absolute_import
 
 import numpy
 
-from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.ops._givens_rotations import (
     fermionic_gaussian_decomposition, givens_decomposition)
 
 
 def gaussian_state_preparation_circuit(
-        quadratic_hamiltonian, occupied_orbitals=None):
+        quadratic_hamiltonian,
+        occupied_orbitals=None,
+        spin_sector=None):
     r"""Obtain the description of a circuit which prepares a fermionic Gaussian
     state.
 
@@ -67,6 +67,13 @@ def gaussian_state_preparation_circuit(
             orbitals in the desired Gaussian state. If this is None
             (the default), then it is assumed that the ground state is
             desired, i.e., the orbitals with negative energies are filled.
+        spin_sector (optional str): An optional integer specifying
+            a spin sector to restrict to: 0 for spin-up and 1 for
+            spin-down. If specified, the returned circuit acts on modes
+            indexed by spatial indices (rather than spin indices).
+            Should only be specified if the Hamiltonian
+            includes a spin degree of freedom and spin-up modes
+            do not interact with spin-down modes.
 
     Returns
     -------
@@ -89,32 +96,31 @@ def gaussian_state_preparation_circuit(
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
 
-    if quadratic_hamiltonian.conserves_particle_number:
-        # The Hamiltonian conserves particle number, so we don't need
-        # to use the most general procedure.
-        hermitian_matrix = quadratic_hamiltonian.combined_hermitian_part
-        energies, diagonalizing_unitary = numpy.linalg.eigh(hermitian_matrix)
+    orbital_energies, transformation_matrix, _ = (
+            quadratic_hamiltonian.diagonalizing_bogoliubov_transform(
+                spin_sector=spin_sector)
+    )
 
+    if quadratic_hamiltonian.conserves_particle_number:
         if occupied_orbitals is None:
             # The ground state is desired, so we fill the orbitals that have
             # negative energy
-            num_negative_energies = numpy.count_nonzero(
-                energies < -EQ_TOLERANCE)
-            occupied_orbitals = range(num_negative_energies)
+            occupied_orbitals = numpy.where(orbital_energies < 0.0)[0]
 
         # Get the unitary rows which represent the Slater determinant
-        slater_determinant_matrix = diagonalizing_unitary.T[occupied_orbitals]
+        slater_determinant_matrix = transformation_matrix[occupied_orbitals]
 
         # Get the circuit description
         circuit_description = slater_determinant_preparation_circuit(
             slater_determinant_matrix)
         start_orbitals = range(len(occupied_orbitals))
     else:
-        # The Hamiltonian does not conserve particle number, so we
-        # need to use the most general procedure.
-        transformation_matrix = (
-            quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
-
+        # TODO implement this
+        if spin_sector is not None:
+            raise NotImplementedError(
+                    'Specifying spin sector for non-particle-conserving '
+                    'Hamiltonians is not yet supported.'
+                    )
         # Rearrange the transformation matrix because the circuit generation
         # routine expects it to describe annihilation operators rather than
         # creation operators
