@@ -12,9 +12,6 @@
 
 """QubitOperator stores a sum of Pauli operators acting on qubits."""
 
-import itertools
-import warnings
-
 import numpy
 
 from openfermion.ops._symbolic_operator import SymbolicOperator
@@ -116,42 +113,6 @@ class QubitOperator(SymbolicOperator):
                 'Cannot renormalize empty or zero operator')
         else:
             self /= norm
-
-    @staticmethod
-    def accumulate(operators, zero=None):
-        """Sums over QubitOperators."""
-        total = zero or QubitOperator.zero()
-        for operator in operators:
-            total += operator
-        return total
-
-    def get_operators(self):
-        """Gets a list of operators with a single term.
-
-        Returns:
-            operators([QubitOperator]): A list of operators summing up to self.
-        """
-        for term, coefficient in self.terms.items():
-            yield QubitOperator(term, coefficient)
-
-    def get_operator_groups(self, num_groups):
-        """Gets a list of operators with a few terms.
-        Args:
-            num_groups(int): How many operators to get in the end.
-
-        Returns:
-            operators([QubitOperator]): A list of operators summing up to self.
-        """
-        if num_groups < 1:
-            warnings.warn('Invalid num_groups {} < 1.'.format(num_groups),
-                          RuntimeWarning)
-            num_groups = 1
-
-        operators = self.get_operators()
-        num_groups = min(num_groups, len(self.terms))
-        for i in range(num_groups):
-            yield QubitOperator.accumulate(itertools.islice(
-                operators, len(range(i, len(self.terms), num_groups))))
 
     def _simplify(self, term, coefficient=1.0):
         """Simplify a term using commutator and anti-commutator relations."""

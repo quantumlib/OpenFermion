@@ -14,6 +14,7 @@
 
 import abc
 import copy
+import itertools
 import re
 import warnings
 
@@ -561,8 +562,8 @@ class SymbolicOperator:
         Args:
             other(SymbolicOperator): SymbolicOperator to compare against.
         """
-        if not isinstance(other, type(self)):
-            return False
+        if not isinstance(self, type(other)):
+            return NotImplemented
 
         # terms which are in both:
         for term in set(self.terms).intersection(set(other.terms)):
@@ -652,6 +653,43 @@ class SymbolicOperator:
         else:
             return max(len(term) for term, coeff in self.terms.items()
                        if abs(coeff) > EQ_TOLERANCE)
+
+    @classmethod
+    def accumulate(cls, operators, start=None):
+        """Sums over SymbolicOperators."""
+        total = copy.deepcopy(start or cls.zero())
+        for operator in operators:
+            total += operator
+        return total
+
+    def get_operators(self):
+        """Gets a list of operators with a single term.
+
+        Returns:
+            operators([self.__class__]): A generator of the operators in self.
+        """
+        for term, coefficient in self.terms.items():
+            yield self.__class__(term, coefficient)
+
+    def get_operator_groups(self, num_groups):
+        """Gets a list of operators with a few terms.
+        Args:
+            num_groups(int): How many operators to get in the end.
+
+        Returns:
+            operators([self.__class__]): A list of operators summing up to
+                self.
+        """
+        if num_groups < 1:
+            warnings.warn('Invalid num_groups {} < 1.'.format(num_groups),
+                          RuntimeWarning)
+            num_groups = 1
+
+        operators = self.get_operators()
+        num_groups = min(num_groups, len(self.terms))
+        for i in range(num_groups):
+            yield self.accumulate(itertools.islice(
+                operators, len(range(i, len(self.terms), num_groups))))
 
     # DEPRECATED FUNCTIONS
     # ====================

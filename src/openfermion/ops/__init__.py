@@ -24,4 +24,5 @@ from ._fermion_operator import FermionOperator
 from ._interaction_operator import InteractionOperator
 from ._quad_operator import QuadOperator
 from ._qubit_operator import QubitOperator
+from ._ising_operator import IsingOperator
 from ._interaction_rdm import InteractionRDM

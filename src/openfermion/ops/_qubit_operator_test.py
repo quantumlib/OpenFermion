@@ -91,6 +91,7 @@ def test_imul_qubit_op_2():
     op4 *= op3
     assert ((2, 'Z'),) in op3.terms
     assert op3.terms[((2, 'Z'),)] == 1.5j
+    assert op4.terms[((0, 'X'), (1, 'Y'))] == -2.25j
 
 
 def test_imul_bidir():
