@@ -103,9 +103,13 @@ def test_hubbard_square_lattice_dof_validation(n_dofs):
 def test_hubbard_square_lattice_edge_types():
     lattice = HubbardSquareLattice(3, 3)
     assert sorted(lattice.edge_types) == sorted((
-            'onsite', 'neighbor', 'vertical_neighbor', 'horizontal_neighbor'))
+            'onsite', 'neighbor', 'next_neighbor',
+            'vertical_neighbor', 'horizontal_neighbor'))
     lattice.validate_edge_type('onsite')
     lattice.validate_edge_type('neighbor')
+    lattice.validate_edge_type('next_neighbor')
+    lattice.validate_edge_type('vertical_neighbor')
+    lattice.validate_edge_type('horizontal_neighbor')
     with pytest.raises(ValueError):
         lattice.validate_edge_type('banana')
     with pytest.raises(ValueError):
@@ -120,6 +124,25 @@ def test_hubbard_square_lattice_1xd(d):
         assert (len(tuple(lattice.neighbors_iter())) ==
                 2 * len(tuple(lattice.neighbors_iter(False))) ==
                 2 * (d - (not periodic)))
+        assert (len(tuple(lattice.diagonal_neighbors_iter())) ==
+                len(tuple(lattice.diagonal_neighbors_iter(False))) ==
+                0)
+
+
+@pytest.mark.parametrize('x,y', 
+        (random.sample(range(3, 10), 2) for _ in range(3)))
+def test_hubbard_square_lattice_neighbors(x, y):
+    for periodic in (True, False):
+        lattice = HubbardSquareLattice(x, y, periodic=periodic)
+        n_horizontal_neighbors = 2 * y * (x - (not periodic))
+        assert (len(tuple(lattice.horizontal_neighbors_iter())) ==
+                n_horizontal_neighbors)
+        n_vertical_neighbors = 2 * x * (y - (not periodic))
+        assert (len(tuple(lattice.vertical_neighbors_iter())) ==
+                n_vertical_neighbors)
+        n_diagonal_neighbors = 4 * (x - (not periodic)) * (y - (not periodic))
+        assert (len(tuple(lattice.diagonal_neighbors_iter())) ==
+                n_diagonal_neighbors)
 
 
 @pytest.mark.parametrize('d', random.sample(range(3, 10), 3))
@@ -131,7 +154,11 @@ def test_hubbard_square_lattice_2xd(d):
         assert (len(tuple(lattice.neighbors_iter())) ==
                 2 * len(tuple(lattice.neighbors_iter(False))) ==
                 n_neighbor_pairs)
-
+        n_next_neighbor_pairs = 4 * (d - (not periodic))
+        assert (len(tuple(lattice.diagonal_neighbors_iter())) == 
+                2 * len(tuple(lattice.diagonal_neighbors_iter(False))) ==
+                n_next_neighbor_pairs)
+               
 
 def test_hubbard_square_lattice_2x2():
     for periodic in (True, False):
@@ -139,6 +166,9 @@ def test_hubbard_square_lattice_2x2():
         assert lattice.n_sites == 4
         assert len(tuple(lattice.neighbors_iter(False))) == 4
         assert len(tuple(lattice.neighbors_iter())) == 8
+        assert len(tuple(lattice.diagonal_neighbors_iter(False))) == 2
+        assert len(tuple(lattice.diagonal_neighbors_iter())) == 4
+
 
 @pytest.mark.parametrize('kwargs', [{
     'x_dimension': random.randrange(1, 10),
