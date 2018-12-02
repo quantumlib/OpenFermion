@@ -72,11 +72,11 @@ class BayesEstimator(object):
         self._full_update_with_failure = full_update_with_failure
         self._store_history = store_history
         self._probability_dist = FourierProbabilityDist(
-            prior_amplitude_mean=prior_amplitude_mean,
-            prior_amplitude_var=prior_amplitude_var,
+            amplitude_mean=prior_amplitude_mean,
+            amplitude_var=prior_amplitude_var,
             num_vectors=num_vectors,
             num_freqs=num_freqs,
-            prior_vector=prior_vector)
+            fourier_vector=prior_vector)
 
         # Store the initial priors given for use in resetting
         self._prior_vector = copy.deepcopy(prior_vector)
@@ -95,11 +95,11 @@ class BayesEstimator(object):
         """
 
         self._probability_dist = FourierProbabilityDist(
-            prior_amplitude_mean=self._prior_amplitude_mean,
-            prior_amplitude_var=self._prior_amplitude_var,
+            amplitude_mean=self._prior_amplitude_mean,
+            amplitude_var=self._prior_amplitude_var,
             num_vectors=self._probability_dist._num_vectors,
             num_freqs=self._probability_dist._num_freqs,
-            prior_vector=self._prior_vector)
+            fourier_vector=self._prior_vector)
 
         # The following stores the history of the estimator
         # for analysis purposes

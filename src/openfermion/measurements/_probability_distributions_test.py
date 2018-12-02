@@ -32,31 +32,31 @@ class FourierProbabilityDistTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             FourierProbabilityDist(num_vectors=1,
-                                   prior_vector=numpy.array([[1, 0], [1, 0]]),
-                                   prior_amplitude_mean=[1],
-                                   prior_amplitude_var=[[1]],
+                                   fourier_vector=numpy.array([[1, 0], [1, 0]]),
+                                   amplitude_mean=[1],
+                                   amplitude_var=[[1]],
                                    num_freqs=10)
         with self.assertRaises(ValueError):
             FourierProbabilityDist(num_vectors=1,
-                                   prior_amplitude_mean=[1, 0],
-                                   prior_amplitude_var=[[1]],
+                                   amplitude_mean=[1, 0],
+                                   amplitude_var=[[1]],
                                    num_freqs=10)
         with self.assertRaises(ValueError):
             FourierProbabilityDist(num_vectors=2,
-                                   prior_amplitude_mean=[0.5, 0.5],
-                                   prior_amplitude_var=[[1]],
+                                   amplitude_mean=[0.5, 0.5],
+                                   amplitude_var=[[1]],
                                    num_freqs=10)
 
     def test_init_dist(self):
 
-        prior_vector = numpy.zeros([21, 1])
-        prior_vector[0, 0] = 1
-        prior_vector[2, 0] = 1  # cos wave
+        fourier_vector = numpy.zeros([21, 1])
+        fourier_vector[0, 0] = 1
+        fourier_vector[2, 0] = 1  # cos wave
         pd = FourierProbabilityDist(num_vectors=1,
-                                    prior_amplitude_mean=[1],
-                                    prior_amplitude_var=[[1]],
+                                    amplitude_mean=[1],
+                                    amplitude_var=[[1]],
                                     num_freqs=10,
-                                    prior_vector=prior_vector)
+                                    fourier_vector=fourier_vector)
         x_vec = numpy.linspace(-pi, pi, 11)
         dist = pd.get_real_dist()
         dist = pd.get_real_dist(x_vec)
@@ -64,13 +64,13 @@ class FourierProbabilityDistTest(unittest.TestCase):
         self.assertAlmostEqual(numpy.sum(numpy.abs(dist-dist_comp)), 0)
 
     def test_holevo(self):
-        prior_vector = numpy.zeros([21, 1])
-        prior_vector[0, 0] = 1
-        prior_vector[2, 0] = 1  # sine wave
+        fourier_vector = numpy.zeros([21, 1])
+        fourier_vector[0, 0] = 1
+        fourier_vector[2, 0] = 1  # sine wave
         pd = FourierProbabilityDist(num_vectors=1,
-                                    prior_amplitude_mean=[1],
-                                    prior_amplitude_var=[[1]],
+                                    amplitude_mean=[1],
+                                    amplitude_var=[[1]],
                                     num_freqs=10,
-                                    prior_vector=prior_vector)
+                                    fourier_vector=fourier_vector)
         self.assertEqual(pd._holevo_centers(), 0)
         self.assertEqual(pd._holevo_variances()[0], 3)

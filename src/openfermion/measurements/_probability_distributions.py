@@ -37,28 +37,28 @@ class FourierProbabilityDist(object):
     """
 
     def __init__(self,
-                 prior_amplitude_mean=None,
-                 prior_amplitude_var=None,
+                 amplitude_mean=None,
+                 amplitude_var=None,
                  num_vectors=1,
                  num_freqs=1000,
-                 prior_vector=None):
+                 fourier_vector=None):
         """
         Args:
-            prior_amplitude_mean (numpy array or list or None):
-                We take an initial normal distribution for the amplitudes
+            amplitude_mean (numpy array or list or None):
+                We take an normal distribution for the amplitudes
                 which requires for each a mean and a variance.
                 We only allow None for a single vector (in which case
                 the amplitude is fixed to 1), as we need this
                 to break the symmetry of the problem.
-            prior_amplitude_var (numpy array or list or None): variance of the
-                estimated distribution in prior_amplitude_mean.
-                We only allow None for a sinlge vector (in which case
+            amplitude_var (numpy array or list or None): variance of the
+                estimated distribution in amplitude_mean.
+                We only allow None for a single vector (in which case
                 this variable is unused).
             num_vectors (int): number of phases phi_j to estimate
             num_freqs (int): number of wave components cos(n*phi_j)
                 to store coefficients for (this provides a cut-off to
                 the sensitivity of the function).
-            prior_vector (numpy array or None): a prior estimate of the function,
+            fourier_vector (numpy array or None): the function
                 given in terms of the Fourier components c_{j,n}.
                 If None, prior taken as a flat function over [-pi,pi].
 
@@ -73,36 +73,39 @@ class FourierProbabilityDist(object):
         self._num_freqs = num_freqs
 
         # Store prior information
-        if prior_vector is not None and (
-                num_vectors != prior_vector.shape[1]
-                or 2*num_freqs+1 != prior_vector.shape[0]):
+        if fourier_vector is not None and (
+                num_vectors != fourier_vector.shape[1]
+                or 2*num_freqs+1 != fourier_vector.shape[0]):
             raise ValueError('''Prior distribution of phases has shape {},
                 required shape is {}'''.format(
-                    prior_vector.shape, (2*num_freqs+1, num_vectors)))
+                    fourier_vector.shape, (2*num_freqs+1, num_vectors)))
 
-        if prior_amplitude_mean is None:
-            prior_amplitude_mean = [1]
-        if prior_amplitude_var is None:
-            prior_amplitude_var = [[EQ_TOLERANCE]]
+        if amplitude_mean is None:
+            amplitude_mean = [1]
+        if amplitude_var is None:
+            amplitude_var = [[EQ_TOLERANCE]]
 
-        if num_vectors != len(prior_amplitude_mean):
+        if num_vectors != len(amplitude_mean):
             raise ValueError('''I need {} amplitudes, but you have
-                given me {}.'''.format(num_vectors, len(prior_amplitude_mean)))
+                given me {}.'''.format(num_vectors, len(amplitude_mean)))
 
-        if any([numpy.isclose(prior_amplitude_mean[j],
-                              prior_amplitude_mean[j+1])
+        if any([numpy.isclose(amplitude_mean[j],
+                              amplitude_mean[j+1])
                 for j in range(num_vectors - 1)]):
             raise ValueError('''Starting amplitudes must be different.''')
 
-        self._prior_amplitude_mean = prior_amplitude_mean
-        self._prior_amplitude_var = prior_amplitude_var
+        # The amplitude distributions are not being updated at this point
+        # (instead the data for the update is stored in p_vecs). As such,
+        # we just store this as a prior.
+        self._prior_amplitude_mean = amplitude_mean
+        self._prior_amplitude_var = amplitude_var
 
         # The current estimate of the amplitudes is just the mean
         # of the given guess.
-        self._amplitude_estimates = numpy.array(prior_amplitude_mean)
+        self._amplitude_estimates = numpy.array(amplitude_mean)
 
-        if prior_vector is not None:
-            self._fourier_vectors = numpy.array(prior_vector)
+        if fourier_vector is not None:
+            self._fourier_vectors = numpy.array(fourier_vector)
         else:
             # Initialize probability distributions
             self._fourier_vectors = numpy.zeros((self._num_freqs*2+1,
@@ -110,6 +113,8 @@ class FourierProbabilityDist(object):
             for j in range(self._num_vectors):
                 self._fourier_vectors[0, j] = 1
 
+        # This stores data from repeated Bayesian updates in order to
+        # calculate data of the updated distribution as required.
         self._p_vecs = []
 
         self._inv_covar_mat = numpy.linalg.inv(
