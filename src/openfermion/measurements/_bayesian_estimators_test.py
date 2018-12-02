@@ -52,10 +52,10 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_init(self):
         be = BayesEstimator(num_vectors=1,
-                            init_amplitude_guess=[1],
-                            init_amplitude_vars=[[1]],
+                            prior_amplitude_mean=[1],
+                            prior_amplitude_var=[[1]],
                             num_freqs=10,
-                            max_n=1,
+                            max_rotations=1,
                             store_history=True)
         self.assertEqual(be.averages, [])
         self.assertEqual(be.variances, [])
@@ -65,10 +65,10 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_vector_product(self):
         pd = BayesEstimator(num_vectors=1,
-                            init_amplitude_guess=[1],
-                            init_amplitude_vars=[[1]],
+                            prior_amplitude_mean=[1],
+                            prior_amplitude_var=[[1]],
                             num_freqs=10,
-                            max_n=1)
+                            max_rotations=1)
 
         round_data = QPERoundData(
             final_rotation=0,
@@ -85,10 +85,10 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_diffs(self):
         pd = BayesEstimator(num_vectors=2,
-                            init_amplitude_guess=[0.9, 0.1],
-                            init_amplitude_vars=[[0.3, -0.29], [-0.29, 0.3]],
+                            prior_amplitude_mean=[0.9, 0.1],
+                            prior_amplitude_var=[[0.3, -0.29], [-0.29, 0.3]],
                             num_freqs=10,
-                            max_n=1)
+                            max_rotations=1)
 
         test_vec = numpy.array([0.9, 0.1])
         test_vec2 = numpy.array([1, 0])
@@ -109,10 +109,10 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_warning(self):
         be = BayesEstimator(num_vectors=1,
-                            init_amplitude_guess=[1],
-                            init_amplitude_vars=[[1]],
+                            prior_amplitude_mean=[1],
+                            prior_amplitude_var=[[1]],
                             num_freqs=10,
-                            max_n=1,
+                            max_rotations=1,
                             store_history=True)
 
         with warnings.catch_warnings(record=True) as w:
@@ -120,10 +120,10 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_update(self):
         be = BayesEstimator(num_vectors=1,
-                            init_amplitude_guess=[1],
-                            init_amplitude_vars=[[1]],
+                            prior_amplitude_mean=[1],
+                            prior_amplitude_var=[[1]],
                             num_freqs=10,
-                            max_n=1,
+                            max_rotations=1,
                             store_history=True)
         test_experiment = QPEExperimentData([QPERoundData(
             final_rotation=-numpy.pi/4,
@@ -140,10 +140,10 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_estimation(self):
         be = BayesEstimator(num_vectors=1,
-                            init_amplitude_guess=[1],
-                            init_amplitude_vars=numpy.array([[1]]),
+                            prior_amplitude_mean=[1],
+                            prior_amplitude_var=numpy.array([[1]]),
                             num_freqs=1000,
-                            max_n=1)
+                            max_rotations=1)
 
         test_experiment1 = QPEExperimentData([QPERoundData(
             final_rotation=numpy.pi/2,
@@ -174,10 +174,10 @@ class BayesEstimatorTest(unittest.TestCase):
     def test_update_warnings(self):
 
         be = BayesEstimator(num_vectors=1,
-                            init_amplitude_guess=[1],
-                            init_amplitude_vars=numpy.array([[1]]),
+                            prior_amplitude_mean=[1],
+                            prior_amplitude_var=numpy.array([[1]]),
                             num_freqs=10,
-                            max_n=1)
+                            max_rotations=1)
 
         mock_result = numpy.array([[-1, 0], [0, 0]])
 
@@ -189,10 +189,10 @@ class BayesEstimatorTest(unittest.TestCase):
             self.assertEqual(len(w), 2)
 
         be = BayesEstimator(num_vectors=1,
-                            init_amplitude_guess=[1],
-                            init_amplitude_vars=numpy.array([[1]]),
+                            prior_amplitude_mean=[1],
+                            prior_amplitude_var=numpy.array([[1]]),
                             num_freqs=10,
-                            max_n=1)
+                            max_rotations=1)
 
         test_experiment1 = QPEExperimentData([QPERoundData(
             final_rotation=numpy.pi/2,
@@ -211,17 +211,17 @@ class BayesEstimatorTest(unittest.TestCase):
 
     def test_amplitude_approx_update(self):
         be = BayesEstimator(num_vectors=2,
-                            init_amplitude_guess=[0.9, 0.1],
-                            init_amplitude_vars=[[0.1, -0.09], [-0.09, 0.1]],
+                            prior_amplitude_mean=[0.9, 0.1],
+                            prior_amplitude_var=[[0.1, -0.09], [-0.09, 0.1]],
                             num_freqs=10,
-                            max_n=1,
+                            max_rotations=1,
                             amplitude_approx_cutoff=15,
                             full_update_with_failure=True)
         be2 = BayesEstimator(num_vectors=2,
-                             init_amplitude_guess=[0.9, 0.1],
-                             init_amplitude_vars=[[0.1, -0.09], [-0.09, 0.1]],
+                             prior_amplitude_mean=[0.9, 0.1],
+                             prior_amplitude_var=[[0.1, -0.09], [-0.09, 0.1]],
                              num_freqs=10,
-                             max_n=1,
+                             max_rotations=1,
                              amplitude_approx_cutoff=10)
 
         test_experiment = QPEExperimentData([QPERoundData(
@@ -271,9 +271,9 @@ class BayesEstimatorTest(unittest.TestCase):
         random_state = numpy.random.RandomState(seed=42)
         ev = random_state.uniform(-numpy.pi, numpy.pi)
         sampler = IteratingSampler(50, angles, random_state)
-        estimator = BayesEstimator(num_vectors=1, max_n=50,
-                                   init_amplitude_guess=[1],
-                                   init_amplitude_vars=[[1]],
+        estimator = BayesEstimator(num_vectors=1, max_rotations=50,
+                                   prior_amplitude_mean=[1],
+                                   prior_amplitude_var=[[1]],
                                    num_freqs=1000*2,
                                    amplitude_approx_cutoff=100)
         for j in range(1000):
@@ -304,9 +304,9 @@ class BayesEstimatorTest(unittest.TestCase):
         random_state = numpy.random.RandomState(seed=42)
         ev = random_state.uniform(-numpy.pi, numpy.pi)
         sampler = IteratingSampler(50, angles, random_state)
-        estimator = BayesEstimator(num_vectors=1, max_n=10,
-                                   init_amplitude_guess=[1],
-                                   init_amplitude_vars=[[1]],
+        estimator = BayesEstimator(num_vectors=1, max_rotations=10,
+                                   prior_amplitude_mean=[1],
+                                   prior_amplitude_var=[[1]],
                                    num_freqs=1000*5,
                                    amplitude_approx_cutoff=100)
 
@@ -325,10 +325,10 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
     def test_epsilons(self):
         estimator = BayesDepolarizingEstimator(
             num_vectors=1,
-            init_amplitude_guess=[1],
-            init_amplitude_vars=numpy.array([[1]]),
+            prior_amplitude_mean=[1],
+            prior_amplitude_var=numpy.array([[1]]),
             num_freqs=1000,
-            max_n=1,
+            max_rotations=1,
             k_1=1,
             k_err=1)
         self.assertAlmostEqual(estimator._epsilon_d_function(2),
@@ -339,10 +339,10 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
     def test_vector_product(self):
         estimator = BayesDepolarizingEstimator(
             num_vectors=1,
-            init_amplitude_guess=[1],
-            init_amplitude_vars=numpy.array([[1]]),
+            prior_amplitude_mean=[1],
+            prior_amplitude_var=numpy.array([[1]]),
             num_freqs=1000,
-            max_n=1,
+            max_rotations=1,
             k_1=1,
             k_err=1)
 
@@ -382,9 +382,9 @@ class BayesDepolarizingEstimatorTest(unittest.TestCase):
         random_state = numpy.random.RandomState(seed=42)
         ev = random_state.uniform(-numpy.pi, numpy.pi)
         sampler = IteratingSampler(10, angles, random_state)
-        estimator = BayesDepolarizingEstimator(num_vectors=1, max_n=10,
-                                               init_amplitude_guess=[1],
-                                               init_amplitude_vars=[[1]],
+        estimator = BayesDepolarizingEstimator(num_vectors=1, max_rotations=10,
+                                               prior_amplitude_mean=[1],
+                                               prior_amplitude_var=[[1]],
                                                num_freqs=1000*5,
                                                amplitude_approx_cutoff=100,
                                                k_err=20)

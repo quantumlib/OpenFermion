@@ -14,6 +14,7 @@
 Classes for Bayesian estimators for quantum phase estimation.
 Estimators described in arXiv:1809.09697 (in particular in App.C and App.C.1)
 """
+import copy
 import warnings
 import numpy
 from numpy import cos, sin, pi
@@ -33,26 +34,26 @@ class BayesEstimator(object):
     """
 
     def __init__(self,
-                 init_amplitude_guess=None,
-                 init_amplitude_vars=None,
+                 prior_amplitude_mean=None,
+                 prior_amplitude_var=None,
                  num_vectors=1,
                  num_freqs=1000,
-                 max_n=1,
-                 vector_guess=None,
+                 max_rotations=1,
+                 prior_vector=None,
                  full_update_with_failure=False,
                  store_history=True,
                  amplitude_approx_cutoff=100):
 
         """
         Args:
-            init_amplitude_guess (numpy array): estimates for amplitudes of different
+            prior_amplitude_mean (numpy array): estimates for amplitudes of different
                 eigenstates in the initial state ($A_j$)
-            init_amplitude_vars (numpy array): variance on the amplitude estimates
+            prior_amplitude_var (numpy array): variance on the amplitude estimates
             num_vectors (int): number of phases to estimate
             num_freqs (int): number of frequencies in Fourier representation.
-            max_n (int): maximum number of unitary evolutions before measurement.
+            max_rotations (int): maximum number of unitary evolutions before measurement.
                 dictates how many matrices for updates are made and stored.
-            vector_guess (numpy array): a prior estimate of the phases. If none,
+            prior_vector (numpy array): a prior estimate of the phases. If none,
                 assumes flat.
             full_update_with_failure (bool): chooses whether to perform
                 a full single step of SLSQP whenever the amplitude
@@ -71,15 +72,20 @@ class BayesEstimator(object):
         self._full_update_with_failure = full_update_with_failure
         self._store_history = store_history
         self._probability_dist = FourierProbabilityDist(
-            init_amplitude_guess=init_amplitude_guess,
-            init_amplitude_vars=init_amplitude_vars,
+            prior_amplitude_mean=prior_amplitude_mean,
+            prior_amplitude_var=prior_amplitude_var,
             num_vectors=num_vectors,
             num_freqs=num_freqs,
-            vector_guess=vector_guess)
+            prior_vector=prior_vector)
+
+        # Store the initial priors given for use in resetting
+        self._prior_vector = copy.deepcopy(prior_vector)
+        self._prior_amplitude_mean = copy.deepcopy(prior_amplitude_mean)
+        self._prior_amplitude_var = copy.deepcopy(prior_amplitude_var)
 
         self._make_projector()
-        self._max_n = max_n
-        self._matrices = make_fourier_matrices(max_n, num_freqs)
+        self._max_rotations = max_rotations
+        self._matrices = make_fourier_matrices(max_rotations, num_freqs)
 
         self.reset()
 
@@ -89,11 +95,11 @@ class BayesEstimator(object):
         """
 
         self._probability_dist = FourierProbabilityDist(
-            init_amplitude_guess=self._probability_dist._init_amplitude_guess,
-            init_amplitude_vars=self._probability_dist._init_amplitude_vars,
+            prior_amplitude_mean=self._prior_amplitude_mean,
+            prior_amplitude_var=self._prior_amplitude_var,
             num_vectors=self._probability_dist._num_vectors,
             num_freqs=self._probability_dist._num_freqs,
-            vector_guess=self._probability_dist._vector_guess)
+            prior_vector=self._prior_vector)
 
         # The following stores the history of the estimator
         # for analysis purposes
@@ -283,7 +289,7 @@ class BayesEstimator(object):
         nrot = round_data.num_rotations
 
         # Get the matrices for multiplication
-        if nrot <= self._max_n:
+        if nrot <= self._max_rotations:
             cos_matrix = self._matrices[nrot-1][0]
             sin_matrix = self._matrices[nrot-1][1]
         else:
@@ -489,7 +495,7 @@ class BayesDepolarizingEstimator(BayesEstimator):
             meas_real = round_data.measurement
 
         # Get the correct cos matrix
-        if nrot < self._max_n:
+        if nrot < self._max_rotations:
             cos_matrix = self._matrices[nrot-1][0]
             sin_matrix = self._matrices[nrot-1][1]
         else:

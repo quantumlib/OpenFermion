@@ -37,29 +37,30 @@ class FourierProbabilityDist(object):
     """
 
     def __init__(self,
-                 init_amplitude_guess=None,
-                 init_amplitude_vars=None,
+                 prior_amplitude_mean=None,
+                 prior_amplitude_var=None,
                  num_vectors=1,
                  num_freqs=1000,
-                 vector_guess=None):
+                 prior_vector=None):
         """
         Args:
-            init_amplitude_guess (numpy array or list):
+            prior_amplitude_mean (numpy array or list or None):
                 We take an initial normal distribution for the amplitudes
-                which requires for each a mean and a variance - 'guess' is
-                the mean
-            init_amplitude_vars (numpy array or list): variance of the
-                estimated distribution in init_amplitude_guess
+                which requires for each a mean and a variance.
+                We only allow None for a single vector (in which case
+                the amplitude is fixed to 1), as we need this
+                to break the symmetry of the problem.
+            prior_amplitude_var (numpy array or list or None): variance of the
+                estimated distribution in prior_amplitude_mean.
+                We only allow None for a sinlge vector (in which case
+                this variable is unused).
             num_vectors (int): number of phases phi_j to estimate
             num_freqs (int): number of wave components cos(n*phi_j)
                 to store coefficients for (this provides a cut-off to
                 the sensitivity of the function).
-            max_n (int): the maximum n required by the user in
-                multiplying the stored function functions of the form
-                cos(n*phi_j + beta).
-            vector_guess (numpy array): a prior estimate of the function,
+            prior_vector (numpy array or None): a prior estimate of the function,
                 given in terms of the Fourier components c_{j,n}.
-                If None, estimated as a flat function over [-pi,pi].
+                If None, prior taken as a flat function over [-pi,pi].
 
         Raises:
             ValueError: if prior distribution does not have required shape.
@@ -72,38 +73,36 @@ class FourierProbabilityDist(object):
         self._num_freqs = num_freqs
 
         # Store prior information
-        if vector_guess is not None and (
-                num_vectors != vector_guess.shape[1]
-                or 2*num_freqs+1 != vector_guess.shape[0]):
+        if prior_vector is not None and (
+                num_vectors != prior_vector.shape[1]
+                or 2*num_freqs+1 != prior_vector.shape[0]):
             raise ValueError('''Prior distribution of phases has shape {},
                 required shape is {}'''.format(
-                    vector_guess.shape, (2*num_freqs+1, num_vectors)))
+                    prior_vector.shape, (2*num_freqs+1, num_vectors)))
 
-        self._vector_guess = vector_guess
+        if prior_amplitude_mean is None:
+            prior_amplitude_mean = [1]
+        if prior_amplitude_var is None:
+            prior_amplitude_var = [[EQ_TOLERANCE]]
 
-        if init_amplitude_guess is None:
-            init_amplitude_guess = [1]
-        if init_amplitude_vars is None:
-            init_amplitude_vars = [[EQ_TOLERANCE]]
-
-        if num_vectors != len(init_amplitude_guess):
+        if num_vectors != len(prior_amplitude_mean):
             raise ValueError('''I need {} amplitudes, but you have
-                given me {}.'''.format(num_vectors, len(init_amplitude_guess)))
+                given me {}.'''.format(num_vectors, len(prior_amplitude_mean)))
 
-        if any([numpy.isclose(init_amplitude_guess[j],
-                              init_amplitude_guess[j+1])
+        if any([numpy.isclose(prior_amplitude_mean[j],
+                              prior_amplitude_mean[j+1])
                 for j in range(num_vectors - 1)]):
             raise ValueError('''Starting amplitudes must be different.''')
 
-        self._init_amplitude_guess = init_amplitude_guess
-        self._init_amplitude_vars = init_amplitude_vars
+        self._prior_amplitude_mean = prior_amplitude_mean
+        self._prior_amplitude_var = prior_amplitude_var
 
         # The current estimate of the amplitudes is just the mean
         # of the given guess.
-        self._amplitude_estimates = numpy.array(init_amplitude_guess)
+        self._amplitude_estimates = numpy.array(prior_amplitude_mean)
 
-        if self._vector_guess is not None:
-            self._fourier_vectors = numpy.array(vector_guess)
+        if prior_vector is not None:
+            self._fourier_vectors = numpy.array(prior_vector)
         else:
             # Initialize probability distributions
             self._fourier_vectors = numpy.zeros((self._num_freqs*2+1,
@@ -114,7 +113,7 @@ class FourierProbabilityDist(object):
         self._p_vecs = []
 
         self._inv_covar_mat = numpy.linalg.inv(
-            numpy.array(self._init_amplitude_vars))
+            numpy.array(self._prior_amplitude_var))
 
     def get_real_dist(self, x_vec=None):
         """
@@ -243,17 +242,17 @@ class FourierProbabilityDist(object):
     def _init_mlikelihood(self, a_vec):
         # A normal distributed initial guess at the amplitudes
         return numpy.dot(
-            0.5*(a_vec-self._init_amplitude_guess)[
+            0.5*(a_vec-self._prior_amplitude_mean)[
                 numpy.newaxis, :],
             numpy.dot(self._inv_covar_mat,
-                      (a_vec-self._init_amplitude_guess)[
+                      (a_vec-self._prior_amplitude_mean)[
                         :, numpy.newaxis])).item()
 
     def _dinit_mlikelihood(self, a_vec):
         # The derivative of the above likelihood function
         return numpy.dot(
             self._inv_covar_mat,
-            (a_vec-self._init_amplitude_guess))
+            (a_vec-self._prior_amplitude_mean))
 
     def _jinit_mlikelihood(self):
         # The jacobian of the above likelihood function
