@@ -34,7 +34,7 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
     def setUp(self):
         """LinearQubitOperatorOptions test set up."""
-        self.processes = 6
+        self.processes = multiprocessing.cpu_count()
         self.options = LinearQubitOperatorOptions(self.processes)
 
     def test_init(self):
@@ -49,7 +49,8 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
     def test_get_processes_large(self):
         """Tests get_processes() with a large num."""
-        self.assertEqual(self.options.get_processes(20), self.processes)
+        self.assertEqual(self.options.get_processes(2*self.processes),
+                         self.processes)
 
     def test_invalid_processes(self):
         """Tests with invalid processes since it's not positive."""
@@ -225,7 +226,8 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
                          default_processes)
 
         # Generated variables.
-        self.assertEqual(len(self.linear_operator.qubit_operator_groups), 3)
+        self.assertEqual(len(self.linear_operator.qubit_operator_groups),
+                         min(multiprocessing.cpu_count(), 3))
         self.assertEqual(QubitOperator.accumulate(
             self.linear_operator.qubit_operator_groups), self.qubit_operator)
 
