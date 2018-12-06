@@ -226,7 +226,8 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
                          default_processes)
 
         # Generated variables.
-        self.assertEqual(len(self.linear_operator.qubit_operator_groups), 3)
+        self.assertEqual(len(self.linear_operator.qubit_operator_groups),
+                         min(multiprocessing.cpu_count(), 3))
         self.assertEqual(QubitOperator.accumulate(
             self.linear_operator.qubit_operator_groups), self.qubit_operator)
 
