@@ -103,11 +103,11 @@ def test_hubbard_square_lattice_dof_validation(n_dofs):
 def test_hubbard_square_lattice_edge_types():
     lattice = HubbardSquareLattice(3, 3)
     assert sorted(lattice.edge_types) == sorted((
-            'onsite', 'neighbor', 'next_neighbor',
+            'onsite', 'neighbor', 'diagonal_neighbor',
             'vertical_neighbor', 'horizontal_neighbor'))
     lattice.validate_edge_type('onsite')
     lattice.validate_edge_type('neighbor')
-    lattice.validate_edge_type('next_neighbor')
+    lattice.validate_edge_type('diagonal_neighbor')
     lattice.validate_edge_type('vertical_neighbor')
     lattice.validate_edge_type('horizontal_neighbor')
     with pytest.raises(ValueError):
@@ -154,10 +154,10 @@ def test_hubbard_square_lattice_2xd(d):
         assert (len(tuple(lattice.neighbors_iter())) ==
                 2 * len(tuple(lattice.neighbors_iter(False))) ==
                 n_neighbor_pairs)
-        n_next_neighbor_pairs = 4 * (d - (not periodic))
+        n_diagonal_neighbor_pairs = 4 * (d - (not periodic))
         assert (len(tuple(lattice.diagonal_neighbors_iter())) == 
                 2 * len(tuple(lattice.diagonal_neighbors_iter(False))) ==
-                n_next_neighbor_pairs)
+                n_diagonal_neighbor_pairs)
                
 
 def test_hubbard_square_lattice_2x2():

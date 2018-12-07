@@ -40,7 +40,7 @@ class HubbardLattice:
         spinless (bool): Whether or not the fermion has spin (False if so).
         edge_types (Tuple[Hashable, ...]): The types of edges that a term could
             correspond to. Examples include 'onsite', 'neighbor',
-            'next_neighbor', etc.
+            'diagonal_neighbor', etc.
         onsite_edge_types (Sequence[Hashable]): The edge types that connect
             sites to themselves.
 
@@ -71,7 +71,7 @@ class HubbardLattice:
     def edge_types(self):
         """The types of edges that a term could correspond to.
 
-        Examples include 'onsite', 'neighbor', 'next_neighbor', etc.
+        Examples include 'onsite', 'neighbor', 'diagonal_neighbor', etc.
         """
 
 
@@ -228,7 +228,7 @@ class HubbardSquareLattice(HubbardLattice):
 
     @property
     def edge_types(self):
-        return ('onsite', 'neighbor', 'next_neighbor',
+        return ('onsite', 'neighbor', 'diagonal_neighbor',
                 'horizontal_neighbor', 'vertical_neighbor')
 
     @property
@@ -244,7 +244,7 @@ class HubbardSquareLattice(HubbardLattice):
             return self.horizontal_neighbors_iter(ordered)
         elif edge_type == 'vertical_neighbor':
             return self.vertical_neighbors_iter(ordered)
-        elif edge_type == 'next_neighbor':
+        elif edge_type == 'diagonal_neighbor':
             return self.diagonal_neighbors_iter(ordered)
         raise ValueError('Edge type {} is not valid.'.format(edge_type))
 
