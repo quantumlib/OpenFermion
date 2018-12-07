@@ -40,7 +40,7 @@ class HubbardLattice:
         spinless (bool): Whether or not the fermion has spin (False if so).
         edge_types (Tuple[Hashable, ...]): The types of edges that a term could
             correspond to. Examples include 'onsite', 'neighbor',
-            'next_neighbor', etc.
+            'diagonal_neighbor', etc.
         onsite_edge_types (Sequence[Hashable]): The edge types that connect
             sites to themselves.
 
@@ -71,7 +71,7 @@ class HubbardLattice:
     def edge_types(self):
         """The types of edges that a term could correspond to.
 
-        Examples include 'onsite', 'neighbor', 'next_neighbor', etc.
+        Examples include 'onsite', 'neighbor', 'diagonal_neighbor', etc.
         """
 
 
@@ -228,7 +228,7 @@ class HubbardSquareLattice(HubbardLattice):
 
     @property
     def edge_types(self):
-        return ('onsite', 'neighbor',
+        return ('onsite', 'neighbor', 'diagonal_neighbor',
                 'horizontal_neighbor', 'vertical_neighbor')
 
     @property
@@ -244,6 +244,8 @@ class HubbardSquareLattice(HubbardLattice):
             return self.horizontal_neighbors_iter(ordered)
         elif edge_type == 'vertical_neighbor':
             return self.vertical_neighbors_iter(ordered)
+        elif edge_type == 'diagonal_neighbor':
+            return self.diagonal_neighbors_iter(ordered)
         raise ValueError('Edge type {} is not valid.'.format(edge_type))
 
 
@@ -299,6 +301,22 @@ class HubbardSquareLattice(HubbardLattice):
                 self.horizontal_neighbors_iter(ordered),
                 self.vertical_neighbors_iter(ordered))
 
+    def diagonal_neighbors_iter(self, ordered=True):
+        n_sites_per_y = (
+                self.x_dimension - 
+                (self.x_dimension <= 2 or not self.periodic))
+        n_sites_per_x = (
+                self.y_dimension -
+                (self.y_dimension <= 2 or not self.periodic))
+        for x in range(n_sites_per_y):
+            for y in range(n_sites_per_x):
+                for dy in (-1, 1):
+                    i = self.to_site_index((x, y))
+                    j = self.to_site_index(((x + 1) % self.x_dimension,
+                                            (y + dy) % self.y_dimension))
+                    yield (i, j)
+                    if ordered:
+                        yield (j, i)
 
     def horizontal_neighbors_iter(self, ordered=True):
         n_horizontal_edges_per_y = (
