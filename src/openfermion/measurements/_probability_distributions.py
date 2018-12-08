@@ -21,17 +21,31 @@ from openfermion.config import EQ_TOLERANCE
 
 class FourierProbabilityDist(object):
     """
-    Stores a multivariant Fourier representation of a periodic function:
+    Stores an approximate probability distribution of our knowledge of
+    a quantum state in the eigenbasis of a unitary operator.
 
-    f(phi_0,phi_1,...) = sum_j A_j f_j
-    f_j = sum_n (c_{j,2n} cos(n*phi_j) + c_{j,2n-1} sin(n*phi_j))
+    A generic quantum state may be written in the eigenbasis of a unitary
+    operator U,
 
-    In particular, this class stores values of A_j, c_{j,2n},
-    c_{j,2n+1} from the above equation.
+    $|\psi\rangle = sum_j a_j |phi_j\rangle$,
 
-    It also provides routines for multiplying f by functions of the form
-    cos^2(n*phi_j + beta), and for calculating maximum-likelihood
-    distributions of the A_j variables.
+    where psi is the quantum state, phi_j are the eigenstates of U,
+    and a_j are the amplitudes.
+
+    This class stores a distribution P(phi_0, phi_1,... , A_0, A_1,...)
+    (where A_j = |a_j|^2) of our knowledge of these variables which may
+    then be updated by the results of experiments (in particular here,
+    QPE experiments).
+
+    This class approximates this distribution as:
+    P(phi_0, phi_1,... , A_0, A_1,...)=P(A_0, A_1,...)*\prod_jP(\phi_j).
+
+    It then represents each phase distribution:
+    P(\phi_j) = sum_n (c_{j,2n} cos(n*phi_j) + c_{j,2n-1} sin(n*phi_j))
+
+    Separately, it stores an estimate of the mean amplitude \bar{A_j},
+    and data that allows for this to be updated (rather than a direct
+    representation of the function).
 
     More details can be found in arXiv:1809.09697, Appendix C.
     """
@@ -150,7 +164,7 @@ class FourierProbabilityDist(object):
 
         return numpy.array(y_vecs)
 
-    def _holevo_centers(self, vectors=None):
+    def get_phase_averages(self, vectors=None):
         """
         Gets the Holevo average phase from a distribution.
         Args:
@@ -166,7 +180,7 @@ class FourierProbabilityDist(object):
         centers = numpy.angle(vectors[2, :] + 1j*vectors[1, :])
         return centers
 
-    def _holevo_variances(self, vectors=None, maxvar=4*numpy.pi**2/12):
+    def get_phase_variances(self, vectors=None, maxvar=4*numpy.pi**2/12):
         """
         Gets the Holevo variance from a distribution
 

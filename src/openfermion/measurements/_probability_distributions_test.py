@@ -26,7 +26,7 @@ class FourierProbabilityDistTest(unittest.TestCase):
         self.assertEqual(pd._num_vectors, 1)
         self.assertEqual(len(pd._amplitude_estimates), 1)
         self.assertEqual(pd._fourier_vectors.shape, (21, 1))
-        self.assertAlmostEqual(pd._holevo_variances(maxvar=1)[0], 1)
+        self.assertAlmostEqual(pd.get_phase_variances(maxvar=1)[0], 1)
 
     def test_raises_errors(self):
 
@@ -63,7 +63,7 @@ class FourierProbabilityDistTest(unittest.TestCase):
         dist_comp = (1 + numpy.cos(x_vec)) / (2*pi)
         self.assertAlmostEqual(numpy.sum(numpy.abs(dist-dist_comp)), 0)
 
-    def test_holevo(self):
+    def testholevo(self):
         fourier_vector = numpy.zeros([21, 1])
         fourier_vector[0, 0] = 1
         fourier_vector[2, 0] = 1  # sine wave
@@ -72,5 +72,5 @@ class FourierProbabilityDistTest(unittest.TestCase):
                                     amplitude_var=[[1]],
                                     num_freqs=10,
                                     fourier_vector=fourier_vector)
-        self.assertEqual(pd._holevo_centers(), 0)
-        self.assertEqual(pd._holevo_variances()[0], 3)
+        self.assertEqual(pd.get_phase_averages(), 0)
+        self.assertEqual(pd.get_phase_variances()[0], 3)

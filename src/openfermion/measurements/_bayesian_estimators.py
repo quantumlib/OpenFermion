@@ -173,7 +173,7 @@ class BayesEstimator(object):
 
         # Check that we still have a positive variance with these
         # new vectors - otherwise throw them out.
-        for var in self._probability_dist._holevo_variances(vectors=new_vectors):
+        for var in self._probability_dist.get_phase_variances(vectors=new_vectors):
             if var < -EQ_TOLERANCE:
                 warnings.warn('''Some variances in the new distribution
                     are negative - var={}. I will reject the result of this
@@ -385,7 +385,7 @@ class BayesEstimator(object):
         Returns:
             (numpy array) the best current estimate of the eigenvalues
         """
-        eigenvalues = self._probability_dist._holevo_centers()
+        eigenvalues = self._probability_dist.get_phase_averages()
         if return_amplitudes:
             amplitudes = self.estimate_amplitudes()
             return eigenvalues, amplitudes
@@ -397,7 +397,7 @@ class BayesEstimator(object):
             (numpy array) the estimated variance in the best current
             estimate of the eigenvalues.
         """
-        return self._probability_dist._holevo_variances()
+        return self._probability_dist.get_phase_variances()
 
     def estimate_amplitudes(self):
         """
