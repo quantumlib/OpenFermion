@@ -29,7 +29,8 @@ class FourierProbabilityDist(object):
 
     $|\psi\rangle = sum_j a_j |phi_j\rangle$,
 
-    where psi is the quantum state, phi_j are the eigenstates of U,
+    where psi is the quantum state, |phi_j\rangle are the eigenstates of U,
+    labeled by their eigenvalues ($U|phi_j\rangle = phi_j|phi_j\rangle$),
     and a_j are the amplitudes.
 
     This class stores a distribution P(phi_0, phi_1,... , A_0, A_1,...)
