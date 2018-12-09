@@ -37,18 +37,16 @@ class FourierProbabilityDist(object):
     and a_j are the (unknown) corresponding amplitudes.
 
     This class stores a distribution P(phi_0, phi_1,... , A_0, A_1,...)
-    (where A_j = |a_j|^2) of our knowledge of these variables which may
-    then be updated by the results of experiments (in particular here,
-    QPE experiments).
+    (where A_j = |a_j|^2) of our knowledge of these variables.
 
-    This class approximates this distribution as:
+    In particular, it approximates this distribution as:
     P(phi_0, phi_1,... , A_0, A_1,...)=P(A_0, A_1,...)*\prod_jP(\phi_j).
 
     It then represents each phase distribution:
     P(\phi_j) = sum_n (c_{j,2n} cos(n*phi_j) + c_{j,2n-1} sin(n*phi_j))
 
     Separately, it stores an estimate of the mean amplitude \bar{A_j},
-    and data that allows for this to be updated (rather than a direct
+    and data that allows for this to be recalculated (rather than a direct
     representation of the function).
 
     More details can be found in arXiv:1809.09697, Appendix C.
