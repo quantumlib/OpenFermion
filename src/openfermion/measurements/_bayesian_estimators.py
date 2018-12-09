@@ -46,15 +46,19 @@ class BayesEstimator(object):
 
         """
         Args:
-            prior_amplitude_mean (numpy array): estimates for amplitudes of different
+            prior_amplitude_mean (1-d numpy array or None):
+                estimates for amplitudes of different
                 eigenstates in the initial state ($A_j$)
-            prior_amplitude_var (numpy array): variance on the amplitude estimates
+            prior_amplitude_var (2-d numpy array or None):
+                variance on the amplitude estimates
             num_vectors (int): number of phases to estimate
-            num_freqs (int): number of frequencies in Fourier representation.
-            max_rotations (int): maximum number of unitary evolutions before measurement.
-                dictates how many matrices for updates are made and stored.
-            prior_vector (numpy array): a prior estimate of the phases. If none,
-                assumes flat.
+            num_freqs (int): number of frequencies in Fourier
+                representation.
+            max_rotations (int): maximum number of unitary
+                evolutions before measurement. Dictates how many
+                matrices for updates are made and stored.
+            prior_vector (2-d numpy array or None):
+                a prior estimate of the phases. If None, assumes flat.
             full_update_with_failure (bool): chooses whether to perform
                 a full single step of SLSQP whenever the amplitude
                 optimization returns an unphysical result (negative
@@ -63,8 +67,9 @@ class BayesEstimator(object):
             store_history (bool): whether to store the history of
                 estimated values of the estimator. This is only
                 a few numbers per update, but it could be costly.
-            amplitude_approx_cutoff (int): a cutoff between estimating the amplitudes
-                via full SLSQP and approximating with single steps of Newton's
+            amplitude_approx_cutoff (int): a cutoff between 
+                estimating the amplitudes via full SLSQP and
+                approximating with single steps of Newton's
                 method. Increasing may lead to higher accuracy,
                 decreasing will lead to faster runtimes.
         """

@@ -60,21 +60,21 @@ class FourierProbabilityDist(object):
                  fourier_vector=None):
         """
         Args:
-            amplitude_mean (numpy array or list or None):
+            amplitude_mean (1D numpy array or list or None):
                 We take an normal distribution for the amplitudes
                 which requires for each a mean and a variance.
                 We only allow None for a single vector (in which case
                 the amplitude is fixed to 1), as we need this
                 to break the symmetry of the problem.
-            amplitude_var (numpy array or list or None): variance of the
-                estimated distribution in amplitude_mean.
-                We only allow None for a single vector (in which case
-                this variable is unused).
+            amplitude_var (2D numpy array or list of lists or None):
+                covariance matrix for the estimated distribution of
+                the amplitudes. We only allow None for a single vector
+                (in which case this variable is unused).
             num_vectors (int): number of phases phi_j to estimate
             num_freqs (int): number of wave components cos(n*phi_j)
                 to store coefficients for (this provides a cut-off to
                 the sensitivity of the function).
-            fourier_vector (numpy array or None): the function
+            fourier_vector (2D numpy array or None): the function
                 given in terms of the Fourier components c_{j,n}.
                 If None, prior taken as a flat function over [-pi,pi].
 
