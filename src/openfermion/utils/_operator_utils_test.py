@@ -30,6 +30,7 @@ from openfermion.utils import (Grid, is_hermitian,
                                random_interaction_operator)
 
 from openfermion.utils._operator_utils import *
+from openfermion.hamiltonians import MolecularData
 
 
 class OperatorUtilsTest(unittest.TestCase):
@@ -843,3 +844,111 @@ class TestNormalOrdering(unittest.TestCase):
     def test_exceptions(self):
         with self.assertRaises(TypeError):
             _ = normal_ordered(1)
+
+
+class GroupTensorProductBasisTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., 1.45))]
+        molecule = MolecularData(geometry, 'sto-3g', 1,
+                                 description="1.45")
+        molecule.load()
+        molecular_hamiltonian = molecule.get_molecular_hamiltonian()
+        hamiltonian = get_fermion_operator(molecular_hamiltonian)
+        cls.qubit_hamiltonian_bk = bravyi_kitaev(hamiltonian)
+        cls.qubit_hamiltonian_jw = jordan_wigner(hamiltonian)
+
+    def test_qubit_hamiltonian_bk_random(self):
+        for i in range(2):
+            sub_operators = group_into_tensor_product_basis_sets(
+                self.qubit_hamiltonian_bk, randomize=True)
+            new_qubit_hamiltonian = QubitOperator()
+            for sub_operator in sub_operators.values():
+                new_qubit_hamiltonian += sub_operator
+            self.assertTrue(new_qubit_hamiltonian == self.qubit_hamiltonian_bk)
+            self.assertTrue(len(sub_operators.values()) > 130)
+            self.assertTrue(len(sub_operators.values()) < 200)
+            for (basis, sub_operator) in sub_operators.items():
+                basis_qubits = tuple(zip(*basis))[0] if len(basis) > 0 else []
+                conflicts = tuple((i, P) for term in sub_operator.terms.keys()
+                                  for (i, P) in term if i in basis_qubits and
+                                  (i, P) not in basis)
+                self.assertTrue(len(conflicts) == 0)
+
+    def test_qubit_hamiltonian_bk_random_seed(self):
+        for i in range(2):
+            sub_operators = group_into_tensor_product_basis_sets(
+                self.qubit_hamiltonian_bk, randomize=True, seed=i)
+            new_qubit_hamiltonian = QubitOperator()
+            for sub_operator in sub_operators.values():
+                new_qubit_hamiltonian += sub_operator
+            self.assertTrue(new_qubit_hamiltonian == self.qubit_hamiltonian_bk)
+            self.assertTrue(len(sub_operators.values()) > 130)
+            self.assertTrue(len(sub_operators.values()) < 200)
+            for (basis, sub_operator) in sub_operators.items():
+                basis_qubits = tuple(zip(*basis))[0] if len(basis) > 0 else []
+                conflicts = tuple((i, P) for term in sub_operator.terms.keys()
+                                  for (i, P) in term if i in basis_qubits and
+                                  (i, P) not in basis)
+                self.assertTrue(len(conflicts) == 0)
+
+    def test_qubit_hamiltonian_bk_ordered(self):
+        sub_operators = group_into_tensor_product_basis_sets(
+            self.qubit_hamiltonian_bk, randomize=False)
+        new_qubit_hamiltonian = QubitOperator()
+        for sub_operator in sub_operators.values():
+            new_qubit_hamiltonian += sub_operator
+        self.assertTrue(new_qubit_hamiltonian == self.qubit_hamiltonian_bk)
+        self.assertTrue(len(sub_operators.values()) > 165)
+        self.assertTrue(len(sub_operators.values()) < 175)
+        for (basis, sub_operator) in sub_operators.items():
+            basis_qubits = tuple(zip(*basis))[0] if len(basis) > 0 else []
+            conflicts = tuple((i, P) for term in sub_operator.terms.keys()
+                              for (i, P) in term if i in basis_qubits and
+                              (i, P) not in basis)
+            self.assertTrue(len(conflicts) == 0)
+
+    def test_qubit_hamiltonian_jw_random(self):
+        for i in range(2):
+            sub_operators = group_into_tensor_product_basis_sets(
+                self.qubit_hamiltonian_jw, randomize=True)
+            new_qubit_hamiltonian = QubitOperator()
+            for sub_operator in sub_operators.values():
+                new_qubit_hamiltonian += sub_operator
+            self.assertTrue(new_qubit_hamiltonian == self.qubit_hamiltonian_jw)
+            self.assertTrue(len(sub_operators.values()) > 130)
+            self.assertTrue(len(sub_operators.values()) < 200)
+            for (basis, sub_operator) in sub_operators.items():
+                basis_qubits = tuple(zip(*basis))[0] if len(basis) > 0 else []
+                conflicts = tuple((i, P) for term in sub_operator.terms.keys()
+                                  for (i, P) in term if i in basis_qubits and
+                                  (i, P) not in basis)
+                self.assertTrue(len(conflicts) == 0)
+
+    def test_empty_qubit_operator_random(self):
+        sub_operators = group_into_tensor_product_basis_sets(QubitOperator(),
+                                                             randomize=True)
+        self.assertTrue(sub_operators == {})
+
+    def test_empty_qubit_operator_random_seed(self):
+        sub_operators = group_into_tensor_product_basis_sets(
+                QubitOperator(), randomize=True, seed=0)
+        self.assertTrue(sub_operators == {})
+
+    def test_empty_qubit_operator_ordered(self):
+        sub_operators = group_into_tensor_product_basis_sets(QubitOperator(),
+                                                             randomize=False)
+        self.assertTrue(sub_operators == {})
+
+    def test_fermion_operator_bad_type(self):
+        with self.assertRaises(TypeError):
+            _ = group_into_tensor_product_basis_sets(FermionOperator())
+
+    def test_boson_operator_bad_type(self):
+        with self.assertRaises(TypeError):
+            _ = group_into_tensor_product_basis_sets(BosonOperator())
+
+    def test_none_bad_type(self):
+        with self.assertRaises(TypeError):
+            _ = group_into_tensor_product_basis_sets(None)
