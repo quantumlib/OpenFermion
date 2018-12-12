@@ -899,6 +899,9 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
             **value** (QubitOperator): A QubitOperator with terms that are
                 diagonal in the basis defined by the key it is stored in.
 
+    Raises:
+       TypeError: Operator of invalid type.
+
     """
 
     if not isinstance(operator, QubitOperator):
