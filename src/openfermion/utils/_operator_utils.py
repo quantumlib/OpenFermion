@@ -901,7 +901,6 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
 
     Raises:
        TypeError: Operator of invalid type.
-
     """
 
     if not isinstance(operator, QubitOperator):
