@@ -926,6 +926,40 @@ class GroupTensorProductBasisTest(unittest.TestCase):
                                   (i, P) not in basis)
                 self.assertTrue(len(conflicts) == 0)
 
+    def test_demo_qubit_operator_random(self):
+        op = QubitOperator('X0 Y1', 2.) + QubitOperator('X1 Y2', 3.j)
+        sub_operators = group_into_tensor_product_basis_sets(op, randomize=True)
+        expected = {((0, 'X'), (1, 'Y')): QubitOperator('X0 Y1', 2.),
+                    ((1, 'X'), (2, 'Y')): QubitOperator('X1 Y2', 3.j)}
+        self.assertTrue(sub_operators == expected)
+
+        op = QubitOperator('X0 Y1', 2.) + QubitOperator('Y1 Y2', 3.j)
+        sub_operators = group_into_tensor_product_basis_sets(op, randomize=True)
+        expected = {((0, 'X'), (1, 'Y'), (2, 'Y')): op}
+        self.assertTrue(sub_operators == expected)
+
+        op = QubitOperator('', 4.) + QubitOperator('X1', 2.j)
+        sub_operators = group_into_tensor_product_basis_sets(op, randomize=True)
+        expected = {((1, 'X'),): op}
+        self.assertTrue(sub_operators == expected)
+
+    def test_demo_qubit_operator_ordered(self):
+        op = QubitOperator('X0 Y1', 2.) + QubitOperator('X1 Y2', 3.j)
+        sub_operators = group_into_tensor_product_basis_sets(op, randomize=False)
+        expected = {((0, 'X'), (1, 'Y')): QubitOperator('X0 Y1', 2.),
+                    ((1, 'X'), (2, 'Y')): QubitOperator('X1 Y2', 3.j)}
+        self.assertTrue(sub_operators == expected)
+
+        op = QubitOperator('X0 Y1', 2.) + QubitOperator('Y1 Y2', 3.j)
+        sub_operators = group_into_tensor_product_basis_sets(op, randomize=False)
+        expected = {((0, 'X'), (1, 'Y'), (2, 'Y')): op}
+        self.assertTrue(sub_operators == expected)
+
+        op = QubitOperator('', 4.) + QubitOperator('X1', 2.j)
+        sub_operators = group_into_tensor_product_basis_sets(op, randomize=False)
+        expected = {((1, 'X'),): op}
+        self.assertTrue(sub_operators == expected)
+
     def test_empty_qubit_operator_random(self):
         sub_operators = group_into_tensor_product_basis_sets(QubitOperator(),
                                                              randomize=True)

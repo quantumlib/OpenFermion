@@ -850,6 +850,16 @@ def normal_ordered(operator, hbar=1.):
     return ordered_operator
 
 
+def _find_compatible_basis(term, bases):
+    for basis in bases:
+        basis_qubits = [op[0] for op in basis]
+        conflicts = [(i, P) for (i, P) in term if i in
+                          basis_qubits and (i, P) not in basis]
+        if not conflicts:
+            return basis
+    return None
+
+
 def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
     """
     Split an operator (instance of QubitOperator) into `sub-operator`
@@ -910,7 +920,6 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
 
     sub_operators = OrderedDict()
     for term, coefficient in operator.terms.items():
-        inserted = False
         bases = sub_operators.keys()
         if randomize:
             bases = list(bases)
@@ -918,15 +927,11 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
                 random.seed(seed)
             random.shuffle(bases)
 
-        for basis in bases:
-            basis_qubits = tuple(zip(*basis))[0] if len(basis) > 0 else []
-            conflicts = tuple((i, P) for (i, P) in term if i in
-                              basis_qubits and (i, P) not in basis)
-            if conflicts:
-                continue
+        basis = _find_compatible_basis(term, bases)
 
-            additions = tuple((i, P) for (i, P) in term if i not in
-                              basis_qubits)
+        if basis is not None:
+            additions = tuple(op for op in term if op not in basis)
+
             if additions:
                 new_basis = tuple(sorted(basis + additions,
                                          key=lambda factor: factor[0]))
@@ -934,10 +939,6 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
                 sub_operators[new_basis] += QubitOperator(term, coefficient)
             else:
                 sub_operators[basis] += QubitOperator(term, coefficient)
-
-            inserted = True
-            break
-
-        if not inserted:
+        else:
             sub_operators[term] = QubitOperator(term, coefficient)
     return dict(sub_operators)
