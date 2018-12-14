@@ -30,7 +30,6 @@ from openfermion.utils import (Grid, is_hermitian,
                                random_interaction_operator)
 
 from openfermion.utils._operator_utils import *
-from openfermion.hamiltonians import MolecularData
 
 
 class OperatorUtilsTest(unittest.TestCase):

@@ -18,7 +18,6 @@ import os
 import copy
 import marshal
 from numpy.random import RandomState
-from collections import OrderedDict
 
 import numpy
 from scipy.sparse import spmatrix
