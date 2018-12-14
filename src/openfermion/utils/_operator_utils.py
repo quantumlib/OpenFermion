@@ -861,7 +861,7 @@ def _find_compatible_basis(term, bases):
     return None
 
 
-def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
+def group_into_tensor_product_basis_sets(operator, seed=None):
     """
     Split an operator (instance of QubitOperator) into `sub-operator`
     QubitOperators, where each sub-operator has terms that are diagonal
@@ -881,18 +881,8 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
     Args:
         operator (QubitOperator): the operator that will be split into
             sub-operators (tensor product basis sets).
-        randomize (bool): default True. If True, each term in
-            operator will be assigned at random to a compatible
-            sub-operator (or will become a new sub-operator if no compatible
-            sub-operator exists). If False, each term in the operator
-            will be assigned to the compatible sub-operator that was
-            created first (or will become a new sub-operator if no
-            compatible sub-operator exists). A sub-operator is compatible
-            if there exists a tensor product basis in which the term,
-            and all terms already in the sub-operator, are diagonal.
-        seed (int): default None. If None, the random number generator
-            is not re-initialised. Otherwise, the random number generator
-            is re-initialised with the seed.
+        seed (int): default None. Random seed used to initialize the
+            numpy.RandomState pseudo-random number generator.
 
     Returns:
         sub_operators (dict): a dictionary where each key defines a
@@ -919,13 +909,11 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
                         ' basis sets. {} is not supported.'.format(
                             type(operator).__name__))
 
-    sub_operators = OrderedDict()
+    sub_operators = {}
+    r = RandomState(seed)
     for term, coefficient in operator.terms.items():
-        bases = sub_operators.keys()
-        if randomize:
-            bases = list(bases)
-            r = RandomState(seed)
-            r.shuffle(bases)
+        bases = list(sub_operators.keys())
+        r.shuffle(bases)
 
         basis = _find_compatible_basis(term, bases)
 
@@ -942,4 +930,4 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
             else:
                 sub_operators[basis] += QubitOperator(term, coefficient)
 
-    return dict(sub_operators)
+    return sub_operators
