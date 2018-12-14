@@ -32,7 +32,8 @@ from ._operator_utils import (chemist_ordered, count_qubits,
                               is_hermitian, is_identity,
                               normal_ordered, prune_unused_indices,
                               reorder, up_then_down,
-                              load_operator, save_operator)
+                              load_operator, save_operator,
+                              group_into_tensor_product_basis_sets)
 
 from ._rdm_mapping_functions import (kronecker_delta,
                                      map_two_pdm_to_two_hole_dm,

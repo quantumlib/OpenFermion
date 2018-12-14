@@ -132,6 +132,7 @@ Authors
 `Thomas Häner <https://github.com/thomashaener>`__ (ETH Zurich),
 `Tarini Hardikar <https://github.com/TariniHardikar>`__ (Dartmouth),
 `Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
+`Oscar Higgott <https://github.com/oscarhiggott>`__ (University College London),
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
 `Josh Izaac <https://github.com/josh146>`__ (Xanadu),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
