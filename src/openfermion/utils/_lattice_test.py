@@ -37,7 +37,7 @@ def test_hubbard_square_lattice(
             n_dofs=n_dofs, spinless=spinless, periodic=periodic)
 
     n_spin_values = 2 - spinless
-    sites = tuple(itertools.product(range(x_dimension), range(y_dimension)))
+    sites = tuple((x, y) for y, x in itertools.product(range(y_dimension), range(x_dimension)))
     site_indices = tuple(lattice.to_site_index(site) for site in sites)
     assert (sites == tuple(
         lattice.from_site_index(site_index) for site_index in site_indices))
