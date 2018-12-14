@@ -187,7 +187,7 @@ class HubbardLattice:
 class HubbardSquareLattice(HubbardLattice):
     r"""A square lattice for a Hubbard model.
     
-    Valid edges are:
+    Valid edge types are:
         * 'onsite'
         * 'horizontal_neighbor'
         * 'vertical_neighbor'
