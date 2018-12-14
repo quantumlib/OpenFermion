@@ -853,17 +853,17 @@ class GroupTensorProductBasisTest(unittest.TestCase):
             sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
             expected = {((0, 'X'), (1, 'Y')): QubitOperator('X0 Y1', 2.),
                         ((1, 'X'), (2, 'Y')): QubitOperator('X1 Y2', 3.j)}
-            self.assertTrue(sub_operators == expected)
+            self.assertEqual(sub_operators, expected)
 
             op = QubitOperator('X0 Y1', 2.) + QubitOperator('Y1 Y2', 3.j)
             sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
             expected = {((0, 'X'), (1, 'Y'), (2, 'Y')): op}
-            self.assertTrue(sub_operators == expected)
+            self.assertEqual(sub_operators, expected)
 
             op = QubitOperator('', 4.) + QubitOperator('X1', 2.j)
             sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
             expected = {((1, 'X'),): op}
-            self.assertTrue(sub_operators == expected)
+            self.assertEqual(sub_operators, expected)
 
             op = (QubitOperator('X0 X1', 0.1) + QubitOperator('X1 X2', 2.j)
                   + QubitOperator('Y2 Z3', 3.) + QubitOperator('X3 Z4', 5.))
@@ -875,7 +875,7 @@ class GroupTensorProductBasisTest(unittest.TestCase):
                                        + QubitOperator('X3 Z4', 5.)),
                 ((2, 'Y'), (3, 'Z')): QubitOperator('Y2 Z3', 3.)
             }
-            self.assertTrue(sub_operators == expected)
+            self.assertEqual(sub_operators, expected)
 
     def test_empty_qubit_operator(self):
         sub_operators = group_into_tensor_product_basis_sets(QubitOperator())
