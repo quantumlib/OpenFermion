@@ -919,14 +919,10 @@ def group_into_tensor_product_basis_sets(operator, seed=None):
         if basis is None:
             sub_operators[term] = QubitOperator(term, coefficient)
         else:
+            sub_operator = sub_operators.pop(basis)
+            sub_operator += QubitOperator(term, coefficient)
             additions = tuple(op for op in term if op not in basis)
-
-            if additions:
-                new_basis = tuple(sorted(basis + additions,
-                                         key=lambda factor: factor[0]))
-                sub_operators[new_basis] = sub_operators.pop(basis)
-                sub_operators[new_basis] += QubitOperator(term, coefficient)
-            else:
-                sub_operators[basis] += QubitOperator(term, coefficient)
+            basis = tuple(sorted(basis + additions, key=lambda factor: factor[0]))
+            sub_operators[basis] = sub_operator
 
     return sub_operators
