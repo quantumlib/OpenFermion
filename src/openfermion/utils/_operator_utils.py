@@ -902,7 +902,6 @@ def group_into_tensor_product_basis_sets(operator, seed=None):
     Raises:
        TypeError: Operator of invalid type.
     """
-
     if not isinstance(operator, QubitOperator):
         raise TypeError('Can only split QubitOperator into tensor product'
                         ' basis sets. {} is not supported.'.format(
@@ -913,9 +912,7 @@ def group_into_tensor_product_basis_sets(operator, seed=None):
     for term, coefficient in operator.terms.items():
         bases = list(sub_operators.keys())
         r.shuffle(bases)
-
         basis = _find_compatible_basis(term, bases)
-
         if basis is None:
             sub_operators[term] = QubitOperator(term, coefficient)
         else:
