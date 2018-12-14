@@ -187,7 +187,12 @@ class HubbardLattice:
 class HubbardSquareLattice(HubbardLattice):
     r"""A square lattice for a Hubbard model.
     
-    There are two types of edges: 'onsite' and 'neighbor'.
+    Valid edge types are:
+        * 'onsite'
+        * 'horizontal_neighbor'
+        * 'vertical_neighbor'
+        * 'neighbor': union of 'horizontal_neighbor' and 'vertical_neighbor'
+        * 'diagonal_neighbor'
     """
 
     def __init__(self, x_dimension, y_dimension,
@@ -264,11 +269,11 @@ class HubbardSquareLattice(HubbardLattice):
     def to_site_index(self, site):
         """The index of a site."""
         x, y = site
-        return x * self.y_dimension + y
+        return x + y * self.x_dimension
 
 
     def from_site_index(self, site_index):
-        return divmod(site_index, self.y_dimension)
+        return divmod(site_index, self.x_dimension)[::-1]
 
 
     # neighbor counting and iteration

@@ -50,7 +50,7 @@ def test_fermi_hubbard_square_special_general_equivalence(
         x_dimension, y_dimension, tunneling, coulomb,
         chemical_potential, spinless, periodic, magnetic_field):
     hubbard_model_special = fermi_hubbard(
-            y_dimension, x_dimension, tunneling, coulomb,
+            x_dimension, y_dimension, tunneling, coulomb,
             chemical_potential=chemical_potential, spinless=spinless,
             periodic=periodic, magnetic_field=magnetic_field)
     hubbard_model_general = fermi_hubbard_from_general(
