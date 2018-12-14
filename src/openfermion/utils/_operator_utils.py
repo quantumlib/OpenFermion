@@ -17,7 +17,7 @@ from builtins import map, zip
 import os
 import copy
 import marshal
-import random
+from numpy.random import RandomState
 from collections import OrderedDict
 
 import numpy
@@ -852,11 +852,12 @@ def normal_ordered(operator, hbar=1.):
 
 def _find_compatible_basis(term, bases):
     for basis in bases:
-        basis_qubits = [op[0] for op in basis]
-        conflicts = [(i, P) for (i, P) in term if i in
-                          basis_qubits and (i, P) not in basis]
-        if not conflicts:
-            return basis
+        basis_qubits = {op[0] for op in basis}
+        conflicts = ((i, P) for (i, P) in term
+                     if i in basis_qubits and (i, P) not in basis)
+        if any(conflicts):
+            continue
+        return basis
     return None
 
 
@@ -923,13 +924,14 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
         bases = sub_operators.keys()
         if randomize:
             bases = list(bases)
-            if seed:
-                random.seed(seed)
-            random.shuffle(bases)
+            r = RandomState(seed)
+            r.shuffle(bases)
 
         basis = _find_compatible_basis(term, bases)
 
-        if basis is not None:
+        if basis is None:
+            sub_operators[term] = QubitOperator(term, coefficient)
+        else:
             additions = tuple(op for op in term if op not in basis)
 
             if additions:
@@ -939,6 +941,5 @@ def group_into_tensor_product_basis_sets(operator, randomize=True, seed=None):
                 sub_operators[new_basis] += QubitOperator(term, coefficient)
             else:
                 sub_operators[basis] += QubitOperator(term, coefficient)
-        else:
-            sub_operators[term] = QubitOperator(term, coefficient)
+
     return dict(sub_operators)
