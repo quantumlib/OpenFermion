@@ -22,6 +22,11 @@ Hamiltonians. For more information, see our
 
 .. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
+
+Run the interactive Jupyter Notebooks on MyBinder:
+.. image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
+
 Plugins
 =======
 
