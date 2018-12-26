@@ -24,6 +24,7 @@ Hamiltonians. For more information, see our
 
 
 Run the interactive Jupyter Notebooks on MyBinder:
+
 .. image:: https://mybinder.org/badge_logo.svg
     :target: https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
 
