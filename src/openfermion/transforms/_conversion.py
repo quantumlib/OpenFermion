@@ -113,6 +113,7 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
     Raises:
         TypeError: Input must be a FermionOperator.
         TypeError: FermionOperator does not map to InteractionOperator.
+        QuadraticHamiltonianError: FermionOperator does not map to QuadraticHamiltonian.
 
     Warning:
         Even assuming that each creation or annihilation operator appears
@@ -168,6 +169,11 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
             raise InteractionOperatorError('FermionOperator does not map '
                                            'to InteractionOperator.')
 
+    if not is_hermitian(fermion_operator):
+        raise QuadraticHamiltonianError(
+            'FermionOperator does not map '
+            'to QuadraticHamiltonian (not Hermitian).')
+
     # Form InteractionOperator and return.
     interaction_operator = InteractionOperator(constant, one_body, two_body)
     return interaction_operator
@@ -197,7 +203,7 @@ def get_quadratic_hamiltonian(fermion_operator,
 
     Raises:
         TypeError: Input must be a FermionOperator.
-        TypeError: FermionOperator does not map to QuadraticHamiltonian.
+        QuadraticHamiltonianError: FermionOperator does not map to QuadraticHamiltonian.
 
     Warning:
         Even assuming that each creation or annihilation operator appears

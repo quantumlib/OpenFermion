@@ -46,7 +46,7 @@ class GetInteractionOperatorTest(unittest.TestCase):
 
     def test_get_molecular_operator(self):
         coefficient = 3.
-        operators = ((2, 1), (3, 0), (0, 0), (3, 1))
+        operators = ((2, 1), (3, 0), (0, 0), (2, 1))
         op = FermionOperator(operators, coefficient)
 
         molecular_operator = get_interaction_operator(op)
@@ -73,6 +73,13 @@ class GetInteractionOperatorTest(unittest.TestCase):
     def test_get_interaction_operator_nonmolecular_term(self):
         with self.assertRaises(InteractionOperatorError):
             get_interaction_operator(FermionOperator('3^ 2 1'))
+
+    def test_get_interaction_operator_not_hermitian(self):
+        coefficient = 3.
+        operators = ((2, 1), (3, 0), (0, 0), (3, 1))
+        op = FermionOperator(operators, coefficient)
+        with self.assertRaises(QuadraticHamiltonianError):
+            get_interaction_operator(op)
 
     def test_get_molecular_data(self):
         """Test conversion to MolecularData from InteractionOperator"""
