@@ -27,7 +27,10 @@ from openfermion.utils._linear_qubit_operator import (
     apply_operator,
     generate_linear_qubit_operator,
 )
-from openfermion.utils._sparse_tools import qubit_operator_sparse
+from openfermion.utils._sparse_tools import (
+    qubit_operator_sparse,
+    get_ground_state,
+)
 
 class LinearQubitOperatorOptionsTest(unittest.TestCase):
     """Tests for LinearQubitOperatorOptions class."""
@@ -63,8 +66,6 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
         pool = self.options.get_pool()
         self.assertIsNotNone(pool)
-        self.assertIsNotNone(self.options.pool)
-        self.assertEqual(pool, self.options.pool)
 
     def test_get_pool_with_num(self):
         """Tests get_processes() with a num."""
@@ -72,15 +73,6 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
         pool = self.options.get_pool(2)
         self.assertIsNotNone(pool)
-        self.assertIsNotNone(self.options.pool)
-        self.assertEqual(pool, self.options.pool)
-
-        # Called twice, should be idempotent.
-        self.assertEqual(self.options.get_pool(2), self.options.pool)
-
-        # Same pool even with a different number of processes.
-        self.assertEqual(self.options.get_pool(1), self.options.pool)
-
 
 class LinearQubitOperatorTest(unittest.TestCase):
     """Tests for LinearQubitOperator class."""
@@ -187,6 +179,14 @@ class LinearQubitOperatorTest(unittest.TestCase):
                          for v in numpy.identity(16)])),
                                        mat_expected.A))
 
+    def test_closed_workers_not_resued(self):
+        """Issue #461 - no longer attempting to reuse closed worker pool"""
+        qubit_op = QubitOperator('X0 Z5')
+        linear_qubit_op = generate_linear_qubit_operator(
+            qubit_op,
+            options=LinearQubitOperatorOptions(processes=2))
+        get_ground_state(linear_qubit_op)
+
 class ParallelLinearQubitOperatorTest(unittest.TestCase):
     """Tests for ParallelLinearQubitOperator class."""
 
@@ -247,7 +247,6 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         self.assertIsNone(self.linear_operator.options.pool)
         self.assertTrue(numpy.allclose(self.linear_operator * self.vec,
                                        self.expected_matvec))
-        self.assertIsNotNone(self.linear_operator.options.pool)
 
     def test_matvec_0(self):
         """Testing with zero term."""
