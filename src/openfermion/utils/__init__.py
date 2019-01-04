@@ -60,6 +60,7 @@ from ._testing_utils import (haar_random_vector,
                              random_hermitian_matrix,
                              random_interaction_operator,
                              random_quadratic_hamiltonian,
+                             random_qubit_operator,
                              random_unitary_matrix,
                              module_importable)
 

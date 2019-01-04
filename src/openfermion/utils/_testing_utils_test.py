@@ -16,8 +16,9 @@ import unittest
 
 import numpy
 
+from openfermion.ops import QubitOperator
 from openfermion.transforms import get_fermion_operator
-from openfermion.utils import is_hermitian
+from openfermion.utils import count_qubits, is_hermitian
 from openfermion.utils._testing_utils import (
         EqualsTester,
         haar_random_vector,
@@ -26,7 +27,22 @@ from openfermion.utils._testing_utils import (
         random_hermitian_matrix,
         random_interaction_operator,
         random_quadratic_hamiltonian,
+        random_qubit_operator,
         random_unitary_matrix)
+
+
+def test_random_qubit_operator():
+    op = random_qubit_operator(
+        n_qubits=20,
+        max_num_terms=20,
+        max_many_body_order=20
+    )
+
+    assert isinstance(op, QubitOperator)
+    assert op.many_body_order() <= 20
+    assert len(op.terms) <= 20
+    assert count_qubits(op) <= 20
+
 
 
 class EqualsTesterTest(unittest.TestCase):

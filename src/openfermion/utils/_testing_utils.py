@@ -20,7 +20,27 @@ from scipy.linalg import qr
 
 from openfermion.ops import (DiagonalCoulombHamiltonian,
                              InteractionOperator,
-                             QuadraticHamiltonian)
+                             QuadraticHamiltonian,
+                             QubitOperator)
+
+
+def random_qubit_operator(n_qubits=16,
+                          max_num_terms=16,
+                          max_many_body_order=16,
+                          seed=None):
+    prng = numpy.random.RandomState(seed)
+    op = QubitOperator()
+    num_terms = prng.randint(max_num_terms+1)
+    for _ in range(num_terms):
+        many_body_order = prng.randint(max_many_body_order+1)
+        term = []
+        for _ in range(many_body_order):
+            index = prng.randint(n_qubits)
+            action = prng.choice(('X', 'Y', 'Z'))
+            term.append((index, action))
+        coefficient = prng.randn()
+        op += QubitOperator(term, coefficient)
+    return op
 
 
 def haar_random_vector(n, seed=None):
