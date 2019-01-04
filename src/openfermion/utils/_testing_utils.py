@@ -30,7 +30,7 @@ def random_qubit_operator(n_qubits=16,
                           seed=None):
     prng = numpy.random.RandomState(seed)
     op = QubitOperator()
-    num_terms = prng.randint(max_num_terms+1)
+    num_terms = prng.randint(1, max_num_terms+1)
     for _ in range(num_terms):
         many_body_order = prng.randint(max_many_body_order+1)
         term = []
