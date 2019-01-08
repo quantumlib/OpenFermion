@@ -70,3 +70,16 @@ def test_majorana_operator_add_subtract():
     assert (a - b).terms == {(0, 2, 3): -1.0,
                              (0, 2, 4): 1.3,
                              (1, 5, 7): -4.75}
+
+
+def test_majorana_operator_multiply():
+    a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5)
+    b = MajoranaOperator((2, 3, 4), 1.75) - MajoranaOperator((0, 3, 6), 0.25)
+
+    assert (a * b).terms == {(1, 3, 4, 7): 0.875,
+                             (0, 1, 2, 3, 6, 7): -0.125,
+                             (1, 3, 5, 6): 0.375,
+                             (0, 1, 2, 3, 4, 5): -2.625}
+
+    assert (2 * a).terms == (a * 2).terms == {(0, 1, 5): 3.0,
+                                              (1, 2, 7): -1.0}

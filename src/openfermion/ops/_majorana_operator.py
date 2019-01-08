@@ -99,14 +99,40 @@ class MajoranaOperator:
 
         terms = {}
         terms.update(self.terms)
-
         for term, coefficient in other.terms.items():
             if term in terms:
                 terms[term] -= coefficient
             else:
                 terms[term] = -coefficient
-
         return MajoranaOperator.from_dict(terms)
+
+    def __mul__(self, other):
+        if not isinstance(other, (type(self), int, float, complex)):
+            return NotImplemented
+
+        if isinstance(other, (int, float, complex)):
+            terms = {term: other*coefficient
+                     for term, coefficient in self.terms.items()}
+            return MajoranaOperator.from_dict(terms)
+
+        terms = {}
+        for left_term, left_coefficient in self.terms.items():
+            for right_term, right_coefficient in other.terms.items():
+                new_term, parity = _merge_majorana_terms(left_term, right_term)
+                coefficient = left_coefficient*right_coefficient*(-1)**parity
+                if new_term in terms:
+                    terms[new_term] += coefficient
+                else:
+                    terms[new_term] = coefficient
+        return MajoranaOperator.from_dict(terms)
+
+    def __rmul__(self, other):
+        if not isinstance(other, (int, float, complex)):
+            return NotImplemented
+        return self * other
+
+    def __repr__(self):
+        return 'MajoranaOperator.from_dict(terms={!r})'.format(self.terms)
 
 
 def _sort_majorana_term(term):
