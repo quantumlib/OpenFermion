@@ -10,6 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from __future__ import division
+
 
 class MajoranaOperator:
 
@@ -111,7 +113,7 @@ class MajoranaOperator:
             return NotImplemented
 
         if isinstance(other, (int, float, complex)):
-            terms = {term: other*coefficient
+            terms = {term: coefficient*other
                      for term, coefficient in self.terms.items()}
             return MajoranaOperator.from_dict(terms)
 
@@ -126,10 +128,36 @@ class MajoranaOperator:
                     terms[new_term] = coefficient
         return MajoranaOperator.from_dict(terms)
 
+    def __imul__(self, other):
+        if not isinstance(other, (type(self), int, float, complex)):
+            return NotImplemented
+
+        if isinstance(other, (int, float, complex)):
+            for term in self.terms:
+                self.terms[term] *= other
+            return self
+
+        return self * other
+
     def __rmul__(self, other):
         if not isinstance(other, (int, float, complex)):
             return NotImplemented
         return self * other
+
+    def __truediv__(self, other):
+        if not isinstance(other, (int, float, complex)):
+            return NotImplemented
+        terms = {term: coefficient/other
+                 for term, coefficient in self.terms.items()}
+        return MajoranaOperator.from_dict(terms)
+
+    def __itruediv__(self, other):
+        if not isinstance(other, (int, float, complex)):
+            return NotImplemented
+
+        for term in self.terms:
+            self.terms[term] /= other
+        return self
 
     def __repr__(self):
         return 'MajoranaOperator.from_dict(terms={!r})'.format(self.terms)
