@@ -31,6 +31,12 @@ class MajoranaOperator:
 
     def commutes_with(self, other):
         """Test commutation with another MajoranaOperator"""
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        if len(self.terms) == 1 and len(other.terms) == 1:
+            return _majorana_terms_commute(list(self.terms.keys())[0],
+                                           list(other.terms.keys())[0])
         # TODO
         return False
 
@@ -77,3 +83,28 @@ def _merge_majorana_terms(left_term, right_term):
     else:
         merged_term.extend(left_term[i:])
     return tuple(merged_term), parity % 2
+
+
+def _majorana_terms_commute(term_a, term_b):
+    """Whether two Majorana terms commute.
+
+    Args:
+        term_a (Tuple[int]): The indices of a Majorana operator term
+        term_b (Tuple[int]): The indices of a Majorana operator term
+
+    Returns:
+        bool. Whether The terms commute.
+    """
+    intersection = 0
+    i, j = 0, 0
+    while i < len(term_a) and j < len(term_b):
+        if term_a[i] < term_b[j]:
+            i += 1
+        elif term_a[i] > term_b[j]:
+            j += 1
+        else:
+            intersection += 1
+            i += 1
+            j += 1
+    parity = (len(term_a)*len(term_b) - intersection) % 2
+    return not parity

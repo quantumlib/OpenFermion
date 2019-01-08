@@ -26,3 +26,22 @@ def test_majorana_operator_init():
 
     op = MajoranaOperator((5, 10, 4, 3, 6, 9, 6))
     assert op.terms == {(3, 4, 5, 9, 10): -1.0}
+
+
+def test_majorana_operator_commutes_with():
+    a = MajoranaOperator((0, 1, 5))
+    b = MajoranaOperator((1, 2, 7))
+    c = MajoranaOperator((2, 3, 4))
+    d = MajoranaOperator((0, 3, 6))
+
+    assert a.commutes_with(b)
+    assert not a.commutes_with(c)
+    assert a.commutes_with(d)
+    assert b.commutes_with(c)
+    assert not b.commutes_with(d)
+    assert c.commutes_with(d)
+
+    e = MajoranaOperator((0, 1, 1, 1, 4, 5))
+    f = MajoranaOperator((0, 1, 1, 4))
+
+    assert e.commutes_with(f)
