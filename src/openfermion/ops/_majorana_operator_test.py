@@ -45,3 +45,28 @@ def test_majorana_operator_commutes_with():
     f = MajoranaOperator((0, 1, 1, 4))
 
     assert e.commutes_with(f)
+
+
+def test_majorana_operator_add_subtract():
+    a = MajoranaOperator((0, 2, 3), -1.25)
+    b = MajoranaOperator((1, 5, 7), 4.75)
+
+    a += MajoranaOperator((0, 2, 4), 1.3)
+    assert a.terms == {(0, 2, 3): -1.25,
+                       (0, 2, 4): 1.3}
+
+    a += MajoranaOperator((0, 2, 3), 0.5)
+    assert a.terms == {(0, 2, 3): -.75,
+                       (0, 2, 4): 1.3}
+
+    a -= MajoranaOperator((0, 2, 3), 0.25)
+    assert a.terms == {(0, 2, 3): -1.0,
+                       (0, 2, 4): 1.3}
+
+    assert (a + b).terms == {(0, 2, 3): -1.0,
+                             (0, 2, 4): 1.3,
+                             (1, 5, 7): 4.75}
+
+    assert (a - b).terms == {(0, 2, 3): -1.0,
+                             (0, 2, 4): 1.3,
+                             (1, 5, 7): -4.75}

@@ -29,6 +29,20 @@ class MajoranaOperator:
             term, parity = _sort_majorana_term(term)
             self.terms[term] = coefficient * (-1)**parity
 
+    @staticmethod
+    def from_dict(terms):
+        """Initialize a MajoranaOperator from a terms dictionary.
+
+        WARNING: The given dictionary is not validated whatsoever. It's up
+        to you to ensure that it is properly formed.
+
+        Args:
+            terms: A dictionary from Majorana term to coefficient
+        """
+        op = MajoranaOperator()
+        op.terms = terms
+        return op
+
     def commutes_with(self, other):
         """Test commutation with another MajoranaOperator"""
         if not isinstance(other, type(self)):
@@ -39,6 +53,60 @@ class MajoranaOperator:
                                            list(other.terms.keys())[0])
         # TODO
         return False
+
+    def __iadd__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        for term, coefficient in other.terms.items():
+            if term in self.terms:
+                self.terms[term] += coefficient
+            else:
+                self.terms[term] = coefficient
+
+        return self
+
+    def __add__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        terms = {}
+        terms.update(self.terms)
+
+        for term, coefficient in other.terms.items():
+            if term in terms:
+                terms[term] += coefficient
+            else:
+                terms[term] = coefficient
+
+        return MajoranaOperator.from_dict(terms)
+
+    def __isub__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        for term, coefficient in other.terms.items():
+            if term in self.terms:
+                self.terms[term] -= coefficient
+            else:
+                self.terms[term] = coefficient
+
+        return self
+
+    def __sub__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        terms = {}
+        terms.update(self.terms)
+
+        for term, coefficient in other.terms.items():
+            if term in terms:
+                terms[term] -= coefficient
+            else:
+                terms[term] = -coefficient
+
+        return MajoranaOperator.from_dict(terms)
 
 
 def _sort_majorana_term(term):
