@@ -132,9 +132,9 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
     fermion_operator = normal_ordered(fermion_operator)
     
     if not is_hermitian(fermion_operator):
-        raise QuadraticHamiltonianError(
+        raise InteractionOperatorError(
             'FermionOperator does not map '
-            'to QuadraticHamiltonian (not Hermitian).')
+            'to InteractionOperator (not Hermitian).')
 
     constant = 0.
     one_body = numpy.zeros((n_qubits, n_qubits), complex)
