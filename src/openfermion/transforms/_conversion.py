@@ -130,6 +130,12 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
 
     # Normal order the terms and initialize.
     fermion_operator = normal_ordered(fermion_operator)
+    
+    if not is_hermitian(fermion_operator):
+        raise QuadraticHamiltonianError(
+            'FermionOperator does not map '
+            'to QuadraticHamiltonian (not Hermitian).')
+
     constant = 0.
     one_body = numpy.zeros((n_qubits, n_qubits), complex)
     two_body = numpy.zeros((n_qubits, n_qubits,
@@ -168,11 +174,6 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
             # Handle non-molecular Hamiltonian.
             raise InteractionOperatorError('FermionOperator does not map '
                                            'to InteractionOperator.')
-
-    if not is_hermitian(fermion_operator):
-        raise QuadraticHamiltonianError(
-            'FermionOperator does not map '
-            'to QuadraticHamiltonian (not Hermitian).')
 
     # Form InteractionOperator and return.
     interaction_operator = InteractionOperator(constant, one_body, two_body)
