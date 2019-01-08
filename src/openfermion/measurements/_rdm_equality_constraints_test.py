@@ -16,7 +16,7 @@ import os
 
 from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
-from openfermion.transforms import get_interaction_operator
+from openfermion.transforms._jordan_wigner import jordan_wigner
 from openfermion.measurements import (one_body_fermion_constraints,
                                       two_body_fermion_constraints)
 
@@ -45,9 +45,8 @@ class FermionConstraintsTest(unittest.TestCase):
     def test_one_body_constraints(self):
         for constraint in one_body_fermion_constraints(
                 self.n_orbitals, self.n_fermions):
-            interaction_operator = get_interaction_operator(
-                constraint, self.n_orbitals)
-            constraint_value = self.fci_rdm.expectation(interaction_operator)
+            qubit_operator = jordan_wigner(constraint)
+            constraint_value = self.fci_rdm.expectation(qubit_operator)
             self.assertAlmostEqual(constraint_value, 0.)
             for term, coefficient in constraint.terms.items():
                 if len(term) == 2:
@@ -59,9 +58,8 @@ class FermionConstraintsTest(unittest.TestCase):
     def test_two_body_constraints(self):
         for constraint in two_body_fermion_constraints(
                 self.n_orbitals, self.n_fermions):
-            interaction_operator = get_interaction_operator(
-                constraint, self.n_orbitals)
-            constraint_value = self.fci_rdm.expectation(interaction_operator)
+            qubit_operator = jordan_wigner(constraint)
+            constraint_value = self.fci_rdm.expectation(qubit_operator)
             self.assertAlmostEqual(constraint_value, 0.)
             for term, coefficient in constraint.terms.items():
                 if len(term) == 2:
