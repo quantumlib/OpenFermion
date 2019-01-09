@@ -40,11 +40,13 @@ def test_majorana_operator_commutes_with():
     assert b.commutes_with(c)
     assert not b.commutes_with(d)
     assert c.commutes_with(d)
+    assert (a+c).commutes_with(b+d)
 
     e = MajoranaOperator((0, 1, 1, 1, 4, 5))
     f = MajoranaOperator((0, 1, 1, 4))
 
     assert e.commutes_with(f)
+
 
 
 def test_majorana_operator_add_subtract():

@@ -55,8 +55,7 @@ class MajoranaOperator:
         if len(self.terms) == 1 and len(other.terms) == 1:
             return _majorana_terms_commute(list(self.terms.keys())[0],
                                            list(other.terms.keys())[0])
-        # TODO
-        return False
+        return self*other == other*self
 
     def __iadd__(self, other):
         if not isinstance(other, type(self)):
