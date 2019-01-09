@@ -207,6 +207,9 @@ class MajoranaOperator:
             result *= self
         return result
 
+    def __neg__(self):
+        return -1 * self
+
     def __eq__(self, other):
         """Approximate numerical equality."""
         if not isinstance(other, type(self)):

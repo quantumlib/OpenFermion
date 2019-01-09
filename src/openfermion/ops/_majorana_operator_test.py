@@ -121,6 +121,12 @@ def test_majorana_operator_divide():
                        (1, 2, 7): -0.25}
 
 
+def test_majorana_operator_neg():
+    a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5)
+    assert (-a).terms == {(0, 1, 5): -1.5,
+                          (1, 2, 7): 0.5}
+
+
 def test_majorana_operator_eq():
     a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5)
     b = (MajoranaOperator((0, 1, 5), 1.5) +
