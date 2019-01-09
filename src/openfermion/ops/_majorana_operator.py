@@ -148,6 +148,7 @@ class MajoranaOperator:
     def __truediv__(self, other):
         if not isinstance(other, (int, float, complex)):
             return NotImplemented
+
         terms = {term: coefficient/other
                  for term, coefficient in self.terms.items()}
         return MajoranaOperator.from_dict(terms)
