@@ -12,6 +12,8 @@
 
 from __future__ import division
 
+import numpy
+
 
 class MajoranaOperator:
 
@@ -158,6 +160,26 @@ class MajoranaOperator:
         for term in self.terms:
             self.terms[term] /= other
         return self
+
+    def __eq__(self, other):
+        """Approximate numerical equality."""
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        for term in self.terms.keys() | other.terms.keys():
+            if term in self.terms and term in other.terms:
+                if not numpy.isclose(self.terms[term], other.terms[term]):
+                    return False
+            elif term in self.terms:
+                if not numpy.isclose(self.terms[term], 0.0):
+                    return False
+            else:
+                if not numpy.isclose(other.terms[term], 0.0):
+                    return False
+        return True
+
+    def __ne__(self, other):
+        return not self == other
 
     def __repr__(self):
         return 'MajoranaOperator.from_dict(terms={!r})'.format(self.terms)

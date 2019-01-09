@@ -95,3 +95,14 @@ def test_majorana_operator_divide():
     a /= 2
     assert a.terms == {(0, 1, 5): 0.75,
                        (1, 2, 7): -0.25}
+
+
+def test_majorana_operator_eq():
+    a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5)
+    b = (MajoranaOperator((0, 1, 5), 1.5) +
+         MajoranaOperator((1, 2, 7), -0.5) +
+         MajoranaOperator((3, 4, 5), 0.0))
+    c = MajoranaOperator((2, 3, 4), 1.75) - MajoranaOperator((0, 3, 6), 0.25)
+
+    assert a == b
+    assert a != c
