@@ -190,6 +190,10 @@ class MajoranaOperator:
             self.terms[term] /= other
         return self
 
+    def __div__(self, divisor):
+        """ For compatibility with Python 2. """
+        return self.__truediv__(divisor)
+
     def __eq__(self, other):
         """Approximate numerical equality."""
         if not isinstance(other, type(self)):
