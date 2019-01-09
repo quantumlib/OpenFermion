@@ -52,36 +52,36 @@ def test_majorana_operator_commutes_with():
 
 def test_majorana_operator_add_subtract():
     a = MajoranaOperator((0, 2, 3), -1.25)
-    b = MajoranaOperator((1, 5, 7), 4.75)
-    c = MajoranaOperator((0, 2, 3), -0.5)
+    b = MajoranaOperator((0, 2, 3), -0.5)
+    c = MajoranaOperator((1, 5, 7), 4.75)
+    d = MajoranaOperator((3, 5, 7), 2.25)
 
-    a += MajoranaOperator((0, 2, 4), 1.3)
+    a += c
     assert a.terms == {(0, 2, 3): -1.25,
-                       (0, 2, 4): 1.3}
+                       (1, 5, 7): 4.75}
+
+    a -= d
+    assert a.terms == {(0, 2, 3): -1.25,
+                       (1, 5, 7): 4.75,
+                       (3, 5, 7): 2.25}
 
     a += MajoranaOperator((0, 2, 3), 0.5)
     assert a.terms == {(0, 2, 3): -.75,
-                       (0, 2, 4): 1.3}
-
-    a += MajoranaOperator((0, 2, 3), 0.5)
-    assert a.terms == {(0, 2, 3): -.25,
-                       (0, 2, 4): 1.3}
+                       (1, 5, 7): 4.75,
+                       (3, 5, 7): 2.25}
 
     a -= MajoranaOperator((0, 2, 3), 0.25)
-    assert a.terms == {(0, 2, 3): -0.5,
-                       (0, 2, 4): 1.3}
+    assert a.terms == {(0, 2, 3): -1.0,
+                       (1, 5, 7): 4.75,
+                       (3, 5, 7): 2.25}
 
-    a -= MajoranaOperator((0, 2, 3), 0.25)
-    assert a.terms == {(0, 2, 3): -0.75,
-                       (0, 2, 4): 1.3}
+    assert (a + b).terms == {(0, 2, 3): -1.5,
+                             (1, 5, 7): 4.75,
+                             (3, 5, 7): 2.25}
 
-    assert (a + b + c).terms == {(0, 2, 3): -1.25,
-                                 (0, 2, 4): 1.3,
-                                 (1, 5, 7): 4.75}
-
-    assert (a - b - c).terms == {(0, 2, 3): -0.25,
-                                 (0, 2, 4): 1.3,
-                                 (1, 5, 7): -4.75}
+    assert (a - b).terms == {(0, 2, 3): -0.5,
+                             (1, 5, 7): 4.75,
+                             (3, 5, 7): 2.25}
 
 
 def test_majorana_operator_multiply():
