@@ -132,10 +132,16 @@ def test_majorana_operator_eq():
     b = (MajoranaOperator((0, 1, 5), 1.5) +
          MajoranaOperator((1, 2, 7), -0.5) +
          MajoranaOperator((3, 4, 5), 0.0))
-    c = MajoranaOperator((2, 3, 4), 1.75) - MajoranaOperator((0, 3, 6), 0.25)
+    c = (MajoranaOperator((0, 1, 5), 1.5) +
+         MajoranaOperator((1, 2, 7), -0.5) +
+         MajoranaOperator((3, 4, 5), 0.1))
+    d = MajoranaOperator((0, 1, 5), 1.75)
+    e = MajoranaOperator((0, 1, 5), 1.5) - MajoranaOperator((0, 3, 6), 0.25)
 
     assert a == b
     assert a != c
+    assert a != d
+    assert a != e
 
 
 def test_majorana_operator_str():
