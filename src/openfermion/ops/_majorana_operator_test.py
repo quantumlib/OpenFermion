@@ -113,11 +113,13 @@ def test_majorana_operator_eq():
 def test_majorana_operator_str():
     zero = MajoranaOperator()
     one = MajoranaOperator(())
+    still_zero = MajoranaOperator((0, 1, 5), 0.0)
     a = MajoranaOperator((0, 1, 5), 1.5)
     b = MajoranaOperator((1, 2, 7), -0.5)
 
     assert str(zero) == '0'
     assert str(one) == '1.0 ()'
+    assert str(still_zero) == '0'
     assert str(a) == '1.5 (0, 1, 5)'
     assert str(b) == '-0.5 (1, 2, 7)'
     assert str(a+b) == """1.5 (0, 1, 5) +

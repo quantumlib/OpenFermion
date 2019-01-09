@@ -218,6 +218,8 @@ class MajoranaOperator:
             if numpy.isclose(coeff, 0.0):
                 continue
             lines.append('{} {} +'.format(coeff, term))
+        if not lines:
+            return '0'
         return '\n'.join(lines)[:-2]
 
     def __repr__(self):
