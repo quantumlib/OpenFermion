@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import pytest
 
 from openfermion import MajoranaOperator
 
@@ -100,6 +101,14 @@ def test_majorana_operator_multiply():
     assert a.terms == {(0, 1, 5): 3.0,
                        (1, 2, 7): -1.0}
 
+
+def test_majorana_operator_pow():
+    a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5)
+    assert (a**2).terms == {(): -2.5,
+                            (0, 2, 5, 7): -1.5}
+
+    with pytest.raises(TypeError):
+        _ = a**-1
 
 
 def test_majorana_operator_divide():

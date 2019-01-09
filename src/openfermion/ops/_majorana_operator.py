@@ -195,6 +195,18 @@ class MajoranaOperator:
         """ For compatibility with Python 2. """
         return self.__truediv__(divisor)
 
+    def __pow__(self, other):
+        if not isinstance(other, int):
+            return NotImplemented
+
+        if other < 0:
+            raise TypeError('Cannot raise MajoranaOperator to negative power.')
+
+        result = MajoranaOperator(())
+        for _ in range(other):
+            result *= self
+        return result
+
     def __eq__(self, other):
         """Approximate numerical equality."""
         if not isinstance(other, type(self)):
