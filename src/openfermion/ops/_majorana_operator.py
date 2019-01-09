@@ -10,12 +10,41 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+"""The MajoranaOperator data structure."""
+
 from __future__ import division
 
 import numpy
 
 
 class MajoranaOperator:
+    """A linear combination of products of Majorana operators.
+
+    A system of N fermionic modes can be described using 2N Majorana operators
+    :math:`\gamma_1, \ldots, \gamma_{2N}`
+    as an alternative to using N fermionic annihilation operators. The algebra
+    of Majorana operators amounts to the relation
+
+    .. math::
+        \{\gamma_i, \gamma_j\}
+         = \gamma_i \gamma_j + \gamma_j \gamma_i
+         = 2 \delta_{ij}
+
+    Note that this implies :math:`\gamma_i^2 = 1`.
+
+    The MajoranaOperator class stores a linear combination of products
+    of Majorana operators. Each product is represented as a tuple of
+    integers representing the indices of the operators. As an example,
+    `MajoranaOperator((2, 3, 5), -1.5)` initializes an operator with
+    a single term which represents the operator
+    :math:`-1.5 \gamma_2 \gamma_3 \gamma_5`. MajoranaOperators can be
+    added, subtracted, multiplied, and divided by scalars. They can be
+    compared for approximate numerical equality using `==`.
+
+    Attributes:
+        terms: A dictionary from term, represented by a tuple of integers,
+        to the coefficient of the term in the linear combination.
+    """
 
     def __init__(self, term=None, coefficient=1.0):
         """Initialize a MajoranaOperator with a single term.
