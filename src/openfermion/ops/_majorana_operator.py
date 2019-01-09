@@ -181,6 +181,16 @@ class MajoranaOperator:
     def __ne__(self, other):
         return not self == other
 
+    def __str__(self):
+        if not self.terms:
+            return '0'
+        lines = []
+        for term, coeff in sorted(self.terms.items()):
+            if numpy.isclose(coeff, 0.0):
+                continue
+            lines.append('{} {} +'.format(coeff, term))
+        return '\n'.join(lines)[:-2]
+
     def __repr__(self):
         return 'MajoranaOperator.from_dict(terms={!r})'.format(self.terms)
 
