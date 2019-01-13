@@ -27,10 +27,7 @@ from openfermion.utils._linear_qubit_operator import (
     apply_operator,
     generate_linear_qubit_operator,
 )
-from openfermion.utils._sparse_tools import (
-    qubit_operator_sparse,
-    get_ground_state,
-)
+from openfermion.utils._sparse_tools import qubit_operator_sparse
 
 class LinearQubitOperatorOptionsTest(unittest.TestCase):
     """Tests for LinearQubitOperatorOptions class."""
@@ -179,14 +176,6 @@ class LinearQubitOperatorTest(unittest.TestCase):
                          for v in numpy.identity(16)])),
                                        mat_expected.A))
 
-    def test_closed_workers_not_resued(self):
-        """Issue #461 - no longer attempting to reuse closed worker pool"""
-        qubit_op = QubitOperator('X0 Z5')
-        linear_qubit_op = generate_linear_qubit_operator(
-            qubit_op,
-            options=LinearQubitOperatorOptions(processes=2))
-        get_ground_state(linear_qubit_op)
-
 class ParallelLinearQubitOperatorTest(unittest.TestCase):
     """Tests for ParallelLinearQubitOperator class."""
 
@@ -260,6 +249,14 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
             matvec_expected))
         self.assertIsNone(self.linear_operator.options.pool)
 
+    def test_closed_workers_not_reused(self):
+        qubit_operator = QubitOperator('X0')
+        parallel_qubit_op = ParallelLinearQubitOperator(qubit_operator, 1,
+                options=LinearQubitOperatorOptions(processes=2))
+        state = [1.0, 0.0]
+        parallel_qubit_op.dot(state)
+        parallel_qubit_op.dot(state)
+        self.assertIsNone(parallel_qubit_op.options.pool)
 
 class UtilityFunctionTest(unittest.TestCase):
     """Tests for utility functions."""
