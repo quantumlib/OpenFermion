@@ -222,37 +222,45 @@ def dual_basis_jellium_model(grid, spinless=False,
         orbital_ids[indices] = {}
         for spin in spins:
             orbital_ids[indices][spin] = grid.orbital_id(indices, spin)
+
     # Loop once through all lattice sites.
-    for grid_indices_a in grid.all_points_indices():
-        coordinates_a = position_vectors[grid_indices_a]
-        for grid_indices_b in grid.all_points_indices():
-            coordinates_b = position_vectors[grid_indices_b]
-            differences = coordinates_b - coordinates_a
+    grid_origin = (0, ) * grid.dimensions
+    coordinates_origin = position_vectors[grid_origin]
+    for grid_indices_b in grid.all_points_indices():
+        coordinates_b = position_vectors[grid_indices_b]
+        differences = coordinates_b - coordinates_origin
 
-            # Compute coefficients.
-            kinetic_coefficient = 0.
-            potential_coefficient = 0.
-            for momenta_indices in grid.all_points_indices():
-                momenta = momentum_vectors[momenta_indices]
-                momenta_squared = momenta_squared_dict[momenta_indices]
-                if momenta_squared == 0:
-                    continue
+        # Compute coefficients.
+        kinetic_coefficient = 0.
+        potential_coefficient = 0.
+        for momenta_indices in grid.all_points_indices():
+            momenta = momentum_vectors[momenta_indices]
+            momenta_squared = momenta_squared_dict[momenta_indices]
+            if momenta_squared == 0:
+                continue
 
-                cos_difference = numpy.cos(momenta.dot(differences))
-                if kinetic:
-                    kinetic_coefficient += (
-                        cos_difference * momenta_squared /
-                        (2. * float(n_points)))
-                if potential:
-                    potential_coefficient += (
-                        position_prefactor * cos_difference / momenta_squared)
-
+            cos_difference = numpy.cos(momenta.dot(differences))
+            if kinetic:
+                kinetic_coefficient += (
+                    cos_difference * momenta_squared /
+                    (2. * float(n_points)))
+            if potential:
+                potential_coefficient += (
+                    position_prefactor * cos_difference / momenta_squared)
+        for grid_indices_shift in grid.all_points_indices():
             # Loop over spins and identify interacting orbitals.
             orbital_a = {}
             orbital_b = {}
+            shifted_index_1 = tuple(
+                [(grid_origin[i] + grid_indices_shift[i]) % grid.length[i]
+                 for i in range(grid.dimensions)])
+            shifted_index_2 = tuple(
+                [(grid_indices_b[i] + grid_indices_shift[i]) % grid.length[i]
+                 for i in range(grid.dimensions)])
+
             for spin in spins:
-                orbital_a[spin] = orbital_ids[grid_indices_a][spin]
-                orbital_b[spin] = orbital_ids[grid_indices_b][spin]
+                orbital_a[spin] = orbital_ids[shifted_index_1][spin]
+                orbital_b[spin] = orbital_ids[shifted_index_2][spin]
             if kinetic:
                 for spin in spins:
                     operators = ((orbital_a[spin], 1), (orbital_b[spin], 0))
