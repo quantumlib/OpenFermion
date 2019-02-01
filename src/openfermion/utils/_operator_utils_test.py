@@ -843,3 +843,61 @@ class TestNormalOrdering(unittest.TestCase):
     def test_exceptions(self):
         with self.assertRaises(TypeError):
             _ = normal_ordered(1)
+
+
+class GroupTensorProductBasisTest(unittest.TestCase):
+
+    def test_demo_qubit_operator(self):
+        for seed in [None, 0, 10000]:
+            op = QubitOperator('X0 Y1', 2.) + QubitOperator('X1 Y2', 3.j)
+            sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
+            expected = {((0, 'X'), (1, 'Y')): QubitOperator('X0 Y1', 2.),
+                        ((1, 'X'), (2, 'Y')): QubitOperator('X1 Y2', 3.j)}
+            self.assertEqual(sub_operators, expected)
+
+            op = QubitOperator('X0 Y1', 2.) + QubitOperator('Y1 Y2', 3.j)
+            sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
+            expected = {((0, 'X'), (1, 'Y'), (2, 'Y')): op}
+            self.assertEqual(sub_operators, expected)
+
+            op = QubitOperator('', 4.) + QubitOperator('X1', 2.j)
+            sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
+            expected = {((1, 'X'),): op}
+            self.assertEqual(sub_operators, expected)
+
+            op = (QubitOperator('X0 X1', 0.1) + QubitOperator('X1 X2', 2.j)
+                  + QubitOperator('Y2 Z3', 3.) + QubitOperator('X3 Z4', 5.))
+            sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
+            expected1 = {
+                ((0, 'X'), (1, 'X'), (2, 'X'),
+                 (3, 'X'), (4, 'Z')): (QubitOperator('X0 X1', 0.1)
+                                       + QubitOperator('X1 X2', 2.j)
+                                       + QubitOperator('X3 Z4', 5.)),
+                ((2, 'Y'), (3, 'Z')): QubitOperator('Y2 Z3', 3.)
+            }
+            expected2 = {
+                ((0, 'X'), (1, 'X'),
+                 (2, 'Y'), (3, 'Z')): (QubitOperator('X0 X1', 0.1)
+                                       + QubitOperator('Y2 Z3', 3.)),
+                ((1, 'X'), (2, 'X'),
+                 (3, 'X'), (4, 'Z')): (QubitOperator('X1 X2', 2.j)
+                                       + QubitOperator('X3 Z4', 5.))
+            }
+            self.assertTrue(sub_operators == expected1 or
+                            sub_operators == expected2)
+
+    def test_empty_qubit_operator(self):
+        sub_operators = group_into_tensor_product_basis_sets(QubitOperator())
+        self.assertTrue(sub_operators == {})
+
+    def test_fermion_operator_bad_type(self):
+        with self.assertRaises(TypeError):
+            _ = group_into_tensor_product_basis_sets(FermionOperator())
+
+    def test_boson_operator_bad_type(self):
+        with self.assertRaises(TypeError):
+            _ = group_into_tensor_product_basis_sets(BosonOperator())
+
+    def test_none_bad_type(self):
+        with self.assertRaises(TypeError):
+            _ = group_into_tensor_product_basis_sets(None)

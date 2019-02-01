@@ -13,7 +13,7 @@
 """Module to efficiently compute the Baker-Campbell-Hausdorff formula."""
 
 import itertools
-from scipy.misc import comb, factorial
+from scipy.special import comb, factorial
 
 
 def bch_expand(*ops, **kwargs):

@@ -16,7 +16,7 @@
 from collections import namedtuple
 
 from openfermion.ops import FermionOperator
-from openfermion.utils import SpinPairs
+from openfermion.utils import (SpinPairs, Spin)
 
 TunnelingParameter = namedtuple('TunnelingParameter',
                                 ('edge_type', 'dofs', 'coefficient'))
@@ -27,17 +27,25 @@ PotentialParameter = namedtuple('PotentialParameter',
                                 ('dof', 'coefficient'))
 
 
-def number_operator(i, coefficient=1.):
-    return FermionOperator(((i, 1), (i, 0)), coefficient)
+def number_operator(i, coefficient=1., particle_hole_symmetry=False):
+    op = FermionOperator(((i, 1), (i, 0)), coefficient)
+    if particle_hole_symmetry:
+        op -= FermionOperator((), 0.5)
+    return op
 
 
-def interaction_operator(i, j, coefficient=1.):
-    return number_operator(i, coefficient) * number_operator(j)
+def interaction_operator(i, j, coefficient=1., particle_hole_symmetry=False):
+    return (number_operator(i, coefficient, 
+                            particle_hole_symmetry=particle_hole_symmetry) * 
+            number_operator(j, particle_hole_symmetry=particle_hole_symmetry))
 
 
-def tunneling_operator(i, j, coefficient):
+def tunneling_operator(i, j, coefficient=1.):
     return (FermionOperator(((i, 1), (j, 0)), coefficient) + 
             FermionOperator(((j, 1), (i, 0)), coefficient.conjugate()))
+
+def number_difference_operator(i, j, coefficient=1.):
+    return number_operator(i, coefficient) - number_operator(j, coefficient)
 
 
 class FermiHubbardModel:
@@ -96,6 +104,9 @@ class FermiHubbardModel:
             \\
             &- \sum_{a} \mu_a
                \sum_i \sum_{\sigma} n_{i, a, \sigma}
+            \\
+            &- h \sum_{i} \sum_{a}
+                \left(n_{i, a, \uparrow} - n_{i, a, \downarrow}\right)
         \end{align}
 
     where
@@ -115,7 +126,8 @@ class FermiHubbardModel:
         - :math:`U_{a, b}^{(\mathrm{nghbr, \pm})}` is the Coulomb potential
           betwen spin orbitals on neighborings sites with the same (+) or
           different (-) spins,
-        - :math:`\mu_{a}` is the chemical potential.
+        - :math:`\mu_{a}` is the chemical potential, and
+        - :math:`h` is the magnetic field.
 
     One can also construct the Hamiltonian for the spinless model, which
     has the form
@@ -157,18 +169,23 @@ class FermiHubbardModel:
     def __init__(self, lattice,
                  tunneling_parameters=None,
                  interaction_parameters=None,
-                 potential_parameters=None
+                 potential_parameters=None,
+                 magnetic_field=0.,
+                 particle_hole_symmetry=False
                  ):
         r"""A Hubbard model defined on a lattice.
 
         Args:
             lattice (HubbardLattice): The lattice on which the model is defined.
             tunneling_parameters (Iterable[Tuple[Hashable, Tuple[int, int],
-                Number]], optional): The tunneling parameters.
+                float]], optional): The tunneling parameters.
             interaction_parameters (Iterable[Tuple[Hashable, Tuple[int, int],
-                Number, int?]], optional): The interaction parameters.
-            potential_parameters (Iterable[Tuple[int, Number]], optional): The
+                float, int?]], optional): The interaction parameters.
+            potential_parameters (Iterable[Tuple[int, float]], optional): The
                 potential parameters.
+            magnetic_field (float, optional): The magnetic field. Default is 0.
+            particle_hole_symmetry: If true, each number operator :math:`n` is
+                replaced with :math:`n - 1/2`.
 
         Each group of parameters is specified as an iterable of tuples.
 
@@ -232,6 +249,8 @@ class FermiHubbardModel:
             - :math:`i` runs over the sites of the lattice;
             - :math:`a` is the degree of freedom ``dof``; and
             - :math:`\mu` is the ``coefficient``.
+
+        In the spinless model, the magnetic field is ignored.
         """
 
         self.lattice = lattice
@@ -242,7 +261,8 @@ class FermiHubbardModel:
                 interaction_parameters)
         self.potential_parameters = self.parse_potential_parameters(
                 potential_parameters)
-
+        self.magnetic_field = magnetic_field
+        self.particle_hole_symmetry = particle_hole_symmetry
 
 
     def parse_tunneling_parameters(self, parameters):
@@ -319,7 +339,8 @@ class FermiHubbardModel:
                         not same_spatial_orbital):
                     i = self.lattice.to_spin_orbital_index(r, a, s)
                     j = self.lattice.to_spin_orbital_index(rr, aa, ss)
-                    terms += interaction_operator(i, j, param.coefficient)
+                    terms += interaction_operator(i, j, param.coefficient,
+                            particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
 
 
@@ -330,11 +351,25 @@ class FermiHubbardModel:
                 for spin_index in self.lattice.spin_indices:
                     i = self.lattice.to_spin_orbital_index(
                             site_index, param.dof, spin_index)
-                    terms += number_operator(i, -param.coefficient)
+                    terms += number_operator(i, -param.coefficient, 
+                            particle_hole_symmetry=self.particle_hole_symmetry)
+        return terms
+
+
+    def field_terms(self):
+        terms = FermionOperator()
+        if self.lattice.spinless or not self.magnetic_field:
+            return terms
+        for site_index in self.lattice.site_indices:
+            for dof in self.lattice.dof_indices:
+                i = self.lattice.to_spin_orbital_index(site_index, dof, Spin.UP)
+                j = self.lattice.to_spin_orbital_index(site_index, dof, Spin.DOWN)
+                terms += number_difference_operator(i, j, -self.magnetic_field)
         return terms
 
 
     def hamiltonian(self):
         return (self.tunneling_terms() + 
                 self.interaction_terms() + 
-                self.potential_terms())
+                self.potential_terms() +
+                self.field_terms())

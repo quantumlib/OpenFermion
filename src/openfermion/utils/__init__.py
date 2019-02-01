@@ -19,7 +19,7 @@ from ._commutators import anticommutator, commutator, double_commutator
 
 from ._grid import Grid
 
-from ._lattice import (HubbardSquareLattice, SpinPairs)
+from ._lattice import (HubbardSquareLattice, SpinPairs, Spin)
 
 from ._lcu_util import (lambda_norm,
                         preprocess_lcu_coefficients_for_reversible_sampling)
@@ -32,7 +32,8 @@ from ._operator_utils import (chemist_ordered, count_qubits,
                               is_hermitian, is_identity,
                               normal_ordered, prune_unused_indices,
                               reorder, up_then_down,
-                              load_operator, save_operator)
+                              load_operator, save_operator,
+                              group_into_tensor_product_basis_sets)
 
 from ._rdm_mapping_functions import (kronecker_delta,
                                      map_two_pdm_to_two_hole_dm,
@@ -59,6 +60,7 @@ from ._testing_utils import (haar_random_vector,
                              random_hermitian_matrix,
                              random_interaction_operator,
                              random_quadratic_hamiltonian,
+                             random_qubit_operator,
                              random_unitary_matrix,
                              module_importable)
 

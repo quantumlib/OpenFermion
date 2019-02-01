@@ -39,6 +39,26 @@ def test_pauli_operator_product():
     assert _PAULI_OPERATOR_PRODUCTS == correct
 
 
+def test_init_simplify():
+    assert QubitOperator("X0 X0") == QubitOperator.identity()
+    assert QubitOperator("X1 X1") == QubitOperator.identity()
+    assert QubitOperator("Y0 Y0") == QubitOperator.identity()
+    assert QubitOperator("Z0 Z0") == QubitOperator.identity()
+    assert QubitOperator("X0 Y0") == QubitOperator("Z0", coefficient=1j)
+    assert QubitOperator("Y0 X0") == QubitOperator("Z0", coefficient=-1j)
+    assert QubitOperator("X0 Y0 Z0") == 1j * QubitOperator.identity()
+    assert QubitOperator("Y0 Z0 X0") == 1j * QubitOperator.identity()
+    assert QubitOperator("Z0 Y0 X0") == -1j * QubitOperator.identity()
+    assert QubitOperator("X1 Y0 X1") == QubitOperator("Y0")
+    assert QubitOperator("Y1 Y1 Y1") == QubitOperator("Y1")
+    assert QubitOperator("Y2 Y2 Y2 Y2") == QubitOperator.identity()
+    assert QubitOperator("Y3 Y3 Y3 Y3 Y3") == QubitOperator("Y3")
+    assert QubitOperator("Y4 Y4 Y4 Y4 Y4 Y4") == QubitOperator.identity()
+    assert QubitOperator("X0 Y1 Y0 X1") == QubitOperator("Z0 Z1")
+    assert QubitOperator("X0 Y1 Z3 X2 Z3 Y0") == QubitOperator("Z0 Y1 X2",
+            coefficient=1j)
+
+
 def test_imul_inplace():
     qubit_op = QubitOperator("X1")
     prev_id = id(qubit_op)
@@ -71,6 +91,7 @@ def test_imul_qubit_op_2():
     op4 *= op3
     assert ((2, 'Z'),) in op3.terms
     assert op3.terms[((2, 'Z'),)] == 1.5j
+    assert op4.terms[((0, 'X'), (1, 'Y'))] == -2.25j
 
 
 def test_imul_bidir():

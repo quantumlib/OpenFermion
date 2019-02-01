@@ -12,9 +12,6 @@
 
 """QubitOperator stores a sum of Pauli operators acting on qubits."""
 
-import itertools
-import warnings
-
 import numpy
 
 from openfermion.ops._symbolic_operator import SymbolicOperator
@@ -108,82 +105,6 @@ class QubitOperator(SymbolicOperator):
         """Whether factors acting on different indices commute."""
         return True
 
-    def __imul__(self, multiplier):
-        """
-        Override in-place multiply of SymbolicOperator
-
-        Args:
-          multiplier(complex float, or QubitOperator): multiplier
-        """
-        # Handle scalars.
-        if isinstance(multiplier, (int, float, complex)):
-            for term in self.terms:
-                self.terms[term] *= multiplier
-            return self
-
-        # Handle QubitOperator.
-        if not isinstance(multiplier, QubitOperator):
-            raise TypeError('Cannot in-place multiply term of invalid type to '
-                            'QubitTerm.')
-
-        result_terms = dict()
-        for left_term in self.terms:
-            for right_term in multiplier.terms:
-                new_coefficient = (self.terms[left_term] *
-                                   multiplier.terms[right_term])
-
-                # Loop through local operators and create new sorted list
-                # of representing the product local operator:
-                product_operators = []
-                left_operator_index = 0
-                right_operator_index = 0
-                n_operators_left = len(left_term)
-                n_operators_right = len(right_term)
-                while (left_operator_index < n_operators_left and
-                       right_operator_index < n_operators_right):
-                    (left_qubit, left_loc_op) = (
-                        left_term[left_operator_index])
-                    (right_qubit, right_loc_op) = (
-                        right_term[right_operator_index])
-
-                    # Multiply local operators acting on the same qubit
-                    if left_qubit == right_qubit:
-                        left_operator_index += 1
-                        right_operator_index += 1
-                        (scalar, loc_op) = _PAULI_OPERATOR_PRODUCTS[
-                            (left_loc_op, right_loc_op)]
-
-                        # Add new term.
-                        if loc_op != 'I':
-                            product_operators += [(left_qubit, loc_op)]
-                            new_coefficient *= scalar
-                        # Note if loc_op == 'I', then scalar == 1.0
-
-                    # If left_qubit > right_qubit, add right_loc_op; else,
-                    # add left_loc_op.
-                    elif left_qubit > right_qubit:
-                        product_operators += [(right_qubit, right_loc_op)]
-                        right_operator_index += 1
-                    else:
-                        product_operators += [(left_qubit, left_loc_op)]
-                        left_operator_index += 1
-
-                # Finish the remaining operators:
-                if left_operator_index == n_operators_left:
-                    product_operators += right_term[
-                        right_operator_index::]
-                elif right_operator_index == n_operators_right:
-                    product_operators += left_term[left_operator_index::]
-
-                # Add to result dict
-                tmp_key = tuple(product_operators)
-                if tmp_key in result_terms:
-                    result_terms[tmp_key] += new_coefficient
-                else:
-                    result_terms[tmp_key] = new_coefficient
-        self.terms = result_terms
-        return self
-
     def renormalize(self):
         """Fix the trace norm of an operator to 1"""
         norm = self.induced_norm(2)
@@ -193,38 +114,34 @@ class QubitOperator(SymbolicOperator):
         else:
             self /= norm
 
-    @staticmethod
-    def accumulate(operators, zero=None):
-        """Sums over QubitOperators."""
-        total = zero or QubitOperator.zero()
-        for operator in operators:
-            total += operator
-        return total
+    def _simplify(self, term, coefficient=1.0):
+        """Simplify a term using commutator and anti-commutator relations."""
+        if not term:
+            return coefficient, term
 
-    def get_operators(self):
-        """Gets a list of operators with a single term.
+        term = sorted(term, key=lambda factor: factor[0])
 
-        Returns:
-            operators([QubitOperator]): A list of operators summing up to self.
-        """
-        for term, coefficient in self.terms.items():
-            yield QubitOperator(term, coefficient)
+        new_term = []
+        left_factor = term[0]
+        for right_factor in term[1:]:
+            left_index, left_action = left_factor
+            right_index, right_action = right_factor
 
-    def get_operator_groups(self, num_groups):
-        """Gets a list of operators with a few terms.
-        Args:
-            num_groups(int): How many operators to get in the end.
+            # Still on the same qubit, keep simplifying.
+            if left_index == right_index:
+                new_coefficient, new_action = _PAULI_OPERATOR_PRODUCTS[
+                        left_action, right_action]
+                left_factor = (left_index, new_action)
+                coefficient *= new_coefficient
 
-        Returns:
-            operators([QubitOperator]): A list of operators summing up to self.
-        """
-        if num_groups < 1:
-            warnings.warn('Invalid num_groups {} < 1.'.format(num_groups),
-                          RuntimeWarning)
-            num_groups = 1
+            # Reached different qubit, save result and re-initialize.
+            else:
+                if left_action != 'I':
+                    new_term.append(left_factor)
+                left_factor = right_factor
 
-        operators = self.get_operators()
-        num_groups = min(num_groups, len(self.terms))
-        for i in range(num_groups):
-            yield QubitOperator.accumulate(itertools.islice(
-                operators, len(range(i, len(self.terms), num_groups))))
+        # Save result of final iteration.
+        if left_factor[1] != 'I':
+            new_term.append(left_factor)
+
+        return coefficient, tuple(new_term)

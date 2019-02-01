@@ -11,9 +11,14 @@
 #   limitations under the License.
 
 import abc
-from enum import Enum
+from enum import Enum, IntEnum
 import itertools
 from six import add_metaclass
+
+
+class Spin(IntEnum):
+    UP = 0
+    DOWN = 1
 
 
 class SpinPairs(Enum):
@@ -35,13 +40,16 @@ class HubbardLattice:
         spinless (bool): Whether or not the fermion has spin (False if so).
         edge_types (Tuple[Hashable, ...]): The types of edges that a term could
             correspond to. Examples include 'onsite', 'neighbor',
-            'next_neighbor', etc.
+            'diagonal_neighbor', etc.
         onsite_edge_types (Sequence[Hashable]): The edge types that connect
             sites to themselves.
 
     And the following methods:
         site_pairs_iter(edge_type: Hashable) -> Iterable[Tuple[int, int]]: Iterable
             over pairs of sites corresponding to the given edge type.
+
+    For 'spinful' lattices, the ``spin_indices`` ``0`` and ``1`` correspond to
+    'up' and 'down', respectively.
     """
 
     @abc.abstractproperty
@@ -63,7 +71,7 @@ class HubbardLattice:
     def edge_types(self):
         """The types of edges that a term could correspond to.
 
-        Examples include 'onsite', 'neighbor', 'next_neighbor', etc.
+        Examples include 'onsite', 'neighbor', 'diagonal_neighbor', etc.
         """
 
 
@@ -179,7 +187,12 @@ class HubbardLattice:
 class HubbardSquareLattice(HubbardLattice):
     r"""A square lattice for a Hubbard model.
     
-    There are two types of edges: 'onsite' and 'neighbor'.
+    Valid edge types are:
+        * 'onsite'
+        * 'horizontal_neighbor'
+        * 'vertical_neighbor'
+        * 'neighbor': union of 'horizontal_neighbor' and 'vertical_neighbor'
+        * 'diagonal_neighbor'
     """
 
     def __init__(self, x_dimension, y_dimension,
@@ -220,7 +233,8 @@ class HubbardSquareLattice(HubbardLattice):
 
     @property
     def edge_types(self):
-        return ('onsite', 'neighbor')
+        return ('onsite', 'neighbor', 'diagonal_neighbor',
+                'horizontal_neighbor', 'vertical_neighbor')
 
     @property
     def onsite_edge_types(self):
@@ -231,6 +245,12 @@ class HubbardSquareLattice(HubbardLattice):
             return ((i, i) for i in self.site_indices)
         elif edge_type == 'neighbor':
             return self.neighbors_iter(ordered)
+        elif edge_type == 'horizontal_neighbor':
+            return self.horizontal_neighbors_iter(ordered)
+        elif edge_type == 'vertical_neighbor':
+            return self.vertical_neighbors_iter(ordered)
+        elif edge_type == 'diagonal_neighbor':
+            return self.diagonal_neighbors_iter(ordered)
         raise ValueError('Edge type {} is not valid.'.format(edge_type))
 
 
@@ -249,29 +269,61 @@ class HubbardSquareLattice(HubbardLattice):
     def to_site_index(self, site):
         """The index of a site."""
         x, y = site
-        return x * self.y_dimension + y
+        return x + y * self.x_dimension
 
 
     def from_site_index(self, site_index):
-        return divmod(site_index, self.y_dimension)
+        return divmod(site_index, self.x_dimension)[::-1]
 
 
     # neighbor counting and iteration
 
-    def n_neighbor_pairs(self, ordered=True):
-        """Number of neighboring (unordered) pairs of sites."""
+    def n_horizontal_neighbor_pairs(self, ordered=True):
+        """Number of horizontally neighboring (unordered) pairs of sites."""
         n_horizontal_edges_per_y = (
                 self.x_dimension - 
                 (self.x_dimension <= 2 or not self.periodic))
+        return (self.y_dimension * n_horizontal_edges_per_y * 
+                (2 if ordered else 1))
+
+
+    def n_vertical_neighbor_pairs(self, ordered=True):
+        """Number of vertically neighboring (unordered) pairs of sites."""
         n_vertical_edges_per_x = (
                 self.y_dimension - 
                 (self.y_dimension <= 2 or not self.periodic))
-        return ((self.y_dimension * n_horizontal_edges_per_y + 
-                 self.x_dimension * n_vertical_edges_per_x) * 
+        return (self.x_dimension * n_vertical_edges_per_x * 
                 (2 if ordered else 1))
+
+    def n_neighbor_pairs(self, ordered=True):
+        """Number of neighboring (unordered) pairs of sites."""
+        return (self.n_horizontal_neighbor_pairs(ordered) + 
+                self.n_vertical_neighbor_pairs(ordered))
     
 
     def neighbors_iter(self, ordered=True):
+        return itertools.chain(
+                self.horizontal_neighbors_iter(ordered),
+                self.vertical_neighbors_iter(ordered))
+
+    def diagonal_neighbors_iter(self, ordered=True):
+        n_sites_per_y = (
+                self.x_dimension - 
+                (self.x_dimension <= 2 or not self.periodic))
+        n_sites_per_x = (
+                self.y_dimension -
+                (self.y_dimension <= 2 or not self.periodic))
+        for x in range(n_sites_per_y):
+            for y in range(n_sites_per_x):
+                for dy in (-1, 1):
+                    i = self.to_site_index((x, y))
+                    j = self.to_site_index(((x + 1) % self.x_dimension,
+                                            (y + dy) % self.y_dimension))
+                    yield (i, j)
+                    if ordered:
+                        yield (j, i)
+
+    def horizontal_neighbors_iter(self, ordered=True):
         n_horizontal_edges_per_y = (
                 self.x_dimension - 
                 (self.x_dimension <= 2 or not self.periodic))
@@ -282,6 +334,9 @@ class HubbardSquareLattice(HubbardLattice):
                 yield (i, j)
                 if ordered:
                     yield (j, i)
+
+
+    def vertical_neighbors_iter(self, ordered=True):
         n_vertical_edges_per_x = (
                 self.y_dimension - 
                 (self.y_dimension <= 2 or not self.periodic))

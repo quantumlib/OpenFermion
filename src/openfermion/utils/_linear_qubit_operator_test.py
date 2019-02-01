@@ -13,6 +13,7 @@
 """Tests for linear_qubit_operator.py."""
 from __future__ import absolute_import, division
 
+import multiprocessing
 import unittest
 
 import numpy
@@ -33,7 +34,7 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
     def setUp(self):
         """LinearQubitOperatorOptions test set up."""
-        self.processes = 6
+        self.processes = multiprocessing.cpu_count()
         self.options = LinearQubitOperatorOptions(self.processes)
 
     def test_init(self):
@@ -48,7 +49,8 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
     def test_get_processes_large(self):
         """Tests get_processes() with a large num."""
-        self.assertEqual(self.options.get_processes(20), self.processes)
+        self.assertEqual(self.options.get_processes(2*self.processes),
+                         self.processes)
 
     def test_invalid_processes(self):
         """Tests with invalid processes since it's not positive."""
@@ -61,8 +63,6 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
         pool = self.options.get_pool()
         self.assertIsNotNone(pool)
-        self.assertIsNotNone(self.options.pool)
-        self.assertEqual(pool, self.options.pool)
 
     def test_get_pool_with_num(self):
         """Tests get_processes() with a num."""
@@ -70,15 +70,6 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
         pool = self.options.get_pool(2)
         self.assertIsNotNone(pool)
-        self.assertIsNotNone(self.options.pool)
-        self.assertEqual(pool, self.options.pool)
-
-        # Called twice, should be idempotent.
-        self.assertEqual(self.options.get_pool(2), self.options.pool)
-
-        # Same pool even with a different number of processes.
-        self.assertEqual(self.options.get_pool(1), self.options.pool)
-
 
 class LinearQubitOperatorTest(unittest.TestCase):
     """Tests for LinearQubitOperator class."""
@@ -216,11 +207,16 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         """Tests __init__()."""
         self.assertEqual(self.linear_operator.qubit_operator, self.qubit_operator)
         self.assertEqual(self.linear_operator.n_qubits, self.n_qubits)
-        self.assertEqual(self.linear_operator.options.processes, 10)
         self.assertIsNone(self.linear_operator.options.pool)
 
+        cpu_count = multiprocessing.cpu_count()
+        default_processes = min(cpu_count, 10)
+        self.assertEqual(self.linear_operator.options.processes,
+                         default_processes)
+
         # Generated variables.
-        self.assertEqual(len(self.linear_operator.qubit_operator_groups), 3)
+        self.assertEqual(len(self.linear_operator.qubit_operator_groups),
+                         min(multiprocessing.cpu_count(), 3))
         self.assertEqual(QubitOperator.accumulate(
             self.linear_operator.qubit_operator_groups), self.qubit_operator)
 
@@ -240,7 +236,6 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         self.assertIsNone(self.linear_operator.options.pool)
         self.assertTrue(numpy.allclose(self.linear_operator * self.vec,
                                        self.expected_matvec))
-        self.assertIsNotNone(self.linear_operator.options.pool)
 
     def test_matvec_0(self):
         """Testing with zero term."""
@@ -254,6 +249,14 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
             matvec_expected))
         self.assertIsNone(self.linear_operator.options.pool)
 
+    def test_closed_workers_not_reused(self):
+        qubit_operator = QubitOperator('X0')
+        parallel_qubit_op = ParallelLinearQubitOperator(qubit_operator, 1,
+                options=LinearQubitOperatorOptions(processes=2))
+        state = [1.0, 0.0]
+        parallel_qubit_op.dot(state)
+        parallel_qubit_op.dot(state)
+        self.assertIsNone(parallel_qubit_op.options.pool)
 
 class UtilityFunctionTest(unittest.TestCase):
     """Tests for utility functions."""

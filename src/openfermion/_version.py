@@ -11,4 +11,4 @@
 #   limitations under the License.
 
 """Define version number here and read it from setup.py automatically"""
-__version__ = "0.8.1"
+__version__ = "0.10.0.dev"

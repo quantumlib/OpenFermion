@@ -14,6 +14,7 @@
 
 import abc
 import copy
+import itertools
 import re
 import warnings
 
@@ -129,6 +130,9 @@ class SymbolicOperator:
         else:
             raise ValueError('term specified incorrectly.')
 
+        # Simplify the term
+        coefficient, term = self._simplify(term, coefficient=coefficient)
+
         # Add the term to the dictionary
         self.terms[term] = coefficient
 
@@ -165,8 +169,9 @@ class SymbolicOperator:
                             'Invalid coefficient {}.'.format(coef_string))
             coef *= coefficient
 
-            # Parse the term and add it to the dict
+            # Parse the term, simpify it and add to the dict
             term = self._parse_string(match[1])
+            coef, term = self._simplify(term, coefficient=coef)
             if term not in self.terms:
                 self.terms[term] = coef
             else:
@@ -189,6 +194,12 @@ class SymbolicOperator:
                              'The index should be a non-negative '
                              'integer.'.format(factor))
 
+    def _simplify(self, term, coefficient=1.0):
+        """Simplifies a term."""
+        if self.different_indices_commute:
+            term = sorted(term, key=lambda factor: factor[0])
+        return coefficient, tuple(term)
+
     def _parse_sequence(self, term):
         """Parse a term given as a sequence type (i.e., list, tuple, etc.).
 
@@ -206,11 +217,6 @@ class SymbolicOperator:
             # Check that all factors in the term are valid
             for factor in term:
                 self._validate_factor(factor)
-
-            # If factors with different indices commute, sort the factors
-            # by index
-            if self.different_indices_commute:
-                term = sorted(term, key=lambda factor: factor[0])
 
             # Return a tuple
             return tuple(term)
@@ -264,12 +270,6 @@ class SymbolicOperator:
 
             # Add the factor to the list as a tuple
             processed_term.append((index, action))
-
-        # If factors with different indices commute, sort the factors
-        # by index
-        if self.different_indices_commute:
-            processed_term = sorted(processed_term,
-                                    key=lambda factor: factor[0])
 
         # Return a tuple
         return tuple(processed_term)
@@ -343,16 +343,20 @@ class SymbolicOperator:
             result_terms = dict()
             for left_term in self.terms:
                 for right_term in multiplier.terms:
-                    new_coefficient = (self.terms[left_term] *
-                                       multiplier.terms[right_term])
-                    product_operators = left_term + right_term
+                    left_coefficient = self.terms[left_term]
+                    right_coefficient = multiplier.terms[right_term]
+
+                    new_coefficient = left_coefficient * right_coefficient
+                    new_term = left_term + right_term
+
+                    new_coefficient, new_term = self._simplify(
+                            new_term, coefficient=new_coefficient)
 
                     # Update result dict.
-                    product_operators = tuple(product_operators)
-                    if product_operators in result_terms:
-                        result_terms[product_operators] += new_coefficient
+                    if new_term in result_terms:
+                        result_terms[new_term] += new_coefficient
                     else:
-                        result_terms[product_operators] = new_coefficient
+                        result_terms[new_term] = new_coefficient
             self.terms = result_terms
             return self
 
@@ -558,8 +562,8 @@ class SymbolicOperator:
         Args:
             other(SymbolicOperator): SymbolicOperator to compare against.
         """
-        if not isinstance(other, type(self)):
-            return False
+        if not isinstance(self, type(other)):
+            return NotImplemented
 
         # terms which are in both:
         for term in set(self.terms).intersection(set(other.terms)):
@@ -649,6 +653,43 @@ class SymbolicOperator:
         else:
             return max(len(term) for term, coeff in self.terms.items()
                        if abs(coeff) > EQ_TOLERANCE)
+
+    @classmethod
+    def accumulate(cls, operators, start=None):
+        """Sums over SymbolicOperators."""
+        total = copy.deepcopy(start or cls.zero())
+        for operator in operators:
+            total += operator
+        return total
+
+    def get_operators(self):
+        """Gets a list of operators with a single term.
+
+        Returns:
+            operators([self.__class__]): A generator of the operators in self.
+        """
+        for term, coefficient in self.terms.items():
+            yield self.__class__(term, coefficient)
+
+    def get_operator_groups(self, num_groups):
+        """Gets a list of operators with a few terms.
+        Args:
+            num_groups(int): How many operators to get in the end.
+
+        Returns:
+            operators([self.__class__]): A list of operators summing up to
+                self.
+        """
+        if num_groups < 1:
+            warnings.warn('Invalid num_groups {} < 1.'.format(num_groups),
+                          RuntimeWarning)
+            num_groups = 1
+
+        operators = self.get_operators()
+        num_groups = min(num_groups, len(self.terms))
+        for i in range(num_groups):
+            yield self.accumulate(itertools.islice(
+                operators, len(range(i, len(self.terms), num_groups))))
 
     # DEPRECATED FUNCTIONS
     # ====================

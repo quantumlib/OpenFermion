@@ -22,6 +22,12 @@ Hamiltonians. For more information, see our
 
 .. image:: https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6-brightgreen.svg
 
+
+Run the interactive Jupyter Notebooks on MyBinder:
+
+.. image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
+
 Plugins
 =======
 
@@ -132,6 +138,7 @@ Authors
 `Thomas Häner <https://github.com/thomashaener>`__ (ETH Zurich),
 `Tarini Hardikar <https://github.com/TariniHardikar>`__ (Dartmouth),
 `Vojtĕch Havlíček <https://github.com/VojtaHavlicek>`__ (Oxford),
+`Oscar Higgott <https://github.com/oscarhiggott>`__ (University College London),
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
 `Josh Izaac <https://github.com/josh146>`__ (Xanadu),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
@@ -139,6 +146,7 @@ Authors
 `Sam McArdle <https://github.com/sammcardle30>`__ (Oxford),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
 `Thomas O'Brien <https://github.com/obriente>`__ (Leiden University),
+`Bryan O'Gorman <https://ti.arc.nasa.gov/profile/bogorman>`__ (UC Berkeley, NASA),
 `Isil Ozfidan <https://github.com/conta877>`__ (D-Wave Systems),
 `Max Radin <https://github.com/max-radin>`__ (UC Santa Barbara),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
