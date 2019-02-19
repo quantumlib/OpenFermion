@@ -22,7 +22,7 @@ import numpy
 EINSUM_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
-def generate_parity_permutations(seq: Union[str, Sequence]):
+def generate_parity_permutations(seq):
     """
     Generates the permutations and sign of a sequence by constructing a tree
     where the nth level contains all n-permutations of m (n < m) objects.
@@ -69,8 +69,7 @@ def generate_parity_permutations(seq: Union[str, Sequence]):
     return permutations
 
 
-def wedge(left_tensor: numpy.ndarray, right_tensor: numpy.ndarray,
-          left_index_ranks: tuple, right_index_ranks: tuple) -> numpy.ndarray:
+def wedge(left_tensor, right_tensor, left_index_ranks, right_index_ranks):
     """
     Implement the wedge product between left_tensor and right_tensor
 
