@@ -82,7 +82,7 @@ def test_random_two_wedge():
 
 def test_random_two_wedge_two():
     """
-    Test wedge product code with random 4-tensor and a random 2-tensor
+    Test wedge product code with a random 4-tensor and a random 4-tensor
 
     (a, b, h, g) wedge (c, d, f, e) -> (a, b, c, d, e, f, g, h)
 
