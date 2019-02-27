@@ -149,7 +149,7 @@ Authors
 `Isil Ozfidan <https://github.com/conta877>`__ (D-Wave Systems),
 `Max Radin <https://github.com/max-radin>`__ (UC Santa Barbara),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
-`Nicholas Rubin <https://github.com/ncrubin>`__ (Rigetti),
+`Nicholas Rubin <https://github.com/ncrubin>`__ (Google),
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
