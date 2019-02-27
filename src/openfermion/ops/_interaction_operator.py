@@ -29,15 +29,18 @@ class InteractionOperator(PolynomialTensor):
     general FermionOperator class. However, this class is able to exploit
     specific properties of how fermions interact to enable more numerically
     efficient manipulation of the data. Note that the operators stored in this
-    class take the form: constant + \sum_{p, q} h_[p, q] a^\dagger_p a_q +
+    class take the form:
 
-        \sum_{p, q, r, s} h_[p, q, r, s] a^\dagger_p a^\dagger_q a_r a_s.
+        .. math::
+
+            constant + \sum_{p, q} h_{p, q} a^\dagger_p a_q +
+            \sum_{p, q, r, s} h_{p, q, r, s} a^\dagger_p a^\dagger_q a_r a_s.
 
     Attributes:
-        one_body_tensor: The coefficients of the one-body terms (h[p, q]).
+        one_body_tensor: The coefficients of the one-body terms (:math:`h_{p, q}`).
             This is an n_qubits x n_qubits numpy array of floats.
         two_body_tensor: The coefficients of the two-body terms
-            (h[p, q, r, s]). This is an n_qubits x n_qubits x n_qubits x
+            (:math:`h_{p, q, r, s}`). This is an n_qubits x n_qubits x n_qubits x
             n_qubits numpy array of floats.
     """
 
@@ -48,10 +51,10 @@ class InteractionOperator(PolynomialTensor):
         Args:
             constant: A constant term in the operator given as a
                 float. For instance, the nuclear repulsion energy.
-            one_body_tensor: The coefficients of the one-body terms (h[p,q]).
+            one_body_tensor: The coefficients of the one-body terms (:math:`h_{p,q}`).
                This is an n_qubits x n_qubits numpy array of floats.
             two_body_tensor: The coefficients of the two-body terms
-                (h[p, q, r, s]). This is an n_qubits x n_qubits x n_qubits x
+                (:math:`h_{p, q, r, s}`). This is an n_qubits x n_qubits x n_qubits x
                 n_qubits numpy array of floats.
         """
         # Make sure nonzero elements are only for normal ordered terms.
