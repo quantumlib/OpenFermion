@@ -80,7 +80,8 @@ class MajoranaOperator:
     def commutes_with(self, other):
         """Test commutation with another MajoranaOperator"""
         if not isinstance(other, type(self)):
-            return NotImplemented
+            raise TypeError(
+                'Can only test commutation with another MajoranaOperator.')
 
         if len(self.terms) == 1 and len(other.terms) == 1:
             return _majorana_terms_commute(list(self.terms.keys())[0],

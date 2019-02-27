@@ -48,6 +48,9 @@ def test_majorana_operator_commutes_with():
 
     assert e.commutes_with(f)
 
+    with pytest.raises(TypeError):
+        _ = e.commutes_with(0)
+
 
 
 def test_majorana_operator_add_subtract():
@@ -83,6 +86,18 @@ def test_majorana_operator_add_subtract():
                              (1, 5, 7): 4.75,
                              (3, 5, 7): 2.25}
 
+    with pytest.raises(TypeError):
+        _ = a + 0
+
+    with pytest.raises(TypeError):
+        a += 0
+
+    with pytest.raises(TypeError):
+        _ = a - 0
+
+    with pytest.raises(TypeError):
+        a -= 0
+
 
 def test_majorana_operator_multiply():
     a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5)
@@ -101,6 +116,15 @@ def test_majorana_operator_multiply():
     assert a.terms == {(0, 1, 5): 3.0,
                        (1, 2, 7): -1.0}
 
+    with pytest.raises(TypeError):
+        _ = a * 'a'
+
+    with pytest.raises(TypeError):
+        _ = 'a' * a
+
+    with pytest.raises(TypeError):
+        a *= 'a'
+
 
 def test_majorana_operator_pow():
     a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5)
@@ -109,6 +133,9 @@ def test_majorana_operator_pow():
 
     with pytest.raises(TypeError):
         _ = a**-1
+
+    with pytest.raises(TypeError):
+        _ = a**'a'
 
 
 def test_majorana_operator_divide():
@@ -119,6 +146,12 @@ def test_majorana_operator_divide():
     a /= 2
     assert a.terms == {(0, 1, 5): 0.75,
                        (1, 2, 7): -0.25}
+
+    with pytest.raises(TypeError):
+        _ = a / 'a'
+
+    with pytest.raises(TypeError):
+        a /= 'a'
 
 
 def test_majorana_operator_neg():
@@ -142,6 +175,8 @@ def test_majorana_operator_eq():
     assert a != c
     assert a != d
     assert a != e
+
+    assert a != 0
 
 
 def test_majorana_operator_str():
