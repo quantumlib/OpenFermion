@@ -269,6 +269,18 @@ def _sort_majorana_term(term):
 
 
 def _merge_majorana_terms(left_term, right_term):
+    """Merge two Majorana terms.
+
+    Args:
+        left_term (Tuple[int]): The left-hand term
+        right_term (Tuple[int]): The right-hand term
+
+    Returns:
+        Tuple[Tuple[int], int]. The first object returned is a sorted list
+        representing the indices acted upon. The second object is the parity
+        of the term. A parity of 1 indicates that the term should include
+        a minus sign.
+    """
     merged_term = []
     parity = 0
     i, j = 0, 0
