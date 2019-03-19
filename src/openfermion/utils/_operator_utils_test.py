@@ -13,6 +13,7 @@
 """Tests for operator_utils."""
 from __future__ import absolute_import
 
+import itertools
 import os
 import unittest
 
@@ -30,6 +31,7 @@ from openfermion.utils import (Grid, is_hermitian,
                                random_interaction_operator)
 
 from openfermion.utils._operator_utils import *
+from openfermion.utils._testing_utils import random_interaction_operator
 
 
 class OperatorUtilsTest(unittest.TestCase):
@@ -402,6 +404,14 @@ class HermitianConjugatedTest(unittest.TestCase):
                  BosonOperator('3^ 1', -2j) +
                  BosonOperator('2^ 2', -0.1j))
         self.assertEqual(op_hc, hermitian_conjugated(op))
+
+    def test_hermitian_conjugated_interaction_operator(self):
+        for n_orbitals, _ in itertools.product((1, 2, 5), range(5)):
+            operator = random_interaction_operator(n_orbitals)
+            qubit_operator = jordan_wigner(operator)
+            conjugate_operator = hermitian_conjugated(operator)
+            conjugate_qubit_operator = jordan_wigner(conjugate_operator)
+            assert hermitian_conjugated(qubit_operator) == conjugate_qubit_operator
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):
@@ -839,6 +849,26 @@ class TestNormalOrdering(unittest.TestCase):
         self.assertTrue(op_132 == normal_ordered(op_123))
         self.assertTrue(op_132 == normal_ordered(op_132))
         self.assertTrue(op_132 == normal_ordered(op_321))
+
+    def test_interaction_operator(self):
+        for n_orbitals, real, _ in itertools.product(
+                (1, 2, 5), (True, False), range(5)):
+            operator = random_interaction_operator(n_orbitals, real=real)
+            normal_ordered_operator = normal_ordered(operator)
+            expected_qubit_operator = jordan_wigner(operator)
+            actual_qubit_operator = jordan_wigner(
+                    normal_ordered_operator)
+            assert expected_qubit_operator == actual_qubit_operator
+            two_body_tensor = normal_ordered_operator.two_body_tensor
+            n_orbitals = len(two_body_tensor)
+            ones = numpy.ones((n_orbitals,) * 2)
+            tril = numpy.tril(ones, -1)
+            shape = (n_orbitals ** 2, 1)
+            mask = (tril.reshape(shape) * ones.reshape(shape[::-1]) +
+                    ones.reshape(shape) * tril.reshape(shape[::-1])
+                    ).reshape((n_orbitals,) * 4)
+            assert numpy.allclose(mask * two_body_tensor,
+                    numpy.zeros((n_orbitals,) * 4))
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):

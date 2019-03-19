@@ -205,6 +205,17 @@ class PolynomialTensorTest(unittest.TestCase):
         new_tensor = self.polynomial_tensor_a + self.polynomial_tensor_b
         self.assertEqual(new_tensor, self.polynomial_tensor_ab)
 
+    def test_mod(self):
+        new_constant = 2.0
+        new_one_body = numpy.zeros_like(self.one_body_a)
+        new_one_body[0, 1] = 2
+        new_two_body = numpy.zeros_like(self.two_body_a)
+        new_two_body[0, 1, 0, 1] = 1
+        new_two_body[1, 1, 0, 0] = 2
+        new_tensor = PolynomialTensor({(): new_constant,
+            (1, 0): new_one_body, (1, 1, 0, 0): new_two_body})
+        assert new_tensor == (self.polynomial_tensor_a % 3)
+
     def test_iadd(self):
         new_tensor = copy.deepcopy(self.polynomial_tensor_a)
         new_tensor += self.polynomial_tensor_b
