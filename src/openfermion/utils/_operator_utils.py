@@ -244,8 +244,16 @@ def hermitian_conjugated(operator):
             operator.one_body_tensor)
         conjugate_two_body_tensor = hermitian_conjugated(
             operator.two_body_tensor)
-        conjugate_operator = InteractionOperator(conjugate_constant,
+        conjugate_operator = type(operator)(conjugate_constant,
             conjugate_one_body_tensor, conjugate_two_body_tensor)
+
+    # Handle dicts
+    elif isinstance(operator, dict):
+        conjugate_operator = copy.deepcopy(operator)
+        conjugate_operator.clear()
+        for key, val in operator.items():
+            conjugate_operator[key[::-1]] = val.conjugate()
+    
 
     # Handle sparse matrix
     elif isinstance(operator, spmatrix):
