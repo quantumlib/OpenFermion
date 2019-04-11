@@ -862,13 +862,20 @@ class TestNormalOrdering(unittest.TestCase):
             two_body_tensor = normal_ordered_operator.two_body_tensor
             n_orbitals = len(two_body_tensor)
             ones = numpy.ones((n_orbitals,) * 2)
-            tril = numpy.tril(ones, -1)
+            triu = numpy.triu(ones, 1)
             shape = (n_orbitals ** 2, 1)
-            mask = (tril.reshape(shape) * ones.reshape(shape[::-1]) +
-                    ones.reshape(shape) * tril.reshape(shape[::-1])
+            mask = (triu.reshape(shape) * ones.reshape(shape[::-1]) +
+                    ones.reshape(shape) * triu.reshape(shape[::-1])
                     ).reshape((n_orbitals,) * 4)
             assert numpy.allclose(mask * two_body_tensor,
                     numpy.zeros((n_orbitals,) * 4))
+            for term in normal_ordered_operator:
+                order = len(term) // 2
+                left_term, right_term = term[:order], term[order:]
+                assert all(i[1] == 1 for i in left_term)
+                assert all(i[1] == 0 for i in right_term)
+                assert left_term == tuple(sorted(left_term, reverse=True))
+                assert right_term == tuple(sorted(right_term, reverse=True))
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):

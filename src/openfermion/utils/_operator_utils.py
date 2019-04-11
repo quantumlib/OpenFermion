@@ -863,15 +863,15 @@ def normal_ordered(operator, hbar=1.):
         one_body_tensor = operator.one_body_tensor.copy()
         two_body_tensor = numpy.zeros_like(operator.two_body_tensor)
         quadratic_index_pairs = (
-            (pq, pq) for pq in itertools.combinations(range(n_modes), 2))
+            (pq, pq) for pq in itertools.combinations(range(n_modes)[::-1], 2))
         cubic_index_pairs = (index_pair
-            for p, q, r in itertools.combinations(range(n_modes), 3)
+            for p, q, r in itertools.combinations(range(n_modes)[::-1], 3)
             for index_pair in [
                 ((p, q), (p, r)), ((p, r), (p, q)),
                 ((p, q), (q, r)), ((q, r), (p, q)),
                 ((p, r), (q, r)), ((q, r), (p, r))])
         quartic_index_pairs = (index_pair
-            for p, q, r, s in itertools.combinations(range(n_modes), 4)
+            for p, q, r, s in itertools.combinations(range(n_modes)[::-1], 4)
             for index_pair in [
                 ((p, q), (r, s)), ((r, s), (p, q)),
                 ((p, r), (q, s)), ((q, s), (p, r)),
