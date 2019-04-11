@@ -405,13 +405,21 @@ class HermitianConjugatedTest(unittest.TestCase):
                  BosonOperator('2^ 2', -0.1j))
         self.assertEqual(op_hc, hermitian_conjugated(op))
 
-    def test_hermitian_conjugated_interaction_operator(self):
+    def test_hermitian_conjugated_interaction_operator_and_dict(self):
         for n_orbitals, _ in itertools.product((1, 2, 5), range(5)):
             operator = random_interaction_operator(n_orbitals)
             qubit_operator = jordan_wigner(operator)
             conjugate_operator = hermitian_conjugated(operator)
             conjugate_qubit_operator = jordan_wigner(conjugate_operator)
             assert hermitian_conjugated(qubit_operator) == conjugate_qubit_operator
+
+            operator_as_dict = {tuple(i[0] for i in I): operator[I]
+                    for I in operator}
+            conjugate_operator_as_dict = {
+                    tuple(i[0] for i in I): conjugate_operator[I]
+                    for I in conjugate_operator}
+            assert (hermitian_conjugated(operator_as_dict) == 
+                    conjugate_operator_as_dict)
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):

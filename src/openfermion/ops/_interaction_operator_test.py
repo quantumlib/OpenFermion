@@ -86,6 +86,14 @@ class InteractionOperatorTest(unittest.TestCase):
         self.assertTrue(numpy.array_equal(summed_op.two_body_tensor,
                                           summed_op.n_body_tensors[(1, 1, 0, 0)]))
 
+    def test_neg(self):
+        interaction_op = InteractionOperator(
+                0, numpy.ones((3, 3)), numpy.ones((3, 3, 3, 3)))
+        neg_interaction_op = -interaction_op
+        assert isinstance(neg_interaction_op, InteractionOperator)
+        assert neg_interaction_op == InteractionOperator(
+                0, -numpy.ones((3, 3)), -numpy.ones((3, 3, 3, 3)))
+
     def test_zero(self):
         interaction_op = InteractionOperator(0, numpy.ones((3, 3)), numpy.ones((3, 3, 3, 3)))
         assert InteractionOperator.zero(interaction_op.n_qubits) == interaction_op * 0
