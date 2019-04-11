@@ -130,8 +130,8 @@ class InteractionOperator(PolynomialTensor):
             for key in [(), (1, 0), (1, 1, 0, 0)]))
 
     def with_function_applied_elementwise(self, func):
-        keys = [(), (1, 0), (1, 1, 0, 0)]
-        return type(self)(*(func(tensor[key]) for key in keys))
+        return type(self)(*(func(tensor) for tensor in
+            [self.constant, self.one_body_tensor, self.two_body_tensor]))
 
     @classmethod
     def from_polynomial_tensor(cls, polynomial_tensor):
