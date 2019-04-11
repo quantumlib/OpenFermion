@@ -227,13 +227,13 @@ class PolynomialTensor(object):
         neg_n_body_tensors = dict()
         for key in self.n_body_tensors:
             neg_n_body_tensors[key] = numpy.negative(self.n_body_tensors[key])
-        return type(self)(neg_n_body_tensors)
+        return PolynomialTensor(neg_n_body_tensors)
 
     def __mod__(self, other):
         mod_n_body_tensors = dict()
         for key in self.n_body_tensors:
             mod_n_body_tensors[key] = self.n_body_tensors[key] % other
-        return type(self)(mod_n_body_tensors)
+        return PolynomialTensor(mod_n_body_tensors)
 
     def __isub__(self, subtrahend):
         if not issubclass(type(subtrahend), PolynomialTensor):

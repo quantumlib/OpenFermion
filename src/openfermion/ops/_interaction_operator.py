@@ -129,6 +129,18 @@ class InteractionOperator(PolynomialTensor):
         return type(self)(*(projected_n_body_tensors[key]
             for key in [(), (1, 0), (1, 1, 0, 0)]))
 
+    def __neg__(self):
+        return self.from_polynomial_tensor(-self)
+
+    def __mod__(self):
+        return self.from_polynomial_tensor(-self)
+
+    @classmethod
+    def from_polynomial_tensor(cls, polynomial_tensor):
+        keys = [(), (1, 0), (1, 1, 0, 0)]
+        assert set(polynomial_tensor.n_body_tensors.keys()) <= set(keys)
+        return cls(*(polynomial_tensor[key] for key in keys))
+
 
 def _symmetric_two_body_terms(quad, complex_valued):
     p, q, r, s = quad
