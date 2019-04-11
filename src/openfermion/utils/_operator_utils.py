@@ -248,6 +248,8 @@ def hermitian_conjugated(operator):
             conjugate_one_body_tensor, conjugate_two_body_tensor)
 
     # Handle dicts
+    # Assumes key corresponds to indices of some number of creation operators
+    # followed by the same number of annihilation operators.
     elif isinstance(operator, dict):
         conjugate_operator = copy.deepcopy(operator)
         conjugate_operator.clear()
