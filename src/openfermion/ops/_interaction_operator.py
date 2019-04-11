@@ -129,11 +129,9 @@ class InteractionOperator(PolynomialTensor):
         return type(self)(*(projected_n_body_tensors[key]
             for key in [(), (1, 0), (1, 1, 0, 0)]))
 
-    def __neg__(self):
-        return self.from_polynomial_tensor(-self)
-
-    def __mod__(self):
-        return self.from_polynomial_tensor(-self)
+    def with_function_applied_elementwise(self, func):
+        keys = [(), (1, 0), (1, 1, 0, 0)]
+        return type(self)(*(func(tensor[key]) for key in keys))
 
     @classmethod
     def from_polynomial_tensor(cls, polynomial_tensor):

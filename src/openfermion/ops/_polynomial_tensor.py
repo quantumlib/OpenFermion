@@ -223,17 +223,17 @@ class PolynomialTensor(object):
         summand += addend
         return summand
 
-    def __neg__(self):
-        neg_n_body_tensors = dict()
+    def with_function_applied_elementwise(self, func):
+        new_n_body_tensors = dict()
         for key in self.n_body_tensors:
-            neg_n_body_tensors[key] = numpy.negative(self.n_body_tensors[key])
-        return PolynomialTensor(neg_n_body_tensors)
+            new_n_body_tensors[key] = func(self.n_body_tensors[key])
+        return PolynomialTensor(new_n_body_tensors)
+
+    def __neg__(self):
+        return self.with_function_applied_elementwise(operator.neg)
 
     def __mod__(self, other):
-        mod_n_body_tensors = dict()
-        for key in self.n_body_tensors:
-            mod_n_body_tensors[key] = self.n_body_tensors[key] % other
-        return PolynomialTensor(mod_n_body_tensors)
+        return self.with_function_applied_elementwise(lambda x: x % other)
 
     def __isub__(self, subtrahend):
         if not issubclass(type(subtrahend), PolynomialTensor):
