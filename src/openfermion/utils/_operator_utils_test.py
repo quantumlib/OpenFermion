@@ -413,14 +413,6 @@ class HermitianConjugatedTest(unittest.TestCase):
             conjugate_qubit_operator = jordan_wigner(conjugate_operator)
             assert hermitian_conjugated(qubit_operator) == conjugate_qubit_operator
 
-            operator_as_dict = {tuple(i[0] for i in I): operator[I]
-                    for I in operator}
-            conjugate_operator_as_dict = {
-                    tuple(i[0] for i in I): conjugate_operator[I]
-                    for I in conjugate_operator}
-            assert (hermitian_conjugated(operator_as_dict) == 
-                    conjugate_operator_as_dict)
-
     def test_exceptions(self):
         with self.assertRaises(TypeError):
             _ = is_hermitian('a')
