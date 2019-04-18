@@ -12,7 +12,6 @@
 
 """This module contains methods to lift tensors to higher spaces
 through the Grassmann wedge product."""
-from typing import Sequence, Union
 from itertools import product
 from math import factorial
 import copy
