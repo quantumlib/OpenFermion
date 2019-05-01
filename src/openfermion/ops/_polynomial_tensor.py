@@ -15,6 +15,8 @@ from __future__ import division
 
 import copy
 import itertools
+import operator
+
 import numpy
 
 from openfermion.config import EQ_TOLERANCE
@@ -221,11 +223,17 @@ class PolynomialTensor(object):
         summand += addend
         return summand
 
-    def __neg__(self):
-        neg_n_body_tensors = dict()
+    def with_function_applied_elementwise(self, func):
+        new_n_body_tensors = dict()
         for key in self.n_body_tensors:
-            neg_n_body_tensors[key] = numpy.negative(self.n_body_tensors[key])
-        return PolynomialTensor(neg_n_body_tensors)
+            new_n_body_tensors[key] = func(self.n_body_tensors[key])
+        return PolynomialTensor(new_n_body_tensors)
+
+    def __neg__(self):
+        return self.with_function_applied_elementwise(operator.neg)
+
+    def __mod__(self, other):
+        return self.with_function_applied_elementwise(lambda x: x % other)
 
     def __isub__(self, subtrahend):
         if not issubclass(type(subtrahend), PolynomialTensor):
@@ -346,3 +354,35 @@ class PolynomialTensor(object):
 
     def __repr__(self):
         return str(self)
+
+    def projected_n_body_tensors(self, selection, exact=False):
+        """Keep only selected elements.
+
+        Args:
+            selection (Union[int, Iterable[int]): If int, keeps terms with at
+                most (exactly, if exact is True) that many unique indices. If
+                iterable, keeps only terms containing (all of, if exact is
+                True) the specified indices. 
+            exact (bool): Whether or not the selection is strict.
+        """
+        comparator = (operator.eq if exact else operator.le)
+        if isinstance(selection, int):
+            pred = lambda index: comparator(len(set(index)), selection)
+            dims = range(self.n_qubits)
+        else:
+            selection = set(selection)
+            pred = lambda index: comparator(set(index), selection)
+            dims = selection
+
+        projected_n_body_tensors = dict()
+        for key, tensor in self.n_body_tensors.items():
+            if not key:
+                projected_n_body_tensors[key] = (
+                        tensor if not (exact and selection) else 0)
+                continue
+            projected_tensor = numpy.zeros_like(tensor)
+            for index in itertools.product(dims, repeat=len(key)):
+                if pred(index):
+                    projected_tensor[index] = tensor[index]
+            projected_n_body_tensors[key] = projected_tensor
+        return projected_n_body_tensors
