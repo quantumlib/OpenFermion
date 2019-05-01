@@ -91,7 +91,29 @@ class MajoranaOperator:
         return self*other == other*self
 
     def with_basis_rotated_by(self, transformation_matrix):
-        """Rotate to a basis of new Majorana operators.
+        r"""Change to a basis of new Majorana operators.
+
+        The input to this method is a real orthogonal matrix :math:`O`.
+        It returns a new MajoranaOperator which is equivalent to the old one
+        but rewritten in terms of a new basis of Majorana operators.
+        Let the original Majorana operators be labeled by 
+        :math:`\gamma_i` and the new operators be labeled by
+        :math:`\tilde{\gamma_i}`. Then they are related by the equation
+
+        .. math::
+
+            O
+            \begin{pmatrix}
+                 \gamma_1 \\
+                 \vdots \\
+                 \gamma_N \\
+            \end{pmatrix}
+            =
+            \begin{pmatrix}
+                 \tilde{\gamma_1} \\
+                 \vdots \\
+                 \tilde{\gamma_N} \\
+            \end{pmatrix}.
 
         Args:
             transformation_matrix: A real orthogonal matrix representing
