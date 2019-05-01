@@ -99,6 +99,9 @@ class MajoranaOperator:
         Returns:
             The rotated operator.
         """
+        if not _is_real_orthogonal(transformation_matrix):
+            raise ValueError("Transformation matrix is not real orthogonal.")
+
         rotated_op = MajoranaOperator()
         for term, coeff in self.terms.items():
             rotated_term = _rotate_basis(term, transformation_matrix)
@@ -355,3 +358,10 @@ def _rotate_basis(term, transformation_matrix):
             coeff *= transformation_matrix[j, i]
         rotated_op += MajoranaOperator(tup, coeff)
     return rotated_op
+
+
+def _is_real_orthogonal(matrix):
+    n, m = matrix.shape
+    return (n == m
+            and numpy.allclose(numpy.imag(matrix), 0.0)
+            and numpy.allclose(numpy.dot(matrix.T, matrix), numpy.eye(n)))
