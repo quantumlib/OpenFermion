@@ -16,6 +16,7 @@ from __future__ import absolute_import
 import unittest
 
 import numpy
+import pytest
 
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops import (BosonOperator,
@@ -501,3 +502,8 @@ def test_get_fermion_operator_majorana_operator():
                    + FermionOperator((0, 0))
                    - FermionOperator((0, 1)))
     assert normal_ordered(op) == normal_ordered(expected_op)
+
+
+def test_get_fermion_operator_wrong_type():
+    with pytest.raises(TypeError):
+        _ = get_fermion_operator(QubitOperator())

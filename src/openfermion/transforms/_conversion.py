@@ -378,26 +378,35 @@ def get_fermion_operator(operator):
     Returns:
         fermion_operator: An instance of the FermionOperator class.
     """
-    fermion_operator = FermionOperator()
-
     if isinstance(operator, PolynomialTensor):
-        for term in operator:
-            fermion_operator += FermionOperator(term, operator[term])
-
+        return _polynomial_tensor_to_fermion_operator(operator)
     elif isinstance(operator, DiagonalCoulombHamiltonian):
-        n_qubits = count_qubits(operator)
-        fermion_operator += FermionOperator((), operator.constant)
-        for p, q in itertools.product(range(n_qubits), repeat=2):
-            fermion_operator += FermionOperator(
-                ((p, 1), (q, 0)),
-                operator.one_body[p, q])
-            fermion_operator += FermionOperator(
-                ((p, 1), (p, 0), (q, 1), (q, 0)),
-                operator.two_body[p, q])
-
+        return _diagonal_coulomb_hamiltonian_to_fermion_operator(operator)
     elif isinstance(operator, MajoranaOperator):
         return _majorana_operator_to_fermion_operator(operator)
+    else:
+        raise TypeError('{} cannot be converted to FermionOperator'.format(
+            type(operator)))
 
+
+def _polynomial_tensor_to_fermion_operator(operator):
+    fermion_operator = FermionOperator()
+    for term in operator:
+        fermion_operator += FermionOperator(term, operator[term])
+    return fermion_operator
+
+
+def _diagonal_coulomb_hamiltonian_to_fermion_operator(operator):
+    fermion_operator = FermionOperator()
+    n_qubits = count_qubits(operator)
+    fermion_operator += FermionOperator((), operator.constant)
+    for p, q in itertools.product(range(n_qubits), repeat=2):
+        fermion_operator += FermionOperator(
+            ((p, 1), (q, 0)),
+            operator.one_body[p, q])
+        fermion_operator += FermionOperator(
+            ((p, 1), (p, 0), (q, 1), (q, 0)),
+            operator.two_body[p, q])
     return fermion_operator
 
 
