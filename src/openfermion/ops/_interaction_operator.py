@@ -13,6 +13,8 @@
 """Class and functions to store interaction operators."""
 import itertools
 
+import numpy
+
 from openfermion.ops import PolynomialTensor
 
 
@@ -116,6 +118,20 @@ class InteractionOperator(PolynomialTensor):
             if self.two_body_tensor[quad] and quad not in seen:
                 seen |= set(_symmetric_two_body_terms(quad, complex_valued))
                 yield tuple(zip(quad, (1, 1, 0, 0)))
+
+    @classmethod
+    def zero(cls, n_qubits):
+        return cls(0, numpy.zeros((n_qubits,) * 2), numpy.zeros((n_qubits,) * 4))
+
+    def projected(self, indices, exact=False):
+        projected_n_body_tensors = self.projected_n_body_tensors(
+                indices, exact)
+        return type(self)(*(projected_n_body_tensors[key]
+            for key in [(), (1, 0), (1, 1, 0, 0)]))
+
+    def with_function_applied_elementwise(self, func):
+        return type(self)(*(func(tensor) for tensor in
+            [self.constant, self.one_body_tensor, self.two_body_tensor]))
 
 
 def _symmetric_two_body_terms(quad, complex_valued):

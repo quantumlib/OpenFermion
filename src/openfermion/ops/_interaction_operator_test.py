@@ -13,6 +13,8 @@
 """Tests for interaction_operator.py."""
 import unittest
 
+import itertools
+
 import numpy
 
 from openfermion.ops import InteractionOperator
@@ -83,3 +85,43 @@ class InteractionOperatorTest(unittest.TestCase):
                                           summed_op.n_body_tensors[(1, 0)]))
         self.assertTrue(numpy.array_equal(summed_op.two_body_tensor,
                                           summed_op.n_body_tensors[(1, 1, 0, 0)]))
+
+    def test_neg(self):
+        interaction_op = InteractionOperator(
+                0, numpy.ones((3, 3)), numpy.ones((3, 3, 3, 3)))
+        neg_interaction_op = -interaction_op
+        assert isinstance(neg_interaction_op, InteractionOperator)
+        assert neg_interaction_op == InteractionOperator(
+                0, -numpy.ones((3, 3)), -numpy.ones((3, 3, 3, 3)))
+
+    def test_zero(self):
+        interaction_op = InteractionOperator(0, numpy.ones((3, 3)), numpy.ones((3, 3, 3, 3)))
+        assert InteractionOperator.zero(interaction_op.n_qubits) == interaction_op * 0
+
+    def test_projected(self):
+        interaction_op = InteractionOperator(1, numpy.ones((3, 3)), numpy.ones((3, 3, 3, 3)))
+        projected_two_body_tensor = numpy.zeros_like(interaction_op.two_body_tensor)
+        for i in range(3):
+            projected_two_body_tensor[(i,) * 4] = 1
+        projected_op = InteractionOperator(0, numpy.eye(3), projected_two_body_tensor)
+        assert projected_op == interaction_op.projected(1, exact=True)
+        projected_op.constant = 1
+        assert projected_op == interaction_op.projected(1, exact=False)
+
+        projected_op.one_body_tensor = numpy.zeros_like(interaction_op.one_body_tensor)
+        for pq in itertools.product(range(2), repeat=2):
+            projected_op.one_body_tensor[pq] = 1
+        projected_op.two_body_tensor = numpy.zeros_like(interaction_op.two_body_tensor)
+        for pqrs in itertools.product(range(2), repeat=4):
+            projected_op.two_body_tensor[pqrs] = 1
+        assert projected_op == interaction_op.projected((0, 1), exact=False)
+
+        projected_op.constant = 0
+        projected_op.one_body_tensor = numpy.zeros_like(interaction_op.one_body_tensor)
+        projected_op.one_body_tensor[0, 1] = 1
+        projected_op.one_body_tensor[1, 0] = 1
+        projected_op.two_body_tensor = numpy.zeros_like(interaction_op.two_body_tensor)
+        for pqrs in itertools.product(range(2), repeat=4):
+            if len(set(pqrs)) > 1:
+                projected_op.two_body_tensor[pqrs] = 1
+        assert projected_op == interaction_op.projected((0, 1), exact=True)
