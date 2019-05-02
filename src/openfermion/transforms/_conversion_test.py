@@ -21,6 +21,7 @@ from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops import (BosonOperator,
                              DiagonalCoulombHamiltonian,
                              FermionOperator,
+                             MajoranaOperator,
                              QuadOperator,
                              QubitOperator)
 from openfermion.transforms import jordan_wigner
@@ -486,3 +487,17 @@ class GetBosonOperatorTest(unittest.TestCase):
                + (BosonOperator('0') - BosonOperator('0^'))
                * (BosonOperator('0') + BosonOperator('0^')))
         self.assertTrue(b == expected)
+
+
+def test_get_fermion_operator_majorana_operator():
+    a = MajoranaOperator((0, 3), 2.0) + MajoranaOperator((1, 2, 3))
+    op = get_fermion_operator(a)
+    expected_op = (-2j*(FermionOperator(((0, 0), (1, 0)))
+                        - FermionOperator(((0, 0), (1, 1)))
+                        + FermionOperator(((0, 1), (1, 0)))
+                        - FermionOperator(((0, 1), (1, 1))))
+                   - 2*FermionOperator(((0, 0), (1, 1), (1, 0)))
+                   + 2*FermionOperator(((0, 1), (1, 1), (1, 0)))
+                   + FermionOperator((0, 0))
+                   - FermionOperator((0, 1)))
+    assert normal_ordered(op) == normal_ordered(expected_op)
