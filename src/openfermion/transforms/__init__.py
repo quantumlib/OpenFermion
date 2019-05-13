@@ -43,3 +43,6 @@ from ._weyl_ordering import (symmetric_ordering,
                              weyl_polynomial_quantization)
 from ._remove_symmetry_qubits import (symmetry_conserving_bravyi_kitaev,
                                       edit_hamiltonian_for_spin)
+
+from ._qubit_tapering_from_stabilizer import (reduce_number_of_terms,
+                                              taper_off_qubits)
