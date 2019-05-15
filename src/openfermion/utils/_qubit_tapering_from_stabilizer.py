@@ -260,7 +260,7 @@ def reduce_number_of_terms(operator, stabilizers,
                                      of QubitOperator.
         maintain_length (Boolean): Option deciding whether the fixed Pauli
                                    strings are re-expressed in their original
-                                   form. Set to True by default.
+                                   form. Set to False by default.
         output_fixed_positions (Boolean): Option deciding whether to return
                                           the list of fixed qubit positions.
                                           Set to False by default.
