@@ -125,7 +125,7 @@ class TaperingTest(unittest.TestCase):
         stab1 = QubitOperator('Z0 Z2', -1.0)
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
-        tapered_hamiltonian = taper_off_qubits(hamiltonian=qubit_hamiltonian,
+        tapered_hamiltonian = taper_off_qubits(operator=qubit_hamiltonian,
                                                stabilizers=stab1 + stab2,
                                                manual_input=False,
                                                fixed_positions=[0, 3])
