@@ -10,47 +10,49 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Functions to taper qubits from stabilizer in quantum codes."""
+"""Tools to reduce the number of terms and taper off qubits
+using stabilizer conditions. Based on ideas of arXiv:1701.08213. """
+
 import numpy
 from openfermion.ops import QubitOperator
 from openfermion.utils import count_qubits
 
 
-class TaperQubitError(Exception):
-    """Taper qibot error class."""
+class StabilizerError(Exception):
+    """Stabilizer error class."""
 
     def __init__(self, message):
-        """Throw custom errors after taper off qubits."""
+        """Throw custom errors connected to stabilizers."""
         super().__init__(message)
 
 
 def _check_commuting_stabilizers(stabilizer_list, msg, thres=1e-6):
     """
-    Auxiliar function to check that stabilizers commute.
+    Auxiliary function checking that stabilizers commute.
 
-    If a two stabilizers anti-commute the product of them
-    will return a imaginary coefficint.
+    If two stabilizers anti-commute their product
+    will have an imaginary coefficient.
     This function checks the list of stabilizers (QubitOperator)
     and raises and error if a complex number is found in
     any of the coefficients.
     """
     for stab in stabilizer_list:
         if abs(numpy.imag(list(stab.terms.values())[0])) >= thres:
-            raise TaperQubitError(msg)
+            raise StabilizerError(msg)
 
 
 def _check_stabilizer_linearity(stabilizer_list, msg):
     """
-    Auxiliar function to check that stabilizers commute.
+    Auxiliary function checking that stabilizers are linearly independent.
 
-    If two stabilizer are linearly depedent the result
-    after their product will be the identity.
+    If two stabilizer are linearly dependent the result
+    after some of their products will be the identity.
     This function checks the list of stabilizers (QubitOperator)
-    and raises and error if the identity is found.
+    and raises an error if the identity is found.
     """
     for stab in stabilizer_list:
         if list(stab.terms.keys())[0] == ():
-            raise TaperQubitError(msg)
+            raise StabilizerError(msg)
 
 
 def _fix_single_term(term, position, fixed_op, other_op, stabilizer):
@@ -70,7 +72,7 @@ def _fix_single_term(term, position, fixed_op, other_op, stabilizer):
 
 def _lookup_term(pauli_string, updated_terms_1, updated_terms_2):
     """
-    Auxiliar function for reducing terms keeping length.
+    Auxiliary function for reducing terms keeping length.
 
     This function checks the length of the original Pauli strings,
     compares it to the updated Pauli strings, and keeps the shortest operators.
@@ -89,9 +91,9 @@ def _lookup_term(pauli_string, updated_terms_1, updated_terms_2):
 def _reduce_terms(terms, stabilizer_list, maintain_length,
                   manual_input, fixed_positions):
     """
-    Perfom the term reduction by stabilizer conditions.
+    Perform the term reduction using stabilizer conditions.
 
-    Auxiliar function of reduce_number_of_terms.
+    Auxiliary function to reduce_number_of_terms.
     """
     # Initialize fixed_position as an empty list to avoid conflict with
     # fixed_positions.
@@ -103,12 +105,13 @@ def _reduce_terms(terms, stabilizer_list, maintain_length,
         selected_stab = list(stabilizer_list[0].terms)[0]
 
         if manual_input is False:
-            # Finds qubit position and its Pauli.
+            # Find first position non-fixed position with non-trivial Pauli.
             for qubit_pauli in selected_stab:
                 if qubit_pauli[0] not in fixed_positions:
                     fixed_positions += [qubit_pauli[0]]
                     fixed_op = qubit_pauli[1]
                     break
+
         else:
             # Finds Pauli of the fixed qubit.
             for qubit_pauli in selected_stab:
@@ -139,7 +142,7 @@ def _reduce_terms(terms, stabilizer_list, maintain_length,
         stabilizer_list = updated_stabilizers
 
         _check_stabilizer_linearity(stabilizer_list,
-                                    msg='Linearly-dependent stabilizers.')
+                                    msg='Linearly dependent stabilizers.')
         _check_commuting_stabilizers(stabilizer_list,
                                      msg='Stabilizers anti-commute.')
 
@@ -149,10 +152,10 @@ def _reduce_terms(terms, stabilizer_list, maintain_length,
 def _reduce_terms_keep_length(terms, stabilizer_list, maintain_length,
                               manual_input, fixed_positions):
     """
-    Perfom the term reduction by stabilizer conditions.
+    Perform the term reduction using stabilizer conditions.
 
-    Auxiliar funtion of reduce_number_of_terms that returns the
-    Pauli strings with the same length as the starting operator.
+    Auxiliary function to reduce_number_of_terms that returns the
+    Pauli strings with the same length as in the starting operator.
     """
     term_list_duplicate = list(terms.terms)
     term_list = [QubitOperator(x) for x in term_list_duplicate]
@@ -196,7 +199,7 @@ def _reduce_terms_keep_length(terms, stabilizer_list, maintain_length,
         stabilizer_list = updated_stabilizers
 
         _check_stabilizer_linearity(stabilizer_list,
-                                    msg='Linearly-dependent stabilizers.')
+                                    msg='Linearly dependent stabilizers.')
         _check_commuting_stabilizers(stabilizer_list,
                                      msg='Stabilizers anti-commute.')
 
@@ -224,37 +227,62 @@ def reduce_number_of_terms(operator, stabilizers,
                            output_fixed_positions=False,
                            manual_input=False,
                            fixed_positions=[]):
-    """
+    r"""
     Reduce the number of Pauli strings of operator using stabilizers.
 
-    The Pauli strings maintain their length, unless specified otherwise.
-    In that case one can also pass a list with fixed indices manually.
+    This function reduces the number of terms in a string by merging
+    terms that are identical by the multiplication of stabilizers.
+    The resulting Pauli strings maintain their length, unless specified
+    otherwise. In the latter case, a list of indices can be passed to
+    manually indicate the qubits to be fixed.
+
+    It is possible to reduce the number of terms in a Hamiltonian by
+    merging Pauli strings :math:`H_1, \, H_2` that are related by a
+    stabilizer :math:`S` such that  :math:`H_1 = H_2 \cdot S`. Given
+    a stabilizer generator :math:`\pm X \otimes p` this algorithm fixes the
+    first qubit, such that every Pauli string in the Hamiltonian acts with
+    either :math:`Z` or the identity on it. Where necessary, this is achieved
+    by multiplications with :math:`\pm X \otimes p`: a string
+    :math:`Y \otimes h`, for instance,  is turned into
+    :math:`Z \otimes (\mp ih\cdot p)`. Qubits on which a generator acts as
+    :math:`Y` (:math:`Z`) are constrained to be acted on by the Hamiltonian as
+    :math:`Z` (:math:`X`) or the identity. Fixing a different qubit for every
+    stabilizer generator eliminates all redundant strings. The fixed
+    representations are in the end re-expressed as the shortest of the
+    original strings, :math:`H_1` or :math:`H_2`.
+
 
     Args:
-        operator (QubitOperator): operator from which the number of terms
+        operator (QubitOperator): Operator of which the number of terms
                                   will be reduced.
-        stabilizers (QubitOperator): stabilizer operators to be used to reduce
-                                     terms of operator.
-        maintain_length (Boolean): whether to keep the length of the terms
-                                   equal to the starting operator or reduce it.
-        output_fixed_positions (Boolean): whether to return the list of fixed
-                                          qubits.
-        manual_input (Boolean): whether to pass the fixed qubits manually.
-        fixed_positions (list): (optional) positions of qubits to be removed,
-                                only possible if manual_input is True.
+        stabilizers (QubitOperator): Stabilizer generators used for the
+                                     reduction. Can also be passed as a list
+                                     of QubitOperator.
+        maintain_length (Boolean): Option deciding whether the fixed Pauli
+                                   strings are re-expressed in their original
+                                   form. Set to True by default.
+        output_fixed_positions (Boolean): Option deciding whether to return
+                                          the list of fixed qubit positions.
+                                          Set to False by default.
+        manual_input (Boolean): Option to pass the list of fixed qubits
+                                positions manually. Set to False by default.
+        fixed_positions (list): (optional) List of fixed qubit positions.
+                                Passing a list is only effective if
+                                manual_input is True.
     Returns:
-        reduced_operator (QubitOperator): operator with reduced number of
+        reduced_operator (QubitOperator): Operator with reduced number of
                                           terms.
 
-        fixed_positions (list): (optional) fixed qubits.
+        fixed_positions (list): (optional) Fixed qubits.
 
     Raises:
-        TypeError: terms must be a QubitOperator
-        TypeError: stabilizers must be a QubitOperator or array-like.
-        TaperQubitError: fixed_positions and stabilizers must have the same
-                         length if manual_input is True.
-        TaperQubitError: fixed_positions contains the same position more
-                         than once.
+        TypeError: Input terms must be QubitOperator.
+        TypeError: Input stabilizers must be QubitOperator or list.
+        StabilizerError: Trivial stabilizer (identity).
+        StabilizerError: Stabilizer with complex coefficient.
+        StabilizerError: The number of stabilizers must be equal to the number
+                         of qubits manually fixed.
+        StabilizerError: All qubit positions must be different.
     """
     if not isinstance(operator, QubitOperator):
         raise TypeError('Input terms must be QubitOperator.')
@@ -265,22 +293,20 @@ def reduce_number_of_terms(operator, stabilizers,
     stabilizer_list = list(stabilizers)
 
     _check_stabilizer_linearity(stabilizer_list,
-                                msg='Identity is not a stabilizer.')
+                                msg='Trivial stabilizer (identity).')
     _check_commuting_stabilizers(stabilizer_list,
-                                 msg='No complex coefficient in stabilizers.')
+                                 msg='Stabilizer with complex coefficient.')
 
     if manual_input:
         # Convert fixed_position into a list to allow any type of
         # array_like data structure.
         fixed_positions = list(fixed_positions)
         if len(fixed_positions) != len(stabilizer_list):
-            raise TaperQubitError('The number of stabilizers must be equal '
-                                  'to the  number of qubits manually fixed.'
-                                  )
+            raise StabilizerError('The number of stabilizers must be equal '
+                                  + 'to the number of qubits manually fixed.')
         if len(set(fixed_positions)) != len(stabilizer_list):
-            raise TaperQubitError('All qubit positions must be different.')
+            raise StabilizerError('All qubit positions must be different.')
 
-    # should we deepcopy operator ?
     if maintain_length:
         (reduced_operator,
          fixed_positions) = _reduce_terms_keep_length(operator,
@@ -302,42 +328,51 @@ def reduce_number_of_terms(operator, stabilizers,
         return reduced_operator
 
 
-def taper_off_qubits(hamiltonian, stabilizers, manual_input=False,
-                     fixed_positions=[]):
-    """
-    Remove qubits from the Hamiltonian.
+def taper_off_qubits(operator, stabilizers,  manual_input=False,
+                     fixed_positions=[], output_tapered_positions=False):
+    r"""
+    Remove qubits from given operator.
 
-    Qubits are removed by eliminating an eqivalent number of
-    stabilizer conditions. Which qubits that are is either determined
-    automatically or their positions be set manually.
+    Qubits are removed by eliminating an equivalent number of
+    stabilizer conditions. Which qubits that are can either be determined
+    automatically or their positions can be set manually.
+
+    Qubits can be disregarded from the Hamiltonian when the effect of all its
+    terms on them is rendered trivial. This algorithm employs a stabilizers
+    like :math:`\pm X \otimes p` to fix the action of every Pauli
+    string on the first qubit to :math:`Z` or the identity. A string
+    :math:`X \otimes h` would for instance be multiplied with the stabilizer
+    to obtain :math:`1 \otimes (\pm h\cdot p)` while a string
+    :math:`Z \otimes h^\prime` would pass without correction. The first
+    qubit can subsequently be removed as it must be in the computational basis
+    in Hamiltonian eigenstates.
+    For stabilizers acting as :math:`Y` (:math:`Z`) on selected qubits,
+    the algorithm would fix the action of every Hamiltonian string to
+    :math:`Z` (:math:`X`). Updating also the list of remaining stabilizer
+    generators, the algorithm is run iteratively.
 
     Args:
-        operator (QubitOperator): operator from which the number of terms
-                                  will be reduced.
-        stabilizers (QubitOperator): stabilizer operators to be used to reduce
-                                     terms of operator.
-        manual_input (Boolean): whether to pass the fixed qubits manually.
-        fixed_positions (list): (optional) positions of qubits to be removed,
-                                only possible if manual_input is True.
+        operator (QubitOperator): Operator of which qubits will be removed.
+        stabilizers (QubitOperator): Stabilizer generators for the tapering.
+                                     Can also be passed as a list of
+                                     QubitOperator.
+        manual_input (Boolean): Option to pass the list of fixed qubits
+                                positions manually. Set to False by default.
+        fixed_positions (list): (optional) List of fixed qubit positions.
+                                Passing a list is only effective if
+                                manual_input is True.
+        output_tapered_positions (Boolean): Option to output the positions of
+                                            qubits that have been removed.
     Returns:
-        reduced_operator (QubitOperator): operator with reduced number of
-                                          terms.
-
-        fixed_positions (list): (optional) fixed qubits.
-
-    Raises:
-        TypeError: terms must be a QubitOperator
-        TypeError: stabilizers must be a QubitOperator or array-like.
-        ValueError: fixed_positions and stabilizers must have the same length
-                    if manual_input is True.
-        ValueError: fixed_positions contains the same position more than once.
-        Warning: if number of qubits at the end equals number of qubits at the
-                 start.
-
+        skimmed_operator (QubitOperator): Operator with fewer qubits.
+        removed_positions (list): (optional) List of removed qubit positions.
+                                  For the qubits to be gone in the qubit count,
+                                  the remaining qubits have been moved up to
+                                  those indices.
     """
-    n_qbits = count_qubits(hamiltonian)
+    n_qbits = count_qubits(operator)
     (ham_to_update,
-     qbts_to_rm) = reduce_number_of_terms(hamiltonian,
+     qbts_to_rm) = reduce_number_of_terms(operator,
                                           stabilizers,
                                           maintain_length=False,
                                           manual_input=manual_input,
@@ -345,23 +380,27 @@ def taper_off_qubits(hamiltonian, stabilizers, manual_input=False,
                                           output_fixed_positions=True)
 
     # Gets a list of the order of the qubits after tapering
-    # putting the qubits to be removed at the end.
     qbit_order = list(numpy.arange(n_qbits - len(qbts_to_rm), dtype=int))
+    # Save the original list before it gets ordered
+    removed_positions = qbts_to_rm
     qbts_to_rm.sort()
     for x in qbts_to_rm:
         qbit_order.insert(x, 'remove')
 
     # Remove the qubits
-    tap_ham = QubitOperator()
+    skimmed_operator = QubitOperator()
     for term, coef in ham_to_update.terms.items():
         if term == ():
-            tap_ham += QubitOperator('', coef)
+            skimmed_operator += QubitOperator('', coef)
             continue
         tap_tpls = []
         for p in term:
             if qbit_order[p[0]] != 'remove':
                 tap_tpls.append((qbit_order[p[0]].item(), p[1]))
 
-        tap_ham += QubitOperator(tuple(tap_tpls), coef)
+        skimmed_operator += QubitOperator(tuple(tap_tpls), coef)
 
-    return tap_ham
+    if output_tapered_positions:
+        return skimmed_operator, removed_positions
+    else:
+        return skimmed_operator

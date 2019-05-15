@@ -23,7 +23,8 @@ from openfermion.utils import eigenspectrum
 
 from openfermion.transforms import (reduce_number_of_terms,
                                     taper_off_qubits)
-from openfermion.transforms._qubit_tapering_from_stabilizer import TaperQubitError
+from openfermion.transforms._qubit_tapering_from_stabilizer import\
+    StabilizerError
 
 
 def lih_hamiltonian():
@@ -71,34 +72,34 @@ class TaperingTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=1)
-        with self.assertRaises(TaperQubitError):
+        with self.assertRaises(StabilizerError):
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=stab1 + stab2,
                                    manual_input=True,
                                    fixed_positions=[])
-        with self.assertRaises(TaperQubitError):
+        with self.assertRaises(StabilizerError):
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=stab1 + stab2,
                                    manual_input=True,
                                    fixed_positions=[1, 1])
-        with self.assertRaises(TaperQubitError):
+        with self.assertRaises(StabilizerError):
             # Check Identity as stabilizer error.
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=(stab1 +
                                                 QubitOperator(' ', 1.0)))
-        with self.assertRaises(TaperQubitError):
+        with self.assertRaises(StabilizerError):
             # Check complex coefficient stabilzier error.
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=(stab1 +
                                                 QubitOperator('Z0', 1.0j)))
-        with self.assertRaises(TaperQubitError):
+        with self.assertRaises(StabilizerError):
             # Check linearly-dependent stabilizer error.
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=(stab1 +
                                                 QubitOperator('Z0 Z1 Z2 Z3',
                                                               1.0) +
                                                 stab2))
-        with self.assertRaises(TaperQubitError):
+        with self.assertRaises(StabilizerError):
             # Check anti-commuting stabilizer error.
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=(QubitOperator('X0', 1.0) +
