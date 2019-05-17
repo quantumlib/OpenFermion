@@ -122,7 +122,7 @@ Code should always come with documentation, which is generated automatically and
 
 We use `Github issues <https://github.com/quantumlib/OpenFermion/issues>`__
 for tracking requests and bugs. Please post questions to the
-`Quantum Computing Stack Exchange <https://quantumcomputing.stackexchange.com/>`__ with 'openfermion' and 'cirq' tags.
+`Quantum Computing Stack Exchange <https://quantumcomputing.stackexchange.com/>`__ with an 'openfermion' tag.
 
 Authors
 =======
