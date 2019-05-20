@@ -15,6 +15,8 @@
 from __future__ import division
 from future.utils import viewkeys
 
+import itertools
+
 import numpy
 
 
@@ -87,6 +89,36 @@ class MajoranaOperator:
             return _majorana_terms_commute(list(self.terms.keys())[0],
                                            list(other.terms.keys())[0])
         return self*other == other*self
+
+    def with_basis_rotated_by(self, transformation_matrix):
+        r"""Change to a basis of new Majorana operators.
+
+        The input to this method is a real orthogonal matrix :math:`O`.
+        It returns a new MajoranaOperator which is equivalent to the old one
+        but rewritten in terms of a new basis of Majorana operators.
+        Let the original Majorana operators be denoted by 
+        :math:`\gamma_i` and the new operators be denoted by
+        :math:`\tilde{\gamma_i}`. Then they are related by the equation
+
+        .. math::
+
+            \tilde{\gamma_i} = \sum_j O_{ij} \gamma_j.
+
+        Args:
+            transformation_matrix: A real orthogonal matrix representing
+                the basis transformation.
+        Returns:
+            The rotated operator.
+        """
+        if not _is_real_orthogonal(transformation_matrix):
+            raise ValueError("Transformation matrix is not real orthogonal.")
+
+        rotated_op = MajoranaOperator()
+        for term, coeff in self.terms.items():
+            rotated_term = _rotate_basis(term, transformation_matrix)
+            rotated_term *= coeff
+            rotated_op += rotated_term
+        return rotated_op
 
     def __iadd__(self, other):
         if not isinstance(other, type(self)):
@@ -326,3 +358,21 @@ def _majorana_terms_commute(term_a, term_b):
             j += 1
     parity = (len(term_a)*len(term_b) - intersection) % 2
     return not parity
+
+
+def _rotate_basis(term, transformation_matrix):
+    n = transformation_matrix.shape[0]
+    rotated_op = MajoranaOperator()
+    for tup in itertools.product(range(n), repeat=len(term)):
+        coeff = 1.0
+        for i, j in zip(term, tup):
+            coeff *= transformation_matrix[j, i]
+        rotated_op += MajoranaOperator(tup, coeff)
+    return rotated_op
+
+
+def _is_real_orthogonal(matrix):
+    n, m = matrix.shape
+    return (n == m
+            and numpy.allclose(numpy.imag(matrix), 0.0)
+            and numpy.allclose(numpy.dot(matrix.T, matrix), numpy.eye(n)))
