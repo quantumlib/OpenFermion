@@ -41,24 +41,25 @@ def jordan_wigner(operator):
         TypeError: Operator must be a FermionOperator,
             DiagonalCoulombHamiltonian, or InteractionOperator.
     """
-    if isinstance(operator, InteractionOperator):
-        return jordan_wigner_interaction_op(operator)
-    if isinstance(operator, DiagonalCoulombHamiltonian):
-        return jordan_wigner_diagonal_coulomb_hamiltonian(operator)
+    if isinstance(operator, FermionOperator):
+        return jordan_wigner_fermion_operator(operator)
     if isinstance(operator, MajoranaOperator):
         return jordan_wigner_majorana_operator(operator)
+    if isinstance(operator, DiagonalCoulombHamiltonian):
+        return jordan_wigner_diagonal_coulomb_hamiltonian(operator)
+    if isinstance(operator, InteractionOperator):
+        return jordan_wigner_interaction_op(operator)
+    raise TypeError("Operator must be a FermionOperator, "
+                    "MajoranaOperator, "
+                    "DiagonalCoulombHamiltonian, or "
+                    "InteractionOperator.")
 
-    if not isinstance(operator, FermionOperator):
-        raise TypeError("Operator must be a FermionOperator, "
-                        "DiagonalCoulombHamiltonian, or "
-                        "InteractionOperator.")
 
+def jordan_wigner_fermion_operator(operator):
     transformed_operator = QubitOperator()
     for term in operator.terms:
-
         # Initialize identity matrix.
         transformed_term = QubitOperator((), operator.terms[term])
-
         # Loop through operators, transform and multiply.
         for ladder_operator in term:
             z_factors = tuple((index, 'Z') for
@@ -73,7 +74,6 @@ def jordan_wigner(operator):
                     z_factors + ((ladder_operator[0], 'Y'),), 0.5j)
             transformed_term *= pauli_x_component + pauli_y_component
         transformed_operator += transformed_term
-
     return transformed_operator
 
 
