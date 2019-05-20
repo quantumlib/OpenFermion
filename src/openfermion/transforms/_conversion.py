@@ -24,6 +24,7 @@ from openfermion.ops import (DiagonalCoulombHamiltonian,
                              FermionOperator,
                              InteractionOperator,
                              InteractionRDM,
+                             MajoranaOperator,
                              PolynomialTensor,
                              QuadraticHamiltonian,
                              QubitOperator,
@@ -377,24 +378,59 @@ def get_fermion_operator(operator):
     Returns:
         fermion_operator: An instance of the FermionOperator class.
     """
-    n_qubits = count_qubits(operator)
-    fermion_operator = FermionOperator()
-
     if isinstance(operator, PolynomialTensor):
-        for term in operator:
-            fermion_operator += FermionOperator(term, operator[term])
-
+        return _polynomial_tensor_to_fermion_operator(operator)
     elif isinstance(operator, DiagonalCoulombHamiltonian):
-        fermion_operator += FermionOperator((), operator.constant)
-        for p, q in itertools.product(range(n_qubits), repeat=2):
-            fermion_operator += FermionOperator(
-                ((p, 1), (q, 0)),
-                operator.one_body[p, q])
-            fermion_operator += FermionOperator(
-                ((p, 1), (p, 0), (q, 1), (q, 0)),
-                operator.two_body[p, q])
+        return _diagonal_coulomb_hamiltonian_to_fermion_operator(operator)
+    elif isinstance(operator, MajoranaOperator):
+        return _majorana_operator_to_fermion_operator(operator)
+    else:
+        raise TypeError('{} cannot be converted to FermionOperator'.format(
+            type(operator)))
 
+
+def _polynomial_tensor_to_fermion_operator(operator):
+    fermion_operator = FermionOperator()
+    for term in operator:
+        fermion_operator += FermionOperator(term, operator[term])
     return fermion_operator
+
+
+def _diagonal_coulomb_hamiltonian_to_fermion_operator(operator):
+    fermion_operator = FermionOperator()
+    n_qubits = count_qubits(operator)
+    fermion_operator += FermionOperator((), operator.constant)
+    for p, q in itertools.product(range(n_qubits), repeat=2):
+        fermion_operator += FermionOperator(
+            ((p, 1), (q, 0)),
+            operator.one_body[p, q])
+        fermion_operator += FermionOperator(
+            ((p, 1), (p, 0), (q, 1), (q, 0)),
+            operator.two_body[p, q])
+    return fermion_operator
+
+
+def _majorana_operator_to_fermion_operator(majorana_operator):
+    fermion_operator = FermionOperator()
+    for term, coeff in majorana_operator.terms.items():
+        converted_term = _majorana_term_to_fermion_operator(term)
+        converted_term *= coeff
+        fermion_operator += converted_term
+    return fermion_operator
+
+
+def _majorana_term_to_fermion_operator(term):
+    converted_term = FermionOperator(())
+    for index in term:
+        j, b = divmod(index, 2)
+        if b:
+            converted_op = FermionOperator((j, 0), -1j)
+            converted_op += FermionOperator((j, 1), 1j)
+        else:
+            converted_op = FermionOperator((j, 0))
+            converted_op += FermionOperator((j, 1))
+        converted_term *= converted_op
+    return converted_term
 
 
 def get_molecular_data(interaction_operator,
