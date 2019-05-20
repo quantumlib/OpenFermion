@@ -21,6 +21,7 @@ from openfermion.config import DATA_DIRECTORY
 from openfermion.hamiltonians import MolecularData, fermi_hubbard
 from openfermion.ops import (FermionOperator,
                              InteractionOperator,
+                             MajoranaOperator,
                              QubitOperator)
 from openfermion.transforms import (get_diagonal_coulomb_hamiltonian,
                                     get_fermion_operator,
@@ -404,3 +405,10 @@ class JordanWignerDiagonalCoulombHamiltonianTest(unittest.TestCase):
         self.assertTrue(
                 jordan_wigner(ferm_op) ==
                 jordan_wigner(get_diagonal_coulomb_hamiltonian(ferm_op)))
+
+
+def test_jordan_wigner_majorana_op_consistent():
+    op = (MajoranaOperator((1, 3, 4), 0.5)
+          + MajoranaOperator((3, 7, 8, 9, 10, 12), 1.8)
+          + MajoranaOperator((0, 4)))
+    assert jordan_wigner(op) == jordan_wigner(get_fermion_operator(op))

@@ -16,7 +16,8 @@ import itertools
 import numpy
 
 from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
-                             InteractionOperator, QubitOperator)
+                             InteractionOperator, MajoranaOperator,
+                             QubitOperator)
 from openfermion.utils import count_qubits
 
 
@@ -44,6 +45,8 @@ def jordan_wigner(operator):
         return jordan_wigner_interaction_op(operator)
     if isinstance(operator, DiagonalCoulombHamiltonian):
         return jordan_wigner_diagonal_coulomb_hamiltonian(operator)
+    if isinstance(operator, MajoranaOperator):
+        return jordan_wigner_majorana_operator(operator)
 
     if not isinstance(operator, FermionOperator):
         raise TypeError("Operator must be a FermionOperator, "
@@ -71,6 +74,19 @@ def jordan_wigner(operator):
             transformed_term *= pauli_x_component + pauli_y_component
         transformed_operator += transformed_term
 
+    return transformed_operator
+
+
+def jordan_wigner_majorana_operator(operator):
+    transformed_operator = QubitOperator()
+    for term, coeff in operator.terms.items():
+        transformed_term = QubitOperator((), coeff)
+        for majorana_index in term:
+            q, b = divmod(majorana_index, 2)
+            z_string = tuple((i, 'Z') for i in range(q))
+            bit_flip_op = 'Y' if b else 'X'
+            transformed_term *= QubitOperator(z_string + ((q, bit_flip_op),))
+        transformed_operator += transformed_term
     return transformed_operator
 
 
