@@ -70,6 +70,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
     def test_bk_n_qubits_too_small(self):
         with self.assertRaises(ValueError):
             bravyi_kitaev(FermionOperator('2^ 3^ 5 0'), n_qubits=4)
+        with self.assertRaises(ValueError):
+            bravyi_kitaev(MajoranaOperator((2, 3, 9, 0)), n_qubits=4)
 
     def test_bk_jw_number_operator(self):
         # Check if number operator has the same spectrum in both
@@ -188,6 +190,9 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         bk_spectrum = eigenspectrum(bk_qubit_operator)
         self.assertAlmostEqual(0., numpy.amax(numpy.absolute(jw_spectrum -
                                               bk_spectrum)), places=5)
+    def test_bk_bad_type(self):
+        with self.assertRaises(TypeError):
+            bravyi_kitaev(QubitOperator())
 
 
 def test_bravyi_kitaev_majorana_op_consistent():
