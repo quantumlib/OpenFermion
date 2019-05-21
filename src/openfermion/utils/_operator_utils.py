@@ -28,6 +28,7 @@ from openfermion.ops import (BosonOperator,
                              FermionOperator,
                              InteractionOperator,
                              InteractionRDM,
+                             MajoranaOperator,
                              QuadOperator,
                              QubitOperator,
                              PolynomialTensor)
@@ -324,6 +325,15 @@ def count_qubits(operator):
             if term:
                 if term[-1][0] + 1 > num_qubits:
                     num_qubits = term[-1][0] + 1
+        return num_qubits
+
+    # Handle MajoranaOperator.
+    if isinstance(operator, MajoranaOperator):
+        num_qubits = 0
+        for term in operator.terms:
+            for majorana_index in term:
+                if majorana_index + 1 > num_qubits:
+                    num_qubits = majorana_index + 1
         return num_qubits
 
     # Handle DiagonalCoulombHamiltonian

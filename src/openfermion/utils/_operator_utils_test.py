@@ -38,12 +38,17 @@ class OperatorUtilsTest(unittest.TestCase):
 
     def setUp(self):
         self.n_qubits = 5
+        self.majorana_operator = MajoranaOperator((1, 2, 4))
         self.fermion_term = FermionOperator('1^ 2^ 3 4', -3.17)
         self.fermion_operator = self.fermion_term + hermitian_conjugated(
             self.fermion_term)
         self.qubit_operator = jordan_wigner(self.fermion_operator)
         self.interaction_operator = get_interaction_operator(
             self.fermion_operator)
+
+    def test_n_qubits_majorana_operator(self):
+        self.assertEqual(self.n_qubits,
+                         count_qubits(self.majorana_operator))
 
     def test_n_qubits_single_fermion_term(self):
         self.assertEqual(self.n_qubits,
