@@ -38,7 +38,7 @@ class OperatorUtilsTest(unittest.TestCase):
 
     def setUp(self):
         self.n_qubits = 5
-        self.majorana_operator = MajoranaOperator((1, 2, 4))
+        self.majorana_operator = MajoranaOperator((1, 4, 9))
         self.fermion_term = FermionOperator('1^ 2^ 3 4', -3.17)
         self.fermion_operator = self.fermion_term + hermitian_conjugated(
             self.fermion_term)
