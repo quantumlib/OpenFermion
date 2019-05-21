@@ -45,7 +45,7 @@ def bravyi_kitaev(operator, n_qubits=None):
     if isinstance(operator, MajoranaOperator):
         return _bravyi_kitaev_majorana_operator(operator, n_qubits)
     raise TypeError("Couldn't apply the Bravyi-Kitaev Transform to object "
-                    "of type {}".format(type(operator)))
+                    "of type {}.".format(type(operator)))
 
 
 def _update_set(index, n_qubits):
