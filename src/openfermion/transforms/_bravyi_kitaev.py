@@ -12,7 +12,7 @@
 
 """Bravyi-Kitaev transform on fermionic operators."""
 
-from openfermion.ops import QubitOperator
+from openfermion.ops import MajoranaOperator, QubitOperator
 from openfermion.utils import count_qubits, inline_sum
 
 
@@ -40,6 +40,9 @@ def bravyi_kitaev(operator, n_qubits=None):
     Raises:
         ValueError: Invalid number of qubits specified.
     """
+    if isinstance(operator, MajoranaOperator):
+        return _bravyi_kitaev_majorana_operator(operator, n_qubits)
+
     # Compute the number of qubits.
     if n_qubits is None:
         n_qubits = count_qubits(operator)
@@ -103,6 +106,49 @@ def _parity_set(index):
         # E.g. 00010100 -> 00010000
         index &= index - 1
     return indices
+
+
+def _bravyi_kitaev_majorana_operator(operator, n_qubits):
+    # Compute the number of qubits.
+    if n_qubits is None:
+        n_qubits = count_qubits(operator)
+
+    # Compute transformed operator.
+    transformed_terms = (
+        _transform_majorana_term(term=term,
+                                 coefficient=coeff,
+                                 n_qubits=n_qubits)
+        for term, coeff in operator.terms.items()
+    )
+    return inline_sum(summands=transformed_terms, seed=QubitOperator())
+
+
+def _transform_majorana_term(term, coefficient, n_qubits):
+    # Build the Bravyi-Kitaev transformed operators.
+    transformed_ops = (
+        _transform_majorana_operator(majorana_index, n_qubits)
+        for majorana_index in term
+    )
+    return inline_product(factors=transformed_ops,
+                          seed=QubitOperator((), coefficient))
+
+
+def _transform_majorana_operator(majorana_index, n_qubits):
+    q, b = divmod(majorana_index, 2)
+
+    update_set = _update_set(q, n_qubits)
+    occupation_set = _occupation_set(q)
+    parity_set = _parity_set(q - 1)
+
+    if b:
+        return QubitOperator(
+                [(q, 'Y')] +
+                [(i, 'X') for i in update_set - {q}] +
+                [(i, 'Z') for i in (parity_set ^ occupation_set) - {q}])
+    else:
+        return QubitOperator(
+                [(i, 'X') for i in update_set] +
+                [(i, 'Z') for i in parity_set])
 
 
 def _transform_operator_term(term, coefficient, n_qubits):

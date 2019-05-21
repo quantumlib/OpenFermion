@@ -18,8 +18,10 @@ import unittest
 import numpy
 
 from openfermion.ops import (FermionOperator,
+                             MajoranaOperator,
                              QubitOperator)
-from openfermion.transforms import bravyi_kitaev, jordan_wigner
+from openfermion.transforms import (
+        bravyi_kitaev, get_fermion_operator, jordan_wigner)
 from openfermion.utils import eigenspectrum, number_operator
 
 
@@ -186,3 +188,10 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         bk_spectrum = eigenspectrum(bk_qubit_operator)
         self.assertAlmostEqual(0., numpy.amax(numpy.absolute(jw_spectrum -
                                               bk_spectrum)), places=5)
+
+
+def test_bravyi_kitaev_majorana_op_consistent():
+    op = (MajoranaOperator((1, 3, 4), 0.5)
+          + MajoranaOperator((3, 7, 8, 9, 10, 12), 1.8)
+          + MajoranaOperator((0, 4)))
+    assert bravyi_kitaev(op) == bravyi_kitaev(get_fermion_operator(op))
