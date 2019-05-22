@@ -62,7 +62,7 @@ def check_stabilizer_linearity(stabilizer_list, msg):
     and raises an error if the identity is found.
 
     Args:
-        stabilizer_list (list): List of stabilizers as QubitOperators.
+        stabilizer_list (list): List of stabilizers (QubitOperator).
         msg (str): Message for the error.
     """
     for stab in stabilizer_list:
@@ -74,20 +74,24 @@ def fix_single_term(term, position, fixed_op, other_op, stabilizer):
     """
     Auxiliary function for term reductions.
 
-    Uses stabilizer to fix the action of a QubitOperator on the selected
-    qubit to either the identity or a specific Pauli operator.
+    Automatically multiplies a single term with a given stabilizer if
+    the Pauli operator on a given qubit is of one of two specified types.
+    This fixes a certain representation of a logical operator.
 
     Args:
-        term (QubitOperator): individual term of a QubitOperator.
-        position (int): qubit position.
-        fixed_op (str): Pauli operator of the fixed qubit.
-        other_op (str): Pauli operator alternative to fixed_op
-        stabilizer (QubitOperator): stabilizer to be used for the term
-                                    reduction.
+        term (QubitOperator): Single term to fix.
+        position (int): Index of the qubit which is to be fixed.
+        fixed_op (str): Pauli operator, which
+                        will cause a multiplication by the
+                        stabilizer when encountered at the fixed
+                        position.
+        other_op (str): Alternative Pauli operator, which will also
+                        cause the multiplication by the stabilizer.
+        stabilizer (QubitOperator): Stabilizer that is multiplied
+                                    when necessary.
 
-    Return:
-        term (QubitOperator): Updated term after the application of the
-                              stabilizer condition.
+    Returns:
+        term (QubitOperator): Updated term in a fiixed representation.
     """
     pauli_tuple = list(term.terms)[0]
     if (position, fixed_op) in pauli_tuple or (position,
@@ -102,17 +106,24 @@ def _lookup_term(pauli_string, updated_terms_1, updated_terms_2):
     Auxiliary function for reducing terms keeping length.
 
     This function checks the length of the original Pauli strings,
-    compares it to the updated Pauli strings, and keeps the shortest operators.
+    compares it to a list of strings and returns the shortest operator
+    equivalent to the original.
 
     Args:
-        pauli_string (tuple): of qubit-pauli as used in QubitOperator.
-        updated_terms_1 (list): of QubitOperators from the operator from which
-                               terms will be reduced.
-        updated_terms_2 (list): of QubitOperators from the operator from which
-                               terms will be reduced.
-    Return:
-        pauli_op (tuple): of the Pauli string with the lenght equal
-                          to the original operator.
+        pauli_string (tuple): Original Pauli string given in the same form
+                              as in the data structure of QubitOperator.
+        updated_terms_1 (list): List of Pauli strings (QubitOperator),
+                                which replace the original string if
+                                they are shorter and they are equivalent
+                                to each other.
+        updated_terms_2 (list): List of Pauli strings given in the data
+                                structure of QubitOperator, denoting which
+                                strings the entries of the first list are
+                                equivalent to.
+    Returns:
+        pauli_op (QubitOperator): Shortest Pauli string equivalent to the
+                                  original.
+
     """
     pauli_op = QubitOperator(pauli_string)
     length = len(pauli_string)
@@ -133,7 +144,7 @@ def _reduce_terms(terms, stabilizer_list, maintain_length,
     Auxiliary function to reduce_number_of_terms.
 
     Args:
-        terms (QubitOperator): Operator from which terms are reduced.
+        terms (QubitOperator): Operator the number of terms is to be reduced.
         stabilizer_list (list): List of the stabilizers as QubitOperators.
         maintain_length (Boolean): Option deciding whether the fixed Pauli
                                    strings are re-expressed in their original
@@ -143,7 +154,7 @@ def _reduce_terms(terms, stabilizer_list, maintain_length,
         fixed_positions (list): (optional) List of fixed qubit positions.
                                 Passing a list is only effective if
                                 manual_input is True.
-    Return:
+    Returns:
         even_newer_terms (QubitOperator): Updated operator with reduced terms.
         fixed_positions (list): Positions of qubits to be used for the
                                 term reduction.
@@ -224,7 +235,7 @@ def _reduce_terms_keep_length(terms, stabilizer_list, maintain_length,
         fixed_positions (list): (optional) List of fixed qubit positions.
                                 Passing a list is only effective if
                                 manual_input is True.
-    Return:
+    Returns:
         even_newer_terms (QubitOperator): Updated operator with reduced terms.
         fixed_positions (list): Positions of qubits to be used for the
                                 term reduction.
