@@ -16,17 +16,23 @@ using stabilizer conditions. Based on ideas of arXiv:1701.08213. """
 import numpy
 from openfermion.ops import QubitOperator
 from openfermion.utils import count_qubits
+from openfermion.config import EQ_TOLERANCE
 
 
 class StabilizerError(Exception):
     """Stabilizer error class."""
 
     def __init__(self, message):
-        """Throw custom errors connected to stabilizers."""
+        """
+        Throw custom errors connected to stabilizers.
+
+        Args:
+            message(str): custome error message string.
+        """
         super().__init__(message)
 
 
-def _check_commuting_stabilizers(stabilizer_list, msg, thres=1e-6):
+def check_commuting_stabilizers(stabilizer_list, msg, thres=EQ_TOLERANCE):
     """
     Auxiliary function checking that stabilizers commute.
 
@@ -35,13 +41,18 @@ def _check_commuting_stabilizers(stabilizer_list, msg, thres=1e-6):
     This function checks the list of stabilizers (QubitOperator)
     and raises and error if a complex number is found in
     any of the coefficients.
+
+    Args:
+        stabilizer_list (list): List of stabilizers as QubitOperators.
+        msg (str): Message for the error.
+        thres: Tolerance value, set to OpenFermion tolerance by default.
     """
     for stab in stabilizer_list:
         if abs(numpy.imag(list(stab.terms.values())[0])) >= thres:
             raise StabilizerError(msg)
 
 
-def _check_stabilizer_linearity(stabilizer_list, msg):
+def check_stabilizer_linearity(stabilizer_list, msg):
     """
     Auxiliary function checking that stabilizers are linearly independent.
 
@@ -49,18 +60,34 @@ def _check_stabilizer_linearity(stabilizer_list, msg):
     after some of their products will be the identity.
     This function checks the list of stabilizers (QubitOperator)
     and raises an error if the identity is found.
+
+    Args:
+        stabilizer_list (list): List of stabilizers as QubitOperators.
+        msg (str): Message for the error.
     """
     for stab in stabilizer_list:
         if list(stab.terms.keys())[0] == ():
             raise StabilizerError(msg)
 
 
-def _fix_single_term(term, position, fixed_op, other_op, stabilizer):
+def fix_single_term(term, position, fixed_op, other_op, stabilizer):
     """
     Auxiliary function for term reductions.
 
     Uses stabilizer to fix the action of a QubitOperator on the selected
     qubit to either the identity or a specific Pauli operator.
+
+    Args:
+        term (QubitOperator): individual term of a QubitOperator.
+        position (int): qubit position.
+        fixed_op (str): Pauli operator of the fixed qubit.
+        other_op (str): Pauli operator alternative to fixed_op
+        stabilizer (QubitOperator): stabilizer to be used for the term
+                                    reduction.
+
+    Return:
+        term (QubitOperator): Updated term after the application of the
+                              stabilizer condition.
     """
     pauli_tuple = list(term.terms)[0]
     if (position, fixed_op) in pauli_tuple or (position,
@@ -76,6 +103,16 @@ def _lookup_term(pauli_string, updated_terms_1, updated_terms_2):
 
     This function checks the length of the original Pauli strings,
     compares it to the updated Pauli strings, and keeps the shortest operators.
+
+    Args:
+        pauli_string (tuple): of qubit-pauli as used in QubitOperator.
+        updated_terms_1 (list): of QubitOperators from the operator from which
+                               terms will be reduced.
+        updated_terms_2 (list): of QubitOperators from the operator from which
+                               terms will be reduced.
+    Return:
+        pauli_op (tuple): of the Pauli string with the lenght equal
+                          to the original operator.
     """
     pauli_op = QubitOperator(pauli_string)
     length = len(pauli_string)
@@ -94,6 +131,25 @@ def _reduce_terms(terms, stabilizer_list, maintain_length,
     Perform the term reduction using stabilizer conditions.
 
     Auxiliary function to reduce_number_of_terms.
+
+    Args:
+        terms (QubitOperator): Operator from which terms are reduced.
+        stabilizer_list (list): List of the stabilizers as QubitOperators.
+        maintain_length (Boolean): Option deciding whether the fixed Pauli
+                                   strings are re-expressed in their original
+                                   form. Set to False by default.
+        manual_input (Boolean): Option to pass the list of fixed qubits
+                                positions manually. Set to False by default.
+        fixed_positions (list): (optional) List of fixed qubit positions.
+                                Passing a list is only effective if
+                                manual_input is True.
+    Return:
+        even_newer_terms (QubitOperator): Updated operator with reduced terms.
+        fixed_positions (list): Positions of qubits to be used for the
+                                term reduction.
+    Raises:
+        StabilizerError: Trivial stabilizer (identity).
+        StabilizerError: Stabilizer with complex coefficient.
     """
     # Initialize fixed_position as an empty list to avoid conflict with
     # fixed_positions.
@@ -126,25 +182,25 @@ def _reduce_terms(terms, stabilizer_list, maintain_length,
 
         new_terms = QubitOperator()
         for qubit_pauli in terms:
-            new_terms += _fix_single_term(qubit_pauli, fixed_positions[i],
-                                          fixed_op,
-                                          other_op, stabilizer_list[0])
+            new_terms += fix_single_term(qubit_pauli, fixed_positions[i],
+                                         fixed_op,
+                                         other_op, stabilizer_list[0])
         updated_stabilizers = []
         for update_stab in stabilizer_list[1:]:
-            updated_stabilizers += [_fix_single_term(update_stab,
-                                                     fixed_positions[i],
-                                                     fixed_op,
-                                                     other_op,
-                                                     stabilizer_list[0])]
+            updated_stabilizers += [fix_single_term(update_stab,
+                                                    fixed_positions[i],
+                                                    fixed_op,
+                                                    other_op,
+                                                    stabilizer_list[0])]
 
         # Update terms and stabilizer list.
         terms = new_terms
         stabilizer_list = updated_stabilizers
 
-        _check_stabilizer_linearity(stabilizer_list,
-                                    msg='Linearly dependent stabilizers.')
-        _check_commuting_stabilizers(stabilizer_list,
-                                     msg='Stabilizers anti-commute.')
+        check_stabilizer_linearity(stabilizer_list,
+                                   msg='Linearly dependent stabilizers.')
+        check_commuting_stabilizers(stabilizer_list,
+                                    msg='Stabilizers anti-commute.')
 
     return terms, fixed_positions
 
@@ -156,6 +212,25 @@ def _reduce_terms_keep_length(terms, stabilizer_list, maintain_length,
 
     Auxiliary function to reduce_number_of_terms that returns the
     Pauli strings with the same length as in the starting operator.
+
+    Args:
+        terms (QubitOperator): Operator from which terms are reduced.
+        stabilizer_list (list): List of the stabilizers as QubitOperators.
+        maintain_length (Boolean): Option deciding whether the fixed Pauli
+                                   strings are re-expressed in their original
+                                   form. Set to False by default.
+        manual_input (Boolean): Option to pass the list of fixed qubits
+                                positions manually. Set to False by default.
+        fixed_positions (list): (optional) List of fixed qubit positions.
+                                Passing a list is only effective if
+                                manual_input is True.
+    Return:
+        even_newer_terms (QubitOperator): Updated operator with reduced terms.
+        fixed_positions (list): Positions of qubits to be used for the
+                                term reduction.
+    Raises:
+        StabilizerError: Trivial stabilizer (identity).
+        StabilizerError: Stabilizer with complex coefficient.
     """
     term_list_duplicate = list(terms.terms)
     term_list = [QubitOperator(x) for x in term_list_duplicate]
@@ -188,20 +263,20 @@ def _reduce_terms_keep_length(terms, stabilizer_list, maintain_length,
         new_list = []
         updated_stabilizers = []
         for y in term_list:
-            new_list += [_fix_single_term(y, fixed_positions[i], fixed_op,
-                                          other_op, stabilizer_list[0])]
+            new_list += [fix_single_term(y, fixed_positions[i], fixed_op,
+                                         other_op, stabilizer_list[0])]
         for update_stab in stabilizer_list[1:]:
-            updated_stabilizers += [_fix_single_term(update_stab,
-                                                     fixed_positions[i],
-                                                     fixed_op, other_op,
-                                                     stabilizer_list[0])]
+            updated_stabilizers += [fix_single_term(update_stab,
+                                                    fixed_positions[i],
+                                                    fixed_op, other_op,
+                                                    stabilizer_list[0])]
         term_list = new_list
         stabilizer_list = updated_stabilizers
 
-        _check_stabilizer_linearity(stabilizer_list,
-                                    msg='Linearly dependent stabilizers.')
-        _check_commuting_stabilizers(stabilizer_list,
-                                     msg='Stabilizers anti-commute.')
+        check_stabilizer_linearity(stabilizer_list,
+                                   msg='Linearly dependent stabilizers.')
+        check_commuting_stabilizers(stabilizer_list,
+                                    msg='Stabilizers anti-commute.')
 
     new_terms = QubitOperator()
     for x, ent in enumerate(term_list):
@@ -226,7 +301,7 @@ def reduce_number_of_terms(operator, stabilizers,
                            maintain_length=False,
                            output_fixed_positions=False,
                            manual_input=False,
-                           fixed_positions=[]):
+                           fixed_positions=None):
     r"""
     Reduce the number of Pauli strings of operator using stabilizers.
 
@@ -292,10 +367,10 @@ def reduce_number_of_terms(operator, stabilizers,
 
     stabilizer_list = list(stabilizers)
 
-    _check_stabilizer_linearity(stabilizer_list,
-                                msg='Trivial stabilizer (identity).')
-    _check_commuting_stabilizers(stabilizer_list,
-                                 msg='Stabilizer with complex coefficient.')
+    check_stabilizer_linearity(stabilizer_list,
+                               msg='Trivial stabilizer (identity).')
+    check_commuting_stabilizers(stabilizer_list,
+                                msg='Stabilizer with complex coefficient.')
 
     if manual_input:
         # Convert fixed_position into a list to allow any type of
@@ -328,8 +403,8 @@ def reduce_number_of_terms(operator, stabilizers,
         return reduced_operator
 
 
-def taper_off_qubits(operator, stabilizers,  manual_input=False,
-                     fixed_positions=[], output_tapered_positions=False):
+def taper_off_qubits(operator, stabilizers, manual_input=False,
+                     fixed_positions=None, output_tapered_positions=False):
     r"""
     Remove qubits from given operator.
 
