@@ -21,9 +21,8 @@ from openfermion.ops import QubitOperator
 from openfermion.transforms import jordan_wigner, get_fermion_operator
 from openfermion.utils import eigenspectrum
 
-from openfermion.transforms import (reduce_number_of_terms,
-                                    taper_off_qubits)
-from openfermion.transforms._qubit_tapering_from_stabilizer import\
+from openfermion.utils import reduce_number_of_terms, taper_off_qubits
+from openfermion.utils._qubit_tapering_from_stabilizer import\
     StabilizerError
 
 
