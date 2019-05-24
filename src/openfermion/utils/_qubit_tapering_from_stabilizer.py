@@ -366,7 +366,7 @@ def reduce_number_of_terms(operator, stabilizers,
         TypeError: Input stabilizers must be QubitOperator or list.
         StabilizerError: Trivial stabilizer (identity).
         StabilizerError: Stabilizer with complex coefficient.
-        StabilizerError: List of fixed qubits required if manual input True.
+        TypeError: List of fixed qubits required if manual input True.
         StabilizerError: The number of stabilizers must be equal to the number
                          of qubits manually fixed.
         StabilizerError: All qubit positions must be different.
@@ -388,7 +388,7 @@ def reduce_number_of_terms(operator, stabilizers,
         # Convert fixed_position into a list to allow any type of
         # array_like data structure.
         if fixed_positions is None:
-            raise StabilizerError('Qubit positions must be defined.')
+            raise TypeError('List of qubit positions required.')
         fixed_positions = list(fixed_positions)
         if len(fixed_positions) != len(stabilizer_list):
             raise StabilizerError('The number of stabilizers must be equal '
