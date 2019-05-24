@@ -388,7 +388,8 @@ def reduce_number_of_terms(operator, stabilizers,
         # Convert fixed_position into a list to allow any type of
         # array_like data structure.
         if fixed_positions is None:
-            raise StabilizerError('The list of qubit positions must be defined.')
+            raise StabilizerError(
+                'The list of qubit positions must be defined.')
         fixed_positions = list(fixed_positions)
         if len(fixed_positions) != len(stabilizer_list):
             raise StabilizerError('The number of stabilizers must be equal '
