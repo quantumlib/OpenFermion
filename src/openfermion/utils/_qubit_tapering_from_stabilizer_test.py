@@ -75,7 +75,12 @@ class TaperingTest(unittest.TestCase):
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=stab1 + stab2,
                                    manual_input=True,
-                                   fixed_positions=[])
+                                   fixed_positions=None)
+        with self.assertRaises(StabilizerError):
+            reduce_number_of_terms(operator=qubit_hamiltonian,
+                                   stabilizers=stab1 + stab2,
+                                   manual_input=True,
+                                   fixed_positions=[1])
         with self.assertRaises(StabilizerError):
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=stab1 + stab2,
