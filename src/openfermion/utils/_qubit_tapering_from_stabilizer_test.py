@@ -22,8 +22,7 @@ from openfermion.transforms import jordan_wigner, get_fermion_operator
 from openfermion.utils import eigenspectrum
 
 from openfermion.utils import reduce_number_of_terms, taper_off_qubits
-from openfermion.utils._qubit_tapering_from_stabilizer import\
-    StabilizerError
+from openfermion.utils._qubit_tapering_from_stabilizer import StabilizerError
 
 
 def lih_hamiltonian():

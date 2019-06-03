@@ -29,7 +29,7 @@ class StabilizerError(Exception):
         Args:
             message(str): custome error message string.
         """
-        super().__init__(message)
+        Exception.__init__(self, message)
 
 
 def check_commuting_stabilizers(stabilizer_list, msg, thres=EQ_TOLERANCE):
