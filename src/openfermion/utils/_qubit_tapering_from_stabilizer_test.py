@@ -184,6 +184,35 @@ class TaperingTest(unittest.TestCase):
 
         self.assertAlmostEqual(spectrum[0], red_eigenspectrum[0])
 
+    def test_reduce_terms_manual_input(self):
+        """Test reduce_terms function using LiH Hamiltonian."""
+        hamiltonian, spectrum = lih_hamiltonian()
+        qubit_hamiltonian = jordan_wigner(hamiltonian)
+        stab1 = QubitOperator('Z0 Z2', -1.0)
+        stab2 = QubitOperator('Z1 Z3', -1.0)
+
+        red_eigenspectrum = eigenspectrum(
+            reduce_number_of_terms(qubit_hamiltonian,
+                                   stab1 + stab2,
+                                   manual_input=True,
+                                   fixed_positions=[0, 1]))
+
+        self.assertAlmostEqual(spectrum[0], red_eigenspectrum[0])
+
+    def test_reduce_terms_maintain_length(self):
+        """Test reduce_terms function using LiH Hamiltonian."""
+        hamiltonian, spectrum = lih_hamiltonian()
+        qubit_hamiltonian = jordan_wigner(hamiltonian)
+        stab1 = QubitOperator('Z0 Z2', -1.0)
+        stab2 = QubitOperator('Z1 Z3', -1.0)
+
+        red_eigenspectrum = eigenspectrum(
+            reduce_number_of_terms(qubit_hamiltonian,
+                                   stab1 + stab2,
+                                   maintain_length=True))
+
+        self.assertAlmostEqual(spectrum[0], red_eigenspectrum[0])
+
     def test_reduce_terms_auxiliar_functions(self):
         """Test reduce_terms function using LiH Hamiltonian."""
         hamiltonian, spectrum = lih_hamiltonian()
@@ -194,14 +223,35 @@ class TaperingTest(unittest.TestCase):
         red_ham1, fixed_pos1 = _reduce_terms(terms=qubit_ham,
                                              stabilizer_list=[stab1, stab2],
                                              manual_input=False,
-                                             fixed_positions=[]
-                                             )
+                                             fixed_positions=[])
         red_ham2, fixed_pos2 = _reduce_terms_keep_length(terms=qubit_ham,
                                                          stabilizer_list=[
                                                              stab1, stab2],
                                                          manual_input=False,
-                                                         fixed_positions=[]
-                                                         )
+                                                         fixed_positions=[])
+        red_eigspct1 = eigenspectrum(red_ham1)
+        red_eigspct2 = eigenspectrum(red_ham2)
+
+        self.assertAlmostEqual(spectrum[0], red_eigspct1[0])
+        self.assertAlmostEqual(spectrum[0], red_eigspct2[0])
+
+    def test_reduce_terms_auxiliar_functions_manual_input(self):
+        """Test reduce_terms function using LiH Hamiltonian."""
+        hamiltonian, spectrum = lih_hamiltonian()
+        qubit_ham = jordan_wigner(hamiltonian)
+        stab1 = QubitOperator('Z0 Z2', -1.0)
+        stab2 = QubitOperator('Z1 Z3', -1.0)
+
+        red_ham1, fixed_pos1 = _reduce_terms(terms=qubit_ham,
+                                             stabilizer_list=[stab1, stab2],
+                                             manual_input=True,
+                                             fixed_positions=[0, 1])
+        red_ham2, fixed_pos2 = _reduce_terms_keep_length(terms=qubit_ham,
+                                                         stabilizer_list=[
+                                                             stab1, stab2],
+                                                         manual_input=True,
+                                                         fixed_positions=[0,
+                                                                          1])
         red_eigspct1 = eigenspectrum(red_ham1)
         red_eigspct2 = eigenspectrum(red_ham2)
 
