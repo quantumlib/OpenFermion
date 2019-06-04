@@ -136,7 +136,7 @@ def _lookup_term(pauli_string, updated_terms_1, updated_terms_2):
     return pauli_op
 
 
-def _reduce_terms(terms, stabilizer_list, maintain_length,
+def _reduce_terms(terms, stabilizer_list,
                   manual_input, fixed_positions):
     """
     Perform the term reduction using stabilizer conditions.
@@ -146,9 +146,6 @@ def _reduce_terms(terms, stabilizer_list, maintain_length,
     Args:
         terms (QubitOperator): Operator the number of terms is to be reduced.
         stabilizer_list (list): List of the stabilizers as QubitOperators.
-        maintain_length (Boolean): Option deciding whether the fixed Pauli
-                                   strings are re-expressed in their original
-                                   form. Set to False by default.
         manual_input (Boolean): Option to pass the list of fixed qubits
                                 positions manually. Set to False by default.
         fixed_positions (list): (optional) List of fixed qubit positions.
@@ -216,7 +213,7 @@ def _reduce_terms(terms, stabilizer_list, maintain_length,
     return terms, fixed_positions
 
 
-def _reduce_terms_keep_length(terms, stabilizer_list, maintain_length,
+def _reduce_terms_keep_length(terms, stabilizer_list,
                               manual_input, fixed_positions):
     """
     Perform the term reduction using stabilizer conditions.
@@ -227,9 +224,6 @@ def _reduce_terms_keep_length(terms, stabilizer_list, maintain_length,
     Args:
         terms (QubitOperator): Operator from which terms are reduced.
         stabilizer_list (list): List of the stabilizers as QubitOperators.
-        maintain_length (Boolean): Option deciding whether the fixed Pauli
-                                   strings are re-expressed in their original
-                                   form. Set to False by default.
         manual_input (Boolean): Option to pass the list of fixed qubits
                                 positions manually. Set to False by default.
         fixed_positions (list): (optional) List of fixed qubit positions.
@@ -400,14 +394,12 @@ def reduce_number_of_terms(operator, stabilizers,
         (reduced_operator,
          fixed_positions) = _reduce_terms_keep_length(operator,
                                                       stabilizer_list,
-                                                      maintain_length,
                                                       manual_input,
                                                       fixed_positions)
     else:
         (reduced_operator,
          fixed_positions) = _reduce_terms(operator,
                                           stabilizer_list,
-                                          maintain_length,
                                           manual_input,
                                           fixed_positions)
 
