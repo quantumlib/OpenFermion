@@ -266,7 +266,7 @@ class TaperingTest(unittest.TestCase):
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
         tapered_hamiltonian = taper_off_qubits(operator=qubit_hamiltonian,
-                                               stabilizers=stab1 + stab2,
+                                               stabilizers=[stab1, stab2],
                                                manual_input=False,
                                                fixed_positions=[0, 3])
         tapered_spectrum = eigenspectrum(tapered_hamiltonian)
@@ -288,11 +288,11 @@ class TaperingTest(unittest.TestCase):
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
         tapered_ham_0_3 = taper_off_qubits(qubit_hamiltonian,
-                                           stab1 + stab2,
+                                           [stab1, stab2],
                                            manual_input=True,
                                            fixed_positions=[0, 3])
         tapered_ham_2_1 = taper_off_qubits(qubit_hamiltonian,
-                                           stab1 + stab2,
+                                           [stab1, stab2],
                                            manual_input=True,
                                            fixed_positions=[2, 1])
 
