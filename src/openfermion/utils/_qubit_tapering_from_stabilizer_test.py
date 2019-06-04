@@ -22,7 +22,9 @@ from openfermion.transforms import jordan_wigner, get_fermion_operator
 from openfermion.utils import eigenspectrum
 
 from openfermion.utils import reduce_number_of_terms, taper_off_qubits
-from openfermion.utils._qubit_tapering_from_stabilizer import StabilizerError
+from openfermion.utils._qubit_tapering_from_stabilizer import (
+    StabilizerError, check_commuting_stabilizers, check_stabilizer_linearity,
+    fix_single_term)
 
 
 def lih_hamiltonian():
@@ -107,6 +109,33 @@ class TaperingTest(unittest.TestCase):
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=(QubitOperator('X0', 1.0) +
                                                 QubitOperator('Y0', 1.0)))
+        with self.assertRaises(StabilizerError):
+            # Test check_commuting_stabilizer function
+            # Requires a list of QubitOperators one of which
+            # has an imaginary term.
+            check_commuting_stabilizers(stabilizer_list=[QubitOperator('Z0 Z1',
+                                                                       1.0),
+                                                         QubitOperator('X0',
+                                                                       1j)],
+                                        msg='This test fails.')
+        with self.assertRaises(StabilizerError):
+            # Test check_stabilizer_linearity function.
+            # Requires a list of QUbitOperators one of which is
+            # the identity.
+            check_stabilizer_linearity([QubitOperator('Z0 Z1', 1.0),
+                                        QubitOperator(' ', 1.0)],
+                                       msg='This test fails.')
+
+    def test_fix_single_term(self):
+        """Test fix_single_term function."""
+        stab2 = QubitOperator('Z1 Z3', -1.0)
+        test_term = QubitOperator('Z1 Z2')
+
+        fix1 = fix_single_term(test_term, 1, 'Z', 'X', stab2)
+        fix2 = fix_single_term(test_term, 0, 'X', 'X', stab2)
+
+        self.assertTrue(fix1 == (test_term * stab2))
+        self.assertTrue(fix2 == test_term)
 
     def test_reduce_terms(self):
         """Test reduce_terms function using LiH Hamiltonian."""
