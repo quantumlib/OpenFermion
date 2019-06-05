@@ -16,7 +16,8 @@ import itertools
 import numpy
 
 from openfermion.ops import (DiagonalCoulombHamiltonian, FermionOperator,
-                             InteractionOperator, QubitOperator)
+                             InteractionOperator, MajoranaOperator,
+                             QubitOperator)
 from openfermion.utils import count_qubits
 
 
@@ -40,22 +41,25 @@ def jordan_wigner(operator):
         TypeError: Operator must be a FermionOperator,
             DiagonalCoulombHamiltonian, or InteractionOperator.
     """
-    if isinstance(operator, InteractionOperator):
-        return jordan_wigner_interaction_op(operator)
+    if isinstance(operator, FermionOperator):
+        return jordan_wigner_fermion_operator(operator)
+    if isinstance(operator, MajoranaOperator):
+        return jordan_wigner_majorana_operator(operator)
     if isinstance(operator, DiagonalCoulombHamiltonian):
         return jordan_wigner_diagonal_coulomb_hamiltonian(operator)
+    if isinstance(operator, InteractionOperator):
+        return jordan_wigner_interaction_op(operator)
+    raise TypeError("Operator must be a FermionOperator, "
+                    "MajoranaOperator, "
+                    "DiagonalCoulombHamiltonian, or "
+                    "InteractionOperator.")
 
-    if not isinstance(operator, FermionOperator):
-        raise TypeError("Operator must be a FermionOperator, "
-                        "DiagonalCoulombHamiltonian, or "
-                        "InteractionOperator.")
 
+def jordan_wigner_fermion_operator(operator):
     transformed_operator = QubitOperator()
     for term in operator.terms:
-
         # Initialize identity matrix.
         transformed_term = QubitOperator((), operator.terms[term])
-
         # Loop through operators, transform and multiply.
         for ladder_operator in term:
             z_factors = tuple((index, 'Z') for
@@ -70,7 +74,19 @@ def jordan_wigner(operator):
                     z_factors + ((ladder_operator[0], 'Y'),), 0.5j)
             transformed_term *= pauli_x_component + pauli_y_component
         transformed_operator += transformed_term
+    return transformed_operator
 
+
+def jordan_wigner_majorana_operator(operator):
+    transformed_operator = QubitOperator()
+    for term, coeff in operator.terms.items():
+        transformed_term = QubitOperator((), coeff)
+        for majorana_index in term:
+            q, b = divmod(majorana_index, 2)
+            z_string = tuple((i, 'Z') for i in range(q))
+            bit_flip_op = 'Y' if b else 'X'
+            transformed_term *= QubitOperator(z_string + ((q, bit_flip_op),))
+        transformed_operator += transformed_term
     return transformed_operator
 
 
@@ -136,7 +152,7 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
     # Transform other one-body terms and "diagonal" two-body terms
     for p, q in itertools.combinations(range(n_qubits), 2):
         # One-body
-        coefficient = .5 * (iop[(p, 1), (q, 0)] + iop[(q, 1), (p, 0)])
+        coefficient = .5 * (iop[(p, 1), (q, 0)] + iop[(q, 1), (p, 0)].conjugate())
         qubit_operator += jordan_wigner_one_body(p, q, coefficient)
 
         # Two-body
@@ -150,17 +166,22 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
     for (p, q), (r, s) in itertools.combinations(
             itertools.combinations(range(n_qubits), 2),
             2):
-        coefficient = (iop[(p, 1), (q, 1), (r, 0), (s, 0)] -
-                       iop[(p, 1), (q, 1), (s, 0), (r, 0)] -
-                       iop[(q, 1), (p, 1), (r, 0), (s, 0)] +
-                       iop[(q, 1), (p, 1), (s, 0), (r, 0)])
+        coefficient = 0.5 * (
+                iop[(p, 1), (q, 1), (r, 0), (s, 0)] +
+                iop[(s, 1), (r, 1), (q, 0), (p, 0)].conjugate() -
+                iop[(p, 1), (q, 1), (s, 0), (r, 0)] -
+                iop[(r, 1), (s, 1), (q, 0), (p, 0)].conjugate() -
+                iop[(q, 1), (p, 1), (r, 0), (s, 0)] -
+                iop[(s, 1), (r, 1), (p, 0), (q, 0)].conjugate() +
+                iop[(q, 1), (p, 1), (s, 0), (r, 0)] +
+                iop[(r, 1), (s, 1), (p, 0), (q, 0)].conjugate())
         qubit_operator += jordan_wigner_two_body(p, q, r, s, coefficient)
 
     return qubit_operator
 
 
 def jordan_wigner_one_body(p, q, coefficient=1.):
-    """Map the term a^\dagger_p a_q + a^\dagger_q a_p to QubitOperator.
+    """Map the term a^\dagger_p a_q + h.c. to QubitOperator.
 
     Note that the diagonal terms are divided by a factor of 2
     because they are equal to their own Hermitian conjugate.
@@ -168,11 +189,16 @@ def jordan_wigner_one_body(p, q, coefficient=1.):
     # Handle off-diagonal terms.
     qubit_operator = QubitOperator()
     if p != q:
-        a, b = sorted([p, q])
-        parity_string = tuple((z, 'Z') for z in range(a + 1, b))
-        for operator in ['X', 'Y']:
-            operators = ((a, operator),) + parity_string + ((b, operator),)
-            qubit_operator += QubitOperator(operators, .5 * coefficient)
+        if p > q:
+            p, q = q, p
+            coefficient = coefficient.conjugate()
+        parity_string = tuple((z, 'Z') for z in range(p + 1, q))
+        for c, (op_a, op_b) in [(coefficient.real, 'XX'),
+                                (coefficient.real, 'YY'),
+                                (coefficient.imag, 'YX'),
+                                (-coefficient.imag, 'XY')]:
+            operators = ((p, op_a),) + parity_string + ((q, op_b),)
+            qubit_operator += QubitOperator(operators, .5 * c)
 
     # Handle diagonal terms.
     else:
@@ -197,39 +223,34 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
 
     # Handle case of four unique indices.
     elif len(set([p, q, r, s])) == 4:
-
+        if (p > q) ^ (r > s):
+            coefficient *= -1
         # Loop through different operators which act on each tensor factor.
-        for operator_p, operator_q, operator_r in itertools.product(
-                ['X', 'Y'], repeat=3):
-            if [operator_p, operator_q, operator_r].count('X') % 2:
-                operator_s = 'X'
+        for ops in itertools.product('XY', repeat=4):
+            op_p, op_q, op_r, op_s = ops
+            # Get coefficients.
+            if ops.count('X') % 2:
+                coeff = .125 * coefficient.imag
+                if ''.join(ops) in ['XYXX', 'YXXX', 'YYXY', 'YYYX']:
+                    coeff *= -1
             else:
-                operator_s = 'Y'
+                coeff = .125 * coefficient.real
+                if ''.join(ops) not in ['XXYY', 'YYXX']:
+                    coeff *= -1
+            if not coeff:
+                continue
 
             # Sort operators.
             [(a, operator_a), (b, operator_b),
-             (c, operator_c), (d, operator_d)] = sorted(
-                [(p, operator_p), (q, operator_q),
-                 (r, operator_r), (s, operator_s)],
-                key=lambda pair: pair[0])
+             (c, operator_c), (d, operator_d)] = sorted(zip([p, q, r, s], ops))
 
-            # Computer operator strings.
+            # Compute operator strings.
             operators = ((a, operator_a),)
             operators += tuple((z, 'Z') for z in range(a + 1, b))
             operators += ((b, operator_b),)
             operators += ((c, operator_c),)
             operators += tuple((z, 'Z') for z in range(c + 1, d))
             operators += ((d, operator_d),)
-
-            # Get coefficients.
-            coeff = .125 * coefficient
-            parity_condition = bool(operator_p != operator_q or
-                                    operator_p == operator_r)
-            if (p > q) ^ (r > s):
-                if not parity_condition:
-                    coeff *= -1.
-            elif parity_condition:
-                coeff *= -1.
 
             # Add term.
             qubit_operator += QubitOperator(operators, coeff)
@@ -239,32 +260,49 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
 
         # Identify equal tensor factors.
         if p == r:
-            a, b = sorted([q, s])
+            if q > s:
+                a, b = s, q
+                coefficient = -coefficient.conjugate()
+            else:
+                a, b = q, s
+                coefficient = -coefficient
             c = p
         elif p == s:
-            a, b = sorted([q, r])
+            if q > r:
+                a, b = r, q
+                coefficient = coefficient.conjugate()
+            else:
+                a, b = q, r
             c = p
         elif q == r:
-            a, b = sorted([p, s])
+            if p > s:
+                a, b = s, p
+                coefficient = coefficient.conjugate()
+            else:
+                a, b = p, s
             c = q
         elif q == s:
-            a, b = sorted([p, r])
+            if p > r:
+                a, b = r, p
+                coefficient = -coefficient.conjugate()
+            else:
+                a, b = p, r
+                coefficient = -coefficient
             c = q
 
         # Get operators.
         parity_string = tuple((z, 'Z') for z in range(a + 1, b))
         pauli_z = QubitOperator(((c, 'Z'),))
-        for operator in ['X', 'Y']:
-            operators = ((a, operator),) + parity_string + ((b, operator),)
-
-            # Get coefficient.
-            if (p == s) or (q == r):
-                coeff = .25 * coefficient
-            else:
-                coeff = -.25 * coefficient
+        for c, (op_a, op_b) in [(coefficient.real, 'XX'),
+                                (coefficient.real, 'YY'),
+                                (coefficient.imag, 'YX'),
+                                (-coefficient.imag, 'XY')]:
+            operators = ((a, op_a),) + parity_string + ((b, op_b),)
+            if not c:
+                continue
 
             # Add term.
-            hopping_term = QubitOperator(operators, coeff)
+            hopping_term = QubitOperator(operators, c / 4)
             qubit_operator -= pauli_z * hopping_term
             qubit_operator += hopping_term
 

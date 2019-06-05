@@ -11,6 +11,7 @@
 #   limitations under the License.
 
 import pytest
+import numpy
 
 from openfermion import MajoranaOperator
 
@@ -51,6 +52,33 @@ def test_majorana_operator_commutes_with():
     with pytest.raises(TypeError):
         _ = e.commutes_with(0)
 
+
+def test_majorana_operator_with_basis_rotated_by():
+    H = numpy.array([[1, 1], [1, -1]]) / numpy.sqrt(2)
+
+    a = MajoranaOperator((0, 1), 2.0)
+    op = a.with_basis_rotated_by(H)
+    assert op == MajoranaOperator.from_dict({(0, 1): -2.0})
+
+    b = MajoranaOperator((0,), 2.0)
+    op = b.with_basis_rotated_by(H)
+    assert op == MajoranaOperator.from_dict({(0,): numpy.sqrt(2),
+                                             (1,): numpy.sqrt(2)})
+
+    c = MajoranaOperator((1,), 2.0)
+    op = c.with_basis_rotated_by(H)
+    assert op == MajoranaOperator.from_dict({(0,): numpy.sqrt(2),
+                                             (1,): -numpy.sqrt(2)})
+
+    P = numpy.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]])
+
+    d = MajoranaOperator((0, 1, 2)) + MajoranaOperator((1, 2))
+    op = d.with_basis_rotated_by(P)
+    assert op == MajoranaOperator.from_dict({(0, 1, 2): 1.0,
+                                             (0, 1): 1.0})
+
+    with pytest.raises(ValueError):
+        _ = a.with_basis_rotated_by(2 * H)
 
 
 def test_majorana_operator_add_subtract():
