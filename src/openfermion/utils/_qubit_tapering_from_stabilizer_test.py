@@ -24,7 +24,8 @@ from openfermion.utils import eigenspectrum
 from openfermion.utils import reduce_number_of_terms, taper_off_qubits
 from openfermion.utils._qubit_tapering_from_stabilizer import (
     StabilizerError, check_commuting_stabilizers, check_stabilizer_linearity,
-    fix_single_term, _reduce_terms, _reduce_terms_keep_length)
+    fix_single_term, _reduce_terms, _reduce_terms_keep_length,
+    _lookup_term)
 
 
 def lih_hamiltonian():
@@ -171,6 +172,19 @@ class TaperingTest(unittest.TestCase):
         self.assertTrue(fix1 == (test_term * stab2))
         self.assertTrue(fix2 == test_term)
 
+    def test_lookup_term(self):
+        """Test for the auxiliar function _lookup_term."""
+        # Dummy test where the initial Pauli string is larger than the
+        # updated one.
+        start_op = list(QubitOperator('Z0 Z1 Z2 Z3').terms.keys())[0]
+        updateop1 = QubitOperator('Z0 Z2', -1.0)
+        updateop2 = list(QubitOperator('Z0 Z1 Z2 Z3').terms.keys())
+
+        qop = _lookup_term(start_op, [updateop1], updateop2)
+        final_op = list(qop.terms.keys())[0]
+
+        self.assertLess(len(final_op), len(start_op))
+
     def test_reduce_terms(self):
         """Test reduce_terms function using LiH Hamiltonian."""
         hamiltonian, spectrum = lih_hamiltonian()
@@ -193,7 +207,7 @@ class TaperingTest(unittest.TestCase):
 
         red_eigenspectrum = eigenspectrum(
             reduce_number_of_terms(qubit_hamiltonian,
-                                   stab1 + stab2,
+                                   [stab1, stab2],
                                    manual_input=True,
                                    fixed_positions=[0, 1]))
 
@@ -303,3 +317,21 @@ class TaperingTest(unittest.TestCase):
         self.assertAlmostEqual(spectrum[0], tapered_spectrum_2_1[0])
         self.assertTrue(numpy.allclose(tapered_spectrum_0_3,
                                        tapered_spectrum_2_1))
+
+    def test_tapering_qubits_remove_positions(self):
+        """Test taper_off_qubits function using LiH Hamiltonian."""
+        hamiltonian, spectrum = lih_hamiltonian()
+        qubit_hamiltonian = jordan_wigner(hamiltonian)
+        stab1 = QubitOperator('Z0 Z2', -1.0)
+        stab2 = QubitOperator('Z1 Z3', -1.0)
+
+        (tapered_hamiltonian,
+         positions) = taper_off_qubits(operator=qubit_hamiltonian,
+                                       stabilizers=[stab1, stab2],
+                                       manual_input=True,
+                                       fixed_positions=[0, 3],
+                                       output_tapered_positions=True)
+        tapered_spectrum = eigenspectrum(tapered_hamiltonian)
+
+        self.assertAlmostEqual(spectrum[0], tapered_spectrum[0])
+        self.assertEqual(positions, [0, 3])
