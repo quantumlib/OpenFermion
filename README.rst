@@ -145,6 +145,7 @@ Authors
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
 `Josh Izaac <https://github.com/josh146>`__ (Xanadu),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
+`William Kirby <https://williammkirby.com>`__ (Tufts University),
 `Xinle Liu <https://github.com/sheilaliuxl>`__ (Google),
 `Sam McArdle <https://github.com/sammcardle30>`__ (Oxford),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
