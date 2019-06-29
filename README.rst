@@ -174,7 +174,7 @@ When using OpenFermion for research projects, please cite:
     Jarrod R. McClean, Kevin J. Sung, Ian D. Kivlichan, Yudong Cao,
     Chengyu Dai, E. Schuyler Fried, Craig Gidney, Brendan Gimby,
     Pranav Gokhale, Thomas Häner, Tarini Hardikar, Vojtĕch Havlíček,
-    Oscar Higgott, Cupjin Huang, Josh Izaac, Zhang Jiang, Xinle Liu,
+    Oscar Higgott, Cupjin Huang, Josh Izaac, Zhang Jiang, William Kirby, Xinle Liu,
     Sam McArdle, Matthew Neeley, Thomas O'Brien, Bryan O'Gorman, Isil Ozfidan,
     Maxwell D. Radin, Jhonathan Romero, Nicholas Rubin, Nicolas P. D. Sawaya,
     Kanav Setia, Sukin Sim, Damian S. Steiger, Mark Steudtner, Qiming Sun,
