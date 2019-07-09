@@ -35,6 +35,9 @@ from ._operator_utils import (chemist_ordered, count_qubits,
                               load_operator, save_operator,
                               group_into_tensor_product_basis_sets)
 
+from ._qubit_tapering_from_stabilizer import (reduce_number_of_terms,
+                                              taper_off_qubits)
+
 from ._rdm_mapping_functions import (kronecker_delta,
                                      map_two_pdm_to_two_hole_dm,
                                      map_two_pdm_to_one_pdm,

@@ -121,7 +121,8 @@ class InteractionOperator(PolynomialTensor):
 
     @classmethod
     def zero(cls, n_qubits):
-        return cls(0, numpy.zeros((n_qubits,) * 2), numpy.zeros((n_qubits,) * 4))
+        return cls(0, numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
+                   numpy.zeros((n_qubits,) * 4, dtype=numpy.complex128))
 
     def projected(self, indices, exact=False):
         projected_n_body_tensors = self.projected_n_body_tensors(
