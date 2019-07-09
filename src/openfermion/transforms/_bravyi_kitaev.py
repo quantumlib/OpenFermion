@@ -12,7 +12,7 @@
 
 """Bravyi-Kitaev transform on fermionic operators."""
 
-from openfermion.ops import QubitOperator
+from openfermion.ops import FermionOperator, MajoranaOperator, QubitOperator
 from openfermion.utils import count_qubits, inline_sum
 
 
@@ -40,20 +40,12 @@ def bravyi_kitaev(operator, n_qubits=None):
     Raises:
         ValueError: Invalid number of qubits specified.
     """
-    # Compute the number of qubits.
-    if n_qubits is None:
-        n_qubits = count_qubits(operator)
-    if n_qubits < count_qubits(operator):
-        raise ValueError('Invalid number of qubits specified.')
-
-    # Compute transformed operator.
-    transformed_terms = (
-        _transform_operator_term(term=term,
-                                 coefficient=operator.terms[term],
-                                 n_qubits=n_qubits)
-        for term in operator.terms
-    )
-    return inline_sum(summands=transformed_terms, seed=QubitOperator())
+    if isinstance(operator, FermionOperator):
+        return _bravyi_kitaev_fermion_operator(operator, n_qubits)
+    if isinstance(operator, MajoranaOperator):
+        return _bravyi_kitaev_majorana_operator(operator, n_qubits)
+    raise TypeError("Couldn't apply the Bravyi-Kitaev Transform to object "
+                    "of type {}.".format(type(operator)))
 
 
 def _update_set(index, n_qubits):
@@ -105,6 +97,52 @@ def _parity_set(index):
     return indices
 
 
+def _bravyi_kitaev_majorana_operator(operator, n_qubits):
+    # Compute the number of qubits.
+    N = count_qubits(operator)
+    if n_qubits is None:
+        n_qubits = N
+    if n_qubits < N:
+        raise ValueError('Invalid number of qubits specified.')
+
+    # Compute transformed operator.
+    transformed_terms = (
+        _transform_majorana_term(term=term,
+                                 coefficient=coeff,
+                                 n_qubits=n_qubits)
+        for term, coeff in operator.terms.items()
+    )
+    return inline_sum(summands=transformed_terms, seed=QubitOperator())
+
+
+def _transform_majorana_term(term, coefficient, n_qubits):
+    # Build the Bravyi-Kitaev transformed operators.
+    transformed_ops = (
+        _transform_majorana_operator(majorana_index, n_qubits)
+        for majorana_index in term
+    )
+    return inline_product(factors=transformed_ops,
+                          seed=QubitOperator((), coefficient))
+
+
+def _transform_majorana_operator(majorana_index, n_qubits):
+    q, b = divmod(majorana_index, 2)
+
+    update_set = _update_set(q, n_qubits)
+    occupation_set = _occupation_set(q)
+    parity_set = _parity_set(q - 1)
+
+    if b:
+        return QubitOperator(
+                [(q, 'Y')] +
+                [(i, 'X') for i in update_set - {q}] +
+                [(i, 'Z') for i in (parity_set ^ occupation_set) - {q}])
+    else:
+        return QubitOperator(
+                [(i, 'X') for i in update_set] +
+                [(i, 'Z') for i in parity_set])
+
+
 def _transform_operator_term(term, coefficient, n_qubits):
     """
     Args:
@@ -123,7 +161,24 @@ def _transform_operator_term(term, coefficient, n_qubits):
     )
     return inline_product(factors=transformed_ladder_ops,
                           seed=QubitOperator((), coefficient))
-                          
+
+
+def _bravyi_kitaev_fermion_operator(operator, n_qubits):
+    # Compute the number of qubits.
+    N = count_qubits(operator)
+    if n_qubits is None:
+        n_qubits = N
+    if n_qubits < N:
+        raise ValueError('Invalid number of qubits specified.')
+
+    # Compute transformed operator.
+    transformed_terms = (
+        _transform_operator_term(term=term,
+                                 coefficient=operator.terms[term],
+                                 n_qubits=n_qubits)
+        for term in operator.terms
+    )
+    return inline_sum(summands=transformed_terms, seed=QubitOperator())
 
 
 def _transform_ladder_operator(ladder_operator, n_qubits):

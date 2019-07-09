@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 """This module provides generic tools for classes in ops/"""
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 from builtins import map, zip
 import copy
 import itertools
@@ -28,6 +28,7 @@ from openfermion.ops import (BosonOperator,
                              FermionOperator,
                              InteractionOperator,
                              InteractionRDM,
+                             MajoranaOperator,
                              QuadOperator,
                              QubitOperator,
                              PolynomialTensor)
@@ -324,6 +325,15 @@ def count_qubits(operator):
             if term:
                 if term[-1][0] + 1 > num_qubits:
                     num_qubits = term[-1][0] + 1
+        return num_qubits
+
+    # Handle MajoranaOperator.
+    if isinstance(operator, MajoranaOperator):
+        num_qubits = 0
+        for term in operator.terms:
+            for majorana_index in term:
+                if numpy.ceil((majorana_index+1) / 2) > num_qubits:
+                    num_qubits = int(numpy.ceil((majorana_index+1) / 2))
         return num_qubits
 
     # Handle DiagonalCoulombHamiltonian
