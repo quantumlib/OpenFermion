@@ -132,6 +132,7 @@ Authors
 `Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan),
 `Ian Kivlichan <http://aspuru.chem.harvard.edu/ian-kivlichan/>`__ (Harvard),
 `Dave Bacon <https://github.com/dabacon>`__ (Google),
+`Xavier Bonet-Monroig <https://github.com/xabomon>`__  (Leiden University),
 `Yudong Cao <https://github.com/yudongcao>`__ (Harvard),
 `Chengyu Dai <https://github.com/jdaaph>`__ (University of Michigan),
 `E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
@@ -171,7 +172,7 @@ How to cite
 ===========
 When using OpenFermion for research projects, please cite:
 
-    Jarrod R. McClean, Kevin J. Sung, Ian D. Kivlichan, Yudong Cao,
+    Jarrod R. McClean, Kevin J. Sung, Ian D. Kivlichan, Xavier Bonet-Monroig, Yudong Cao,
     Chengyu Dai, E. Schuyler Fried, Craig Gidney, Brendan Gimby,
     Pranav Gokhale, Thomas Häner, Tarini Hardikar, Vojtĕch Havlíček,
     Oscar Higgott, Cupjin Huang, Josh Izaac, Zhang Jiang, William Kirby, Xinle Liu,
