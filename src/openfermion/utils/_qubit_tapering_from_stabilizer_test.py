@@ -19,7 +19,7 @@ import numpy
 from openfermion.hamiltonians import MolecularData
 from openfermion.ops import QubitOperator
 from openfermion.transforms import jordan_wigner, get_fermion_operator
-from openfermion.utils import eigenspectrum
+from openfermion.utils import eigenspectrum, count_qubits
 
 from openfermion.utils import reduce_number_of_terms, taper_off_qubits
 from openfermion.utils._qubit_tapering_from_stabilizer import (
@@ -331,7 +331,20 @@ class TaperingTest(unittest.TestCase):
                                        manual_input=True,
                                        fixed_positions=[0, 3],
                                        output_tapered_positions=True)
+
         tapered_spectrum = eigenspectrum(tapered_hamiltonian)
 
         self.assertAlmostEqual(spectrum[0], tapered_spectrum[0])
         self.assertEqual(positions, [0, 3])
+
+    def test_tappering_stabilizer_more_qubits(self):
+        """Test for stabilizer with more qubits than operator."""
+        hamiltonian = QubitOperator('Y0 Y1', 1.0)
+        stab = QubitOperator('X0 X1 X2', -1.0)
+
+        num_qubits = max(count_qubits(hamiltonian),
+                         count_qubits(stab))
+        tap_ham = taper_off_qubits(hamiltonian, stab)
+        num_qubits_tap = count_qubits(tap_ham)
+
+        self.assertFalse(num_qubits == num_qubits_tap)
