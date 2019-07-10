@@ -451,7 +451,16 @@ def taper_off_qubits(operator, stabilizers, manual_input=False,
                                   the remaining qubits have been moved up to
                                   those indices.
     """
-    n_qbits = count_qubits(operator)
+    if isinstance(stabilizers, (list, tuple, numpy.ndarray)):
+        n_qbits_stabs = 0
+        for ent in stabilizers:
+            if count_qubits(ent) > n_qbits_stabs:
+                n_qbits_stabs = count_qubits(ent)
+    else:
+        n_qbits_stabs = count_qubits(stabilizers)
+
+    n_qbits = max(count_qubits(operator), n_qbits_stabs)
+
     (ham_to_update,
      qbts_to_rm) = reduce_number_of_terms(operator,
                                           stabilizers,
