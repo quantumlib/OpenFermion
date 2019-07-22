@@ -44,7 +44,7 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
     def test_get_processes_small(self):
         """Tests get_processes() with a small num."""
-        num = 2
+        num = 1
         self.assertEqual(self.options.get_processes(num), num)
 
     def test_get_processes_large(self):
