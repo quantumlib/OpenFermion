@@ -933,6 +933,61 @@ class MolecularData(object):
         # Cast to InteractionRDM class.
         rdm = InteractionRDM(one_rdm, two_rdm)
         return rdm
+    
+    def get_molecular_rdm_spin(self, use_fci=False):
+        """Method to return 1-RDM and 2-RDMs from CISD or FCI, adapted for
+           spin-orbitals.
+
+        Args:
+            use_fci: Boolean indicating whether to use RDM from FCI
+                calculation.
+
+        Returns:
+            rdm: An instance of the MolecularRDM class.
+
+        Raises:
+            MisissingCalculationError: If the CI calculation has not been
+                performed.
+        """
+        # Make sure requested RDM has been computed and load.
+        if use_fci:
+            if self.fci_energy is None:
+                raise MissingCalculationError(
+                    'Missing FCI RDM in {}'.format(self.filename) +
+                    'Run FCI calculation before loading FCI RDMs.')
+            else:
+                one_rdm = self.fci_one_rdm
+                two_rdm = self.fci_two_rdm
+        else:
+            if self.cisd_energy is None:
+                raise MissingCalculationError(
+                    'Missing CISD RDM in {}'.format(self.filename) +
+                    'Run CISD calculation before loading CISD RDMs.')
+            else:
+                one_rdm = self.cisd_one_rdm
+                two_rdm = self.cisd_two_rdm
+
+        one_rdm = numpy.kron(one_rdm/2,numpy.eye(2))
+
+        #two_rdm
+        n_qubits = one_rdm.shape[0]                
+
+        new_two_rdm = numpy.zeros((n_qubits, n_qubits,n_qubits, n_qubits))
+        for p in range(n_qubits // 2):
+            for q in range(n_qubits // 2):
+                for r in range(n_qubits // 2):
+                    for s in range(n_qubits // 2):
+                        new_two_rdm[2 * p, 2 * q + 1, 2 * r + 1, 2 * s] = (two_rdm[p, q, r, s] / 2.)
+                        new_two_rdm[2 * p + 1, 2 * q, 2 * r, 2 * s + 1] = (two_rdm[p, q, r, s] / 2.)
+                        new_two_rdm[2 * p, 2 * q + 1, 2 * r, 2 * s + 1] = -(two_rdm[p, q, r, s] / 2.)
+                        new_two_rdm[2 * p + 1, 2 * q, 2 * r + 1, 2 * s] = -(two_rdm[p, q, r, s] / 2.)
+        # Truncate.
+        one_rdm[numpy.absolute(one_rdm) < EQ_TOLERANCE] = 0.
+        new_two_rdm[numpy.absolute(new_two_rdm) < EQ_TOLERANCE] = 0.
+
+        # Cast to InteractionRDM class.
+        rdm = InteractionRDM(one_rdm, new_two_rdm)
+        return rdm
 
 
 def load_molecular_hamiltonian(
