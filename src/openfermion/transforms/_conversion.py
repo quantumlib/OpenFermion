@@ -305,7 +305,7 @@ def get_quadratic_hamiltonian(fermion_operator,
 def get_diagonal_coulomb_hamiltonian(fermion_operator,
                                      n_qubits=None,
                                      ignore_incompatible_terms=False):
-    """Convert a FermionOperator to a DiagonalCoulombHamiltonian.
+    r"""Convert a FermionOperator to a DiagonalCoulombHamiltonian.
     
     Args:
         fermion_operator(FermionOperator): The operator to convert.
@@ -612,15 +612,13 @@ def get_number_preserving_sparse_operator(
     """
 
     # We use the Hartree-Fock determinant as a reference if none is provided.
-    if (reference_determinant is None):
-        unoccupied = [False for i in range(num_qubits - num_electrons)]
-        occupied = [True for i in range(num_electrons)]
-
-        reference_determinant = numpy.asarray(occupied + unoccupied)
+    if reference_determinant is None:
+        reference_determinant = numpy.array([i < num_electrons for i in
+                                             range(num_qubits)])
     else:
         reference_determinant = numpy.asarray(reference_determinant)
 
-    if (excitation_level is None):
+    if excitation_level is None:
         excitation_level = num_electrons
 
     state_array = numpy.asarray(list(_iterate_basis_(
@@ -636,7 +634,7 @@ def get_number_preserving_sparse_operator(
     sparse_op = scipy.sparse.csc_matrix((space_size, space_size), dtype=float)
 
     for term, coefficient in fermion_op.terms.items():
-        if (len(term) == 0):
+        if len(term) == 0:
             constant = coefficient * scipy.sparse.identity(
                 space_size, dtype=float, format='csc')
 
@@ -672,9 +670,10 @@ def _iterate_basis_(reference_determinant, excitation_level, spin_preserving):
         Lists of bools which indicate which orbitals are occupied and which are
             unoccupied in the current determinant.
     """
-    if (not spin_preserving):
+    if not spin_preserving:
         for order in range(excitation_level + 1):
-            yield from _iterate_basis_order_(reference_determinant, order)
+            for determinant in _iterate_basis_order_(reference_determinant, order):
+                yield determinant
 
     else:
         alpha_excitation_level = min((numpy.sum(reference_determinant[::2]),
@@ -688,8 +687,10 @@ def _iterate_basis_(reference_determinant, excitation_level, spin_preserving):
                 if (beta_order < 0 or beta_order > beta_excitation_level):
                     continue
 
-                yield from _iterate_basis_spin_order_(
-                    reference_determinant, alpha_order, beta_order)
+                for determinant in _iterate_basis_spin_order_(
+                        reference_determinant, alpha_order, beta_order):
+                    yield determinant
+
 
 
 def _iterate_basis_order_(reference_determinant, order):
@@ -810,8 +811,8 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
     # ensure that there are an equal number of them in order to help detect
     # invalid inputs.
     delta = 0
-    for (index, op_type) in reversed(term):
-        if (op_type == 0):
+    for index, op_type in reversed(term):
+        if op_type == 0:
             needs_to_be_occupied.append(index)
             delta -= 1
         else:
@@ -859,8 +860,8 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
             1 << numpy.arange(target_determinant.size)[::-1])
 
         target_state_index_sorted = numpy.searchsorted(int_state_array,
-                                                    int_encoding,
-                                                    sorter=sorting_indices)
+                                                       int_encoding,
+                                                       sorter=sorting_indices)
 
         target_state = sorting_indices[target_state_index_sorted]
 
