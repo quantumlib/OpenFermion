@@ -50,6 +50,8 @@ Electronic structure package plugins
 
 * `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__ to support integration with `PySCF <https://github.com/sunqm/pyscf>`__.
 
+* `OpenFermion-Dirac <https://github.com/bsenjean/Openfermion-Dirac>`__ to support integration with `DIRAC <http://diracprogram.org/doku.php>`__.
+
 Getting started
 ===============
 
@@ -132,6 +134,7 @@ Authors
 `Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan),
 `Ian Kivlichan <http://aspuru.chem.harvard.edu/ian-kivlichan/>`__ (Harvard),
 `Dave Bacon <https://github.com/dabacon>`__ (Google),
+`Xavier Bonet-Monroig <https://github.com/xabomon>`__  (Leiden University),
 `Yudong Cao <https://github.com/yudongcao>`__ (Harvard),
 `Chengyu Dai <https://github.com/jdaaph>`__ (University of Michigan),
 `E. Schuyler Fried <https://github.com/schuylerfried>`__ (Harvard),
@@ -145,6 +148,7 @@ Authors
 `Cupjin Huang <https://github.com/pertoX4726>`__ (University of Michigan),
 `Josh Izaac <https://github.com/josh146>`__ (Xanadu),
 `Zhang Jiang <https://ti.arc.nasa.gov/profile/zjiang3>`__ (NASA),
+`William Kirby <https://williammkirby.com>`__ (Tufts University),
 `Xinle Liu <https://github.com/sheilaliuxl>`__ (Google),
 `Sam McArdle <https://github.com/sammcardle30>`__ (Oxford),
 `Matthew Neeley <https://github.com/maffoo>`__ (Google),
@@ -156,6 +160,7 @@ Authors
 `Nicholas Rubin <https://github.com/ncrubin>`__ (Google),
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
+`Bruno Senjean <https://github.com/bsenjean>`__ (Leiden University),
 `Kanav Setia <https://github.com/kanavsetia>`__ (Dartmouth),
 `Hannah Sim <https://github.com/hsim13372>`__ (Harvard),
 `Damian Steiger <https://github.com/damiansteiger>`__ (ETH Zurich),
@@ -170,10 +175,10 @@ How to cite
 ===========
 When using OpenFermion for research projects, please cite:
 
-    Jarrod R. McClean, Kevin J. Sung, Ian D. Kivlichan, Yudong Cao,
+    Jarrod R. McClean, Kevin J. Sung, Ian D. Kivlichan, Xavier Bonet-Monroig, Yudong Cao,
     Chengyu Dai, E. Schuyler Fried, Craig Gidney, Brendan Gimby,
     Pranav Gokhale, Thomas Häner, Tarini Hardikar, Vojtĕch Havlíček,
-    Oscar Higgott, Cupjin Huang, Josh Izaac, Zhang Jiang, Xinle Liu,
+    Oscar Higgott, Cupjin Huang, Josh Izaac, Zhang Jiang, William Kirby, Xinle Liu,
     Sam McArdle, Matthew Neeley, Thomas O'Brien, Bryan O'Gorman, Isil Ozfidan,
     Maxwell D. Radin, Jhonathan Romero, Nicholas Rubin, Nicolas P. D. Sawaya,
     Kanav Setia, Sukin Sim, Damian S. Steiger, Mark Steudtner, Qiming Sun,

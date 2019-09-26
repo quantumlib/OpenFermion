@@ -38,12 +38,17 @@ class OperatorUtilsTest(unittest.TestCase):
 
     def setUp(self):
         self.n_qubits = 5
+        self.majorana_operator = MajoranaOperator((1, 4, 9))
         self.fermion_term = FermionOperator('1^ 2^ 3 4', -3.17)
         self.fermion_operator = self.fermion_term + hermitian_conjugated(
             self.fermion_term)
         self.qubit_operator = jordan_wigner(self.fermion_operator)
         self.interaction_operator = get_interaction_operator(
             self.fermion_operator)
+
+    def test_n_qubits_majorana_operator(self):
+        self.assertEqual(self.n_qubits,
+                         count_qubits(self.majorana_operator))
 
     def test_n_qubits_single_fermion_term(self):
         self.assertEqual(self.n_qubits,
@@ -938,3 +943,37 @@ class GroupTensorProductBasisTest(unittest.TestCase):
     def test_none_bad_type(self):
         with self.assertRaises(TypeError):
             _ = group_into_tensor_product_basis_sets(None)
+
+
+class IsContextualTest(unittest.TestCase):
+
+    def setUp(self):
+        self.x1 = QubitOperator('X1',1.)
+        self.x2 = QubitOperator('X2',1.)
+        self.x3 = QubitOperator('X3',1.)
+        self.x4 = QubitOperator('X4',1.)
+        self.z1 = QubitOperator('Z1',1.)
+        self.z2 = QubitOperator('Z2',1.)
+        self.x1x2 = QubitOperator('X1 X2',1.)
+        self.y1y2 = QubitOperator('Y1 Y2',1.)
+
+    def test_empty_qubit_operator(self):
+        self.assertFalse(is_contextual(QubitOperator()))
+
+    def test_noncontextual_two_qubit_hamiltonians(self):
+        self.assertFalse(is_contextual(self.x1 + self.x2))
+        self.assertFalse(is_contextual(self.x1 + self.x2 + self.z2))
+        self.assertFalse(is_contextual(self.x1 + self.x2 + self.y1y2))
+
+    def test_contextual_two_qubit_hamiltonians(self):
+        self.assertTrue(is_contextual(self.x1 + self.x2 + self.z1 + self.z2))
+        self.assertTrue(is_contextual(self.x1 + self.x1x2 + self.z1 + self.z2))
+        self.assertTrue(is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2))
+
+    def test_contextual_hamiltonians_with_extra_terms(self):
+        self.assertTrue(is_contextual(self.x1 + self.x2 + self.z1 + self.z2 + self.x3 + self.x4))
+        self.assertTrue(is_contextual(self.x1 + self.x1x2 + self.z1 + self.z2 + self.x3 + self.x4))
+        self.assertTrue(is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2 + self.x3 + self.x4))
+
+    def test_commuting_hamiltonian(self):
+        self.assertFalse(is_contextual(self.x1 + self.x2 + self.x3 + self.x4))
