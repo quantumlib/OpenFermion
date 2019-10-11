@@ -84,10 +84,8 @@ class BinaryPartitionIteratorTest(unittest.TestCase):
 
     def test_zero_counting(self):
         bpi = binary_partition_iterator([0, 1], 0)
-        count = 0
-        for _ in bpi:
-            count += 1
-        self.assertEqual(count, 0)
+        with self.assertRaises(StopIteration):
+            next(bpi)
 
 
 class PartitionIteratorTest(unittest.TestCase):
@@ -176,6 +174,7 @@ class PauliStringIteratorTest(unittest.TestCase):
 
     def test_small_run_cases(self):
         for num_qubits in range(4, 20):
-            psi = pauli_string_iterator(num_qubits, 3)
-            for _ in psi:
-                pass
+            for word_length in range(2, min(num_qubits, 5)):
+                psi = pauli_string_iterator(num_qubits, word_length)
+                for _ in psi:
+                    pass
