@@ -13,7 +13,11 @@
 
 """ Code to generate Pauli strings for measurement of local operators"""
 import numpy
-from itertools import chain, zip_longest
+from itertools import chain
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
 
 
 def binary_partition_iterator(qubit_list, num_partitions=None):
