@@ -70,8 +70,8 @@ class BinaryPartitionIteratorTest(unittest.TestCase):
 
     def test_exception(self):
         with self.assertRaises(ValueError):
-            for p1 in binary_partition_iterator([]):
-                pass
+            bpi = binary_partition_iterator([])
+            next(bpi)
 
     def test_partition_of_two(self):
         bpi = binary_partition_iterator([0, 1])
@@ -81,6 +81,13 @@ class BinaryPartitionIteratorTest(unittest.TestCase):
             self.assertEqual(p1[0], 0)
             self.assertEqual(p2[0], 1)
         self.assertEqual(count, 1)
+
+    def test_zero_counting(self):
+        bpi = binary_partition_iterator([0, 1], 0)
+        count = 0
+        for _ in bpi:
+            count += 1
+        self.assertEqual(count, 0)
 
 
 class PartitionIteratorTest(unittest.TestCase):
@@ -106,8 +113,8 @@ class PartitionIteratorTest(unittest.TestCase):
 
     def test_exception(self):
         with self.assertRaises(ValueError):
-            for p1 in partition_iterator([1, 2], 3):
-                pass
+            pi = partition_iterator([1, 2], 3)
+            next(pi)
 
     def test_threepartition_three(self):
         bpi = partition_iterator([1, 2, 3], 3)
@@ -158,3 +165,17 @@ class PauliStringIteratorTest(unittest.TestCase):
                                             pauli_string[i3] == l3):
                                         count += 1
                                 self.assertTrue(count > 0)
+
+    def test_exceptions(self):
+        with self.assertRaises(ValueError):
+            psi = pauli_string_iterator(1, 2)
+            next(psi)
+        with self.assertRaises(ValueError):
+            psi = pauli_string_iterator(3, -1)
+            next(psi)
+
+    def test_small_run_cases(self):
+        for num_qubits in range(4, 20):
+            psi = pauli_string_iterator(num_qubits, 3)
+            for _ in psi:
+                pass
