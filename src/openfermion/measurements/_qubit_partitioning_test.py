@@ -10,8 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Tests for _qubit_partitioning.py"""
 
+"""Tests for _qubit_partitioning.py"""
 import unittest
 from ._qubit_partitioning import (
     binary_partition_iterator, partition_iterator,
@@ -39,8 +39,8 @@ class BinaryPartitionIteratorTest(unittest.TestCase):
         qubit_list = range(7)
         bpi = binary_partition_iterator(qubit_list)
         for p1, p2 in bpi:
-            self.assertEqual(len(p1), 3)
-            self.assertEqual(len(p2), 4)
+            self.assertEqual(len(p1), 4)
+            self.assertEqual(len(p2), 3)
 
     def test_partitioning(self):
         qubit_list = list(range(6))
@@ -128,22 +128,23 @@ class PartitionIteratorTest(unittest.TestCase):
             count += 1
         self.assertEqual(count, 1)
 
-    def test_eightpartition_three(self):
-        qubit_list = list(range(8))
-        for i in range(8):
-            for j in range(i+1, 8):
-                for k in range(j+1, 8):
-                    print('Testing {}, {}, {}'.format(i, j, k))
-                    pi = partition_iterator(qubit_list, 3)
-                    count = 0
-                    for p1, p2, p3 in pi:
-                        print('Partition obtained: ', p1, p2, p3)
-                        if max([sum([1 for x in p if x in [i, j, k]])
-                                for p in [p1, p2, p3]]) == 1:
-                            count += 1
-                    print('count = {}'.format(count))
-                    self.assertTrue(count > 0)
-                    print()
+    def test_partition_three(self):
+        for num_qubits in range(1, 16):
+            qubit_list = list(range(num_qubits))
+            for i in range(num_qubits):
+                for j in range(i+1, num_qubits):
+                    for k in range(j+1, num_qubits):
+                        print('Testing {}, {}, {}'.format(i, j, k))
+                        pi = partition_iterator(qubit_list, 3)
+                        count = 0
+                        for p1, p2, p3 in pi:
+                            print('Partition obtained: ', p1, p2, p3)
+                            if max([sum([1 for x in p if x in [i, j, k]])
+                                    for p in [p1, p2, p3]]) == 1:
+                                count += 1
+                        print('count = {}'.format(count))
+                        self.assertTrue(count > 0)
+                        print()
 
 
 class PauliStringIteratorTest(unittest.TestCase):

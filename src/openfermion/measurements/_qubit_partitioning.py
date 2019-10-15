@@ -20,18 +20,25 @@ except ImportError:
     from itertools import izip_longest as zip_longest
 
 
-def binary_partition_iterator(qubit_list, num_partitions=None):
+def binary_partition_iterator(qubit_list, num_iterations=None):
     '''Generator for a list of 2-partitions of N qubits
     such that all pairs of qubits are split in at least one partition,
-    following ArXiv:1908.05628
+    This follows a variation on ArXiv:1908.0562 - instead of
+    explicitly partitioning the list based on the binary indices of
+    the qubits, we repeatedly divide the list in two and then
+    zip it back together.
 
     Args:
         qubit_list(list): list of qubits to be partitioned
+        num_iterations(int or None): number of iterations to perform.
+            If None, will be set to ceil(log2(len(qubit_list)))
 
     Returns:
         partition(iterator of lists of lists): the required partitioning
     '''
-    if num_partitions is not None and num_partitions == 0:
+
+    # Some edge cases
+    if num_iterations is not None and num_iterations == 0:
         return
     num_qubits = len(qubit_list)
     if num_qubits < 2:
@@ -40,22 +47,29 @@ def binary_partition_iterator(qubit_list, num_partitions=None):
         yield [[qubit_list[0]], [qubit_list[1]]]
         return
 
-    num_partitions = num_partitions or\
+    num_iterations = num_iterations or\
         int(numpy.ceil(numpy.log2(num_qubits)))
 
-    partition = [qubit_list[:num_qubits//2], qubit_list[num_qubits//2:]]
+    # Calculate the point where we need to split the list each time.
+    half_point = int(numpy.ceil(num_qubits/2))
 
-    for j in range(num_partitions):
+    # Repeat the division and zip steps as many times
+    # as required.
+    for j in range(num_iterations):
+        # Divide the qubit list in two and return it
+        partition = [qubit_list[:half_point],
+                     qubit_list[half_point:]]
         yield partition
-        merged_partition = list(
-            chain(*zip_longest(partition[1], partition[0])))
-        if merged_partition[-1] is None:
-            del merged_partition[-1]
-        partition = [merged_partition[:num_qubits//2],
-                     merged_partition[num_qubits//2:]]
+        # Zip the partition together to remake the qubit list.
+        qubit_list = list(chain(*zip_longest(partition[0], partition[1])))
+        # If len(qubit_list) is odd, the end of the list will be 'None'
+        # which we delete.
+        if qubit_list[-1] is None:
+            del qubit_list[-1]
+        
 
 
-def partition_iterator(qubit_list, partition_size, num_partitions=None):
+def partition_iterator(qubit_list, partition_size, num_iterations=None):
     '''Generator for a list of k-partitions of N qubits such that
     all sets of k qubits are perfectly split in at least one
     partition, following ArXiv:1908.05628
@@ -63,20 +77,23 @@ def partition_iterator(qubit_list, partition_size, num_partitions=None):
     Args:
         qubit_list(list): list of qubits to be partitioned
         partition_size(int): the number of partitions.
+        num_iterations(int or None): the number of iterations in the
+            outer iterator. If None, set to ceil(log2(len(qubit_list)))
 
     Returns:
         partition(iterator of lists of lists): the required partitioning
     '''
-    if num_partitions is not None and num_partitions == 0:
+
+    # Some edge cases
+    if num_iterations is not None and num_iterations == 0:
         return
     if partition_size == 1:
         yield [qubit_list]
         return
     elif partition_size == 2:
-        for p in binary_partition_iterator(qubit_list, num_partitions):
+        for p in binary_partition_iterator(qubit_list, num_iterations):
             yield p
         return
-
     num_qubits = len(qubit_list)
     if partition_size == num_qubits:
         yield [[q] for q in qubit_list]
@@ -84,28 +101,36 @@ def partition_iterator(qubit_list, partition_size, num_partitions=None):
     elif partition_size > num_qubits:
         raise ValueError('I cant k-partition less than k qubits')
 
-    num_partitions = num_partitions or\
+
+    num_iterations = num_iterations or\
         int(numpy.ceil(numpy.log2(num_qubits)))
 
+    # First iterate over the outer binary partition
     outer_iterator = binary_partition_iterator(
-        qubit_list, num_partitions=num_partitions)
-
+        qubit_list, num_iterations=num_iterations)
     for p1, p2 in outer_iterator:
-        num_partitions -= 1
 
+        # Each new partition needs to be subdivided fewer times
+        # to prevent an additional k! factor in the scaling.
+        num_iterations -= 1
+
+        # Iterate over all possibilities of subdividing the first
+        # partition into l partitions and the second partition into
+        # k - l partitions.
         for inner_partition_size in range(1, partition_size):
             if inner_partition_size > len(p1) or\
                     partition_size - inner_partition_size > len(p2):
                 continue
 
+            # subdivide the first partition
             inner_iterator1 = partition_iterator(
-                p1, inner_partition_size, num_partitions)
-
+                p1, inner_partition_size, num_iterations)
             for ips1 in inner_iterator1:
+
+                # subdivide the second partition
                 inner_iterator2 = partition_iterator(
                     p2, partition_size-inner_partition_size,
-                    num_partitions)
-
+                    num_iterations)
                 for ips2 in inner_iterator2:
                     yield ips1 + ips2
 
