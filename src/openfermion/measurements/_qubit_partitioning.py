@@ -12,6 +12,7 @@
 
 
 """ Code to generate Pauli strings for measurement of local operators"""
+from __future__ import division
 import numpy
 from itertools import chain
 try:
