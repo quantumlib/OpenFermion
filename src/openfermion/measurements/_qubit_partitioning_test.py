@@ -49,7 +49,10 @@ class BinaryPartitionIteratorTest(unittest.TestCase):
                 print(i, j)
                 flag = False
                 bpi = binary_partition_iterator(qubit_list)
-                for p1, p2 in bpi:
+                for partition in bpi:
+                    print(type(partition))
+                    self.assertTrue(type(partition) is tuple)
+                    p1, p2 = partition
                     print(p1, p2)
                     if (i in p1 and j in p2) or (j in p1 and i in p2):
                         flag = True
@@ -117,7 +120,10 @@ class PartitionIteratorTest(unittest.TestCase):
     def test_threepartition_three(self):
         bpi = partition_iterator([1, 2, 3], 3)
         count = 0
-        for p1, p2, p3 in bpi:
+        for partition in bpi:
+            print(type(partition))
+            self.assertTrue(type(partition) is tuple)
+            p1, p2, p3 = partition
             print(p1, p2, p3)
             self.assertEqual(len(p1), 1)
             self.assertEqual(p1[0], 1)
@@ -138,9 +144,13 @@ class PartitionIteratorTest(unittest.TestCase):
                         pi = partition_iterator(qubit_list, 3)
                         count = 0
                         for p1, p2, p3 in pi:
+                            self.assertEqual(len(p1)+len(p2)+len(p3),
+                                             len(qubit_list))
+                            self.assertEqual(set(p1 + p2 + p3),
+                                             set(qubit_list))
                             print('Partition obtained: ', p1, p2, p3)
-                            if max([sum([1 for x in p if x in [i, j, k]])
-                                    for p in [p1, p2, p3]]) == 1:
+                            if max(sum(1 for x in p if x in [i, j, k])
+                                    for p in [p1, p2, p3]) == 1:
                                 count += 1
                         print('count = {}'.format(count))
                         self.assertTrue(count > 0)

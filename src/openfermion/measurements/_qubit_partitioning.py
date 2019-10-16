@@ -22,7 +22,7 @@ except ImportError:
 
 
 def binary_partition_iterator(qubit_list, num_iterations=None):
-    '''Generator for a list of 2-partitions of N qubits
+    """Generator for a list of 2-partitions of N qubits
     such that all pairs of qubits are split in at least one partition,
     This follows a variation on ArXiv:1908.0562 - instead of
     explicitly partitioning the list based on the binary indices of
@@ -36,7 +36,7 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
 
     Returns:
         partition(iterator of lists of lists): the required partitioning
-    '''
+    """
 
     # Some edge cases
     if num_iterations is not None and num_iterations == 0:
@@ -45,7 +45,7 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
     if num_qubits < 2:
         raise ValueError('Need at least 2 qubits to partition')
     if num_qubits == 2:
-        yield [[qubit_list[0]], [qubit_list[1]]]
+        yield ([qubit_list[0]], [qubit_list[1]])
         return
 
     num_iterations = num_iterations or\
@@ -58,8 +58,8 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
     # as required.
     for j in range(num_iterations):
         # Divide the qubit list in two and return it
-        partition = [qubit_list[:half_point],
-                     qubit_list[half_point:]]
+        partition = (qubit_list[:half_point],
+                     qubit_list[half_point:])
         yield partition
         # Zip the partition together to remake the qubit list.
         qubit_list = list(chain(*zip_longest(partition[0], partition[1])))
@@ -69,27 +69,26 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
             del qubit_list[-1]
         
 
-
 def partition_iterator(qubit_list, partition_size, num_iterations=None):
-    '''Generator for a list of k-partitions of N qubits such that
+    """Generator for a list of k-partitions of N qubits such that
     all sets of k qubits are perfectly split in at least one
     partition, following ArXiv:1908.05628
 
     Args:
         qubit_list(list): list of qubits to be partitioned
-        partition_size(int): the number of partitions.
+        partition_size(int): the number of sets in the partition.
         num_iterations(int or None): the number of iterations in the
             outer iterator. If None, set to ceil(log2(len(qubit_list)))
 
     Returns:
         partition(iterator of lists of lists): the required partitioning
-    '''
+    """
 
     # Some edge cases
-    if num_iterations is not None and num_iterations == 0:
+    if num_iterations == 0:
         return
     if partition_size == 1:
-        yield [qubit_list]
+        yield (qubit_list, )
         return
     elif partition_size == 2:
         for p in binary_partition_iterator(qubit_list, num_iterations):
@@ -97,47 +96,45 @@ def partition_iterator(qubit_list, partition_size, num_iterations=None):
         return
     num_qubits = len(qubit_list)
     if partition_size == num_qubits:
-        yield [[q] for q in qubit_list]
+        yield tuple([q] for q in qubit_list)
         return
     elif partition_size > num_qubits:
         raise ValueError('I cant k-partition less than k qubits')
 
-
-    num_iterations = num_iterations or\
-        int(numpy.ceil(numpy.log2(num_qubits)))
+    if num_iterations is None:
+        num_iterations = int(numpy.ceil(numpy.log2(num_qubits)))
 
     # First iterate over the outer binary partition
     outer_iterator = binary_partition_iterator(
         qubit_list, num_iterations=num_iterations)
-    for p1, p2 in outer_iterator:
+    for set1, set2 in outer_iterator:
 
         # Each new partition needs to be subdivided fewer times
         # to prevent an additional k! factor in the scaling.
         num_iterations -= 1
 
-        # Iterate over all possibilities of subdividing the first
-        # partition into l partitions and the second partition into
-        # k - l partitions.
+        # Iterate over all possibilities of partitioning the first
+        # set into l parts and the second set into k - l parts.
         for inner_partition_size in range(1, partition_size):
-            if inner_partition_size > len(p1) or\
-                    partition_size - inner_partition_size > len(p2):
+            if inner_partition_size > len(set1) or\
+                    partition_size - inner_partition_size > len(set2):
                 continue
 
             # subdivide the first partition
             inner_iterator1 = partition_iterator(
-                p1, inner_partition_size, num_iterations)
-            for ips1 in inner_iterator1:
+                set1, inner_partition_size, num_iterations)
+            for inner_partition1 in inner_iterator1:
 
                 # subdivide the second partition
                 inner_iterator2 = partition_iterator(
-                    p2, partition_size-inner_partition_size,
+                    set2, partition_size-inner_partition_size,
                     num_iterations)
-                for ips2 in inner_iterator2:
-                    yield ips1 + ips2
+                for inner_partition2 in inner_iterator2:
+                    yield inner_partition1 + inner_partition2
 
 
 def pauli_string_iterator(num_qubits, max_word_size=2):
-    '''Generates a set of Pauli strings such that each word
+    """Generates a set of Pauli strings such that each word
     of k Pauli operators lies in at least one string.
 
     Args:
@@ -147,7 +144,7 @@ def pauli_string_iterator(num_qubits, max_word_size=2):
     Returns:
         pauli_string(iterator of strings): iterator
             over Pauli strings
-    '''
+    """
     if max_word_size > num_qubits:
         raise ValueError('Number of qubits is too few')
     if max_word_size <= 0:
@@ -164,4 +161,4 @@ def pauli_string_iterator(num_qubits, max_word_size=2):
                 for qubit in p:
                     pauli_string[qubit] = letter
                 lettering = lettering // 3
-            yield pauli_string
+            yield tuple(pauli_string)
