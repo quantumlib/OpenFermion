@@ -874,6 +874,27 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
 
         assert numpy.abs(eig_val_cisd[0] - eig_val_fci[0]) < 1E-9
 
+    def test_weird_determinant_matches_fci_energy_two_electron_hubbard(self):
+        hamiltonian_fop = self.hubbard_hamiltonian
+
+        sparse_ham_cisd = get_number_preserving_sparse_operator(
+            hamiltonian_fop,
+            8,
+            2,
+            spin_preserving=True,
+            excitation_level=2,
+            reference_determinant = numpy.asarray(
+                [False, False, True, True, False, False, False, False]))
+
+        sparse_ham_fci = get_sparse_operator(
+            hamiltonian_fop,
+            n_qubits=8)
+
+        eig_val_cisd, eig_vec_cisd = scipy.sparse.linalg.eigsh(sparse_ham_cisd, k=1, which='SA')
+        eig_val_fci, eig_vec_fci = scipy.sparse.linalg.eigsh(sparse_ham_fci, k=1, which='SA')
+
+        assert numpy.abs(eig_val_cisd[0] - eig_val_fci[0]) < 1E-9
+
     def test_number_restricted_spectra_match_molecule(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
 

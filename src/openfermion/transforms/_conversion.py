@@ -794,8 +794,12 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
         sorting_indices(ndarray.view): A Numpy view which sorts
             int_state_array. This, together with int_state_array, allows for a
             quick lookup of the position of a particular determinant in
-            state_array by converting it to it's integer representation and
+            state_array by converting it to its integer representation and
             searching through the sorted int_state_array.
+
+    Raises:
+        ValueError: If term does not represent a particle number conserving
+            operator.
 
     Returns:
         A scipy.sparse.csc_matrix which corresponds to the operator specified
@@ -820,7 +824,10 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
                 needs_to_be_unoccupied.append(index)
             delta += 1
 
-    assert delta == 0
+    if delta != 0:
+        raise ValueError(
+            "The supplied operator doesn't preserve particle number")
+
 
     # We search for every state which has the necessary orbitals occupied and
     # unoccupied in order to not be immediately zeroed out based on the
@@ -850,9 +857,9 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
         target_determinant = determinant.copy()
 
         parity = 1
-        for (i, _) in reversed(term):
+        for i, _ in reversed(term):
             area_to_check = target_determinant[0:i]
-            parity *= (-1) ** (numpy.sum(area_to_check) % 2)
+            parity *= (-1) ** numpy.sum(area_to_check)
 
             target_determinant[i] = not target_determinant[i]
 
@@ -865,7 +872,7 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
 
         target_state = sorting_indices[target_state_index_sorted]
 
-        if (int_state_array[target_state] == int_encoding):
+        if int_state_array[target_state] == int_encoding:
             # Then target state is in the space considered:
             data.append(parity)
             row_ind.append(target_state)
