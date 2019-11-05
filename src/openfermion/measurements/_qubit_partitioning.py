@@ -35,7 +35,7 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
             If None, will be set to ceil(log2(len(qubit_list)))
 
     Returns:
-        partition(iterator of lists of lists): the required partitioning
+        partition(iterator of tuples of lists): the required partitioning
     """
 
     # Some edge cases
@@ -48,8 +48,8 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
         yield ([qubit_list[0]], [qubit_list[1]])
         return
 
-    num_iterations = num_iterations or\
-        int(numpy.ceil(numpy.log2(num_qubits)))
+    if num_iterations is None:
+        num_iterations = int(numpy.ceil(numpy.log2(num_qubits)))
 
     # Calculate the point where we need to split the list each time.
     half_point = int(numpy.ceil(num_qubits/2))
@@ -81,7 +81,7 @@ def partition_iterator(qubit_list, partition_size, num_iterations=None):
             outer iterator. If None, set to ceil(log2(len(qubit_list)))
 
     Returns:
-        partition(iterator of lists of lists): the required partitioning
+        partition(iterator of tuples of lists): the required partitioning
     """
 
     # Some edge cases
