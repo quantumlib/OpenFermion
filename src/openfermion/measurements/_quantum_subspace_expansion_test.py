@@ -190,6 +190,18 @@ class QSETest(unittest.TestCase):
             calculate_qse_spectrum(hamiltonian=ham, expansion_operators=[
                 stab1, stab2, stab3], expectation_values=expct_vals)
 
+    def test_qubitoperator_to_list(self):
+        """Test QubitOperators of expansion are set as list."""
+        stab_qop = (QubitOperator('Z0 Z2', -1.0) +
+                    QubitOperator('Z1 Z3', -1.0) +
+                    QubitOperator('Z0 Z1 Z2 Z3', 1.0))
+        ham = hubbard_ham()
+        (expct_vals, expct_vals_ext) = hubbard_ham_expect_vals()
+
+        get_additional_operators(hamiltonian=ham, expansion_operators=stab_qop)
+        calculate_qse_spectrum(hamiltonian=ham, expansion_operators=stab_qop,
+                               expectation_values=expct_vals_ext)
+
     def test_symmetry_qse(self):
         """Function to test SQSE."""
         stab1 = QubitOperator('Z0 Z2', -1.0)
