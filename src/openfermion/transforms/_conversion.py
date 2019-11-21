@@ -563,7 +563,7 @@ def get_number_preserving_sparse_operator(
         fermion_op,
         num_qubits,
         num_electrons,
-        spin_preserving=True,
+        spin_preserving=False,
         reference_determinant=None,
         excitation_level=None):
     """Initialize a Scipy sparse matrix in a specific symmetry sector.

@@ -584,6 +584,21 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         assert reference.dot(sum_sparse_n_op.dot(reference)) - self.molecule.n_electrons < 1E-9
 
 
+    def test_space_size_correct(self):
+        hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
+
+        sparse_ham = get_number_preserving_sparse_operator(
+            hamiltonian_fop,
+            self.molecule.n_qubits,
+            self.molecule.n_electrons,
+            spin_preserving=True)
+
+        space_size = sparse_ham.shape[0]
+
+        # Naive Hilbert space size is 2**12, or 4096.
+        assert space_size == 225
+
+
     def test_hf_energy(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
 
