@@ -46,7 +46,7 @@ def geometry_from_pubchem(name, structure=None):
                                                         record_type='2d')
 
     if not pubchempy_molecule:
-        print('Unable to find structure info in the PubChem database for the specified molecule.')
+        print('Unable to find structure info in the PubChem database for the specified molecule "%s".' % name)
         return None
 
     pubchempy_geometry = \
