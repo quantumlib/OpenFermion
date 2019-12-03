@@ -17,9 +17,6 @@ from ._equality_constraint_projection import (apply_constraints,
 
 from ._hamiltonian_stabilizers_sets import (get_hamiltonian_subsets)
 
-from ._quantum_subspace_expansion import (calculate_qse_spectrum,
-                                          get_additional_operators)
-
 from ._rdm_equality_constraints import (one_body_fermion_constraints,
                                         two_body_fermion_constraints)
 
