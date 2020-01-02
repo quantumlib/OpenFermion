@@ -80,6 +80,8 @@ def get_hamiltonian_subsets(hamiltonian, stabilizers):
 
     This function splits a Hamiltonian into subsets of Pauli strings that do
     not overlap with stabilizers.
+    Pauli strings might be repeated between subsets if they do not share any
+    qubit with the stabilizer.
     The Pauli strings that overlap with all stabilizers will be stored with a
     separate set.
     It can be used to perform SV and not disregarding all data if only a single
