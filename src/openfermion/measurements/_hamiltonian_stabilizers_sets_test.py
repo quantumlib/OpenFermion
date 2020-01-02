@@ -20,7 +20,7 @@ from openfermion import QubitOperator
 
 from openfermion.measurements import get_hamiltonian_subsets
 from openfermion.measurements._hamiltonian_stabilizers_sets import (
-    _check_stabilizer_overlap, _check_missing_paulis)
+    _has_overlapping_indices, _check_missing_paulis)
 
 
 def hubbard_ham():
@@ -76,9 +76,9 @@ class HamiltonianSetTest(unittest.TestCase):
         pauli = QubitOperator('Z0 X1', 1.0)
         stab1 = QubitOperator('X2 Y3', -1.0)
         stab2 = QubitOperator('Z0 Z2', -1.0)
-        self.assertFalse(_check_stabilizer_overlap(QubitOperator(' '), stab1))
-        self.assertFalse(_check_stabilizer_overlap(pauli, stab1))
-        self.assertTrue(_check_stabilizer_overlap(pauli, stab2))
+        self.assertFalse(_has_overlapping_indices(QubitOperator(' '), stab1))
+        self.assertFalse(_has_overlapping_indices(pauli, stab1))
+        self.assertTrue(_has_overlapping_indices(pauli, stab2))
 
     def test_missing_paulis(self):
         """Test _check_missing_paulis function."""

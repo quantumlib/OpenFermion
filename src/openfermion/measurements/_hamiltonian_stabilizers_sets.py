@@ -14,38 +14,31 @@
 its stabilizers."""
 
 import numpy
-import copy
 from openfermion.ops import QubitOperator
 
 
-def _check_stabilizer_overlap(pauli_op, stabilizer):
+def _has_overlapping_indices(op1, op2):
     """
-    Auxiliar function of get Hamiltonian subsets.
+    Auxiliary function of get Hamiltonian subsets.
 
-    Checks if a Pauli string has support on a stabilizer.
+    Check if two QubitOperators have any qubit in common.
 
     Args:
-        pauli_op(QubitOperator): Single Pauli string.
-        stabilizer(QubitOperator): Single Pauli string.
+        op1(QubitOperator): Single Pauli string.
+        op2(QubitOperator): Single Pauli string.
 
     Returns:
         overlap (Boolean): True if the operator and stabilizer overlap.
     """
-    # Find qubits involved
-    qbts_in_stab = [qbt for (qbt, p) in list(stabilizer.terms.keys())[0]]
+    indices_in_op1 = {index for (index, _) in list(op1.terms.keys())[0]}
+    indices_in_op2 = {index for (index, _) in list(op2.terms.keys())[0]}
 
-    overlap = False
-    for qp in list(pauli_op.terms.keys())[0]:
-        if qp == ():
-            overlap = False
-        if qp[0] in qbts_in_stab:
-            overlap = True
-    return overlap
+    return not indices_in_op1.isdisjoint(indices_in_op2)
 
 
 def _check_missing_paulis(hamiltonian, subsets):
     """
-    Auxiliar function of Hamiltonian subset splitting.
+    Auxiliary function of Hamiltonian subset splitting.
 
     This function checks which Pauli strings are not included
     in any subset.
@@ -114,21 +107,18 @@ def get_hamiltonian_subsets(hamiltonian, stabilizers):
                                     tuple, numpy.ndarray)):
         raise TypeError('Input stabilizers must be QubitOperator or list.')
 
-    stabilizer_list = list(copy.deepcopy(stabilizers))
-    ham = copy.deepcopy(hamiltonian)
-
     hamiltonian_subsets = []
-    for stab in stabilizer_list:
+    for stab in list(stabilizers):
         # Initialize subset
         ham_subset = QubitOperator()
-        for pauli in ham:
-            if _check_stabilizer_overlap(pauli, stab) is False:
+        for pauli in hamiltonian:
+            if _has_overlapping_indices(pauli, stab) is False:
                 ham_subset += pauli
 
         # Adds the subset to the list.
         hamiltonian_subsets.append(ham_subset)
 
     # Check if there are missing strings
-    rest_paulis = _check_missing_paulis(ham, hamiltonian_subsets)
+    rest_paulis = _check_missing_paulis(hamiltonian, hamiltonian_subsets)
 
     return hamiltonian_subsets, rest_paulis
