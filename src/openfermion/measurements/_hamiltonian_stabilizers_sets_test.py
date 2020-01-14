@@ -20,7 +20,7 @@ from openfermion import QubitOperator
 
 from openfermion.measurements import get_hamiltonian_subsets
 from openfermion.measurements._hamiltonian_stabilizers_sets import (
-    _has_overlapping_indices, _check_missing_paulis)
+    _has_disjoint_indices)
 
 
 def hubbard_ham():
@@ -76,35 +76,28 @@ class HamiltonianSetTest(unittest.TestCase):
         pauli = QubitOperator('Z0 X1', 1.0)
         stab1 = QubitOperator('X2 Y3', -1.0)
         stab2 = QubitOperator('Z0 Z2', -1.0)
-        self.assertFalse(_has_overlapping_indices(QubitOperator(' '), stab1))
-        self.assertFalse(_has_overlapping_indices(pauli, stab1))
-        self.assertTrue(_has_overlapping_indices(pauli, stab2))
+        self.assertTrue(_has_disjoint_indices(QubitOperator(' '), stab1))
+        self.assertTrue(_has_disjoint_indices(pauli, stab1))
+        self.assertFalse(_has_disjoint_indices(pauli, stab2))
 
-    def test_missing_paulis(self):
-        """Test _check_missing_paulis function."""
+    def test_remaining_paulis(self):
+        """Test total number of Paulis is correct."""
         stab1 = QubitOperator('Z0 Z2', -1.0)
         stab2 = QubitOperator('Z1 Z3', -1.0)
         ham = hubbard_ham()
 
-        ham_subsets, pauli_rest = get_hamiltonian_subsets(
-            ham, [stab1, stab2])
+        (ham_subsets,
+         remain_paulis) = get_hamiltonian_subsets(ham, [stab1, stab2])
 
         # Will compare the number of Pauli strings in the Hamiltonian,
         # with respect to the sum of the strings in the subsets
         # and in Pauli rest.
 
         num_paulis_ham = len(ham.terms)
-        num_paulis_left = len(pauli_rest.terms)
+        num_remain_paulis = len(remain_paulis.terms)
         aux_set = set()
         for sb in ham_subsets:
             aux_set.update(set(sb.terms.keys()))
         num_paulis_in_subsets = len(aux_set)
         self.assertTrue(num_paulis_ham == (
-            num_paulis_in_subsets + num_paulis_left))
-
-    def test_no_missing_paulis(self):
-        """Test return when no paulis are missing."""
-        op = QubitOperator('Z0 X1 X2', 1.0)
-        sub_list = [QubitOperator('Z0 X1 X2', 1.0)]
-        self.assertIsInstance(_check_missing_paulis(
-            op, sub_list), QubitOperator)
+            num_paulis_in_subsets + num_remain_paulis))
