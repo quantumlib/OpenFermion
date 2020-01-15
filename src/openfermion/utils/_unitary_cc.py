@@ -330,18 +330,24 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons,
             virtual_2_b = index_b(virtual_spatial_2)
             occupied_2_b = index_b(occupied_spatial_2)
 
-            generator += FermionOperator((
-                (virtual_1_a, 1),
-                (occupied_1_a, 0),
-                (virtual_2_b, 1),
-                (occupied_2_b, 0)),
-                coeff)
-            if anti_hermitian:
+            if virtual_1_a == virtual_2_b:
+                continue
+            if occupied_1_a == occupied_2_b:
+                continue
+            else:
+
                 generator += FermionOperator((
-                    (occupied_2_b, 1),
-                    (virtual_2_b, 0),
-                    (occupied_1_a, 1),
-                    (virtual_1_a, 0)),
-                    -coeff)
+                    (virtual_1_a, 1),
+                    (occupied_1_a, 0),
+                    (virtual_2_b, 1),
+                    (occupied_2_b, 0)),
+                    coeff)
+                if anti_hermitian:
+                    generator += FermionOperator((
+                        (occupied_2_b, 1),
+                        (virtual_2_b, 0),
+                        (occupied_1_a, 1),
+                        (virtual_1_a, 0)),
+                        -coeff)
 
     return generator
