@@ -16,6 +16,7 @@ import unittest
 import warnings
 
 import numpy
+import sympy
 from openfermion.config import EQ_TOLERANCE
 from openfermion.utils._testing_utils import EqualsTester
 
@@ -103,11 +104,15 @@ class GeneralTest(unittest.TestCase):
 
         zeros_1 = [DummyOperator1(),
                    DummyOperator1('1^ 0', 0.),
-                   DummyOperator1('1^ 0', -1j) * 0]
+                   DummyOperator1('1^ 0', -1j) * 0,
+                   DummyOperator1('1^ 0', 0 * sympy.Symbol('x')),
+                   DummyOperator1('1^ 0', sympy.Symbol('x')) * 0]
 
         zeros_2 = [DummyOperator2(),
                    DummyOperator2(((1, 'Y'), (0, 'X')), 0.),
-                   DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0]
+                   DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0,
+                   DummyOperator2(((1, 'Y'), (0, 'X')), 0 * sympy.Symbol('x')),
+                   DummyOperator2(((1, 'Y'), (0, 'X')), sympy.Symbol('x')) * 0]
 
         different_ops_1 = [DummyOperator1(((1, 0),), -0.1j),
                            DummyOperator1(((1, 1),), -0.1j),
@@ -119,8 +124,15 @@ class GeneralTest(unittest.TestCase):
                            (DummyOperator2(((1, 'Y'),), -0.1j) +
                             DummyOperator2(((2, 'Y'),), -0.1j))]
 
+        sympy_ops_1 = [DummyOperator1('1^ 0', sympy.Symbol('x')),
+                       DummyOperator1('1^ 0', 2*sympy.Symbol('x')) / 2,
+                       DummyOperator1('1^ 0', sympy.Symbol('x') *
+                                      sympy.Symbol('y')) *
+                       1 / sympy.Symbol('y')]
+
         equals_tester.add_equality_group(*zeros_1)
         equals_tester.add_equality_group(*zeros_2)
+        equals_tester.add_equality_group(*sympy_ops_1)
         for op in different_ops_1:
             equals_tester.add_equality_group(op)
         for op in different_ops_2:
@@ -307,6 +319,10 @@ class SymbolicOperatorTest1(unittest.TestCase):
         fermion_op = DummyOperator1('')
         self.assertIn((), fermion_op.terms)
 
+    def test_init_with_sympy(self):
+        fermion_op = DummyOperator1('0^', sympy.Symbol('x'))
+        self.assertEqual(fermion_op.terms[((0, 1),)], sympy.Symbol('x'))
+
     def test_init_bad_term(self):
         with self.assertRaises(ValueError):
             DummyOperator1(2)
@@ -363,6 +379,29 @@ class SymbolicOperatorTest1(unittest.TestCase):
         fermion_op = DummyOperator1(loc_op)
         fermion_op *= multiplier
         self.assertEqual(fermion_op.terms[loc_op], multiplier)
+
+    def test_imul_sympy(self):
+        loc_op = ((1, 0), (2, 1))
+        multiplier = sympy.Symbol('x')
+        fermion_op = DummyOperator1(loc_op)
+        fermion_op *= multiplier
+        self.assertTrue(fermion_op.terms[loc_op] - multiplier == 0)
+
+    def test_imul_sympy_2(self):
+        loc_op = ((1, 0), (2, 1))
+        multiplier = sympy.Symbol('x') + 3
+        fermion_op = DummyOperator1(loc_op)
+        fermion_op *= multiplier
+        self.assertTrue(fermion_op.terms[loc_op] - multiplier == 0)
+
+    def test_imul_sympy_ops(self):
+        loc_op1 = ((1, 0), (2, 1))
+        coeff1 = sympy.Symbol('x') + 3
+        loc_op2 = ((1, 1), (3, 1))
+        coeff2 = sympy.Symbol('x') + 5
+        fermion_op = DummyOperator1(loc_op1, coeff1)
+        fermion_op *= DummyOperator1(loc_op2, coeff2)
+        self.assertTrue(fermion_op.terms[loc_op1 + loc_op2] - coeff1 * coeff2 == 0)
 
     def test_imul_scalar_npfloat64(self):
         loc_op = ((1, 0), (2, 1))
@@ -436,6 +475,11 @@ class SymbolicOperatorTest1(unittest.TestCase):
         op = DummyOperator1(((1, 1), (0, 1)), -1j)
         with self.assertRaises(TypeError):
             op = op * "0.5"
+
+    def test_mul_sympy_coeff(self):
+        op = DummyOperator1(((1, 1), (0, 1)), -1j)
+        op = op * sympy.Symbol('x')
+        self.assertTrue(op.terms[((1, 1), (0, 1))] - (-1j * sympy.Symbol('x')) == 0)
 
     def test_mul_out_of_place(self):
         op1 = DummyOperator1(((0, 1), (3, 1), (3, 0), (11, 1)), 3.j)
@@ -601,6 +645,44 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertEqual(a.terms[term_a], 1.0)
         self.assertEqual(a.terms[term_b], 1.0)
 
+    def test_iadd_sympy(self):
+        term_a = ((1, 1), (3, 0), (8, 1))
+        coeff_a = sympy.Symbol('a')
+        term_b = ((1, 1), (3, 1), (8, 0))
+        coeff_b = sympy.Symbol('b')
+        a = DummyOperator1(term_a, coeff_a)
+        a += DummyOperator1(term_b, coeff_b)
+        self.assertEqual(len(a.terms), 2)
+        self.assertTrue(a.terms[term_a] - coeff_a == 0)
+        self.assertTrue(a.terms[term_b] - coeff_b == 0)
+        a += DummyOperator1(term_b, 0.5)
+        self.assertEqual(len(a.terms), 2)
+        self.assertTrue(a.terms[term_a] - coeff_a == 0)
+        self.assertTrue(a.terms[term_b] - coeff_b - 0.5 == 0)
+
+    def test_add_sympy(self):
+        term_a = ((1, 1), (3, 0), (8, 1))
+        coeff_a = sympy.Symbol('a')
+        term_b = ((1, 1), (3, 1), (8, 0))
+        coeff_b = sympy.Symbol('b')
+        a = DummyOperator1(term_a, coeff_a)
+        a = a + DummyOperator1(term_b, coeff_b)
+        self.assertEqual(len(a.terms), 2)
+        self.assertTrue(a.terms[term_a] - coeff_a == 0)
+        self.assertTrue(a.terms[term_b] - coeff_b == 0)
+        a = a + DummyOperator1(term_b, 0.5)
+        self.assertEqual(len(a.terms), 2)
+        self.assertTrue(a.terms[term_a] - coeff_a == 0)
+        self.assertTrue(a.terms[term_b] - coeff_b - 0.5 == 0)
+
+    def test_iadd_sympy_term_removal(self):
+        term_a = ((1, 1), (3, 0), (8, 1))
+        coeff_a = sympy.Symbol('a')
+
+        a = DummyOperator1(term_a, coeff_a)
+        a += DummyOperator1(term_a, -coeff_a)
+        self.assertEqual(len(a.terms), 0)
+
     def test_iadd_bad_addend(self):
         op = DummyOperator1((), 1.0)
         with self.assertRaises(TypeError):
@@ -643,6 +725,21 @@ class SymbolicOperatorTest1(unittest.TestCase):
         with self.assertRaises(TypeError):
             _ = op - "0.5"
 
+    def test_sub_sympy(self):
+        term_a = ((1, 1), (3, 0), (8, 1))
+        coeff_a = sympy.Symbol('a')
+        term_b = ((1, 1), (3, 1), (8, 0))
+        coeff_b = sympy.Symbol('b')
+        a = DummyOperator1(term_a, coeff_a)
+        a = a - DummyOperator1(term_b, coeff_b)
+        self.assertEqual(len(a.terms), 2)
+        self.assertTrue(a.terms[term_a] - coeff_a == 0)
+        self.assertTrue(a.terms[term_b] + coeff_b == 0)
+        a = a - DummyOperator1(term_b, 0.5)
+        self.assertEqual(len(a.terms), 2)
+        self.assertTrue(a.terms[term_a] - coeff_a == 0)
+        self.assertTrue(a.terms[term_b] + coeff_b + 0.5 == 0)
+
     def test_isub_different_term(self):
         term_a = ((1, 1), (3, 1), (8, 0))
         term_b = ((1, 0), (3, 1), (8, 1))
@@ -660,6 +757,29 @@ class SymbolicOperatorTest1(unittest.TestCase):
         op = DummyOperator1((), 1.0)
         with self.assertRaises(TypeError):
             op -= "0.5"
+
+    def test_isub_sympy(self):
+        term_a = ((1, 1), (3, 0), (8, 1))
+        coeff_a = sympy.Symbol('a')
+        term_b = ((1, 1), (3, 1), (8, 0))
+        coeff_b = sympy.Symbol('b')
+        a = DummyOperator1(term_a, coeff_a)
+        a -= DummyOperator1(term_b, coeff_b)
+        self.assertEqual(len(a.terms), 2)
+        self.assertTrue(a.terms[term_a] - coeff_a == 0)
+        self.assertTrue(a.terms[term_b] + coeff_b == 0)
+        a -= DummyOperator1(term_b, 0.5)
+        self.assertEqual(len(a.terms), 2)
+        self.assertTrue(a.terms[term_a] - coeff_a == 0)
+        self.assertTrue(a.terms[term_b] + coeff_b + 0.5 == 0)
+
+    def test_isub_sympy_term_removal(self):
+        term_a = ((1, 1), (3, 0), (8, 1))
+        coeff_a = sympy.Symbol('a')
+
+        a = DummyOperator1(term_a, coeff_a)
+        a -= DummyOperator1(term_a, coeff_a)
+        self.assertEqual(len(a.terms), 0)
 
     def test_neg(self):
         op = DummyOperator1(((1, 1), (3, 1), (8, 1)), 0.5)
@@ -716,6 +836,10 @@ class SymbolicOperatorTest1(unittest.TestCase):
                          DummyOperator1('1^ 3', 1e-3))
         op.compress(1e-7)
         self.assertTrue(op_compressed == op)
+
+    def test_str_sympy(self):
+        op = DummyOperator1("0^", sympy.Symbol('x'))
+        self.assertEqual(str(op), "x [0^]")
 
     def test_str(self):
 
@@ -868,6 +992,15 @@ class SymbolicOperatorTest2(unittest.TestCase):
         res1 = op * multiplier
         res2 = multiplier * op
         self.assertTrue(res1 == res2)
+
+    def test_rmul_sympy(self):
+        multiplier = sympy.Symbol('x') + 3
+        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        res1 = op * multiplier
+        res2 = multiplier * op
+        zero_op = DummyOperator2()
+        print(res1 - res2)
+        self.assertTrue(res1 - res2 == zero_op)
 
     def test_rmul_bad_multiplier(self):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
@@ -1043,6 +1176,14 @@ class SymbolicOperatorTest2(unittest.TestCase):
         op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
         op += DummyOperator2(((2, 'Z'), (3, 'Y')), 1)
         self.assertAlmostEqual(op.induced_norm(2), numpy.sqrt(2.))
+
+    def test_norm_sympy(self):
+        x_sym = sympy.Symbol('x')
+        y_sym = sympy.Symbol('y')
+        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), x_sym)
+        op += DummyOperator2(((2, 'Z'), (3, 'Y')), y_sym)
+        norm = op.induced_norm(2)
+        self.assertTrue(norm - (abs(x_sym)**2 + abs(y_sym)**2)**(0.5) == 0)
 
     def test_tracenorm_zero(self):
         op = DummyOperator2()

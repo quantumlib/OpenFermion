@@ -19,6 +19,7 @@ import re
 import warnings
 
 import numpy
+import sympy
 from six import add_metaclass, string_types
 
 from openfermion.config import EQ_TOLERANCE
@@ -103,7 +104,7 @@ class SymbolicOperator:
     __hash__ = None
 
     def __init__(self, term=None, coefficient=1.):
-        if not isinstance(coefficient, (int, float, complex)):
+        if not isinstance(coefficient, (int, float, complex, sympy.Expr)):
             raise ValueError('Coefficient must be a numeric type.')
 
         # Initialize the terms dictionary
@@ -305,7 +306,9 @@ class SymbolicOperator:
             return '0'
         string_rep = ''
         for term, coeff in sorted(self.terms.items()):
-            if numpy.isclose(coeff, 0.0):
+            if ((not isinstance(coeff, sympy.Expr) and
+                    numpy.isclose(coeff, 0.0))
+                    or coeff == 0):
                 continue
             tmp_string = '{} ['.format(coeff)
             for factor in term:
@@ -333,7 +336,7 @@ class SymbolicOperator:
             product (SymbolicOperator): Mutated self.
         """
         # Handle scalars.
-        if isinstance(multiplier, (int, float, complex)):
+        if isinstance(multiplier, (int, float, complex, sympy.Expr)):
             for term in self.terms:
                 self.terms[term] *= multiplier
             return self
@@ -377,7 +380,7 @@ class SymbolicOperator:
         Raises:
             TypeError: Invalid type cannot be multiply with SymbolicOperator.
         """
-        if isinstance(multiplier, (int, float, complex, type(self))):
+        if isinstance(multiplier, (int, float, complex, sympy.Expr, type(self))):
             product = copy.deepcopy(self)
             product *= multiplier
             return product
@@ -402,8 +405,11 @@ class SymbolicOperator:
             for term in addend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) +
                                     addend.terms[term])
-                if abs(self.terms[term]) < EQ_TOLERANCE:
-                    del self.terms[term]
+                try:
+                    if abs(self.terms[term]) < EQ_TOLERANCE:
+                        del self.terms[term]
+                except TypeError:
+                    pass
         else:
             raise TypeError('Cannot add invalid type to {}.'.format(
                             type(self)))
@@ -438,8 +444,11 @@ class SymbolicOperator:
             for term in subtrahend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) -
                                     subtrahend.terms[term])
-                if abs(self.terms[term]) < EQ_TOLERANCE:
-                    del self.terms[term]
+                try:
+                    if abs(self.terms[term]) < EQ_TOLERANCE:
+                        del self.terms[term]
+                except TypeError:
+                    pass
         else:
             raise TypeError('Cannot subtract invalid type from {}.'.format(
                             type(self)))
@@ -474,7 +483,7 @@ class SymbolicOperator:
         Raises:
           TypeError: Object of invalid type cannot multiply SymbolicOperator.
         """
-        if not isinstance(multiplier, (int, float, complex)):
+        if not isinstance(multiplier, (int, float, complex, sympy.Expr)):
             raise TypeError(
                 'Object of invalid type cannot multiply with ' +
                 type(self) + '.')
@@ -497,7 +506,7 @@ class SymbolicOperator:
           TypeError: Cannot divide local operator by non-scalar type.
 
         """
-        if not isinstance(divisor, (int, float, complex)):
+        if not isinstance(divisor, (int, float, complex, sympy.Expr)):
             raise TypeError('Cannot divide ' + type(self) +
                             ' by non-scalar type.')
         return self * (1.0 / divisor)
@@ -507,7 +516,7 @@ class SymbolicOperator:
         return self.__truediv__(divisor)
 
     def __itruediv__(self, divisor):
-        if not isinstance(divisor, (int, float, complex)):
+        if not isinstance(divisor, (int, float, complex, sympy.Expr)):
             raise TypeError('Cannot divide ' + type(self) +
                             ' by non-scalar type.')
         self *= (1.0 / divisor)
@@ -570,16 +579,30 @@ class SymbolicOperator:
             a = self.terms[term]
             b = other.terms[term]
             # math.isclose does this in Python >=3.5
-            if not abs(a - b) <= max(EQ_TOLERANCE,
-                                     EQ_TOLERANCE * max(abs(a), abs(b))):
-                return False
+            if isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr):
+                try:
+                    if not abs(a - b) <= EQ_TOLERANCE:
+                        return False
+                except TypeError:
+                    return False
+            else:
+                if not abs(a - b) <= max(EQ_TOLERANCE,
+                                         EQ_TOLERANCE * max(abs(a), abs(b))):
+                    return False
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if not abs(self.terms[term]) <= EQ_TOLERANCE:
+                try:
+                    if not abs(self.terms[term]) <= EQ_TOLERANCE:
+                        return False
+                except TypeError:
                     return False
-            elif not abs(other.terms[term]) <= EQ_TOLERANCE:
-                return False
+            else:
+                try:
+                    if not abs(other.terms[term]) <= EQ_TOLERANCE:
+                        return False
+                except TypeError:
+                    return False
         return True
 
     def __ne__(self, other):
