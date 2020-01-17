@@ -130,6 +130,9 @@ class GeneralTest(unittest.TestCase):
                                       sympy.Symbol('y')) *
                        1 / sympy.Symbol('y')]
 
+        sympy_ops_2 = [DummyOperator1('1^ 0', sympy.Symbol('x') + 1)]
+
+        equals_tester.add_equality_group(*sympy_ops_2)
         equals_tester.add_equality_group(*zeros_1)
         equals_tester.add_equality_group(*zeros_2)
         equals_tester.add_equality_group(*sympy_ops_1)
