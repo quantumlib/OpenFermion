@@ -8,3 +8,4 @@ networkx
 matplotlib
 pubchempy
 six
+sympy
