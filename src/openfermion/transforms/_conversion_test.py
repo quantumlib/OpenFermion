@@ -17,6 +17,7 @@ import unittest
 
 import numpy
 import pytest
+import sympy
 
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops import (BosonOperator,
@@ -41,7 +42,15 @@ from openfermion.transforms._conversion import (
         get_interaction_operator,
         get_quad_operator,
         get_quadratic_hamiltonian,
-        get_sparse_operator)
+        get_sparse_operator,
+        _check_no_sympy)
+
+class RaisesSympyExceptionTest(unittest.TestCase):
+
+    def test_raises_sympy_expression(self):
+        operator = FermionOperator('0^', sympy.Symbol('x'))
+        with self.assertRaises(TypeError):
+            _check_no_sympy(operator)
 
 
 class GetInteractionOperatorTest(unittest.TestCase):
