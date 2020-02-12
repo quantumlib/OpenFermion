@@ -1,0 +1,242 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+
+def pair_within(labels):
+    '''
+    Generates a set of len(labels)-1 pairings such that
+    each element in labels is paired with each other element
+    in at least one pairing
+
+    Args:
+        labels (list): list of elements
+
+    Yields:
+        pairings (list): list of pairings of elements of labels
+    '''
+    if len(labels) == 0:
+        return
+    if len(labels) == 1:
+        yield (labels[0], )
+        return
+
+    # Determine fragment size
+    fragment_size = len(labels) // 2
+    frag1 = labels[:fragment_size]
+    frag2 = labels[fragment_size:]
+
+    for pairing in pair_between(frag1, frag2, len(frag2) % 2):
+        yield pairing
+
+    if len(labels) % 4 == 1:
+        frag1.append(None)
+
+    for j, (pairing1, pairing2) in enumerate(zip(
+            pair_within(frag1), pair_within(frag2))):
+
+        if len(labels) % 4 == 1:
+            if pairing1[-1] is None:
+                yield pairing1[:-1] + pairing2
+            else:
+                extra_pair = ((pairing1[-1], pairing2[-1]), )
+                zero_index, = [
+                    pair[0] for pair in pairing1[:-1]
+                    if pair[1] is None]
+                pairing1 = tuple(
+                    pair for pair in pairing1[:-1]
+                    if pair[1] is not None)
+                yield (pairing1 + pairing2[:-1] +
+                       extra_pair + (zero_index, ))
+
+        elif len(labels) % 4 == 2:
+            extra_pair = ((pairing1[-1], pairing2[-1]), )
+            yield pairing1[:-1] + pairing2[:-1] + extra_pair
+
+        elif len(labels) % 4 == 3:
+            yield pairing1[:-1] + pairing2 + (pairing1[-1],)
+
+        else:
+            yield pairing1 + pairing2
+
+
+def pair_between(frag1, frag2, start_offset=0):
+    '''
+    Generates a set of pairings between elements of frag1
+    and frag2 such that each element in frag1 is paired to
+    each element in frag2 exactly once.
+
+    Args:
+        frag1, frag2 (lists): the elements to be paired
+        start_offset (int): prevents the first start_offset pairings
+            from being yielded
+
+    Yields:
+        pairing tuple: the desired pairings, followed by
+            any unpaired elements
+
+    '''
+
+    num_iter = max(len(frag1), len(frag2))
+    num_pairs = min(len(frag1), len(frag2))
+
+    for index_offset in range(start_offset, num_iter):
+
+        if len(frag1) > len(frag2):
+            pairing = tuple(
+                (frag1[(index + index_offset) % len(frag1)], frag2[index])
+                for index in range(num_pairs))
+            pairing += tuple(frag1[index % len(frag1)]
+                             for index in range(len(frag2) + index_offset,
+                                                len(frag1) + index_offset))
+        else:
+            pairing = tuple(
+                (frag1[index], frag2[(index + index_offset) % len(frag2)])
+                for index in range(num_pairs))
+        if len(frag2) > len(frag1):
+            pairing += tuple(frag2[index % len(frag2)]
+                             for index in range(len(frag1) + index_offset,
+                                                len(frag2) + index_offset))
+
+        yield pairing
+
+
+def _loop_iterator(func, *params, max_loops=100):
+    generator = func(*params)
+    looped = False
+    num_loops = 0
+    while True:
+        for res in generator:
+            yield res, looped
+        looped = True
+        num_loops += 1
+        if num_loops > max_loops:
+            raise ValueError('Number of loops exceeded maximum allowed.')
+        generator = func(*params)
+
+
+def _gen_partitions(labels, min_size=4):
+    '''
+    Generates a set of exponentially smaller partitions of a set
+
+    Args:
+        labels(list): list to be partitioned
+    '''
+    if len(labels) == 1:
+        return (labels, )
+    partitions = (labels[:len(labels)//2], labels[len(labels)//2:])
+    while True:
+        yield partitions
+        if len(partitions[-1]) < min_size:
+            return
+        new_partitions = []
+        for part in partitions:
+            new_partitions.append(part[:len(part)//2])
+            new_partitions.append(part[len(part)//2:])
+        partitions = new_partitions
+
+
+def _gen_pairings_between_partitions(parta, partb):
+    if len(parta + partb) < 5:
+        yield (tuple(parta), tuple(partb))
+    splita = [parta[:len(parta)//2], parta[len(parta)//2:]]
+    splitb = [partb[:len(partb)//2], partb[len(partb)//2:]]
+    for a, b in ((0, 0), (0, 1), (1, 0), (1, 1)):
+        if max(len(splita[a]), len(splitb[b])) < 2:
+            continue
+        if min(len(splita[1-a]), len(splitb[1-b])) < 1:
+            continue
+        gen_a = _loop_iterator(pair_within, splita[a])
+        gen_b = _loop_iterator(pair_within, splitb[b])
+        num_iter = max(len(splitb[b]) - 1 + len(splitb[b]) % 2,
+                       len(splita[a]) - 1 + len(splita[a]) % 2)
+        for j in range(num_iter):
+            pair_a, _ = next(gen_a)
+            pair_b, _ = next(gen_b)
+            gen_ab = pair_between(splita[1-a], splitb[1-b])
+            for pair_ab in gen_ab:
+                yield pair_a + pair_b + pair_ab
+
+
+def pair_within_simultaneously(labels):
+    '''
+    Generates a set of pairings such that for every four elements
+    (i,j,k,l) in 'labels', there exists one pairing containing (i,j)
+    and (k,l) at the same time.
+
+    Args:
+        labels(list): list of elements to be paired
+
+    Yields:
+        pairings(tuple of pairs): the desired pairings
+    '''
+
+    if len(labels) == 1:
+        return
+    elif len(labels) == 2:
+        yield ((labels[0], labels[1]), )
+        return
+    elif len(labels) == 3:
+        yield ((labels[0], labels[1]), labels[2])
+        return
+
+    for partition in _gen_partitions(labels):
+        generator_list = [_loop_iterator(pair_within, partition[j])
+                          for j in range(len(partition))]
+        for dummy1 in range(len(partition[-2]) - 1 + len(partition[-2]) % 2):
+            pairing = tuple()
+            for generator in generator_list[::2]:
+                pairing = pairing + next(generator)[0]
+            for dummy2 in range(len(partition[-1]) - 1 +
+                                len(partition[-1]) % 2):
+                pairing2 = tuple(pairing)
+                for generator in generator_list[1::2]:
+                    pairing2 = pairing2 + next(generator)[0]
+                yield pairing2
+
+        if len(partition[-1]) < 3:
+            continue
+
+        for partition_pairing in pair_within(partition):
+            generator_list = [
+                _loop_iterator(_gen_pairings_between_partitions,
+                               part_a, part_b)
+                for part_a, part_b in partition_pairing]
+            while True:
+                pairing = tuple()
+                looped = True
+                for generator in generator_list:
+                    this_pairing, this_looped = next(generator)
+                    pairing += this_pairing
+                    if this_looped is False:
+                        looped = False
+                if looped is True:
+                    break
+                yield pairing
+
+
+def pair_within_simultaneously_number_conserving_real(num_fermions):
+    '''
+    Generates a pairing of Majoranas for a set of N fermions
+    that allows for measurement of all non-zero terms in a
+    number-conserving real Hamiltonian with up to two-body terms.
+    '''
+    majoranas = list(range(num_fermions * 2))
+    even_majoranas = majoranas[::2]
+    odd_majoranas = majoranas[1::2]
+
+    for pair_odd in pair_within(odd_majoranas):
+        for pair_even in pair_within(even_majoranas):
+            yield pair_odd + pair_even
+
+    for pair_odd, pair_even in zip(pair_within_simultaneously(odd_majoranas),
+                                   pair_within_simultaneously(even_majoranas)):
+        yield pair_odd + pair_even
