@@ -15,6 +15,9 @@ from openfermion.measurements import partition_iterator
 import numpy
 
 
+MAX_LOOPS = 1e6
+
+
 def pair_within(labels):
     '''
     Generates a set of len(labels)-1 pairings such that
@@ -113,7 +116,7 @@ def pair_between(frag1, frag2, start_offset=0):
         yield pairing
 
 
-def _loop_iterator(func, *params, max_loops=10000):
+def _loop_iterator(func, *params):
     generator = func(*params)
     looped = False
     num_loops = 0
@@ -122,7 +125,7 @@ def _loop_iterator(func, *params, max_loops=10000):
             yield res, looped
         looped = True
         num_loops += 1
-        if num_loops > max_loops:
+        if num_loops > MAX_LOOPS:
             raise ValueError('Number of loops exceeded maximum allowed.')
         generator = func(*params)
 
