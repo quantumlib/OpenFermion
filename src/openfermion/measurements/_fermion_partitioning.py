@@ -11,6 +11,10 @@
 #   limitations under the License.
 
 
+from openfermion.measurements import partition_iterator
+import numpy
+
+
 def pair_within(labels):
     '''
     Generates a set of len(labels)-1 pairings such that
@@ -109,7 +113,7 @@ def pair_between(frag1, frag2, start_offset=0):
         yield pairing
 
 
-def _loop_iterator(func, *params, max_loops=100):
+def _loop_iterator(func, *params, max_loops=10000):
     generator = func(*params)
     looped = False
     num_loops = 0
@@ -179,13 +183,7 @@ def pair_within_simultaneously(labels):
         pairings(tuple of pairs): the desired pairings
     '''
 
-    if len(labels) == 1:
-        return
-    elif len(labels) == 2:
-        yield ((labels[0], labels[1]), )
-        return
-    elif len(labels) == 3:
-        yield ((labels[0], labels[1]), labels[2])
+    if len(labels) <= 3:
         return
 
     for partition in _gen_partitions(labels):
@@ -223,20 +221,158 @@ def pair_within_simultaneously(labels):
                 yield pairing
 
 
-def pair_within_simultaneously_number_conserving_real(num_fermions):
+def _get_padding(num_bins, bin_size):
     '''
-    Generates a pairing of Majoranas for a set of N fermions
-    that allows for measurement of all non-zero terms in a
-    number-conserving real Hamiltonian with up to two-body terms.
+    For parallel iteration: gets the smallest number L' >= bin_size
+    such that num_bins is smaller than the lowest factor of L'.
     '''
-    majoranas = list(range(num_fermions * 2))
-    even_majoranas = majoranas[::2]
-    odd_majoranas = majoranas[1::2]
+    trial_size = bin_size
+    while True:
+        success_flag = True
+        for divisor in range(2, num_bins-1):
+            if trial_size % divisor == 0:
+                success_flag = False
+                break
+        if success_flag == True:
+            return trial_size
+        trial_size += 1
 
-    for pair_odd in pair_within(odd_majoranas):
-        for pair_even in pair_within(even_majoranas):
-            yield pair_odd + pair_even
 
-    for pair_odd, pair_even in zip(pair_within_simultaneously(odd_majoranas),
-                                   pair_within_simultaneously(even_majoranas)):
-        yield pair_odd + pair_even
+def _asynchronous_iter(iterators, flatten=False):
+    '''
+    Iterates over a set of K iterators with max L elements to 
+    generate all pairs between them in O(L^2 + 2L log(L) + log(L)^2),
+    assuming L>>K. When appropriate, calls a different iterator
+    optimized for small lists.
+
+    Args:
+        iterators(list of iterators): iterators to be passed
+        flatten(boolean): whether to concatenate or join the results.
+    Yields:
+        next_result(list of results): the joined/concatenated set of results.
+    '''
+    iterator_lists = [[x for x in iterator] for iterator in iterators]
+    num_lists = len(iterator_lists)
+    list_size = max([len(lst) for lst in iterator_lists])
+
+    # Edge cases
+    if list_size == 1:
+        next_res = [iterator[0] if iterator else None for iterator in iterator_lists]
+        if flatten:
+            next_res = [x for result in next_res if result for x in result]
+        yield tuple(next_res)
+        return
+    elif numpy.log2(num_lists+1) * list_size**2 < num_lists**2:
+        for next_res in _asynchronous_iter_small_lists(iterator_lists, flatten):
+            yield next_res
+        return
+
+    new_size = _get_padding(num_lists, list_size)
+    for lst in iterator_lists:
+        lst += [None] * (new_size - len(lst))
+
+    for j in range(new_size):
+        for l in range(new_size):
+            next_res = [iterator_lists[k][(j*k+l) % new_size] for k in range(num_lists-1)]
+            next_res.append(iterator_lists[-1][j])
+            if flatten:
+                next_res = [x for result in next_res if result for x in result]
+            yield tuple(next_res)
+
+
+def _asynchronous_iter_small_lists(iterator_lists, flatten=False):
+    '''
+    Iterates over a set of K iterators of max L items to generate all pairs
+    between them in O(log(K)L^2) time - this is suboptimal when L>>K,
+    but does not require list padding, making it better for small L.
+
+    Args:
+        iterators(list of iterators): iterators to be passed
+        flatten(boolean): whether to concatenate or join the results.
+    Yields:
+        next_result(list of results): the joined/concatenated set of results.
+    '''
+    for partitions in partition_iterator(iterator_lists, 2):
+        for res in _asynchronous_iter([
+                _parallel_iter(partition, flatten)
+                for partition in partitions], flatten):
+            yield res
+
+
+def _parallel_iter(iterators, flatten=False):
+    '''
+    Iterates in parallel over a set of iterators.
+    Stopped iterators are removed, so the position of any
+    result is not conserved.
+
+    Args:
+        iterators(list of iterables): iterators to be passed
+        flatten(boolean): whether to concatenate or join the results.
+    Yields:
+        next_result(list of results): the joined/concatenated set of results.
+    '''
+    iterators = [iter(iterator) for iterator in iterators]
+
+    while iterators:
+        next_result = []
+        for j in range(len(iterators)-1, -1, -1):
+            temp = next(iterators[j], None)
+            if temp is None:
+                del iterators[j]
+            else:
+                if flatten:
+                    next_result = list(temp) + next_result
+                else:
+                    next_result = [temp] + next_result
+        if next_result:
+            yield tuple(next_result)
+
+def pair_within_simultaneously_binned(binned_Majoranas):
+    '''Generates a pairing of Majoranas that covers all 2-RDM elements
+    that  conserve a set of symmetry conditions. The constraints
+    are defined by a binning of the Majoranas into bins such that
+    Majoranas in bin n commute with symmetry S_i if the ith binary digit
+    of n is 0.
+
+    Args:
+        binned_Majoranas(list of lists of integers): majoranas to be paired,
+            separated up by their symmetry bins.
+    '''
+
+    # Generate all four-fold pairings within bins
+    iterators = [pair_within_simultaneously(bn) for bn in binned_Majoranas]
+    for pairing in _parallel_iter(iterators, flatten=True):
+        yield pairing
+
+    # Iterate over all pairs within bins
+    num_bins = len(binned_Majoranas)
+    if max([len(bn) for bn in binned_Majoranas]) > 1 and num_bins > 1:
+        iterators = [pair_within(bn) for bn in binned_Majoranas]
+        for pairing in _asynchronous_iter(iterators, flatten=True):
+            yield pairing
+
+    # Pair between bins
+    for bin_gap in range(1, num_bins // 2):
+        iterators = []
+        for bin_index in range(num_bins):
+            if bin_index < bin_index ^ bin_gap:
+                iterators.append(pair_between(
+                    binned_Majoranas[bin_index],
+                    binned_Majoranas[bin_index ^ bin_gap]))
+        for pairing in _asynchronous_iter(iterators, flatten=True):
+            yield pairing
+
+
+def pair_within_simultaneously_symmetric(num_fermions, num_symmetries):
+    '''Generates a pairing of Majoranas for a set of N fermions
+    that respects Ns symmetries --- we assume that each symmetry
+    divides the set of Majoranas in two, indexed by their binary
+    digits.
+    '''
+    binned_Majoranas = [
+        [index for index in range(2*num_fermions)
+         if index % 2**num_symmetries == bin_index]
+        for bin_index in range(2**num_symmetries)]
+
+    for pairing in pair_within_simultaneously_binned(binned_Majoranas):
+        yield pairing

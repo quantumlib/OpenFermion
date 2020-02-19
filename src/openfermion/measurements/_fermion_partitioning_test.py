@@ -13,7 +13,12 @@
 
 """Tests for _qubit_partitioning.py"""
 import unittest
-from ._fermion_partitioning import pair_within, pair_within_simultaneously
+import numpy
+from ._fermion_partitioning import (
+    pair_within, pair_within_simultaneously,
+    pair_within_simultaneously_binned,
+    pair_within_simultaneously_symmetric,
+    _get_padding, _parallel_iter, _asynchronous_iter)
 
 
 class TestPairWithin(unittest.TestCase):
@@ -93,3 +98,129 @@ class TestPairWithinSimultaneously(unittest.TestCase):
             for j in range(len(checksum)):
                 print(all_quads[j], checksum[j])
                 self.assertGreaterEqual(checksum[j], 1)
+
+class TestPadding(unittest.TestCase):
+
+    def test_primes(self):
+        bin_size = 11
+        for num_bins in range(10):
+            self.assertEqual(_get_padding(num_bins, bin_size), bin_size)
+
+    def test_composite(self):
+        bin_size = 12
+        for num_bins in range(4, 13):
+            self.assertEqual(_get_padding(num_bins, bin_size), 13)
+
+
+class TestIterators(unittest.TestCase):
+
+    def test_asynchronous_three(self):
+        lists = [[0, 1, 2], [0, 1, 2], [0, 1, 2], [0, 1, 2]]
+        test_matrices = [[numpy.zeros((3,3)) for j in range(4)] for k in range(4)]
+        iterator = _asynchronous_iter(lists)
+        count = 0
+        for next_tuple in iterator:
+            print(next_tuple)
+            count += 1
+            for j in range(4):
+                for k in range(4):
+                    test_matrices[j][k][next_tuple[j], next_tuple[k]] += 1
+
+        self.assertEqual(count, 9)
+        for j in range(4):
+            for k in range(j+1, 4):
+                for i1 in range(3):
+                    for i2 in range(3):
+                        self.assertEqual(test_matrices[j][k][i1,i2], 1)
+
+    def test_asynchronous_four(self):
+        lists = [[x for x in range(4)] for y in range(4)]
+        iterator = _asynchronous_iter(lists)
+        count = 0
+        for next_tuple in iterator:
+            count += 1
+        self.assertEqual(count, 25)
+
+    def test_parallel(self):
+        def iter1():
+            for j in range(4):
+                yield j
+        def iter2():
+            for j in range(5):
+                yield j
+        iterators = [iter1(), iter2()]
+        count = 0
+        for res in _parallel_iter(iterators):
+            count += 1
+        self.assertEqual(count, 5)
+
+    def test_parallel_flatten(self):
+        def iter1():
+            for j in range(4):
+                yield [j]
+        def iter2():
+            for j in range(5):
+                yield [j]
+        iterators = [iter1(), iter2()]
+        for res in _parallel_iter(iterators, flatten=False):
+            self.assertTrue(isinstance(res[0], list))
+        iterators = [iter1(), iter2()]
+        for res in _parallel_iter(iterators, flatten=True):
+            self.assertTrue(isinstance(res[0], int))
+
+
+class TestPairingWithSymmetries(unittest.TestCase):
+
+    def test_two_fermions(self):
+        bins = [[1], [2], [3], [4]]
+        count = 0
+        for pairing in pair_within_simultaneously_binned(bins):
+            count += 1
+            self.assertEqual(len(pairing), 2)
+            print(pairing)
+        self.assertEqual(count, 1)
+        count = 0
+        for pairing in pair_within_simultaneously_symmetric(2, 2):
+            count += 1
+            self.assertEqual(len(pairing), 2)
+        self.assertEqual(count, 1)
+        count = 0
+        for pairing in pair_within_simultaneously_symmetric(2, 1):
+            count += 1
+            self.assertEqual(len(pairing), 2)
+        self.assertEqual(count, 1)
+        count = 0
+        for pairing in pair_within_simultaneously_symmetric(2, 0):
+            count += 1
+            self.assertEqual(len(pairing), 2)
+        self.assertEqual(count, 1)
+
+    def test_four_fermions(self):
+        print('Trying with 0 symmetries')
+        count = 0
+        for pairing in pair_within_simultaneously_symmetric(4, 0):
+            print(pairing)
+            count += 1
+            self.assertEqual(len(pairing), 4)
+        self.assertEqual(count, 18)
+        print('Trying with 1 symmetry')
+        count = 0
+        for pairing in pair_within_simultaneously_symmetric(4, 1):
+            print(pairing)
+            count += 1
+            self.assertEqual(len(pairing), 4)
+        self.assertEqual(count, 10)
+        print('Trying with 2 symmetries')
+        count = 0
+        for pairing in pair_within_simultaneously_symmetric(4, 2):
+            print(pairing)
+            count += 1
+            self.assertEqual(len(pairing), 4)
+        self.assertEqual(count, 5)
+        print('Trying with 3 symmetries')
+        count = 0
+        for pairing in pair_within_simultaneously_symmetric(4, 3):
+            print(pairing)
+            count += 1
+            self.assertEqual(len(pairing), 4)
+        self.assertEqual(count, 3)
