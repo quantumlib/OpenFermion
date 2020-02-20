@@ -138,7 +138,8 @@ def _gen_partitions(labels, min_size=4):
         labels(list): list to be partitioned
     '''
     if len(labels) == 1:
-        return (labels, )
+        yield (labels, )
+        return
     partitions = (labels[:len(labels)//2], labels[len(labels)//2:])
     while True:
         yield partitions
