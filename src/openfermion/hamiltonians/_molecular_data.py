@@ -15,6 +15,7 @@
 import h5py
 import numpy
 import os
+import shutil
 import uuid
 
 from openfermion.config import *
@@ -638,8 +639,8 @@ class MolecularData(object):
         except OSError:
             pass
 
-        os.rename("{}.hdf5".format(tmp_name),
-                  "{}.hdf5".format(self.filename))
+        shutil.move("{}.hdf5".format(tmp_name),
+                    "{}.hdf5".format(self.filename))
 
     def load(self):
         geometry = []
