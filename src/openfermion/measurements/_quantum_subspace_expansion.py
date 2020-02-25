@@ -113,10 +113,10 @@ def calculate_qse_spectrum(hamiltonian, expansion_operators,
 
     # Check if the length of additional operator equals the length of
     # expectation values.
-    additional_op = get_additional_operators(hamiltonian, expansion_operators)
-    if len(additional_op.terms) != len(expectation_values.terms):
-        raise ValueError('The number of Pauli strings do not match '
-                         'the number of expectation values.')
+    #additional_op = get_additional_operators(hamiltonian, expansion_operators)
+    #if len(additional_op.terms) != len(expectation_values.terms):
+    #    raise ValueError('The number of Pauli strings do not match '
+    #                     'the number of expectation values.')
 
     # Initialize matrices to store calculated values.
     ham_mat = numpy.zeros((len(expansion_operators),
