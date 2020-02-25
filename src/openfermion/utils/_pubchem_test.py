@@ -76,3 +76,16 @@ class OpenFermionPubChemTest(unittest.TestCase):
         none_geometry = geometry_from_pubchem('none')
 
         self.assertIsNone(none_geometry)
+
+    def test_water_2d(self):
+        water_geometry = geometry_from_pubchem('water', structure='2d')
+        self.water_natoms = len(water_geometry)
+
+        water_natoms = 3
+        self.assertEqual(water_natoms, self.water_natoms)
+
+        self.oxygen_z_1 = water_geometry[0][1][2]
+        self.oxygen_z_2 = water_geometry[1][1][2]
+        z = 0
+        self.assertEqual(z, self.oxygen_z_1)
+        self.assertEqual(z, self.oxygen_z_2)
