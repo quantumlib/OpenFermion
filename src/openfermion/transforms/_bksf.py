@@ -68,7 +68,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
     For the sake of brevity the reader is encouraged to look up the
     expressions of other terms from the code below. The variables for edge
     operators are chosen according to the nomenclature defined above
-    (B_i and A_ij). A detailed description of these operators and the terms 
+    (B_i and A_ij). A detailed description of these operators and the terms
     of the electronic Hamiltonian are provided in (arXiv 1712.00446).
 
     Args:

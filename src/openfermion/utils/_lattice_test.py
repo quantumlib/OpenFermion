@@ -25,8 +25,8 @@ def test_spin():
 @pytest.mark.parametrize(
         "x_dimension,y_dimension,n_dofs,spinless,periodic",
         itertools.product(
-            random.sample(range(3, 10), 3), 
-            random.sample(range(3, 10), 3), 
+            random.sample(range(3, 10), 3),
+            random.sample(range(3, 10), 3),
             range(1, 4),
             (False, True),
             (False, True)
@@ -41,7 +41,7 @@ def test_hubbard_square_lattice(
     site_indices = tuple(lattice.to_site_index(site) for site in sites)
     assert (sites == tuple(
         lattice.from_site_index(site_index) for site_index in site_indices))
-    assert (site_indices == tuple(lattice.site_indices) == 
+    assert (site_indices == tuple(lattice.site_indices) ==
             tuple(range(x_dimension * y_dimension)))
 
     spin_orbital_composite_indices = tuple(itertools.product(
@@ -60,7 +60,7 @@ def test_hubbard_square_lattice(
             (x_dimension * (y_dimension - (not periodic))) +
             ((x_dimension - (not periodic)) * y_dimension))
     neighbor_pairs = tuple(lattice.site_pairs_iter('neighbor'))
-    assert (2 * len(tuple(lattice.site_pairs_iter('neighbor', False))) 
+    assert (2 * len(tuple(lattice.site_pairs_iter('neighbor', False)))
             == len(neighbor_pairs)
             == n_neighbor_pairs)
     for i, j in neighbor_pairs:
@@ -129,7 +129,7 @@ def test_hubbard_square_lattice_1xd(d):
                 0)
 
 
-@pytest.mark.parametrize('x,y', 
+@pytest.mark.parametrize('x,y',
         (random.sample(range(3, 10), 2) for _ in range(3)))
 def test_hubbard_square_lattice_neighbors(x, y):
     for periodic in (True, False):
@@ -155,10 +155,10 @@ def test_hubbard_square_lattice_2xd(d):
                 2 * len(tuple(lattice.neighbors_iter(False))) ==
                 n_neighbor_pairs)
         n_diagonal_neighbor_pairs = 4 * (d - (not periodic))
-        assert (len(tuple(lattice.diagonal_neighbors_iter())) == 
+        assert (len(tuple(lattice.diagonal_neighbors_iter())) ==
                 2 * len(tuple(lattice.diagonal_neighbors_iter(False))) ==
                 n_diagonal_neighbor_pairs)
-               
+
 
 def test_hubbard_square_lattice_2x2():
     for periodic in (True, False):
@@ -191,7 +191,7 @@ def test_spin_pairs_iter():
     with pytest.raises(ValueError):
         spinful_lattice.spin_pairs_iter(10)
 
-    assert (tuple(spinful_lattice.spin_pairs_iter(SpinPairs.ALL, True)) == 
+    assert (tuple(spinful_lattice.spin_pairs_iter(SpinPairs.ALL, True)) ==
             ((0, 0), (0, 1), (1, 0), (1, 1)))
     assert (tuple(spinful_lattice.spin_pairs_iter(SpinPairs.ALL, False)) ==
             ((0, 0), (0, 1), (1, 1)))
