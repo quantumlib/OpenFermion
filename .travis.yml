@@ -2,7 +2,7 @@ sudo: false
 language: python
 matrix:
   include:
-    os: linux
+  - os: linux
     env: NAME=format
     python: '3.6'
     install:
