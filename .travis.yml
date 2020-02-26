@@ -2,6 +2,13 @@ sudo: false
 language: python
 matrix:
   include:
+  - stage: quick_test
+    os: linux
+    env: NAME=format
+    python: '3.6'
+    install:
+      - cat dev_tools/conf/pip-list-dev-tools.txt | grep yapf | xargs pip install
+    script: check/format-incremental
   - os: linux
     python: "2.7"
     addons:
