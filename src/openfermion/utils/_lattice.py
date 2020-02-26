@@ -281,17 +281,15 @@ class HubbardSquareLattice(HubbardLattice):
     def n_horizontal_neighbor_pairs(self, ordered=True):
         """Number of horizontally neighboring (unordered) pairs of sites."""
         n_horizontal_edges_per_y = (
-                self.x_dimension -
-                (self.x_dimension <= 2 or not self.periodic))
+            self.x_dimension - (self.x_dimension <= 2 or not self.periodic))
         return (self.y_dimension * n_horizontal_edges_per_y *
                 (2 if ordered else 1))
 
 
     def n_vertical_neighbor_pairs(self, ordered=True):
         """Number of vertically neighboring (unordered) pairs of sites."""
-        n_vertical_edges_per_x = (
-                self.y_dimension -
-                (self.y_dimension <= 2 or not self.periodic))
+        n_vertical_edges_per_x = (self.y_dimension -
+                                  (self.y_dimension <= 2 or not self.periodic))
         return (self.x_dimension * n_vertical_edges_per_x *
                 (2 if ordered else 1))
 
@@ -307,9 +305,8 @@ class HubbardSquareLattice(HubbardLattice):
                 self.vertical_neighbors_iter(ordered))
 
     def diagonal_neighbors_iter(self, ordered=True):
-        n_sites_per_y = (
-                self.x_dimension -
-                (self.x_dimension <= 2 or not self.periodic))
+        n_sites_per_y = (self.x_dimension -
+                         (self.x_dimension <= 2 or not self.periodic))
         n_sites_per_x = (
                 self.y_dimension -
                 (self.y_dimension <= 2 or not self.periodic))
@@ -325,8 +322,7 @@ class HubbardSquareLattice(HubbardLattice):
 
     def horizontal_neighbors_iter(self, ordered=True):
         n_horizontal_edges_per_y = (
-                self.x_dimension -
-                (self.x_dimension <= 2 or not self.periodic))
+            self.x_dimension - (self.x_dimension <= 2 or not self.periodic))
         for x in range(n_horizontal_edges_per_y):
             for y in range(self.y_dimension):
                 i = self.to_site_index((x, y))
@@ -337,9 +333,8 @@ class HubbardSquareLattice(HubbardLattice):
 
 
     def vertical_neighbors_iter(self, ordered=True):
-        n_vertical_edges_per_x = (
-                self.y_dimension -
-                (self.y_dimension <= 2 or not self.periodic))
+        n_vertical_edges_per_x = (self.y_dimension -
+                                  (self.y_dimension <= 2 or not self.periodic))
         for y in range(n_vertical_edges_per_x):
             for x in range(self.x_dimension):
                 i = self.to_site_index((x, y))

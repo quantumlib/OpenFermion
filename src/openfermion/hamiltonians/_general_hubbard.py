@@ -35,14 +35,14 @@ def number_operator(i, coefficient=1., particle_hole_symmetry=False):
 
 
 def interaction_operator(i, j, coefficient=1., particle_hole_symmetry=False):
-    return (number_operator(i, coefficient,
-                            particle_hole_symmetry=particle_hole_symmetry) *
+    return (number_operator(
+        i, coefficient, particle_hole_symmetry=particle_hole_symmetry) *
             number_operator(j, particle_hole_symmetry=particle_hole_symmetry))
 
 
 def tunneling_operator(i, j, coefficient=1.):
-    return (FermionOperator(((i, 1), (j, 0)), coefficient) +
-            FermionOperator(((j, 1), (i, 0)), coefficient.conjugate()))
+    return (FermionOperator(((i, 1), (j, 0)), coefficient) + FermionOperator(
+        ((j, 1), (i, 0)), coefficient.conjugate()))
 
 def number_difference_operator(i, j, coefficient=1.):
     return number_operator(i, coefficient) - number_operator(j, coefficient)
@@ -288,8 +288,8 @@ class FermiHubbardModel:
         for parameter in parameters:
             if len(parameter) not in (3, 4):
                 raise ValueError('len(parameter) not in (3, 4)')
-            spin_pairs = (SpinPairs.ALL if len(parameter) < 4
-                                        else parameter[-1])
+            spin_pairs = (SpinPairs.ALL
+                          if len(parameter) < 4 else parameter[-1])
             parameter = InteractionParameter(*parameter[:3],
                                              spin_pairs=spin_pairs)
             self.lattice.validate_edge_type(parameter.edge_type)
@@ -351,8 +351,10 @@ class FermiHubbardModel:
                 for spin_index in self.lattice.spin_indices:
                     i = self.lattice.to_spin_orbital_index(
                             site_index, param.dof, spin_index)
-                    terms += number_operator(i, -param.coefficient,
-                            particle_hole_symmetry=self.particle_hole_symmetry)
+                    terms += number_operator(
+                        i,
+                        -param.coefficient,
+                        particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
 
 
@@ -369,7 +371,5 @@ class FermiHubbardModel:
 
 
     def hamiltonian(self):
-        return (self.tunneling_terms() +
-                self.interaction_terms() +
-                self.potential_terms() +
-                self.field_terms())
+        return (self.tunneling_terms() + self.interaction_terms() +
+                self.potential_terms() + self.field_terms())
