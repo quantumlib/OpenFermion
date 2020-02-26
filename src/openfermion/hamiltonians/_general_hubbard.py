@@ -44,6 +44,7 @@ def tunneling_operator(i, j, coefficient=1.):
     return (FermionOperator(((i, 1), (j, 0)), coefficient) + FermionOperator(
         ((j, 1), (i, 0)), coefficient.conjugate()))
 
+
 def number_difference_operator(i, j, coefficient=1.):
     return number_operator(i, coefficient) - number_operator(j, coefficient)
 

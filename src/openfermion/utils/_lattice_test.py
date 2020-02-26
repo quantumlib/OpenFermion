@@ -22,6 +22,7 @@ def test_spin():
     lattice = HubbardSquareLattice(3, 3)
     assert tuple(lattice.spin_indices) == (Spin.UP, Spin.DOWN)
 
+
 @pytest.mark.parametrize("x_dimension,y_dimension,n_dofs,spinless,periodic",
                          itertools.product(random.sample(range(3, 10), 3),
                                            random.sample(range(3, 10), 3),
@@ -205,6 +206,6 @@ def test_spin_pairs_iter():
             tuple(spinless_lattice.spin_pairs_iter(SpinPairs.SAME, True)) ==
             tuple(spinless_lattice.spin_pairs_iter(SpinPairs.SAME, False)) ==
             ((0, 0),))
-    assert (tuple(spinless_lattice.spin_pairs_iter(SpinPairs.DIFF, True)) ==
-            tuple(spinless_lattice.spin_pairs_iter(SpinPairs.DIFF, False)) ==
-            tuple())
+    assert (tuple(spinless_lattice.spin_pairs_iter(
+        SpinPairs.DIFF, True)) == tuple(
+            spinless_lattice.spin_pairs_iter(SpinPairs.DIFF, False)) == tuple())
