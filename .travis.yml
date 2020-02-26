@@ -2,7 +2,6 @@ sudo: false
 language: python
 matrix:
   include:
-  - stage: quick_test
     os: linux
     env: NAME=format
     python: '3.6'
