@@ -26,10 +26,10 @@ from openfermion.hamiltonians._general_hubbard import InteractionParameter
 def fermi_hubbard_from_general(x_dimension, y_dimension, tunneling, coulomb,
                   chemical_potential=0.,
                   periodic=True, spinless=False, magnetic_field=0):
-    lattice = HubbardSquareLattice(x_dimension, y_dimension, 
+    lattice = HubbardSquareLattice(x_dimension, y_dimension,
                              periodic=periodic, spinless=spinless)
     interaction_edge_type = 'neighbor' if spinless else 'onsite'
-    model = FermiHubbardModel(lattice, 
+    model = FermiHubbardModel(lattice,
             tunneling_parameters=(('neighbor', (0, 0), tunneling),),
             interaction_parameters=((interaction_edge_type, (0, 0), coulomb),),
             potential_parameters=((0, chemical_potential),),
@@ -38,7 +38,7 @@ def fermi_hubbard_from_general(x_dimension, y_dimension, tunneling, coulomb,
 
 
 @pytest.mark.parametrize(
-        'x_dimension,y_dimension,tunneling,coulomb,' + 
+        'x_dimension,y_dimension,tunneling,coulomb,' +
         'chemical_potential,spinless,periodic,magnetic_field',
         itertools.product(
             range(1, 4), range(1, 4),
@@ -61,7 +61,7 @@ def test_fermi_hubbard_square_special_general_equivalence(
 
 def random_parameters(lattice, probability=0.5, distinguish_edges=False):
     parameters = {}
-    edge_types = (('onsite', 'horizontal_neighbor', 'vertical_neighbor') if 
+    edge_types = (('onsite', 'horizontal_neighbor', 'vertical_neighbor') if
                   distinguish_edges else ('onsite', 'neighbor'))
 
     parameters['tunneling_parameters'] = [
@@ -75,7 +75,7 @@ def random_parameters(lattice, probability=0.5, distinguish_edges=False):
             (edge_type, dofs, random.uniform(-1, 1), spin_pairs)
             for edge_type in edge_types
             for spin_pairs in possible_spin_pairs
-            for dofs in lattice.dof_pairs_iter(edge_type == 'onsite' and 
+            for dofs in lattice.dof_pairs_iter(edge_type == 'onsite' and
                                                spin_pairs in (SpinPairs.ALL, SpinPairs.SAME))
             if random.random() <= probability]
 
@@ -86,7 +86,7 @@ def random_parameters(lattice, probability=0.5, distinguish_edges=False):
 
     if random.random() <= probability:
         parameters['magnetic_field'] = random.uniform(-1, 1)
-    
+
     return parameters
 
 
@@ -137,9 +137,9 @@ def test_fermi_hubbard_square_lattice_random_parameters(
         if len(spin_orbitals) == 2:
             (i, a, s), (ii, aa, ss) = (
                     lattice.from_spin_orbital_index(i) for i in spin_orbitals)
-            edge_type = ({(0, 0): 'onsite', (0, 1): 'vertical_neighbor', 
+            edge_type = ({(0, 0): 'onsite', (0, 1): 'vertical_neighbor',
                           (1, 0): 'horizontal_neighbor'}
-                         if distinguish_edges else 
+                         if distinguish_edges else
                          {(0, 0): 'onsite', (0, 1): 'neighbor',
                           (1, 0): 'neighbor'}
                         )[lattice.delta_mag(i, ii, True)]
@@ -150,7 +150,7 @@ def test_fermi_hubbard_square_lattice_random_parameters(
                 terms_per_parameter['tunneling', parameter] += 1
             else:
                 assert len(term) == 4
-                spin_pairs = (SpinPairs.ALL if lattice.spinless else 
+                spin_pairs = (SpinPairs.ALL if lattice.spinless else
                            (SpinPairs.SAME if s == ss else SpinPairs.DIFF))
                 parameter = (edge_type, dofs, coefficient, spin_pairs)
                 assert parameter in parameters['interaction_parameters']
@@ -164,7 +164,7 @@ def test_fermi_hubbard_square_lattice_random_parameters(
             if not lattice.spinless:
                 spin = (-1) ** spin_index
                 potential_coefficient -= (
-                        ((-1) ** spin_index) * 
+                        ((-1) ** spin_index) *
                          parameters.get('magnetic_field', 0))
             if not potential_coefficient:
                 continue
@@ -172,7 +172,7 @@ def test_fermi_hubbard_square_lattice_random_parameters(
             assert parameter in parameters['potential_parameters']
             terms_per_parameter['potential', parameter] += 1
     edge_type_to_n_site_pairs = {
-            'onsite': lattice.n_sites, 
+            'onsite': lattice.n_sites,
             'neighbor': lattice.n_neighbor_pairs(False),
             'vertical_neighbor': lattice.n_vertical_neighbor_pairs(False),
             'horizontal_neighbor': lattice.n_horizontal_neighbor_pairs(False)}
@@ -191,7 +191,7 @@ def test_fermi_hubbard_square_lattice_random_parameters(
                 expected_n_terms *= len(set(parameter.dofs))
             if not lattice.spinless:
                 assert parameter.spin_pairs != SpinPairs.ALL
-                if (parameter.edge_type == 'onsite' and 
+                if (parameter.edge_type == 'onsite' and
                       parameter.spin_pairs == SpinPairs.DIFF):
                     expected_n_terms *= len(set(parameter.dofs))
                 else:

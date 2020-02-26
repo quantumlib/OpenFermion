@@ -71,7 +71,7 @@ def dissolve(term):
 
 def make_parity_list(code):
     """Create the parity list from the decoder of the input code.
-    The output parity list has a similar structure as code.decoder. 
+    The output parity list has a similar structure as code.decoder.
 
     Args:
         code (BinaryCode): the code to extract the parity list from.
@@ -102,7 +102,7 @@ def binary_code_transform(hamiltonian, code):
     property N>n, when the Fermion basis is smaller than the fermionic Fock
     space. The binary_code_transform function can transform Fermion operators
     to qubit operators for custom- and qubit-saving mappings.
-    
+
     Note:
         Logic multi-qubit operators are decomposed into Pauli-strings (e.g.
         CPhase(1,2) = 0.5 * (1 + Z1 + Z2 - Z1 Z2 ) ), which might increase
