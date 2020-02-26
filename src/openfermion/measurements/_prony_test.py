@@ -13,7 +13,7 @@
 
 """ Tests for _prony.py"""
 import unittest
-from ._prony import prony, heisenberg_prony, _phase_difference, _match_phases
+from ._prony import prony
 import numpy
 
 
