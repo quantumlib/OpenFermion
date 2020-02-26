@@ -21,6 +21,13 @@ This plugin library integrates OpenFermion with Rigetti's
 [Forest](https://www.rigetti.com/forest) framework in order to compile
 quantum simulation algorithms to NISQ circuits using Forest.
 
+[PennyLane](http://github.com/XanaduAI/PennyLane)
+
+The `pennylane.qchem` module integrates OpenFermion with Xanadu's
+[PennyLane](https://pennylane.ai) framework, allowing optimization
+of quantum simulation algorithms using TensorFlow and PyTorch
+on quantum hardware.
+
 [SFOpenBoson](https://github.com/XanaduAI/SFOpenBoson)
 
 This plugin library integrates OpenFermion with Xanadu's
