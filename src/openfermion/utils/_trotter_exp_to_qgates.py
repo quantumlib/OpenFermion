@@ -117,7 +117,7 @@ def trotter_operator_grouping(hamiltonian,
 
     # First order trotter
     if trotter_order == 1:
-        for step in range(trotter_number):
+        for __ in range(trotter_number):
             for op in term_ordering:
                 yield QubitOperator(
                     op, hamiltonian.terms[op] * k_exp / trotter_number)
