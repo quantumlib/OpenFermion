@@ -68,7 +68,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
     For the sake of brevity the reader is encouraged to look up the
     expressions of other terms from the code below. The variables for edge
     operators are chosen according to the nomenclature defined above
-    (B_i and A_ij). A detailed description of these operators and the terms 
+    (B_i and A_ij). A detailed description of these operators and the terms
     of the electronic Hamiltonian are provided in (arXiv 1712.00446).
 
     Args:
@@ -116,7 +116,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
                             qubit_operator += transformed_term
                             continue
                         elif p != r and q < p:
-                                continue
+                            continue
 
 
                     # Handle the two-body terms.
@@ -167,7 +167,7 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
                             if min(r, s) < min(p, q):
                                 continue
                         elif p != r and q < p:
-                                continue
+                            continue
 
                     # Handle case of four unique indices.
                     if len(set([p, q, r, s])) == 4:
@@ -365,7 +365,7 @@ def edge_operator_aij(edge_matrix_indices, i, j):
     for edge_index in range(numpy.size(qubit_position_j[0, :])):
         if edge_matrix_indices[int(not(qubit_position_j[0, edge_index]))][
                 qubit_position_j[1, edge_index]] < i:
-                    operator += ((int(qubit_position_j[1, edge_index]), 'Z'),)
+            operator += ((int(qubit_position_j[1, edge_index]), 'Z'),)
     a_ij += QubitOperator(operator, 1)
     if j < i:
         a_ij = -1*a_ij
