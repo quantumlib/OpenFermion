@@ -499,7 +499,7 @@ def jw_sz_restrict_state(state, sz_value,
 
 def jw_get_ground_state_at_particle_number(sparse_operator, particle_number):
     """Compute ground energy and state at a specified particle number.
-    
+
     Assumes the Jordan-Wigner transform. The input operator should be Hermitian
     and particle-number-conserving.
 
