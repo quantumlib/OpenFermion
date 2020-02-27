@@ -215,7 +215,6 @@ def apply_constraints(operator, n_fermions):
     print(solution['message'])
     assert solution['success']
     solution_vector = solution['x']
-    objective = solution['fun'] ** 2
     print('Program terminated after %i iterations.' % solution['nit'])
 
     # Alternative bound.

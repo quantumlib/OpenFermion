@@ -163,7 +163,7 @@ def _reduce_terms(terms, stabilizer_list, manual_input, fixed_positions):
         fixed_positions = []
 
     # We need the index of the stabilizer to connect it to the fixed qubit.
-    for i, x in enumerate(stabilizer_list):
+    for i, __ in enumerate(stabilizer_list):
         selected_stab = list(stabilizer_list[0].terms)[0]
 
         if manual_input is False:

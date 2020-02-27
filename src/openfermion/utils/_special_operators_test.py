@@ -174,12 +174,11 @@ class MajoranaOperatorTest(unittest.TestCase):
         self.assertEqual(op1, correct)
 
     def test_none_term(self):
-        majorana_op = majorana_operator()
         self.assertEqual(majorana_operator(), FermionOperator())
 
     def test_bad_coefficient(self):
         with self.assertRaises(ValueError):
-            majorana_op = majorana_operator((1, 1), 'a')
+            majorana_operator((1, 1), 'a')
 
     def test_bad_term(self):
         with self.assertRaises(ValueError):

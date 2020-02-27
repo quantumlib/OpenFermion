@@ -852,7 +852,7 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
     # more than two excitations from the reference. These more than double
     # excited determinants are not included in the matrix representation (and
     # hence, will not be present in state_array).
-    for k, state in enumerate(maybe_valid_states):
+    for __, state in enumerate(maybe_valid_states):
         determinant = state_array[state, :]
         target_determinant = determinant.copy()
 

@@ -187,7 +187,6 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         dimension = 1
         wigner_seitz_radius = 10.0
         inverse_filling_fraction = 2
-        n_qubits = grid_length ** dimension
 
         # Generate the Hamiltonian.
         grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
@@ -201,7 +200,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, indices, __ = result
 
         for i in range(len(terms)):
             term = list(terms[i].terms)
@@ -229,7 +228,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, __, is_hopping = result
 
         for i in range(len(terms)):
             single_term = list(terms[i].terms)[0]
@@ -242,7 +241,6 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         dimension = 1
         wigner_seitz_radius = 10.0
         inverse_filling_fraction = 2
-        n_qubits = grid_length ** dimension
 
         # Generate the Hamiltonian.
         grid = hypercube_grid_with_given_wigner_seitz_radius_and_filling(
@@ -256,7 +254,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian, external_potential_at_end=True)
-        terms, indices, is_hopping = result
+        terms, indices, __ = result
 
         for i in range(len(terms)):
             term = list(terms[i].terms)
@@ -287,7 +285,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian, external_potential_at_end=True)
-        terms, indices, is_hopping = result
+        terms, __, is_hopping = result
 
         for i in range(len(terms)):
             single_term = list(terms[i].terms)[0]
@@ -317,7 +315,7 @@ class OrderedDualBasisTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_low_depth_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, __, __ = result
 
         self.assertEqual(len(terms), n_qubits * (n_qubits - 1))
 
