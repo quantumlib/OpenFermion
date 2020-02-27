@@ -67,7 +67,7 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
         # which we delete.
         if qubit_list[-1] is None:
             del qubit_list[-1]
-        
+
 
 def partition_iterator(qubit_list, partition_size, num_iterations=None):
     """Generator for a list of k-partitions of N qubits such that

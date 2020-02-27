@@ -30,7 +30,6 @@ class GeneralTest(unittest.TestCase):
     def test_ising_operator(self):
         equals_tester = EqualsTester(self)
 
-        group = [IsingOperator('Z0 Z3'), 
-                 IsingOperator([(0, 'Z'), (3, 'Z')])]
+        group = [IsingOperator('Z0 Z3'), IsingOperator([(0, 'Z'), (3, 'Z')])]
 
         equals_tester.add_equality_group(*group)

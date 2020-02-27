@@ -972,7 +972,7 @@ def load_molecular_hamiltonian(
     else:
         n_core_orbitals = (molecule.n_electrons - n_active_electrons) // 2
         occupied_indices = list(range(n_core_orbitals))
-        
+
     if n_active_orbitals is None:
         active_indices = None
     else:
