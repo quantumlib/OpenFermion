@@ -639,8 +639,7 @@ class MolecularData(object):
         except OSError:
             pass
 
-        shutil.move("{}.hdf5".format(tmp_name),
-                    "{}.hdf5".format(self.filename))
+        shutil.move("{}.hdf5".format(tmp_name), "{}.hdf5".format(self.filename))
 
     def load(self):
         geometry = []
