@@ -12,10 +12,9 @@
 
 """This module provides functions to interface with scipy.sparse."""
 from __future__ import absolute_import
-from future.utils import iteritems
-
-from functools import reduce
 import itertools
+from functools import reduce
+from future.utils import iteritems
 
 import numpy
 import numpy.linalg

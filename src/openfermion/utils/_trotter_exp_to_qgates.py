@@ -11,11 +11,11 @@
 #   limitations under the License.
 """Module to perform Trotter-Suzuki decompositions to output as circuits."""
 
+import collections
+import copy
 from openfermion.ops import QubitOperator
 from openfermion.utils import count_qubits
 import numpy
-import copy
-import collections
 
 """
 Description:

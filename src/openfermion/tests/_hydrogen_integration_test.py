@@ -14,9 +14,9 @@
 from __future__ import absolute_import
 
 import os
+import unittest
 import numpy
 import scipy.sparse
-import unittest
 
 from openfermion.config import *
 from openfermion.hamiltonians import *

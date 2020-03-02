@@ -18,7 +18,6 @@ import os
 import unittest
 import numpy
 
-
 import scipy
 from numpy.random import randn
 

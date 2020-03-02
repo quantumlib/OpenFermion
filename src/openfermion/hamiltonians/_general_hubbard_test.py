@@ -14,8 +14,8 @@
 
 from collections import defaultdict
 import itertools
-import pytest
 import random
+import pytest
 
 
 from openfermion.hamiltonians import fermi_hubbard, FermiHubbardModel

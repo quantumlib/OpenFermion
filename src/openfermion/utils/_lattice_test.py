@@ -16,7 +16,6 @@ import itertools
 import random
 import pytest
 
-
 from openfermion.utils import (HubbardSquareLattice, SpinPairs, Spin)
 
 def test_spin():

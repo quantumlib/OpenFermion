@@ -16,7 +16,6 @@ from __future__ import absolute_import, division
 import unittest
 import numpy
 
-
 from numpy.linalg import multi_dot
 from scipy.linalg import eigh, norm
 from scipy.sparse import csc_matrix

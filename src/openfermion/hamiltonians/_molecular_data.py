@@ -12,11 +12,12 @@
 
 """Class and functions to store quantum chemistry data."""
 
+import uuid
+import shutil
+import os
 import h5py
 import numpy
-import os
-import shutil
-import uuid
+
 
 from openfermion.config import *
 from openfermion.ops import InteractionOperator, InteractionRDM
