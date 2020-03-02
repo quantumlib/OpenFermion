@@ -54,14 +54,14 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
 
     def test_linearize_term(self):
         past_terms = set()
-        for term, __ in self.fermion_hamiltonian.terms.items():
+        for term, _ in self.fermion_hamiltonian.terms.items():
             index = linearize_term(term, self.n_orbitals)
             self.assertTrue(isinstance(index, int))
             self.assertFalse(index in past_terms)
             past_terms.add(index)
 
     def test_unlinearize_term_consistency(self):
-        for term, __ in self.fermion_hamiltonian.terms.items():
+        for term, _ in self.fermion_hamiltonian.terms.items():
             index = linearize_term(term, self.n_orbitals)
             new_term = unlinearize_term(index, self.n_orbitals)
             self.assertEqual(term, new_term)
@@ -71,7 +71,7 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
         operator = vector_to_operator(vector, self.n_orbitals)
         magnitude = 0.
         difference = operator - self.fermion_hamiltonian
-        for __, coefficient in difference.terms.items():
+        for _, coefficient in difference.terms.items():
             magnitude += abs(coefficient)
         self.assertAlmostEqual(0, magnitude)
 

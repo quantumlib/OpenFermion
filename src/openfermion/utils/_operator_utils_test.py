@@ -202,7 +202,7 @@ class ChemistOrderingTest(unittest.TestCase):
         random_operator = get_fermion_operator(
             random_interaction_operator(n_qubits))
         chemist_operator = chemist_ordered(random_operator)
-        for term, __ in chemist_operator.terms.items():
+        for term, _ in chemist_operator.terms.items():
             if len(term) == 2 or not len(term):
                 pass
             else:

@@ -352,6 +352,7 @@ def ordered_low_depth_terms_no_info(hamiltonian):
         terms which are products of at most two number operators (n_i or
         n_i n_j).
     """
+    count_qubits(hamiltonian)
     hamiltonian = normal_ordered(hamiltonian)
     terms = []
 

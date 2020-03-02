@@ -55,7 +55,7 @@ class LambdaNormTest(unittest.TestCase):
 
         # Third norm.
         third_norm = 0.
-        for __, coefficient in qubit_operator.terms.items():
+        for _, coefficient in qubit_operator.terms.items():
             third_norm += abs(coefficient)
 
         # Test.

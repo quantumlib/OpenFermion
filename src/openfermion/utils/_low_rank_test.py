@@ -284,7 +284,7 @@ class LowRankTest(unittest.TestCase):
         two_body_coefficients = molecule_interaction.two_body_tensor
 
         # Decompose.
-        eigenvalues, one_body_squares, __, __ = (
+        eigenvalues, one_body_squares, _, _ = (
             low_rank_two_body_decomposition(two_body_coefficients))
         rank = eigenvalues.size
         for l in range(rank):

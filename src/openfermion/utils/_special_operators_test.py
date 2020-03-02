@@ -174,6 +174,7 @@ class MajoranaOperatorTest(unittest.TestCase):
         self.assertEqual(op1, correct)
 
     def test_none_term(self):
+        majorana_operator()
         self.assertEqual(majorana_operator(), FermionOperator())
 
     def test_bad_coefficient(self):

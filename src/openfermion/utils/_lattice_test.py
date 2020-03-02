@@ -41,6 +41,10 @@ def test_hubbard_square_lattice(
     assert (site_indices == tuple(lattice.site_indices) == tuple(
         range(x_dimension * y_dimension)))
 
+    tuple(
+        itertools.product(range(x_dimension), range(y_dimension), range(n_dofs),
+                          range(n_spin_values)))
+
     spin_orbital_linear_indices = tuple(lattice.to_spin_orbital_index(*indices)
             for indices in itertools.product(
                 site_indices, range(n_dofs), range(n_spin_values)))

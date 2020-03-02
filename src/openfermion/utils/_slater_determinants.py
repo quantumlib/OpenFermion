@@ -185,6 +185,6 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
             of modes :math:`i` and :math:`j` by angles :math:`\theta`
             and :math:`\varphi`.
     """
-    decomposition, __, __ = givens_decomposition(slater_determinant_matrix)
+    decomposition, _, _ = givens_decomposition(slater_determinant_matrix)
     circuit_description = list(reversed(decomposition))
     return circuit_description

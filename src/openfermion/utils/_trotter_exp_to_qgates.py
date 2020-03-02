@@ -117,7 +117,7 @@ def trotter_operator_grouping(hamiltonian,
 
     # First order trotter
     if trotter_order == 1:
-        for __ in range(trotter_number):
+        for _ in range(trotter_number):
             for op in term_ordering:
                 yield QubitOperator(
                     op, hamiltonian.terms[op] * k_exp / trotter_number)
@@ -127,7 +127,7 @@ def trotter_operator_grouping(hamiltonian,
         if len(term_ordering) < 2:
             raise ValueError("Not enough terms in the Hamiltonian to do " +
                              "second order trotterization")
-        for __ in range(trotter_number):
+        for _ in range(trotter_number):
             for op in term_ordering[:-1]:
                 yield QubitOperator(
                     op, hamiltonian.terms[op] * k_exp / (2.0 * trotter_number))
@@ -150,7 +150,7 @@ def trotter_operator_grouping(hamiltonian,
         ham_temp = []
         for term in term_ordering:
             ham_temp.append(QubitOperator(term, ham.terms[term]))
-        for __ in range(trotter_number):
+        for _ in range(trotter_number):
             for returned_op in _third_order_trotter_helper(ham_temp):
                 yield returned_op
 

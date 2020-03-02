@@ -48,7 +48,7 @@ class FermionConstraintsTest(unittest.TestCase):
                 constraint, self.n_orbitals)
             constraint_value = self.fci_rdm.expectation(interaction_operator)
             self.assertAlmostEqual(constraint_value, 0.)
-            for term, __ in constraint.terms.items():
+            for term, _ in constraint.terms.items():
                 if len(term) == 2:
                     self.assertTrue(term[0][1])
                     self.assertFalse(term[1][1])
@@ -62,7 +62,7 @@ class FermionConstraintsTest(unittest.TestCase):
                 constraint, self.n_orbitals)
             constraint_value = self.fci_rdm.expectation(interaction_operator)
             self.assertAlmostEqual(constraint_value, 0.)
-            for term, __ in constraint.terms.items():
+            for term, _ in constraint.terms.items():
                 if len(term) == 2:
                     self.assertTrue(term[0][1])
                     self.assertFalse(term[1][1])

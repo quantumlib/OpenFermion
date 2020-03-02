@@ -364,7 +364,7 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
         restricted_jellium_hamiltonian = jw_number_restrict_operator(
             jellium_hamiltonian, 2)
 
-        __, ground_state = get_ground_state(restricted_jellium_hamiltonian)
+        _, ground_state = get_ground_state(restricted_jellium_hamiltonian)
 
         number_expectation = expectation(restricted_number, ground_state)
         self.assertAlmostEqual(number_expectation, 2)
@@ -531,7 +531,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, __ = get_ground_state(sparse_operator)
+            ground_energy, _ = get_ground_state(sparse_operator)
 
             # Compute the ground state using the circuit
             circuit_energy, circuit_state = jw_get_gaussian_state(
@@ -556,7 +556,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, __ = get_ground_state(sparse_operator)
+            ground_energy, _ = get_ground_state(sparse_operator)
 
             # Compute the ground state using the circuit
             circuit_energy, circuit_state = (
@@ -1095,7 +1095,7 @@ class ExpectationDualBasisOperatorWithPlaneWaveBasisState(unittest.TestCase):
                     FermionOperator('7^ 6^ 7 4', -3.7j) +
                     FermionOperator('3^ 7', 2.1))
         operator = normal_ordered(operator)
-
+        normal_ordered(fourier_transform(operator, self.grid3, spinless))
         expected = -0.2625 - 0.4625j
         # Calculated with expectation(get_sparse_operator(
         #    transformed_operator), self.hf_state3)
