@@ -17,8 +17,8 @@ import unittest
 import os
 
 import numpy
-import scipy
 import pytest
+import scipy
 
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops import (BosonOperator,

@@ -13,9 +13,9 @@
 
 import collections
 import copy
+import numpy
 from openfermion.ops import QubitOperator
 from openfermion.utils import count_qubits
-import numpy
 
 """
 Description:

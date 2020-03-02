@@ -14,8 +14,8 @@
 import os
 import unittest
 
-import h5py
 import numpy
+import h5py
 from openfermion.config import DATA_DIRECTORY, THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
 from openfermion.utils._rdm_mapping_functions import (

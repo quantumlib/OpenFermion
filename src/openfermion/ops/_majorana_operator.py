@@ -14,9 +14,8 @@
 
 from __future__ import division
 import itertools
-from future.utils import viewkeys
-
 import numpy
+from future.utils import viewkeys
 
 
 class MajoranaOperator:

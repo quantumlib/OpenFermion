@@ -14,13 +14,14 @@
 from __future__ import absolute_import
 import itertools
 from functools import reduce
-from future.utils import iteritems
-
-import numpy
 import numpy.linalg
+import numpy
+
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
+
+from future.utils import iteritems
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
