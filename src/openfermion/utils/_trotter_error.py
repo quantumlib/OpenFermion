@@ -11,9 +11,9 @@
 #   limitations under the License.
 
 """Module to compute the second order Trotter error."""
+from math import sqrt, ceil
 from future.utils import iteritems
 
-from math import sqrt, ceil
 from scipy.linalg import expm
 
 from openfermion.config import *

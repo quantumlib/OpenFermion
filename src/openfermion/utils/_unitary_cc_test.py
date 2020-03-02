@@ -14,9 +14,10 @@
 
 from __future__ import absolute_import
 
-import numpy
 import os
 import unittest
+import numpy
+
 
 import scipy
 from numpy.random import randn

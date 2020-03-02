@@ -13,8 +13,9 @@
 """Tests for Hubbard model lattice module."""
 
 import itertools
-import pytest
 import random
+import pytest
+
 
 from openfermion.utils import (HubbardSquareLattice, SpinPairs, Spin)
 
