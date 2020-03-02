@@ -162,7 +162,6 @@ class TrottQasmTest(unittest.TestCase):
         op_a = QubitOperator('X0', 1.)
         op_b = QubitOperator('Z2', 1.)
         op_c = QubitOperator('Z3', 1.)
-        op_a + op_b + op_c
         ham = op_a + op_b + op_c
         [op for op in trotter_operator_grouping(ham, trotter_order=2)]
         gold = []
