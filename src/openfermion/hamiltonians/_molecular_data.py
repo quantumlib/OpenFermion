@@ -15,9 +15,8 @@
 import uuid
 import shutil
 import os
-import h5py
 import numpy
-
+import h5py
 
 from openfermion.config import *
 from openfermion.ops import InteractionOperator, InteractionRDM

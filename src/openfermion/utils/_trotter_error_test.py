@@ -13,9 +13,9 @@
 """Tests for _trotter_error.py."""
 import unittest
 from math import sqrt
+import numpy
 from future.utils import iteritems
 
-import numpy
 from scipy.linalg import expm
 
 from openfermion.config import *

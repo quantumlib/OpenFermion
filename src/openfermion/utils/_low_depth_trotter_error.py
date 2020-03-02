@@ -12,9 +12,9 @@
 
 """Module to compute Trotter errors in the plane-wave dual basis."""
 from __future__ import absolute_import
+import numpy
 from future.utils import iteritems, itervalues
 
-import numpy
 import openfermion.hamiltonians
 
 from openfermion.ops import FermionOperator

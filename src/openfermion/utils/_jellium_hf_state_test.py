@@ -3,9 +3,9 @@ from __future__ import absolute_import
 
 from itertools import permutations
 import unittest
+import numpy
 from scipy.sparse import csr_matrix
 
-import numpy
 
 from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.transforms import get_sparse_operator
