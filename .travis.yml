@@ -15,6 +15,13 @@ matrix:
       - cat dev_tools/conf/pip-list-dev-tools.txt | grep pylint | xargs pip install
     script: check/pylint
   - os: linux
+    env: NAME=pytest-and-incremental-coverage
+    python: '3.6'
+    install:
+      - python -m pip install -r requirements.txt
+      - python -m pip install -r dev_tools/conf/pip-list-dev-tools.txt
+    script: check/pytest-and-incremental-coverage master --actually-quiet
+  - os: linux
     python: "2.7"
     addons:
       apt:
