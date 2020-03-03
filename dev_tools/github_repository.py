@@ -17,9 +17,8 @@ from typing import Optional
 
 class GithubRepository:
     """Details how to access a repository on github."""
-    def __init__(self,
-                 organization: str,
-                 name: str,
+
+    def __init__(self, organization: str, name: str,
                  access_token: Optional[str]) -> None:
         """
         Args:
@@ -36,5 +35,4 @@ class GithubRepository:
 
     def as_remote(self) -> str:
         """Returns a string identifying the location of this repository."""
-        return 'git@github.com:{}/{}.git'.format(self.organization,
-                                                 self.name)
+        return 'git@github.com:{}/{}.git'.format(self.organization, self.name)

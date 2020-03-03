@@ -40,10 +40,8 @@ def get_unhidden_ungenerated_python_files(directory: str) -> Iterable[str]:
                 yield os.path.join(dirpath, filename)
 
 
-def create_virtual_env(venv_path: str,
-                       requirements_paths: Iterable[str],
-                       python_path: str,
-                       verbose: bool) -> None:
+def create_virtual_env(venv_path: str, requirements_paths: Iterable[str],
+                       python_path: str, verbose: bool) -> None:
     """Creates a new virtual environment and then installs dependencies.
 
     Args:
@@ -106,8 +104,7 @@ def prepare_temporary_test_environment(
             verbose=verbose)
     else:
         env = git_env_tools.fetch_local_files(
-            destination_directory=destination_directory,
-            verbose=verbose)
+            destination_directory=destination_directory, verbose=verbose)
 
     if commit_ids_known_callback is not None:
         commit_ids_known_callback(env)
@@ -116,13 +113,9 @@ def prepare_temporary_test_environment(
     base_path = cast(str, env.destination_directory)
     env_path = os.path.join(base_path, env_name)
     req_path = os.path.join(base_path, 'requirements.txt')
-    dev_req_path = os.path.join(base_path,
-                                'dev_tools',
-                                'conf',
+    dev_req_path = os.path.join(base_path, 'dev_tools', 'conf',
                                 'pip-list-dev-tools.txt')
-    contrib_req_path = os.path.join(base_path,
-                                    'cirq',
-                                    'contrib',
+    contrib_req_path = os.path.join(base_path, 'cirq', 'contrib',
                                     'contrib-requirements.txt')
     rev_paths = [req_path, dev_req_path, contrib_req_path]
     create_virtual_env(venv_path=env_path,
