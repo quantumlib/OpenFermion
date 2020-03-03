@@ -19,6 +19,7 @@ matrix:
     python: '3.6'
     install:
       - python -m pip install -r requirements.txt
+      - python -m pip install -r examples/requirements.txt
       - python -m pip install -r dev_tools/conf/pip-list-dev-tools.txt
     script: check/pytest-and-incremental-coverage master --actually-quiet
   - os: linux
