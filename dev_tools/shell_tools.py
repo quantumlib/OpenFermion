@@ -28,15 +28,11 @@ from typing import (
 
 from collections.abc import AsyncIterable
 
-CommandOutput = NamedTuple(
-    "CommandOutput",
-    [
-        ('out', Optional[str]),
-        ('err', Optional[str]),
-        ('exit_code', int),
-    ]
-)
-
+CommandOutput = NamedTuple("CommandOutput", [
+    ('out', Optional[str]),
+    ('err', Optional[str]),
+    ('exit_code', int),
+])
 
 BOLD = 1
 DIM = 2
@@ -45,7 +41,7 @@ GREEN = 32
 YELLOW = 33
 
 
-def highlight(text: str, color_code: int, bold: bool=False) -> str:
+def highlight(text: str, color_code: int, bold: bool = False) -> str:
     """Wraps the given string with terminal color codes.
 
     Args:
@@ -59,7 +55,8 @@ def highlight(text: str, color_code: int, bold: bool=False) -> str:
     return '{}\033[{}m{}\033[0m'.format(
         '\033[1m' if bold else '',
         color_code,
-        text,)
+        text,
+    )
 
 
 class TeeCapture:
@@ -68,6 +65,7 @@ class TeeCapture:
     If out_pipe is None, the caller just wants to capture output without
     writing it to anything in particular.
     """
+
     def __init__(self, out_pipe: Optional[IO[str]] = None) -> None:
         self.out_pipe = out_pipe
 
@@ -124,8 +122,8 @@ async def _async_wait_for_process(
     return CommandOutput(output, err_output, process.returncode)
 
 
-def abbreviate_command_arguments_after_switches(
-        cmd: Tuple[str, ...]) -> Tuple[str, ...]:
+def abbreviate_command_arguments_after_switches(cmd: Tuple[str, ...]
+                                               ) -> Tuple[str, ...]:
     result = [cmd[0]]
     for i in range(1, len(cmd)):
         if not cmd[i].startswith('-'):
@@ -141,8 +139,7 @@ def run_cmd(*cmd: Optional[str],
             raise_on_fail: bool = True,
             log_run_to_stderr: bool = True,
             abbreviate_non_option_arguments: bool = False,
-            **kwargs
-            ) -> CommandOutput:
+            **kwargs) -> CommandOutput:
     """Invokes a subprocess and waits for it to finish.
 
     Args:
@@ -187,13 +184,10 @@ def run_cmd(*cmd: Optional[str],
         print('run:', cmd_desc, file=sys.stderr)
     result = asyncio.get_event_loop().run_until_complete(
         _async_wait_for_process(
-            asyncio.create_subprocess_exec(
-                *kept_cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                **kwargs),
-            out,
-            err))
+            asyncio.create_subprocess_exec(*kept_cmd,
+                                           stdout=asyncio.subprocess.PIPE,
+                                           stderr=asyncio.subprocess.PIPE,
+                                           **kwargs), out, err))
     if raise_on_fail and result[2]:
         raise subprocess.CalledProcessError(result[2], kept_cmd)
     return result
@@ -204,8 +198,7 @@ def run_shell(cmd: str,
               err: Optional[Union[TeeCapture, IO[str]]] = sys.stderr,
               raise_on_fail: bool = True,
               log_run_to_stderr: bool = True,
-              **kwargs
-              ) -> CommandOutput:
+              **kwargs) -> CommandOutput:
     """Invokes a shell command and waits for it to finish.
 
     Args:
@@ -242,13 +235,10 @@ def run_shell(cmd: str,
         print('shell:', cmd, file=sys.stderr)
     result = asyncio.get_event_loop().run_until_complete(
         _async_wait_for_process(
-            asyncio.create_subprocess_shell(
-                cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                **kwargs),
-            out,
-            err))
+            asyncio.create_subprocess_shell(cmd,
+                                            stdout=asyncio.subprocess.PIPE,
+                                            stderr=asyncio.subprocess.PIPE,
+                                            **kwargs), out, err))
     if raise_on_fail and result[2]:
         raise subprocess.CalledProcessError(result[2], cmd)
     return result
@@ -271,10 +261,9 @@ def output_of(*cmd: Optional[str], **kwargs) -> str:
          subprocess.CalledProcessError: The process returned a non-zero error
             code and raise_on_fail was set.
     """
-    result = cast(str, run_cmd(*cmd,
-                               log_run_to_stderr=False,
-                               out=TeeCapture(),
-                               **kwargs).out)
+    result = cast(
+        str,
+        run_cmd(*cmd, log_run_to_stderr=False, out=TeeCapture(), **kwargs).out)
 
     # Strip final newline.
     if result.endswith('\n'):

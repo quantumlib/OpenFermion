@@ -23,10 +23,10 @@ from dev_tools import shell_tools, github_repository
 
 class PreparedEnv:
     """Details of a local environment that has been prepared for use."""
+
     def __init__(self,
                  github_repo: Optional[github_repository.GithubRepository],
-                 actual_commit_id: Optional[str],
-                 compare_commit_id: str,
+                 actual_commit_id: Optional[str], compare_commit_id: str,
                  destination_directory: Optional[str],
                  virtual_env_path: Optional[str]) -> None:
         """Initializes a description of a prepared (or desired) environment.
@@ -90,11 +90,8 @@ class PreparedEnv:
         if self.repository is None or self.repository.access_token is None:
             return
 
-        print(repr(('report_status',
-                    context,
-                    state,
-                    description,
-                    target_url)), file=sys.stderr)
+        print(repr(('report_status', context, state, description, target_url)),
+              file=sys.stderr)
 
         payload = {
             'state': state,
@@ -104,12 +101,9 @@ class PreparedEnv:
         if target_url is not None:
             payload['target_url'] = target_url
 
-        url = (
-            "https://api.github.com/repos/{}/{}/statuses/{}?access_token={}"
-            .format(self.repository.organization,
-                    self.repository.name,
-                    self.actual_commit_id,
-                    self.repository.access_token))
+        url = ("https://api.github.com/repos/{}/{}/statuses/{}?access_token={}".
+               format(self.repository.organization, self.repository.name,
+                      self.actual_commit_id, self.repository.access_token))
 
         response = requests.post(url, json=payload)
 
@@ -124,12 +118,11 @@ class PreparedEnv:
             List[str]: File paths of changed files, relative to the git repo
                 root.
         """
-        out = shell_tools.output_of(
-            'git',
-            'diff',
-            '--name-only',
-            self.compare_commit_id,
-            self.actual_commit_id,
-            '--',
-            cwd=self.destination_directory)
+        out = shell_tools.output_of('git',
+                                    'diff',
+                                    '--name-only',
+                                    self.compare_commit_id,
+                                    self.actual_commit_id,
+                                    '--',
+                                    cwd=self.destination_directory)
         return [e for e in out.split('\n') if e.strip()]
