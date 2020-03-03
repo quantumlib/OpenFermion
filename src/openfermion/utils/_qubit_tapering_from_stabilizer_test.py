@@ -60,7 +60,7 @@ class TaperingTest(unittest.TestCase):
 
     def test_function_errors(self):
         """Test error of main function."""
-        hamiltonian, spectrum = lih_hamiltonian()
+        hamiltonian, _ = lih_hamiltonian()
         qubit_hamiltonian = jordan_wigner(hamiltonian)
         stab1 = QubitOperator('Z0 Z2', -1.0)
         stab2 = QubitOperator('Z1 Z3', -1.0)
@@ -221,15 +221,14 @@ class TaperingTest(unittest.TestCase):
         stab1 = QubitOperator('Z0 Z2', -1.0)
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
-        red_ham1, fixed_pos1 = _reduce_terms(terms=qubit_ham,
-                                             stabilizer_list=[stab1, stab2],
-                                             manual_input=False,
-                                             fixed_positions=[])
-        red_ham2, fixed_pos2 = _reduce_terms_keep_length(
-            terms=qubit_ham,
-            stabilizer_list=[stab1, stab2],
-            manual_input=False,
-            fixed_positions=[])
+        red_ham1, _ = _reduce_terms(terms=qubit_ham,
+                                    stabilizer_list=[stab1, stab2],
+                                    manual_input=False,
+                                    fixed_positions=[])
+        red_ham2, _ = _reduce_terms_keep_length(terms=qubit_ham,
+                                                stabilizer_list=[stab1, stab2],
+                                                manual_input=False,
+                                                fixed_positions=[])
         red_eigspct1 = eigenspectrum(red_ham1)
         red_eigspct2 = eigenspectrum(red_ham2)
 
@@ -243,15 +242,14 @@ class TaperingTest(unittest.TestCase):
         stab1 = QubitOperator('Z0 Z2', -1.0)
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
-        red_ham1, fixed_pos1 = _reduce_terms(terms=qubit_ham,
-                                             stabilizer_list=[stab1, stab2],
-                                             manual_input=True,
-                                             fixed_positions=[0, 1])
-        red_ham2, fixed_pos2 = _reduce_terms_keep_length(
-            terms=qubit_ham,
-            stabilizer_list=[stab1, stab2],
-            manual_input=True,
-            fixed_positions=[0, 1])
+        red_ham1, _ = _reduce_terms(terms=qubit_ham,
+                                    stabilizer_list=[stab1, stab2],
+                                    manual_input=True,
+                                    fixed_positions=[0, 1])
+        red_ham2, _ = _reduce_terms_keep_length(terms=qubit_ham,
+                                                stabilizer_list=[stab1, stab2],
+                                                manual_input=True,
+                                                fixed_positions=[0, 1])
         red_eigspct1 = eigenspectrum(red_ham1)
         red_eigspct2 = eigenspectrum(red_ham2)
 

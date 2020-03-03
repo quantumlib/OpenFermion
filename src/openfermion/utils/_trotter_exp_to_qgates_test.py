@@ -71,8 +71,6 @@ class TrottQasmTest(unittest.TestCase):
         # Test 3rd-order helper, H=A+B
         op_a = QubitOperator('X0 Z1 Y2', 0.1)
         op_b = QubitOperator('Z2', 0.1)
-        a = 'X0 Z1 Y2'
-        b = 'Z2'
 
         gold = []
         gold.append(op_a * (7./24))
@@ -165,9 +163,7 @@ class TrottQasmTest(unittest.TestCase):
         op_b = QubitOperator('Z2', 1.)
         op_c = QubitOperator('Z3', 1.)
         ham = op_a + op_b + op_c
-
-        res = [op for op in trotter_operator_grouping(ham, trotter_order=2)]
-
+        [op for op in trotter_operator_grouping(ham, trotter_order=2)]
         gold = []
         gold.append(op_a * 0.5)
         gold.append(op_b * 0.5)
@@ -258,7 +254,7 @@ Rx -1.5707963267948966 3'''
         self.assertEqual(qasmstr, strcorrect)
 
     def test_qasm_string_Controlled_XYZ_ancilla_list(self):
-                # Testing for correct QASM string output w/ Pauli-{X,Y,Z}
+        # Testing for correct QASM string output w/ Pauli-{X,Y,Z}
         # QubitOperator('X0 Z1 Y3', 0.5) and a controlled ancilla
 
         # Number of qubits
