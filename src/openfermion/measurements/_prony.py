@@ -18,7 +18,14 @@ import numpy
 
 
 def prony(signal):
-    """
+    """Estimates amplitudes and phases of a sparse signal using Prony's method
+    Single-ancilla quantum phase estimation returns a signal
+    g(k)=sum (aj*exp(i*k*phij)), where aj and phij are the amplitudes
+    and corresponding eigenvalues of the unitary whose phases we wish
+    to estimate. When more than one amplitude is involved, Prony's method
+    provides a simple estimation tool, which achieves near-Heisenberg-limited
+    scaling (error scaling as N^{-1/2}K^{-3/2}).
+
     Args:
         signal(1d complex array): the signal to fit
 
