@@ -224,3 +224,8 @@ class TestPairingWithSymmetries(unittest.TestCase):
             count += 1
             self.assertEqual(len(pairing), 4)
         self.assertEqual(count, 3)
+
+    def test_four_symmetries(self):
+        for num_fermions in [5,8,9]:
+            for pairing in pair_within_simultaneously_symmetric(num_fermions, 3):
+                pass
