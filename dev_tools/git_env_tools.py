@@ -25,8 +25,7 @@ def get_repo_root() -> str:
     return shell_tools.output_of('git', 'rev-parse', '--show-toplevel')
 
 
-def _git_fetch_for_comparison(remote: str,
-                              actual_branch: str,
+def _git_fetch_for_comparison(remote: str, actual_branch: str,
                               compare_branch: str,
                               verbose: bool) -> prepared_env.PreparedEnv:
     """Fetches two branches including their common ancestor.
@@ -52,14 +51,13 @@ def _git_fetch_for_comparison(remote: str,
     for depth in [10, 100, 1000, None]:
         depth_str = '' if depth is None else '--depth={}'.format(depth)
 
-        shell_tools.run_cmd(
-            'git',
-            'fetch',
-            None if verbose else '--quiet',
-            remote,
-            actual_branch,
-            depth_str,
-            log_run_to_stderr=verbose)
+        shell_tools.run_cmd('git',
+                            'fetch',
+                            None if verbose else '--quiet',
+                            remote,
+                            actual_branch,
+                            depth_str,
+                            log_run_to_stderr=verbose)
         actual_id = shell_tools.output_of('git', 'rev-parse', 'FETCH_HEAD')
 
         shell_tools.run_cmd('git',
@@ -72,11 +70,8 @@ def _git_fetch_for_comparison(remote: str,
         base_id = shell_tools.output_of('git', 'rev-parse', 'FETCH_HEAD')
 
         try:
-            base_id = shell_tools.output_of(
-                'git',
-                'merge-base',
-                actual_id,
-                base_id)
+            base_id = shell_tools.output_of('git', 'merge-base', actual_id,
+                                            base_id)
             break
         except subprocess.CalledProcessError:
             # No common ancestor. We need to dig deeper.
@@ -88,8 +83,7 @@ def _git_fetch_for_comparison(remote: str,
 def fetch_github_pull_request(destination_directory: str,
                               repository: github_repository.GithubRepository,
                               pull_request_number: int,
-                              verbose: bool
-                              ) -> prepared_env.PreparedEnv:
+                              verbose: bool) -> prepared_env.PreparedEnv:
     """Uses content from github to create a dir for testing and comparisons.
 
     Args:
@@ -107,36 +101,32 @@ def fetch_github_pull_request(destination_directory: str,
     os.chdir(destination_directory)
     print('chdir', destination_directory, file=sys.stderr)
 
-    shell_tools.run_cmd(
-        'git',
-        'init',
-        None if verbose else '--quiet',
-        out=sys.stderr)
+    shell_tools.run_cmd('git',
+                        'init',
+                        None if verbose else '--quiet',
+                        out=sys.stderr)
     result = _git_fetch_for_comparison(remote=repository.as_remote(),
                                        actual_branch=branch,
                                        compare_branch='master',
                                        verbose=verbose)
-    shell_tools.run_cmd(
-        'git',
-        'branch',
-        None if verbose else '--quiet',
-        'compare_commit',
-        result.compare_commit_id,
-        log_run_to_stderr=verbose)
-    shell_tools.run_cmd(
-        'git',
-        'checkout',
-        None if verbose else '--quiet',
-        '-b',
-        'actual_commit',
-        result.actual_commit_id,
-        log_run_to_stderr=verbose)
-    return prepared_env.PreparedEnv(
-        github_repo=repository,
-        actual_commit_id=result.actual_commit_id,
-        compare_commit_id=result.compare_commit_id,
-        destination_directory=destination_directory,
-        virtual_env_path=None)
+    shell_tools.run_cmd('git',
+                        'branch',
+                        None if verbose else '--quiet',
+                        'compare_commit',
+                        result.compare_commit_id,
+                        log_run_to_stderr=verbose)
+    shell_tools.run_cmd('git',
+                        'checkout',
+                        None if verbose else '--quiet',
+                        '-b',
+                        'actual_commit',
+                        result.actual_commit_id,
+                        log_run_to_stderr=verbose)
+    return prepared_env.PreparedEnv(github_repo=repository,
+                                    actual_commit_id=result.actual_commit_id,
+                                    compare_commit_id=result.compare_commit_id,
+                                    destination_directory=destination_directory,
+                                    virtual_env_path=None)
 
 
 def fetch_local_files(destination_directory: str,
@@ -157,22 +147,21 @@ def fetch_local_files(destination_directory: str,
         if verbose:
             print('chdir', staging_dir, file=sys.stderr)
 
-        shell_tools.run_cmd(
-            'git',
-            'add',
-            '--all',
-            out=sys.stderr,
-            log_run_to_stderr=verbose)
+        shell_tools.run_cmd('git',
+                            'add',
+                            '--all',
+                            out=sys.stderr,
+                            log_run_to_stderr=verbose)
 
-        shell_tools.run_cmd(
-            'git',
-            'commit',
-            '-m', 'working changes',
-            '--allow-empty',
-            '--no-gpg-sign',
-            None if verbose else '--quiet',
-            out=sys.stderr,
-            log_run_to_stderr=verbose)
+        shell_tools.run_cmd('git',
+                            'commit',
+                            '-m',
+                            'working changes',
+                            '--allow-empty',
+                            '--no-gpg-sign',
+                            None if verbose else '--quiet',
+                            out=sys.stderr,
+                            log_run_to_stderr=verbose)
 
         cur_commit = shell_tools.output_of('git', 'rev-parse', 'HEAD')
 
@@ -191,24 +180,21 @@ def fetch_local_files(destination_directory: str,
     finally:
         shutil.rmtree(staging_dir, ignore_errors=True)
 
-    shell_tools.run_cmd(
-        'git',
-        'branch',
-        None if verbose else '--quiet',
-        'compare_commit',
-        result.compare_commit_id,
-        log_run_to_stderr=verbose)
-    shell_tools.run_cmd(
-        'git',
-        'checkout',
-        None if verbose else '--quiet',
-        '-b',
-        'actual_commit',
-        result.actual_commit_id,
-        log_run_to_stderr=verbose)
-    return prepared_env.PreparedEnv(
-        github_repo=None,
-        actual_commit_id=result.actual_commit_id,
-        compare_commit_id=result.compare_commit_id,
-        destination_directory=destination_directory,
-        virtual_env_path=None)
+    shell_tools.run_cmd('git',
+                        'branch',
+                        None if verbose else '--quiet',
+                        'compare_commit',
+                        result.compare_commit_id,
+                        log_run_to_stderr=verbose)
+    shell_tools.run_cmd('git',
+                        'checkout',
+                        None if verbose else '--quiet',
+                        '-b',
+                        'actual_commit',
+                        result.actual_commit_id,
+                        log_run_to_stderr=verbose)
+    return prepared_env.PreparedEnv(github_repo=None,
+                                    actual_commit_id=result.actual_commit_id,
+                                    compare_commit_id=result.compare_commit_id,
+                                    destination_directory=destination_directory,
+                                    virtual_env_path=None)
