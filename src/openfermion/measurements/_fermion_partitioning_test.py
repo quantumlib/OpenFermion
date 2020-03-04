@@ -17,7 +17,8 @@ import numpy
 from ._fermion_partitioning import (pair_within, pair_within_simultaneously,
                                     pair_within_simultaneously_binned,
                                     pair_within_simultaneously_symmetric,
-                                    _get_padding, _parallel_iter, _asynchronous_iter)
+                                    _get_padding, _parallel_iter,
+                                    _asynchronous_iter)
 
 
 class TestPairWithin(unittest.TestCase):
@@ -64,7 +65,7 @@ class TestPairWithin(unittest.TestCase):
                 print(pairing)
             all_pairs = [(i, j)
                          for i in range(num_indices)
-                         for j in range(i+1, num_indices)]
+                         for j in range(i + 1, num_indices)]
             checksum = [0 for _ in all_pairs]
             for pairing in pairings_list:
                 for j, pair in enumerate(all_pairs):
@@ -120,7 +121,7 @@ class TestIterators(unittest.TestCase):
     def test_asynchronous_three(self):
         lists = [[0, 1, 2], [0, 1, 2], [0, 1, 2], [0, 1, 2]]
         test_matrices = [
-            [numpy.zeros((3,3)) for j in range(4)] for k in range(4)
+            [numpy.zeros((3, 3)) for j in range(4)] for k in range(4)
         ]
         iterator = _asynchronous_iter(lists)
         count = 0
@@ -142,7 +143,7 @@ class TestIterators(unittest.TestCase):
         lists = [[x for x in range(4)] for y in range(4)]
         iterator = _asynchronous_iter(lists)
         count = 0
-        for next_tuple in iterator:
+        for _ in iterator:
             count += 1
         self.assertEqual(count, 25)
 
@@ -158,7 +159,7 @@ class TestIterators(unittest.TestCase):
 
         iterators = [iter1(), iter2()]
         count = 0
-        for res in _parallel_iter(iterators):
+        for _ in _parallel_iter(iterators):
             count += 1
         self.assertEqual(count, 5)
 
@@ -238,6 +239,6 @@ class TestPairingWithSymmetries(unittest.TestCase):
 
     def test_four_symmetries(self):
         for num_fermions in [5, 8, 9]:
-            for pairing in pair_within_simultaneously_symmetric(
+            for _ in pair_within_simultaneously_symmetric(
                     num_fermions, 3):
                 pass

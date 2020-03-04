@@ -10,10 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-
 from openfermion.measurements import partition_iterator
 import numpy
-
 
 MAX_LOOPS = 1e6
 
@@ -47,8 +45,8 @@ def pair_within(labels):
     if len(labels) % 4 == 1:
         frag1.append(None)
 
-    for j, (pairing1,
-            pairing2) in enumerate(zip(pair_within(frag1), pair_within(frag2))):
+    for (pairing1,
+         pairing2) in zip(pair_within(frag1), pair_within(frag2)):
 
         if len(labels) % 4 == 1:
             if pairing1[-1] is None:
@@ -166,7 +164,7 @@ def _gen_pairings_between_partitions(parta, partb):
         num_iter = max(
             len(splitb[b]) - 1 + len(splitb[b]) % 2,
             len(splita[a]) - 1 + len(splita[a]) % 2)
-        for j in range(num_iter):
+        for _ in range(num_iter):
             pair_a, _ = next(gen_a)
             pair_b, _ = next(gen_b)
             gen_ab = pair_between(splita[1 - a], splitb[1 - b])
@@ -246,7 +244,7 @@ def _get_padding(num_bins, bin_size):
 
 def _asynchronous_iter(iterators, flatten=False):
     '''
-    Iterates over a set of K iterators with max L elements to 
+    Iterates over a set of K iterators with max L elements to
     generate all pairs between them in O(L^2 + 2L log(L) + log(L)^2),
     assuming L>>K. When appropriate, calls a different iterator
     optimized for small lists.
@@ -282,8 +280,8 @@ def _asynchronous_iter(iterators, flatten=False):
     for j in range(new_size):
         for l in range(new_size):
             next_res = [
-                iterator_lists[k][(j*k+l) % new_size]
-                for k in range(num_lists-1)
+                iterator_lists[k][(j * k + l) % new_size]
+                for k in range(num_lists - 1)
             ]
             next_res.append(iterator_lists[-1][j])
             if flatten:
@@ -382,8 +380,8 @@ def pair_within_simultaneously_symmetric(num_fermions, num_symmetries):
     '''
     binned_Majoranas = [[
         index
-        for index in range(2*num_fermions)
-         if index % 2**num_symmetries == bin_index
+        for index in range(2 * num_fermions)
+        if index % 2**num_symmetries == bin_index
     ]
                         for bin_index in range(2**num_symmetries)]
 
