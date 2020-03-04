@@ -139,7 +139,7 @@ def checksum_code(n_modes, odd):
     is defined such that it yields the total occupation number for a given basis
     state. A Checksum code with odd weight will encode all states with odd
     occupation number. This code saves one qubit: n_qubits = n_modes - 1.
-        
+
     Args:
         n_modes (int): number of modes
         odd (int or bool): 1 (True) or 0 (False), if odd,
@@ -153,7 +153,7 @@ def checksum_code(n_modes, odd):
 
 def jordan_wigner_code(n_modes):
     """ The Jordan-Wigner transform as binary code.
-        
+
     Args:
         n_modes (int): number of modes
 
@@ -166,7 +166,7 @@ def jordan_wigner_code(n_modes):
 def bravyi_kitaev_code(n_modes):
     """ The Bravyi-Kitaev transform as binary code. The implementation
     follows arXiv:1208.5986.
-        
+
     Args:
         n_modes (int): number of modes
 
@@ -180,7 +180,7 @@ def parity_code(n_modes):
     """ The parity transform (arXiv:1208.5986) as binary code. This code is
     very similar to the Jordan-Wigner transform, but with long update strings
     instead of parity strings. It does not save qubits: n_qubits = n_modes.
-        
+
     Args:
         n_modes (int): number of modes
 
@@ -200,7 +200,7 @@ def weight_one_binary_addressing_code(exponent):
     of two. It encodes all possible vectors with Hamming weight 1, which
     corresponds to all states with total occupation one. The amount of
     qubits saved here is maximal: for a given argument 'exponent', we find
-    n_modes = 2 ^ exponent, n_qubits = exponent. 
+    n_modes = 2 ^ exponent, n_qubits = exponent.
 
     Note:
         This code is highly non-linear and might produce a lot of terms.
@@ -258,16 +258,16 @@ def weight_two_segment_code():
 def interleaved_code(modes):
     """ Linear code that reorders orbitals from even-odd to up-then-down.
     In up-then-down convention, one can append two instances of the same
-    code 'c' in order to have two symmetric subcodes that are symmetric for 
+    code 'c' in order to have two symmetric subcodes that are symmetric for
     spin-up and -down modes: ' c + c '.
-    In even-odd, one can concatenate with the interleaved_code 
+    In even-odd, one can concatenate with the interleaved_code
     to have the same result:' interleaved_code * (c + c)'.
     This code changes the order of modes from (0, 1 , 2, ... , modes-1 )
-    to (0, modes/2, 1 modes/2+1, ... , modes-1, modes/2 - 1).  
-    n_qubits = n_modes. 
-    
-    Args: modes (int): number of modes, must be even 
-    
+    to (0, modes/2, 1 modes/2+1, ... , modes-1, modes/2 - 1).
+    n_qubits = n_modes.
+
+    Args: modes (int): number of modes, must be even
+
     Returns (BinaryCode): code that interleaves orbitals
     """
     if modes % 2 == 1:

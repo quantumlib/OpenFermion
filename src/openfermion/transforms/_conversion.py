@@ -306,7 +306,7 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator,
                                      n_qubits=None,
                                      ignore_incompatible_terms=False):
     r"""Convert a FermionOperator to a DiagonalCoulombHamiltonian.
-    
+
     Args:
         fermion_operator(FermionOperator): The operator to convert.
         n_qubits(int): Optionally specify the total number of qubits in the
