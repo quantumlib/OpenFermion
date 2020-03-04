@@ -9,8 +9,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
-
 """An implementation of Prony's method (or the matrix pencil method)
 This fits a signal f(t) to sum_i=1^M a_i gamma_i^t, where a_i, gamma_i
 are complex numbers
