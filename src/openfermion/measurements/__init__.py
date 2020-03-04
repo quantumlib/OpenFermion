@@ -22,8 +22,7 @@ from ._qubit_partitioning import (binary_partition_iterator,
                                   partition_iterator,
                                   pauli_string_iterator)
 
-from ._fermion_partitioning import (pair_within,
-									pair_between,
-									pair_within_simultaneously,
-									pair_within_simultaneously_binned,
-									pair_within_simultaneously_symmetric)
+from ._fermion_partitioning import (pair_within, pair_between,
+                                    pair_within_simultaneously,
+                                    pair_within_simultaneously_binned,
+                                    pair_within_simultaneously_symmetric)

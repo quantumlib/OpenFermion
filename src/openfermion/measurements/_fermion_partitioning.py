@@ -33,7 +33,7 @@ def pair_within(labels):
     if len(labels) == 0:
         return
     if len(labels) == 1:
-        yield (labels[0], )
+        yield (labels[0],)
         return
 
     # Determine fragment size
@@ -47,25 +47,23 @@ def pair_within(labels):
     if len(labels) % 4 == 1:
         frag1.append(None)
 
-    for j, (pairing1, pairing2) in enumerate(zip(
-            pair_within(frag1), pair_within(frag2))):
+    for j, (pairing1,
+            pairing2) in enumerate(zip(pair_within(frag1), pair_within(frag2))):
 
         if len(labels) % 4 == 1:
             if pairing1[-1] is None:
                 yield pairing1[:-1] + pairing2
             else:
-                extra_pair = ((pairing1[-1], pairing2[-1]), )
+                extra_pair = ((pairing1[-1], pairing2[-1]),)
                 zero_index, = [
-                    pair[0] for pair in pairing1[:-1]
-                    if pair[1] is None]
+                    pair[0] for pair in pairing1[:-1] if pair[1] is None
+                ]
                 pairing1 = tuple(
-                    pair for pair in pairing1[:-1]
-                    if pair[1] is not None)
-                yield (pairing1 + pairing2[:-1] +
-                       extra_pair + (zero_index, ))
+                    pair for pair in pairing1[:-1] if pair[1] is not None)
+                yield (pairing1 + pairing2[:-1] + extra_pair + (zero_index,))
 
         elif len(labels) % 4 == 2:
-            extra_pair = ((pairing1[-1], pairing2[-1]), )
+            extra_pair = ((pairing1[-1], pairing2[-1]),)
             yield pairing1[:-1] + pairing2[:-1] + extra_pair
 
         elif len(labels) % 4 == 3:
@@ -101,17 +99,17 @@ def pair_between(frag1, frag2, start_offset=0):
             pairing = tuple(
                 (frag1[(index + index_offset) % len(frag1)], frag2[index])
                 for index in range(num_pairs))
-            pairing += tuple(frag1[index % len(frag1)]
-                             for index in range(len(frag2) + index_offset,
-                                                len(frag1) + index_offset))
+            pairing += tuple(frag1[index % len(frag1)] for index in range(
+                len(frag2) + index_offset,
+                len(frag1) + index_offset))
         else:
             pairing = tuple(
                 (frag1[index], frag2[(index + index_offset) % len(frag2)])
                 for index in range(num_pairs))
         if len(frag2) > len(frag1):
-            pairing += tuple(frag2[index % len(frag2)]
-                             for index in range(len(frag1) + index_offset,
-                                                len(frag2) + index_offset))
+            pairing += tuple(frag2[index % len(frag2)] for index in range(
+                len(frag1) + index_offset,
+                len(frag2) + index_offset))
 
         yield pairing
 
@@ -126,7 +124,8 @@ def _loop_iterator(func, *params):
         looped = True
         num_loops += 1
         if num_loops > MAX_LOOPS:
-            raise ValueError('Number of loops exceeded maximum allowed.')  # pragma: no cover
+            raise ValueError(
+                'Number of loops exceeded maximum allowed.')  # pragma: no cover
         generator = func(*params)
 
 
@@ -138,38 +137,39 @@ def _gen_partitions(labels, min_size=4):
         labels(list): list to be partitioned
     '''
     if len(labels) == 1:
-        yield (labels, )  # pragma: no cover
+        yield (labels,)  # pragma: no cover
         return  # pragma: no cover
-    partitions = (labels[:len(labels)//2], labels[len(labels)//2:])
+    partitions = (labels[:len(labels) // 2], labels[len(labels) // 2:])
     while True:
         yield partitions
         if len(partitions[-1]) < min_size:
             return
         new_partitions = []
         for part in partitions:
-            new_partitions.append(part[:len(part)//2])
-            new_partitions.append(part[len(part)//2:])
+            new_partitions.append(part[:len(part) // 2])
+            new_partitions.append(part[len(part) // 2:])
         partitions = new_partitions
 
 
 def _gen_pairings_between_partitions(parta, partb):
     if len(parta + partb) < 5:
         yield (tuple(parta), tuple(partb))
-    splita = [parta[:len(parta)//2], parta[len(parta)//2:]]
-    splitb = [partb[:len(partb)//2], partb[len(partb)//2:]]
+    splita = [parta[:len(parta) // 2], parta[len(parta) // 2:]]
+    splitb = [partb[:len(partb) // 2], partb[len(partb) // 2:]]
     for a, b in ((0, 0), (0, 1), (1, 0), (1, 1)):
         if max(len(splita[a]), len(splitb[b])) < 2:
             continue
-        if min(len(splita[1-a]), len(splitb[1-b])) < 1:
+        if min(len(splita[1 - a]), len(splitb[1 - b])) < 1:
             continue
         gen_a = _loop_iterator(pair_within, splita[a])
         gen_b = _loop_iterator(pair_within, splitb[b])
-        num_iter = max(len(splitb[b]) - 1 + len(splitb[b]) % 2,
-                       len(splita[a]) - 1 + len(splita[a]) % 2)
+        num_iter = max(
+            len(splitb[b]) - 1 + len(splitb[b]) % 2,
+            len(splita[a]) - 1 + len(splita[a]) % 2)
         for j in range(num_iter):
             pair_a, _ = next(gen_a)
             pair_b, _ = next(gen_b)
-            gen_ab = pair_between(splita[1-a], splitb[1-b])
+            gen_ab = pair_between(splita[1 - a], splitb[1 - b])
             for pair_ab in gen_ab:
                 yield pair_a + pair_b + pair_ab
 
@@ -191,14 +191,16 @@ def pair_within_simultaneously(labels):
         return
 
     for partition in _gen_partitions(labels):
-        generator_list = [_loop_iterator(pair_within, partition[j])
-                          for j in range(len(partition))]
+        generator_list = [
+            _loop_iterator(pair_within, partition[j])
+            for j in range(len(partition))
+        ]
         for dummy1 in range(len(partition[-2]) - 1 + len(partition[-2]) % 2):
             pairing = tuple()
             for generator in generator_list[::2]:
                 pairing = pairing + next(generator)[0]
-            for dummy2 in range(len(partition[-1]) - 1 +
-                                len(partition[-1]) % 2):
+            for dummy2 in range(
+                    len(partition[-1]) - 1 + len(partition[-1]) % 2):
                 pairing2 = tuple(pairing)
                 for generator in generator_list[1::2]:
                     pairing2 = pairing2 + next(generator)[0]
@@ -209,9 +211,9 @@ def pair_within_simultaneously(labels):
 
         for partition_pairing in pair_within(partition):
             generator_list = [
-                _loop_iterator(_gen_pairings_between_partitions,
-                               part_a, part_b)
-                for part_a, part_b in partition_pairing]
+                _loop_iterator(_gen_pairings_between_partitions, part_a, part_b)
+                for part_a, part_b in partition_pairing
+            ]
             while True:
                 pairing = tuple()
                 looped = True
@@ -233,7 +235,7 @@ def _get_padding(num_bins, bin_size):
     trial_size = bin_size
     while True:
         success_flag = True
-        for divisor in range(2, num_bins-1):
+        for divisor in range(2, num_bins - 1):
             if trial_size % divisor == 0:
                 success_flag = False
                 break
@@ -261,12 +263,14 @@ def _asynchronous_iter(iterators, flatten=False):
 
     # Edge cases
     if list_size == 1:
-        next_res = [iterator[0] if iterator else None for iterator in iterator_lists]
+        next_res = [
+            iterator[0] if iterator else None for iterator in iterator_lists
+        ]
         if flatten:
             next_res = [x for result in next_res if result for x in result]
         yield tuple(next_res)
         return
-    elif numpy.log2(num_lists+1) * list_size**2 < num_lists**2:
+    elif numpy.log2(num_lists + 1) * list_size**2 < num_lists**2:
         for next_res in _asynchronous_iter_small_lists(iterator_lists, flatten):
             yield next_res
         return
@@ -277,7 +281,10 @@ def _asynchronous_iter(iterators, flatten=False):
 
     for j in range(new_size):
         for l in range(new_size):
-            next_res = [iterator_lists[k][(j*k+l) % new_size] for k in range(num_lists-1)]
+            next_res = [
+                iterator_lists[k][(j*k+l) % new_size]
+                for k in range(num_lists-1)
+            ]
             next_res.append(iterator_lists[-1][j])
             if flatten:
                 next_res = [x for result in next_res if result for x in result]
@@ -297,9 +304,9 @@ def _asynchronous_iter_small_lists(iterator_lists, flatten=False):
         next_result(list of results): the joined/concatenated set of results.
     '''
     for partitions in partition_iterator(iterator_lists, 2):
-        for res in _asynchronous_iter([
-                _parallel_iter(partition, flatten)
-                for partition in partitions], flatten):
+        for res in _asynchronous_iter(
+            [_parallel_iter(partition, flatten) for partition in partitions],
+                flatten):
             yield res
 
 
@@ -319,7 +326,7 @@ def _parallel_iter(iterators, flatten=False):
 
     while iterators:
         next_result = []
-        for j in range(len(iterators)-1, -1, -1):
+        for j in range(len(iterators) - 1, -1, -1):
             temp = next(iterators[j], None)
             if temp is None:
                 del iterators[j]
@@ -360,9 +367,9 @@ def pair_within_simultaneously_binned(binned_Majoranas):
         iterators = []
         for bin_index in range(num_bins):
             if bin_index < bin_index ^ bin_gap:
-                iterators.append(pair_between(
-                    binned_Majoranas[bin_index],
-                    binned_Majoranas[bin_index ^ bin_gap]))
+                iterators.append(
+                    pair_between(binned_Majoranas[bin_index],
+                                 binned_Majoranas[bin_index ^ bin_gap]))
         for pairing in _asynchronous_iter(iterators, flatten=True):
             yield pairing
 
@@ -373,10 +380,12 @@ def pair_within_simultaneously_symmetric(num_fermions, num_symmetries):
     divides the set of Majoranas in two, indexed by their binary
     digits.
     '''
-    binned_Majoranas = [
-        [index for index in range(2*num_fermions)
-         if index % 2**num_symmetries == bin_index]
-        for bin_index in range(2**num_symmetries)]
+    binned_Majoranas = [[
+        index
+        for index in range(2*num_fermions)
+         if index % 2**num_symmetries == bin_index
+    ]
+                        for bin_index in range(2**num_symmetries)]
 
     for pairing in pair_within_simultaneously_binned(binned_Majoranas):
         yield pairing

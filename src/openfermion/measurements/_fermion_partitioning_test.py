@@ -14,11 +14,10 @@
 """Tests for _qubit_partitioning.py"""
 import unittest
 import numpy
-from ._fermion_partitioning import (
-    pair_within, pair_within_simultaneously,
-    pair_within_simultaneously_binned,
-    pair_within_simultaneously_symmetric,
-    _get_padding, _parallel_iter, _asynchronous_iter)
+from ._fermion_partitioning import (pair_within, pair_within_simultaneously,
+                                    pair_within_simultaneously_binned,
+                                    pair_within_simultaneously_symmetric,
+                                    _get_padding, _parallel_iter, _asynchronous_iter)
 
 
 class TestPairWithin(unittest.TestCase):
@@ -31,16 +30,14 @@ class TestPairWithin(unittest.TestCase):
 
     def test_pair(self):
         labels = [0, 1]
-        pairings_list = [
-            pairing for pairing in pair_within(labels)]
+        pairings_list = [pairing for pairing in pair_within(labels)]
         self.assertEqual(len(pairings_list), 1)
         self.assertEqual(len(pairings_list[0]), 1)
         self.assertEqual(pairings_list[0][0], (0, 1))
 
     def test_threeway(self):
         labels = [0, 1, 2]
-        pairings_list = [
-            pairing for pairing in pair_within(labels)]
+        pairings_list = [pairing for pairing in pair_within(labels)]
         self.assertEqual(len(pairings_list), 3)
         all_pairs = [(0, 1), (0, 2), (1, 2)]
         checksum = [0, 0, 0]
@@ -58,15 +55,15 @@ class TestPairWithin(unittest.TestCase):
             print()
             print(num_indices)
             labels = [j for j in range(num_indices)]
-            pairings_list = [
-                pairing for pairing in pair_within(labels)]
+            pairings_list = [pairing for pairing in pair_within(labels)]
             if num_indices % 2 == 0:
-                self.assertEqual(len(pairings_list), num_indices-1)
+                self.assertEqual(len(pairings_list), num_indices - 1)
             else:
                 self.assertEqual(len(pairings_list), num_indices)
             for pairing in pairings_list:
                 print(pairing)
-            all_pairs = [(i, j) for i in range(num_indices)
+            all_pairs = [(i, j)
+                         for i in range(num_indices)
                          for j in range(i+1, num_indices)]
             checksum = [0 for _ in all_pairs]
             for pairing in pairings_list:
@@ -86,9 +83,9 @@ class TestPairWithinSimultaneously(unittest.TestCase):
             print('Trying with num_indices = {}'.format(num_indices))
             labels = [j for j in range(num_indices)]
             all_quads = [((i, j, k, l)) for i in range(num_indices)
-                         for j in range(i+1, num_indices)
-                         for k in range(j+1, num_indices)
-                         for l in range(k+1, num_indices)]
+                         for j in range(i + 1, num_indices)
+                         for k in range(j + 1, num_indices)
+                         for l in range(k + 1, num_indices)]
             checksum = [0 for pp2 in all_quads]
             for pairing in pair_within_simultaneously(labels):
                 print(pairing)
@@ -96,8 +93,8 @@ class TestPairWithinSimultaneously(unittest.TestCase):
                     for n1 in range(3):
                         n2 = (n1 + 1) % 3
                         n3 = (n1 + 2) % 3
-                        pair1 = (quad[0], quad[n1+1])
-                        pair2 = (quad[min(n2, n3)+1], quad[max(n2, n3) + 1])
+                        pair1 = (quad[0], quad[n1 + 1])
+                        pair2 = (quad[min(n2, n3) + 1], quad[max(n2, n3) + 1])
                         if pair1 in pairing and pair2 in pairing:
                             checksum[j] += 1
 
@@ -122,7 +119,9 @@ class TestIterators(unittest.TestCase):
 
     def test_asynchronous_three(self):
         lists = [[0, 1, 2], [0, 1, 2], [0, 1, 2], [0, 1, 2]]
-        test_matrices = [[numpy.zeros((3,3)) for j in range(4)] for k in range(4)]
+        test_matrices = [
+            [numpy.zeros((3,3)) for j in range(4)] for k in range(4)
+        ]
         iterator = _asynchronous_iter(lists)
         count = 0
         for next_tuple in iterator:
@@ -134,10 +133,10 @@ class TestIterators(unittest.TestCase):
 
         self.assertEqual(count, 9)
         for j in range(4):
-            for k in range(j+1, 4):
+            for k in range(j + 1, 4):
                 for i1 in range(3):
                     for i2 in range(3):
-                        self.assertEqual(test_matrices[j][k][i1,i2], 1)
+                        self.assertEqual(test_matrices[j][k][i1, i2], 1)
 
     def test_asynchronous_four(self):
         lists = [[x for x in range(4)] for y in range(4)]
@@ -148,12 +147,15 @@ class TestIterators(unittest.TestCase):
         self.assertEqual(count, 25)
 
     def test_parallel(self):
+
         def iter1():
             for j in range(4):
                 yield j
+
         def iter2():
             for j in range(5):
                 yield j
+
         iterators = [iter1(), iter2()]
         count = 0
         for res in _parallel_iter(iterators):
@@ -161,12 +163,15 @@ class TestIterators(unittest.TestCase):
         self.assertEqual(count, 5)
 
     def test_parallel_flatten(self):
+
         def iter1():
             for j in range(4):
                 yield [j]
+
         def iter2():
             for j in range(5):
                 yield [j]
+
         iterators = [iter1(), iter2()]
         for res in _parallel_iter(iterators, flatten=False):
             self.assertTrue(isinstance(res[0], list))
@@ -232,6 +237,7 @@ class TestPairingWithSymmetries(unittest.TestCase):
         self.assertEqual(count, 3)
 
     def test_four_symmetries(self):
-        for num_fermions in [5,8,9]:
-            for pairing in pair_within_simultaneously_symmetric(num_fermions, 3):
+        for num_fermions in [5, 8, 9]:
+            for pairing in pair_within_simultaneously_symmetric(
+                    num_fermions, 3):
                 pass
