@@ -126,7 +126,7 @@ def _loop_iterator(func, *params):
         looped = True
         num_loops += 1
         if num_loops > MAX_LOOPS:
-            raise ValueError('Number of loops exceeded maximum allowed.')
+            raise ValueError('Number of loops exceeded maximum allowed.')  # pragma: no cover
         generator = func(*params)
 
 
@@ -138,8 +138,8 @@ def _gen_partitions(labels, min_size=4):
         labels(list): list to be partitioned
     '''
     if len(labels) == 1:
-        yield (labels, )
-        return
+        yield (labels, )  # pragma: no cover
+        return  # pragma: no cover
     partitions = (labels[:len(labels)//2], labels[len(labels)//2:])
     while True:
         yield partitions

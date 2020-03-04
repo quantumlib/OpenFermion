@@ -23,6 +23,12 @@ from ._fermion_partitioning import (
 
 class TestPairWithin(unittest.TestCase):
 
+    def test_zero(self):
+        count = 0
+        for _ in pair_within([]):
+            count += 1
+        self.assertEqual(count, 0)
+
     def test_pair(self):
         labels = [0, 1]
         pairings_list = [
