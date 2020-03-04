@@ -17,7 +17,6 @@ are complex numbers
 """
 import scipy
 import numpy
-from openfermion.config import EQ_TOLERANCE
 
 
 def prony(signal):
@@ -33,21 +32,18 @@ def prony(signal):
     """
 
     num_freqs = len(signal) // 2
-    hankel0 = scipy.linalg.hankel(
-        c=signal[:num_freqs], r=signal[num_freqs-1:-1])
-    hankel1 = scipy.linalg.hankel(
-        c=signal[1:num_freqs+1], r=signal[num_freqs:])
-
+    hankel0 = scipy.linalg.hankel(c=signal[:num_freqs],
+                                  r=signal[num_freqs - 1:-1])
+    hankel1 = scipy.linalg.hankel(c=signal[1:num_freqs + 1],
+                                  r=signal[num_freqs:])
     shift_matrix = scipy.linalg.lstsq(hankel0.T, hankel1.T)[0]
     phases = numpy.linalg.eigvals(shift_matrix.T)
 
-    generation_matrix = numpy.array([
-        [phase**k for phase in phases]
-        for k in range(len(signal))])
+    generation_matrix = numpy.array(
+        [[phase**k for phase in phases] for k in range(len(signal))])
     amplitudes = scipy.linalg.lstsq(generation_matrix, signal)[0]
 
-    amplitudes, phases = zip(
-            *sorted(zip(amplitudes, phases),
-                    key=lambda x: numpy.abs(x[0]), reverse=True))
+    amplitudes, phases = zip(*sorted(
+        zip(amplitudes, phases), key=lambda x: numpy.abs(x[0]), reverse=True))
 
     return numpy.array(amplitudes), numpy.array(phases)
