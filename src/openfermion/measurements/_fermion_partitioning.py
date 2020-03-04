@@ -45,8 +45,7 @@ def pair_within(labels):
     if len(labels) % 4 == 1:
         frag1.append(None)
 
-    for (pairing1,
-         pairing2) in zip(pair_within(frag1), pair_within(frag2)):
+    for (pairing1, pairing2) in zip(pair_within(frag1), pair_within(frag2)):
 
         if len(labels) % 4 == 1:
             if pairing1[-1] is None:
@@ -335,6 +334,7 @@ def _parallel_iter(iterators, flatten=False):
                     next_result = [temp] + next_result
         if next_result:
             yield tuple(next_result)
+
 
 def pair_within_simultaneously_binned(binned_Majoranas):
     '''Generates a pairing of Majoranas that covers all 2-RDM elements

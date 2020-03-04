@@ -9,8 +9,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
-
 """Tests for _qubit_partitioning.py"""
 import unittest
 import numpy
@@ -102,6 +100,7 @@ class TestPairWithinSimultaneously(unittest.TestCase):
             for j in range(len(checksum)):
                 print(all_quads[j], checksum[j])
                 self.assertGreaterEqual(checksum[j], 1)
+
 
 class TestPadding(unittest.TestCase):
 
@@ -239,6 +238,5 @@ class TestPairingWithSymmetries(unittest.TestCase):
 
     def test_four_symmetries(self):
         for num_fermions in [5, 8, 9]:
-            for _ in pair_within_simultaneously_symmetric(
-                    num_fermions, 3):
+            for _ in pair_within_simultaneously_symmetric(num_fermions, 3):
                 pass
