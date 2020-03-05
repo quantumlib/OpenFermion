@@ -23,8 +23,8 @@ class PronyTest:
         assert (len(amplitudes) == 5)
         assert (len(phases) == 5)
         for j in range(5):
-            assert numpy.testing.assert_allclose(amplitudes[j], 0)
-            assert numpy.testing.assert_allclose(phases[j], 0)
+            numpy.testing.assert_allclose(amplitudes[j], 0)
+            numpy.testing.assert_allclose(phases[j], 0)
 
     def test_signal(self):
         x_vec = numpy.linspace(0, 1, 11)
@@ -39,23 +39,23 @@ class PronyTest:
         assert (len(phases) == 5)
         for a, p in zip(amplitudes, phases):
             print(a, numpy.angle(p))
-        assert numpy.testing.assert_allclose(amplitudes[0], 0.5, atol=0.001)
-        assert numpy.testing.assert_allclose(amplitudes[1], 0.3, atol=0.001)
-        assert numpy.testing.assert_allclose(amplitudes[2], 0.15, atol=0.001)
-        assert numpy.testing.assert_allclose(amplitudes[3], 0.1, atol=0.001)
-        assert numpy.testing.assert_allclose(amplitudes[4], 0.05, atol=0.001)
-        assert numpy.testing.assert_allclose(numpy.angle(phases[0]),
+        numpy.testing.assert_allclose(amplitudes[0], 0.5, atol=1e-9)
+        numpy.testing.assert_allclose(amplitudes[1], 0.3, atol=1e-9)
+        numpy.testing.assert_allclose(amplitudes[2], 0.15, atol=1e-9)
+        numpy.testing.assert_allclose(amplitudes[3], 0.1, atol=1e-9)
+        numpy.testing.assert_allclose(amplitudes[4], 0.05, atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[0]),
                                              0.3,
-                                             atol=0.001)
-        assert numpy.testing.assert_allclose(numpy.angle(phases[1]),
+                                             atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[1]),
                                              0.5,
-                                             atol=0.001)
-        assert numpy.testing.assert_allclose(numpy.angle(phases[2]),
+                                             atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[2]),
                                              0.15,
-                                             atol=0.001)
-        assert numpy.testing.assert_allclose(numpy.angle(phases[3]),
+                                             atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[3]),
                                              0.4,
-                                             atol=0.001)
-        assert numpy.testing.assert_allclose(numpy.angle(phases[4]),
+                                             atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[4]),
                                              0.12,
-                                             atol=0.001)
+                                             atol=1e-9)
