@@ -11,9 +11,9 @@
 #   limitations under the License.
 
 import itertools
-import numpy
 import os
 import unittest
+import numpy
 
 from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData

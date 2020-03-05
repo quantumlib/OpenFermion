@@ -9,6 +9,9 @@ enable=
     anomalous-backslash-in-string,
     trailing-whitespace,
     unused-variable,
+    wrong-import-order,
+    wrong-import-position,
+    yield-outside-function
 
 # Ignore long lines containing urls or pylint directives.
 ignore-long-lines=^(.*#\w*pylint: disable.*|\s*(# )?<?https?://\S+>?)$

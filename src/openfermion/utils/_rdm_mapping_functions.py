@@ -11,8 +11,8 @@
 #   limitations under the License.
 """Mapping RDMs to other RDMs"""
 from __future__ import division
-import numpy
 from itertools import product
+import numpy
 
 
 def kronecker_delta(i, j):

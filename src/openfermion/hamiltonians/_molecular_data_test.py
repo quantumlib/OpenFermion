@@ -12,9 +12,9 @@
 
 """Tests for molecular_data."""
 
+import unittest
 import numpy.random
 import scipy.linalg
-import unittest
 
 from openfermion.config import *
 from openfermion.hamiltonians import jellium_model, make_atom
