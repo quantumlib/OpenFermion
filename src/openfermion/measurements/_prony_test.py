@@ -44,18 +44,8 @@ class PronyTest:
         numpy.testing.assert_allclose(amplitudes[2], 0.15, atol=1e-9)
         numpy.testing.assert_allclose(amplitudes[3], 0.1, atol=1e-9)
         numpy.testing.assert_allclose(amplitudes[4], 0.05, atol=1e-9)
-        numpy.testing.assert_allclose(numpy.angle(phases[0]),
-                                             0.3,
-                                             atol=1e-9)
-        numpy.testing.assert_allclose(numpy.angle(phases[1]),
-                                             0.5,
-                                             atol=1e-9)
-        numpy.testing.assert_allclose(numpy.angle(phases[2]),
-                                             0.15,
-                                             atol=1e-9)
-        numpy.testing.assert_allclose(numpy.angle(phases[3]),
-                                             0.4,
-                                             atol=1e-9)
-        numpy.testing.assert_allclose(numpy.angle(phases[4]),
-                                             0.12,
-                                             atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[0]), 0.3, atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[1]), 0.5, atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[2]), 0.15, atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[3]), 0.4, atol=1e-9)
+        numpy.testing.assert_allclose(numpy.angle(phases[4]), 0.12, atol=1e-9)
