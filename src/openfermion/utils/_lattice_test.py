@@ -34,7 +34,9 @@ def test_hubbard_square_lattice(
             n_dofs=n_dofs, spinless=spinless, periodic=periodic)
 
     n_spin_values = 2 - spinless
-    sites = tuple((x, y) for y, x in itertools.product(range(y_dimension), range(x_dimension)))
+    sites = tuple(
+        (x, y)
+        for y, x in itertools.product(range(y_dimension), nge(x_dimension)))
     site_indices = tuple(lattice.to_site_index(site) for site in sites)
     assert (sites == tuple(
         lattice.from_site_index(site_index) for site_index in site_indices))
@@ -63,7 +65,8 @@ def test_hubbard_square_lattice(
     for i, j in neighbor_pairs:
         assert sum(lattice.delta_mag(i, j, True)) == 1
 
-    assert len(tuple(lattice.dof_pairs_iter(False))) == n_dofs * (n_dofs + 1) / 2
+    assert len(tuple(lattice.dof_pairs_iter(False))) == \
+        n_dofs * (n_dofs + 1) / 2
     assert len(tuple(lattice.dof_pairs_iter(True))) == n_dofs * (n_dofs - 1) / 2
     spin_pairs_all = tuple(lattice.spin_pairs_iter())
     assert len(spin_pairs_all) == n_spin_values ** 2

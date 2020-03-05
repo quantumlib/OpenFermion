@@ -45,11 +45,13 @@ def geometry_from_pubchem(name, structure=None):
             pubchempy_molecule = pubchempy.get_compounds(name, 'name',
                                                         record_type='2d')
     else:
-        raise ValueError('Incorrect value for the argument structure=%s' % structure)
+        raise ValueError('Incorrect value for the argument structure=%s' %
+                         structure)
 
     # Check if pubchempy_molecule is an empty list or None
     if not pubchempy_molecule:
-        print('Unable to find structure info in the PubChem database for the specified molecule "%s".' % name)
+        print('Unable to find structure info in the PubChem database"
+         "for the specified molecule %s." % name)
         return None
 
     pubchempy_geometry = \

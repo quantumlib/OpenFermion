@@ -966,7 +966,8 @@ def group_into_tensor_product_basis_sets(operator, seed=None):
             sub_operator = sub_operators.pop(basis)
             sub_operator += QubitOperator(term, coefficient)
             additions = tuple(op for op in term if op not in basis)
-            basis = tuple(sorted(basis + additions, key=lambda factor: factor[0]))
+            basis = tuple(
+                sorted(basis + additions, key=lambda factor: factor[0]))
             sub_operators[basis] = sub_operator
 
     return sub_operators
@@ -977,8 +978,8 @@ def _commutes(operator1,operator2):
 
 def _non_fully_commuting_terms(hamiltonian):
     terms = list([QubitOperator(key) for key in hamiltonian.terms.keys()])
-    T = [
-    ]  # will contain the subset of terms that do not commute universally in terms
+    T = []  # will contain the subset of terms that do not
+    # commute universally in terms
     for i in range(len(terms)):
         if any(not _commutes(terms[i],terms[j]) for j in range(len(terms))):
             T.append(terms[i])
@@ -997,12 +998,16 @@ def is_contextual(hamiltonian):
         boolean indicating whether hamiltonian is contextual or not.
     """
     T = _non_fully_commuting_terms(hamiltonian)
-    # Search in T for triples in which exactly one pair anticommutes; if any exist, hamiltonian is contextual.
+    # Search in T for triples in which exactly one pair anticommutes;
+    # if any exist, hamiltonian is contextual.
     for i in range(
             len(T)
-    ):  # WLOG, i indexes the operator that (putatively) commutes with both others.
+    ):  # WLOG, i indexes the operator that (putatively)
+        # commutes with both others.
         for j in range(len(T)):
             for k in range(j + 1, len(T)):  # Ordering of j, k does not matter.
-                if i!=j and i!=k and _commutes(T[i],T[j]) and _commutes(T[i],T[k]) and not _commutes(T[j],T[k]):
+                if i!=j and i!=k and _commutes(T[i],T[j]) \
+                    and _commutes(T[i],T[k]) and \
+                        not _commutes(T[j],T[k]):
                     return True
     return False

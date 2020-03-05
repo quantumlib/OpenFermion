@@ -120,8 +120,10 @@ class JordanWignerSparseTest(unittest.TestCase):
         qubit_operator = QubitOperator.zero()
         vec_expected = numpy.zeros(8)
 
-        self.assertTrue(numpy.allclose(
-            get_linear_qubit_operator_diagonal(qubit_operator, 3), vec_expected))
+        self.assertTrue(
+            numpy.allclose(
+                get_linear_qubit_operator_diagonal(qubit_operator, 3),
+                vec_expected))
 
     def test_get_linear_qubit_operator_diagonal_zero(self):
         """Get zero diagonals from get_linear_qubit_operator_diagonal."""

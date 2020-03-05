@@ -31,8 +31,8 @@ def prony(signal):
         signal(1d complex array): the signal to fit
 
     Returns:
-        amplitudes(list of complex values): the amplitudes a_i, in descending order
-            by their complex magnitude
+        amplitudes(list of complex values): the amplitudes a_i,
+        in descending order by their complex magnitude
         phases(list of complex values): the complex frequencies gamma_i,
             correlated with amplitudes.
     """

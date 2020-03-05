@@ -211,7 +211,8 @@ class FermiHubbardModel:
 
         where
 
-            - :math:`(a, b)` is the pair of degrees of freedom given by ``dofs``;
+            - :math:`(a, b)` is the pair of degrees
+            of freedom given by ``dofs``;
             - :math:`E^{(\mathrm{edge type})}` is the set of ordered pairs of
               site indices returned by ``lattice.site_pairs_iter(edge_type, a !=
               b)``; and
@@ -222,25 +223,31 @@ class FermiHubbardModel:
         optional, and will default to ``SpinPairs.ALL``. In any case, it is
         ignored for spinless lattices.
 
-        For example, in the spinful model if `dofs` indicates distinct degrees of freedom then the parameter corresponds to the terms
+        For example, in the spinful model if `dofs`
+        indicates distinct degrees of freedom then the
+        parameter corresponds to the terms
 
         .. math::
-
-            U \sum_{(i, j) \in E^{(\mathrm{edge type})}} \sum_{(\sigma, \sigma')}
-            n_{i, a, \sigma} n_{j, b, \sigma'}
+        U \sum_{(i, j) \in E^{(\mathrm{edge type})}} \sum_{(\sigma, \sigma')}
+        n_{i, a, \sigma} n_{j, b, \sigma'}
 
         where
 
-            - :math:`(a, b)` is the pair of degrees of freedom given by ``dofs``;
+            - :math:`(a, b)` is the pair of degrees of
+            freedom given by ``dofs``;
             - :math:`E^{(\mathrm{edge type})}` is the set of ordered pairs of
               site indices returned by ``lattice.site_pairs_iter(edge_type)``;
             - :math:`U` is the ``coefficient``; and
             - :math:`(\sigma, \sigma')` runs over
-                - all four possible pairs of spins if `spin_pairs == SpinPairs.ALL`,
-                - :math:`\{(\uparrow, \downarrow), (\downarrow, \uparrow)\}` if `spin_pairs == SpinPairs.DIFF`, and
-                - :math:`\{(\uparrow, \uparrow), (\downarrow, \downarrow)\}' if 'spin_pairs == SpinPairs.SAME`.
+                - all four possible pairs of spins 
+                if `spin_pairs == SpinPairs.ALL`,
+                - :math:`\{(\uparrow, \downarrow), (\downarrow, \uparrow)\}`
+                if `spin_pairs == SpinPairs.DIFF`, and
+                - :math:`\{(\uparrow, \uparrow), (\downarrow, \downarrow)\}'
+                if 'spin_pairs == SpinPairs.SAME`.
 
-        Each potential parameter is a tuple ``(dof, coefficient)``. For example, in the spinful model, it corresponds to the terms
+        Each potential parameter is a tuple ``(dof, coefficient)``.
+        For example, in the spinful model, it corresponds to the terms
 
         .. math::
             -\mu \sum_{i} \sum_{\sigma} n_{i, a, \sigma},
@@ -365,8 +372,10 @@ class FermiHubbardModel:
             return terms
         for site_index in self.lattice.site_indices:
             for dof in self.lattice.dof_indices:
-                i = self.lattice.to_spin_orbital_index(site_index, dof, Spin.UP)
-                j = self.lattice.to_spin_orbital_index(site_index, dof, Spin.DOWN)
+                i = self.lattice.to_spin_orbital_index(
+                    site_index, dof, Spin.UP)
+                j = self.lattice.to_spin_orbital_index(
+                    site_index, dof, Spin.DOWN)
                 terms += number_difference_operator(i, j, -self.magnetic_field)
         return terms
 

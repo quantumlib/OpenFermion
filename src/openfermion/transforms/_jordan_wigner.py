@@ -152,7 +152,8 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
     # Transform other one-body terms and "diagonal" two-body terms
     for p, q in itertools.combinations(range(n_qubits), 2):
         # One-body
-        coefficient = .5 * (iop[(p, 1), (q, 0)] + iop[(q, 1), (p, 0)].conjugate())
+        coefficient = .5 * (iop[(p, 1), (q, 0)] + iop[(q, 1),
+                                                      (p, 0)].conjugate())
         qubit_operator += jordan_wigner_one_body(p, q, coefficient)
 
         # Two-body

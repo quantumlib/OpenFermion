@@ -45,7 +45,8 @@ class HubbardLattice:
             sites to themselves.
 
     And the following methods:
-        site_pairs_iter(edge_type: Hashable) -> Iterable[Tuple[int, int]]: Iterable
+        site_pairs_iter(edge_type: Hashable) \\
+            -> Iterable[Tuple[int, int]]: Iterable
             over pairs of sites corresponding to the given edge type.
 
     For 'spinful' lattices, the ``spin_indices`` ``0`` and ``1`` correspond to
@@ -54,7 +55,8 @@ class HubbardLattice:
 
     @abc.abstractproperty
     def n_dofs(self):
-        """The number of degrees of freedom per site (and spin if applicable)."""
+        """The number of degrees of freedom per site
+        (and spin if applicable)."""
 
 
     @abc.abstractproperty
