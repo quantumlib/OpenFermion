@@ -1,0 +1,13 @@
+[config]
+max-line-length=80
+disable=all
+ignore-patterns=.*_pb2\.py,quantum_engine_service_client.py,engine_pb2_grpc.py
+output-format=colorized
+score=no
+reports=no
+enable=
+    trailing-whitespace,
+    unused-variable,
+
+# Ignore long lines containing urls or pylint directives.
+ignore-long-lines=^(.*#\w*pylint: disable.*|\s*(# )?<?https?://\S+>?)$

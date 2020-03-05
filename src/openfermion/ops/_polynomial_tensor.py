@@ -362,7 +362,7 @@ class PolynomialTensor(object):
             selection (Union[int, Iterable[int]): If int, keeps terms with at
                 most (exactly, if exact is True) that many unique indices. If
                 iterable, keeps only terms containing (all of, if exact is
-                True) the specified indices. 
+                True) the specified indices.
             exact (bool): Whether or not the selection is strict.
         """
         comparator = (operator.eq if exact else operator.le)

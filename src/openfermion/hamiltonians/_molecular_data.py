@@ -15,6 +15,7 @@
 import h5py
 import numpy
 import os
+import shutil
 import uuid
 
 from openfermion.config import *
@@ -638,8 +639,7 @@ class MolecularData(object):
         except OSError:
             pass
 
-        os.rename("{}.hdf5".format(tmp_name),
-                  "{}.hdf5".format(self.filename))
+        shutil.move("{}.hdf5".format(tmp_name), "{}.hdf5".format(self.filename))
 
     def load(self):
         geometry = []
@@ -972,7 +972,7 @@ def load_molecular_hamiltonian(
     else:
         n_core_orbitals = (molecule.n_electrons - n_active_electrons) // 2
         occupied_indices = list(range(n_core_orbitals))
-        
+
     if n_active_orbitals is None:
         active_indices = None
     else:
