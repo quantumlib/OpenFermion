@@ -1,6 +1,7 @@
+from itertools import product
 import pytest
 import numpy
-from itertools import product
+
 from openfermion.utils._wedge_product import (wedge,
                                               generate_parity_permutations)
 

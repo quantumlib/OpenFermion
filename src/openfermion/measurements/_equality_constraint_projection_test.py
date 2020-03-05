@@ -11,25 +11,23 @@
 #   limitations under the License.
 
 """Tests for _variance_reduction.py"""
-import numpy
 import os
 import unittest
+import numpy
 
-from ._equality_constraint_projection import (apply_constraints,
-                                              constraint_matrix,
-                                              linearize_term,
-                                              operator_to_vector,
-                                              unlinearize_term,
-                                              vector_to_operator)
-
-from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
+from openfermion.config import THIS_DIRECTORY
 from openfermion.transforms import get_fermion_operator, get_sparse_operator
 from openfermion.utils import (count_qubits,
                                expectation,
                                get_ground_state,
                                jw_number_restrict_operator,
                                sparse_eigenspectrum)
+from ._equality_constraint_projection import (apply_constraints,
+                                              constraint_matrix, linearize_term,
+                                              operator_to_vector,
+                                              unlinearize_term,
+                                              vector_to_operator)
 
 
 class EqualityConstraintProjectionTest(unittest.TestCase):

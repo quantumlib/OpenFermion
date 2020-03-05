@@ -13,8 +13,8 @@
 """bravyi_kitaev_fast transform on fermionic operators."""
 from __future__ import absolute_import
 
-import networkx
 import numpy
+import networkx
 
 from openfermion.ops import InteractionOperator, QubitOperator
 from openfermion.utils import count_qubits
