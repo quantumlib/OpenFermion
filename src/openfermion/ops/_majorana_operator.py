@@ -21,7 +21,7 @@ import numpy
 
 
 class MajoranaOperator:
-    """A linear combination of products of Majorana operators.
+    r"""A linear combination of products of Majorana operators.
 
     A system of N fermionic modes can be described using 2N Majorana operators
     :math:`\gamma_1, \ldots, \gamma_{2N}`
