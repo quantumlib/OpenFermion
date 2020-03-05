@@ -1000,9 +1000,7 @@ def is_contextual(hamiltonian):
     T = _non_fully_commuting_terms(hamiltonian)
     # Search in T for triples in which exactly one pair anticommutes;
     # if any exist, hamiltonian is contextual.
-    for i in range(
-            len(T)
-    ):  # WLOG, i indexes the operator that (putatively)
+    for i in range(len(T)):  # WLOG, i indexes the operator that (putatively)
         # commutes with both others.
         for j in range(len(T)):
             for k in range(j + 1, len(T)):  # Ordering of j, k does not matter.

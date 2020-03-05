@@ -616,8 +616,8 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
 
         sparse_hf_energy = reference.dot(sparse_ham.dot(reference))
 
-        assert numpy.linalg.norm(
-            sparse_hf_energy - self.molecule.hf_energy) < 1E-9
+        assert numpy.linalg.norm(sparse_hf_energy -
+                                 self.molecule.hf_energy) < 1E-9
 
 
     def test_one_body_hf_energy(self):
@@ -776,8 +776,8 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
             spin_preserving=True,
             excitation_level=1)
 
-        assert scipy.sparse.linalg.norm(
-            sparse_op - sparse_op_conj.getH()) < 1E-9
+        assert scipy.sparse.linalg.norm(sparse_op -
+                                        sparse_op_conj.getH()) < 1E-9
 
 
     def test_singles_simple_two_body_term_hermitian(self):
@@ -798,8 +798,8 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
             spin_preserving=True,
             excitation_level=1)
 
-        assert scipy.sparse.linalg.norm(
-            sparse_op - sparse_op_conj.getH()) < 1E-9
+        assert scipy.sparse.linalg.norm(sparse_op -
+                                        sparse_op_conj.getH()) < 1E-9
 
 
     def test_singles_repeating_two_body_term_hermitian(self):

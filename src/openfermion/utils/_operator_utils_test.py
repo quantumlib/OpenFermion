@@ -975,10 +975,12 @@ class IsContextualTest(unittest.TestCase):
         self.assertTrue(
             is_contextual(self.x1 + self.x2 + self.z1 + self.z2 + self.x3 +
                           self.x4))
-        self.assertTrue(is_contextual(self.x1 + self.x1x2 + \
-            self.z1 + self.z2 + self.x3 + self.x4))
-        self.assertTrue(is_contextual(self.x1 + self.y1y2 + \ 
-        self.z1 + self.z2 + self.x3 + self.x4))
+        self.assertTrue(
+            is_contextual(self.x1 + self.x1x2 + self.z1 + self.z2 + self.x3 +
+                          self.x4))
+        self.assertTrue(
+            is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2 + self.x3 +
+                          self.x4))
 
     def test_commuting_hamiltonian(self):
         self.assertFalse(is_contextual(self.x1 + self.x2 + self.x3 + self.x4))
