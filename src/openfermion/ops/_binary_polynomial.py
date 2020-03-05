@@ -93,7 +93,7 @@ class BinaryPolynomial(object):
             return
 
         # Sequence input: list of tuples of tuples
-        elif isinstance(term, tuple) or isinstance(term, list):
+        elif isinstance(term, (list, tuple)):
             self._parse_sequence(list(term))
 
         # String input
