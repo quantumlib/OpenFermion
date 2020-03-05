@@ -26,8 +26,7 @@ def test_zeros():
 
 def test_signal():
     x_vec = numpy.linspace(0, 1, 11)
-    y_vec = (0.5 * numpy.exp(1j * x_vec * 3) +
-             0.3 * numpy.exp(1j * x_vec * 5) +
+    y_vec = (0.5 * numpy.exp(1j * x_vec * 3) + 0.3 * numpy.exp(1j * x_vec * 5) +
              0.15 * numpy.exp(1j * x_vec * 1.5) +
              0.1 * numpy.exp(1j * x_vec * 4) +
              0.05 * numpy.exp(1j * x_vec * 1.2))
