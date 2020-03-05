@@ -13,9 +13,9 @@
 """Tests for _pubchem.py."""
 from __future__ import absolute_import
 
+import unittest
 import numpy
 import pytest
-import unittest
 
 from openfermion.utils import (geometry_from_pubchem,
                                module_importable)

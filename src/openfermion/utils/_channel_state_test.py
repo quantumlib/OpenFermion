@@ -12,10 +12,10 @@
 
 from __future__ import absolute_import
 
+import unittest
 from numpy import dot, zeros
 from scipy.linalg import norm
 
-import unittest
 
 from ._channel_state import *
 

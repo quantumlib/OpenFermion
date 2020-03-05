@@ -19,7 +19,7 @@ from openfermion.utils import count_qubits, number_operator
 
 
 def reverse_jordan_wigner(qubit_operator, n_qubits=None):
-    """Transforms a QubitOperator into a FermionOperator using the
+    r"""Transforms a QubitOperator into a FermionOperator using the
     Jordan-Wigner transform.
 
     Operators are mapped as follows:

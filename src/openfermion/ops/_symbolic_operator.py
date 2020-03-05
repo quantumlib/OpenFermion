@@ -137,14 +137,14 @@ class SymbolicOperator:
         self.terms[term] = coefficient
 
     def _long_string_init(self, long_string, coefficient):
-        """
+        r"""
         Initialization from a long string representation.
 
         e.g. For FermionOperator:
             '1.5 [2^ 3] + 1.4 [3^ 0]'
         """
 
-        pattern = '(.*?)\[(.*?)\]'  # regex for a term
+        pattern = r'(.*?)\[(.*?)\]'  # regex for a term
         for match in re.findall(pattern, long_string, flags=re.DOTALL):
 
             # Determine the coefficient for this term

@@ -209,7 +209,7 @@ def s_squared_operator(n_spatial_orbitals):
 
 
 def majorana_operator(term=None, coefficient=1.):
-    """Initialize a Majorana operator.
+    r"""Initialize a Majorana operator.
 
     Args:
         term(tuple or string): The first element of the tuple indicates the
