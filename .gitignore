@@ -1,6 +1,5 @@
 .DS_Store
 *lastfailed
-*coverage
 
 # Data files.
 *.out
