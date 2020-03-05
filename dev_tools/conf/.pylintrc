@@ -6,6 +6,7 @@ output-format=colorized
 score=no
 reports=no
 enable=
+    anomalous-backslash-in-string,
     trailing-whitespace,
     unused-variable,
     wrong-import-order,

@@ -22,7 +22,7 @@ from openfermion.config import *
 from openfermion.ops import InteractionOperator, InteractionRDM
 
 
-"""NOTE ON PQRS CONVENTION:
+r"""NOTE ON PQRS CONVENTION:
   The data structures which hold fermionic operators / integrals /
   coefficients assume a particular convention which depends on how integrals
   are labeled:

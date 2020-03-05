@@ -72,7 +72,7 @@ class BinaryCodeError(Exception):
 
 
 class BinaryCode(object):
-    """The BinaryCode class provides a representation of an encoding-decoding
+    r"""The BinaryCode class provides a representation of an encoding-decoding
     pair for binary vectors of different lengths, where the decoding is allowed
     to be non-linear.
 
