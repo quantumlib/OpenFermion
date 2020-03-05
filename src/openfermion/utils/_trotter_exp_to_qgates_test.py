@@ -32,10 +32,14 @@ class TrottQasmTest(unittest.TestCase):
         # Test exceptions in trotter_operator_grouping()
 
         with self.assertRaises(ValueError):
-            _ = [i for i in trotter_operator_grouping(self.qo1, trotter_order=0)]
+            _ = [
+                i for i in trotter_operator_grouping(self.qo1, trotter_order=0)
+            ]
 
         with self.assertRaises(ValueError):
-            _ = [i for i in trotter_operator_grouping(self.qo1, trotter_order=4)]
+            _ = [
+                i for i in trotter_operator_grouping(self.qo1, trotter_order=4)
+            ]
 
         with self.assertRaises(TypeError):
             _ = [i for i in trotter_operator_grouping(42)]
@@ -46,17 +50,22 @@ class TrottQasmTest(unittest.TestCase):
 
         emptyTO = []
         with self.assertRaises(TypeError):
-            _ = [i for i in trotter_operator_grouping(self.qo1,
-                                                  term_ordering=emptyTO)]
+            _ = [
+                i for i in trotter_operator_grouping(self.qo1,
+                                                     term_ordering=emptyTO)
+            ]
 
         # Too few ops for 2nd-order
         with self.assertRaises(ValueError):
-            _ = [i for i in trotter_operator_grouping(self.opA, trotter_order=2)]
+            _ = [
+                i for i in trotter_operator_grouping(self.opA, trotter_order=2)
+            ]
 
         # Too few ops for 3rd-order
         with self.assertRaises(ValueError):
-            _ = [i for i in trotter_operator_grouping(self.opA,
-                                                  trotter_order=3)]
+            _ = [
+                i for i in trotter_operator_grouping(self.opA, trotter_order=3)
+            ]
 
     def compare_qubop_lists(self, gold, res):
         # Compare lists of operators. Used in most test functions.
