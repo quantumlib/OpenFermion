@@ -24,6 +24,7 @@ def test_zeros():
         numpy.testing.assert_allclose(amplitudes[j], 0)
         numpy.testing.assert_allclose(phases[j], 0)
 
+
 def test_signal():
     x_vec = numpy.linspace(0, 1, 11)
     y_vec = (0.5 * numpy.exp(1j * x_vec * 3) + 0.3 * numpy.exp(1j * x_vec * 5) +
