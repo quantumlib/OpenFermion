@@ -102,8 +102,7 @@ class LiHIntegrationTest(unittest.TestCase):
 
         # Confirm fermionic RDMs can be built from measured qubit RDMs.
         new_fermi_rdm = get_interaction_rdm(qubit_rdm)
-        fermi_rdm_energy = new_fermi_rdm.expectation(
-            self.molecular_hamiltonian)
+        new_fermi_rdm.expectation(self.molecular_hamiltonian)
         self.assertAlmostEqual(fci_rdm_energy, self.molecule.fci_energy)
 
         # Test sparse matrices.

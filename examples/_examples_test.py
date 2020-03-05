@@ -26,9 +26,8 @@ class ExamplesTest(unittest.TestCase):
     def setUp(self):
 
         self.examples_folder = os.path.join(
-                os.path.dirname(__file__),  # Start at this file's directory.
-                '..', 'tests',  # Hacky check that we're under tests/.
-                '..', '..', '..', 'examples')
+            os.path.dirname(__file__),  # Start at this file's directory.
+        )
 
     def test_performance_benchmarks(self):
         """Unit test for examples/performance_benchmark.py."""
@@ -66,6 +65,7 @@ class ExamplesTest(unittest.TestCase):
         self.assertLess(runtime_parallel, runtime_upper_bound)
 
     def test_can_run_examples_jupyter_notebooks(self):
+        print("Examples folder ", self.examples_folder)
         for filename in os.listdir(self.examples_folder):
             if not filename.endswith('.ipynb'):
                 continue

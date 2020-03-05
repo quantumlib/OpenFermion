@@ -195,14 +195,14 @@ class ChemistOrderingTest(unittest.TestCase):
         bad_term = ((2, 1), (3, 1))
         random_operator += FermionOperator(bad_term)
         with self.assertRaises(OperatorSpecificationError):
-            chemist_operator = chemist_ordered(random_operator)
+            chemist_ordered(random_operator)
 
     def test_form(self):
         n_qubits = 6
         random_operator = get_fermion_operator(
             random_interaction_operator(n_qubits))
         chemist_operator = chemist_ordered(random_operator)
-        for term, coefficient in chemist_operator.terms.items():
+        for term, _ in chemist_operator.terms.items():
             if len(term) == 2 or not len(term):
                 pass
             else:

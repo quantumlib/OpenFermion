@@ -56,7 +56,7 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
 
     # Repeat the division and zip steps as many times
     # as required.
-    for j in range(num_iterations):
+    for _ in range(num_iterations):
         # Divide the qubit list in two and return it
         partition = (qubit_list[:half_point],
                      qubit_list[half_point:])

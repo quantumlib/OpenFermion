@@ -105,7 +105,6 @@ class HydrogenIntegrationTest(unittest.TestCase):
     def test_qubit_operator(self):
 
         # Below are qubit term coefficients, also from arXiv 1208.5986:
-        f0 = -0.8126
         f1 = 0.1712
         f2 = -0.2228
         f3 = 0.1686

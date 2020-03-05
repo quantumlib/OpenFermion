@@ -10,6 +10,7 @@ enable=
     wrong-import-order,
     wrong-import-position,
     yield-outside-function
+    unused-variable
 
 # Ignore long lines containing urls or pylint directives.
 ignore-long-lines=^(.*#\w*pylint: disable.*|\s*(# )?<?https?://\S+>?)$
