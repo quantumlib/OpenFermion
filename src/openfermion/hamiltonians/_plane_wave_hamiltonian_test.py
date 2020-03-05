@@ -150,5 +150,4 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
 
         # TODO: This is only for code coverage. Remove after having real
         #     integration test.
-        h_3 = plane_wave_hamiltonian(grid, geometry, True, True, False, None,
-                                     True)
+        plane_wave_hamiltonian(grid, geometry, True, True, False, None, True)

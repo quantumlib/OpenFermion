@@ -1,3 +1,4 @@
 # For testing and analyzing code.
+pytest-cov~=2.5.0
+pylint~=2.3.0
 yapf~=0.27.0
-
