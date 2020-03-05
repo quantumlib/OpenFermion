@@ -224,7 +224,7 @@ def random_unitary_matrix(n, real=False, seed=None):
         rand_mat = numpy.random.randn(n, n)
     else:
         rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
-    Q, R = qr(rand_mat)
+    Q, _ = qr(rand_mat)
     return Q
 
 

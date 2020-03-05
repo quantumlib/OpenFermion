@@ -227,7 +227,6 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
             coefficient *= -1
         # Loop through different operators which act on each tensor factor.
         for ops in itertools.product('XY', repeat=4):
-            op_p, op_q, op_r, op_s = ops
             # Get coefficients.
             if ops.count('X') % 2:
                 coeff = .125 * coefficient.imag
@@ -323,4 +322,3 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
                                         coeff)
 
     return qubit_operator
-

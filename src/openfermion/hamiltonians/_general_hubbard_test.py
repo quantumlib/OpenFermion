@@ -167,7 +167,7 @@ def test_fermi_hubbard_square_lattice_random_parameters(
             _, dof, spin_index = lattice.from_spin_orbital_index(spin_orbital)
             potential_coefficient = -coefficient
             if not lattice.spinless:
-                spin = (-1) ** spin_index
+                (-1)**spin_index
                 potential_coefficient -= (((-1)**spin_index) *
                                           parameters.get('magnetic_field', 0))
             if not potential_coefficient:

@@ -5,3 +5,5 @@ future
 networkx
 pubchempy
 six
+requests~=2.18
+
