@@ -28,7 +28,7 @@ def pair_within(labels):
     Yields:
         pairings (list): list of pairings of elements of labels
     '''
-    if len(labels) == 0:
+    if not labels:
         return
     if len(labels) == 1:
         yield (labels[0],)
