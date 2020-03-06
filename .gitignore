@@ -76,8 +76,10 @@ ENV/
 /site
 *.lprof
 
-# cache
-*.pytest_cache/
+# ignore cache
+.cache/*
+.mypy_cache/*
+.pytest_cache/*
 
 # swap files
 *.swp

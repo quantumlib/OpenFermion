@@ -21,7 +21,7 @@ except ImportError:
     from itertools import izip_longest as zip_longest
 
 
-def binary_partition_iterator(qubit_list, num_iterations=None):
+def binary_partition_iterator(qubit_list: list, num_iterations: int = None):
     """Generator for a list of 2-partitions of N qubits
     such that all pairs of qubits are split in at least one partition,
     This follows a variation on ArXiv:1908.0562 - instead of
