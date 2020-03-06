@@ -10,8 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from openfermion.measurements import partition_iterator
 import numpy
+from openfermion.measurements import partition_iterator
 
 MAX_LOOPS = 1e6
 
