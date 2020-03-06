@@ -16,7 +16,7 @@ from openfermion.ops._symbolic_operator import SymbolicOperator
 
 
 class FermionOperator(SymbolicOperator):
-    """FermionOperator stores a sum of products of fermionic ladder operators.
+    r"""FermionOperator stores a sum of products of fermionic ladder operators.
 
     In OpenFermion, we describe fermionic ladder operators using the shorthand:
     'q^' = a^\dagger_q

@@ -12,9 +12,9 @@
 
 """Module to compute commutators, with optimizations for specific systems."""
 from __future__ import absolute_import
-from future.utils import itervalues
 
 import numpy
+from future.utils import itervalues
 
 from openfermion.ops import FermionOperator
 from openfermion.utils._operator_utils import normal_ordered
