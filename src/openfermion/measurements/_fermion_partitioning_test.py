@@ -16,8 +16,7 @@ from ._fermion_partitioning import (pair_within, pair_within_simultaneously,
                                     pair_within_simultaneously_binned,
                                     pair_within_simultaneously_symmetric,
                                     _gen_partitions, _get_padding,
-                                    _parallel_iter,
-                                    _asynchronous_iter)
+                                    _parallel_iter, _asynchronous_iter)
 
 
 class TestPairWithin(unittest.TestCase):
