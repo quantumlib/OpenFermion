@@ -15,6 +15,7 @@ import numpy
 from ._fermion_partitioning import (pair_within, pair_within_simultaneously,
                                     pair_within_simultaneously_binned,
                                     pair_within_simultaneously_symmetric,
+                                    _gen_partitions,
                                     _get_padding, _parallel_iter,
                                     _asynchronous_iter)
 
@@ -24,7 +25,7 @@ class TestPairWithin(unittest.TestCase):
     def test_zero(self):
         count = 0
         for _ in pair_within([]):
-            count += 1
+            count += 1  # pragma: no cover
         self.assertEqual(count, 0)
 
     def test_pair(self):
@@ -240,3 +241,10 @@ class TestPairingWithSymmetries(unittest.TestCase):
         for num_fermions in [5, 8, 9]:
             for _ in pair_within_simultaneously_symmetric(num_fermions, 3):
                 pass
+
+def test_gen_partitions_1input():
+    labels = [0, ]
+    count = 0
+    for res in _gen_partitions(labels):
+        count += 1
+    assert count == 1

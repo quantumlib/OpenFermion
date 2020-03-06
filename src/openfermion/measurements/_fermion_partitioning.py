@@ -134,8 +134,8 @@ def _gen_partitions(labels, min_size=4):
         labels(list): list to be partitioned
     '''
     if len(labels) == 1:
-        yield (labels,)  # pragma: no cover
-        return  # pragma: no cover
+        yield (labels,)
+        return
     partitions = (labels[:len(labels) // 2], labels[len(labels) // 2:])
     while True:
         yield partitions
@@ -157,7 +157,7 @@ def _gen_pairings_between_partitions(parta, partb):
         if max(len(splita[a]), len(splitb[b])) < 2:
             continue
         if min(len(splita[1 - a]), len(splitb[1 - b])) < 1:
-            continue
+            continue  # pragma: no cover
         gen_a = _loop_iterator(pair_within, splita[a])
         gen_b = _loop_iterator(pair_within, splitb[b])
         num_iter = max(
