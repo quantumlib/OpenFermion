@@ -12,16 +12,16 @@
 
 """This module provides functions to interface with scipy.sparse."""
 from __future__ import absolute_import
-from future.utils import iteritems
-
-from functools import reduce
 import itertools
-
-import numpy
+from functools import reduce
 import numpy.linalg
+import numpy
+
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
+
+from future.utils import iteritems
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,

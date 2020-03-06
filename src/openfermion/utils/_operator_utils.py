@@ -43,7 +43,7 @@ class OperatorSpecificationError(Exception):
 
 
 def chemist_ordered(fermion_operator):
-    """Puts a two-body fermion operator in chemist ordering.
+    r"""Puts a two-body fermion operator in chemist ordering.
 
     The normal ordering convention for chemists is different.
     Rather than ordering the two-body term as physicists do, as

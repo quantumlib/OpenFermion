@@ -13,8 +13,8 @@
 """bravyi_kitaev_fast transform on fermionic operators."""
 from __future__ import absolute_import
 
-import networkx
 import numpy
+import networkx
 
 from openfermion.ops import InteractionOperator, QubitOperator
 from openfermion.utils import count_qubits
@@ -45,7 +45,7 @@ def bravyi_kitaev_fast(operator):
 
 
 def bravyi_kitaev_fast_interaction_op(iop):
-    """
+    r"""
     Transform from InteractionOpeator to QubitOperator for Bravyi-Kitaev fast
     algorithm.
 
@@ -204,7 +204,7 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
 
 
 def one_body(edge_matrix_indices, p, q):
-    """
+    r"""
     Map the term a^\dagger_p a_q + a^\dagger_q a_p to QubitOperator.
 
     The definitions for various operators will be presented in a paper soon.
@@ -234,7 +234,7 @@ def one_body(edge_matrix_indices, p, q):
 
 
 def two_body(edge_matrix_indices, p, q, r, s):
-    """
+    r"""
     Map the term a^\dagger_p a^\dagger_q a_r a_s + h.c. to QubitOperator.
 
     The definitions for various operators will be covered in a paper soon.
