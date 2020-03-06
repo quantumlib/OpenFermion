@@ -13,8 +13,8 @@
 This fits a signal f(t) to sum_i=1^M a_i gamma_i^t, where a_i, gamma_i
 are complex numbers
 """
-import scipy
 import numpy
+import scipy
 
 
 def prony(signal):

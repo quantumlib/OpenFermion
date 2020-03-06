@@ -26,7 +26,7 @@ class BinaryPolynomialError(Exception):
 
 
 class BinaryPolynomial(object):
-    """The BinaryPolynomial class provides an analytic representation
+    r"""The BinaryPolynomial class provides an analytic representation
     of non-linear binary functions. An instance of this class describes
     a term of binary variables (variables of the values {0,1}, indexed
     by integers like w0, w1, w2 and so on) that is considered to be evaluated
@@ -93,7 +93,7 @@ class BinaryPolynomial(object):
             return
 
         # Sequence input: list of tuples of tuples
-        elif isinstance(term, tuple) or isinstance(term, list):
+        elif isinstance(term, (list, tuple)):
             self._parse_sequence(list(term))
 
         # String input

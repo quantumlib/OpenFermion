@@ -12,17 +12,17 @@
 
 """Class and functions to store quantum chemistry data."""
 
-import h5py
-import numpy
-import os
-import shutil
 import uuid
+import shutil
+import os
+import numpy
+import h5py
 
 from openfermion.config import *
 from openfermion.ops import InteractionOperator, InteractionRDM
 
 
-"""NOTE ON PQRS CONVENTION:
+r"""NOTE ON PQRS CONVENTION:
   The data structures which hold fermionic operators / integrals /
   coefficients assume a particular convention which depends on how integrals
   are labeled:

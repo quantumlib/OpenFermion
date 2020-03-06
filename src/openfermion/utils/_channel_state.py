@@ -19,7 +19,7 @@ from six import string_types
 
 
 def _verify_channel_inputs(density_matrix, probability, target_qubit):
-    """Verifies input parameters for channels
+    r"""Verifies input parameters for channels
 
     Args:
         density_matrix (numpy.ndarray): Density matrix of the system
@@ -64,7 +64,7 @@ def _lift_operator(operator, n_qubits, target_qubit):
 
 def amplitude_damping_channel(density_matrix, probability, target_qubit,
                               transpose=False):
-    """Apply an amplitude damping channel
+    r"""Apply an amplitude damping channel
 
     Applies an amplitude damping channel with a given probability to the target
     qubit in the density_matrix.
@@ -103,7 +103,7 @@ def amplitude_damping_channel(density_matrix, probability, target_qubit,
 
 def dephasing_channel(density_matrix, probability, target_qubit,
                       transpose=False):
-    """Apply a dephasing channel
+    r"""Apply a dephasing channel
 
     Applies an amplitude damping channel with a given probability to the target
     qubit in the density_matrix.
@@ -140,7 +140,7 @@ def dephasing_channel(density_matrix, probability, target_qubit,
 
 def depolarizing_channel(density_matrix, probability, target_qubit,
                          transpose=False):
-    """Apply a depolarizing channel
+    r"""Apply a depolarizing channel
 
     Applies an amplitude damping channel with a given probability to the target
     qubit in the density_matrix.

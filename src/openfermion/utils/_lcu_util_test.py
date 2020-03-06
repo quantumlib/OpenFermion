@@ -14,9 +14,9 @@
 
 from __future__ import absolute_import, division
 
-import numpy
-import random
 import unittest
+import random
+import numpy
 
 from openfermion.ops import DiagonalCoulombHamiltonian
 from openfermion.transforms import jordan_wigner
