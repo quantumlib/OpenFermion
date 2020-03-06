@@ -121,7 +121,7 @@ class SymbolicOperator:
 
         # Parse the term
         # Sequence input
-        if isinstance(term, tuple) or isinstance(term, list):
+        if isinstance(term, (list, tuple)):
             term = self._parse_sequence(term)
         # String input
         elif isinstance(term, string_types):

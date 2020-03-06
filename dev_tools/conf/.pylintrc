@@ -7,6 +7,18 @@ score=no
 reports=no
 enable=
     anomalous-backslash-in-string,
+    assert-on-tuple,
+    bad-indentation,
+    bad-option-value,
+    bad-reversed-sequence,
+    bad-super-call,
+    consider-merging-isinstance,
+    continue-in-finally,
+    dangerous-default-value,
+    duplicate-argument-name,
+    expression-not-assigned,
+    function-redefined,
+    inconsistent-mro,
     trailing-whitespace,
     unused-variable,
     wrong-import-order,

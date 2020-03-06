@@ -17,25 +17,6 @@ from six import string_types
 
 from openfermion.ops import BosonOperator, FermionOperator, down_index, up_index
 
-
-def up_index(index):
-    """Function to return up-orbital index given a spatial orbital index.
-
-    Args:
-        index (Int): spatial orbital index
-    """
-    return 2 * index
-
-
-def down_index(index):
-    """Function to return down-orbital index given a spatial orbital index.
-
-    Args:
-        index (Int): spatial orbital index
-    """
-    return 2 * index + 1
-
-
 def s_plus_operator(n_spatial_orbitals):
     r"""Return the s+ operator.
 
