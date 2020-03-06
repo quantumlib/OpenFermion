@@ -22,7 +22,7 @@ from openfermion.utils import count_qubits
 
 
 def jordan_wigner(operator):
-    """ Apply the Jordan-Wigner transform to a FermionOperator,
+    r""" Apply the Jordan-Wigner transform to a FermionOperator,
     InteractionOperator, or DiagonalCoulombHamiltonian to convert
     to a QubitOperator.
 
@@ -182,7 +182,7 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
 
 
 def jordan_wigner_one_body(p, q, coefficient=1.):
-    """Map the term a^\dagger_p a_q + h.c. to QubitOperator.
+    r"""Map the term a^\dagger_p a_q + h.c. to QubitOperator.
 
     Note that the diagonal terms are divided by a factor of 2
     because they are equal to their own Hermitian conjugate.
@@ -210,7 +210,7 @@ def jordan_wigner_one_body(p, q, coefficient=1.):
 
 
 def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
-    """Map the term a^\dagger_p a^\dagger_q a_r a_s + h.c. to QubitOperator.
+    r"""Map the term a^\dagger_p a^\dagger_q a_r a_s + h.c. to QubitOperator.
 
     Note that the diagonal terms are divided by a factor of two
     because they are equal to their own Hermitian conjugate.

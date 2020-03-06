@@ -23,7 +23,7 @@ class InteractionOperatorError(Exception):
 
 
 class InteractionOperator(PolynomialTensor):
-    """Class for storing 'interaction operators' which are defined to be
+    r"""Class for storing 'interaction operators' which are defined to be
     fermionic operators consisting of one-body and two-body terms which
     conserve particle number and spin. The most common examples of data that
     will use this structure are molecular Hamiltonians. In principle,

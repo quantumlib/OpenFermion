@@ -101,7 +101,7 @@ class OperatorUtilsTest(unittest.TestCase):
     def test_is_identity_unit_quadoperator(self):
         self.assertTrue(is_identity(QuadOperator(())))
 
-    def test_is_identity_double_of_unit_bosonoperator(self):
+    def test_is_identity_double_of_unit_quadoperator(self):
         self.assertTrue(is_identity(2. * QuadOperator(())))
 
     def test_is_identity_unit_qubitoperator(self):

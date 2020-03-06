@@ -11,8 +11,8 @@
 #   limitations under the License.
 """ Tests for _prony.py"""
 import pytest
-from ._prony import prony
 import numpy
+from ._prony import prony
 
 
 def test_zeros():
