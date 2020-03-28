@@ -4,6 +4,4 @@ h5py>=2.8
 future
 networkx
 pubchempy
-six
 requests~=2.18
-
