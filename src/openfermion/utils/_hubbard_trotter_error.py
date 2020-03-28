@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Module to compute Trotter errors in the plane-wave dual basis."""
-from __future__ import absolute_import
 
 import numpy
 

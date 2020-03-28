@@ -12,7 +12,6 @@
 
 """The MajoranaOperator data structure."""
 
-from __future__ import division
 import itertools
 import numpy
 from future.utils import viewkeys

@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for plane_wave_hamiltonian.py"""
-from __future__ import absolute_import
 
 import unittest
 

@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """This module provides functions to interface with scipy.sparse."""
-from __future__ import absolute_import
 import itertools
 from functools import reduce
 import numpy.linalg

@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """This module constructs the uniform electron gas' Hartree-Fock state."""
-from __future__ import absolute_import
 
 import numpy
 from openfermion.ops import FermionOperator

@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Module to compute commutators, with optimizations for specific systems."""
-from __future__ import absolute_import
 
 import numpy
 from future.utils import itervalues

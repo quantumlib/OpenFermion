@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Functions to create chemical series data sets."""
-from __future__ import absolute_import
 
 import numpy
 

@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for chemical_series."""
-from __future__ import absolute_import
 
 import os
 import unittest

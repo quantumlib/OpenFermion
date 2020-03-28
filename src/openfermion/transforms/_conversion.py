@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Transformations acting on operators and RDMs."""
-from __future__ import absolute_import
 
 import itertools
 
