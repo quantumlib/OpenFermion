@@ -55,13 +55,12 @@ def diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian):
         else:
             kinetic += FermionOperator(term, coeff)
 
-    potential_terms = numpy.array(
-        [FermionOperator(term, coeff)
-         for term, coeff in potential.terms.items()])
+    potential_terms = numpy.array([
+        FermionOperator(term, coeff) for term, coeff in potential.terms.items()
+    ])
 
     kinetic_terms = numpy.array(
-        [FermionOperator(term, coeff)
-         for term, coeff in kinetic.terms.items()])
+        [FermionOperator(term, coeff) for term, coeff in kinetic.terms.items()])
 
     return (potential_terms, kinetic_terms)
 
