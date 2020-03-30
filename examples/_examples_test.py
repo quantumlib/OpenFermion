@@ -46,7 +46,7 @@ class ExamplesTest(unittest.TestCase):
         runtime_upper_bound = 600
 
         # Run diagonal commutator benchmark
-        runtime_standard, runtime_diagonal = run_linear_qubit_operator()
+        runtime_standard, runtime_diagonal = run_diagonal_commutator()
         self.assertLess(runtime_standard, runtime_upper_bound)
         self.assertLess(runtime_diagonal, runtime_upper_bound)
 
