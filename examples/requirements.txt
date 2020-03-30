@@ -7,4 +7,3 @@ nbformat
 networkx
 matplotlib
 pubchempy
-six
