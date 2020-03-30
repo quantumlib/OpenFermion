@@ -13,7 +13,6 @@
 import abc
 from enum import Enum, IntEnum
 import itertools
-from six import add_metaclass
 
 
 class Spin(IntEnum):
@@ -29,8 +28,7 @@ class SpinPairs(Enum):
     DIFF = -1
 
 
-@add_metaclass(abc.ABCMeta)
-class HubbardLattice:
+class HubbardLattice(metaclass=abc.ABCMeta):
     """Base class for a Hubbard model lattice.
 
     Subclasses must define the following properties:

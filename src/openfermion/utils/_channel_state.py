@@ -15,7 +15,6 @@
 from functools import reduce
 from itertools import chain
 from numpy import array, conj, dot, eye, kron, log2, sqrt
-from six import string_types
 
 
 def _verify_channel_inputs(density_matrix, probability, target_qubit):
@@ -161,7 +160,7 @@ def depolarizing_channel(density_matrix, probability, target_qubit,
     n_qubits = int(log2(density_matrix.shape[0]))
 
     # Toggle depolarizing channel on all qubits
-    if isinstance(target_qubit, string_types) and target_qubit.lower() == "all":
+    if isinstance(target_qubit, str) and target_qubit.lower() == "all":
         dimension = density_matrix.shape[0]
         new_density_matrix = ((1.0 - probability) * density_matrix +
                               probability * eye(dimension) / float(dimension))
