@@ -14,7 +14,6 @@
 import unittest
 from math import sqrt
 import numpy
-from future.utils import iteritems
 
 from scipy.linalg import expm
 

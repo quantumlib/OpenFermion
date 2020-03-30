@@ -12,7 +12,6 @@
 
 """Module to compute Trotter errors in the plane-wave dual basis."""
 import numpy
-from future.utils import iteritems, itervalues
 
 import openfermion.hamiltonians
 
@@ -355,7 +354,7 @@ def ordered_low_depth_terms_no_info(hamiltonian):
     hamiltonian = normal_ordered(hamiltonian)
     terms = []
 
-    for operators, coefficient in iteritems(hamiltonian.terms):
+    for operators, coefficient in hamiltonian.terms.items():
         terms += [FermionOperator(operators, coefficient)]
 
     return terms
