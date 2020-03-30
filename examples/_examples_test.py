@@ -35,6 +35,7 @@ class ExamplesTest(unittest.TestCase):
         # Import performance benchmarks and seed random number generator.
         sys.path.append(self.examples_folder)
         from performance_benchmarks import (
+            run_diagonal_commutator,
             run_fermion_math_and_normal_order,
             run_jordan_wigner_sparse,
             run_molecular_operator_jordan_wigner,
@@ -43,6 +44,11 @@ class ExamplesTest(unittest.TestCase):
         numpy.random.seed(1)
 
         runtime_upper_bound = 600
+
+        # Run diagonal commutator benchmark
+        runtime_standard, runtime_diagonal = run_diagonal_commutator()
+        self.assertLess(runtime_standard, runtime_upper_bound)
+        self.assertLess(runtime_diagonal, runtime_upper_bound)
 
         # Run InteractionOperator.jordan_wigner_transform() benchmark.
         runtime = run_molecular_operator_jordan_wigner(n_qubits=10)

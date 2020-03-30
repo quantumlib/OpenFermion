@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Reverse Jordan-Wigner transform on QubitOperators."""
-from __future__ import absolute_import
 
 from openfermion.ops import (FermionOperator,
                              QubitOperator)

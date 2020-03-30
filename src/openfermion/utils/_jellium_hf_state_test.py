@@ -1,5 +1,4 @@
 """Tests for _jellium_hf_state.py."""
-from __future__ import absolute_import
 
 from itertools import permutations
 import unittest

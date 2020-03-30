@@ -12,7 +12,6 @@
 
 """Module to test unitary coupled cluster operators."""
 
-from __future__ import absolute_import
 
 import os
 import unittest

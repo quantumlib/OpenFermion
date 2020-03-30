@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """bravyi_kitaev_fast transform on fermionic operators."""
-from __future__ import absolute_import
 
 import numpy
 import networkx

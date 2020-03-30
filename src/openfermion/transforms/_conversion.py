@@ -11,13 +11,11 @@
 #   limitations under the License.
 
 """Transformations acting on operators and RDMs."""
-from __future__ import absolute_import
 
 import itertools
 
 import numpy
 import scipy
-from future.utils import iteritems
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
@@ -86,7 +84,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
     # One-RDM.
     for i, j in itertools.product(range(n_qubits), repeat=2):
         transformed_operator = jordan_wigner(FermionOperator(((i, 1), (j, 0))))
-        for term, coefficient in iteritems(transformed_operator.terms):
+        for term, coefficient in transformed_operator.terms.items():
             if term in qubit_operator.terms:
                 one_rdm[i, j] += coefficient * qubit_operator.terms[term]
 
@@ -94,7 +92,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
     for i, j, k, l in itertools.product(range(n_qubits), repeat=4):
         transformed_operator = jordan_wigner(FermionOperator(((i, 1), (j, 1),
                                                               (k, 0), (l, 0))))
-        for term, coefficient in iteritems(transformed_operator.terms):
+        for term, coefficient in transformed_operator.terms.items():
             if term in qubit_operator.terms:
                 two_rdm[i, j, k, l] += coefficient * qubit_operator.terms[term]
 

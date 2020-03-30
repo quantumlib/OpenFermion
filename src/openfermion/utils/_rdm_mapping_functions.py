@@ -10,7 +10,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Mapping RDMs to other RDMs"""
-from __future__ import division
 from itertools import product
 import numpy
 
