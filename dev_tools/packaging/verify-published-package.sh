@@ -61,7 +61,7 @@ cd "${tmp_dir}"
 trap "{ rm -rf ${tmp_dir}; }" EXIT
 
 # Test both the python 2 and python 3 versions.
-for PYTHON_VERSION in python2 python3; do
+for PYTHON_VERSION in python3; do
     # Prepare.
     RUNTIME_DEPS_FILE="${REPO_ROOT}/requirements.txt"
     echo -e "\n\e[32m${PYTHON_VERSION}\e[0m"
