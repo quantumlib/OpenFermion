@@ -31,6 +31,7 @@ from ._conversion import (get_boson_operator,
                           get_interaction_operator,
                           get_quadratic_hamiltonian,
                           get_molecular_data,
+                          get_number_preserving_sparse_operator,
                           get_sparse_operator,
                           get_quad_operator)
 from ._jordan_wigner import jordan_wigner
