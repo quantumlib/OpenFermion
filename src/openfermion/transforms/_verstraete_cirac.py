@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Verstraete-Cirac transform on fermionic operators."""
-from __future__ import absolute_import
 
 import networkx
 

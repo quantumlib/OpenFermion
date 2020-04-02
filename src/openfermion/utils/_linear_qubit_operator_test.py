@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for linear_qubit_operator.py."""
-from __future__ import absolute_import, division
 
 import multiprocessing
 import unittest

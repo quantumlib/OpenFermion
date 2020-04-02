@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """This module provides functions to interface with scipy.sparse."""
-from __future__ import absolute_import
 import itertools
 from functools import reduce
 import numpy.linalg
@@ -20,8 +19,6 @@ import numpy
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
-
-from future.utils import iteritems
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import (FermionOperator, QuadraticHamiltonian,
@@ -859,7 +856,7 @@ def expectation_db_operator_with_pw_basis_state(
     """
     expectation_value = operator.terms.get((), 0.0)
 
-    for single_action, coefficient in iteritems(operator.terms):
+    for single_action, coefficient in operator.terms.items():
         if len(single_action) == 2:
             expectation_value += coefficient * (
                 expectation_one_body_db_operator_computational_basis_state(

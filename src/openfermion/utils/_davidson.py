@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """This module is to find lowest eigenvalues with Davidson algorithm."""
-from __future__ import absolute_import
 
 import logging
 import warnings

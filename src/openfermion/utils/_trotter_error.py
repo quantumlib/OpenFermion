@@ -12,7 +12,6 @@
 
 """Module to compute the second order Trotter error."""
 from math import sqrt, ceil
-from future.utils import iteritems
 
 from scipy.linalg import expm
 

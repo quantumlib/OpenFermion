@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Construct Hamiltonians in plan wave basis and its dual in 3D."""
-from __future__ import absolute_import
 
 import openfermion.utils._operator_utils
 

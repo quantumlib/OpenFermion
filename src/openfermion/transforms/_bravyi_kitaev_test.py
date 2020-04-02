@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for _bravyi_kitaev.py."""
-from __future__ import absolute_import
 
 import unittest
 
