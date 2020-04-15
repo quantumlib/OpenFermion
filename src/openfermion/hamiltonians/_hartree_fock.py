@@ -9,8 +9,8 @@ from itertools import product
 import numpy as np
 import scipy as sp
 from scipy.optimize.optimize import OptimizeResult
-from openfermion import (wedge, InteractionRDM, general_basis_change,
-                         InteractionOperator)
+from openfermion.ops import InteractionOperator, InteractionRDM, general_basis_change
+from openfermion.utils import wedge
 
 
 def get_matrix_of_eigs(w: np.ndarray) -> np.ndarray:
@@ -99,8 +99,6 @@ class HartreeFockFunctional():
             self.nvirt = 2 * self.num_orbitals - self.nocc
             self.occ = list(range(self.nocc))
             self.virt = list(range(self.nocc, self.nocc + self.nvirt))
-        else:  # nocover
-            raise ValueError("The impossible has happened")
 
         if initial_orbitals is None:
             # use core orbitals
@@ -407,7 +405,7 @@ def rhf_minimization(rhf_object: HartreeFockFunctional,
     if initial_guess is None:
         init_guess = np.zeros(rhf_object.nocc * rhf_object.nvirt)
     else:
-        init_guess = initial_guess.flatten()
+        init_guess = np.asarray(initial_guess).flatten()
 
     sp_optimizer_options = {'disp': verbose}
     if sp_options is not None:

@@ -3,6 +3,7 @@ from itertools import product
 import os
 import numpy as np
 import scipy as sp
+from scipy.optimize.optimize import OptimizeResult
 import pytest
 from openfermion.config import DATA_DIRECTORY
 from openfermion import (MolecularData, general_basis_change,
@@ -12,7 +13,8 @@ from openfermion.hamiltonians._hartree_fock import (get_matrix_of_eigs,
                                                     InputError,
                                                     rhf_params_to_matrix,
                                                     rhf_func_generator,
-                                                    generate_hamiltonian)
+                                                    generate_hamiltonian,
+                                                    rhf_minimization)
 
 
 def test_get_matrix_of_eigs():
@@ -224,6 +226,9 @@ def test_rhf_func_generator():
     assert isinstance(opdm_func(params), np.ndarray)
     assert np.isclose(opdm_func(params).shape[0], hff.num_orbitals)
 
+    _, energy, _ = rhf_func_generator(hff, init_occ_vec=np.array([1, 1, 1, 1, 0, 0]))
+    assert isinstance(energy(params), float)
+
 
 def test_rhf_params_to_matrix():
     params = np.random.randn(4)
@@ -236,11 +241,11 @@ def test_rhf_params_to_matrix():
     assert np.allclose(test_kappa, true_kappa)
 
     test_kappa = rhf_params_to_matrix(params, 4,
-                                      occ=range(2))
+                                      occ=list(range(2)))
     assert np.allclose(test_kappa, true_kappa)
 
     test_kappa = rhf_params_to_matrix(params, 4,
-                                      virt=range(2, 4))
+                                      virt=list(range(2, 4)))
     assert np.allclose(test_kappa, true_kappa)
 
     with pytest.raises(ValueError):
@@ -261,4 +266,31 @@ def test_generate_hamiltonian():
                        0.5 * mo_tbi)
     assert np.allclose(mol_ham.two_body_tensor[1::2, 1::2, 1::2, 1::2],
                        0.5 * mo_tbi)
+
+
+def test_rhf_min():
+    filename = os.path.join(DATA_DIRECTORY, "H2_sto-3g_singlet_0.7414.hdf5")
+    molecule = MolecularData(filename=filename)
+
+    overlap = molecule.overlap_integrals
+    mo_obi = molecule.one_body_integrals
+    mo_tbi = molecule.two_body_integrals
+    rotation_mat = molecule.canonical_orbitals.T @ overlap
+    obi = general_basis_change(mo_obi, rotation_mat, (1, 0))
+    tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0))
+    hff = HartreeFockFunctional(one_body_integrals=obi,
+                                two_body_integrals=tbi,
+                                overlap=overlap,
+                                n_electrons=molecule.n_electrons,
+                                model='rhf',
+                                nuclear_repulsion=molecule.nuclear_repulsion)
+    result = rhf_minimization(hff)
+    assert isinstance(result, OptimizeResult)
+
+    result2 = rhf_minimization(hff, initial_guess=np.array([0]),
+                               sp_options={'maxiter': 100, 'disp': False})
+    assert isinstance(result2, OptimizeResult)
+    assert np.isclose(result2.fun, result.fun)
+
+
 
