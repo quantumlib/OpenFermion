@@ -59,7 +59,7 @@ def test_higham_root():
     mat = np.random.random((dim, dim))
     mat = 0.5 * (mat + mat.T)
     w, _ = np.linalg.eigh(mat)
-    target_trace = np.round(w[-1]-1)
+    target_trace = np.round(w[-1] - 1)
     sigma = higham_root(w, target_trace)
     assert np.isclose(higham_polynomial(w, shift=sigma), target_trace)
 
@@ -110,20 +110,21 @@ def test_reconstruction():
     mat_tensor = map_to_tensor(mat)
     trace_mat = np.trace(mat)
     true_mat = fixed_trace_positive_projection(mat, trace_mat)
-    test_mat = map_to_matrix(fixed_trace_positive_projection(mat_tensor,
-                                                             trace_mat))
+    test_mat = map_to_matrix(
+        fixed_trace_positive_projection(mat_tensor, trace_mat))
     assert np.allclose(true_mat, test_mat)
 
-    assert np.allclose(true_mat, fixed_trace_positive_projection(true_mat,
-                                                                 trace_mat))
+    assert np.allclose(true_mat,
+                       fixed_trace_positive_projection(true_mat, trace_mat))
 
 
 def test_mlme():
     """
     Test from fig 1 of maximum likelihood minimum effort!
     """
-    eigs = np.array(list(reversed([3.0/5, 1.0/2, 7.0/20, 1.0/10, -11.0/20])))
+    eigs = np.array(
+        list(reversed([3.0 / 5, 1.0 / 2, 7.0 / 20, 1.0 / 10, -11.0 / 20])))
     target_trace = 1.0
     sigma = higham_root(eigs, target_trace)
     shifted_eigs = np.multiply(heaviside(eigs - sigma), (eigs - sigma))
-    assert np.allclose(shifted_eigs, [0, 0, 1.0/5, 7.0/20, 9.0/20])
+    assert np.allclose(shifted_eigs, [0, 0, 1.0 / 5, 7.0 / 20, 9.0 / 20])

@@ -140,7 +140,8 @@ def fixed_trace_positive_projection(bmat, target_trace):
         bmat = 0.5 * (bmat + bmat.conj().T)
 
     w, v = np.linalg.eigh(bmat)
-    if np.all(w >= -1.0*float(1.0E-14)) and np.isclose(np.sum(w), target_trace):
+    if np.all(w >= -1.0 * float(1.0E-14)) and np.isclose(
+            np.sum(w), target_trace):
         purified_matrix = bmat
     else:
         sigma = higham_root(w, target_trace)
