@@ -16,6 +16,10 @@ from ._chemical_series import (make_atomic_ring,
 
 from ._general_hubbard import FermiHubbardModel
 
+from ._hartree_fock import (rhf_minimization, HartreeFockFunctional,
+                            rhf_params_to_matrix, get_matrix_of_eigs,
+                            generate_hamiltonian)
+
 from ._jellium import (
     dual_basis_kinetic, dual_basis_potential,
     dual_basis_jellium_model, jellium_model,

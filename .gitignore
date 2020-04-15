@@ -84,3 +84,6 @@ ENV/
 
 # idea SDK
 .idea/
+
+# no .dat files
+*.dat
