@@ -2,33 +2,28 @@ from typing import Callable
 from itertools import product
 import os
 import numpy as np
+import pytest
 import scipy as sp
 from scipy.optimize.optimize import OptimizeResult
-import pytest
 from openfermion.config import DATA_DIRECTORY
 from openfermion import (MolecularData, general_basis_change,
                          InteractionOperator)
-from openfermion.hamiltonians._hartree_fock import (get_matrix_of_eigs,
-                                                    HartreeFockFunctional,
-                                                    InputError,
-                                                    rhf_params_to_matrix,
-                                                    rhf_func_generator,
-                                                    generate_hamiltonian,
-                                                    rhf_minimization)
+from openfermion.hamiltonians._hartree_fock import (
+    get_matrix_of_eigs, HartreeFockFunctional, InputError, rhf_params_to_matrix,
+    rhf_func_generator, generate_hamiltonian, rhf_minimization)
 
 
 def test_get_matrix_of_eigs():
     lam_vals = np.random.randn(4) + 1j * np.random.randn(4)
     lam_vals[0] = lam_vals[1]
-    mat_eigs = np.zeros((lam_vals.shape[0],
-                         lam_vals.shape[0]),
-                         dtype=np.complex128)
+    mat_eigs = np.zeros((lam_vals.shape[0], lam_vals.shape[0]),
+                        dtype=np.complex128)
     for i, j in product(range(lam_vals.shape[0]), repeat=2):
         if np.isclose(abs(lam_vals[i] - lam_vals[j]), 0):
             mat_eigs[i, j] = 1
         else:
-            mat_eigs[i, j] = (np.exp(1j * (lam_vals[i] - lam_vals[j])) - 1) / (
-                        1j * (lam_vals[i] - lam_vals[j]))
+            mat_eigs[i, j] = (np.exp(1j * (lam_vals[i] - lam_vals[j])) -
+                              1) / (1j * (lam_vals[i] - lam_vals[j]))
 
     test_mat_eigs = get_matrix_of_eigs(lam_vals)
     assert np.allclose(test_mat_eigs, mat_eigs)
@@ -90,7 +85,7 @@ def test_gradient():
     overlap = molecule.overlap_integrals
     mo_obi = molecule.one_body_integrals
     mo_tbi = molecule.two_body_integrals
-    rotation_mat = molecule.canonical_orbitals.T @ overlap
+    rotation_mat = molecule.canonical_orbitals.T.dot(overlap)
     obi = general_basis_change(mo_obi, rotation_mat, (1, 0))
     tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0))
     hff = HartreeFockFunctional(one_body_integrals=obi,
@@ -100,14 +95,14 @@ def test_gradient():
                                 model='rhf',
                                 nuclear_repulsion=molecule.nuclear_repulsion)
 
-
     params = np.random.randn(hff.nocc * hff.nvirt)
-    u = sp.linalg.expm(rhf_params_to_matrix(params,
-                                            hff.num_orbitals,
-                                            occ=hff.occ,
-                                            virt=hff.virt))
+    u = sp.linalg.expm(
+        rhf_params_to_matrix(params,
+                             hff.num_orbitals,
+                             occ=hff.occ,
+                             virt=hff.virt))
     initial_opdm = np.diag([1] * hff.nocc + [0] * hff.nvirt)
-    final_opdm = u @ initial_opdm @ u.conj().T
+    final_opdm = u.dot(initial_opdm).dot(u.conj().T)
     grad = hff.rhf_global_gradient(params, final_opdm)
     grad_dim = grad.shape[0]
 
@@ -117,19 +112,21 @@ def test_gradient():
     for i in range(grad_dim):
         params_epsilon = params.copy()
         params_epsilon[i] += epsilon
-        u = sp.linalg.expm(rhf_params_to_matrix(params_epsilon,
-                                                hff.num_orbitals,
-                                                occ=hff.occ,
-                                                virt=hff.virt))
-        tfinal_opdm = u @ initial_opdm @ u.conj().T
+        u = sp.linalg.expm(
+            rhf_params_to_matrix(params_epsilon,
+                                 hff.num_orbitals,
+                                 occ=hff.occ,
+                                 virt=hff.virt))
+        tfinal_opdm = u.dot(initial_opdm).dot(u.conj().T)
         energy_plus_epsilon = hff.energy_from_rhf_opdm(tfinal_opdm)
 
         params_epsilon[i] -= 2 * epsilon
-        u = sp.linalg.expm(rhf_params_to_matrix(params_epsilon,
-                                                hff.num_orbitals,
-                                                occ=hff.occ,
-                                                virt=hff.virt))
-        tfinal_opdm = u @ initial_opdm @ u.conj().T
+        u = sp.linalg.expm(
+            rhf_params_to_matrix(params_epsilon,
+                                 hff.num_orbitals,
+                                 occ=hff.occ,
+                                 virt=hff.virt))
+        tfinal_opdm = u.dot(initial_opdm).dot(u.conj().T)
         energy_minus_epsilon = hff.energy_from_rhf_opdm(tfinal_opdm)
 
         finite_diff_grad[i] = (energy_plus_epsilon -
@@ -145,7 +142,7 @@ def test_gradient_lih():
     overlap = molecule.overlap_integrals
     mo_obi = molecule.one_body_integrals
     mo_tbi = molecule.two_body_integrals
-    rotation_mat = molecule.canonical_orbitals.T @ overlap
+    rotation_mat = molecule.canonical_orbitals.T.dot(overlap)
     obi = general_basis_change(mo_obi, rotation_mat, (1, 0))
     tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0))
 
@@ -157,13 +154,14 @@ def test_gradient_lih():
                                 nuclear_repulsion=molecule.nuclear_repulsion)
 
     params = np.random.randn(hff.nocc * hff.nvirt)
-    u = sp.linalg.expm(rhf_params_to_matrix(params,
-                                            hff.num_orbitals,
-                                            occ=hff.occ,
-                                            virt=hff.virt))
+    u = sp.linalg.expm(
+        rhf_params_to_matrix(params,
+                             hff.num_orbitals,
+                             occ=hff.occ,
+                             virt=hff.virt))
     grad_dim = hff.nocc * hff.nvirt
     initial_opdm = np.diag([1] * hff.nocc + [0] * hff.nvirt)
-    final_opdm = u @ initial_opdm @ u.conj().T
+    final_opdm = u.dot(initial_opdm).dot(u.conj().T)
     grad = hff.rhf_global_gradient(params, final_opdm)
 
     # get finite difference gradient
@@ -172,19 +170,21 @@ def test_gradient_lih():
     for i in range(grad_dim):
         params_epsilon = params.copy()
         params_epsilon[i] += epsilon
-        u = sp.linalg.expm(rhf_params_to_matrix(params_epsilon,
-                                                hff.num_orbitals,
-                                                occ=hff.occ,
-                                                virt=hff.virt))
-        tfinal_opdm = u @ initial_opdm @ u.conj().T
+        u = sp.linalg.expm(
+            rhf_params_to_matrix(params_epsilon,
+                                 hff.num_orbitals,
+                                 occ=hff.occ,
+                                 virt=hff.virt))
+        tfinal_opdm = u.dot(initial_opdm).dot(u.conj().T)
         energy_plus_epsilon = hff.energy_from_rhf_opdm(tfinal_opdm)
 
         params_epsilon[i] -= 2 * epsilon
-        u = sp.linalg.expm(rhf_params_to_matrix(params_epsilon,
-                                                hff.num_orbitals,
-                                                occ=hff.occ,
-                                                virt=hff.virt))
-        tfinal_opdm = u @ initial_opdm @ u.conj().T
+        u = sp.linalg.expm(
+            rhf_params_to_matrix(params_epsilon,
+                                 hff.num_orbitals,
+                                 occ=hff.occ,
+                                 virt=hff.virt))
+        tfinal_opdm = u.dot(initial_opdm).dot(u.conj().T)
         energy_minus_epsilon = hff.energy_from_rhf_opdm(tfinal_opdm)
 
         finite_diff_grad[i] = (energy_plus_epsilon -
@@ -200,7 +200,7 @@ def test_rhf_func_generator():
     overlap = molecule.overlap_integrals
     mo_obi = molecule.one_body_integrals
     mo_tbi = molecule.two_body_integrals
-    rotation_mat = molecule.canonical_orbitals.T @ overlap
+    rotation_mat = molecule.canonical_orbitals.T.dot(overlap)
     obi = general_basis_change(mo_obi, rotation_mat, (1, 0))
     tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0))
 
@@ -217,7 +217,7 @@ def test_rhf_func_generator():
 
     params = np.random.randn(hff.nocc * hff.nvirt)
     u = unitary(params)
-    assert np.allclose(u.conj().T @ u, np.eye(hff.num_orbitals))
+    assert np.allclose(u.conj().T.dot(u), np.eye(hff.num_orbitals))
     assert isinstance(energy(params), float)
     assert isinstance(gradient(params), np.ndarray)
 
@@ -226,7 +226,8 @@ def test_rhf_func_generator():
     assert isinstance(opdm_func(params), np.ndarray)
     assert np.isclose(opdm_func(params).shape[0], hff.num_orbitals)
 
-    _, energy, _ = rhf_func_generator(hff, init_occ_vec=np.array([1, 1, 1, 1, 0, 0]))
+    _, energy, _ = rhf_func_generator(hff,
+                                      init_occ_vec=np.array([1, 1, 1, 1, 0, 0]))
     assert isinstance(energy(params), float)
 
 
@@ -240,12 +241,10 @@ def test_rhf_params_to_matrix():
     test_kappa = rhf_params_to_matrix(params, 4)
     assert np.allclose(test_kappa, true_kappa)
 
-    test_kappa = rhf_params_to_matrix(params, 4,
-                                      occ=list(range(2)))
+    test_kappa = rhf_params_to_matrix(params, 4, occ=list(range(2)))
     assert np.allclose(test_kappa, true_kappa)
 
-    test_kappa = rhf_params_to_matrix(params, 4,
-                                      virt=list(range(2, 4)))
+    test_kappa = rhf_params_to_matrix(params, 4, virt=list(range(2, 4)))
     assert np.allclose(test_kappa, true_kappa)
 
     with pytest.raises(ValueError):
@@ -257,8 +256,7 @@ def test_generate_hamiltonian():
     molecule = MolecularData(filename=filename)
     mo_obi = molecule.one_body_integrals
     mo_tbi = molecule.two_body_integrals
-    mol_ham = generate_hamiltonian(mo_obi, mo_tbi,
-                                   constant=0)
+    mol_ham = generate_hamiltonian(mo_obi, mo_tbi, constant=0)
     assert isinstance(mol_ham, InteractionOperator)
     assert np.allclose(mol_ham.one_body_tensor[::2, ::2], mo_obi)
     assert np.allclose(mol_ham.one_body_tensor[1::2, 1::2], mo_obi)
@@ -275,7 +273,7 @@ def test_rhf_min():
     overlap = molecule.overlap_integrals
     mo_obi = molecule.one_body_integrals
     mo_tbi = molecule.two_body_integrals
-    rotation_mat = molecule.canonical_orbitals.T @ overlap
+    rotation_mat = molecule.canonical_orbitals.T.dot(overlap)
     obi = general_basis_change(mo_obi, rotation_mat, (1, 0))
     tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0))
     hff = HartreeFockFunctional(one_body_integrals=obi,
@@ -287,10 +285,11 @@ def test_rhf_min():
     result = rhf_minimization(hff)
     assert isinstance(result, OptimizeResult)
 
-    result2 = rhf_minimization(hff, initial_guess=np.array([0]),
-                               sp_options={'maxiter': 100, 'disp': False})
+    result2 = rhf_minimization(hff,
+                               initial_guess=np.array([0]),
+                               sp_options={
+                                   'maxiter': 100,
+                                   'disp': False
+                               })
     assert isinstance(result2, OptimizeResult)
     assert np.isclose(result2.fun, result.fun)
-
-
-
