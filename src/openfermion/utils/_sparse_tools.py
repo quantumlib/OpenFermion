@@ -744,32 +744,36 @@ def expectation(operator, state):
     Raises:
         ValueError: Input state has invalid format.
     """
-
     if isinstance(state, scipy.sparse.spmatrix):
         # Handle density matrix.
         if isinstance(operator, scipy.sparse.linalg.LinearOperator):
             raise ValueError('Taking the expectation of a LinearOperator with '
                              'a density matrix is not supported.')
         product = state * operator
-        expectation = numpy.sum(product.diagonal())
+        return numpy.sum(product.diagonal())
 
-    elif isinstance(state, numpy.ndarray):
+    if isinstance(state, numpy.ndarray):
         # Handle state vector.
         if len(state.shape) == 1:
             # Row vector
-            expectation = numpy.dot(numpy.conjugate(state), operator * state)
-        else:
-            # Column vector
-            expectation = numpy.dot(numpy.conjugate(state.T),
-                                    operator * state)[0, 0]
+            return numpy.dot(numpy.conjugate(state), operator * state)
+        if len(state.shape) == 2:
+            if state.shape[1] == 1:
+                # Column vector
+                return numpy.dot(numpy.conjugate(state.T),
+                                 operator * state).item()
+            if state.shape[0] == state.shape[1]:
+                # Density matrix
+                product = state * operator
+                return numpy.sum(product.diagonal()).item()
 
-    else:
-        # Handle exception.
-        raise ValueError(
-                'Input state must be a numpy array or a sparse matrix.')
+            raise ValueError("Invalid shape for `state`: {}"
+                             .format(state.shape))
+        raise ValueError("Invalid shape for `state`: {}. "
+                         "(should be 1D or 2D)".format(state.shape))
 
-    # Return.
-    return expectation
+    raise ValueError('Input state must be a numpy array or a sparse matrix.')
+
 
 
 def variance(operator, state):
