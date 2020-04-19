@@ -78,7 +78,8 @@ def uccsd_generator(single_amplitudes, double_amplitudes, anti_hermitian=True):
 
 
 def uccsd_convert_amplitude_format(single_amplitudes, double_amplitudes):
-    r"""Re-format single_amplitudes and double_amplitudes from ndarrays to lists.
+    r"""Re-format single_amplitudes and double_amplitudes from ndarrays
+        to lists.
 
     Args:
         single_amplitudes(ndarray): [NxN] array storing single excitation
