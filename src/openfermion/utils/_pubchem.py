@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 
-def geometry_from_pubchem(name, structure=None):
+def geometry_from_pubchem(name: str, structure: str = None):
     """Function to extract geometry using the molecule's name from the PubChem
     database. The 'structure' argument can be used to specify which structure
     info to use to extract the geometry. If structure=None, the geometry will

@@ -89,3 +89,7 @@ class OpenFermionPubChemTest(unittest.TestCase):
         z = 0
         self.assertEqual(z, self.oxygen_z_1)
         self.assertEqual(z, self.oxygen_z_2)
+
+        with pytest.raises(ValueError,
+                           match='Incorrect value for the argument structure'):
+            _ = geometry_from_pubchem('water', structure='foo')
