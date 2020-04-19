@@ -14,8 +14,6 @@
 
 import numpy
 
-from future.utils import iteritems
-
 from openfermion import (count_qubits,
                          FermionOperator,
                          get_fermion_operator,
@@ -50,20 +48,19 @@ def diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian):
     potential = FermionOperator.zero()
     kinetic = FermionOperator.zero()
 
-    for term, coeff in iteritems(hamiltonian.terms):
+    for term, coeff in hamiltonian.terms.items():
         acted = set(term[i][0] for i in range(len(term)))
         if len(acted) == len(term) / 2:
             potential += FermionOperator(term, coeff)
         else:
             kinetic += FermionOperator(term, coeff)
 
-    potential_terms = numpy.array(
-        [FermionOperator(term, coeff)
-         for term, coeff in iteritems(potential.terms)])
+    potential_terms = numpy.array([
+        FermionOperator(term, coeff) for term, coeff in potential.terms.items()
+    ])
 
     kinetic_terms = numpy.array(
-        [FermionOperator(term, coeff)
-         for term, coeff in iteritems(kinetic.terms)])
+        [FermionOperator(term, coeff) for term, coeff in kinetic.terms.items()])
 
     return (potential_terms, kinetic_terms)
 

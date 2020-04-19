@@ -11,7 +11,6 @@
 #   limitations under the License.
 """Base class for representating operators that are polynomials in the
 fermionic ladder operators."""
-from __future__ import division
 
 import copy
 import itertools

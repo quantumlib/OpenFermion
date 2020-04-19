@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for slater_determinants.py."""
-from __future__ import absolute_import
 import unittest
 
 import numpy

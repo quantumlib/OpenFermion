@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests many modules to compute energy of hydrogen."""
-from __future__ import absolute_import
 
 import os
 import unittest

@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for operator_utils."""
-from __future__ import absolute_import
 
 import itertools
 import os

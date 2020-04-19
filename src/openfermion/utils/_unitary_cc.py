@@ -12,7 +12,6 @@
 
 """Module to create and manipulate unitary coupled cluster operators."""
 
-from __future__ import division
 
 import itertools
 

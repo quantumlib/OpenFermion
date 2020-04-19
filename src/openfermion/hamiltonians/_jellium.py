@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """This module constructs Hamiltonians for the uniform electron gas."""
-from __future__ import absolute_import
 
 import numpy
 

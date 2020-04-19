@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """This module provides generic tools for classes in ops/"""
-from __future__ import absolute_import, division
 from builtins import map, zip
 import copy
 import itertools

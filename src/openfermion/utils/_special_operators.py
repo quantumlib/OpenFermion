@@ -13,7 +13,6 @@
 """Commonly used operators (mainly instances of SymbolicOperator)."""
 
 import numpy
-from six import string_types
 
 from openfermion.ops import BosonOperator, FermionOperator, down_index, up_index
 
@@ -237,7 +236,7 @@ def majorana_operator(term=None, coefficient=1.):
         raise ValueError('Coefficient must be scalar.')
 
     # If term is a string, convert it to a tuple
-    if isinstance(term, string_types):
+    if isinstance(term, str):
         operator_type = term[0]
         mode = int(term[1:])
         if operator_type == 'c':

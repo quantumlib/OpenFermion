@@ -12,10 +12,8 @@
 
 """The MajoranaOperator data structure."""
 
-from __future__ import division
 import itertools
 import numpy
-from future.utils import viewkeys
 
 
 class MajoranaOperator:
@@ -246,7 +244,7 @@ class MajoranaOperator:
         if not isinstance(other, type(self)):
             return NotImplemented
 
-        for term in viewkeys(self.terms) | viewkeys(other.terms):
+        for term in self.terms.keys() | other.terms.keys():
             if term in self.terms and term in other.terms:
                 if not numpy.isclose(self.terms[term], other.terms[term]):
                     return False

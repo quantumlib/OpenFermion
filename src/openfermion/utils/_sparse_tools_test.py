@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for sparse_tools.py."""
-from __future__ import absolute_import, division
 
 import unittest
 import numpy

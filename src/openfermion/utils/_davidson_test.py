@@ -12,7 +12,6 @@
 
 """Tests for _davidson.py."""
 
-from __future__ import absolute_import, division
 
 import logging
 import unittest

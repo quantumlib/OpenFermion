@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for mean-field d-wave model module."""
-from __future__ import absolute_import
 
 import unittest
 
