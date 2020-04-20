@@ -10,19 +10,5 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""
-OpenFermion
-
-For more information, examples, or tutorials visit our website:
-
-www.openfermion.org
-"""
-
-from openfermion.hamiltonians import *
-from openfermion.measurements import *
-from openfermion.ops import *
-from openfermion.third_party import *
-from openfermion.transforms import *
-from openfermion.utils import *
-
-from ._version import __version__
+from ._higham import (fixed_trace_positive_projection, map_to_tensor,
+                      map_to_matrix, higham_polynomial, higham_root, heaviside)
