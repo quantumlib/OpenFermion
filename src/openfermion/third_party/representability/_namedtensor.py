@@ -186,11 +186,6 @@ class Tensor(object):
 
         :return: a vector of self.size x 1
         """
-        # vec = np.zeros((self.dim**self.ndim, 1))
-        # for indices in product(range(self.dim), repeat=self.ndim):
-        #     vec[self.index_vectorized(*indices)] = self.data[indices]
-
-        # return vec
         return np.reshape(self.data, (-1, 1), order=order)
 
 
