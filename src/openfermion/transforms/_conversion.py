@@ -432,6 +432,42 @@ def _majorana_term_to_fermion_operator(term):
     return converted_term
 
 
+def get_majorana_operator(operator):
+    """Convert to MajoranaOperator.
+
+    Returns:
+        majorana_operator: An instance of the MajoranaOperator class.
+    """
+    if isinstance(operator, (PolynomialTensor, DiagonalCoulombHamiltonian)):
+        return _fermion_operator_to_majorana_operator(get_fermion_operator(operator))
+    elif isinstance(operator, FermionOperator):
+        return _fermion_operator_to_majorana_operator(operator)
+    else:
+        raise TypeError('{} cannot be converted to MajoranaOperator'.format(
+            type(operator)))
+
+
+def _fermion_operator_to_majorana_operator(fermion_operator):
+    majorana_operator = MajoranaOperator()
+    for term, coeff in fermion_operator.terms.items():
+        converted_term = _fermion_term_to_majorana_operator(term)
+        converted_term *= coeff
+        majorana_operator += converted_term
+    return majorana_operator
+
+
+def _fermion_term_to_majorana_operator(term):
+    converted_term = MajoranaOperator(())
+    for index, action in term:
+        converted_op = MajoranaOperator((2*index,), 0.5)
+        if action: 
+          converted_op += MajoranaOperator((2*index+1,), -0.5j)
+        else:
+          converted_op += MajoranaOperator((2*index+1,), 0.5j)
+        converted_term *= converted_op
+    return converted_term
+
+
 def get_molecular_data(interaction_operator,
                        geometry=None, basis=None, multiplicity=None,
                        n_electrons=None, reduce_spin=True,

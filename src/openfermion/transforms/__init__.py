@@ -40,6 +40,7 @@ from ._conversion import (
     get_boson_operator,
     get_diagonal_coulomb_hamiltonian,
     get_fermion_operator,
+    get_majorana_operator,
     get_interaction_rdm,
     get_interaction_operator,
     get_quadratic_hamiltonian,

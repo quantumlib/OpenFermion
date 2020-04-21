@@ -45,6 +45,7 @@ from openfermion.transforms._conversion import (
         get_boson_operator,
         get_diagonal_coulomb_hamiltonian,
         get_fermion_operator,
+        get_majorana_operator,
         get_interaction_operator,
         get_quad_operator,
         get_quadratic_hamiltonian,
@@ -516,6 +517,25 @@ def test_get_fermion_operator_majorana_operator():
 def test_get_fermion_operator_wrong_type():
     with pytest.raises(TypeError):
         _ = get_fermion_operator(QubitOperator())
+
+
+def test_get_majorana_operator_fermion_operator():
+    fermion_op = (-2j*(FermionOperator(((0, 0), (1, 0)))
+                       - FermionOperator(((0, 0), (1, 1)))
+                       + FermionOperator(((0, 1), (1, 0)))
+                       - FermionOperator(((0, 1), (1, 1))))
+                  - 2*FermionOperator(((0, 0), (1, 1), (1, 0)))
+                  + 2*FermionOperator(((0, 1), (1, 1), (1, 0)))
+                  + FermionOperator((0, 0))
+                  - FermionOperator((0, 1)))
+    majorana_op = get_majorana_operator(fermion_op)
+    expected_op = MajoranaOperator((0, 3), 2.0) + MajoranaOperator((1, 2, 3))
+    assert majorana_op == expected_op
+
+
+def test_get_majorana_operator_wrong_type():
+    with pytest.raises(TypeError):
+        _ = get_majorana_operator(QubitOperator())
 
 
 class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
