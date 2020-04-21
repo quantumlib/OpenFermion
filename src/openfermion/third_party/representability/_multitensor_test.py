@@ -1,6 +1,6 @@
 import numpy as np
-import scipy as sp
 import pytest
+import scipy as sp
 from openfermion.third_party.representability._namedtensor import Tensor
 from openfermion.third_party.representability._multitensor import MultiTensor, \
     TMap
