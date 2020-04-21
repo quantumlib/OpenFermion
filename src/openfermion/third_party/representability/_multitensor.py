@@ -105,17 +105,13 @@ class MultiTensor(object):
         bias_data_values = []
         # this forms the c-vector of ax + b = c
         inner_prod_data_values = []
-        from tqdm import tqdm
-        pbar = tqdm(total=len(self.dual_basis))
         for index, dual_element in enumerate(self.dual_basis):
-            pbar.update(1)
             dcol, dval = self.synthesize_element(dual_element)
             dual_row_indices.extend([index] * len(dcol))
             dual_col_indices.extend(dcol)
             dual_data_values.extend(dval)
             inner_prod_data_values.append(float(dual_element.dual_scalar))
             bias_data_values.append(dual_element.constant_bias)
-        pbar.close()
         sparse_dual_operator = csr_matrix(
             (dual_data_values, (dual_row_indices, dual_col_indices)),
             [index + 1, self.vec_dim])
