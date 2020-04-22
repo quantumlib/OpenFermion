@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Iterable, Generator, Optional, Union
 from itertools import zip_longest
 import numpy as np
 from openfermion.third_party.representability._bijections import Bijection, \
@@ -133,28 +133,28 @@ class Tensor(object):
             bijection += indices[n] * dim**(ndim - n - 1)
         return bijection
 
-    def utri_iterator(self):
+    def utri_iterator(self) -> Generator:
         """
         Iterate over the upper triangle (including diagonal)
         and return data value and index
         """
         return self._iterator("upper")
 
-    def ltri_iterator(self):
+    def ltri_iterator(self) -> Generator:
         """
         Iterate over the lower triangle (including diagonal)
         and return data value and index
         """
         return self._iterator("lower")
 
-    def all_iterator(self):
+    def all_iterator(self) -> Generator:
         """
         Iterate over the lower triangle (including diagonal)
         and return data value and index
         """
         return self._iterator("all")
 
-    def _iterator(self, ultri):
+    def _iterator(self, ultri: str) -> Generator:
         """
         Iterate over the a data store yielding the upper/lower/all values
         """
@@ -180,7 +180,7 @@ class Tensor(object):
 
             it.iternext()
 
-    def vectorize(self, order='C'):
+    def vectorize(self, order: Optional[str] = 'C') -> np.ndarray:
         """
         Take a multidimensional array and vectorized via C ordering
 
@@ -190,7 +190,9 @@ class Tensor(object):
 
 
 # from standard library itertools recipe book
-def grouper(iterable, n, fillvalue=None):
+def grouper(iterable: Iterable,
+            n: int,
+            fillvalue: Optional[Union[None, str]] = None):
     """Collect data into fixed-length chunks or blocks"""
     # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
     args = [iter(iterable)] * n
