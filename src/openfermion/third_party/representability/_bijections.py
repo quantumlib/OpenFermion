@@ -1,7 +1,7 @@
 from typing import Callable, List, Tuple
 
 
-class Bijection(object):
+class Bijection:
 
     def __init__(self, fwd: Callable, rev: Callable, sizes: Callable):
         """
