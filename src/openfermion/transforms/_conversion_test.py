@@ -202,8 +202,8 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
         ferm_op = get_fermion_operator(quad_ham)
         self.assertTrue(
             normal_ordered(ferm_op) == normal_ordered(
-                get_fermion_operator(
-                    get_diagonal_coulomb_hamiltonian(ferm_op))))
+                get_fermion_operator(get_diagonal_coulomb_hamiltonian(
+                    ferm_op))))
 
     def test_ignore_incompatible_terms(self):
 
