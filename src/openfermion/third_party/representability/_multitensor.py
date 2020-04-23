@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.sparse import csr_matrix
-from openfermion.third_party.representability._dualbasis import DualBasisElement, DualBasis
+from openfermion.third_party.representability._dualbasis import \
+    DualBasisElement, DualBasis
 
 
 class TMap(object):
