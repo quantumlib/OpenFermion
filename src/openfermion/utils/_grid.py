@@ -218,7 +218,8 @@ class Grid:
         return momentum_vector
 
     def orbital_id(self, grid_coordinates, spin=None):
-        """Return the tensor factor of a orbital with given coordinates and spin.
+        """Return the tensor factor of a orbital
+        with given coordinates and spin.
 
         Args:
             grid_coordinates: List or tuple of ints giving coordinates of grid

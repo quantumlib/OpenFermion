@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 
-def geometry_from_pubchem(name, structure=None):
+def geometry_from_pubchem(name: str, structure: str = None):
     """Function to extract geometry using the molecule's name from the PubChem
     database. The 'structure' argument can be used to specify which structure
     info to use to extract the geometry. If structure=None, the geometry will
@@ -45,11 +45,13 @@ def geometry_from_pubchem(name, structure=None):
             pubchempy_molecule = pubchempy.get_compounds(name, 'name',
                                                         record_type='2d')
     else:
-        raise ValueError('Incorrect value for the argument structure=%s' % structure)
+        raise ValueError('Incorrect value for the argument structure=%s' %
+                         structure)
 
     # Check if pubchempy_molecule is an empty list or None
     if not pubchempy_molecule:
-        print('Unable to find structure info in the PubChem database for the specified molecule "%s".' % name)
+        print("Unable to find structure info in the PubChem database"
+              "for the specified molecule %s." % name)
         return None
 
     pubchempy_geometry = \
