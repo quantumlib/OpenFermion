@@ -68,5 +68,9 @@ class InteractionRDMTest(unittest.TestCase):
 
     def test_addition(self):
         rdm2 = self.rdm + self.rdm
-        self.assertTrue(numpy.array_equal(rdm2.one_body_tensor, rdm2.n_body_tensors[(1, 0)]))
-        self.assertTrue(numpy.array_equal(rdm2.two_body_tensor, rdm2.n_body_tensors[(1, 1, 0, 0)]))
+        self.assertTrue(
+            numpy.array_equal(rdm2.one_body_tensor,
+                              rdm2.n_body_tensors[(1, 0)]))
+        self.assertTrue(
+            numpy.array_equal(rdm2.two_body_tensor,
+                              rdm2.n_body_tensors[(1, 1, 0, 0)]))
