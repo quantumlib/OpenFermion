@@ -282,8 +282,10 @@ def number_operator(n_modes, mode=None, coefficient=1., parity=-1):
         mode (int, optional): The mode on which to return the number
             operator. If None, return total number operator on all sites.
         coefficient (float): The coefficient of the term.
-        parity (int): Returns the fermionic number operator if parity=-1 (default),
-            and returns the bosonic number operator if parity=1.
+        parity (int): Returns the fermionic number operator
+                    if parity=-1 (default),
+                    and returns the bosonic number operator
+                    if parity=1.
     Returns:
         operator (BosonOperator or FermionOperator)
     """

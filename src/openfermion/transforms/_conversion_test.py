@@ -659,8 +659,8 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         hf_state[0] = 1.0
         hf_state = make_hf_sparse_op.dot(hf_state)
 
-        regular_sparse_hf_energy = (hf_state.dot(
-            one_body_regular_sparse_op.dot(hf_state))).real
+        regular_sparse_hf_energy = \
+            (hf_state.dot(one_body_regular_sparse_op.dot(hf_state))).real
 
         one_body_sparse_op = get_number_preserving_sparse_operator(
             one_body_fop,

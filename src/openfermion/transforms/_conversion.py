@@ -714,7 +714,8 @@ def get_number_preserving_sparse_operator(
 
     state_array = numpy.asarray(list(_iterate_basis_(
         reference_determinant, excitation_level, spin_preserving)))
-    # Create a 1d array with each determinant encoded as an integer for sorting purposes.
+    # Create a 1d array with each determinant encoded
+    # as an integer for sorting purposes.
     int_state_array = state_array.dot(
         1 << numpy.arange(state_array.shape[1])[::-1])
     sorting_indices = numpy.argsort(int_state_array)
@@ -762,7 +763,8 @@ def _iterate_basis_(reference_determinant, excitation_level, spin_preserving):
     """
     if not spin_preserving:
         for order in range(excitation_level + 1):
-            for determinant in _iterate_basis_order_(reference_determinant, order):
+            for determinant in _iterate_basis_order_(reference_determinant,
+                                                     order):
                 yield determinant
 
     else:
