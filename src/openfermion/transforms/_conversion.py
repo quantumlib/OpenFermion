@@ -448,8 +448,9 @@ def get_majorana_operator(operator):
         TypeError: If operator is not of PolynomialTensor,
             DiagonalCoulombHamiltonian or FermionOperator.
     """
-    if not isinstance(operator, (PolynomialTensor, DiagonalCoulombHamiltonian,
-                                 FermionOperator)):
+    if not isinstance(
+            operator,
+        (PolynomialTensor, DiagonalCoulombHamiltonian, FermionOperator)):
         raise TypeError('{} cannot be converted to MajoranaOperator'.format(
             type(operator)))
     try:
@@ -732,9 +733,7 @@ def get_number_preserving_sparse_operator(
             sparse_op += constant
 
         else:
-            term_op = _build_term_op_(term,
-                                      state_array,
-                                      int_state_array,
+            term_op = _build_term_op_(term, state_array, int_state_array,
                                       sorting_indices)
 
             sparse_op += coefficient * term_op
@@ -924,7 +923,8 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
     maybe_valid_states = numpy.where(
         numpy.logical_and(
             numpy.all(state_array[:, needs_to_be_occupied], axis=1),
-            numpy.logical_not(numpy.any(state_array[:, needs_to_be_unoccupied], axis=1))))[0]
+            numpy.logical_not(
+                numpy.any(state_array[:, needs_to_be_unoccupied], axis=1))))[0]
 
     data = []
     row_ind = []
