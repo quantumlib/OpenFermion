@@ -415,7 +415,8 @@ class HermitianConjugatedTest(unittest.TestCase):
             qubit_operator = jordan_wigner(operator)
             conjugate_operator = hermitian_conjugated(operator)
             conjugate_qubit_operator = jordan_wigner(conjugate_operator)
-            assert hermitian_conjugated(qubit_operator) == conjugate_qubit_operator
+            assert hermitian_conjugated(qubit_operator) == \
+                conjugate_qubit_operator
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):
@@ -970,9 +971,15 @@ class IsContextualTest(unittest.TestCase):
         self.assertTrue(is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2))
 
     def test_contextual_hamiltonians_with_extra_terms(self):
-        self.assertTrue(is_contextual(self.x1 + self.x2 + self.z1 + self.z2 + self.x3 + self.x4))
-        self.assertTrue(is_contextual(self.x1 + self.x1x2 + self.z1 + self.z2 + self.x3 + self.x4))
-        self.assertTrue(is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2 + self.x3 + self.x4))
+        self.assertTrue(
+            is_contextual(self.x1 + self.x2 + self.z1 + self.z2 + self.x3 +
+                          self.x4))
+        self.assertTrue(
+            is_contextual(self.x1 + self.x1x2 + self.z1 + self.z2 + self.x3 +
+                          self.x4))
+        self.assertTrue(
+            is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2 + self.x3 +
+                          self.x4))
 
     def test_commuting_hamiltonian(self):
         self.assertFalse(is_contextual(self.x1 + self.x2 + self.x3 + self.x4))

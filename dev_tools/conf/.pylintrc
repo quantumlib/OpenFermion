@@ -6,6 +6,8 @@ output-format=colorized
 score=no
 reports=no
 enable=
+    init-is-generator,
+    line-too-long,
     anomalous-backslash-in-string,
     assert-on-tuple,
     bad-indentation,

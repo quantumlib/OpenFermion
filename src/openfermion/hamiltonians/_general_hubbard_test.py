@@ -72,7 +72,8 @@ def random_parameters(lattice, probability=0.5, distinguish_edges=False):
             for dofs in lattice.dof_pairs_iter(edge_type == 'onsite')
             if random.random() <= probability]
 
-    possible_spin_pairs = (SpinPairs.ALL,) if lattice.spinless else (SpinPairs.SAME, SpinPairs.DIFF)
+    possible_spin_pairs = (SpinPairs.ALL,) if lattice.spinless else (
+        SpinPairs.SAME, SpinPairs.DIFF)
     parameters['interaction_parameters'] = [
         (edge_type, dofs, random.uniform(-1, 1), spin_pairs)
         for edge_type in edge_types for spin_pairs in possible_spin_pairs
@@ -113,15 +114,19 @@ def test_fermi_hubbard_bad_parameters():
         FermiHubbardModel(lattice, interaction_parameters=[(0,) * 5])
     with pytest.raises(ValueError):
         interaction_parameters = [('onsite', (0, 0), 1, SpinPairs.SAME)]
-        FermiHubbardModel(lattice, interaction_parameters=interaction_parameters)
+        FermiHubbardModel(lattice,
+                          interaction_parameters=interaction_parameters)
 
 
-lattices = [HubbardSquareLattice(random.randrange(3, 10), random.randrange(3, 10),
-                                 periodic=periodic, spinless=spinless)
-    for periodic in (False, True)
-    for spinless in (False, True)
-    for _ in range(2)
-    ]
+lattices = [
+    HubbardSquareLattice(random.randrange(3, 10),
+                         random.randrange(3, 10),
+                         periodic=periodic,
+                         spinless=spinless) for periodic in (False, True)
+    for spinless in (False, True) for _ in range(2)
+]
+
+
 @pytest.mark.parametrize('lattice,parameters,distinguish_edges', [
     (lattice, random_parameters(lattice, distinguish_edges=distinguish_edges),
      distinguish_edges)
