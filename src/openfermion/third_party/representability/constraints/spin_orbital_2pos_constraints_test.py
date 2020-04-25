@@ -131,7 +131,7 @@ def test_d2_to_q2():
     mt = MultiTensor(tensors=[topdm, ttpdm, tthdm], dual_basis=db)
     A, _, b = mt.synthesize_dual_basis()
     vec_rdms = mt.vectorize_tensors()
-    assert np.isclose(np.linalg.norm(A @ vec_rdms - b), 0)
+    assert np.isclose(np.linalg.norm(A.dot(vec_rdms) - b), 0)
 
 
 def test_d2_to_g2():
@@ -150,7 +150,7 @@ def test_d2_to_g2():
     mt = MultiTensor(tensors=[topdm, ttpdm, tphdm], dual_basis=db)
     A, _, b = mt.synthesize_dual_basis()
     vec_rdms = mt.vectorize_tensors()
-    assert np.isclose(np.linalg.norm(A @ vec_rdms - b), 0)
+    assert np.isclose(np.linalg.norm(A.dot(vec_rdms) - b), 0)
 
 
 def test_spin_orbital_dual_basis_construction():
