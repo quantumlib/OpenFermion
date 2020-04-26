@@ -58,6 +58,7 @@ def test_tpdm_opdm_mapping():
         assert len(dbe.primal_elements) == 7 or len(dbe.primal_elements) == 14
         assert np.isclose(dbe.dual_scalar, 0)
         assert np.isclose(dbe.constant_bias, 0)
+        print(vars(dbe))
         for idx, element in enumerate(dbe.primal_elements):
             if len(element) == 4:
                 assert element[1] == element[3]
@@ -67,8 +68,10 @@ def test_tpdm_opdm_mapping():
                     assert np.isclose(dbe.primal_coeffs[idx], 0.5)
                 assert dbe.primal_coeffs
             elif len(element) == 2:
+                gem_idx = [len(x) for x in dbe.primal_elements].index(4)
                 assert sorted(element) == sorted(
-                    [dbe.primal_elements[0][0], dbe.primal_elements[0][2]])
+                    [dbe.primal_elements[gem_idx][0],
+                     dbe.primal_elements[gem_idx][2]])
 
 
 def test_opdm_to_ohdm_mapping():
@@ -161,3 +164,7 @@ def test_spin_orbital_dual_basis_construction():
         constraint_list=['ck', 'kc', 'cckk', 'kkcc', 'ckck'],
         sz=0)
     assert isinstance(db, DualBasis)
+
+
+if __name__ == "__main__":
+    test_tpdm_opdm_mapping()
