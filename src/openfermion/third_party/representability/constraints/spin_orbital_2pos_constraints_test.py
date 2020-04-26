@@ -69,9 +69,10 @@ def test_tpdm_opdm_mapping():
                 assert dbe.primal_coeffs
             elif len(element) == 2:
                 gem_idx = [len(x) for x in dbe.primal_elements].index(4)
-                assert sorted(element) == sorted(
-                    [dbe.primal_elements[gem_idx][0],
-                     dbe.primal_elements[gem_idx][2]])
+                assert sorted(element) == sorted([
+                    dbe.primal_elements[gem_idx][0],
+                    dbe.primal_elements[gem_idx][2]
+                ])
 
 
 def test_opdm_to_ohdm_mapping():
