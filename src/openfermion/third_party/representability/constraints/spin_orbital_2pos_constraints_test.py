@@ -165,7 +165,3 @@ def test_spin_orbital_dual_basis_construction():
         constraint_list=['ck', 'kc', 'cckk', 'kkcc', 'ckck'],
         sz=0)
     assert isinstance(db, DualBasis)
-
-
-if __name__ == "__main__":
-    test_tpdm_opdm_mapping()
