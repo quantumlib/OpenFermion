@@ -36,21 +36,16 @@ from openfermion.utils import (is_hermitian,
 from openfermion.hamiltonians._molecular_data import MolecularData
 from openfermion.ops._interaction_operator import InteractionOperatorError
 from openfermion.ops._quadratic_hamiltonian import QuadraticHamiltonianError
-from openfermion.utils._testing_utils import (
-        random_hermitian_matrix,
-        random_quadratic_hamiltonian)
+from openfermion.utils._testing_utils import (random_hermitian_matrix,
+                                              random_quadratic_hamiltonian)
 from openfermion.config import THIS_DIRECTORY
 
 from openfermion.transforms._conversion import (
-        get_boson_operator,
-        get_diagonal_coulomb_hamiltonian,
-        get_fermion_operator,
-        get_interaction_operator,
-        get_quad_operator,
-        get_quadratic_hamiltonian,
-        get_sparse_operator,
-        get_number_preserving_sparse_operator,
-        _iterate_basis_)
+    get_boson_operator, get_diagonal_coulomb_hamiltonian, get_fermion_operator,
+    get_interaction_operator, get_majorana_operator,
+    _fermion_operator_to_majorana_operator, _fermion_term_to_majorana_operator,
+    get_quad_operator, get_quadratic_hamiltonian, get_sparse_operator,
+    get_number_preserving_sparse_operator, _iterate_basis_)
 
 
 class GetInteractionOperatorTest(unittest.TestCase):
@@ -174,13 +169,11 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         ferm_op = (FermionOperator('0^ 2') + FermionOperator('2^ 0') +
                    FermionOperator('1^ 0^ 2') + FermionOperator('1^ 0^ 2 1') +
                    FermionOperator('0^ 0 1^ 1') + FermionOperator('1^ 2^ 1 2'))
-        converted_op = get_quadratic_hamiltonian(
-                ferm_op,
-                ignore_incompatible_terms=True)
-        self.assertTrue(numpy.allclose(converted_op.hermitian_part,
-                        numpy.array([[0, 0, 1],
-                                     [0, 0, 0],
-                                     [1, 0, 0]])))
+        converted_op = get_quadratic_hamiltonian(ferm_op,
+                                                 ignore_incompatible_terms=True)
+        self.assertTrue(
+            numpy.allclose(converted_op.hermitian_part,
+                           numpy.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]])))
 
 
 class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
@@ -199,20 +192,18 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
                                       periodic)
 
         self.assertTrue(
-                normal_ordered(hubbard_model) ==
-                normal_ordered(
-                    get_fermion_operator(
-                        get_diagonal_coulomb_hamiltonian(hubbard_model))))
+            normal_ordered(hubbard_model) == normal_ordered(
+                get_fermion_operator(
+                    get_diagonal_coulomb_hamiltonian(hubbard_model))))
 
     def test_random_quadratic(self):
         n_qubits = 5
         quad_ham = random_quadratic_hamiltonian(n_qubits, True)
         ferm_op = get_fermion_operator(quad_ham)
         self.assertTrue(
-                normal_ordered(ferm_op) ==
-                normal_ordered(
-                    get_fermion_operator(
-                        get_diagonal_coulomb_hamiltonian(ferm_op))))
+            normal_ordered(ferm_op) == normal_ordered(
+                get_fermion_operator(get_diagonal_coulomb_hamiltonian(
+                    ferm_op))))
 
     def test_ignore_incompatible_terms(self):
 
@@ -220,16 +211,14 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
                    FermionOperator('1^ 0^ 2') + FermionOperator('1^ 0^ 2 1') +
                    FermionOperator('0^ 0 1^ 1') + FermionOperator('1^ 2^ 1 2'))
         converted_op = get_diagonal_coulomb_hamiltonian(
-                ferm_op,
-                ignore_incompatible_terms=True)
-        self.assertTrue(numpy.allclose(converted_op.one_body,
-                        numpy.array([[0, 0, 1],
-                                     [0, 0, 0],
-                                     [1, 0, 0]])))
-        self.assertTrue(numpy.allclose(converted_op.two_body,
-                        numpy.array([[0, 0.5, 0],
-                                     [0.5, 0, -0.5],
-                                     [0, -0.5, 0]])))
+            ferm_op, ignore_incompatible_terms=True)
+        self.assertTrue(
+            numpy.allclose(converted_op.one_body,
+                           numpy.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]])))
+        self.assertTrue(
+            numpy.allclose(
+                converted_op.two_body,
+                numpy.array([[0, 0.5, 0], [0.5, 0, -0.5], [0, -0.5, 0]])))
 
     def test_exceptions(self):
         op1 = QubitOperator()
@@ -518,6 +507,46 @@ def test_get_fermion_operator_wrong_type():
         _ = get_fermion_operator(QubitOperator())
 
 
+class GetMajoranaOperatorTest(unittest.TestCase):
+    """Test class get Majorana Operator."""
+
+    def test_raises(self):
+        """Test raises errors."""
+        with self.assertRaises(TypeError):
+            get_majorana_operator(1.0)
+        with self.assertRaises(TypeError):
+            _fermion_operator_to_majorana_operator([1.0])
+        with self.assertRaises(TypeError):
+            _fermion_term_to_majorana_operator(1.0)
+
+    def test_get_majorana_operator_fermion_operator(self):
+        """Test conversion FermionOperator to MajoranaOperator."""
+        fermion_op = (-2j * (FermionOperator(
+            ((0, 0), (1, 0))) - FermionOperator(
+                ((0, 0), (1, 1))) + FermionOperator(
+                    ((0, 1), (1, 0))) - FermionOperator(
+                        ((0, 1), (1, 1)))) - 2 * FermionOperator(
+                            ((0, 0), (1, 1), (1, 0))) + 2 * FermionOperator(
+                                ((0, 1), (1, 1), (1, 0))) + FermionOperator(
+                                    (0, 0)) - FermionOperator((0, 1)))
+
+        majorana_op = get_majorana_operator(fermion_op)
+        expected_op = (MajoranaOperator((0, 3), 2.0) + MajoranaOperator(
+            (1, 2, 3)))
+        self.assertTrue(majorana_op == expected_op)
+
+    def test_get_majorana_operator_diagonalcoulomb(self):
+        """Test get majorana from Diagonal Coulomb."""
+        fermion_op = (FermionOperator('0^ 1', 1.0) +
+                      FermionOperator('1^ 0', 1.0))
+
+        diagonal_ham = get_diagonal_coulomb_hamiltonian(fermion_op)
+
+        self.assertTrue(
+            get_majorana_operator(diagonal_ham) == get_majorana_operator(
+                fermion_op))
+
+
 class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
 
     def setUp(self):
@@ -539,7 +568,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
             chemical_potential=.2,
             magnetic_field=0.0,
             spinless=False)
-
 
     def test_number_on_reference(self):
         sum_n_op = FermionOperator()
@@ -584,7 +612,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         assert reference.dot(sum_sparse_n_op.dot(reference)) - \
             self.molecule.n_electrons < 1E-9
 
-
     def test_space_size_correct(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
 
@@ -598,7 +625,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
 
         # Naive Hilbert space size is 2**12, or 4096.
         assert space_size == 225
-
 
     def test_hf_energy(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
@@ -617,7 +643,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
 
         assert numpy.linalg.norm(sparse_hf_energy -
                                  self.molecule.hf_energy) < 1E-9
-
 
     def test_one_body_hf_energy(self):
         one_body_part = self.molecular_hamiltonian
@@ -652,7 +677,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         assert numpy.linalg.norm(sparse_hf_energy -
                                  regular_sparse_hf_energy) < 1E-9
 
-
     def test_ground_state_energy(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
 
@@ -666,7 +690,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
 
         assert numpy.abs(eig_val[0] - self.molecule.fci_energy) < 1E-9
 
-
     def test_doubles_are_subset(self):
         reference_determinants = [
             [True, True, True, True, False, False,
@@ -678,16 +701,18 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         for reference_determinant in reference_determinants:
             reference_determinant = numpy.asarray(reference_determinant)
             doubles_state_array = numpy.asarray(
-                list(_iterate_basis_(reference_determinant,
-                                       excitation_level=2,
-                                       spin_preserving=True)))
+                list(
+                    _iterate_basis_(reference_determinant,
+                                    excitation_level=2,
+                                    spin_preserving=True)))
             doubles_int_state_array = doubles_state_array.dot(
                 1 << numpy.arange(doubles_state_array.shape[1])[::-1])
 
             all_state_array = numpy.asarray(
-                list(_iterate_basis_(reference_determinant,
-                                       excitation_level=4,
-                                       spin_preserving=True)))
+                list(
+                    _iterate_basis_(reference_determinant,
+                                    excitation_level=4,
+                                    spin_preserving=True)))
             all_int_state_array = all_state_array.dot(
                 1 << numpy.arange(all_state_array.shape[1])[::-1])
 
@@ -697,16 +722,18 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         for reference_determinant in reference_determinants:
             reference_determinant = numpy.asarray(reference_determinant)
             doubles_state_array = numpy.asarray(
-                list(_iterate_basis_(reference_determinant,
-                                       excitation_level=2,
-                                       spin_preserving=True)))
+                list(
+                    _iterate_basis_(reference_determinant,
+                                    excitation_level=2,
+                                    spin_preserving=True)))
             doubles_int_state_array = doubles_state_array.dot(
                 1 << numpy.arange(doubles_state_array.shape[1])[::-1])
 
             all_state_array = numpy.asarray(
-                list(_iterate_basis_(reference_determinant,
-                                       excitation_level=4,
-                                       spin_preserving=False)))
+                list(
+                    _iterate_basis_(reference_determinant,
+                                    excitation_level=4,
+                                    spin_preserving=False)))
             all_int_state_array = all_state_array.dot(
                 1 << numpy.arange(all_state_array.shape[1])[::-1])
 
@@ -716,46 +743,45 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         for reference_determinant in reference_determinants:
             reference_determinant = numpy.asarray(reference_determinant)
             doubles_state_array = numpy.asarray(
-                list(_iterate_basis_(reference_determinant,
-                                       excitation_level=2,
-                                       spin_preserving=False)))
+                list(
+                    _iterate_basis_(reference_determinant,
+                                    excitation_level=2,
+                                    spin_preserving=False)))
             doubles_int_state_array = doubles_state_array.dot(
                 1 << numpy.arange(doubles_state_array.shape[1])[::-1])
 
             all_state_array = numpy.asarray(
-                list(_iterate_basis_(reference_determinant,
-                                       excitation_level=4,
-                                       spin_preserving=False)))
+                list(
+                    _iterate_basis_(reference_determinant,
+                                    excitation_level=4,
+                                    spin_preserving=False)))
             all_int_state_array = all_state_array.dot(
                 1 << numpy.arange(all_state_array.shape[1])[::-1])
 
             for item in doubles_int_state_array:
                 assert item in all_int_state_array
-
 
     def test_full_ham_hermitian(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
 
         sparse_ham = get_number_preserving_sparse_operator(
             hamiltonian_fop,
-           self.molecule.n_qubits,
-           self.molecule.n_electrons,
+            self.molecule.n_qubits,
+            self.molecule.n_electrons,
             spin_preserving=True)
 
         assert scipy.sparse.linalg.norm(sparse_ham - sparse_ham.getH()) < 1E-9
-
 
     def test_full_ham_hermitian_non_spin_preserving(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
 
         sparse_ham = get_number_preserving_sparse_operator(
             hamiltonian_fop,
-           self.molecule.n_qubits,
-           self.molecule.n_electrons,
+            self.molecule.n_qubits,
+            self.molecule.n_electrons,
             spin_preserving=False)
 
         assert scipy.sparse.linalg.norm(sparse_ham - sparse_ham.getH()) < 1E-9
-
 
     def test_singles_simple_one_body_term_hermitian(self):
         fop = FermionOperator(((3, 1), (1, 0)))
@@ -778,7 +804,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         assert scipy.sparse.linalg.norm(sparse_op -
                                         sparse_op_conj.getH()) < 1E-9
 
-
     def test_singles_simple_two_body_term_hermitian(self):
         fop = FermionOperator(((3, 1), (8, 1), (1, 0), (4, 0)))
         fop_conj = FermionOperator(((4, 1), (1, 1), (8, 0), (3, 0)))
@@ -799,7 +824,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
 
         assert scipy.sparse.linalg.norm(sparse_op -
                                         sparse_op_conj.getH()) < 1E-9
-
 
     def test_singles_repeating_two_body_term_hermitian(self):
         fop = FermionOperator(((3, 1), (1, 1), (5, 0), (1, 0)))
@@ -822,7 +846,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         assert scipy.sparse.linalg.norm(sparse_op -
                                         sparse_op_conj.getH()) < 1E-9
 
-
     def test_singles_ham_hermitian(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
 
@@ -835,7 +858,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
 
         assert scipy.sparse.linalg.norm(sparse_ham - sparse_ham.getH()) < 1E-9
 
-
     def test_singles_ham_hermitian_non_spin_preserving(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
 
@@ -847,7 +869,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
             excitation_level=1)
 
         assert scipy.sparse.linalg.norm(sparse_ham - sparse_ham.getH()) < 1E-9
-
 
     def test_cisd_energy(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
@@ -862,7 +883,6 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
         eig_val, _ = scipy.sparse.linalg.eigsh(sparse_ham, k=1, which='SA')
 
         assert numpy.abs(eig_val[0] - self.molecule.cisd_energy) < 1E-9
-
 
     def test_cisd_energy_non_spin_preserving(self):
         hamiltonian_fop = get_fermion_operator(self.molecular_hamiltonian)
@@ -910,7 +930,7 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
             2,
             spin_preserving=True,
             excitation_level=2,
-            reference_determinant = numpy.asarray(
+            reference_determinant=numpy.asarray(
                 [False, False, True, True, False, False, False, False]))
 
         sparse_ham_fci = get_sparse_operator(
