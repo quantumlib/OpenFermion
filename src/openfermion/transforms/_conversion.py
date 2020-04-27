@@ -13,11 +13,10 @@
 """Transformations acting on operators and RDMs."""
 
 import itertools
+from typing import Union
 
 import numpy
 import scipy
-
-from typing import Union
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
@@ -434,8 +433,9 @@ def _majorana_term_to_fermion_operator(term):
     return converted_term
 
 
-def get_majorana_operator(operator: Union[PolynomialTensor, 
-    DiagonalCoulombHamiltonian, FermionOperator]) -> MajoranaOperator:
+def get_majorana_operator(
+        operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian, 
+                        FermionOperator]) -> MajoranaOperator:
     """
     Convert to MajoranaOperator. 
 
@@ -466,7 +466,7 @@ def get_majorana_operator(operator: Union[PolynomialTensor,
 
 
 def _fermion_operator_to_majorana_operator(fermion_operator: FermionOperator
-        ) -> MajoranaOperator:
+                                          ) -> MajoranaOperator:
     """
     Convert FermionOperator to MajoranaOperator.
 
