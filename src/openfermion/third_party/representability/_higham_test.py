@@ -31,10 +31,9 @@
 from itertools import product
 import numpy as np
 import pytest
-from openfermion.third_party._higham import (heaviside, higham_polynomial,
-                                             higham_root, map_to_tensor,
-                                             map_to_matrix,
-                                             fixed_trace_positive_projection)
+from openfermion.third_party.representability._higham import (
+    heaviside, higham_polynomial, higham_root, map_to_tensor, map_to_matrix,
+    fixed_trace_positive_projection)
 
 
 def test_heaviside():
