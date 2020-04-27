@@ -437,9 +437,9 @@ def get_majorana_operator(
         operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian,
                         FermionOperator]) -> MajoranaOperator:
     """
-    Convert to MajoranaOperator. 
+    Convert to MajoranaOperator.
 
-    Uses the convention of even + odd indexing of Majorana modes derived from 
+    Uses the convention of even + odd indexing of Majorana modes derived from
     a fermionic mode:
         fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
         fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
@@ -498,7 +498,7 @@ def _fermion_term_to_majorana_operator(term: tuple) -> MajoranaOperator:
     Convert single terms of FermionOperator to Majorana.
     (Auxiliary function of get_majorana_operator.)
 
-    Convention: even + odd indexing of Majorana modes derived from a 
+    Convention: even + odd indexing of Majorana modes derived from a
     fermionic mode:
         fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
         fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
