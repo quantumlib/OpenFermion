@@ -17,6 +17,8 @@ import itertools
 import numpy
 import scipy
 
+from typing import Union
+
 from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
 from openfermion.ops import (DiagonalCoulombHamiltonian,
@@ -432,9 +434,15 @@ def _majorana_term_to_fermion_operator(term):
     return converted_term
 
 
-def get_majorana_operator(operator):
+def get_majorana_operator(operator: Union[PolynomialTensor, 
+    DiagonalCoulombHamiltonian, FermionOperator]) -> MajoranaOperator:
     """
-    Convert to MajoranaOperator.
+    Convert to MajoranaOperator. 
+
+    Uses the convention of even + odd indexing of Majorana modes derived from 
+    a fermionic mode:
+        fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
+        fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
 
     Args:
         operator (PolynomialTensor,
@@ -448,22 +456,17 @@ def get_majorana_operator(operator):
         TypeError: If operator is not of PolynomialTensor,
             DiagonalCoulombHamiltonian or FermionOperator.
     """
-    if not isinstance(
-            operator,
-        (PolynomialTensor, DiagonalCoulombHamiltonian, FermionOperator)):
-        raise TypeError('{} cannot be converted to MajoranaOperator'.format(
-            type(operator)))
-    try:
-
+    if isinstance(operator, FermionOperator):
         return _fermion_operator_to_majorana_operator(operator)
-
-    except:
-
+    elif isinstance(operator, (PolynomialTensor, DiagonalCoulombHamiltonian)):
         return _fermion_operator_to_majorana_operator(
             get_fermion_operator(operator))
+    raise TypeError('{} cannot be converted to MajoranaOperator'.format(
+        type(operator)))
 
 
-def _fermion_operator_to_majorana_operator(fermion_operator):
+def _fermion_operator_to_majorana_operator(fermion_operator: FermionOperator
+        ) -> MajoranaOperator:
     """
     Convert FermionOperator to MajoranaOperator.
 
@@ -482,9 +485,7 @@ def _fermion_operator_to_majorana_operator(fermion_operator):
         raise TypeError('Input a FermionOperator.')
 
     majorana_operator = MajoranaOperator()
-
     for term, coeff in fermion_operator.terms.items():
-
         converted_term = _fermion_term_to_majorana_operator(term)
         converted_term *= coeff
         majorana_operator += converted_term
@@ -492,11 +493,15 @@ def _fermion_operator_to_majorana_operator(fermion_operator):
     return majorana_operator
 
 
-def _fermion_term_to_majorana_operator(term):
+def _fermion_term_to_majorana_operator(term: tuple) -> MajoranaOperator:
     """
     Convert single terms of FermionOperator to Majorana.
+    (Auxiliary function of get_majorana_operator.)
 
-    Auxiliar function of get_majorana_operator.
+    Convention: even + odd indexing of Majorana modes derived from a 
+    fermionic mode:
+        fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
+        fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
 
     Args:
         term (tuple): single FermionOperator term.
