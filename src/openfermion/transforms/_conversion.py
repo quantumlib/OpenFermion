@@ -13,6 +13,7 @@
 """Transformations acting on operators and RDMs."""
 
 import itertools
+from typing import Union
 
 import numpy
 import scipy
@@ -432,6 +433,103 @@ def _majorana_term_to_fermion_operator(term):
     return converted_term
 
 
+def get_majorana_operator(
+        operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian,
+                        FermionOperator]) -> MajoranaOperator:
+    """
+    Convert to MajoranaOperator.
+
+    Uses the convention of even + odd indexing of Majorana modes derived from
+    a fermionic mode:
+        fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
+        fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
+
+    Args:
+        operator (PolynomialTensor,
+            DiagonalCoulombHamiltonian or
+            FermionOperator): Operator to write as Majorana Operator.
+
+    Returns:
+        majorana_operator: An instance of the MajoranaOperator class.
+
+    Raises:
+        TypeError: If operator is not of PolynomialTensor,
+            DiagonalCoulombHamiltonian or FermionOperator.
+    """
+    if isinstance(operator, FermionOperator):
+        return _fermion_operator_to_majorana_operator(operator)
+    elif isinstance(operator, (PolynomialTensor, DiagonalCoulombHamiltonian)):
+        return _fermion_operator_to_majorana_operator(
+            get_fermion_operator(operator))
+    raise TypeError('{} cannot be converted to MajoranaOperator'.format(
+        type(operator)))
+
+
+def _fermion_operator_to_majorana_operator(fermion_operator: FermionOperator
+                                          ) -> MajoranaOperator:
+    """
+    Convert FermionOperator to MajoranaOperator.
+
+    Auxiliar function of get_majorana_operator.
+
+    Args:
+        fermion_operator (FermionOperator): To convert to MajoranaOperator.
+
+    Returns:
+        majorana_operator object.
+
+    Raises:
+        TypeError: if input is not a FermionOperator.
+    """
+    if not isinstance(fermion_operator, FermionOperator):
+        raise TypeError('Input a FermionOperator.')
+
+    majorana_operator = MajoranaOperator()
+    for term, coeff in fermion_operator.terms.items():
+        converted_term = _fermion_term_to_majorana_operator(term)
+        converted_term *= coeff
+        majorana_operator += converted_term
+
+    return majorana_operator
+
+
+def _fermion_term_to_majorana_operator(term: tuple) -> MajoranaOperator:
+    """
+    Convert single terms of FermionOperator to Majorana.
+    (Auxiliary function of get_majorana_operator.)
+
+    Convention: even + odd indexing of Majorana modes derived from a
+    fermionic mode:
+        fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
+        fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
+
+    Args:
+        term (tuple): single FermionOperator term.
+
+    Returns:
+        converted_term: single MajoranaOperator term.
+
+    Raises:
+        TypeError: if term is a tuple.
+    """
+    if not isinstance(term, tuple):
+        raise TypeError('Term does not have the correct Type.')
+
+    converted_term = MajoranaOperator(())
+    for index, action in term:
+        converted_op = MajoranaOperator((2 * index,), 0.5)
+
+        if action:
+            converted_op += MajoranaOperator((2 * index + 1,), -0.5j)
+
+        else:
+            converted_op += MajoranaOperator((2 * index + 1,), 0.5j)
+
+        converted_term *= converted_op
+
+    return converted_term
+
+
 def get_molecular_data(interaction_operator,
                        geometry=None, basis=None, multiplicity=None,
                        n_electrons=None, reduce_spin=True,
@@ -641,10 +739,8 @@ def get_number_preserving_sparse_operator(
             sparse_op += constant
 
         else:
-            term_op = _build_term_op_(term,
-                                        state_array,
-                                        int_state_array,
-                                        sorting_indices)
+            term_op = _build_term_op_(term, state_array, int_state_array,
+                                      sorting_indices)
 
             sparse_op += coefficient * term_op
 
@@ -691,7 +787,6 @@ def _iterate_basis_(reference_determinant, excitation_level, spin_preserving):
                 for determinant in _iterate_basis_spin_order_(
                         reference_determinant, alpha_order, beta_order):
                     yield determinant
-
 
 
 def _iterate_basis_order_(reference_determinant, order):
@@ -828,7 +923,6 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
     if delta != 0:
         raise ValueError(
             "The supplied operator doesn't preserve particle number")
-
 
     # We search for every state which has the necessary orbitals occupied and
     # unoccupied in order to not be immediately zeroed out based on the
