@@ -1,6 +1,5 @@
 .DS_Store
 *lastfailed
-*coverage
 
 # Data files.
 *.out
@@ -85,3 +84,6 @@ ENV/
 
 # idea SDK
 .idea/
+
+# no .dat files
+*.dat

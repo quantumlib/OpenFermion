@@ -12,7 +12,6 @@
 
 """Module to create and manipulate unitary coupled cluster operators."""
 
-from __future__ import division
 
 import itertools
 
@@ -21,7 +20,7 @@ from openfermion.ops import FermionOperator, QubitOperator, down_index, up_index
 
 
 def uccsd_generator(single_amplitudes, double_amplitudes, anti_hermitian=True):
-    """Create a fermionic operator that is the generator of uccsd.
+    r"""Create a fermionic operator that is the generator of uccsd.
 
     This a the most straight-forward method to generate UCCSD operators,
     however it is slightly inefficient. In particular, it parameterizes
@@ -78,7 +77,8 @@ def uccsd_generator(single_amplitudes, double_amplitudes, anti_hermitian=True):
 
 
 def uccsd_convert_amplitude_format(single_amplitudes, double_amplitudes):
-    """Re-format single_amplitudes and double_amplitudes from ndarrays to lists.
+    r"""Re-format single_amplitudes and double_amplitudes from ndarrays
+        to lists.
 
     Args:
         single_amplitudes(ndarray): [NxN] array storing single excitation
@@ -136,7 +136,7 @@ def uccsd_singlet_paramsize(n_qubits, n_electrons):
 
 def uccsd_singlet_get_packed_amplitudes(single_amplitudes, double_amplitudes,
                                         n_qubits, n_electrons):
-    """Convert amplitudes for use with singlet UCCSD
+    r"""Convert amplitudes for use with singlet UCCSD
 
     The output list contains only those amplitudes that are relevant to
     singlet UCCSD, in an order suitable for use with the function
@@ -330,18 +330,24 @@ def uccsd_singlet_generator(packed_amplitudes, n_qubits, n_electrons,
             virtual_2_b = index_b(virtual_spatial_2)
             occupied_2_b = index_b(occupied_spatial_2)
 
-            generator += FermionOperator((
-                (virtual_1_a, 1),
-                (occupied_1_a, 0),
-                (virtual_2_b, 1),
-                (occupied_2_b, 0)),
-                coeff)
-            if anti_hermitian:
+            if virtual_1_a == virtual_2_b:
+                continue
+            if occupied_1_a == occupied_2_b:
+                continue
+            else:
+
                 generator += FermionOperator((
-                    (occupied_2_b, 1),
-                    (virtual_2_b, 0),
-                    (occupied_1_a, 1),
-                    (virtual_1_a, 0)),
-                    -coeff)
+                    (virtual_1_a, 1),
+                    (occupied_1_a, 0),
+                    (virtual_2_b, 1),
+                    (occupied_2_b, 0)),
+                    coeff)
+                if anti_hermitian:
+                    generator += FermionOperator((
+                        (occupied_2_b, 1),
+                        (virtual_2_b, 0),
+                        (occupied_1_a, 1),
+                        (virtual_1_a, 0)),
+                        -coeff)
 
     return generator

@@ -11,10 +11,9 @@
 #   limitations under the License.
 
 """bravyi_kitaev_fast transform on fermionic operators."""
-from __future__ import absolute_import
 
-import networkx
 import numpy
+import networkx
 
 from openfermion.ops import InteractionOperator, QubitOperator
 from openfermion.utils import count_qubits
@@ -45,7 +44,7 @@ def bravyi_kitaev_fast(operator):
 
 
 def bravyi_kitaev_fast_interaction_op(iop):
-    """
+    r"""
     Transform from InteractionOpeator to QubitOperator for Bravyi-Kitaev fast
     algorithm.
 
@@ -68,7 +67,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
     For the sake of brevity the reader is encouraged to look up the
     expressions of other terms from the code below. The variables for edge
     operators are chosen according to the nomenclature defined above
-    (B_i and A_ij). A detailed description of these operators and the terms 
+    (B_i and A_ij). A detailed description of these operators and the terms
     of the electronic Hamiltonian are provided in (arXiv 1712.00446).
 
     Args:
@@ -116,7 +115,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
                             qubit_operator += transformed_term
                             continue
                         elif p != r and q < p:
-                                continue
+                            continue
 
 
                     # Handle the two-body terms.
@@ -167,7 +166,7 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
                             if min(r, s) < min(p, q):
                                 continue
                         elif p != r and q < p:
-                                continue
+                            continue
 
                     # Handle case of four unique indices.
                     if len(set([p, q, r, s])) == 4:
@@ -204,7 +203,7 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
 
 
 def one_body(edge_matrix_indices, p, q):
-    """
+    r"""
     Map the term a^\dagger_p a_q + a^\dagger_q a_p to QubitOperator.
 
     The definitions for various operators will be presented in a paper soon.
@@ -234,7 +233,7 @@ def one_body(edge_matrix_indices, p, q):
 
 
 def two_body(edge_matrix_indices, p, q, r, s):
-    """
+    r"""
     Map the term a^\dagger_p a^\dagger_q a_r a_s + h.c. to QubitOperator.
 
     The definitions for various operators will be covered in a paper soon.
@@ -365,7 +364,7 @@ def edge_operator_aij(edge_matrix_indices, i, j):
     for edge_index in range(numpy.size(qubit_position_j[0, :])):
         if edge_matrix_indices[int(not(qubit_position_j[0, edge_index]))][
                 qubit_position_j[1, edge_index]] < i:
-                    operator += ((int(qubit_position_j[1, edge_index]), 'Z'),)
+            operator += ((int(qubit_position_j[1, edge_index]), 'Z'),)
     a_ij += QubitOperator(operator, 1)
     if j < i:
         a_ij = -1*a_ij

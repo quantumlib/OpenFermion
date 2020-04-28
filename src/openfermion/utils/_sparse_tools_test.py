@@ -11,10 +11,9 @@
 #   limitations under the License.
 
 """Tests for sparse_tools.py."""
-from __future__ import absolute_import, division
 
-import numpy
 import unittest
+import numpy
 
 from numpy.linalg import multi_dot
 from scipy.linalg import eigh, norm
@@ -120,8 +119,10 @@ class JordanWignerSparseTest(unittest.TestCase):
         qubit_operator = QubitOperator.zero()
         vec_expected = numpy.zeros(8)
 
-        self.assertTrue(numpy.allclose(
-            get_linear_qubit_operator_diagonal(qubit_operator, 3), vec_expected))
+        self.assertTrue(
+            numpy.allclose(
+                get_linear_qubit_operator_diagonal(qubit_operator, 3),
+                vec_expected))
 
     def test_get_linear_qubit_operator_diagonal_zero(self):
         """Get zero diagonals from get_linear_qubit_operator_diagonal."""
@@ -265,16 +266,16 @@ class JWSzIndicesTest(unittest.TestCase):
 
         # Test exceptions
         with self.assertRaises(ValueError):
-            indices = jw_sz_indices(3, 3)
+            jw_sz_indices(3, 3)
 
         with self.assertRaises(ValueError):
-            indices = jw_sz_indices(3.1, 4)
+            jw_sz_indices(3.1, 4)
 
         with self.assertRaises(ValueError):
-            indices = jw_sz_indices(1.5, 8, n_electrons=6)
+            jw_sz_indices(1.5, 8, n_electrons=6)
 
         with self.assertRaises(ValueError):
-            indices = jw_sz_indices(1.5, 8, n_electrons=1)
+            jw_sz_indices(1.5, 8, n_electrons=1)
 
 
 class JWNumberRestrictOperatorTest(unittest.TestCase):
@@ -364,7 +365,7 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
         restricted_jellium_hamiltonian = jw_number_restrict_operator(
             jellium_hamiltonian, 2)
 
-        energy, ground_state = get_ground_state(restricted_jellium_hamiltonian)
+        _, ground_state = get_ground_state(restricted_jellium_hamiltonian)
 
         number_expectation = expectation(restricted_number, ground_state)
         self.assertAlmostEqual(number_expectation, 2)
@@ -531,7 +532,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, ground_state = get_ground_state(sparse_operator)
+            ground_energy, _ = get_ground_state(sparse_operator)
 
             # Compute the ground state using the circuit
             circuit_energy, circuit_state = jw_get_gaussian_state(
@@ -556,7 +557,7 @@ class JWGetGaussianStateTest(unittest.TestCase):
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, ground_state = get_ground_state(sparse_operator)
+            ground_energy, _ = get_ground_state(sparse_operator)
 
             # Compute the ground state using the circuit
             circuit_energy, circuit_state = (
@@ -640,16 +641,16 @@ class JWGetGaussianStateTest(unittest.TestCase):
     def test_bad_input(self):
         """Test bad input."""
         with self.assertRaises(ValueError):
-            energy, state = jw_get_gaussian_state('a')
+            jw_get_gaussian_state('a')
 
 
 class JWSparseGivensRotationTest(unittest.TestCase):
 
     def test_bad_input(self):
         with self.assertRaises(ValueError):
-            givens_matrix = jw_sparse_givens_rotation(0, 2, 1., 1., 5)
+            jw_sparse_givens_rotation(0, 2, 1., 1., 5)
         with self.assertRaises(ValueError):
-            givens_matrix = jw_sparse_givens_rotation(4, 5, 1., 1., 5)
+            jw_sparse_givens_rotation(4, 5, 1., 1., 5)
 
 
 class JWSlaterDeterminantTest(unittest.TestCase):
@@ -980,8 +981,7 @@ class ExpectationDualBasisOperatorWithPlaneWaveBasisState(unittest.TestCase):
                     FermionOperator('3^ 3', 2.1) +
                     FermionOperator('3^ 2', 1.7))
         operator = normal_ordered(operator)
-        transformed_operator = normal_ordered(fourier_transform(
-            operator, self.grid3, spinless))
+        normal_ordered(fourier_transform(operator, self.grid3, spinless))
 
         expected = 2.1
         # Calculated from expectation(get_sparse_operator(
@@ -1039,8 +1039,7 @@ class ExpectationDualBasisOperatorWithPlaneWaveBasisState(unittest.TestCase):
                     FermionOperator('3^ 3', 2.1) +
                     FermionOperator('5^ 3^ 1 0', 7.3))
         operator = normal_ordered(operator)
-        transformed_operator = normal_ordered(fourier_transform(
-            operator, self.grid3, spinless))
+        normal_ordered(fourier_transform(operator, self.grid3, spinless))
 
         expected = 1.66 - 0.0615536707435j
         # Calculated with expected = expectation(get_sparse_operator(
@@ -1097,9 +1096,7 @@ class ExpectationDualBasisOperatorWithPlaneWaveBasisState(unittest.TestCase):
                     FermionOperator('7^ 6^ 7 4', -3.7j) +
                     FermionOperator('3^ 7', 2.1))
         operator = normal_ordered(operator)
-        transformed_operator = normal_ordered(fourier_transform(
-            operator, self.grid3, spinless))
-
+        normal_ordered(fourier_transform(operator, self.grid3, spinless))
         expected = -0.2625 - 0.4625j
         # Calculated with expectation(get_sparse_operator(
         #    transformed_operator), self.hf_state3)
@@ -1155,8 +1152,7 @@ class ExpectationDualBasisOperatorWithPlaneWaveBasisState(unittest.TestCase):
                     FermionOperator('7^ 6^ 7 4', -3.7j) +
                     FermionOperator('3^ 7', 2.1))
         operator = normal_ordered(operator)
-        transformed_operator = normal_ordered(fourier_transform(
-            operator, self.grid3, spinless))
+        normal_ordered(fourier_transform(operator, self.grid3, spinless))
 
         expected = -0.2625 - 0.578125j
         # Calculated from expected = expectation(get_sparse_operator(
@@ -1201,13 +1197,13 @@ class BosonSparseTest(unittest.TestCase):
 
     def test_boson_ladder_noninteger_trunc(self):
         with self.assertRaises(ValueError):
-            b = boson_ladder_sparse(1, 0, 0, 0.1)
+            boson_ladder_sparse(1, 0, 0, 0.1)
 
         with self.assertRaises(ValueError):
-            b = boson_ladder_sparse(1, 0, 0, -1)
+            boson_ladder_sparse(1, 0, 0, -1)
 
         with self.assertRaises(ValueError):
-            b = boson_ladder_sparse(1, 0, 0, 0)
+            boson_ladder_sparse(1, 0, 0, 0)
 
     def test_boson_ladder_destroy_one_mode(self):
         b = boson_ladder_sparse(1, 0, 0, self.d).toarray()
@@ -1233,13 +1229,13 @@ class BosonSparseTest(unittest.TestCase):
 
     def test_single_quad_noninteger_trunc(self):
         with self.assertRaises(ValueError):
-            b = single_quad_op_sparse(1, 0, 'q', self.hbar, 0.1)
+            single_quad_op_sparse(1, 0, 'q', self.hbar, 0.1)
 
         with self.assertRaises(ValueError):
-            b = single_quad_op_sparse(1, 0, 'q', self.hbar, -1)
+            single_quad_op_sparse(1, 0, 'q', self.hbar, -1)
 
         with self.assertRaises(ValueError):
-            b = single_quad_op_sparse(1, 0, 'q', self.hbar, 0)
+            single_quad_op_sparse(1, 0, 'q', self.hbar, 0)
 
     def test_single_quad_q_one_mode(self):
         res = single_quad_op_sparse(1, 0, 'q', self.hbar, self.d).toarray()
@@ -1263,18 +1259,18 @@ class BosonSparseTest(unittest.TestCase):
     def test_boson_operator_sparse_trunc(self):
         op = BosonOperator('0')
         with self.assertRaises(ValueError):
-            b = boson_operator_sparse(op, 0.1)
+            boson_operator_sparse(op, 0.1)
 
         with self.assertRaises(ValueError):
-            b = boson_operator_sparse(op, -1)
+            boson_operator_sparse(op, -1)
 
         with self.assertRaises(ValueError):
-            b = boson_operator_sparse(op, 0)
+            boson_operator_sparse(op, 0)
 
     def test_boson_operator_invalid_op(self):
         op = FermionOperator('0')
         with self.assertRaises(ValueError):
-            b = boson_operator_sparse(op, self.d)
+            boson_operator_sparse(op, self.d)
 
     def test_boson_operator_sparse_empty(self):
         for op in (BosonOperator(), QuadOperator()):

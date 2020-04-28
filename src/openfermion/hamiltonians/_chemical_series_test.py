@@ -11,11 +11,10 @@
 #   limitations under the License.
 
 """Tests for chemical_series."""
-from __future__ import absolute_import
 
-import numpy
 import os
 import unittest
+import numpy
 
 from openfermion.hamiltonians import (make_atom,
                                       make_atomic_lattice,

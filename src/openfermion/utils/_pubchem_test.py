@@ -11,11 +11,10 @@
 #   limitations under the License.
 
 """Tests for _pubchem.py."""
-from __future__ import absolute_import
 
+import unittest
 import numpy
 import pytest
-import unittest
 
 from openfermion.utils import (geometry_from_pubchem,
                                module_importable)
@@ -76,3 +75,20 @@ class OpenFermionPubChemTest(unittest.TestCase):
         none_geometry = geometry_from_pubchem('none')
 
         self.assertIsNone(none_geometry)
+
+    def test_water_2d(self):
+        water_geometry = geometry_from_pubchem('water', structure='2d')
+        self.water_natoms = len(water_geometry)
+
+        water_natoms = 3
+        self.assertEqual(water_natoms, self.water_natoms)
+
+        self.oxygen_z_1 = water_geometry[0][1][2]
+        self.oxygen_z_2 = water_geometry[1][1][2]
+        z = 0
+        self.assertEqual(z, self.oxygen_z_1)
+        self.assertEqual(z, self.oxygen_z_2)
+
+        with pytest.raises(ValueError,
+                           match='Incorrect value for the argument structure'):
+            _ = geometry_from_pubchem('water', structure='foo')

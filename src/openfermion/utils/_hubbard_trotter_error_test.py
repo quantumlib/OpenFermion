@@ -109,7 +109,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, _, _ = result
 
         terms_total = sum(terms, FermionOperator.zero())
 
@@ -146,7 +146,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, indices, _ = result
 
         for i in range(len(terms)):
             term = list(terms[i].terms)
@@ -165,7 +165,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, _, is_hopping = result
 
         for i in range(len(terms)):
             single_term = list(terms[i].terms)[0]
@@ -182,7 +182,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, _, _ = result
 
         self.assertEqual(len(terms), 8)
 
@@ -195,7 +195,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, _, _ = result
 
         self.assertEqual(len(terms), 24)
 
@@ -208,7 +208,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, _, _ = result
 
         self.assertEqual(len(terms), 48)
 
@@ -221,7 +221,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, _, _ = result
 
         self.assertEqual(len(terms), 4)
 
@@ -234,7 +234,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, _, _ = result
 
         self.assertEqual(len(terms), 9)
 
@@ -247,7 +247,7 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, _, _ = result
 
         self.assertEqual(len(terms), 16)
 
@@ -260,6 +260,6 @@ class OrderedHubbardTermsMoreInfoTest(unittest.TestCase):
         # hopping operators.
         result = simulation_ordered_grouped_hubbard_terms_with_info(
             hamiltonian)
-        terms, indices, is_hopping = result
+        terms, _, _ = result
 
         self.assertEqual(len(terms), 105)

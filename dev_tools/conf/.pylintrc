@@ -1,0 +1,31 @@
+[config]
+max-line-length=80
+disable=all
+ignore-patterns=.*_pb2\.py,quantum_engine_service_client.py,engine_pb2_grpc.py
+output-format=colorized
+score=no
+reports=no
+enable=
+    init-is-generator,
+    line-too-long,
+    anomalous-backslash-in-string,
+    assert-on-tuple,
+    bad-indentation,
+    bad-option-value,
+    bad-reversed-sequence,
+    bad-super-call,
+    consider-merging-isinstance,
+    continue-in-finally,
+    dangerous-default-value,
+    duplicate-argument-name,
+    expression-not-assigned,
+    function-redefined,
+    inconsistent-mro,
+    trailing-whitespace,
+    unused-variable,
+    wrong-import-order,
+    wrong-import-position,
+    yield-outside-function
+
+# Ignore long lines containing urls or pylint directives.
+ignore-long-lines=^(.*#\w*pylint: disable.*|\s*(# )?<?https?://\S+>?)$

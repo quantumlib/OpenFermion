@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for polynomial_tensor.py."""
-from __future__ import division
 
 import unittest
 

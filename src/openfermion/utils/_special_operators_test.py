@@ -11,8 +11,8 @@
 #   limitations under the License.
 
 """testing angular momentum generators. _fermion_spin_operators.py"""
-import numpy
 import unittest
+import numpy
 from openfermion.ops import FermionOperator, BosonOperator
 from openfermion.utils import commutator, normal_ordered
 from openfermion.utils._special_operators import (
@@ -174,12 +174,12 @@ class MajoranaOperatorTest(unittest.TestCase):
         self.assertEqual(op1, correct)
 
     def test_none_term(self):
-        majorana_op = majorana_operator()
+        majorana_operator()
         self.assertEqual(majorana_operator(), FermionOperator())
 
     def test_bad_coefficient(self):
         with self.assertRaises(ValueError):
-            majorana_op = majorana_operator((1, 1), 'a')
+            majorana_operator((1, 1), 'a')
 
     def test_bad_term(self):
         with self.assertRaises(ValueError):

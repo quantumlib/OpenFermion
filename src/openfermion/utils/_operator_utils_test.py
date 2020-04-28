@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for operator_utils."""
-from __future__ import absolute_import
 
 import itertools
 import os
@@ -101,7 +100,7 @@ class OperatorUtilsTest(unittest.TestCase):
     def test_is_identity_unit_quadoperator(self):
         self.assertTrue(is_identity(QuadOperator(())))
 
-    def test_is_identity_double_of_unit_bosonoperator(self):
+    def test_is_identity_double_of_unit_quadoperator(self):
         self.assertTrue(is_identity(2. * QuadOperator(())))
 
     def test_is_identity_unit_qubitoperator(self):
@@ -195,14 +194,14 @@ class ChemistOrderingTest(unittest.TestCase):
         bad_term = ((2, 1), (3, 1))
         random_operator += FermionOperator(bad_term)
         with self.assertRaises(OperatorSpecificationError):
-            chemist_operator = chemist_ordered(random_operator)
+            chemist_ordered(random_operator)
 
     def test_form(self):
         n_qubits = 6
         random_operator = get_fermion_operator(
             random_interaction_operator(n_qubits))
         chemist_operator = chemist_ordered(random_operator)
-        for term, coefficient in chemist_operator.terms.items():
+        for term, _ in chemist_operator.terms.items():
             if len(term) == 2 or not len(term):
                 pass
             else:
@@ -416,7 +415,8 @@ class HermitianConjugatedTest(unittest.TestCase):
             qubit_operator = jordan_wigner(operator)
             conjugate_operator = hermitian_conjugated(operator)
             conjugate_qubit_operator = jordan_wigner(conjugate_operator)
-            assert hermitian_conjugated(qubit_operator) == conjugate_qubit_operator
+            assert hermitian_conjugated(qubit_operator) == \
+                conjugate_qubit_operator
 
     def test_exceptions(self):
         with self.assertRaises(TypeError):
@@ -971,9 +971,15 @@ class IsContextualTest(unittest.TestCase):
         self.assertTrue(is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2))
 
     def test_contextual_hamiltonians_with_extra_terms(self):
-        self.assertTrue(is_contextual(self.x1 + self.x2 + self.z1 + self.z2 + self.x3 + self.x4))
-        self.assertTrue(is_contextual(self.x1 + self.x1x2 + self.z1 + self.z2 + self.x3 + self.x4))
-        self.assertTrue(is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2 + self.x3 + self.x4))
+        self.assertTrue(
+            is_contextual(self.x1 + self.x2 + self.z1 + self.z2 + self.x3 +
+                          self.x4))
+        self.assertTrue(
+            is_contextual(self.x1 + self.x1x2 + self.z1 + self.z2 + self.x3 +
+                          self.x4))
+        self.assertTrue(
+            is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2 + self.x3 +
+                          self.x4))
 
     def test_commuting_hamiltonian(self):
         self.assertFalse(is_contextual(self.x1 + self.x2 + self.x3 + self.x4))

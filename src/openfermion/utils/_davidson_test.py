@@ -12,7 +12,6 @@
 
 """Tests for _davidson.py."""
 
-from __future__ import absolute_import, division
 
 import logging
 import unittest
@@ -283,7 +282,8 @@ class DavidsonTest(unittest.TestCase):
         success, eigen_values, _ = self.davidson.get_lowest_n(
             n_lowest, initial_guess, max_iterations=2)
         self.assertTrue(success)
-        self.assertTrue(numpy.allclose(eigen_values, self.eigen_values[:n_lowest]))
+        self.assertTrue(
+            numpy.allclose(eigen_values, self.eigen_values[:n_lowest]))
 
     def test_get_lowest_all(self):
         """Test for get_lowest_n() with n_lowest = 10."""
@@ -293,7 +293,9 @@ class DavidsonTest(unittest.TestCase):
         success, eigen_values, _ = self.davidson.get_lowest_n(
             n_lowest, initial_guess, max_iterations=1)
         self.assertTrue(success)
-        self.assertTrue(numpy.allclose(eigen_values, self.eigen_values[:n_lowest]))
+        self.assertTrue(
+            numpy.allclose(eigen_values, self.eigen_values[:n_lowest]))
+
 
 class QubitDavidsonTest(unittest.TestCase):
     """"Tests for QubitDavidson class with a QubitOperator."""
