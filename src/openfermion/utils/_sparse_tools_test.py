@@ -722,7 +722,7 @@ class ExpectationTest(unittest.TestCase):
         operator = get_sparse_operator(QubitOperator('X0'), n_qubits=2)
         vector = numpy.array([0., 1.j, 0., 1.j])
         density_matrix = numpy.outer(vector, numpy.conjugate(vector))
-        assert density_matrix.shape == (4,4)
+        assert density_matrix.shape == (4, 4)
         self.assertAlmostEqual(expectation(operator, density_matrix), 2.0)
 
 
