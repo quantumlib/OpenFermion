@@ -766,8 +766,8 @@ def expectation(operator, state):
                 product = state * operator
                 return numpy.sum(product.diagonal()).item()
 
-            raise ValueError("Invalid shape for `state`: {}"
-                             .format(state.shape))
+            raise ValueError("Invalid shape for `state`: {}".format(
+              state.shape))
         raise ValueError("Invalid shape for `state`: {}. "
                          "(should be 1D or 2D)".format(state.shape))
 
