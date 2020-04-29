@@ -774,7 +774,6 @@ def expectation(operator, state):
     raise ValueError('Input state must be a numpy array or a sparse matrix.')
 
 
-
 def variance(operator, state):
     """Compute variance of operator with a state.
 
