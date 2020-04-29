@@ -734,8 +734,8 @@ def expectation(operator, state):
         operator(scipy.sparse.spmatrix or scipy.sparse.linalg.LinearOperator):
             The operator whose expectation value is desired.
         state(numpy.ndarray or scipy.sparse.spmatrix): A numpy array
-            representing a pure state or a sparse matrix representing a density
-            matrix. If `operator` is a LinearOperator, then this must be a
+            representing a pure state or a density matrix (sparse or dense).
+            If `operator` is a LinearOperator, then this must be a
             numpy array.
 
     Returns:
@@ -753,7 +753,6 @@ def expectation(operator, state):
         return numpy.sum(product.diagonal())
 
     if isinstance(state, numpy.ndarray):
-        # Handle state vector.
         if len(state.shape) == 1:
             # Row vector
             return numpy.dot(numpy.conjugate(state), operator * state)
