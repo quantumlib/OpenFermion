@@ -13,7 +13,6 @@
 import abc
 from enum import Enum, IntEnum
 import itertools
-from six import add_metaclass
 
 
 class Spin(IntEnum):
@@ -23,14 +22,13 @@ class Spin(IntEnum):
 
 class SpinPairs(Enum):
     """The spin orbitals corresponding to a pair of spatial orbitals."""
-    
+
     SAME = 1
     ALL = 0
     DIFF = -1
 
 
-@add_metaclass(abc.ABCMeta)
-class HubbardLattice:
+class HubbardLattice(metaclass=abc.ABCMeta):
     """Base class for a Hubbard model lattice.
 
     Subclasses must define the following properties:
@@ -45,7 +43,8 @@ class HubbardLattice:
             sites to themselves.
 
     And the following methods:
-        site_pairs_iter(edge_type: Hashable) -> Iterable[Tuple[int, int]]: Iterable
+        site_pairs_iter(edge_type: Hashable) \\
+            -> Iterable[Tuple[int, int]]: Iterable
             over pairs of sites corresponding to the given edge type.
 
     For 'spinful' lattices, the ``spin_indices`` ``0`` and ``1`` correspond to
@@ -54,7 +53,8 @@ class HubbardLattice:
 
     @abc.abstractproperty
     def n_dofs(self):
-        """The number of degrees of freedom per site (and spin if applicable)."""
+        """The number of degrees of freedom per site
+        (and spin if applicable)."""
 
 
     @abc.abstractproperty
@@ -83,7 +83,7 @@ class HubbardLattice:
     @abc.abstractmethod
     def site_pairs_iter(self, edge_type, ordered=True):
         """Iterable over pairs of sites corresponding to the given edge type."""
-    
+
 
     # properties
 
@@ -113,7 +113,7 @@ class HubbardLattice:
 
 
     def to_spin_orbital_index(self, site_index, dof_index, spin_index):
-        """The index of the spin orbital.""" 
+        """The index of the spin orbital."""
         return (self.site_index_offset(site_index) +
                 self.dof_index_offset(dof_index) +
                 spin_index)
@@ -186,7 +186,7 @@ class HubbardLattice:
 
 class HubbardSquareLattice(HubbardLattice):
     r"""A square lattice for a Hubbard model.
-    
+
     Valid edge types are:
         * 'onsite'
         * 'horizontal_neighbor'
@@ -229,7 +229,7 @@ class HubbardSquareLattice(HubbardLattice):
     @property
     def n_sites(self):
         return self.x_dimension * self.y_dimension
-    
+
 
     @property
     def edge_types(self):
@@ -281,25 +281,23 @@ class HubbardSquareLattice(HubbardLattice):
     def n_horizontal_neighbor_pairs(self, ordered=True):
         """Number of horizontally neighboring (unordered) pairs of sites."""
         n_horizontal_edges_per_y = (
-                self.x_dimension - 
-                (self.x_dimension <= 2 or not self.periodic))
-        return (self.y_dimension * n_horizontal_edges_per_y * 
+            self.x_dimension - (self.x_dimension <= 2 or not self.periodic))
+        return (self.y_dimension * n_horizontal_edges_per_y *
                 (2 if ordered else 1))
 
 
     def n_vertical_neighbor_pairs(self, ordered=True):
         """Number of vertically neighboring (unordered) pairs of sites."""
-        n_vertical_edges_per_x = (
-                self.y_dimension - 
-                (self.y_dimension <= 2 or not self.periodic))
-        return (self.x_dimension * n_vertical_edges_per_x * 
+        n_vertical_edges_per_x = (self.y_dimension -
+                                  (self.y_dimension <= 2 or not self.periodic))
+        return (self.x_dimension * n_vertical_edges_per_x *
                 (2 if ordered else 1))
 
     def n_neighbor_pairs(self, ordered=True):
         """Number of neighboring (unordered) pairs of sites."""
-        return (self.n_horizontal_neighbor_pairs(ordered) + 
+        return (self.n_horizontal_neighbor_pairs(ordered) +
                 self.n_vertical_neighbor_pairs(ordered))
-    
+
 
     def neighbors_iter(self, ordered=True):
         return itertools.chain(
@@ -307,9 +305,8 @@ class HubbardSquareLattice(HubbardLattice):
                 self.vertical_neighbors_iter(ordered))
 
     def diagonal_neighbors_iter(self, ordered=True):
-        n_sites_per_y = (
-                self.x_dimension - 
-                (self.x_dimension <= 2 or not self.periodic))
+        n_sites_per_y = (self.x_dimension -
+                         (self.x_dimension <= 2 or not self.periodic))
         n_sites_per_x = (
                 self.y_dimension -
                 (self.y_dimension <= 2 or not self.periodic))
@@ -325,8 +322,7 @@ class HubbardSquareLattice(HubbardLattice):
 
     def horizontal_neighbors_iter(self, ordered=True):
         n_horizontal_edges_per_y = (
-                self.x_dimension - 
-                (self.x_dimension <= 2 or not self.periodic))
+            self.x_dimension - (self.x_dimension <= 2 or not self.periodic))
         for x in range(n_horizontal_edges_per_y):
             for y in range(self.y_dimension):
                 i = self.to_site_index((x, y))
@@ -337,9 +333,8 @@ class HubbardSquareLattice(HubbardLattice):
 
 
     def vertical_neighbors_iter(self, ordered=True):
-        n_vertical_edges_per_x = (
-                self.y_dimension - 
-                (self.y_dimension <= 2 or not self.periodic))
+        n_vertical_edges_per_x = (self.y_dimension -
+                                  (self.y_dimension <= 2 or not self.periodic))
         for y in range(n_vertical_edges_per_x):
             for x in range(self.x_dimension):
                 i = self.to_site_index((x, y))

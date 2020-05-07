@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Construct Hamiltonians in plan wave basis and its dual in 3D."""
-from __future__ import absolute_import
 
 import openfermion.utils._operator_utils
 
@@ -46,7 +45,7 @@ def dual_basis_external_potential(grid, geometry, spinless,
     """
     prefactor = -4.0 * numpy.pi / grid.volume_scale()
     if non_periodic and period_cutoff is None:
-      period_cutoff = grid.volume_scale() ** (1. / grid.dimensions)
+        period_cutoff = grid.volume_scale()**(1. / grid.dimensions)
     operator = None
     if spinless:
         spins = [None]

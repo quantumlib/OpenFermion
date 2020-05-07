@@ -17,8 +17,8 @@ import re
 import sys
 import unittest
 
-import nbformat
 import numpy
+import nbformat
 
 
 class ExamplesTest(unittest.TestCase):
@@ -26,9 +26,8 @@ class ExamplesTest(unittest.TestCase):
     def setUp(self):
 
         self.examples_folder = os.path.join(
-                os.path.dirname(__file__),  # Start at this file's directory.
-                '..', 'tests',  # Hacky check that we're under tests/.
-                '..', '..', '..', 'examples')
+            os.path.dirname(__file__),  # Start at this file's directory.
+        )
 
     def test_performance_benchmarks(self):
         """Unit test for examples/performance_benchmark.py."""
@@ -36,6 +35,7 @@ class ExamplesTest(unittest.TestCase):
         # Import performance benchmarks and seed random number generator.
         sys.path.append(self.examples_folder)
         from performance_benchmarks import (
+            run_diagonal_commutator,
             run_fermion_math_and_normal_order,
             run_jordan_wigner_sparse,
             run_molecular_operator_jordan_wigner,
@@ -44,6 +44,11 @@ class ExamplesTest(unittest.TestCase):
         numpy.random.seed(1)
 
         runtime_upper_bound = 600
+
+        # Run diagonal commutator benchmark
+        runtime_standard, runtime_diagonal = run_diagonal_commutator()
+        self.assertLess(runtime_standard, runtime_upper_bound)
+        self.assertLess(runtime_diagonal, runtime_upper_bound)
 
         # Run InteractionOperator.jordan_wigner_transform() benchmark.
         runtime = run_molecular_operator_jordan_wigner(n_qubits=10)
@@ -66,6 +71,7 @@ class ExamplesTest(unittest.TestCase):
         self.assertLess(runtime_parallel, runtime_upper_bound)
 
     def test_can_run_examples_jupyter_notebooks(self):
+        print("Examples folder ", self.examples_folder)
         for filename in os.listdir(self.examples_folder):
             if not filename.endswith('.ipynb'):
                 continue

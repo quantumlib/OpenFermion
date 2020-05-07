@@ -12,9 +12,8 @@
 
 
 """ Code to generate Pauli strings for measurement of local operators"""
-from __future__ import division
-import numpy
 from itertools import chain
+import numpy
 try:
     from itertools import zip_longest
 except ImportError:
@@ -56,7 +55,7 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
 
     # Repeat the division and zip steps as many times
     # as required.
-    for j in range(num_iterations):
+    for _ in range(num_iterations):
         # Divide the qubit list in two and return it
         partition = (qubit_list[:half_point],
                      qubit_list[half_point:])
@@ -67,7 +66,7 @@ def binary_partition_iterator(qubit_list, num_iterations=None):
         # which we delete.
         if qubit_list[-1] is None:
             del qubit_list[-1]
-        
+
 
 def partition_iterator(qubit_list, partition_size, num_iterations=None):
     """Generator for a list of k-partitions of N qubits such that

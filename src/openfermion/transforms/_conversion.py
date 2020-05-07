@@ -11,13 +11,12 @@
 #   limitations under the License.
 
 """Transformations acting on operators and RDMs."""
-from __future__ import absolute_import
 
 import itertools
+from typing import Union
 
 import numpy
 import scipy
-from future.utils import iteritems
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
@@ -86,7 +85,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
     # One-RDM.
     for i, j in itertools.product(range(n_qubits), repeat=2):
         transformed_operator = jordan_wigner(FermionOperator(((i, 1), (j, 0))))
-        for term, coefficient in iteritems(transformed_operator.terms):
+        for term, coefficient in transformed_operator.terms.items():
             if term in qubit_operator.terms:
                 one_rdm[i, j] += coefficient * qubit_operator.terms[term]
 
@@ -94,7 +93,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
     for i, j, k, l in itertools.product(range(n_qubits), repeat=4):
         transformed_operator = jordan_wigner(FermionOperator(((i, 1), (j, 1),
                                                               (k, 0), (l, 0))))
-        for term, coefficient in iteritems(transformed_operator.terms):
+        for term, coefficient in transformed_operator.terms.items():
             if term in qubit_operator.terms:
                 two_rdm[i, j, k, l] += coefficient * qubit_operator.terms[term]
 
@@ -306,7 +305,7 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator,
                                      n_qubits=None,
                                      ignore_incompatible_terms=False):
     r"""Convert a FermionOperator to a DiagonalCoulombHamiltonian.
-    
+
     Args:
         fermion_operator(FermionOperator): The operator to convert.
         n_qubits(int): Optionally specify the total number of qubits in the
@@ -431,6 +430,103 @@ def _majorana_term_to_fermion_operator(term):
             converted_op = FermionOperator((j, 0))
             converted_op += FermionOperator((j, 1))
         converted_term *= converted_op
+    return converted_term
+
+
+def get_majorana_operator(
+        operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian,
+                        FermionOperator]) -> MajoranaOperator:
+    """
+    Convert to MajoranaOperator.
+
+    Uses the convention of even + odd indexing of Majorana modes derived from
+    a fermionic mode:
+        fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
+        fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
+
+    Args:
+        operator (PolynomialTensor,
+            DiagonalCoulombHamiltonian or
+            FermionOperator): Operator to write as Majorana Operator.
+
+    Returns:
+        majorana_operator: An instance of the MajoranaOperator class.
+
+    Raises:
+        TypeError: If operator is not of PolynomialTensor,
+            DiagonalCoulombHamiltonian or FermionOperator.
+    """
+    if isinstance(operator, FermionOperator):
+        return _fermion_operator_to_majorana_operator(operator)
+    elif isinstance(operator, (PolynomialTensor, DiagonalCoulombHamiltonian)):
+        return _fermion_operator_to_majorana_operator(
+            get_fermion_operator(operator))
+    raise TypeError('{} cannot be converted to MajoranaOperator'.format(
+        type(operator)))
+
+
+def _fermion_operator_to_majorana_operator(fermion_operator: FermionOperator
+                                          ) -> MajoranaOperator:
+    """
+    Convert FermionOperator to MajoranaOperator.
+
+    Auxiliar function of get_majorana_operator.
+
+    Args:
+        fermion_operator (FermionOperator): To convert to MajoranaOperator.
+
+    Returns:
+        majorana_operator object.
+
+    Raises:
+        TypeError: if input is not a FermionOperator.
+    """
+    if not isinstance(fermion_operator, FermionOperator):
+        raise TypeError('Input a FermionOperator.')
+
+    majorana_operator = MajoranaOperator()
+    for term, coeff in fermion_operator.terms.items():
+        converted_term = _fermion_term_to_majorana_operator(term)
+        converted_term *= coeff
+        majorana_operator += converted_term
+
+    return majorana_operator
+
+
+def _fermion_term_to_majorana_operator(term: tuple) -> MajoranaOperator:
+    """
+    Convert single terms of FermionOperator to Majorana.
+    (Auxiliary function of get_majorana_operator.)
+
+    Convention: even + odd indexing of Majorana modes derived from a
+    fermionic mode:
+        fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
+        fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
+
+    Args:
+        term (tuple): single FermionOperator term.
+
+    Returns:
+        converted_term: single MajoranaOperator term.
+
+    Raises:
+        TypeError: if term is a tuple.
+    """
+    if not isinstance(term, tuple):
+        raise TypeError('Term does not have the correct Type.')
+
+    converted_term = MajoranaOperator(())
+    for index, action in term:
+        converted_op = MajoranaOperator((2 * index,), 0.5)
+
+        if action:
+            converted_op += MajoranaOperator((2 * index + 1,), -0.5j)
+
+        else:
+            converted_op += MajoranaOperator((2 * index + 1,), 0.5j)
+
+        converted_term *= converted_op
+
     return converted_term
 
 
@@ -623,8 +719,10 @@ def get_number_preserving_sparse_operator(
 
     state_array = numpy.asarray(list(_iterate_basis_(
         reference_determinant, excitation_level, spin_preserving)))
-    # Create a 1d array with each determinant encoded as an integer for sorting purposes.
-    int_state_array = state_array.dot(1 << numpy.arange(state_array.shape[1])[::-1])
+    # Create a 1d array with each determinant encoded
+    # as an integer for sorting purposes.
+    int_state_array = state_array.dot(
+        1 << numpy.arange(state_array.shape[1])[::-1])
     sorting_indices = numpy.argsort(int_state_array)
 
     space_size = state_array.shape[0]
@@ -641,10 +739,8 @@ def get_number_preserving_sparse_operator(
             sparse_op += constant
 
         else:
-            term_op = _build_term_op_(term,
-                                        state_array,
-                                        int_state_array,
-                                        sorting_indices)
+            term_op = _build_term_op_(term, state_array, int_state_array,
+                                      sorting_indices)
 
             sparse_op += coefficient * term_op
 
@@ -672,7 +768,8 @@ def _iterate_basis_(reference_determinant, excitation_level, spin_preserving):
     """
     if not spin_preserving:
         for order in range(excitation_level + 1):
-            for determinant in _iterate_basis_order_(reference_determinant, order):
+            for determinant in _iterate_basis_order_(reference_determinant,
+                                                     order):
                 yield determinant
 
     else:
@@ -690,7 +787,6 @@ def _iterate_basis_(reference_determinant, excitation_level, spin_preserving):
                 for determinant in _iterate_basis_spin_order_(
                         reference_determinant, alpha_order, beta_order):
                     yield determinant
-
 
 
 def _iterate_basis_order_(reference_determinant, order):
@@ -828,14 +924,14 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
         raise ValueError(
             "The supplied operator doesn't preserve particle number")
 
-
     # We search for every state which has the necessary orbitals occupied and
     # unoccupied in order to not be immediately zeroed out based on the
     # creation and annihilation operators specified in term.
     maybe_valid_states = numpy.where(
         numpy.logical_and(
-            numpy.all(state_array[:,needs_to_be_occupied], axis=1),
-            numpy.logical_not(numpy.any(state_array[:, needs_to_be_unoccupied], axis=1))))[0]
+            numpy.all(state_array[:, needs_to_be_occupied], axis=1),
+            numpy.logical_not(
+                numpy.any(state_array[:, needs_to_be_unoccupied], axis=1))))[0]
 
     data = []
     row_ind = []
@@ -852,7 +948,7 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
     # more than two excitations from the reference. These more than double
     # excited determinants are not included in the matrix representation (and
     # hence, will not be present in state_array).
-    for k, state in enumerate(maybe_valid_states):
+    for _, state in enumerate(maybe_valid_states):
         determinant = state_array[state, :]
         target_determinant = determinant.copy()
 

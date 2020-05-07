@@ -26,7 +26,7 @@ class InteractionRDMError(Exception):
 
 
 class InteractionRDM(PolynomialTensor):
-    """Class for storing 1- and 2-body reduced density matrices.
+    r"""Class for storing 1- and 2-body reduced density matrices.
 
     Attributes:
         one_body_tensor: The expectation values <a^\dagger_p a_q>.
@@ -35,7 +35,7 @@ class InteractionRDM(PolynomialTensor):
     """
 
     def __init__(self, one_body_tensor, two_body_tensor):
-        """Initialize the InteractionRDM class.
+        r"""Initialize the InteractionRDM class.
 
         Args:
             one_body_tensor: Expectation values <a^\dagger_p a_q>.

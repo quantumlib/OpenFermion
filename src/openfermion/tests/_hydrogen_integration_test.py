@@ -11,12 +11,11 @@
 #   limitations under the License.
 
 """Tests many modules to compute energy of hydrogen."""
-from __future__ import absolute_import
 
 import os
+import unittest
 import numpy
 import scipy.sparse
-import unittest
 
 from openfermion.config import *
 from openfermion.hamiltonians import *
@@ -105,7 +104,6 @@ class HydrogenIntegrationTest(unittest.TestCase):
     def test_qubit_operator(self):
 
         # Below are qubit term coefficients, also from arXiv 1208.5986:
-        f0 = -0.8126
         f1 = 0.1712
         f2 = -0.2228
         f3 = 0.1686

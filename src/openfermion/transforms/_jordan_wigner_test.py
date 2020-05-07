@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests  _jordan_wigner.py."""
-from __future__ import absolute_import
 import itertools
 import os
 import unittest

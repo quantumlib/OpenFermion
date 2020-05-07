@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """This module is to find lowest eigenvalues with Davidson algorithm."""
-from __future__ import absolute_import
 
 import logging
 import warnings
@@ -24,7 +23,9 @@ import scipy.sparse
 import scipy.sparse.linalg
 
 from openfermion.utils._sparse_tools import get_linear_qubit_operator_diagonal
-from openfermion.utils._linear_qubit_operator import generate_linear_qubit_operator
+from openfermion.utils._linear_qubit_operator import \
+    generate_linear_qubit_operator
+
 
 class DavidsonError(Exception):
     """Exceptions."""
@@ -102,7 +103,8 @@ class Davidson(object):
             linear_operator.
 
         Args:
-            n(int): The number of states corresponding to the smallest eigenvalues
+            n(int):
+                The number of states corresponding to the smallest eigenvalues
                 and associated eigenvectors for the linear_operator.
             initial_guess(numpy.ndarray[complex]): Initial guess of eigenvectors
                 associated with the `n` smallest eigenvalues.
@@ -179,8 +181,8 @@ class Davidson(object):
             count_mvs = guess_mv.shape[1]
             guess_v = orthonormalize(guess_v, count_mvs, self.options.eps)
             if guess_v.shape[1] <= count_mvs:
-                guess_v = append_random_vectors(guess_v, n_lowest,
-                                                real_only=self.options.real_only)
+                guess_v = append_random_vectors(
+                    guess_v, n_lowest, real_only=self.options.real_only)
 
 
             # Limits number of vectors to self.options.max_subspace, in this
@@ -310,7 +312,8 @@ class Davidson(object):
                 # search for new directions.
                 continue
 
-            max_trial_error = max(max_trial_error, numpy.linalg.norm(current_error_v))
+            max_trial_error = max(max_trial_error,
+                                  numpy.linalg.norm(current_error_v))
             diagonal_inverse = numpy.ones(origonal_dimension)
             for j in range(origonal_dimension):
                 # Makes sure error vectors are bounded.

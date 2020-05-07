@@ -9,7 +9,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """Test for qubit_tapering_from_stabilizer model."""
 
 import unittest
@@ -24,8 +23,7 @@ from openfermion.utils import eigenspectrum, count_qubits
 from openfermion.utils import reduce_number_of_terms, taper_off_qubits
 from openfermion.utils._qubit_tapering_from_stabilizer import (
     StabilizerError, check_commuting_stabilizers, check_stabilizer_linearity,
-    fix_single_term, _reduce_terms, _reduce_terms_keep_length,
-    _lookup_term)
+    fix_single_term, _reduce_terms, _reduce_terms_keep_length, _lookup_term)
 
 
 def lih_hamiltonian():
@@ -44,8 +42,7 @@ def lih_hamiltonian():
     geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., 1.45))]
     active_space_start = 1
     active_space_stop = 3
-    molecule = MolecularData(geometry, 'sto-3g', 1,
-                             description="1.45")
+    molecule = MolecularData(geometry, 'sto-3g', 1, description="1.45")
     molecule.load()
 
     molecular_hamiltonian = molecule.get_molecular_hamiltonian(
@@ -63,16 +60,14 @@ class TaperingTest(unittest.TestCase):
 
     def test_function_errors(self):
         """Test error of main function."""
-        hamiltonian, spectrum = lih_hamiltonian()
+        hamiltonian, _ = lih_hamiltonian()
         qubit_hamiltonian = jordan_wigner(hamiltonian)
         stab1 = QubitOperator('Z0 Z2', -1.0)
         stab2 = QubitOperator('Z1 Z3', -1.0)
         with self.assertRaises(TypeError):
-            reduce_number_of_terms(operator=1,
-                                   stabilizers=stab1 + stab2)
+            reduce_number_of_terms(operator=1, stabilizers=stab1 + stab2)
         with self.assertRaises(TypeError):
-            reduce_number_of_terms(operator=qubit_hamiltonian,
-                                   stabilizers=1)
+            reduce_number_of_terms(operator=qubit_hamiltonian, stabilizers=1)
         with self.assertRaises(TypeError):
             reduce_number_of_terms(operator=qubit_hamiltonian,
                                    stabilizers=stab1 + stab2,
@@ -100,11 +95,9 @@ class TaperingTest(unittest.TestCase):
                                                 QubitOperator('Z0', 1.0j)))
         with self.assertRaises(StabilizerError):
             # Check linearly-dependent stabilizer error.
-            reduce_number_of_terms(operator=qubit_hamiltonian,
-                                   stabilizers=(stab1 +
-                                                QubitOperator('Z0 Z1 Z2 Z3',
-                                                              1.0) +
-                                                stab2))
+            reduce_number_of_terms(
+                operator=qubit_hamiltonian,
+                stabilizers=(stab1 + QubitOperator('Z0 Z1 Z2 Z3', 1.0) + stab2))
         with self.assertRaises(StabilizerError):
             # Check anti-commuting stabilizer error.
             reduce_number_of_terms(operator=qubit_hamiltonian,
@@ -112,13 +105,12 @@ class TaperingTest(unittest.TestCase):
                                                 QubitOperator('Y0', 1.0)))
         with self.assertRaises(StabilizerError):
             # Check linearly-dependent stabilizer error.
-            _reduce_terms(terms=qubit_hamiltonian,
-                          stabilizer_list=list(stab1 +
-                                               QubitOperator('Z0 Z1 Z2 Z3',
-                                                             1.0) +
-                                               stab2),
-                          manual_input=False,
-                          fixed_positions=[])
+            _reduce_terms(
+                terms=qubit_hamiltonian,
+                stabilizer_list=list(stab1 + QubitOperator('Z0 Z1 Z2 Z3', 1.0) +
+                                     stab2),
+                manual_input=False,
+                fixed_positions=[])
         with self.assertRaises(StabilizerError):
             # Check complex coefficient stabilizer error.
             _reduce_terms(terms=qubit_hamiltonian,
@@ -130,36 +122,33 @@ class TaperingTest(unittest.TestCase):
             # Check linearly-dependent stabilizer error.
             par_qop = QubitOperator('Z0 Z1 Z2 Z3', 1.0)
             _reduce_terms_keep_length(terms=qubit_hamiltonian,
-                                      stabilizer_list=[stab1,
-                                                       par_qop,
-                                                       stab2],
+                                      stabilizer_list=[stab1, par_qop, stab2],
                                       manual_input=False,
                                       fixed_positions=[])
         with self.assertRaises(StabilizerError):
             # Check complex coefficient stabilizer error.
-            aux_qop = QubitOperator('Z0',
-                                    1.0j)
+            aux_qop = QubitOperator('Z0', 1.0j)
             _reduce_terms_keep_length(terms=qubit_hamiltonian,
-                                      stabilizer_list=[stab1,
-                                                       aux_qop],
+                                      stabilizer_list=[stab1, aux_qop],
                                       manual_input=False,
                                       fixed_positions=[])
         with self.assertRaises(StabilizerError):
             # Test check_commuting_stabilizer function
             # Requires a list of QubitOperators one of which
             # has an imaginary term.
-            check_commuting_stabilizers(stabilizer_list=[QubitOperator('Z0 Z1',
-                                                                       1.0),
-                                                         QubitOperator('X0',
-                                                                       1j)],
+            check_commuting_stabilizers(stabilizer_list=[
+                QubitOperator('Z0 Z1', 1.0),
+                QubitOperator('X0', 1j)
+            ],
                                         msg='This test fails.')
         with self.assertRaises(StabilizerError):
             # Test check_stabilizer_linearity function.
             # Requires a list of QUbitOperators one of which is
             # the identity.
-            check_stabilizer_linearity([QubitOperator('Z0 Z1', 1.0),
-                                        QubitOperator(' ', 1.0)],
-                                       msg='This test fails.')
+            check_stabilizer_linearity(
+                [QubitOperator('Z0 Z1', 1.0),
+                 QubitOperator(' ', 1.0)],
+                msg='This test fails.')
 
     def test_fix_single_term(self):
         """Test fix_single_term function."""
@@ -193,8 +182,7 @@ class TaperingTest(unittest.TestCase):
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
         red_eigenspectrum = eigenspectrum(
-            reduce_number_of_terms(qubit_hamiltonian,
-                                   stab1 + stab2))
+            reduce_number_of_terms(qubit_hamiltonian, stab1 + stab2))
 
         self.assertAlmostEqual(spectrum[0], red_eigenspectrum[0])
 
@@ -206,8 +194,7 @@ class TaperingTest(unittest.TestCase):
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
         red_eigenspectrum = eigenspectrum(
-            reduce_number_of_terms(qubit_hamiltonian,
-                                   [stab1, stab2],
+            reduce_number_of_terms(qubit_hamiltonian, [stab1, stab2],
                                    manual_input=True,
                                    fixed_positions=[0, 1]))
 
@@ -234,15 +221,14 @@ class TaperingTest(unittest.TestCase):
         stab1 = QubitOperator('Z0 Z2', -1.0)
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
-        red_ham1, fixed_pos1 = _reduce_terms(terms=qubit_ham,
-                                             stabilizer_list=[stab1, stab2],
-                                             manual_input=False,
-                                             fixed_positions=[])
-        red_ham2, fixed_pos2 = _reduce_terms_keep_length(terms=qubit_ham,
-                                                         stabilizer_list=[
-                                                             stab1, stab2],
-                                                         manual_input=False,
-                                                         fixed_positions=[])
+        red_ham1, _ = _reduce_terms(terms=qubit_ham,
+                                    stabilizer_list=[stab1, stab2],
+                                    manual_input=False,
+                                    fixed_positions=[])
+        red_ham2, _ = _reduce_terms_keep_length(terms=qubit_ham,
+                                                stabilizer_list=[stab1, stab2],
+                                                manual_input=False,
+                                                fixed_positions=[])
         red_eigspct1 = eigenspectrum(red_ham1)
         red_eigspct2 = eigenspectrum(red_ham2)
 
@@ -256,16 +242,14 @@ class TaperingTest(unittest.TestCase):
         stab1 = QubitOperator('Z0 Z2', -1.0)
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
-        red_ham1, fixed_pos1 = _reduce_terms(terms=qubit_ham,
-                                             stabilizer_list=[stab1, stab2],
-                                             manual_input=True,
-                                             fixed_positions=[0, 1])
-        red_ham2, fixed_pos2 = _reduce_terms_keep_length(terms=qubit_ham,
-                                                         stabilizer_list=[
-                                                             stab1, stab2],
-                                                         manual_input=True,
-                                                         fixed_positions=[0,
-                                                                          1])
+        red_ham1, _ = _reduce_terms(terms=qubit_ham,
+                                    stabilizer_list=[stab1, stab2],
+                                    manual_input=True,
+                                    fixed_positions=[0, 1])
+        red_ham2, _ = _reduce_terms_keep_length(terms=qubit_ham,
+                                                stabilizer_list=[stab1, stab2],
+                                                manual_input=True,
+                                                fixed_positions=[0, 1])
         red_eigspct1 = eigenspectrum(red_ham1)
         red_eigspct2 = eigenspectrum(red_ham2)
 
@@ -301,12 +285,10 @@ class TaperingTest(unittest.TestCase):
         stab1 = QubitOperator('Z0 Z2', -1.0)
         stab2 = QubitOperator('Z1 Z3', -1.0)
 
-        tapered_ham_0_3 = taper_off_qubits(qubit_hamiltonian,
-                                           [stab1, stab2],
+        tapered_ham_0_3 = taper_off_qubits(qubit_hamiltonian, [stab1, stab2],
                                            manual_input=True,
                                            fixed_positions=[0, 3])
-        tapered_ham_2_1 = taper_off_qubits(qubit_hamiltonian,
-                                           [stab1, stab2],
+        tapered_ham_2_1 = taper_off_qubits(qubit_hamiltonian, [stab1, stab2],
                                            manual_input=True,
                                            fixed_positions=[2, 1])
 
@@ -315,8 +297,8 @@ class TaperingTest(unittest.TestCase):
 
         self.assertAlmostEqual(spectrum[0], tapered_spectrum_0_3[0])
         self.assertAlmostEqual(spectrum[0], tapered_spectrum_2_1[0])
-        self.assertTrue(numpy.allclose(tapered_spectrum_0_3,
-                                       tapered_spectrum_2_1))
+        self.assertTrue(
+            numpy.allclose(tapered_spectrum_0_3, tapered_spectrum_2_1))
 
     def test_tapering_qubits_remove_positions(self):
         """Test taper_off_qubits function using LiH Hamiltonian."""
@@ -342,8 +324,7 @@ class TaperingTest(unittest.TestCase):
         hamiltonian = QubitOperator('Y0 Y1', 1.0)
         stab = QubitOperator('X0 X1 X2', -1.0)
 
-        num_qubits = max(count_qubits(hamiltonian),
-                         count_qubits(stab))
+        num_qubits = max(count_qubits(hamiltonian), count_qubits(stab))
         tap_ham = taper_off_qubits(hamiltonian, stab)
         num_qubits_tap = count_qubits(tap_ham)
 

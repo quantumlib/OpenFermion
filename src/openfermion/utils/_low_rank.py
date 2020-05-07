@@ -23,7 +23,7 @@ from openfermion.utils import count_qubits, is_hermitian, normal_ordered
 
 
 def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
-    """Convert two-body operator coefficients to low rank tensor.
+    r"""Convert two-body operator coefficients to low rank tensor.
 
     The input is a two-body fermionic Hamiltonian expressed as
     :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a^\dagger_q a_r a_s`
@@ -83,7 +83,7 @@ def low_rank_two_body_decomposition(two_body_coefficients,
                                     truncation_threshold=1e-8,
                                     final_rank=None,
                                     spin_basis=True):
-    """Convert two-body operator into sum of squared one-body operators.
+    r"""Convert two-body operator into sum of squared one-body operators.
 
     As in arXiv:1808.02625, this function decomposes
     :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a^\dagger_q a_r a_s` as
@@ -169,7 +169,7 @@ def low_rank_two_body_decomposition(two_body_coefficients,
 
 
 def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
-    """Get Givens angles and DiagonalHamiltonian to simulate squared one-body.
+    r"""Get Givens angles and DiagonalHamiltonian to simulate squared one-body.
 
     The goal here will be to prepare to simulate evolution under
     :math:`(\sum_{pq} h_{pq} a^\dagger_p a_q)^2` by decomposing as

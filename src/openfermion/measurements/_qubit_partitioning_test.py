@@ -24,7 +24,7 @@ class BinaryPartitionIteratorTest(unittest.TestCase):
         qubit_list = range(6)
         bpi = binary_partition_iterator(qubit_list)
         count = 0
-        for p1, p2 in bpi:
+        for _, _ in bpi:
             count += 1
         self.assertEqual(count, 3)
 

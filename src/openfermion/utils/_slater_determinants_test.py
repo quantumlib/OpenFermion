@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for slater_determinants.py."""
-from __future__ import absolute_import
 import unittest
 
 import numpy
@@ -45,7 +44,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, ground_state = get_ground_state(sparse_operator)
+            ground_energy, _ = get_ground_state(sparse_operator)
 
             # Obtain the circuit
             circuit_description, start_orbitals = (
@@ -81,7 +80,7 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, ground_state = get_ground_state(sparse_operator)
+            ground_energy, _ = get_ground_state(sparse_operator)
 
             # Obtain the circuit
             circuit_description, start_orbitals = (
@@ -110,4 +109,4 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
     def test_bad_input(self):
         """Test bad input."""
         with self.assertRaises(ValueError):
-            description, n_electrons = gaussian_state_preparation_circuit('a')
+            gaussian_state_preparation_circuit('a')

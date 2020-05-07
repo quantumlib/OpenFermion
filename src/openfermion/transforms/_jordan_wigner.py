@@ -22,7 +22,7 @@ from openfermion.utils import count_qubits
 
 
 def jordan_wigner(operator):
-    """ Apply the Jordan-Wigner transform to a FermionOperator,
+    r""" Apply the Jordan-Wigner transform to a FermionOperator,
     InteractionOperator, or DiagonalCoulombHamiltonian to convert
     to a QubitOperator.
 
@@ -152,7 +152,8 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
     # Transform other one-body terms and "diagonal" two-body terms
     for p, q in itertools.combinations(range(n_qubits), 2):
         # One-body
-        coefficient = .5 * (iop[(p, 1), (q, 0)] + iop[(q, 1), (p, 0)].conjugate())
+        coefficient = .5 * (iop[(p, 1), (q, 0)] + iop[(q, 1),
+                                                      (p, 0)].conjugate())
         qubit_operator += jordan_wigner_one_body(p, q, coefficient)
 
         # Two-body
@@ -181,7 +182,7 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
 
 
 def jordan_wigner_one_body(p, q, coefficient=1.):
-    """Map the term a^\dagger_p a_q + h.c. to QubitOperator.
+    r"""Map the term a^\dagger_p a_q + h.c. to QubitOperator.
 
     Note that the diagonal terms are divided by a factor of 2
     because they are equal to their own Hermitian conjugate.
@@ -209,7 +210,7 @@ def jordan_wigner_one_body(p, q, coefficient=1.):
 
 
 def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
-    """Map the term a^\dagger_p a^\dagger_q a_r a_s + h.c. to QubitOperator.
+    r"""Map the term a^\dagger_p a^\dagger_q a_r a_s + h.c. to QubitOperator.
 
     Note that the diagonal terms are divided by a factor of two
     because they are equal to their own Hermitian conjugate.
@@ -227,7 +228,6 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
             coefficient *= -1
         # Loop through different operators which act on each tensor factor.
         for ops in itertools.product('XY', repeat=4):
-            op_p, op_q, op_r, op_s = ops
             # Get coefficients.
             if ops.count('X') % 2:
                 coeff = .125 * coefficient.imag
@@ -323,4 +323,3 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.):
                                         coeff)
 
     return qubit_operator
-

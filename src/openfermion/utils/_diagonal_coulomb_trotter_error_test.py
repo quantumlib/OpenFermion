@@ -158,7 +158,7 @@ class BitMaskModesActedOnByFermionTermsTest(unittest.TestCase):
 
     def test_mask_n_qubits_too_small_for_term(self):
         with self.assertRaises(ValueError):
-            mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
+            bit_mask_of_modes_acted_on_by_fermionic_terms(
                 [FermionOperator('1^ 1')], n_qubits=1)
 
     def test_mask_long_arbitrary_terms(self):

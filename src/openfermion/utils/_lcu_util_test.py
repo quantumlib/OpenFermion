@@ -12,11 +12,10 @@
 
 """Tests for _lcu_util.py."""
 
-from __future__ import absolute_import, division
 
-import numpy
-import random
 import unittest
+import random
+import numpy
 
 from openfermion.ops import DiagonalCoulombHamiltonian
 from openfermion.transforms import jordan_wigner
@@ -55,7 +54,7 @@ class LambdaNormTest(unittest.TestCase):
 
         # Third norm.
         third_norm = 0.
-        for term, coefficient in qubit_operator.terms.items():
+        for _, coefficient in qubit_operator.terms.items():
             third_norm += abs(coefficient)
 
         # Test.

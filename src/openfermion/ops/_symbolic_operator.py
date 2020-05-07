@@ -19,13 +19,11 @@ import re
 import warnings
 
 import numpy
-from six import add_metaclass, string_types
 
 from openfermion.config import EQ_TOLERANCE
 
 
-@add_metaclass(abc.ABCMeta)
-class SymbolicOperator:
+class SymbolicOperator(metaclass=abc.ABCMeta):
     """Base class for FermionOperator and QubitOperator.
 
     A SymbolicOperator stores an object which represents a weighted
@@ -111,7 +109,7 @@ class SymbolicOperator:
 
         # Detect if the input is the string representation of a sum of terms;
         # if so, initialization needs to be handled differently
-        if isinstance(term, string_types) and '[' in term:
+        if isinstance(term, str) and '[' in term:
             self._long_string_init(term, coefficient)
             return
 
@@ -121,10 +119,10 @@ class SymbolicOperator:
 
         # Parse the term
         # Sequence input
-        if isinstance(term, tuple) or isinstance(term, list):
+        if isinstance(term, (list, tuple)):
             term = self._parse_sequence(term)
         # String input
-        elif isinstance(term, string_types):
+        elif isinstance(term, str):
             term = self._parse_string(term)
         # Invalid input type
         else:
@@ -137,14 +135,14 @@ class SymbolicOperator:
         self.terms[term] = coefficient
 
     def _long_string_init(self, long_string, coefficient):
-        """
+        r"""
         Initialization from a long string representation.
 
         e.g. For FermionOperator:
             '1.5 [2^ 3] + 1.4 [3^ 0]'
         """
 
-        pattern = '(.*?)\[(.*?)\]'  # regex for a term
+        pattern = r'(.*?)\[(.*?)\]'  # regex for a term
         for match in re.findall(pattern, long_string, flags=re.DOTALL):
 
             # Determine the coefficient for this term
