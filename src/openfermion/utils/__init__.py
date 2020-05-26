@@ -38,6 +38,8 @@ from ._operator_utils import (chemist_ordered, count_qubits,
 from ._qubit_tapering_from_stabilizer import (reduce_number_of_terms,
                                               taper_off_qubits)
 
+from ._reduced_hamiltonian import make_reduced_hamiltonian
+
 from ._rdm_mapping_functions import (kronecker_delta,
                                      map_two_pdm_to_two_hole_dm,
                                      map_two_pdm_to_one_pdm,
