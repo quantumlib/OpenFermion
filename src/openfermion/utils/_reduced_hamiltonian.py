@@ -39,10 +39,8 @@ def make_reduced_hamiltonian(molecular_hamiltonian: InteractionOperator,
     k2 = np.zeros_like(h2)
     normalization = 1 / (4 * (n_electrons - 1))
     for i, j, k, l in product(range(h1.shape[0]), repeat=4):
-        k2[i, j, k, l] = normalization * (h1[i, l] * delta[j, k]
-                                          + h1[j, k] * delta[i, l]
-                                          - h1[i, k] * delta[j, l]
-                                          - h1[j, l] * delta[i, k]) + h2[i, j,
-                                                                         k, l]
+        k2[i, j, k, l] = normalization * (
+            h1[i, l] * delta[j, k] + h1[j, k] * delta[i, l] -
+            h1[i, k] * delta[j, l] - h1[j, l] * delta[i, k]) + h2[i, j, k, l]
 
     return InteractionOperator(constant, np.zeros_like(h1), k2)
