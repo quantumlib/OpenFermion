@@ -17,6 +17,8 @@ from ._channel_state import (amplitude_damping_channel, dephasing_channel,
 
 from ._commutators import anticommutator, commutator, double_commutator
 
+from ._erpa import singlet_erpa, erpa_eom_hamiltonian
+
 from ._grid import Grid
 
 from ._lattice import (HubbardSquareLattice, SpinPairs, Spin)
