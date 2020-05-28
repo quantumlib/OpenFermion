@@ -60,20 +60,18 @@ def erpa_eom_hamiltonian(h_ijkl: np.ndarray, tpdm: np.ndarray, p: int, q: int,
     #  (  -1.00000) h_ijkl(a,b,r,p) cre(a) cre(b) des(q) des(s)
     h_mat += -1.0 * einsum('ab,ab', h_ijkl[:, :, r, p], tpdm[:, :, q, s])
 
-    #  (   1.00000) h_ijkl(s,a,b,c) kdelta(q,r) cre(p) cre(a) des(b) des(c)
     if q == r:
+        #  (   1.00000) h_ijkl(s,a,b,c) kdelta(q,r) cre(p) cre(a) des(b) des(c)
         h_mat += 1.0 * einsum('abc,abc', h_ijkl[s, :, :, :], tpdm[p, :, :, :])
 
-    #  (  -1.00000) h_ijkl(a,s,b,c) kdelta(q,r) cre(p) cre(a) des(b) des(c)
-    if q == r:
+        #  (  -1.00000) h_ijkl(a,s,b,c) kdelta(q,r) cre(p) cre(a) des(b) des(c)
         h_mat += -1.0 * einsum('abc,abc', h_ijkl[:, s, :, :], tpdm[p, :, :, :])
 
-    #  (   1.00000) h_ijkl(a,b,r,c) kdelta(p,s) cre(a) cre(b) des(q) des(c)
     if p == s:
+        #  (   1.00000) h_ijkl(a,b,r,c) kdelta(p,s) cre(a) cre(b) des(q) des(c)
         h_mat += 1.0 * einsum('abc,abc', h_ijkl[:, :, r, :], tpdm[:, :, q, :])
 
-    #  (  -1.00000) h_ijkl(a,b,c,r) kdelta(p,s) cre(a) cre(b) des(q) des(c)
-    if p == s:
+        #  (  -1.00000) h_ijkl(a,b,c,r) kdelta(p,s) cre(a) cre(b) des(q) des(c)
         h_mat += -1.0 * einsum('abc,abc', h_ijkl[:, :, :, r], tpdm[:, :, q, :])
 
     return h_mat
