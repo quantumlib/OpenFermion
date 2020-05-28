@@ -11,13 +11,12 @@
 #   limitations under the License.
 
 """Verstraete-Cirac transform on fermionic operators."""
-from __future__ import absolute_import
 
 import networkx
 
 from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.transforms import jordan_wigner
-from openfermion.utils import majorana_operator 
+from openfermion.utils import majorana_operator
 
 
 def verstraete_cirac_2d_square(operator, x_dimension, y_dimension,

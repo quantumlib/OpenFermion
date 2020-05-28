@@ -21,6 +21,13 @@ This plugin library integrates OpenFermion with Rigetti's
 [Forest](https://www.rigetti.com/forest) framework in order to compile
 quantum simulation algorithms to NISQ circuits using Forest.
 
+[PennyLane](http://github.com/XanaduAI/PennyLane)
+
+The `pennylane.qchem` module integrates OpenFermion with Xanadu's
+[PennyLane](https://pennylane.ai) framework, allowing optimization
+of quantum simulation algorithms using TensorFlow and PyTorch
+on quantum hardware.
+
 [SFOpenBoson](https://github.com/XanaduAI/SFOpenBoson)
 
 This plugin library integrates OpenFermion with Xanadu's
@@ -37,6 +44,11 @@ package [Psi4](http://psicode.org).
 
 This plugin library integrates OpenFermion with the electronic structure package
 [PySCF](https://github.com/sunqm/pyscf).
+
+[OpenFermion-Dirac](https://github.com/bsenjean/Openfermion-Dirac)
+
+This plugin library integrates OpenFermion with the electronic structure package
+[DIRAC](http://diracprogram.org/doku.php)
 
 [OpenFermion-ProjectQ](https://github.com/quantumlib/OpenFermion-ProjectQ) - Deprecated
 
@@ -61,6 +73,11 @@ more compact circuits to use for algorithms such as VQE.
 
 
 ### Papers (we refer to only the arXiv versions) - last updated 9/3/18
+
+***Calculating energy derivatives for quantum chemistry on a quantum computer***.
+Thomas O'Brien, Bruno Senjean, Ramiro Sagastizabal, Xavier Bonet-Monroig,
+Alicja Dutkiewicz, Francesco Buda, Leonardo DiCarlo and Lucas Visscher.
+[arXiv:1905.03742](https://arxiv.org/abs/1905.03742). 2019.
 
 ***Strategies for Quantum Computing Molecular Energies using the Unitary Coupled
 Cluster Ansatz***. Jonathan Romero, Ryan Babbush, Jarrod McClean, Cornelius

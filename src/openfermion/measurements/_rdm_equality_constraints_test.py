@@ -26,7 +26,6 @@ class FermionConstraintsTest(unittest.TestCase):
     def setUp(self):
 
         # Setup.
-        n_atoms = 2
         geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
         basis = 'sto-3g'
         multiplicity = 1
@@ -48,7 +47,7 @@ class FermionConstraintsTest(unittest.TestCase):
             qubit_operator = jordan_wigner(constraint)
             constraint_value = self.fci_rdm.expectation(qubit_operator)
             self.assertAlmostEqual(constraint_value, 0.)
-            for term, coefficient in constraint.terms.items():
+            for term, _ in constraint.terms.items():
                 if len(term) == 2:
                     self.assertTrue(term[0][1])
                     self.assertFalse(term[1][1])
@@ -61,7 +60,7 @@ class FermionConstraintsTest(unittest.TestCase):
             qubit_operator = jordan_wigner(constraint)
             constraint_value = self.fci_rdm.expectation(qubit_operator)
             self.assertAlmostEqual(constraint_value, 0.)
-            for term, coefficient in constraint.terms.items():
+            for term, _ in constraint.terms.items():
                 if len(term) == 2:
                     self.assertTrue(term[0][1])
                     self.assertFalse(term[1][1])

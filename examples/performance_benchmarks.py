@@ -16,8 +16,6 @@ import logging
 
 import numpy
 
-from future.utils import iteritems
-
 from openfermion import (commutator,
                          FermionOperator,
                          Grid,
@@ -216,7 +214,7 @@ def benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
     part_a = FermionOperator.zero()
     part_b = FermionOperator.zero()
     add_to_a_or_b = 0  # add to a if 0; add to b if 1
-    for term, coeff in iteritems(hamiltonian.terms):
+    for term, coeff in hamiltonian.terms.items():
         # Partition terms in the Hamiltonian into part_a or part_b
         if add_to_a_or_b:
             part_a += FermionOperator(term, coeff)

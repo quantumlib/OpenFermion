@@ -134,7 +134,7 @@ def gaussian_state_preparation_circuit(
         new_transformation_matrix[:, n_qubits:] = numpy.conjugate(left_block)
 
         # Get the circuit description
-        decomposition, left_decomposition, diagonal, left_diagonal = (
+        decomposition, left_decomposition, _, _ = (
             fermionic_gaussian_decomposition(new_transformation_matrix))
         if occupied_orbitals is None:
             # The ground state is desired, so the circuit should be applied
@@ -185,7 +185,6 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
             of modes :math:`i` and :math:`j` by angles :math:`\theta`
             and :math:`\varphi`.
     """
-    decomposition, left_unitary, diagonal = givens_decomposition(
-        slater_determinant_matrix)
+    decomposition, _, _ = givens_decomposition(slater_determinant_matrix)
     circuit_description = list(reversed(decomposition))
     return circuit_description

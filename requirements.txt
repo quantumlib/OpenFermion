@@ -1,10 +1,6 @@
 numpy>=1.11.0
 scipy>=1.1.0
 h5py>=2.8
-future
-jupyter
-nbformat
 networkx
-matplotlib
 pubchempy
-six
+requests~=2.18

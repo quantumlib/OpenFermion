@@ -11,14 +11,11 @@
 #   limitations under the License.
 
 """This module provides functions to interface with scipy.sparse."""
-from __future__ import absolute_import
-from future.utils import iteritems
-
-from functools import reduce
 import itertools
-
-import numpy
+from functools import reduce
 import numpy.linalg
+import numpy
+
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
@@ -499,7 +496,7 @@ def jw_sz_restrict_state(state, sz_value,
 
 def jw_get_ground_state_at_particle_number(sparse_operator, particle_number):
     """Compute ground energy and state at a specified particle number.
-    
+
     Assumes the Jordan-Wigner transform. The input operator should be Hermitian
     and particle-number-conserving.
 
@@ -859,7 +856,7 @@ def expectation_db_operator_with_pw_basis_state(
     """
     expectation_value = operator.terms.get((), 0.0)
 
-    for single_action, coefficient in iteritems(operator.terms):
+    for single_action, coefficient in operator.terms.items():
         if len(single_action) == 2:
             expectation_value += coefficient * (
                 expectation_one_body_db_operator_computational_basis_state(

@@ -1,6 +1,5 @@
 .DS_Store
 *lastfailed
-*coverage
 
 # Data files.
 *.out
@@ -9,8 +8,10 @@ src/openfermion/data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.mypy_cache/*
 *.py[cod]
 *$py.class
+
 
 # C extensions
 *.so
@@ -85,3 +86,6 @@ ENV/
 
 # idea SDK
 .idea/
+
+# no .dat files
+*.dat

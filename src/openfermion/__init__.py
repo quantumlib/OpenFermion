@@ -21,6 +21,7 @@ www.openfermion.org
 from openfermion.hamiltonians import *
 from openfermion.measurements import *
 from openfermion.ops import *
+from openfermion.third_party import *
 from openfermion.transforms import *
 from openfermion.utils import *
 

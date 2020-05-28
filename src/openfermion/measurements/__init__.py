@@ -17,3 +17,9 @@ from ._equality_constraint_projection import (apply_constraints,
 
 from ._rdm_equality_constraints import (one_body_fermion_constraints,
                                         two_body_fermion_constraints)
+
+from ._qubit_partitioning import (binary_partition_iterator,
+                                  partition_iterator,
+                                  pauli_string_iterator)
+
+from ._prony import (prony)

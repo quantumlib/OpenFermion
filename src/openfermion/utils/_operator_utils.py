@@ -11,24 +11,23 @@
 #   limitations under the License.
 
 """This module provides generic tools for classes in ops/"""
-from __future__ import absolute_import
 from builtins import map, zip
-
-import os
 import copy
+import itertools
 import marshal
-from numpy.random import RandomState
+import os
 
 import numpy
+from numpy.random import RandomState
 from scipy.sparse import spmatrix
 
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
-
 from openfermion.ops import (BosonOperator,
                              DiagonalCoulombHamiltonian,
                              FermionOperator,
                              InteractionOperator,
                              InteractionRDM,
+                             MajoranaOperator,
                              QuadOperator,
                              QubitOperator,
                              PolynomialTensor)
@@ -43,7 +42,7 @@ class OperatorSpecificationError(Exception):
 
 
 def chemist_ordered(fermion_operator):
-    """Puts a two-body fermion operator in chemist ordering.
+    r"""Puts a two-body fermion operator in chemist ordering.
 
     The normal ordering convention for chemists is different.
     Rather than ordering the two-body term as physicists do, as
@@ -238,6 +237,16 @@ def hermitian_conjugated(operator):
                 sorted(conjugate_term, key=lambda factor: factor[0]))
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
+    # Handle InteractionOperator
+    elif isinstance(operator, InteractionOperator):
+        conjugate_constant = operator.constant.conjugate()
+        conjugate_one_body_tensor = hermitian_conjugated(
+            operator.one_body_tensor)
+        conjugate_two_body_tensor = hermitian_conjugated(
+            operator.two_body_tensor)
+        conjugate_operator = type(operator)(conjugate_constant,
+            conjugate_one_body_tensor, conjugate_two_body_tensor)
+
     # Handle sparse matrix
     elif isinstance(operator, spmatrix):
         conjugate_operator = operator.getH()
@@ -256,8 +265,9 @@ def hermitian_conjugated(operator):
 
 def is_hermitian(operator):
     """Test if operator is Hermitian."""
-    # Handle FermionOperator and BosonOperator
-    if isinstance(operator, (FermionOperator, BosonOperator)):
+    # Handle FermionOperator, BosonOperator, and InteractionOperator
+    if isinstance(operator,
+            (FermionOperator, BosonOperator, InteractionOperator)):
         return (normal_ordered(operator) ==
                 normal_ordered(hermitian_conjugated(operator)))
 
@@ -314,6 +324,15 @@ def count_qubits(operator):
             if term:
                 if term[-1][0] + 1 > num_qubits:
                     num_qubits = term[-1][0] + 1
+        return num_qubits
+
+    # Handle MajoranaOperator.
+    if isinstance(operator, MajoranaOperator):
+        num_qubits = 0
+        for term in operator.terms:
+            for majorana_index in term:
+                if numpy.ceil((majorana_index+1) / 2) > num_qubits:
+                    num_qubits = int(numpy.ceil((majorana_index+1) / 2))
         return num_qubits
 
     # Handle DiagonalCoulombHamiltonian
@@ -800,7 +819,7 @@ def normal_ordered_quad_term(term, coefficient, hbar=1.):
 
 def normal_ordered(operator, hbar=1.):
     r"""Compute and return the normal ordered form of a FermionOperator,
-    BosonOperator, QuadOperator.
+    BosonOperator, QuadOperator, or InteractionOperator.
 
     Due to the canonical commutation/anticommutation relations satisfied
     by these operators, there are multiple forms that the same operator
@@ -817,7 +836,7 @@ def normal_ordered(operator, hbar=1.):
 
     Args:
         operator: an instance of the FermionOperator, BosonOperator,
-            or QuadOperator classes.
+            QuadOperator, or InteractionOperator classes.
         hbar (float): the value of hbar used in the definition of the
             commutator [q_i, p_j] = i hbar delta_ij. By default hbar=1.
             This argument only applies when normal ordering QuadOperators.
@@ -839,9 +858,36 @@ def normal_ordered(operator, hbar=1.):
         order_fn = normal_ordered_quad_term
         kwargs['hbar'] = hbar
 
+    elif isinstance(operator, InteractionOperator):
+        constant = operator.constant
+        n_modes = operator.n_qubits
+        one_body_tensor = operator.one_body_tensor.copy()
+        two_body_tensor = numpy.zeros_like(operator.two_body_tensor)
+        quadratic_index_pairs = (
+            (pq, pq) for pq in itertools.combinations(range(n_modes)[::-1], 2))
+        cubic_index_pairs = (index_pair
+            for p, q, r in itertools.combinations(range(n_modes)[::-1], 3)
+            for index_pair in [
+                ((p, q), (p, r)), ((p, r), (p, q)),
+                ((p, q), (q, r)), ((q, r), (p, q)),
+                ((p, r), (q, r)), ((q, r), (p, r))])
+        quartic_index_pairs = (index_pair
+            for p, q, r, s in itertools.combinations(range(n_modes)[::-1], 4)
+            for index_pair in [
+                ((p, q), (r, s)), ((r, s), (p, q)),
+                ((p, r), (q, s)), ((q, s), (p, r)),
+                ((p, s), (q, r)), ((q, r), (p, s))])
+        index_pairs = itertools.chain(
+            quadratic_index_pairs, cubic_index_pairs, quartic_index_pairs)
+        for pq, rs in index_pairs:
+            two_body_tensor[pq + rs] = sum(
+                s * ss * operator.two_body_tensor[pq[::s] + rs[::ss]]
+                for s, ss in itertools.product([-1, 1], repeat=2))
+        return InteractionOperator(constant, one_body_tensor, two_body_tensor)
+
     else:
         raise TypeError('Can only normal order FermionOperator, '
-                        'BosonOperator, or QuadOperator.')
+                        'BosonOperator, QuadOperator, or InteractionOperator.')
 
     for term, coefficient in operator.terms.items():
         ordered_operator += order_fn(term, coefficient, **kwargs)
@@ -919,7 +965,46 @@ def group_into_tensor_product_basis_sets(operator, seed=None):
             sub_operator = sub_operators.pop(basis)
             sub_operator += QubitOperator(term, coefficient)
             additions = tuple(op for op in term if op not in basis)
-            basis = tuple(sorted(basis + additions, key=lambda factor: factor[0]))
+            basis = tuple(
+                sorted(basis + additions, key=lambda factor: factor[0]))
             sub_operators[basis] = sub_operator
 
     return sub_operators
+
+
+def _commutes(operator1,operator2):
+    return operator1*operator2==operator2*operator1
+
+def _non_fully_commuting_terms(hamiltonian):
+    terms = list([QubitOperator(key) for key in hamiltonian.terms.keys()])
+    T = []  # will contain the subset of terms that do not
+    # commute universally in terms
+    for i in range(len(terms)):
+        if any(not _commutes(terms[i],terms[j]) for j in range(len(terms))):
+            T.append(terms[i])
+    return T
+
+def is_contextual(hamiltonian):
+    """
+    Determine whether a hamiltonian (instance of QubitOperator) is contextual,
+    in the sense of https://arxiv.org/abs/1904.02260.
+
+    Args:
+        hamiltonian (QubitOperator): the hamiltonian whose
+            contextuality is to be evaluated.
+
+    Returns:
+        boolean indicating whether hamiltonian is contextual or not.
+    """
+    T = _non_fully_commuting_terms(hamiltonian)
+    # Search in T for triples in which exactly one pair anticommutes;
+    # if any exist, hamiltonian is contextual.
+    for i in range(len(T)):  # WLOG, i indexes the operator that (putatively)
+        # commutes with both others.
+        for j in range(len(T)):
+            for k in range(j + 1, len(T)):  # Ordering of j, k does not matter.
+                if i!=j and i!=k and _commutes(T[i],T[j]) \
+                    and _commutes(T[i],T[k]) and \
+                        not _commutes(T[j],T[k]):
+                    return True
+    return False

@@ -10,7 +10,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 '''Tests for the qubit_operator_transforms module'''
-from __future__ import absolute_import
 
 import unittest
 import numpy
@@ -26,6 +25,44 @@ class ProjectionTest(unittest.TestCase):
     def setUp(self):
         pass
 
+    def test_function_errors(self):
+        """Test main function errors."""
+        operator = (QubitOperator('Z0 X1', 1.0) +
+                    QubitOperator('X1', 2.0))
+        sector1 = [0]
+        sector2 = [1]
+        qbt_list = [0]
+        with self.assertRaises(TypeError):
+            project_onto_sector(operator=1.0, qubits=qbt_list, sectors=sector1)
+        with self.assertRaises(TypeError):
+            projection_error(operator=1.0, qubits=qbt_list, sectors=sector1)
+        with self.assertRaises(TypeError):
+            project_onto_sector(operator=operator, qubits=0.0, sectors=sector2)
+        with self.assertRaises(TypeError):
+            projection_error(operator=operator, qubits=0.0, sectors=sector2)
+        with self.assertRaises(TypeError):
+            project_onto_sector(operator=operator,
+                                qubits=qbt_list, sectors=operator)
+        with self.assertRaises(TypeError):
+            projection_error(operator=operator,
+                             qubits=qbt_list, sectors=operator)
+        with self.assertRaises(ValueError):
+            project_onto_sector(operator=operator, qubits=[
+                                0, 1], sectors=sector1)
+        with self.assertRaises(ValueError):
+            projection_error(operator=operator, qubits=[0, 1], sectors=sector1)
+        with self.assertRaises(ValueError):
+            project_onto_sector(operator=operator,
+                                qubits=qbt_list, sectors=[0, 0])
+        with self.assertRaises(ValueError):
+            projection_error(operator=operator,
+                             qubits=qbt_list, sectors=[0, 0])
+        with self.assertRaises(ValueError):
+            project_onto_sector(operator=operator,
+                                qubits=qbt_list, sectors=[-1])
+        with self.assertRaises(ValueError):
+            projection_error(operator=operator, qubits=qbt_list, sectors=[-1])
+
     def test_projection(self):
         coefficient = 0.5
         opstring = ((0, 'X'), (1, 'X'), (2, 'Z'))
@@ -33,7 +70,7 @@ class ProjectionTest(unittest.TestCase):
         operator = QubitOperator(opstring, coefficient)
         operator += QubitOperator(opstring2, coefficient)
         new_operator = project_onto_sector(
-                operator, qubits=[2, 3], sectors=[0, 1])
+            operator, qubits=[2, 3], sectors=[0, 1])
         error = projection_error(operator, qubits=[2, 3], sectors=[0, 1])
         self.assertEqual(count_qubits(new_operator), 2)
         self.assertEqual(error, 0)
@@ -67,7 +104,7 @@ class UnitaryRotationsTest(unittest.TestCase):
         qop += QubitOperator('Z0 Z1', 1)
         rot_op = QubitOperator('Z1', 1)
 
-        rotated_qop = rotate_qubit_by_pauli(qop, rot_op, numpy.pi/4)
+        rotated_qop = rotate_qubit_by_pauli(qop, rot_op, numpy.pi / 4)
         comp_op = QubitOperator('Z0 Z1', 1)
         comp_op += QubitOperator('X0 Y1', 1)
         self.assertEqual(comp_op, rotated_qop)
@@ -80,6 +117,6 @@ class UnitaryRotationsTest(unittest.TestCase):
         rot_op2 = QubitOperator('Z1', 1)
         ferm_op = FermionOperator('1^ 2', 1)
         with self.assertRaises(TypeError):
-            rotate_qubit_by_pauli(qop, rot_op, numpy.pi/4)
+            rotate_qubit_by_pauli(qop, rot_op, numpy.pi / 4)
         with self.assertRaises(TypeError):
-            rotate_qubit_by_pauli(ferm_op, rot_op2, numpy.pi/4)
+            rotate_qubit_by_pauli(ferm_op, rot_op2, numpy.pi / 4)

@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Tests for linear_qubit_operator.py."""
-from __future__ import absolute_import, division
 
 import multiprocessing
 import unittest
@@ -44,7 +43,7 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
     def test_get_processes_small(self):
         """Tests get_processes() with a small num."""
-        num = 2
+        num = 1
         self.assertEqual(self.options.get_processes(num), num)
 
     def test_get_processes_large(self):
@@ -63,8 +62,6 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
         pool = self.options.get_pool()
         self.assertIsNotNone(pool)
-        self.assertIsNotNone(self.options.pool)
-        self.assertEqual(pool, self.options.pool)
 
     def test_get_pool_with_num(self):
         """Tests get_processes() with a num."""
@@ -72,15 +69,6 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
         pool = self.options.get_pool(2)
         self.assertIsNotNone(pool)
-        self.assertIsNotNone(self.options.pool)
-        self.assertEqual(pool, self.options.pool)
-
-        # Called twice, should be idempotent.
-        self.assertEqual(self.options.get_pool(2), self.options.pool)
-
-        # Same pool even with a different number of processes.
-        self.assertEqual(self.options.get_pool(1), self.options.pool)
-
 
 class LinearQubitOperatorTest(unittest.TestCase):
     """Tests for LinearQubitOperator class."""
@@ -216,7 +204,8 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
 
     def test_init(self):
         """Tests __init__()."""
-        self.assertEqual(self.linear_operator.qubit_operator, self.qubit_operator)
+        self.assertEqual(self.linear_operator.qubit_operator,
+                         self.qubit_operator)
         self.assertEqual(self.linear_operator.n_qubits, self.n_qubits)
         self.assertIsNone(self.linear_operator.options.pool)
 
@@ -247,7 +236,6 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         self.assertIsNone(self.linear_operator.options.pool)
         self.assertTrue(numpy.allclose(self.linear_operator * self.vec,
                                        self.expected_matvec))
-        self.assertIsNotNone(self.linear_operator.options.pool)
 
     def test_matvec_0(self):
         """Testing with zero term."""
@@ -261,6 +249,14 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
             matvec_expected))
         self.assertIsNone(self.linear_operator.options.pool)
 
+    def test_closed_workers_not_reused(self):
+        qubit_operator = QubitOperator('X0')
+        parallel_qubit_op = ParallelLinearQubitOperator(qubit_operator, 1,
+                options=LinearQubitOperatorOptions(processes=2))
+        state = [1.0, 0.0]
+        parallel_qubit_op.dot(state)
+        parallel_qubit_op.dot(state)
+        self.assertIsNone(parallel_qubit_op.options.pool)
 
 class UtilityFunctionTest(unittest.TestCase):
     """Tests for utility functions."""

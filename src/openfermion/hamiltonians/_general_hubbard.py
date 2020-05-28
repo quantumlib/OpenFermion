@@ -35,14 +35,15 @@ def number_operator(i, coefficient=1., particle_hole_symmetry=False):
 
 
 def interaction_operator(i, j, coefficient=1., particle_hole_symmetry=False):
-    return (number_operator(i, coefficient, 
-                            particle_hole_symmetry=particle_hole_symmetry) * 
+    return (number_operator(
+        i, coefficient, particle_hole_symmetry=particle_hole_symmetry) *
             number_operator(j, particle_hole_symmetry=particle_hole_symmetry))
 
 
 def tunneling_operator(i, j, coefficient=1.):
-    return (FermionOperator(((i, 1), (j, 0)), coefficient) + 
-            FermionOperator(((j, 1), (i, 0)), coefficient.conjugate()))
+    return (FermionOperator(((i, 1), (j, 0)), coefficient) + FermionOperator(
+        ((j, 1), (i, 0)), coefficient.conjugate()))
+
 
 def number_difference_operator(i, j, coefficient=1.):
     return number_operator(i, coefficient) - number_operator(j, coefficient)
@@ -195,22 +196,23 @@ class FermiHubbardModel:
 
         .. math::
 
-            t \sum_{(i, j) \in E^{(\mathrm{edge type})}} 
+            t \sum_{(i, j) \in E^{(\mathrm{edge type})}}
             \sum_{\sigma}
-            \left(a_{i, a, \sigma}^{\dagger} a_{j, b, \sigma} 
+            \left(a_{i, a, \sigma}^{\dagger} a_{j, b, \sigma}
             + a_{j, b, \sigma}^{\dagger} a_{i, a, \sigma}\right)
 
-        and in the spinless model to 
+        and in the spinless model to
 
         .. math::
 
-            -t \sum_{(i, j) \in E^{(\mathrm{edge type})}} 
-            \left(a_{i, a}^{\dagger} a_{j, b} 
+            -t \sum_{(i, j) \in E^{(\mathrm{edge type})}}
+            \left(a_{i, a}^{\dagger} a_{j, b}
             + a_{j, b}^{\dagger} a_{i, a}\right),
 
-        where 
+        where
 
-            - :math:`(a, b)` is the pair of degrees of freedom given by ``dofs``;
+            - :math:`(a, b)` is the pair of degrees
+            of freedom given by ``dofs``;
             - :math:`E^{(\mathrm{edge type})}` is the set of ordered pairs of
               site indices returned by ``lattice.site_pairs_iter(edge_type, a !=
               b)``; and
@@ -221,30 +223,36 @@ class FermiHubbardModel:
         optional, and will default to ``SpinPairs.ALL``. In any case, it is
         ignored for spinless lattices.
 
-        For example, in the spinful model if `dofs` indicates distinct degrees of freedom then the parameter corresponds to the terms
+        For example, in the spinful model if `dofs`
+        indicates distinct degrees of freedom then the
+        parameter corresponds to the terms
 
         .. math::
+        U \sum_{(i, j) \in E^{(\mathrm{edge type})}} \sum_{(\sigma, \sigma')}
+        n_{i, a, \sigma} n_{j, b, \sigma'}
 
-            U \sum_{(i, j) \in E^{(\mathrm{edge type})}} \sum_{(\sigma, \sigma')}
-            n_{i, a, \sigma} n_{j, b, \sigma'}
+        where
 
-        where 
-
-            - :math:`(a, b)` is the pair of degrees of freedom given by ``dofs``;
+            - :math:`(a, b)` is the pair of degrees of
+            freedom given by ``dofs``;
             - :math:`E^{(\mathrm{edge type})}` is the set of ordered pairs of
               site indices returned by ``lattice.site_pairs_iter(edge_type)``;
             - :math:`U` is the ``coefficient``; and
             - :math:`(\sigma, \sigma')` runs over
-                - all four possible pairs of spins if `spin_pairs == SpinPairs.ALL`,
-                - :math:`\{(\uparrow, \downarrow), (\downarrow, \uparrow)\}` if `spin_pairs == SpinPairs.DIFF`, and 
-                - :math:`\{(\uparrow, \uparrow), (\downarrow, \downarrow)\}' if 'spin_pairs == SpinPairs.SAME`.
+                - all four possible pairs of spins
+                if `spin_pairs == SpinPairs.ALL`,
+                - :math:`\{(\uparrow, \downarrow), (\downarrow, \uparrow)\}`
+                if `spin_pairs == SpinPairs.DIFF`, and
+                - :math:`\{(\uparrow, \uparrow), (\downarrow, \downarrow)\}'
+                if 'spin_pairs == SpinPairs.SAME`.
 
-        Each potential parameter is a tuple ``(dof, coefficient)``. For example, in the spinful model, it corresponds to the terms
+        Each potential parameter is a tuple ``(dof, coefficient)``.
+        For example, in the spinful model, it corresponds to the terms
 
         .. math::
             -\mu \sum_{i} \sum_{\sigma} n_{i, a, \sigma},
 
-        where 
+        where
 
             - :math:`i` runs over the sites of the lattice;
             - :math:`a` is the degree of freedom ``dof``; and
@@ -273,7 +281,7 @@ class FermiHubbardModel:
             parameter = TunnelingParameter(*parameter)
             self.lattice.validate_edge_type(parameter.edge_type)
             self.lattice.validate_dofs(parameter.dofs, 2)
-            if ((parameter.edge_type in self.lattice.onsite_edge_types) and 
+            if ((parameter.edge_type in self.lattice.onsite_edge_types) and
                 (len(set(parameter.dofs)) == 1)):
                 raise ValueError('Invalid onsite tunneling parameter between '
                                  'same dof {}.'.format(parameter.dofs))
@@ -288,13 +296,13 @@ class FermiHubbardModel:
         for parameter in parameters:
             if len(parameter) not in (3, 4):
                 raise ValueError('len(parameter) not in (3, 4)')
-            spin_pairs = (SpinPairs.ALL if len(parameter) < 4 
-                                        else parameter[-1])
+            spin_pairs = (SpinPairs.ALL
+                          if len(parameter) < 4 else parameter[-1])
             parameter = InteractionParameter(*parameter[:3],
                                              spin_pairs=spin_pairs)
             self.lattice.validate_edge_type(parameter.edge_type)
             self.lattice.validate_dofs(parameter.dofs, 2)
-            if ((len(set(parameter.dofs)) == 1) and 
+            if ((len(set(parameter.dofs)) == 1) and
                 (parameter.edge_type in self.lattice.onsite_edge_types) and
                 (parameter.spin_pairs == SpinPairs.SAME)):
                 raise ValueError('Parameter {} specifies '.format(parameter) +
@@ -351,8 +359,10 @@ class FermiHubbardModel:
                 for spin_index in self.lattice.spin_indices:
                     i = self.lattice.to_spin_orbital_index(
                             site_index, param.dof, spin_index)
-                    terms += number_operator(i, -param.coefficient, 
-                            particle_hole_symmetry=self.particle_hole_symmetry)
+                    terms += number_operator(
+                        i,
+                        -param.coefficient,
+                        particle_hole_symmetry=self.particle_hole_symmetry)
         return terms
 
 
@@ -363,13 +373,12 @@ class FermiHubbardModel:
         for site_index in self.lattice.site_indices:
             for dof in self.lattice.dof_indices:
                 i = self.lattice.to_spin_orbital_index(site_index, dof, Spin.UP)
-                j = self.lattice.to_spin_orbital_index(site_index, dof, Spin.DOWN)
+                j = self.lattice.to_spin_orbital_index(site_index, dof,
+                                                       Spin.DOWN)
                 terms += number_difference_operator(i, j, -self.magnetic_field)
         return terms
 
 
     def hamiltonian(self):
-        return (self.tunneling_terms() + 
-                self.interaction_terms() + 
-                self.potential_terms() +
-                self.field_terms())
+        return (self.tunneling_terms() + self.interaction_terms() +
+                self.potential_terms() + self.field_terms())

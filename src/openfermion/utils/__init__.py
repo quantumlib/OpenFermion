@@ -17,6 +17,8 @@ from ._channel_state import (amplitude_damping_channel, dephasing_channel,
 
 from ._commutators import anticommutator, commutator, double_commutator
 
+from ._erpa import singlet_erpa, erpa_eom_hamiltonian
+
 from ._grid import Grid
 
 from ._lattice import (HubbardSquareLattice, SpinPairs, Spin)
@@ -34,6 +36,11 @@ from ._operator_utils import (chemist_ordered, count_qubits,
                               reorder, up_then_down,
                               load_operator, save_operator,
                               group_into_tensor_product_basis_sets)
+
+from ._qubit_tapering_from_stabilizer import (reduce_number_of_terms,
+                                              taper_off_qubits)
+
+from ._reduced_hamiltonian import make_reduced_hamiltonian
 
 from ._rdm_mapping_functions import (kronecker_delta,
                                      map_two_pdm_to_two_hole_dm,
@@ -60,6 +67,7 @@ from ._testing_utils import (haar_random_vector,
                              random_hermitian_matrix,
                              random_interaction_operator,
                              random_quadratic_hamiltonian,
+                             random_qubit_operator,
                              random_unitary_matrix,
                              module_importable)
 
@@ -74,6 +82,10 @@ from ._unitary_cc import (uccsd_convert_amplitude_format,
                           uccsd_singlet_generator,
                           uccsd_singlet_get_packed_amplitudes,
                           uccsd_singlet_paramsize)
+
+from ._wedge_product import (generate_parity_permutations,
+                             wedge)
+
 
 # Imports out of alphabetical order to avoid circular dependency.
 from ._jellium_hf_state import hartree_fock_state_jellium

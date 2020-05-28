@@ -12,9 +12,9 @@
 
 """Tests for molecular_data."""
 
+import unittest
 import numpy.random
 import scipy.linalg
-import unittest
 
 from openfermion.config import *
 from openfermion.hamiltonians import jellium_model, make_atom
@@ -92,8 +92,7 @@ class MolecularDataTest(unittest.TestCase):
         basis = 'sto-3g'
         multiplicity = -1
         with self.assertRaises(MoleculeNameError):
-            molecule = MolecularData(
-                geometry, basis, multiplicity)
+            MolecularData(geometry, basis, multiplicity)
 
     def test_geometry_from_file(self):
         water_geometry = [('O', (0., 0., 0.)),
@@ -156,7 +155,7 @@ class MolecularDataTest(unittest.TestCase):
         # Test missing calculation and information exceptions
         molecule.one_body_integrals = None
         with self.assertRaises(MissingCalculationError):
-            one_body_ints, two_body_ints = molecule.get_integrals()
+            molecule.get_integrals()
         molecule.hf_energy = 99.
 
         with self.assertRaises(ValueError):
