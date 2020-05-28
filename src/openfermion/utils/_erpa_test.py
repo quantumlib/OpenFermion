@@ -4,11 +4,11 @@ import numpy as np
 import openfermion as of
 from openfermion.config import DATA_DIRECTORY
 from openfermion.hamiltonians import MolecularData
-from openfermion.utils._reduced_hamiltonian import make_reduced_hamiltonian
-from openfermion.utils._erpa import singlet_erpa, erpa_eom_hamiltonian
+from openfermion.utils import make_reduced_hamiltonian
+from openfermion.utils import singlet_erpa, erpa_eom_hamiltonian
 
 
-def h2_rpa_test():
+def test_h2_rpa():
     filename = os.path.join(DATA_DIRECTORY, "H2_sto-3g_singlet_0.7414.hdf5")
     molecule = MolecularData(filename=filename)
     reduced_ham = make_reduced_hamiltonian(molecule.get_molecular_hamiltonian(),
@@ -24,7 +24,7 @@ def h2_rpa_test():
     assert isinstance(basis, dict)
 
 
-def erpa_eom_ham_h2():
+def test_erpa_eom_ham_h2():
     filename = os.path.join(DATA_DIRECTORY, "H2_sto-3g_singlet_0.7414.hdf5")
     molecule = MolecularData(filename=filename)
     reduced_ham = make_reduced_hamiltonian(molecule.get_molecular_hamiltonian(),
@@ -60,7 +60,7 @@ def erpa_eom_ham_h2():
                 assert np.isclose(true, test)
 
 
-def erpa_eom_ham_lih():
+def test_erpa_eom_ham_lih():
     filename = os.path.join(DATA_DIRECTORY, "H1-Li1_sto-3g_singlet_1.45.hdf5")
     molecule = MolecularData(filename=filename)
     reduced_ham = make_reduced_hamiltonian(molecule.get_molecular_hamiltonian(),

@@ -3,9 +3,9 @@ from typing import Dict, Tuple, Union
 from itertools import product
 import numpy as np
 from numpy import einsum
+import scipy as sp
 from openfermion.utils._rdm_mapping_functions import kronecker_delta as kdelta
 from openfermion.utils._rdm_mapping_functions import map_two_pdm_to_one_pdm
-import scipy as sp
 
 
 def erpa_eom_hamiltonian(h_ijkl: np.ndarray, tpdm: np.ndarray, p: int, q: int,
