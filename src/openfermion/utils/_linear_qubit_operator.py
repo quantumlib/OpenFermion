@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """LinearQubitOperator is a linear operator from QubitOperator."""
-from __future__ import absolute_import
 
 import functools
 import logging

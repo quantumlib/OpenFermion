@@ -11,7 +11,6 @@
 #   limitations under the License.
 """Base class for representating operators that are polynomials in the
 fermionic ladder operators."""
-from __future__ import division
 
 import copy
 import itertools
@@ -27,7 +26,7 @@ class PolynomialTensorError(Exception):
 
 
 def general_basis_change(general_tensor, rotation_matrix, key):
-    """Change the basis of an general interaction tensor.
+    r"""Change the basis of an general interaction tensor.
 
     M'^{p_1p_2...p_n} = R^{p_1}_{a_1} R^{p_2}_{a_2} ...
                         R^{p_n}_{a_n} M^{a_1a_2...a_n} R^{p_n}_{a_n}^T ...
@@ -95,7 +94,7 @@ def general_basis_change(general_tensor, rotation_matrix, key):
 
 
 class PolynomialTensor(object):
-    """Class for storing tensor representations of operators that correspond
+    r"""Class for storing tensor representations of operators that correspond
     with multilinear polynomials in the fermionic ladder operators.
     For instance, in a quadratic Hamiltonian (degree 2 polynomial) which
     conserves particle number, there are only terms of the form
@@ -362,7 +361,7 @@ class PolynomialTensor(object):
             selection (Union[int, Iterable[int]): If int, keeps terms with at
                 most (exactly, if exact is True) that many unique indices. If
                 iterable, keeps only terms containing (all of, if exact is
-                True) the specified indices. 
+                True) the specified indices.
             exact (bool): Whether or not the selection is strict.
         """
         comparator = (operator.eq if exact else operator.le)

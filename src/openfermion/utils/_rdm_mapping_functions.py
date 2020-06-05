@@ -10,9 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Mapping RDMs to other RDMs"""
-from __future__ import division
-import numpy
 from itertools import product
+import numpy
 
 
 def kronecker_delta(i, j):
@@ -20,7 +19,7 @@ def kronecker_delta(i, j):
 
 
 def map_two_pdm_to_one_pdm(tpdm, particle_number):
-    """
+    r"""
     Contract a 2-RDM to a 1-RDM
 
     Args:
@@ -36,7 +35,7 @@ def map_two_pdm_to_one_pdm(tpdm, particle_number):
 
 
 def map_two_pdm_to_two_hole_dm(tpdm, opdm):
-    """
+    r"""
     Map from the 2-RDM to the 2-hole-RDM
 
     Args:
@@ -65,7 +64,7 @@ def map_two_pdm_to_two_hole_dm(tpdm, opdm):
 
 
 def map_two_hole_dm_to_two_pdm(tqdm, opdm):
-    """
+    r"""
     Map from the 2-hole-RDM to the 2-RDM
 
     Args:
@@ -94,7 +93,7 @@ def map_two_hole_dm_to_two_pdm(tqdm, opdm):
 
 
 def map_two_hole_dm_to_one_hole_dm(tqdm, hole_number):
-    """
+    r"""
     Map from 2-hole-RDM to 1-hole-RDM
 
     Args:
@@ -112,7 +111,7 @@ def map_two_hole_dm_to_one_hole_dm(tqdm, hole_number):
 
 
 def map_one_pdm_to_one_hole_dm(opdm):
-    """
+    r"""
     Convert a 1-RDM to a 1-hole-RDM
 
     Args:
@@ -128,7 +127,7 @@ def map_one_pdm_to_one_hole_dm(opdm):
 
 
 def map_one_hole_dm_to_one_pdm(oqdm):
-    """
+    r"""
     Convert a 1-hole-RDM to a 1-RDM
 
     Args:
@@ -144,7 +143,7 @@ def map_one_hole_dm_to_one_pdm(oqdm):
 
 
 def map_two_pdm_to_particle_hole_dm(tpdm, opdm):
-    """
+    r"""
     Map the 2-RDM to the particle-hole-RDM
 
     Args:
@@ -168,7 +167,7 @@ def map_two_pdm_to_particle_hole_dm(tpdm, opdm):
 
 
 def map_particle_hole_dm_to_two_pdm(phdm, opdm):
-    """
+    r"""
     Map the 2-RDM to the particle-hole-RDM
 
     Args:
@@ -192,7 +191,7 @@ def map_particle_hole_dm_to_two_pdm(phdm, opdm):
 
 
 def map_particle_hole_dm_to_one_pdm(phdm, num_particles, num_basis_functions):
-    """
+    r"""
     Map the particle-hole-RDM to the 1-RDM
 
     Args:

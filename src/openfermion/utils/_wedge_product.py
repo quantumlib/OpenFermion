@@ -124,8 +124,10 @@ def wedge(left_tensor, right_tensor, left_index_ranks, right_index_ranks):
         # <a^ b^ c d> = D_{dc}^{ab} in this code.
         n_upper_einsum_chars = upper_order_parities[0][:left_index_ranks[0]]
         m_upper_einsum_chars = upper_order_parities[0][left_index_ranks[0]:]
-        n_lower_einsum_chars = lower_order_parities[0][:left_index_ranks[1]][::-1]
-        m_lower_einsum_chars = lower_order_parities[0][left_index_ranks[1]:][::-1]
+        n_lower_einsum_chars = lower_order_parities[0] \
+            [:left_index_ranks[1]][::-1]
+        m_lower_einsum_chars = lower_order_parities[0] \
+            [left_index_ranks[1]:][::-1]
 
         n_string = "".join(n_upper_einsum_chars + n_lower_einsum_chars)
         m_string = "".join(m_upper_einsum_chars + m_lower_einsum_chars)

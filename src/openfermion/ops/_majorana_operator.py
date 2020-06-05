@@ -12,16 +12,12 @@
 
 """The MajoranaOperator data structure."""
 
-from __future__ import division
-from future.utils import viewkeys
-
 import itertools
-
 import numpy
 
 
 class MajoranaOperator:
-    """A linear combination of products of Majorana operators.
+    r"""A linear combination of products of Majorana operators.
 
     A system of N fermionic modes can be described using 2N Majorana operators
     :math:`\gamma_1, \ldots, \gamma_{2N}`
@@ -96,7 +92,7 @@ class MajoranaOperator:
         The input to this method is a real orthogonal matrix :math:`O`.
         It returns a new MajoranaOperator which is equivalent to the old one
         but rewritten in terms of a new basis of Majorana operators.
-        Let the original Majorana operators be denoted by 
+        Let the original Majorana operators be denoted by
         :math:`\gamma_i` and the new operators be denoted by
         :math:`\tilde{\gamma_i}`. Then they are related by the equation
 
@@ -248,7 +244,7 @@ class MajoranaOperator:
         if not isinstance(other, type(self)):
             return NotImplemented
 
-        for term in viewkeys(self.terms) | viewkeys(other.terms):
+        for term in self.terms.keys() | other.terms.keys():
             if term in self.terms and term in other.terms:
                 if not numpy.isclose(self.terms[term], other.terms[term]):
                     return False

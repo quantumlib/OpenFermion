@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Reverse Jordan-Wigner transform on QubitOperators."""
-from __future__ import absolute_import
 
 from openfermion.ops import (FermionOperator,
                              QubitOperator)
@@ -19,7 +18,7 @@ from openfermion.utils import count_qubits, number_operator
 
 
 def reverse_jordan_wigner(qubit_operator, n_qubits=None):
-    """Transforms a QubitOperator into a FermionOperator using the
+    r"""Transforms a QubitOperator into a FermionOperator using the
     Jordan-Wigner transform.
 
     Operators are mapped as follows:

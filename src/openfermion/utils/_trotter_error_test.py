@@ -11,12 +11,11 @@
 #   limitations under the License.
 
 """Tests for _trotter_error.py."""
-from future.utils import iteritems
-
+import unittest
 from math import sqrt
 import numpy
+
 from scipy.linalg import expm
-import unittest
 
 from openfermion.config import *
 from openfermion.hamiltonians import MolecularData

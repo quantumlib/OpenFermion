@@ -15,8 +15,6 @@
 import unittest
 import warnings
 
-from future.utils import iteritems
-
 from openfermion import FermionOperator, Grid, jellium_model, normal_ordered
 from openfermion.transforms import get_fermion_operator
 from openfermion.utils import commutator
@@ -100,7 +98,7 @@ class DiagonalHamiltonianCommutatorTest(unittest.TestCase):
         part_b = FermionOperator.zero()
 
         add_to_a_or_b = 0  # add to a if 0; add to b if 1
-        for term, coeff in iteritems(hamiltonian.terms):
+        for term, coeff in hamiltonian.terms.items():
             # Partition terms in the Hamiltonian into part_a or part_b
             if add_to_a_or_b:
                 part_a += FermionOperator(term, coeff)

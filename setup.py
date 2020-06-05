@@ -16,6 +16,7 @@ from setuptools import setup, find_packages
 
 
 # This reads the __version__ variable from openfermion/_version.py
+__version__ = ''
 exec(open('src/openfermion/_version.py').read())
 
 # Readme file as long_description:

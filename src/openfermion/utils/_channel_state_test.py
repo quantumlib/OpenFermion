@@ -10,12 +10,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from __future__ import absolute_import
 
+import unittest
 from numpy import dot, zeros
 from scipy.linalg import norm
 
-import unittest
 
 from ._channel_state import *
 

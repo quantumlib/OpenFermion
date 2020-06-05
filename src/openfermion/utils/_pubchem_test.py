@@ -11,11 +11,10 @@
 #   limitations under the License.
 
 """Tests for _pubchem.py."""
-from __future__ import absolute_import
 
+import unittest
 import numpy
 import pytest
-import unittest
 
 from openfermion.utils import (geometry_from_pubchem,
                                module_importable)
@@ -89,3 +88,7 @@ class OpenFermionPubChemTest(unittest.TestCase):
         z = 0
         self.assertEqual(z, self.oxygen_z_1)
         self.assertEqual(z, self.oxygen_z_2)
+
+        with pytest.raises(ValueError,
+                           match='Incorrect value for the argument structure'):
+            _ = geometry_from_pubchem('water', structure='foo')
