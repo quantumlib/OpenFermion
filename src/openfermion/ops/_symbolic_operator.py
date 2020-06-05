@@ -120,7 +120,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
         # Parse the term
         # Sequence input
-        if isinstance(term, tuple) or isinstance(term, list):
+        if isinstance(term, (tuple, list)):
             term = self._parse_sequence(term)
         # String input
         elif isinstance(term, str):
