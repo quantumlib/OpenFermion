@@ -102,17 +102,21 @@ class GeneralTest(unittest.TestCase):
         """Test == and !=."""
         equals_tester = EqualsTester(self)
 
-        zeros_1 = [DummyOperator1(),
-                   DummyOperator1('1^ 0', 0.),
-                   DummyOperator1('1^ 0', -1j) * 0,
-                   DummyOperator1('1^ 0', 0 * sympy.Symbol('x')),
-                   DummyOperator1('1^ 0', sympy.Symbol('x')) * 0]
+        zeros_1 = [
+            DummyOperator1(),
+            DummyOperator1('1^ 0', 0.),
+            DummyOperator1('1^ 0', -1j) * 0,
+            DummyOperator1('1^ 0', 0 * sympy.Symbol('x')),
+            DummyOperator1('1^ 0', sympy.Symbol('x')) * 0
+        ]
 
-        zeros_2 = [DummyOperator2(),
-                   DummyOperator2(((1, 'Y'), (0, 'X')), 0.),
-                   DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0,
-                   DummyOperator2(((1, 'Y'), (0, 'X')), 0 * sympy.Symbol('x')),
-                   DummyOperator2(((1, 'Y'), (0, 'X')), sympy.Symbol('x')) * 0]
+        zeros_2 = [
+            DummyOperator2(),
+            DummyOperator2(((1, 'Y'), (0, 'X')), 0.),
+            DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0,
+            DummyOperator2(((1, 'Y'), (0, 'X')), 0 * sympy.Symbol('x')),
+            DummyOperator2(((1, 'Y'), (0, 'X')), sympy.Symbol('x')) * 0
+        ]
 
         different_ops_1 = [DummyOperator1(((1, 0),), -0.1j),
                            DummyOperator1(((1, 1),), -0.1j),
@@ -124,11 +128,13 @@ class GeneralTest(unittest.TestCase):
                            (DummyOperator2(((1, 'Y'),), -0.1j) +
                             DummyOperator2(((2, 'Y'),), -0.1j))]
 
-        sympy_ops_1 = [DummyOperator1('1^ 0', sympy.Symbol('x')),
-                       DummyOperator1('1^ 0', 2*sympy.Symbol('x')) / 2,
-                       DummyOperator1('1^ 0', sympy.Symbol('x') *
-                                      sympy.Symbol('y')) *
-                       1 / sympy.Symbol('y')]
+        sympy_ops_1 = [
+            DummyOperator1('1^ 0', sympy.Symbol('x')),
+            DummyOperator1('1^ 0', 2*sympy.Symbol('x')) / 2,
+            DummyOperator1('1^ 0',
+                           sympy.Symbol('x') * sympy.Symbol('y')) * 1 /
+            sympy.Symbol('y')
+        ]
 
         sympy_ops_2 = [DummyOperator1('1^ 0', sympy.Symbol('x') + 1)]
 
@@ -404,7 +410,8 @@ class SymbolicOperatorTest1(unittest.TestCase):
         coeff2 = sympy.Symbol('x') + 5
         fermion_op = DummyOperator1(loc_op1, coeff1)
         fermion_op *= DummyOperator1(loc_op2, coeff2)
-        self.assertTrue(fermion_op.terms[loc_op1 + loc_op2] - coeff1 * coeff2 == 0)
+        self.assertTrue(fermion_op.terms[loc_op1 + loc_op2] -
+                        coeff1 * coeff2 == 0)
 
     def test_imul_scalar_npfloat64(self):
         loc_op = ((1, 0), (2, 1))
@@ -482,7 +489,8 @@ class SymbolicOperatorTest1(unittest.TestCase):
     def test_mul_sympy_coeff(self):
         op = DummyOperator1(((1, 1), (0, 1)), -1j)
         op = op * sympy.Symbol('x')
-        self.assertTrue(op.terms[((1, 1), (0, 1))] - (-1j * sympy.Symbol('x')) == 0)
+        self.assertTrue(op.terms[((1, 1), (0, 1))] -
+                        (-1j * sympy.Symbol('x')) == 0)
 
     def test_mul_out_of_place(self):
         op1 = DummyOperator1(((0, 1), (3, 1), (3, 0), (11, 1)), 3.j)

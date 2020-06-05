@@ -305,8 +305,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         string_rep = ''
         for term, coeff in sorted(self.terms.items()):
             if ((not isinstance(coeff, sympy.Expr) and
-                    numpy.isclose(coeff, 0.0))
-                    or coeff == 0):
+                 numpy.isclose(coeff, 0.0)) or coeff == 0):
                 continue
             tmp_string = '{} ['.format(coeff)
             for factor in term:
@@ -378,7 +377,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Raises:
             TypeError: Invalid type cannot be multiply with SymbolicOperator.
         """
-        if isinstance(multiplier, (int, float, complex, sympy.Expr, type(self))):
+        if isinstance(multiplier,
+                      (int, float, complex, sympy.Expr, type(self))):
             product = copy.deepcopy(self)
             product *= multiplier
             return product
