@@ -130,7 +130,7 @@ class GeneralTest(unittest.TestCase):
 
         sympy_ops_1 = [
             DummyOperator1('1^ 0', sympy.Symbol('x')),
-            DummyOperator1('1^ 0', 2*sympy.Symbol('x')) / 2,
+            DummyOperator1('1^ 0', 2 * sympy.Symbol('x')) / 2,
             DummyOperator1('1^ 0',
                            sympy.Symbol('x') * sympy.Symbol('y')) * 1 /
             sympy.Symbol('y')
@@ -489,8 +489,8 @@ class SymbolicOperatorTest1(unittest.TestCase):
     def test_mul_sympy_coeff(self):
         op = DummyOperator1(((1, 1), (0, 1)), -1j)
         op = op * sympy.Symbol('x')
-        self.assertTrue(op.terms[((1, 1), (0, 1))] -
-                        (-1j * sympy.Symbol('x')) == 0)
+        self.assertTrue(op.terms[((1, 1),
+                                  (0, 1))] - (-1j * sympy.Symbol('x')) == 0)
 
     def test_mul_out_of_place(self):
         op1 = DummyOperator1(((0, 1), (3, 1), (3, 0), (11, 1)), 3.j)

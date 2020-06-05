@@ -48,6 +48,7 @@ from openfermion.transforms._conversion import (
     get_quad_operator, get_quadratic_hamiltonian, get_sparse_operator,
     get_number_preserving_sparse_operator, _iterate_basis_, _check_no_sympy)
 
+
 class RaisesSympyExceptionTest(unittest.TestCase):
 
     def test_raises_sympy_expression(self):
