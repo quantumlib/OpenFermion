@@ -381,7 +381,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Raises:
             TypeError: Invalid type cannot be multiply with SymbolicOperator.
         """
-        if isinstance(multiplier, COEFFICIENT_TYPES + (type(self), )):
+        if isinstance(multiplier, COEFFICIENT_TYPES + (type(self),)):
             product = copy.deepcopy(self)
             product *= multiplier
             return product
