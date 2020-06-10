@@ -272,7 +272,6 @@ class EqualsTester(object):
                      (NotImplemented, NotImplemented)])
 
         # Check that this group's items don't overlap with other groups.
-        print('Testing others')
         for other_group in self.groups:
             for v1, v2 in itertools.product(group_items, other_group):
                 # Binary operators should always work.

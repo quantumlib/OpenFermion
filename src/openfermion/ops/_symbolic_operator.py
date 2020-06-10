@@ -306,8 +306,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         for term, coeff in sorted(self.terms.items()):
             if ((not isinstance(coeff, sympy.Expr) and
                  numpy.isclose(coeff, 0.0)) or
-                (isinstance(coeff, sympy.Expr) and
-                 sympy.simplify(coeff) == 0)):
+                (isinstance(coeff, sympy.Expr) and sympy.simplify(coeff) == 0)):
                 continue
             tmp_string = '{} ['.format(coeff)
             for factor in term:
@@ -406,7 +405,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                 self.terms[term] = (self.terms.get(term, 0.0) +
                                     addend.terms[term])
                 if isinstance(self.terms[term], sympy.Expr):
-                    if (sympy.simplify(abs(self.terms[term]) < EQ_TOLERANCE)) == True:
+                    if (sympy.simplify(
+                            abs(self.terms[term]) < EQ_TOLERANCE)) == True:
                         del self.terms[term]
                 else:
                     if abs(self.terms[term]) < EQ_TOLERANCE:
@@ -594,16 +594,16 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
                 if isinstance (self.terms[term], sympy.Expr):
-                    if sympy.simplify(abs(self.terms[term]) <=
-                                      EQ_TOLERANCE) != True:
+                    if sympy.simplify(
+                            abs(self.terms[term]) <= EQ_TOLERANCE) != True:
                         return False
                 else:
                     if not abs(self.terms[term]) <= EQ_TOLERANCE:
                         return False
             else:
                 if isinstance (other.terms[term], sympy.Expr):
-                    if sympy.simplify(abs(other.terms[term]) <=
-                                      EQ_TOLERANCE) != True:
+                    if sympy.simplify(
+                            abs(other.terms[term]) <= EQ_TOLERANCE) != True:
                         return False
                 else:
                     if not abs(other.terms[term]) <= EQ_TOLERANCE:
