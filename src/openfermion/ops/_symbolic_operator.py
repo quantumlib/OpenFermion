@@ -593,7 +593,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if isinstance (self.terms[term], sympy.Expr):
+                if isinstance(self.terms[term], sympy.Expr):
                     if sympy.simplify(
                             abs(self.terms[term]) <= EQ_TOLERANCE) != True:
                         return False
@@ -601,7 +601,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                     if not abs(self.terms[term]) <= EQ_TOLERANCE:
                         return False
             else:
-                if isinstance (other.terms[term], sympy.Expr):
+                if isinstance(other.terms[term], sympy.Expr):
                     if sympy.simplify(
                             abs(other.terms[term]) <= EQ_TOLERANCE) != True:
                         return False
