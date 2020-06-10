@@ -24,6 +24,9 @@ import sympy
 from openfermion.config import EQ_TOLERANCE
 
 
+COEFFICIENT_TYPES = (int, float, complex, sympy.Expr)
+
+
 class SymbolicOperator(metaclass=abc.ABCMeta):
     """Base class for FermionOperator and QubitOperator.
 
@@ -102,7 +105,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
     __hash__ = None
 
     def __init__(self, term=None, coefficient=1.):
-        if not isinstance(coefficient, (int, float, complex, sympy.Expr)):
+        if not isinstance(coefficient, COEFFICIENT_TYPES):
             raise ValueError('Coefficient must be a numeric type.')
 
         # Initialize the terms dictionary
@@ -334,7 +337,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             product (SymbolicOperator): Mutated self.
         """
         # Handle scalars.
-        if isinstance(multiplier, (int, float, complex, sympy.Expr)):
+        if isinstance(multiplier, COEFFICIENT_TYPES):
             for term in self.terms:
                 self.terms[term] *= multiplier
             return self
@@ -378,8 +381,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Raises:
             TypeError: Invalid type cannot be multiply with SymbolicOperator.
         """
-        if isinstance(multiplier,
-                      (int, float, complex, sympy.Expr, type(self))):
+        if isinstance(multiplier, COEFFICIENT_TYPES + (type(self), )):
             product = copy.deepcopy(self)
             product *= multiplier
             return product
@@ -486,7 +488,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Raises:
           TypeError: Object of invalid type cannot multiply SymbolicOperator.
         """
-        if not isinstance(multiplier, (int, float, complex, sympy.Expr)):
+        if not isinstance(multiplier, COEFFICIENT_TYPES):
             raise TypeError(
                 'Object of invalid type cannot multiply with ' +
                 type(self) + '.')
@@ -509,7 +511,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
           TypeError: Cannot divide local operator by non-scalar type.
 
         """
-        if not isinstance(divisor, (int, float, complex, sympy.Expr)):
+        if not isinstance(divisor, COEFFICIENT_TYPES):
             raise TypeError('Cannot divide ' + type(self) +
                             ' by non-scalar type.')
         return self * (1.0 / divisor)
@@ -519,7 +521,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         return self.__truediv__(divisor)
 
     def __itruediv__(self, divisor):
-        if not isinstance(divisor, (int, float, complex, sympy.Expr)):
+        if not isinstance(divisor, COEFFICIENT_TYPES):
             raise TypeError('Cannot divide ' + type(self) +
                             ' by non-scalar type.')
         self *= (1.0 / divisor)
