@@ -120,7 +120,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
         # Parse the term
         # Sequence input
-        if isinstance(term, (tuple, list)):
+        if isinstance(term, (list, tuple)):
             term = self._parse_sequence(term)
         # String input
         elif isinstance(term, str):
@@ -305,7 +305,9 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         string_rep = ''
         for term, coeff in sorted(self.terms.items()):
             if ((not isinstance(coeff, sympy.Expr) and
-                 numpy.isclose(coeff, 0.0)) or coeff == 0):
+                 numpy.isclose(coeff, 0.0)) or
+                (isinstance(coeff, sympy.Expr) and
+                 sympy.simplify(coeff) == 0)):
                 continue
             tmp_string = '{} ['.format(coeff)
             for factor in term:
@@ -403,11 +405,13 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             for term in addend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) +
                                     addend.terms[term])
-                try:
+                if isinstance(self.terms[term], sympy.Expr):
+                    if (sympy.simplify(abs(self.terms[term]) < EQ_TOLERANCE)) == True:
+                        del self.terms[term]
+                else:
                     if abs(self.terms[term]) < EQ_TOLERANCE:
                         del self.terms[term]
-                except TypeError:
-                    pass
+
         else:
             raise TypeError('Cannot add invalid type to {}.'.format(
                             type(self)))
@@ -442,11 +446,12 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             for term in subtrahend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) -
                                     subtrahend.terms[term])
-                try:
+                if isinstance(self.terms[term], sympy.Expr):
+                    if sympy.simplify(self.terms[term] < EQ_TOLERANCE) == True:
+                        del self.terms[term]
+                else:
                     if abs(self.terms[term]) < EQ_TOLERANCE:
                         del self.terms[term]
-                except TypeError:
-                    pass
         else:
             raise TypeError('Cannot subtract invalid type from {}.'.format(
                             type(self)))
@@ -578,29 +583,31 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             b = other.terms[term]
             # math.isclose does this in Python >=3.5
             if isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr):
-                try:
-                    if not abs(a - b) <= EQ_TOLERANCE:
-                        return False
-                except TypeError:
+                # Can only use absolute inequality here as max(1, a, b)
+                # is not necessarily well-defined for expressions.
+                if sympy.simplify(abs(a - b) <= EQ_TOLERANCE) != True:
                     return False
             else:
-                if not abs(a - b) <= max(EQ_TOLERANCE,
-                                         EQ_TOLERANCE * max(abs(a), abs(b))):
+                if not abs(a - b) <= EQ_TOLERANCE * max(1, abs(a), abs(b)):
                     return False
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                try:
+                if isinstance (self.terms[term], sympy.Expr):
+                    if sympy.simplify(abs(self.terms[term]) <=
+                                      EQ_TOLERANCE) != True:
+                        return False
+                else:
                     if not abs(self.terms[term]) <= EQ_TOLERANCE:
                         return False
-                except TypeError:
-                    return False
             else:
-                try:
+                if isinstance (other.terms[term], sympy.Expr):
+                    if sympy.simplify(abs(other.terms[term]) <=
+                                      EQ_TOLERANCE) != True:
+                        return False
+                else:
                     if not abs(other.terms[term]) <= EQ_TOLERANCE:
                         return False
-                except TypeError:
-                    return False
         return True
 
     def __ne__(self, other):
