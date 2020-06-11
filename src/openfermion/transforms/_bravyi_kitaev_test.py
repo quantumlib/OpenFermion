@@ -71,11 +71,12 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         n_qubits = 16
         lowering = bravyi_kitaev(FermionOperator(((9, 0),)) * coeff, n_qubits)
         raising = bravyi_kitaev(FermionOperator(((9, 1),)) * coeff, n_qubits)
-        sum_lr = bravyi_kitaev(FermionOperator(((9, 0),)) * coeff +
-                               FermionOperator(((9, 1),)) * coeff, n_qubits)
+        sum_lr = bravyi_kitaev(
+            FermionOperator(((9, 0),)) * coeff + FermionOperator(
+                ((9, 1),)) * coeff, n_qubits)
 
-        correct_operators_c = ((7, 'Z'), (8, 'Z'), (9, 'X'),
-                               (11, 'X'), (15, 'X'))
+        correct_operators_c = ((7, 'Z'), (8, 'Z'), (9, 'X'), (11, 'X'), (15,
+                                                                         'X'))
         correct_operators_d = ((7, 'Z'), (9, 'Y'), (11, 'X'), (15, 'X'))
 
         self.assertEqual(lowering.terms[correct_operators_c], 0.5 * coeff)
