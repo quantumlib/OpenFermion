@@ -1181,8 +1181,8 @@ def boson_ladder_sparse(n_modes, mode, ladder_type, trunc):
     Returns:
         The corresponding trunc x trunc Scipy sparse matrix.
     """
-    if trunc < 1 or not isinstance(trunc, int):
-        raise ValueError("Fock space truncation must be a positive integer.")
+    if not isinstance(trunc, int) or trunc < 1:
+        raise ValueError("Fock space truncation (trunc) must be a positive integer.")
 
     if ladder_type:
         lop = scipy.sparse.spdiags(numpy.sqrt(range(1, trunc)),
@@ -1219,8 +1219,8 @@ def single_quad_op_sparse(n_modes, mode, quadrature, hbar, trunc):
     Returns:
         The corresponding trunc x trunc Scipy sparse matrix.
     """
-    if trunc < 1 or not isinstance(trunc, int):
-        raise ValueError("Fock space truncation must be a positive integer.")
+    if not isinstance(trunc, int) or trunc < 1:
+        raise ValueError("Fock space truncation (trunc) must be a positive integer.")
 
     b = boson_ladder_sparse(1, 0, 0, trunc)
 
@@ -1264,8 +1264,8 @@ def boson_operator_sparse(operator, trunc, hbar=1.):
     else:
         raise ValueError("Only BosonOperator and QuadOperator are supported.")
 
-    if trunc < 1 or not isinstance(trunc, int):
-        raise ValueError("Fock space truncation must be a positive integer.")
+    if not isinstance(trunc, int) or trunc < 1:
+        raise ValueError("Fock space truncation (trunc) must be a positive integer.")
 
     # count the number of modes
     n_modes = 0

@@ -1205,6 +1205,9 @@ class BosonSparseTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             boson_ladder_sparse(1, 0, 0, 0)
 
+        with self.assertRaises(ValueError):
+            boson_ladder_sparse(1, 0, 0, None)
+
     def test_boson_ladder_destroy_one_mode(self):
         b = boson_ladder_sparse(1, 0, 0, self.d).toarray()
         self.assertTrue(numpy.allclose(b, self.b))
@@ -1237,6 +1240,12 @@ class BosonSparseTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             single_quad_op_sparse(1, 0, 'q', self.hbar, 0)
 
+        with self.assertRaises(ValueError):
+            single_quad_op_sparse(1, 0, 'q', self.hbar, None)
+
+        with self.assertRaises(ValueError):
+            single_quad_op_sparse(1, 0, 'q', self.hbar, 'test')
+
     def test_single_quad_q_one_mode(self):
         res = single_quad_op_sparse(1, 0, 'q', self.hbar, self.d).toarray()
         self.assertTrue(numpy.allclose(res, self.q))
@@ -1266,6 +1275,9 @@ class BosonSparseTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             boson_operator_sparse(op, 0)
+
+        with self.assertRaises(ValueError):
+            boson_operator_sparse(op, None)
 
     def test_boson_operator_invalid_op(self):
         op = FermionOperator('0')
