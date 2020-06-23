@@ -850,7 +850,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
 
     def test_compress_sympy(self):
         op = (DummyOperator1('',
-                             sympy.Symbol('x') + sympy.Symbol('y'))+
+                             sympy.Symbol('x') + sympy.Symbol('y')) +
               DummyOperator1('3^ 1',
                              sympy.Symbol('x') + 1e-7 - sympy.Symbol('x')))
         op_compressed = DummyOperator1('',
