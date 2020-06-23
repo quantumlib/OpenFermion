@@ -639,11 +639,9 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             coeff = self.terms[term]
 
             if isinstance(coeff, sympy.Expr):
-                if sympy.simplify(
-                        sympy.im(coeff) <= abs_tol) == True:
+                if sympy.simplify(sympy.im(coeff) <= abs_tol) == True:
                     coeff = sympy.re(coeff)
-                if sympy.simplify(
-                        sympy.re(coeff) <= abs_tol) == True:
+                if sympy.simplify(sympy.re(coeff) <= abs_tol) == True:
                     coeff = 1j * sympy.im(coeff)
                 if (sympy.simplify(abs(coeff) <= abs_tol) != True):
                     new_terms[term] = coeff
