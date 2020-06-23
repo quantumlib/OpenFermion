@@ -849,11 +849,12 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertTrue(op_compressed == op)
 
     def test_compress_sympy(self):
-        op = (DummyOperator1('', sympy.Symbol('x') + sympy.Symbol('y'))+
-              DummyOperator1('3^ 1', sympy.Symbol('x') + 1e-7 -
-                             sympy.Symbol('x')))
-        op_compressed = DummyOperator1(
-            '', sympy.Symbol('x') + sympy.Symbol('y'))
+        op = (DummyOperator1('',
+                             sympy.Symbol('x') + sympy.Symbol('y'))+
+              DummyOperator1('3^ 1',
+                             sympy.Symbol('x') + 1e-7 - sympy.Symbol('x')))
+        op_compressed = DummyOperator1('',
+                                       sympy.Symbol('x') + sympy.Symbol('y'))
         op.compress(1e-6)
         self.assertTrue(op_compressed == op)
 
@@ -1019,7 +1020,6 @@ class SymbolicOperatorTest2(unittest.TestCase):
         res1 = op * multiplier
         res2 = multiplier * op
         zero_op = DummyOperator2()
-        print(res1 - res2)
         self.assertTrue(res1 - res2 == zero_op)
 
     def test_rmul_bad_multiplier(self):
