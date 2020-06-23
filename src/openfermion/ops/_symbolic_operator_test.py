@@ -848,6 +848,15 @@ class SymbolicOperatorTest1(unittest.TestCase):
         op.compress(1e-7)
         self.assertTrue(op_compressed == op)
 
+    def test_compress_sympy(self):
+        op = (DummyOperator1('', sympy.Symbol('x') + sympy.Symbol('y'))+
+              DummyOperator1('3^ 1', sympy.Symbol('x') + 1e-7 -
+                             sympy.Symbol('x')))
+        op_compressed = DummyOperator1(
+            '', sympy.Symbol('x') + sympy.Symbol('y'))
+        op.compress(1e-6)
+        self.assertTrue(op_compressed == op)
+
     def test_str_sympy(self):
         op = DummyOperator1("0^", sympy.Symbol('x'))
         self.assertEqual(str(op), "x [0^]")
