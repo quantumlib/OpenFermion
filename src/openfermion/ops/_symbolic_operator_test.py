@@ -940,6 +940,16 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertTrue(qubit_op == correct)
         self.assertTrue(qubit_op == DummyOperator2(str(qubit_op)))
 
+    def test_init_long_str_sympy(self):
+        coeff = sympy.Symbol('x')
+        qubit_op = DummyOperator2(
+                '(-2.0+3.0j) [X0 Y1] +\n\n -1.0[ X2 Y3 ] - []', -coeff)
+        correct = \
+            DummyOperator2('X0 Y1', complex(2., -3.) * coeff) + \
+            DummyOperator2('X2 Y3', coeff) + \
+            DummyOperator2('', coeff)
+        self.assertEqual(len((qubit_op-correct).terms), 0)
+
     def test_init_str_identity(self):
         qubit_op = DummyOperator2('', 2.)
         self.assertTrue(len(qubit_op.terms) == 1)
@@ -1204,6 +1214,13 @@ class SymbolicOperatorTest2(unittest.TestCase):
         op += DummyOperator2(((2, 'Z'), (3, 'Y')), y_sym)
         norm = op.induced_norm(2)
         self.assertTrue(norm - (abs(x_sym)**2 + abs(y_sym)**2)**(0.5) == 0)
+
+    def test_many_body_order_sympy(self):
+        x_sym = sympy.Symbol('x')
+        y_sym = sympy.Symbol('y')
+        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), x_sym)
+        op += DummyOperator2(((2, 'Z'), (3, 'Y')), y_sym)
+        self.assertEqual(op.many_body_order(), 3)
 
     def test_tracenorm_zero(self):
         op = DummyOperator2()
