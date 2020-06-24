@@ -952,6 +952,10 @@ class SymbolicOperatorTest2(unittest.TestCase):
         reparsed_op = DummyOperator2(str(qubit_op))
         self.assertEqual(len((qubit_op - reparsed_op).terms), 0)
 
+    def test_init_long_str_sympy_failure(self):
+        with self.assertRaises(ValueError):
+            _= DummyOperator2('(x^) [X0 Y1]', -1)
+
     def test_init_str_identity(self):
         qubit_op = DummyOperator2('', 2.)
         self.assertTrue(len(qubit_op.terms) == 1)
