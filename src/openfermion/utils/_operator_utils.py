@@ -608,10 +608,11 @@ def save_operator(operator, file_name=None, data_directory=None,
     else:
         raise TypeError('Operator of invalid type.')
 
-    for term in operator.terms:
-        if isinstance(operator.terms[term], sympy.Expr):
-            raise TypeError('Saving is not currently supported' +
-                            ' for sympy expressions')
+    if plain_text is False:
+        for term in operator.terms:
+            if isinstance(operator.terms[term], sympy.Expr):
+                raise TypeError('Cannot save sympy expressions to compact'
+                    ' form, use plain text form instead.')
 
     if plain_text:
         with open(file_path, 'w') as f:
