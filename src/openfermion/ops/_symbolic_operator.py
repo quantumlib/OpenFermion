@@ -151,7 +151,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
             # Determine the coefficient for this term
             coef_string = re.sub(r"\s+", "", match[0])
-            if coef_string and coef_string[0] is '+':
+            if coef_string and coef_string[0] == '+':
                 coef_string = coef_string[1:].strip()
             if coef_string == '':
                 coef = 1.0
@@ -167,8 +167,12 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                     else:
                         coef = float(coef_string)
                 except ValueError:
-                    raise ValueError(
-                            'Invalid coefficient {}.'.format(coef_string))
+                    try:
+                        coef = sympy.sympify(coef_string)
+                    except:
+                        raise ValueError(
+                                'Invalid coefficient {}.'.format(coef_string))
+            print(coef, coefficient)
             coef *= coefficient
 
             # Parse the term, simpify it and add to the dict

@@ -949,6 +949,9 @@ class SymbolicOperatorTest2(unittest.TestCase):
             DummyOperator2('X2 Y3', coeff) + \
             DummyOperator2('', coeff)
         self.assertEqual(len((qubit_op - correct).terms), 0)
+        reparsed_op = DummyOperator2(str(qubit_op))
+        self.assertEqual(len((qubit_op - reparsed_op).terms), 0)
+
 
     def test_init_str_identity(self):
         qubit_op = DummyOperator2('', 2.)
