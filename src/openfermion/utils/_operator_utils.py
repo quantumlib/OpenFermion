@@ -612,7 +612,7 @@ def save_operator(operator, file_name=None, data_directory=None,
         for term in operator.terms:
             if isinstance(operator.terms[term], sympy.Expr):
                 raise TypeError('Cannot save sympy expressions to compact'
-                    ' form, use plain text form instead.')
+                                ' form, use plain text form instead.')
 
     if plain_text:
         with open(file_path, 'w') as f:
