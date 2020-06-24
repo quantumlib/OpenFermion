@@ -171,7 +171,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                         coef = sympy.sympify(coef_string)
                     except:
                         raise ValueError(
-                                'Invalid coefficient {}.'.format(coef_string))
+                            'Invalid coefficient {}.'.format(coef_string))
             print(coef, coefficient)
             coef *= coefficient
 
