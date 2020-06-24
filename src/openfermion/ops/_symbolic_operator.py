@@ -690,10 +690,12 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             # Zero operator
             return 0
         else:
-            return max(len(term) for term, coeff in self.terms.items()
-                       if ((isinstance(coeff, sympy.Expr) and
-                            sympy.simplify(abs(coeff) > EQ_TOLERANCE) != False)
-                           or abs(coeff) > EQ_TOLERANCE))
+            return max(
+                len(term)
+                for term, coeff in self.terms.items()
+                if ((isinstance(coeff, sympy.Expr) and sympy.simplify(
+                    abs(coeff) > EQ_TOLERANCE) != False) or
+                    abs(coeff) > EQ_TOLERANCE))
 
     @classmethod
     def accumulate(cls, operators, start=None):

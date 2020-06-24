@@ -943,12 +943,12 @@ class SymbolicOperatorTest2(unittest.TestCase):
     def test_init_long_str_sympy(self):
         coeff = sympy.Symbol('x')
         qubit_op = DummyOperator2(
-                '(-2.0+3.0j) [X0 Y1] +\n\n -1.0[ X2 Y3 ] - []', -coeff)
+            '(-2.0+3.0j) [X0 Y1] +\n\n -1.0[ X2 Y3 ] - []', -coeff)
         correct = \
             DummyOperator2('X0 Y1', complex(2., -3.) * coeff) + \
             DummyOperator2('X2 Y3', coeff) + \
             DummyOperator2('', coeff)
-        self.assertEqual(len((qubit_op-correct).terms), 0)
+        self.assertEqual(len((qubit_op - correct).terms), 0)
 
     def test_init_str_identity(self):
         qubit_op = DummyOperator2('', 2.)
