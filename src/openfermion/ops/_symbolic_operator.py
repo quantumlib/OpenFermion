@@ -29,9 +29,9 @@ COEFFICIENT_TYPES = (int, float, complex, sympy.Expr)
 
 def _issmall(val, tol=EQ_TOLERANCE):
     '''Checks whether a value is near-zero
-    
+
     Parses the allowed coefficients above for near-zero tests.
-    
+
     Args:
         val (COEFFICIENT_TYPES) -- the value to be tested
         tol (float) -- tolerance for inequality
