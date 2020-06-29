@@ -1,4 +1,4 @@
-.. image:: https://github.com/quantumlib/openfermion/blob/master/docs/second_logo.svg
+.. image:: docs/images/logo_horizontal.svg
 
 OpenFermion is an open source library for compiling and analyzing quantum
 algorithms to simulate fermionic systems, including quantum chemistry. Among
