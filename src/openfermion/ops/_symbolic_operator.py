@@ -18,7 +18,6 @@ import itertools
 import re
 import warnings
 
-import numpy
 import sympy
 
 from openfermion.config import EQ_TOLERANCE
