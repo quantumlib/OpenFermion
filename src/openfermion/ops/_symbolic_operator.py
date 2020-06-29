@@ -27,6 +27,24 @@ from openfermion.config import EQ_TOLERANCE
 COEFFICIENT_TYPES = (int, float, complex, sympy.Expr)
 
 
+def _issmall(val, tol=EQ_TOLERANCE):
+    '''Checks whether a value is near-zero
+    
+    Parses the allowed coefficients above for near-zero tests.
+    
+    Args:
+        val (COEFFICIENT_TYPES) -- the value to be tested
+        tol (float) -- tolerance for inequality
+    '''
+    if isinstance(val, sympy.Expr):
+        if sympy.simplify(abs(val) < tol) == True:
+            return True
+        return False
+    if abs(val) < tol:
+        return True
+    return False
+
+
 class SymbolicOperator(metaclass=abc.ABCMeta):
     """Base class for FermionOperator and QubitOperator.
 
@@ -311,9 +329,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             return '0'
         string_rep = ''
         for term, coeff in sorted(self.terms.items()):
-            if ((not isinstance(coeff, sympy.Expr) and
-                 numpy.isclose(coeff, 0.0)) or
-                (isinstance(coeff, sympy.Expr) and sympy.simplify(coeff) == 0)):
+            if _issmall(coeff):
                 continue
             tmp_string = '{} ['.format(coeff)
             for factor in term:
@@ -410,14 +426,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             for term in addend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) +
                                     addend.terms[term])
-                if isinstance(self.terms[term], sympy.Expr):
-                    if (sympy.simplify(
-                            abs(self.terms[term]) < EQ_TOLERANCE)) == True:
-                        del self.terms[term]
-                else:
-                    if abs(self.terms[term]) < EQ_TOLERANCE:
-                        del self.terms[term]
-
+                if _issmall(self.terms[term]):
+                    del self.terms[term]
         else:
             raise TypeError('Cannot add invalid type to {}.'.format(
                             type(self)))
@@ -452,12 +462,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             for term in subtrahend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) -
                                     subtrahend.terms[term])
-                if isinstance(self.terms[term], sympy.Expr):
-                    if sympy.simplify(self.terms[term] < EQ_TOLERANCE) == True:
-                        del self.terms[term]
-                else:
-                    if abs(self.terms[term]) < EQ_TOLERANCE:
-                        del self.terms[term]
+                if _issmall(self.terms[term]):
+                    del self.terms[term]
         else:
             raise TypeError('Cannot subtract invalid type from {}.'.format(
                             type(self)))
@@ -587,33 +593,20 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         for term in set(self.terms).intersection(set(other.terms)):
             a = self.terms[term]
             b = other.terms[term]
-            # math.isclose does this in Python >=3.5
             if isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr):
-                # Can only use absolute inequality here as max(1, a, b)
-                # is not necessarily well-defined for expressions.
-                if sympy.simplify(abs(a - b) <= EQ_TOLERANCE) != True:
-                    return False
+                tol = EQ_TOLERANCE
             else:
-                if not abs(a - b) <= EQ_TOLERANCE * max(1, abs(a), abs(b)):
-                    return False
+                tol = EQ_TOLERANCE * max(1, abs(a), abs(b))
+            if _issmall(a - b, tol) is False:
+                return False
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if isinstance(self.terms[term], sympy.Expr):
-                    if sympy.simplify(
-                            abs(self.terms[term]) <= EQ_TOLERANCE) != True:
-                        return False
-                else:
-                    if not abs(self.terms[term]) <= EQ_TOLERANCE:
-                        return False
+                if _issmall(self.terms[term]) is False:
+                    return False
             else:
-                if isinstance(other.terms[term], sympy.Expr):
-                    if sympy.simplify(
-                            abs(other.terms[term]) <= EQ_TOLERANCE) != True:
-                        return False
-                else:
-                    if not abs(other.terms[term]) <= EQ_TOLERANCE:
-                        return False
+                if _issmall(other.terms[term]) is False:
+                    return False
         return True
 
     def __ne__(self, other):
@@ -697,9 +690,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             return max(
                 len(term)
                 for term, coeff in self.terms.items()
-                if ((isinstance(coeff, sympy.Expr) and sympy.simplify(
-                    abs(coeff) > EQ_TOLERANCE) != False) or
-                    abs(coeff) > EQ_TOLERANCE))
+                if (_issmall(coeff) is False))
 
     @classmethod
     def accumulate(cls, operators, start=None):
