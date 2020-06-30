@@ -184,12 +184,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                     else:
                         coef = float(coef_string)
                 except ValueError:
-                    try:
-                        coef = sympy.sympify(coef_string)
-                    except:
-                        raise ValueError(
-                            'Invalid coefficient {}.'.format(coef_string))
-            print(coef, coefficient)
+                    raise ValueError(
+                        'Invalid coefficient {}.'.format(coef_string))
             coef *= coefficient
 
             # Parse the term, simpify it and add to the dict
