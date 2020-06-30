@@ -24,7 +24,8 @@ from tensorflow_docs.api_generator import public_api
 
 import openfermion
 
-flags.DEFINE_string("output_dir", "/tmp/openfermion_api", "Where to output the docs")
+flags.DEFINE_string("output_dir", "/tmp/openfermion_api",
+                    "Where to output the docs")
 
 flags.DEFINE_string("code_url_prefix",
                     ("https://github.com/quantumlib/OpenFermion/tree/master/src"
