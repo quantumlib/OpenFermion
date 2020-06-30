@@ -2,7 +2,7 @@
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# You may obtain a copy the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
@@ -22,9 +22,9 @@ from tensorflow_docs.api_generator import doc_controls
 from tensorflow_docs.api_generator import generate_lib
 from tensorflow_docs.api_generator import public_api
 
-import openfermion as of
+import openfermion
 
-flags.DEFINE_string("output_dir", "/tmp/of_api", "Where to output the docs")
+flags.DEFINE_string("output_dir", "/tmp/openfermion_api", "Where to output the docs")
 
 flags.DEFINE_string("code_url_prefix",
                     ("https://github.com/quantumlib/OpenFermion/tree/master/src"
@@ -43,8 +43,8 @@ def main(unused_argv):
 
     doc_generator = generate_lib.DocGenerator(
         root_title="OpenFermion",
-        py_modules=[("of", of)],
-        base_dir=os.path.dirname(of.__file__),
+        py_modules=[("openfermion", openfermion)],
+        base_dir=os.path.dirname(openfermion.__file__),
         code_url_prefix=FLAGS.code_url_prefix,
         search_hints=FLAGS.search_hints,
         site_path=FLAGS.site_path,
