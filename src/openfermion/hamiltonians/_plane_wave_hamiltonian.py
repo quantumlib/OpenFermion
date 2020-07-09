@@ -15,7 +15,6 @@ import numpy as np
 
 import openfermion.utils._operator_utils
 
-
 from openfermion.hamiltonians._jellium import (jellium_model,
                                                jordan_wigner_dual_basis_jellium)
 from openfermion.hamiltonians._molecular_data import periodic_hash_table

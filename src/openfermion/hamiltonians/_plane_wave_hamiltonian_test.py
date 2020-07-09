@@ -53,10 +53,10 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
                     h_plane_wave_spectrum = eigenspectrum(jw_h_plane_wave)
                     h_dual_basis_spectrum = eigenspectrum(jw_h_dual_basis)
 
-                    max_diff = np.amax(
-                        h_plane_wave_spectrum - h_dual_basis_spectrum)
-                    min_diff = np.amin(
-                        h_plane_wave_spectrum - h_dual_basis_spectrum)
+                    max_diff = np.amax(h_plane_wave_spectrum -
+                                       h_dual_basis_spectrum)
+                    min_diff = np.amin(h_plane_wave_spectrum -
+                                       h_dual_basis_spectrum)
                     self.assertAlmostEqual(max_diff, 0)
                     self.assertAlmostEqual(min_diff, 0)
 
