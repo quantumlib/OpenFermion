@@ -11,9 +11,9 @@
 #   limitations under the License.
 
 """Tests for plane_wave_hamiltonian.py"""
+import unittest
 
 import numpy as np
-import unittest
 
 from openfermion.hamiltonians._plane_wave_hamiltonian import (
     jellium_model,
