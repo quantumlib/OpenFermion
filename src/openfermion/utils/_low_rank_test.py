@@ -11,9 +11,9 @@
 #   limitations under the License.
 
 import itertools
-import numpy
 import os
 import unittest
+import numpy
 
 from openfermion.config import THIS_DIRECTORY
 from openfermion.hamiltonians import MolecularData
@@ -275,17 +275,16 @@ class LowRankTest(unittest.TestCase):
 
         # Initialize H2 InteractionOperator.
         n_qubits = 4
-        n_orbitals = 2
         filename = os.path.join(THIS_DIRECTORY, 'data',
                                 'H2_sto-3g_singlet_0.7414')
         molecule = MolecularData(filename=filename)
         molecule_interaction = molecule.get_molecular_hamiltonian()
-        fermion_operator = get_fermion_operator(molecule_interaction)
+        get_fermion_operator(molecule_interaction)
 
         two_body_coefficients = molecule_interaction.two_body_tensor
 
         # Decompose.
-        eigenvalues, one_body_squares, one_body_correction, error = (
+        eigenvalues, one_body_squares, _, _ = (
             low_rank_two_body_decomposition(two_body_coefficients))
         rank = eigenvalues.size
         for l in range(rank):

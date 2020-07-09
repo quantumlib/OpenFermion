@@ -17,6 +17,8 @@ from ._channel_state import (amplitude_damping_channel, dephasing_channel,
 
 from ._commutators import anticommutator, commutator, double_commutator
 
+from ._erpa import singlet_erpa, erpa_eom_hamiltonian
+
 from ._grid import Grid
 
 from ._lattice import (HubbardSquareLattice, SpinPairs, Spin)
@@ -37,6 +39,8 @@ from ._operator_utils import (chemist_ordered, count_qubits,
 
 from ._qubit_tapering_from_stabilizer import (reduce_number_of_terms,
                                               taper_off_qubits)
+
+from ._reduced_hamiltonian import make_reduced_hamiltonian
 
 from ._rdm_mapping_functions import (kronecker_delta,
                                      map_two_pdm_to_two_hole_dm,

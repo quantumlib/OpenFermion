@@ -15,7 +15,6 @@
 import copy
 
 import numpy
-from six import string_types
 
 _SYMBOLIC_ONE = 'one'
 _ACTION = 'W'
@@ -26,7 +25,7 @@ class BinaryPolynomialError(Exception):
 
 
 class BinaryPolynomial(object):
-    """The BinaryPolynomial class provides an analytic representation
+    r"""The BinaryPolynomial class provides an analytic representation
     of non-linear binary functions. An instance of this class describes
     a term of binary variables (variables of the values {0,1}, indexed
     by integers like w0, w1, w2 and so on) that is considered to be evaluated
@@ -84,7 +83,7 @@ class BinaryPolynomial(object):
         self.terms = []
 
         # long string input
-        if isinstance(term, string_types) and '+' in term:
+        if isinstance(term, str) and '+' in term:
             self._long_string_init(term)
             return
 
@@ -93,11 +92,11 @@ class BinaryPolynomial(object):
             return
 
         # Sequence input: list of tuples of tuples
-        elif isinstance(term, tuple) or isinstance(term, list):
+        elif isinstance(term, (list, tuple)):
             self._parse_sequence(list(term))
 
         # String input
-        elif isinstance(term, string_types):
+        elif isinstance(term, str):
             self.terms.append(tuple(self._parse_string(term)))
 
         elif isinstance(term, (numpy.int32, numpy.int64, int)):
@@ -277,7 +276,7 @@ class BinaryPolynomial(object):
           BinaryPolynomialError: Length of list provided must match the number
                 of qubits indexed in BinaryPolynomial
         """
-        if isinstance(binary_list, string_types):
+        if isinstance(binary_list, str):
             binary_list = list(map(int, list(binary_list)))
 
         all_qubits = self.enumerate_qubits()

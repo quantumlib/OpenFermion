@@ -13,28 +13,8 @@
 """Commonly used operators (mainly instances of SymbolicOperator)."""
 
 import numpy
-from six import string_types
 
 from openfermion.ops import BosonOperator, FermionOperator, down_index, up_index
-
-
-def up_index(index):
-    """Function to return up-orbital index given a spatial orbital index.
-
-    Args:
-        index (Int): spatial orbital index
-    """
-    return 2 * index
-
-
-def down_index(index):
-    """Function to return down-orbital index given a spatial orbital index.
-
-    Args:
-        index (Int): spatial orbital index
-    """
-    return 2 * index + 1
-
 
 def s_plus_operator(n_spatial_orbitals):
     r"""Return the s+ operator.
@@ -228,7 +208,7 @@ def s_squared_operator(n_spatial_orbitals):
 
 
 def majorana_operator(term=None, coefficient=1.):
-    """Initialize a Majorana operator.
+    r"""Initialize a Majorana operator.
 
     Args:
         term(tuple or string): The first element of the tuple indicates the
@@ -256,7 +236,7 @@ def majorana_operator(term=None, coefficient=1.):
         raise ValueError('Coefficient must be scalar.')
 
     # If term is a string, convert it to a tuple
-    if isinstance(term, string_types):
+    if isinstance(term, str):
         operator_type = term[0]
         mode = int(term[1:])
         if operator_type == 'c':
@@ -302,8 +282,10 @@ def number_operator(n_modes, mode=None, coefficient=1., parity=-1):
         mode (int, optional): The mode on which to return the number
             operator. If None, return total number operator on all sites.
         coefficient (float): The coefficient of the term.
-        parity (int): Returns the fermionic number operator if parity=-1 (default),
-            and returns the bosonic number operator if parity=1.
+        parity (int): Returns the fermionic number operator
+                    if parity=-1 (default),
+                    and returns the bosonic number operator
+                    if parity=1.
     Returns:
         operator (BosonOperator or FermionOperator)
     """

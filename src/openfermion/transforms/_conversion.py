@@ -11,12 +11,12 @@
 #   limitations under the License.
 
 """Transformations acting on operators and RDMs."""
-from __future__ import absolute_import
 
 import itertools
+from typing import Union
 
 import numpy
-from future.utils import iteritems
+import scipy
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import MolecularData
@@ -85,7 +85,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
     # One-RDM.
     for i, j in itertools.product(range(n_qubits), repeat=2):
         transformed_operator = jordan_wigner(FermionOperator(((i, 1), (j, 0))))
-        for term, coefficient in iteritems(transformed_operator.terms):
+        for term, coefficient in transformed_operator.terms.items():
             if term in qubit_operator.terms:
                 one_rdm[i, j] += coefficient * qubit_operator.terms[term]
 
@@ -93,7 +93,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
     for i, j, k, l in itertools.product(range(n_qubits), repeat=4):
         transformed_operator = jordan_wigner(FermionOperator(((i, 1), (j, 1),
                                                               (k, 0), (l, 0))))
-        for term, coefficient in iteritems(transformed_operator.terms):
+        for term, coefficient in transformed_operator.terms.items():
             if term in qubit_operator.terms:
                 two_rdm[i, j, k, l] += coefficient * qubit_operator.terms[term]
 
@@ -304,8 +304,8 @@ def get_quadratic_hamiltonian(fermion_operator,
 def get_diagonal_coulomb_hamiltonian(fermion_operator,
                                      n_qubits=None,
                                      ignore_incompatible_terms=False):
-    """Convert a FermionOperator to a DiagonalCoulombHamiltonian.
-    
+    r"""Convert a FermionOperator to a DiagonalCoulombHamiltonian.
+
     Args:
         fermion_operator(FermionOperator): The operator to convert.
         n_qubits(int): Optionally specify the total number of qubits in the
@@ -433,6 +433,103 @@ def _majorana_term_to_fermion_operator(term):
     return converted_term
 
 
+def get_majorana_operator(
+        operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian,
+                        FermionOperator]) -> MajoranaOperator:
+    """
+    Convert to MajoranaOperator.
+
+    Uses the convention of even + odd indexing of Majorana modes derived from
+    a fermionic mode:
+        fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
+        fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
+
+    Args:
+        operator (PolynomialTensor,
+            DiagonalCoulombHamiltonian or
+            FermionOperator): Operator to write as Majorana Operator.
+
+    Returns:
+        majorana_operator: An instance of the MajoranaOperator class.
+
+    Raises:
+        TypeError: If operator is not of PolynomialTensor,
+            DiagonalCoulombHamiltonian or FermionOperator.
+    """
+    if isinstance(operator, FermionOperator):
+        return _fermion_operator_to_majorana_operator(operator)
+    elif isinstance(operator, (PolynomialTensor, DiagonalCoulombHamiltonian)):
+        return _fermion_operator_to_majorana_operator(
+            get_fermion_operator(operator))
+    raise TypeError('{} cannot be converted to MajoranaOperator'.format(
+        type(operator)))
+
+
+def _fermion_operator_to_majorana_operator(fermion_operator: FermionOperator
+                                          ) -> MajoranaOperator:
+    """
+    Convert FermionOperator to MajoranaOperator.
+
+    Auxiliar function of get_majorana_operator.
+
+    Args:
+        fermion_operator (FermionOperator): To convert to MajoranaOperator.
+
+    Returns:
+        majorana_operator object.
+
+    Raises:
+        TypeError: if input is not a FermionOperator.
+    """
+    if not isinstance(fermion_operator, FermionOperator):
+        raise TypeError('Input a FermionOperator.')
+
+    majorana_operator = MajoranaOperator()
+    for term, coeff in fermion_operator.terms.items():
+        converted_term = _fermion_term_to_majorana_operator(term)
+        converted_term *= coeff
+        majorana_operator += converted_term
+
+    return majorana_operator
+
+
+def _fermion_term_to_majorana_operator(term: tuple) -> MajoranaOperator:
+    """
+    Convert single terms of FermionOperator to Majorana.
+    (Auxiliary function of get_majorana_operator.)
+
+    Convention: even + odd indexing of Majorana modes derived from a
+    fermionic mode:
+        fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
+        fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
+
+    Args:
+        term (tuple): single FermionOperator term.
+
+    Returns:
+        converted_term: single MajoranaOperator term.
+
+    Raises:
+        TypeError: if term is a tuple.
+    """
+    if not isinstance(term, tuple):
+        raise TypeError('Term does not have the correct Type.')
+
+    converted_term = MajoranaOperator(())
+    for index, action in term:
+        converted_op = MajoranaOperator((2 * index,), 0.5)
+
+        if action:
+            converted_op += MajoranaOperator((2 * index + 1,), -0.5j)
+
+        else:
+            converted_op += MajoranaOperator((2 * index + 1,), 0.5j)
+
+        converted_term *= converted_op
+
+    return converted_term
+
+
 def get_molecular_data(interaction_operator,
                        geometry=None, basis=None, multiplicity=None,
                        n_electrons=None, reduce_spin=True,
@@ -556,3 +653,331 @@ def get_boson_operator(operator, hbar=1.):
                         "supported for get_boson_operator.")
 
     return boson_operator
+
+
+def get_number_preserving_sparse_operator(
+        fermion_op,
+        num_qubits,
+        num_electrons,
+        spin_preserving=False,
+        reference_determinant=None,
+        excitation_level=None):
+    """Initialize a Scipy sparse matrix in a specific symmetry sector.
+
+    This method initializes a Scipy sparse matrix from a FermionOperator,
+    explicitly working in a particular particle number sector. Optionally, it
+    can also restrict the space to contain only states with a particular Sz.
+
+    Finally, the Hilbert space can also be restricted to only those states
+    which are reachable by excitations up to a fixed rank from an initial
+    reference determinant.
+
+    Args:
+        fermion_op(FermionOperator): An instance of the FermionOperator class.
+            It should not contain terms which do not preserve particle number.
+            If spin_preserving is set to True it should also not contain terms
+            which do not preserve the Sz (it is assumed that the ordering of
+            the indices goes alpha, beta, alpha, beta, ...).
+        num_qubits(int): The total number of qubits / spin-orbitals in the
+            system.
+        num_electrons(int): The number of particles in the desired Hilbert
+            space.
+        spin_preserving(bool): Whether or not the constructed operator should
+            be defined in a space which has support only on states with the
+            same Sz value as the reference_determinant.
+        reference_determinant(list(bool)): A list, whose length is equal to
+            num_qubits, which specifies which orbitals should be occupied in
+            the reference state. If spin_preserving is set to True then the Sz
+            value of this reference state determines the Sz value of the
+            symmetry sector in which the generated operator acts. If a value
+            for excitation_level is provided then the excitations are generated
+            with respect to the reference state. In any case, the ordering of
+            the states in the matrix representation of the operator depends on
+            reference_determinant and the state corresponding to
+            reference_determinant is the vector [1.0, 0.0, 0.0 ... 0.0]. Can be
+            set to None in order to take the first num_electrons orbitals to be
+            the occupied orbitals.
+        excitation_level(int): The number of excitations from the reference
+            state which should be included in the generated operator's matrix
+            representation. Can be set to None to include all levels of
+            excitation.
+
+    Returns:
+        sparse_op(scipy.sparse.csc_matrix): A sparse matrix representation of
+            fermion_op in the basis set by the arguments.
+    """
+
+    # We use the Hartree-Fock determinant as a reference if none is provided.
+    if reference_determinant is None:
+        reference_determinant = numpy.array([i < num_electrons for i in
+                                             range(num_qubits)])
+    else:
+        reference_determinant = numpy.asarray(reference_determinant)
+
+    if excitation_level is None:
+        excitation_level = num_electrons
+
+    state_array = numpy.asarray(list(_iterate_basis_(
+        reference_determinant, excitation_level, spin_preserving)))
+    # Create a 1d array with each determinant encoded
+    # as an integer for sorting purposes.
+    int_state_array = state_array.dot(
+        1 << numpy.arange(state_array.shape[1])[::-1])
+    sorting_indices = numpy.argsort(int_state_array)
+
+    space_size = state_array.shape[0]
+
+    fermion_op = normal_ordered(fermion_op)
+
+    sparse_op = scipy.sparse.csc_matrix((space_size, space_size), dtype=float)
+
+    for term, coefficient in fermion_op.terms.items():
+        if len(term) == 0:
+            constant = coefficient * scipy.sparse.identity(
+                space_size, dtype=float, format='csc')
+
+            sparse_op += constant
+
+        else:
+            term_op = _build_term_op_(term, state_array, int_state_array,
+                                      sorting_indices)
+
+            sparse_op += coefficient * term_op
+
+    return sparse_op
+
+
+def _iterate_basis_(reference_determinant, excitation_level, spin_preserving):
+    """A helper method which iterates over the specified basis states.
+
+    Note that this method always yields the states in order of their excitation
+    rank from the reference_determinant.
+
+    Args:
+        reference_determinant(list(bool)): A list of bools which indicates
+            which orbitals are occupied and which are unoccupied in the
+            reference state.
+        excitation_level(int): The maximum excitation rank to iterate over.
+        spin_preserving(bool): A bool which, if set to True, constrains the
+            method to iterate over only those states which have the same Sz as
+            reference_determinant.
+
+    Yields:
+        Lists of bools which indicate which orbitals are occupied and which are
+            unoccupied in the current determinant.
+    """
+    if not spin_preserving:
+        for order in range(excitation_level + 1):
+            for determinant in _iterate_basis_order_(reference_determinant,
+                                                     order):
+                yield determinant
+
+    else:
+        alpha_excitation_level = min((numpy.sum(reference_determinant[::2]),
+                                      excitation_level))
+        beta_excitation_level = min((numpy.sum(reference_determinant[1::2]),
+                                     excitation_level))
+
+        for order in range(excitation_level + 1):
+            for alpha_order in range(alpha_excitation_level + 1):
+                beta_order = order - alpha_order
+                if (beta_order < 0 or beta_order > beta_excitation_level):
+                    continue
+
+                for determinant in _iterate_basis_spin_order_(
+                        reference_determinant, alpha_order, beta_order):
+                    yield determinant
+
+
+def _iterate_basis_order_(reference_determinant, order):
+    """A helper for iterating over determinants of a fixed excitation rank.
+
+    Args:
+        reference_determinant(list(bool)): The reference state with respect to
+            which we are iterating over excited determinants.
+        order(int): The number of excitations from the modes which are occupied
+            in the reference_determinant.
+
+    Yields:
+        Lists of bools which indicate which orbitals are occupied and which are
+            unoccupied in the current determinant.
+        """
+    occupied_indices = numpy.where(reference_determinant)[0]
+    unoccupied_indices = numpy.where(numpy.invert(reference_determinant))[0]
+
+    for occ_ind, unocc_ind in itertools.product(
+            itertools.combinations(occupied_indices, order),
+            itertools.combinations(unoccupied_indices, order)):
+        basis_state = reference_determinant.copy()
+
+        occ_ind = list(occ_ind)
+        unocc_ind = list(unocc_ind)
+
+        basis_state[occ_ind] = False
+        basis_state[unocc_ind] = True
+
+        yield basis_state
+
+
+def _iterate_basis_spin_order_(reference_determinant, alpha_order, beta_order):
+    """Iterates over states with a fixed excitation rank for each spin sector.
+
+    This helper method assumes that the two spin sectors are interleaved:
+    [1_alpha, 1_beta, 2_alpha, 2_beta, ...].
+
+    Args:
+        reference_determinant(list(bool)): The reference state with respect to
+            which we are iterating over excited determinants.
+        alpha_order(int): The number of excitations from the alpha spin sector
+            of the reference_determinant.
+        beta_order(int): The number of excitations from the beta spin sector of
+            the reference_determinant.
+
+    Yields:
+        Lists of bools which indicate which orbitals are occupied and which are
+            unoccupied in the current determinant.
+        """
+    occupied_alpha_indices = numpy.where(
+        reference_determinant[::2])[0] * 2
+    unoccupied_alpha_indices = numpy.where(
+        numpy.invert(reference_determinant[::2]))[0] * 2
+    occupied_beta_indices = numpy.where(
+        reference_determinant[1::2])[0] * 2 + 1
+    unoccupied_beta_indices = numpy.where(
+        numpy.invert(reference_determinant[1::2]))[0] * 2 + 1
+
+    for (alpha_occ_ind,
+            alpha_unocc_ind,
+            beta_occ_ind,
+            beta_unocc_ind) in itertools.product(
+            itertools.combinations(occupied_alpha_indices, alpha_order),
+            itertools.combinations(unoccupied_alpha_indices, alpha_order),
+            itertools.combinations(occupied_beta_indices, beta_order),
+            itertools.combinations(unoccupied_beta_indices, beta_order)):
+        basis_state = reference_determinant.copy()
+
+        alpha_occ_ind = list(alpha_occ_ind)
+        alpha_unocc_ind = list(alpha_unocc_ind)
+        beta_occ_ind = list(beta_occ_ind)
+        beta_unocc_ind = list(beta_unocc_ind)
+
+        basis_state[alpha_occ_ind] = False
+        basis_state[alpha_unocc_ind] = True
+        basis_state[beta_occ_ind] = False
+        basis_state[beta_unocc_ind] = True
+
+        yield basis_state
+
+
+def _build_term_op_(term, state_array, int_state_array, sorting_indices):
+    """Builds a scipy sparse representation of a term from a FermionOperator.
+
+    Args:
+        term(tuple of tuple(int, int)s): The argument is a tuple of tuples
+            representing a product of normal ordered fermionic creation and
+            annihilation operators, each of which is of the form (int, int)
+            where the first int indicates which site the operator acts on and
+            the second int indicates whether the operator is a creation
+            operator (1) or an annihilation operator (0). See the
+            implementation of FermionOperator for more details.
+        state_array(ndarray(bool)): A Numpy array which encodes each of the
+            determinants in the space we are working in a bools which indicate
+            the occupation of each mode. See the implementation of
+            get_number_preserving_sparse_operator for more details.
+        int_state_array(ndarray(int)): A one dimensional Numpy array which
+            encodes the integer representation of the binary number
+            corresponding to each determinant in state_array.
+        sorting_indices(ndarray.view): A Numpy view which sorts
+            int_state_array. This, together with int_state_array, allows for a
+            quick lookup of the position of a particular determinant in
+            state_array by converting it to its integer representation and
+            searching through the sorted int_state_array.
+
+    Raises:
+        ValueError: If term does not represent a particle number conserving
+            operator.
+
+    Returns:
+        A scipy.sparse.csc_matrix which corresponds to the operator specified
+            by term expressed in the basis corresponding to the other arguments
+            of the method."""
+
+    space_size = state_array.shape[0]
+
+    needs_to_be_occupied = []
+    needs_to_be_unoccupied = []
+
+    # We keep track of the number of creation and annihilation operators and
+    # ensure that there are an equal number of them in order to help detect
+    # invalid inputs.
+    delta = 0
+    for index, op_type in reversed(term):
+        if op_type == 0:
+            needs_to_be_occupied.append(index)
+            delta -= 1
+        else:
+            if index not in needs_to_be_occupied:
+                needs_to_be_unoccupied.append(index)
+            delta += 1
+
+    if delta != 0:
+        raise ValueError(
+            "The supplied operator doesn't preserve particle number")
+
+    # We search for every state which has the necessary orbitals occupied and
+    # unoccupied in order to not be immediately zeroed out based on the
+    # creation and annihilation operators specified in term.
+    maybe_valid_states = numpy.where(
+        numpy.logical_and(
+            numpy.all(state_array[:, needs_to_be_occupied], axis=1),
+            numpy.logical_not(
+                numpy.any(state_array[:, needs_to_be_unoccupied], axis=1))))[0]
+
+    data = []
+    row_ind = []
+    col_ind = []
+    shape = (space_size, space_size)
+
+    # For each state that is not immediately zeroed out by the action of our
+    # operator we check to see if the determinant which this state gets mapped
+    # to is in the space we are considering.
+    # Note that a failure to find any state does not necessarily indicate that
+    # term specifies an invalid operator. For example, if we are restricting
+    # ourselves to double excitations from a fixed reference state then the
+    # action of term on some of our basis states may lead to determinants with
+    # more than two excitations from the reference. These more than double
+    # excited determinants are not included in the matrix representation (and
+    # hence, will not be present in state_array).
+    for _, state in enumerate(maybe_valid_states):
+        determinant = state_array[state, :]
+        target_determinant = determinant.copy()
+
+        parity = 1
+        for i, _ in reversed(term):
+            area_to_check = target_determinant[0:i]
+            parity *= (-1) ** numpy.sum(area_to_check)
+
+            target_determinant[i] = not target_determinant[i]
+
+        int_encoding = target_determinant.dot(
+            1 << numpy.arange(target_determinant.size)[::-1])
+
+        target_state_index_sorted = numpy.searchsorted(int_state_array,
+                                                       int_encoding,
+                                                       sorter=sorting_indices)
+
+        target_state = sorting_indices[target_state_index_sorted]
+
+        if int_state_array[target_state] == int_encoding:
+            # Then target state is in the space considered:
+            data.append(parity)
+            row_ind.append(target_state)
+            col_ind.append(state)
+
+    data = numpy.asarray(data)
+    row_ind = numpy.asarray(row_ind)
+    col_ind = numpy.asarray(col_ind)
+
+    term_op = scipy.sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape)
+
+    return term_op

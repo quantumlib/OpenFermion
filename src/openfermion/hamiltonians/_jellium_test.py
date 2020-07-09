@@ -10,7 +10,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from __future__ import absolute_import
 
 import unittest
 
@@ -442,5 +441,5 @@ class JelliumTest(unittest.TestCase):
 
         # TODO: This is only for code coverage. Remove after having real
         #     integration test.
-        hamiltonian_3 = jellium_model(grid, spinless, True, False, None, True)
-        hamiltonian_4 = jellium_model(grid, spinless, False, False, None, True)
+        jellium_model(grid, spinless, True, False, None, True)
+        jellium_model(grid, spinless, False, False, None, True)

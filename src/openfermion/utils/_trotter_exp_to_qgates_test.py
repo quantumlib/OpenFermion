@@ -32,31 +32,40 @@ class TrottQasmTest(unittest.TestCase):
         # Test exceptions in trotter_operator_grouping()
 
         with self.assertRaises(ValueError):
-            [i for i in trotter_operator_grouping(self.qo1, trotter_order=0)]
+            _ = [
+                i for i in trotter_operator_grouping(self.qo1, trotter_order=0)
+            ]
 
         with self.assertRaises(ValueError):
-            [i for i in trotter_operator_grouping(self.qo1, trotter_order=4)]
+            _ = [
+                i for i in trotter_operator_grouping(self.qo1, trotter_order=4)
+            ]
 
         with self.assertRaises(TypeError):
-            [i for i in trotter_operator_grouping(42)]
+            _ = [i for i in trotter_operator_grouping(42)]
 
         emptyQO = QubitOperator()
         with self.assertRaises(TypeError):
-            [i for i in trotter_operator_grouping(emptyQO)]
+            _ = [i for i in trotter_operator_grouping(emptyQO)]
 
         emptyTO = []
         with self.assertRaises(TypeError):
-            [i for i in trotter_operator_grouping(self.qo1,
-                                                  term_ordering=emptyTO)]
+            _ = [
+                i for i in trotter_operator_grouping(self.qo1,
+                                                     term_ordering=emptyTO)
+            ]
 
         # Too few ops for 2nd-order
         with self.assertRaises(ValueError):
-            [i for i in trotter_operator_grouping(self.opA, trotter_order=2)]
+            _ = [
+                i for i in trotter_operator_grouping(self.opA, trotter_order=2)
+            ]
 
         # Too few ops for 3rd-order
         with self.assertRaises(ValueError):
-            [i for i in trotter_operator_grouping(self.opA,
-                                                  trotter_order=3)]
+            _ = [
+                i for i in trotter_operator_grouping(self.opA, trotter_order=3)
+            ]
 
     def compare_qubop_lists(self, gold, res):
         # Compare lists of operators. Used in most test functions.
@@ -71,8 +80,6 @@ class TrottQasmTest(unittest.TestCase):
         # Test 3rd-order helper, H=A+B
         op_a = QubitOperator('X0 Z1 Y2', 0.1)
         op_b = QubitOperator('Z2', 0.1)
-        a = 'X0 Z1 Y2'
-        b = 'Z2'
 
         gold = []
         gold.append(op_a * (7./24))
@@ -165,9 +172,7 @@ class TrottQasmTest(unittest.TestCase):
         op_b = QubitOperator('Z2', 1.)
         op_c = QubitOperator('Z3', 1.)
         ham = op_a + op_b + op_c
-
-        res = [op for op in trotter_operator_grouping(ham, trotter_order=2)]
-
+        _ = [op for op in trotter_operator_grouping(ham, trotter_order=2)]
         gold = []
         gold.append(op_a * 0.5)
         gold.append(op_b * 0.5)
@@ -258,7 +263,7 @@ Rx -1.5707963267948966 3'''
         self.assertEqual(qasmstr, strcorrect)
 
     def test_qasm_string_Controlled_XYZ_ancilla_list(self):
-                # Testing for correct QASM string output w/ Pauli-{X,Y,Z}
+        # Testing for correct QASM string output w/ Pauli-{X,Y,Z}
         # QubitOperator('X0 Z1 Y3', 0.5) and a controlled ancilla
 
         # Number of qubits

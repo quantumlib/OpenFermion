@@ -11,8 +11,6 @@
 #   limitations under the License.
 
 """Module to compute commutators, with optimizations for specific systems."""
-from __future__ import absolute_import
-from future.utils import itervalues
 
 import numpy
 
@@ -296,6 +294,6 @@ def trivially_double_commutes_dual_basis(term_a, term_b, term_c):
         counts[operator[0]] = counts.get(operator[0], 0) + 2 * operator[1] - 1
 
     # If the final result creates or destroys the same mode twice.
-    commutes = max(itervalues(counts)) > 1 or min(itervalues(counts)) < -1
+    commutes = max(counts.values()) > 1 or min(counts.values()) < -1
 
     return commutes

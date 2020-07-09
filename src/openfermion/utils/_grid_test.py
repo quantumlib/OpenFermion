@@ -10,10 +10,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from __future__ import absolute_import
 
-import numpy
 import unittest
+import numpy
 
 from openfermion.utils import Grid
 from openfermion.utils._grid import OrbitalSpecificationError

@@ -11,7 +11,6 @@
 #   limitations under the License.
 
 """Bravyi-Kitaev transform on fermionic operators."""
-from __future__ import absolute_import
 
 from openfermion.ops import QubitOperator
 from openfermion.utils import inline_sum

@@ -10,7 +10,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from __future__ import absolute_import
 
 import itertools
 import numpy
@@ -219,7 +218,8 @@ class Grid:
         return momentum_vector
 
     def orbital_id(self, grid_coordinates, spin=None):
-        """Return the tensor factor of a orbital with given coordinates and spin.
+        """Return the tensor factor of a orbital
+        with given coordinates and spin.
 
         Args:
             grid_coordinates: List or tuple of ints giving coordinates of grid
