@@ -11,10 +11,12 @@
 #   limitations under the License.
 
 """Construct Hamiltonians in plan wave basis and its dual in 3D."""
+import numpy as np
 
 import openfermion.utils._operator_utils
 
-from openfermion.hamiltonians._jellium import *
+from openfermion.hamiltonians._jellium import (jellium_model,
+                                               jordan_wigner_dual_basis_jellium)
 from openfermion.hamiltonians._molecular_data import periodic_hash_table
 from openfermion.ops import FermionOperator, QubitOperator
 
@@ -43,7 +45,7 @@ def dual_basis_external_potential(grid, geometry, spinless,
     Returns:
         FermionOperator: The dual basis operator.
     """
-    prefactor = -4.0 * numpy.pi / grid.volume_scale()
+    prefactor = -4.0 * np.pi / grid.volume_scale()
     if non_periodic and period_cutoff is None:
         period_cutoff = grid.volume_scale()**(1. / grid.dimensions)
     operator = None
@@ -54,7 +56,7 @@ def dual_basis_external_potential(grid, geometry, spinless,
     for pos_indices in grid.all_points_indices():
         coordinate_p = grid.position_vector(pos_indices)
         for nuclear_term in geometry:
-            coordinate_j = numpy.array(nuclear_term[1], float)
+            coordinate_j = np.array(nuclear_term[1], float)
             for momenta_indices in grid.all_points_indices():
                 momenta = grid.momentum_vector(momenta_indices)
                 momenta_squared = momenta.dot(momenta)
@@ -64,7 +66,7 @@ def dual_basis_external_potential(grid, geometry, spinless,
                 cos_index = momenta.dot(coordinate_j - coordinate_p)
                 coefficient = (prefactor / momenta_squared *
                                periodic_hash_table[nuclear_term[0]] *
-                               numpy.cos(cos_index))
+                               np.cos(cos_index))
 
                 for spin_p in spins:
                     orbital_p = grid.orbital_id(pos_indices, spin_p)
@@ -194,7 +196,7 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
         n_qubits = n_orbitals
     else:
         n_qubits = 2 * n_orbitals
-    prefactor = -2 * numpy.pi / volume
+    prefactor = -2 * np.pi / volume
     external_potential = QubitOperator()
 
     for k_indices in grid.all_points_indices():
@@ -208,12 +210,12 @@ def jordan_wigner_dual_basis_hamiltonian(grid, geometry=None, spinless=False,
             coordinate_p = grid.position_vector(index_p)
 
             for nuclear_term in geometry:
-                coordinate_j = numpy.array(nuclear_term[1], float)
+                coordinate_j = np.array(nuclear_term[1], float)
 
                 cos_index = momenta.dot(coordinate_j - coordinate_p)
                 coefficient = (prefactor / momenta_squared *
                                periodic_hash_table[nuclear_term[0]] *
-                               numpy.cos(cos_index))
+                               np.cos(cos_index))
                 external_potential += (QubitOperator((), coefficient) -
                                        QubitOperator(((p, 'Z'),), coefficient))
 
