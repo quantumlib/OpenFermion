@@ -16,6 +16,7 @@ import itertools
 from typing import Union
 
 import numpy
+import sympy
 import scipy
 
 from openfermion.config import EQ_TOLERANCE
@@ -38,6 +39,21 @@ from openfermion.utils import (boson_operator_sparse,
                                jordan_wigner_sparse,
                                normal_ordered,
                                qubit_operator_sparse)
+
+
+def _check_no_sympy(operator):
+    """Checks whether a SymbolicOperator contains any
+    sympy expressions, which will prevent it being converted
+    to a PolynomialTensor or DiagonalCoulombHamiltonian
+
+    Args:
+        operator(SymbolicOperator): the operator to be tested
+    """
+    for key in operator.terms:
+        if isinstance(operator.terms[key], sympy.Expr):
+            raise TypeError('This conversion is currently not supported ' +
+                            'for operators with sympy expressions ' +
+                            'as coefficients')
 
 
 def get_sparse_operator(operator, n_qubits=None, trunc=None, hbar=1.):
@@ -75,6 +91,9 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
 
     Returns: An InteractionRDM object.
     """
+
+    _check_no_sympy(qubit_operator)
+
     # Avoid circular import.
     from openfermion.transforms import jordan_wigner
     if n_qubits is None:
@@ -122,6 +141,8 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
     """
     if not isinstance(fermion_operator, FermionOperator):
         raise TypeError('Input must be a FermionOperator.')
+
+    _check_no_sympy(fermion_operator)
 
     if n_qubits is None:
         n_qubits = count_qubits(fermion_operator)
@@ -207,6 +228,8 @@ def get_quadratic_hamiltonian(fermion_operator,
     """
     if not isinstance(fermion_operator, FermionOperator):
         raise TypeError('Input must be a FermionOperator.')
+
+    _check_no_sympy(fermion_operator)
 
     if n_qubits is None:
         n_qubits = count_qubits(fermion_operator)
@@ -320,6 +343,8 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator,
     """
     if not isinstance(fermion_operator, FermionOperator):
         raise TypeError('Input must be a FermionOperator.')
+
+    _check_no_sympy(fermion_operator)
 
     if n_qubits is None:
         n_qubits = count_qubits(fermion_operator)

@@ -16,6 +16,7 @@ import os
 import unittest
 
 import numpy
+import sympy
 
 from openfermion.config import DATA_DIRECTORY
 from openfermion.hamiltonians import MolecularData, fermi_hubbard
@@ -57,6 +58,36 @@ class JordanWignerTransformTest(unittest.TestCase):
 
         self.assertEqual(raising.terms[correct_operators_x], 0.5)
         self.assertEqual(raising.terms[correct_operators_y], -0.5j)
+        self.assertTrue(raising == qtermx + qtermy)
+
+    def test_transm_hopping_sympy(self):
+        coeff = sympy.Symbol('x')
+        hopping = FermionOperator(((3, 1), (2, 0))) * coeff
+        hopping += FermionOperator(((2, 1), (3, 0))) * coeff
+
+        jw_hopping = jordan_wigner(hopping)
+        print(jw_hopping)
+        correct_operators_xx = ((2, 'X'), (3, 'X'))
+        correct_operators_yy = ((2, 'Y'), (3, 'Y'))
+        qtermxx = QubitOperator(correct_operators_xx, 0.5 * coeff)
+        qtermyy = QubitOperator(correct_operators_yy, 0.5 * coeff)
+
+        self.assertEqual(jw_hopping.terms[correct_operators_xx], 0.5 * coeff)
+        self.assertEqual(jw_hopping.terms[correct_operators_yy], 0.5 * coeff)
+        self.assertTrue(jw_hopping == qtermxx + qtermyy)
+
+    def test_transm_raise3_sympy(self):
+        coeff = sympy.Symbol('x')
+        raising = jordan_wigner(coeff * FermionOperator(((3, 1),)))
+        self.assertEqual(len(raising.terms), 2)
+
+        correct_operators_x = ((0, 'Z'), (1, 'Z'), (2, 'Z'), (3, 'X'))
+        correct_operators_y = ((0, 'Z'), (1, 'Z'), (2, 'Z'), (3, 'Y'))
+        qtermx = QubitOperator(correct_operators_x, 0.5 * coeff)
+        qtermy = QubitOperator(correct_operators_y, -0.5j * coeff)
+
+        self.assertEqual(raising.terms[correct_operators_x], 0.5 * coeff)
+        self.assertEqual(raising.terms[correct_operators_y], -0.5j * coeff)
         self.assertTrue(raising == qtermx + qtermy)
 
     def test_transm_raise1(self):
