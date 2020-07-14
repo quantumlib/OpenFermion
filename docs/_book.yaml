@@ -23,16 +23,12 @@ upper_tabs:
       - heading: Tutorials
       - title: "Introduction to OpenFermion"
         path: /quark/openfermion/tutorials/intro_to_openfermion
-        status: external
       - title: "Bosonic operators"
-        path: /quark/openfermion/tutorials/bosonic_operators.ipynb
-        status: external
+        path: /quark/openfermion/tutorials/bosonic_operators
       - title: "Lowering qubit requirements using binary codes"
         path: /quark/openfermion/tutorials/binary_code_transforms
-        status: external
       - title: "The Jordan-Wigner and Bravyi-Kitaev transforms"
         path: /quark/openfermion/tutorials/jordan_wigner_and_bravyi_kitaev_transforms
-        status: external
 
     - name: API
       skip_translation: true
