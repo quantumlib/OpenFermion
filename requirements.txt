@@ -4,3 +4,4 @@ h5py>=2.8
 networkx
 pubchempy
 requests~=2.18
+sympy
