@@ -15,7 +15,6 @@
 import unittest
 
 import numpy
-import sympy
 
 from openfermion.ops import (FermionOperator,
                              MajoranaOperator,
@@ -62,30 +61,6 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         self.assertEqual(lowering.terms[correct_operators_d], 0.5j)
         self.assertEqual(raising.terms[correct_operators_d], -0.5j)
         self.assertEqual(raising.terms[correct_operators_c], 0.5)
-
-    def test_bravyi_kitaev_transform_sympy(self):
-        # Check that the QubitOperators are two-term.
-        coeff = sympy.Symbol('x')
-
-        #  Hardcoded coefficient test on 16 qubits
-        n_qubits = 16
-        lowering = bravyi_kitaev(FermionOperator(((9, 0),)) * coeff, n_qubits)
-        raising = bravyi_kitaev(FermionOperator(((9, 1),)) * coeff, n_qubits)
-        sum_lr = bravyi_kitaev(
-            FermionOperator(((9, 0),)) * coeff + FermionOperator(
-                ((9, 1),)) * coeff, n_qubits)
-
-        correct_operators_c = ((7, 'Z'), (8, 'Z'), (9, 'X'), (11, 'X'), (15,
-                                                                         'X'))
-        correct_operators_d = ((7, 'Z'), (9, 'Y'), (11, 'X'), (15, 'X'))
-
-        self.assertEqual(lowering.terms[correct_operators_c], 0.5 * coeff)
-        self.assertEqual(lowering.terms[correct_operators_d], 0.5j * coeff)
-        self.assertEqual(raising.terms[correct_operators_d], -0.5j * coeff)
-        self.assertEqual(raising.terms[correct_operators_c], 0.5 * coeff)
-        self.assertEqual(len(sum_lr.terms), 1)
-        sum_lr_correct = QubitOperator(correct_operators_c, coeff)
-        self.assertEqual(sum_lr, sum_lr_correct)
 
     def test_bk_identity(self):
         self.assertTrue(bravyi_kitaev(FermionOperator(())) ==

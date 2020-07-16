@@ -11,15 +11,11 @@
 #   limitations under the License.
 
 """Tests for plane_wave_hamiltonian.py"""
+
 import unittest
 
-import numpy as np
 
-from openfermion.hamiltonians._plane_wave_hamiltonian import (
-    jellium_model,
-    jordan_wigner_dual_basis_hamiltonian,
-    plane_wave_hamiltonian,
-)
+from openfermion.hamiltonians._plane_wave_hamiltonian import *
 from openfermion.transforms import jordan_wigner, get_sparse_operator
 from openfermion.utils import (eigenspectrum, Grid, inverse_fourier_transform,
                                is_hermitian)
@@ -53,10 +49,10 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
                     h_plane_wave_spectrum = eigenspectrum(jw_h_plane_wave)
                     h_dual_basis_spectrum = eigenspectrum(jw_h_dual_basis)
 
-                    max_diff = np.amax(h_plane_wave_spectrum -
-                                       h_dual_basis_spectrum)
-                    min_diff = np.amin(h_plane_wave_spectrum -
-                                       h_dual_basis_spectrum)
+                    max_diff = numpy.amax(
+                        h_plane_wave_spectrum - h_dual_basis_spectrum)
+                    min_diff = numpy.amin(
+                        h_plane_wave_spectrum - h_dual_basis_spectrum)
                     self.assertAlmostEqual(max_diff, 0)
                     self.assertAlmostEqual(min_diff, 0)
 
@@ -127,7 +123,7 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
         jw_2 = jordan_wigner(h_2)
         spectrum_2 = eigenspectrum(jw_2)
 
-        max_diff = np.amax(np.absolute(spectrum_1 - spectrum_2))
+        max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
         self.assertGreater(max_diff, 0.)
 
     def test_plane_wave_period_cutoff(self):
@@ -148,7 +144,7 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
         jw_2 = jordan_wigner(h_2)
         spectrum_2 = eigenspectrum(jw_2)
 
-        max_diff = np.amax(np.absolute(spectrum_1 - spectrum_2))
+        max_diff = numpy.amax(numpy.absolute(spectrum_1 - spectrum_2))
         self.assertGreater(max_diff, 0.)
 
         # TODO: This is only for code coverage. Remove after having real

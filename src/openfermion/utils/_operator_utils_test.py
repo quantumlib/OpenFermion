@@ -557,16 +557,6 @@ class SaveLoadOperatorTest(unittest.TestCase):
         if os.path.isfile(file_path):
             os.remove(file_path)
 
-    def test_save_sympy_plaintext(self):
-        operator = FermionOperator('1^', sympy.Symbol('x'))
-        with self.assertRaises(TypeError):
-            save_operator(operator, self.file_name, plain_text=True)
-
-    def test_raises_error_sympy(self):
-        operator = FermionOperator('1^', sympy.Symbol('x'))
-        with self.assertRaises(TypeError):
-            save_operator(operator, self.file_name, plain_text=False)
-
     def test_save_and_load_fermion_operators(self):
         save_operator(self.fermion_operator, self.file_name)
         loaded_fermion_operator = load_operator(self.file_name)

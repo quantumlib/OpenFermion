@@ -18,7 +18,6 @@ import marshal
 import os
 
 import numpy
-import sympy
 from numpy.random import RandomState
 from scipy.sparse import spmatrix
 
@@ -586,9 +585,7 @@ def save_operator(operator, file_name=None, data_directory=None,
     Raises:
         OperatorUtilsError: Not saved, file already exists.
         TypeError: Operator of invalid type.
-        TypeError: Coefficients in Operator sympy expressions.
     """
-
     file_path = get_file_path(file_name, data_directory)
 
     if os.path.isfile(file_path) and not allow_overwrite:
@@ -607,10 +604,6 @@ def save_operator(operator, file_name=None, data_directory=None,
                                   'InteractionOperator or InteractionRDM.')
     else:
         raise TypeError('Operator of invalid type.')
-
-    for term in operator.terms:
-        if isinstance(operator.terms[term], sympy.Expr):
-            raise TypeError('Cannot save sympy expressions.')
 
     if plain_text:
         with open(file_path, 'w') as f:

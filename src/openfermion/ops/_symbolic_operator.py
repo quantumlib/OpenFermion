@@ -18,30 +18,9 @@ import itertools
 import re
 import warnings
 
-import sympy
+import numpy
 
 from openfermion.config import EQ_TOLERANCE
-
-
-COEFFICIENT_TYPES = (int, float, complex, sympy.Expr)
-
-
-def _issmall(val, tol=EQ_TOLERANCE):
-    '''Checks whether a value is near-zero
-
-    Parses the allowed coefficients above for near-zero tests.
-
-    Args:
-        val (COEFFICIENT_TYPES) -- the value to be tested
-        tol (float) -- tolerance for inequality
-    '''
-    if isinstance(val, sympy.Expr):
-        if sympy.simplify(abs(val) < tol) == True:
-            return True
-        return False
-    if abs(val) < tol:
-        return True
-    return False
 
 
 class SymbolicOperator(metaclass=abc.ABCMeta):
@@ -122,7 +101,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
     __hash__ = None
 
     def __init__(self, term=None, coefficient=1.):
-        if not isinstance(coefficient, COEFFICIENT_TYPES):
+        if not isinstance(coefficient, (int, float, complex)):
             raise ValueError('Coefficient must be a numeric type.')
 
         # Initialize the terms dictionary
@@ -168,7 +147,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
             # Determine the coefficient for this term
             coef_string = re.sub(r"\s+", "", match[0])
-            if coef_string and coef_string[0] == '+':
+            if coef_string and coef_string[0] is '+':
                 coef_string = coef_string[1:].strip()
             if coef_string == '':
                 coef = 1.0
@@ -185,7 +164,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                         coef = float(coef_string)
                 except ValueError:
                     raise ValueError(
-                        'Invalid coefficient {}.'.format(coef_string))
+                            'Invalid coefficient {}.'.format(coef_string))
             coef *= coefficient
 
             # Parse the term, simpify it and add to the dict
@@ -324,7 +303,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             return '0'
         string_rep = ''
         for term, coeff in sorted(self.terms.items()):
-            if _issmall(coeff):
+            if numpy.isclose(coeff, 0.0):
                 continue
             tmp_string = '{} ['.format(coeff)
             for factor in term:
@@ -352,7 +331,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             product (SymbolicOperator): Mutated self.
         """
         # Handle scalars.
-        if isinstance(multiplier, COEFFICIENT_TYPES):
+        if isinstance(multiplier, (int, float, complex)):
             for term in self.terms:
                 self.terms[term] *= multiplier
             return self
@@ -396,7 +375,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Raises:
             TypeError: Invalid type cannot be multiply with SymbolicOperator.
         """
-        if isinstance(multiplier, COEFFICIENT_TYPES + (type(self),)):
+        if isinstance(multiplier, (int, float, complex, type(self))):
             product = copy.deepcopy(self)
             product *= multiplier
             return product
@@ -421,7 +400,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             for term in addend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) +
                                     addend.terms[term])
-                if _issmall(self.terms[term]):
+                if abs(self.terms[term]) < EQ_TOLERANCE:
                     del self.terms[term]
         else:
             raise TypeError('Cannot add invalid type to {}.'.format(
@@ -457,7 +436,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             for term in subtrahend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) -
                                     subtrahend.terms[term])
-                if _issmall(self.terms[term]):
+                if abs(self.terms[term]) < EQ_TOLERANCE:
                     del self.terms[term]
         else:
             raise TypeError('Cannot subtract invalid type from {}.'.format(
@@ -493,7 +472,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Raises:
           TypeError: Object of invalid type cannot multiply SymbolicOperator.
         """
-        if not isinstance(multiplier, COEFFICIENT_TYPES):
+        if not isinstance(multiplier, (int, float, complex)):
             raise TypeError(
                 'Object of invalid type cannot multiply with ' +
                 type(self) + '.')
@@ -516,7 +495,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
           TypeError: Cannot divide local operator by non-scalar type.
 
         """
-        if not isinstance(divisor, COEFFICIENT_TYPES):
+        if not isinstance(divisor, (int, float, complex)):
             raise TypeError('Cannot divide ' + type(self) +
                             ' by non-scalar type.')
         return self * (1.0 / divisor)
@@ -526,7 +505,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         return self.__truediv__(divisor)
 
     def __itruediv__(self, divisor):
-        if not isinstance(divisor, COEFFICIENT_TYPES):
+        if not isinstance(divisor, (int, float, complex)):
             raise TypeError('Cannot divide ' + type(self) +
                             ' by non-scalar type.')
         self *= (1.0 / divisor)
@@ -588,20 +567,17 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         for term in set(self.terms).intersection(set(other.terms)):
             a = self.terms[term]
             b = other.terms[term]
-            if isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr):
-                tol = EQ_TOLERANCE
-            else:
-                tol = EQ_TOLERANCE * max(1, abs(a), abs(b))
-            if _issmall(a - b, tol) is False:
+            # math.isclose does this in Python >=3.5
+            if not abs(a - b) <= max(EQ_TOLERANCE,
+                                     EQ_TOLERANCE * max(abs(a), abs(b))):
                 return False
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if _issmall(self.terms[term]) is False:
+                if not abs(self.terms[term]) <= EQ_TOLERANCE:
                     return False
-            else:
-                if _issmall(other.terms[term]) is False:
-                    return False
+            elif not abs(other.terms[term]) <= EQ_TOLERANCE:
+                return False
         return True
 
     def __ne__(self, other):
@@ -629,15 +605,6 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         new_terms = {}
         for term in self.terms:
             coeff = self.terms[term]
-
-            if isinstance(coeff, sympy.Expr):
-                if sympy.simplify(sympy.im(coeff) <= abs_tol) == True:
-                    coeff = sympy.re(coeff)
-                if sympy.simplify(sympy.re(coeff) <= abs_tol) == True:
-                    coeff = 1j * sympy.im(coeff)
-                if (sympy.simplify(abs(coeff) <= abs_tol) != True):
-                    new_terms[term] = coeff
-                continue
 
             # Remove small imaginary and real parts
             if abs(coeff.imag) <= abs_tol:
@@ -682,10 +649,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             # Zero operator
             return 0
         else:
-            return max(
-                len(term)
-                for term, coeff in self.terms.items()
-                if (_issmall(coeff) is False))
+            return max(len(term) for term, coeff in self.terms.items()
+                       if abs(coeff) > EQ_TOLERANCE)
 
     @classmethod
     def accumulate(cls, operators, start=None):
