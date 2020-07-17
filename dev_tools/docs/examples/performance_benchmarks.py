@@ -181,7 +181,7 @@ def benchmark_linear_qubit_operator(n_qubits, n_terms, processes=None):
 
 
 def benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
-    side_length):
+        side_length):
     """Test speed of computing commutators using specialized functions.
 
     Args:
