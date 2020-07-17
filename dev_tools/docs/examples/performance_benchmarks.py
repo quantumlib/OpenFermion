@@ -9,26 +9,18 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """This file contains tests of code performance to reveal bottlenecks."""
 import time
 import logging
 
 import numpy
 
-from openfermion import (commutator,
-                         FermionOperator,
-                         Grid,
-                         jellium_model,
-                         jordan_wigner,
-                         normal_ordered,
-                         QubitOperator)
+from openfermion import (commutator, FermionOperator, Grid, jellium_model,
+                         jordan_wigner, normal_ordered, QubitOperator)
 from openfermion.transforms import get_fermion_operator
-from openfermion.utils import (
-    jordan_wigner_sparse,
-    LinearQubitOperator,
-    LinearQubitOperatorOptions,
-    ParallelLinearQubitOperator)
+from openfermion.utils import (jordan_wigner_sparse, LinearQubitOperator,
+                               LinearQubitOperatorOptions,
+                               ParallelLinearQubitOperator)
 from openfermion.utils._testing_utils import random_interaction_operator
 from openfermion.utils._commutator_diagonal_coulomb_operator import (
     commutator_ordered_diagonal_coulomb_with_two_body_operator)
@@ -77,23 +69,19 @@ def benchmark_fermion_math_and_normal_order(n_qubits, term_length, power):
             FermionOperator.normal_order()
     """
     # Generate random operator strings.
-    operators_a = [(numpy.random.randint(n_qubits),
-                    numpy.random.randint(2))]
-    operators_b = [(numpy.random.randint(n_qubits),
-                    numpy.random.randint(2))]
+    operators_a = [(numpy.random.randint(n_qubits), numpy.random.randint(2))]
+    operators_b = [(numpy.random.randint(n_qubits), numpy.random.randint(2))]
     for _ in range(term_length):
 
         # Make sure the operator is not trivially zero.
-        operator_a = (numpy.random.randint(n_qubits),
-                      numpy.random.randint(2))
+        operator_a = (numpy.random.randint(n_qubits), numpy.random.randint(2))
         while operator_a == operators_a[-1]:
             operator_a = (numpy.random.randint(n_qubits),
                           numpy.random.randint(2))
         operators_a += [operator_a]
 
         # Do the same for the other operator.
-        operator_b = (numpy.random.randint(n_qubits),
-                      numpy.random.randint(2))
+        operator_b = (numpy.random.randint(n_qubits), numpy.random.randint(2))
         while operator_b == operators_b[-1]:
             operator_b = (numpy.random.randint(n_qubits),
                           numpy.random.randint(2))
@@ -183,7 +171,7 @@ def benchmark_linear_qubit_operator(n_qubits, n_terms, processes=None):
     end = time.time()
     runtime_operator = end - start
 
-    vec = numpy.random.rand(2 ** n_qubits)
+    vec = numpy.random.rand(2**n_qubits)
     # Performs matrix multiplication.
     start = time.time()
     _ = linear_operator * vec
@@ -193,7 +181,7 @@ def benchmark_linear_qubit_operator(n_qubits, n_terms, processes=None):
 
 
 def benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
-        side_length):
+    side_length):
     """Test speed of computing commutators using specialized functions.
 
     Args:
@@ -208,8 +196,8 @@ def benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
         runtime_diagonal_commutator: The time it takes to compute the same
             commutator using methods restricted to diagonal Coulomb operators.
     """
-    hamiltonian = normal_ordered(jellium_model(Grid(2, side_length, 1.),
-                                               plane_wave=False))
+    hamiltonian = normal_ordered(
+        jellium_model(Grid(2, side_length, 1.), plane_wave=False))
 
     part_a = FermionOperator.zero()
     part_b = FermionOperator.zero()
@@ -243,8 +231,9 @@ def run_molecular_operator_jordan_wigner(n_qubits=18):
                  'InteractionOperator.jordan_wigner_transform()')
     logging.info('n_qubits = %d.', n_qubits)
     runtime = benchmark_molecular_operator_jordan_wigner(n_qubits)
-    logging.info('InteractionOperator.jordan_wigner_transform() takes %f '
-                 'seconds.\n', runtime)
+    logging.info(
+        'InteractionOperator.jordan_wigner_transform() takes %f '
+        'seconds.\n', runtime)
 
     return runtime
 
@@ -278,12 +267,13 @@ def run_linear_qubit_operator(n_qubits=16, n_terms=10, processes=10):
     logging.info('Starting test on linear_qubit_operator().')
     logging.info('(n_qubits, n_terms) = (%d, %d).', n_qubits, n_terms)
     _, runtime_sequential = benchmark_linear_qubit_operator(n_qubits, n_terms)
-    _, runtime_parallel = benchmark_linear_qubit_operator(n_qubits, n_terms,
-                                                          processes)
-    logging.info('LinearQubitOperator took %f seconds, while '
-                 'ParallelQubitOperator took %f seconds with %d processes, '
-                 'and ratio is %.2f.\n', runtime_sequential, runtime_parallel,
-                 processes, runtime_sequential / runtime_parallel)
+    _, runtime_parallel = benchmark_linear_qubit_operator(
+        n_qubits, n_terms, processes)
+    logging.info(
+        'LinearQubitOperator took %f seconds, while '
+        'ParallelQubitOperator took %f seconds with %d processes, '
+        'and ratio is %.2f.\n', runtime_sequential, runtime_parallel, processes,
+        runtime_sequential / runtime_parallel)
 
     return runtime_sequential, runtime_parallel
 
@@ -297,11 +287,12 @@ def run_diagonal_commutator(side_length=4):
     runtime_commutator, runtime_diagonal_commutator = (
         benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
             side_length=side_length))
-    logging.info('Regular commutator computation took %f seconds, while '
-                 'commutator_ordered_diagonal_coulomb_with_two_body_operator'
-                 ' took %f seconds. Ratio is %.2f.\n', runtime_commutator,
-                 runtime_diagonal_commutator,
-                 runtime_commutator / runtime_diagonal_commutator)
+    logging.info(
+        'Regular commutator computation took %f seconds, while '
+        'commutator_ordered_diagonal_coulomb_with_two_body_operator'
+        ' took %f seconds. Ratio is %.2f.\n', runtime_commutator,
+        runtime_diagonal_commutator,
+        runtime_commutator / runtime_diagonal_commutator)
 
     return runtime_commutator, runtime_diagonal_commutator
 

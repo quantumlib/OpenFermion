@@ -9,7 +9,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """Tests the code in the examples directory of the git repo."""
 
 import os
@@ -96,12 +95,12 @@ def is_matplotlib_cell(cell):
 
 def strip_magics_and_shows(text):
     """Remove Jupyter magics and pyplot show commands."""
-    lines = [line for line in text.split('\n')
-             if not contains_magic_or_show(line)]
+    lines = [
+        line for line in text.split('\n') if not contains_magic_or_show(line)
+    ]
     return '\n'.join(lines)
 
 
 def contains_magic_or_show(line):
-    return (line.strip().startswith('%') or
-            'pyplot.show(' in line or
+    return (line.strip().startswith('%') or 'pyplot.show(' in line or
             'plt.show(' in line)
