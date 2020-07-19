@@ -19,7 +19,7 @@ from sympy.ntheory import factorint
 
 import cirq
 import cirq.contrib.acquaintance.permutation
-from openfermion import FSWAP
+from openfermion import gates
 from openfermion.primitives import bogoliubov_transform
 
 
@@ -289,5 +289,5 @@ def _permute(qubits: Sequence[cirq.Qid],
     return cirq.contrib.acquaintance.permutation.LinearPermutationGate(
         len(qubits),
         {i: permutation[i] for i in range(len(permutation))},
-        FSWAP
+        gates.FSWAP
     ).on(*qubits)

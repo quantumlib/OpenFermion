@@ -12,21 +12,20 @@
 
 """Operations for preparing useful quantum states."""
 
-from typing import Iterable, Optional, Sequence, Set, Tuple, Union, cast
+from typing import (Iterable, Optional, Sequence, Set, TYPE_CHECKING, Tuple, Union, cast)
 
 import numpy
 
 import cirq
-from openfermion import (
-        QuadraticHamiltonian,
-        gaussian_state_preparation_circuit,
-        slater_determinant_preparation_circuit)
 
-from openfermion import Ryxxy
+from openfermion import gates, ops, utils
+
+if TYPE_CHECKING:
+    import openfermion
 
 
 def prepare_gaussian_state(qubits: Sequence[cirq.Qid],
-                           quadratic_hamiltonian: QuadraticHamiltonian,
+                           quadratic_hamiltonian: 'openfermion.QuadraticHamiltonian',
                            occupied_orbitals: Optional[Union[
                                Sequence[int],
                                Tuple[Sequence[int], Sequence[int]]
@@ -82,13 +81,14 @@ def prepare_gaussian_state(qubits: Sequence[cirq.Qid],
 
 def _generic_gaussian_circuit(
         qubits: Sequence[cirq.Qid],
-        quadratic_hamiltonian: QuadraticHamiltonian,
+        quadratic_hamiltonian: 'openfermion.QuadraticHamiltonian',
         occupied_orbitals: Optional[Sequence[int]],
         initial_state: Union[int, Sequence[int]]) -> cirq.OP_TREE:
 
     n_qubits = len(qubits)
-    circuit_description, start_orbitals = gaussian_state_preparation_circuit(
-            quadratic_hamiltonian, occupied_orbitals)
+    circuit_description, start_orbitals = (
+            utils.gaussian_state_preparation_circuit(
+            quadratic_hamiltonian, occupied_orbitals))
 
     if isinstance(initial_state, int):
         initially_occupied_orbitals = _occupied_orbitals(
@@ -106,7 +106,7 @@ def _generic_gaussian_circuit(
 
 def _spin_symmetric_gaussian_circuit(
         qubits: Sequence[cirq.Qid],
-        quadratic_hamiltonian: QuadraticHamiltonian,
+        quadratic_hamiltonian: 'openfermion.QuadraticHamiltonian',
         occupied_orbitals: Tuple[Sequence[int], Sequence[int]],
         initial_state: Union[int, Sequence[int]]) -> cirq.OP_TREE:
 
@@ -181,7 +181,7 @@ def prepare_slater_determinant(qubits: Sequence[cirq.Qid],
             Default is 0, the all zeros state.
     """
     n_qubits = len(qubits)
-    circuit_description = slater_determinant_preparation_circuit(
+    circuit_description = utils.slater_determinant_preparation_circuit(
             slater_determinant_matrix)
     n_occupied = slater_determinant_matrix.shape[0]
 
@@ -219,5 +219,5 @@ def _ops_from_givens_rotations_circuit_description(
                 yield cirq.X(qubits[-1])
             else:
                 i, j, theta, phi = cast(Tuple[int, int, float, float], op)
-                yield Ryxxy(theta).on(qubits[i], qubits[j])
+                yield gates.Ryxxy(theta).on(qubits[i], qubits[j])
                 yield cirq.Z(qubits[j]) ** (phi / numpy.pi)

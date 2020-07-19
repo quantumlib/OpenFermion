@@ -18,12 +18,11 @@ from typing import (
 import numpy
 
 import cirq
-from openfermion import slater_determinant_preparation_circuit
 from openfermion.ops._givens_rotations import (
         fermionic_gaussian_decomposition,
         givens_decomposition_square)
 
-from openfermion import Ryxxy
+from openfermion import gates, utils
 
 
 def bogoliubov_transform(
@@ -228,5 +227,5 @@ def _ops_from_givens_rotations_circuit_description(
                 yield cirq.X(qubits[-1])
             else:
                 i, j, theta, phi = cast(Tuple[int, int, float, float], op)
-                yield Ryxxy(theta).on(qubits[i], qubits[j])
+                yield gates.Ryxxy(theta).on(qubits[i], qubits[j])
                 yield cirq.Z(qubits[j]) ** (phi / numpy.pi)

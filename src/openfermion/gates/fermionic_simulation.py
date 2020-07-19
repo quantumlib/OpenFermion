@@ -16,9 +16,10 @@ from typing import (cast, Dict, Optional, Sequence, Tuple, TYPE_CHECKING, Union)
 
 import cirq
 import numpy as np
-import openfermion
 import scipy.linalg as la
 import sympy
+
+from openfermion import ops, transforms, utils
 
 if TYPE_CHECKING:
     import openfermion
@@ -92,7 +93,7 @@ def state_swap_eigen_component(x: str, y: str, sign: int = 1, angle: float = 0):
 
 
 def fermionic_simulation_gates_from_interaction_operator(
-        operator: openfermion.InteractionOperator):
+        operator: 'openfermion.InteractionOperator'):
     r"""
     Given $H = \sum_{I \subset [n]} H_I$, returns gates
     $\left\{G_I\right\} = \left\{e^{i H_I\right\}$.
@@ -137,7 +138,7 @@ def fermionic_simulation_gates_from_interaction_operator(
 def sum_of_interaction_operator_gate_generators(
         n_modes: int,
         gates: Dict[Tuple[int, ...], Union[float, cirq.Gate]],
-) -> openfermion.InteractionOperator:
+) -> 'openfermion.InteractionOperator':
     """The interaction operator that is the sum of the generators of the
     specified fermionic simulation gates.
 
@@ -160,7 +161,7 @@ def sum_of_interaction_operator_gate_generators(
         The interaction operator.
     """
     # assumes gate indices in JW order
-    operator = openfermion.InteractionOperator.zero(n_modes)
+    operator = ops.InteractionOperator.zero(n_modes)
 
     for indices, gate in gates.items():
         if not indices:
@@ -226,7 +227,7 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
 
     @staticmethod
     @abc.abstractmethod
-    def fermion_generator_components() -> Tuple[openfermion.FermionOperator]:
+    def fermion_generator_components() -> Tuple['openfermion.FermionOperator']:
         r"""The FermionOperators :math:`(G_i)_i` such that the gate's fermionic
         generator is :math:`\sum_i w_i G_i + \text{h.c.}` where :math:`(w_i)_i`
         are the gate's weights."""
@@ -245,18 +246,18 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
     def qubit_generator_matrix(self) -> np.ndarray:
         """The matrix G such that the gate's unitary is exp(-i t G) with
         exponent t."""
-        return openfermion.jordan_wigner_sparse(self.fermion_generator,
+        return utils.jordan_wigner_sparse(self.fermion_generator,
                                                 self.num_qubits()).toarray()
 
     @property
-    def fermion_generator(self) -> openfermion.FermionOperator:
+    def fermion_generator(self) -> 'openfermion.FermionOperator':
         """The FermionOperator G such that the gate's unitary is exp(-i t G)
         with exponent t using the Jordan-Wigner transformation."""
         half_generator = sum((
             w * G
             for w, G in zip(self.weights, self.fermion_generator_components())),
-                             openfermion.FermionOperator())
-        return half_generator + openfermion.hermitian_conjugated(half_generator)
+                             ops.FermionOperator())
+        return half_generator + utils.hermitian_conjugated(half_generator)
 
     def _diagram_exponent(self,
                           args: cirq.CircuitDiagramInfoArgs,
@@ -363,7 +364,7 @@ class InteractionOperatorFermionicGate(ParityPreservingFermionicGate):
     def from_interaction_operator(
             cls,
             *,
-            operator: openfermion.InteractionOperator,
+            operator: 'openfermion.InteractionOperator',
             modes: Optional[Sequence[int]] = None,
     ) -> Optional['ParityPreservingFermionicGate']:
         """Constructs the gate corresponding to the specified term in the
@@ -372,19 +373,19 @@ class InteractionOperatorFermionicGate(ParityPreservingFermionicGate):
     def interaction_operator_generator(
             self,
             *,
-            operator: Optional[openfermion.InteractionOperator] = None,
+            operator: Optional['openfermion.InteractionOperator'] = None,
             modes: Optional[Sequence[int]] = None
-    ) -> openfermion.InteractionOperator:
+    ) -> 'openfermion.InteractionOperator':
         """Constructs the Hamiltonian corresponding to the gate's generator."""
         if modes is None:
             modes = tuple(range(self.num_qubits()))
         if operator is None:
             n_modes = max(modes) + 1
-            operator = openfermion.InteractionOperator.zero(n_modes)
+            operator = ops.InteractionOperator.zero(n_modes)
         else:
             n_modes = operator.n_qubits
         fermion_operator = self.fermion_generator
-        return openfermion.get_interaction_operator(fermion_operator,
+        return transforms.get_interaction_operator(fermion_operator,
                                                     n_qubits=n_modes)
 
 
@@ -465,8 +466,8 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
     @staticmethod
     def fermion_generator_components():
         return (
-            openfermion.FermionOperator(((0, 1), (1, 0))),
-            openfermion.FermionOperator(((0, 1), (0, 0), (1, 1), (1, 0)), 0.5),
+            ops.FermionOperator(((0, 1), (1, 0))),
+            ops.FermionOperator(((0, 1), (0, 0), (1, 1), (1, 0)), 0.5),
         )
 
     @classmethod
@@ -477,7 +478,7 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
     def from_interaction_operator(
             cls,
             *,
-            operator: openfermion.InteractionOperator,
+            operator: 'openfermion.InteractionOperator',
             modes: Optional[Sequence[int]] = None,
     ) -> Optional['QuadraticFermionicSimulationGate']:
         if modes is None:
@@ -498,14 +499,14 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
     def interaction_operator_generator(
             self,
             *,
-            operator: Optional[openfermion.InteractionOperator] = None,
+            operator: Optional['openfermion.InteractionOperator'] = None,
             modes: Optional[Sequence[int]] = None
-    ) -> openfermion.InteractionOperator:
+    ) -> 'openfermion.InteractionOperator':
         if modes is None:
             modes = (0, 1)
         if operator is None:
             n_modes = max(modes) + 1
-            operator = openfermion.InteractionOperator.zero(n_modes)
+            operator = ops.InteractionOperator.zero(n_modes)
 
         weights = tuple(w * self._exponent for w in self.weights)
         operator.constant += self._exponent * self._global_shift
@@ -609,16 +610,16 @@ class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
     @staticmethod
     def fermion_generator_components():
         return (
-            openfermion.FermionOperator(((0, 1), (0, 0), (1, 1), (2, 0))),
-            openfermion.FermionOperator(((0, 1), (1, 1), (1, 0), (2, 0)), -1),
-            openfermion.FermionOperator(((0, 1), (1, 0), (2, 1), (2, 0))),
+            ops.FermionOperator(((0, 1), (0, 0), (1, 1), (2, 0))),
+            ops.FermionOperator(((0, 1), (1, 1), (1, 0), (2, 0)), -1),
+            ops.FermionOperator(((0, 1), (1, 0), (2, 1), (2, 0))),
         )
 
     @classmethod
     def from_interaction_operator(
             cls,
             *,
-            operator: openfermion.InteractionOperator,
+            operator: 'openfermion.InteractionOperator',
             modes: Optional[Sequence[int]] = None,
     ) -> Optional['CubicFermionicSimulationGate']:
         if modes is None:
@@ -638,14 +639,14 @@ class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
     def interaction_operator_generator(
             self,
             *,
-            operator: Optional[openfermion.InteractionOperator] = None,
+            operator: Optional['openfermion.InteractionOperator'] = None,
             modes: Optional[Sequence[int]] = None
-    ) -> openfermion.InteractionOperator:
+    ) -> 'openfermion.InteractionOperator':
         if modes is None:
             modes = (0, 1, 2)
         if operator is None:
             n_modes = max(modes) + 1
-            operator = openfermion.InteractionOperator.zero(n_modes)
+            operator = ops.InteractionOperator.zero(n_modes)
 
         weights = tuple(w * self._exponent for w in self.weights)
         operator.constant += self._exponent * self._global_shift
@@ -898,16 +899,16 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
     @staticmethod
     def fermion_generator_components():
         return (
-            openfermion.FermionOperator(((0, 1), (1, 0), (2, 0), (3, 1)), -1),
-            openfermion.FermionOperator(((0, 1), (1, 0), (2, 1), (3, 0))),
-            openfermion.FermionOperator(((0, 1), (1, 1), (2, 0), (3, 0)), -1),
+            ops.FermionOperator(((0, 1), (1, 0), (2, 0), (3, 1)), -1),
+            ops.FermionOperator(((0, 1), (1, 0), (2, 1), (3, 0))),
+            ops.FermionOperator(((0, 1), (1, 1), (2, 0), (3, 0)), -1),
         )
 
     @classmethod
     def from_interaction_operator(
             cls,
             *,
-            operator: openfermion.InteractionOperator,
+            operator: 'openfermion.InteractionOperator',
             modes: Optional[Sequence[int]] = None,
     ) -> Optional['QuarticFermionicSimulationGate']:
         if modes is None:
@@ -925,14 +926,14 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
 
     def interaction_operator_generator(
             self,
-            operator: Optional[openfermion.InteractionOperator] = None,
+            operator: Optional['openfermion.InteractionOperator'] = None,
             modes: Optional[Sequence[int]] = None
-    ) -> openfermion.InteractionOperator:
+    ) -> 'openfermion.InteractionOperator':
         if modes is None:
             modes = (0, 1, 2, 3)
         if operator is None:
             n_modes = max(modes) + 1
-            operator = openfermion.InteractionOperator.zero(n_modes)
+            operator = ops.InteractionOperator.zero(n_modes)
 
         weights = tuple(w * self._exponent for w in self.weights)
         operator.constant += self._exponent * self._global_shift

@@ -16,7 +16,7 @@ from typing import Callable, cast, Iterable, List, Sequence
 
 import cirq
 
-from openfermion import FSWAP
+from openfermion import gates
 
 
 def swap_network(qubits: Sequence[cirq.Qid],
@@ -120,7 +120,7 @@ def swap_network(qubits: Sequence[cirq.Qid],
     """
     n_qubits = len(qubits)
     order = list(range(n_qubits))
-    swap_gate = FSWAP if fermionic else cirq.SWAP
+    swap_gate = gates.FSWAP if fermionic else cirq.SWAP
     result = []  # type: List[cirq.Operation]
 
     for layer_num in range(n_qubits):

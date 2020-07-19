@@ -15,8 +15,8 @@
 from typing import Optional, Sequence
 
 import cirq
-from openfermion import DiagonalCoulombHamiltonian, InteractionOperator
 
+from openfermion import ops
 from openfermion.trotter.trotter_algorithm import (
         Hamiltonian,
         TrotterStep,
@@ -147,9 +147,9 @@ def _perform_trotter_step(qubits: Sequence[cirq.Qid],
 
 
 def _select_trotter_algorithm(hamiltonian: Hamiltonian) -> TrotterAlgorithm:
-    if isinstance(hamiltonian, DiagonalCoulombHamiltonian):
+    if isinstance(hamiltonian, ops.DiagonalCoulombHamiltonian):
         return LINEAR_SWAP_NETWORK
-    elif isinstance(hamiltonian, InteractionOperator):
+    elif isinstance(hamiltonian, ops.InteractionOperator):
         return LOW_RANK
     else:
         raise TypeError('Failed to select a default Trotter algorithm '

@@ -10,18 +10,23 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from typing import TYPE_CHECKING
+
 import itertools
 from typing import Optional
 
-import openfermion
+from openfermion import ops
 from openfermion.utils._testing_utils import random_interaction_operator
+
+if TYPE_CHECKING:
+    import openfermion
 
 
 def random_interaction_operator_term(
         order: int,
         real: bool = True,
         seed: Optional[int] = None,
-        ) -> openfermion.InteractionOperator:
+        ) -> 'openfermion.InteractionOperator':
     """Generates a random interaction operator with non-zero coefficients only
     on terms corresponding to the given number of unique orbitals.
 
@@ -36,7 +41,7 @@ def random_interaction_operator_term(
     n_orbitals = order
 
     if order > 4:
-        return openfermion.InteractionOperator.zero(order)
+        return ops.InteractionOperator.zero(order)
 
     operator = random_interaction_operator(n_orbitals, real=real, seed=seed)
     operator.constant = 0

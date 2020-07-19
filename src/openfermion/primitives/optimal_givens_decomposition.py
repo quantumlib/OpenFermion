@@ -24,7 +24,7 @@ import cirq
 
 from openfermion.ops._givens_rotations import (givens_matrix_elements,
                                                givens_rotate)
-from openfermion import Ryxxy
+from openfermion import gates
 
 
 class GivensTranspositionError(Exception):
@@ -131,7 +131,7 @@ def optimal_givens_decomposition(qubits: Sequence[cirq.Qid],
         if not numpy.isclose(phi, 0.0):
             yield cirq.Z(qubits[j]) ** (phi / numpy.pi)
 
-        yield Ryxxy(-theta).on(qubits[i], qubits[j])
+        yield gates.Ryxxy(-theta).on(qubits[i], qubits[j])
 
     for idx, phase in enumerate(phases):
         yield cirq.Z(qubits[idx]) ** (numpy.angle(phase) / numpy.pi)

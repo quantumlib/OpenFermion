@@ -17,7 +17,7 @@ from typing import Optional, Sequence, TYPE_CHECKING, Tuple, Union
 import abc
 
 import cirq
-import openfermion
+from openfermion import ops
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import
@@ -25,10 +25,10 @@ if TYPE_CHECKING:
 
 
 Hamiltonian = Union[
-        openfermion.FermionOperator,
-        openfermion.QubitOperator,
-        openfermion.InteractionOperator,
-        openfermion.DiagonalCoulombHamiltonian]
+        ops.FermionOperator,
+        ops.QubitOperator,
+        ops.InteractionOperator,
+        ops.DiagonalCoulombHamiltonian]
 
 
 class TrotterStep(metaclass=abc.ABCMeta):
