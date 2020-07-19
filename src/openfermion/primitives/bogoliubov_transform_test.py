@@ -13,15 +13,14 @@
 from typing import Container
 
 import numpy
+import pytest
 import cirq
 from cirq import LineQubit
+
 import openfermion
-from openfermion import get_sparse_operator
+from openfermion import bogoliubov_transform, get_sparse_operator
 from openfermion.utils import (random_quadratic_hamiltonian,
                                random_unitary_matrix)
-import pytest
-
-from openfermion import bogoliubov_transform
 
 
 def fourier_transform_matrix(n_modes):

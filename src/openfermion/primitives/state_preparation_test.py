@@ -11,14 +11,14 @@
 #   limitations under the License.
 
 import numpy
+import pytest
 import cirq
 from cirq import LineQubit
-import openfermion
-from openfermion import get_sparse_operator
-from openfermion.utils._testing_utils import random_quadratic_hamiltonian
-import pytest
 
-from openfermion import prepare_gaussian_state, prepare_slater_determinant
+import openfermion
+from openfermion import (get_sparse_operator, prepare_gaussian_state,
+                         prepare_slater_determinant)
+from openfermion.utils._testing_utils import random_quadratic_hamiltonian
 
 
 @pytest.mark.parametrize(

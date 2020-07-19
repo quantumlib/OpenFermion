@@ -13,11 +13,11 @@
 from typing import Optional, Tuple
 
 import numpy
+import pytest
 import scipy.sparse.linalg
 import cirq
-import openfermion
-import pytest
 
+import openfermion
 from openfermion import simulate_trotter
 from openfermion.trotter import (
     LINEAR_SWAP_NETWORK,

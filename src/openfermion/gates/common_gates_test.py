@@ -12,10 +12,10 @@
 import warnings
 
 import numpy as np
+import pytest
 from scipy.linalg import expm, kron
 import sympy
 import cirq
-import pytest
 
 import openfermion
 

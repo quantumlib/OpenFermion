@@ -14,10 +14,10 @@ import abc
 import itertools
 from typing import (cast, Dict, Optional, Sequence, Tuple, TYPE_CHECKING, Union)
 
-import cirq
 import numpy as np
 import scipy.linalg as la
 import sympy
+import cirq
 
 from openfermion import ops, transforms, utils
 

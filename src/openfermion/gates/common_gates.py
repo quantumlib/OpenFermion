@@ -38,8 +38,8 @@ class FSwapPowGate(cirq.EigenGate, cirq.InterchangeableQubitsGate,
         g = exp(i·π·t/2)
         p = exp(i·π·t).
 
-    `openfermion.FSWAP` is an instance of this gate at exponent=1. It swaps adjacent
-    fermionic modes under the Jordan-Wigner Transform.
+    `openfermion.FSWAP` is an instance of this gate at exponent=1. It swaps
+    adjacent fermionic modes under the Jordan-Wigner Transform.
     """
 
     def num_qubits(self):

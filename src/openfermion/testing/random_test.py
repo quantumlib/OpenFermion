@@ -13,9 +13,9 @@
 import random
 
 import numpy as np
-import openfermion
 import pytest
 
+import openfermion
 from openfermion.testing import random_interaction_operator_term
 
 

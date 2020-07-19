@@ -13,16 +13,12 @@
 from typing import List, TYPE_CHECKING
 
 import numpy as np
-
+import pytest
 import cirq
 from cirq import LineQubit
-import pytest
 
-from openfermion import (bogoliubov_transform, ffft)
-from openfermion.primitives.ffft import (
-    _F0Gate,
-    _TwiddleGate,
-)
+from openfermion import bogoliubov_transform, ffft
+from openfermion.primitives.ffft import _F0Gate, _TwiddleGate
 
 if TYPE_CHECKING:
     from typing import Dict

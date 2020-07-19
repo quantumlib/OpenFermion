@@ -12,9 +12,8 @@
 
 import numpy
 import scipy
-import cirq
-import openfermion
 import pytest
+import cirq
 
 import openfermion
 

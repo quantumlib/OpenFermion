@@ -12,10 +12,10 @@
 
 import warnings
 import numpy as np
+import pytest
 import sympy
 import cirq
 from cirq.testing import EqualsTester
-import pytest
 
 import openfermion
 

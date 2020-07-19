@@ -13,13 +13,12 @@
 import itertools
 from typing import cast, Tuple
 
-import cirq
-import cirq.contrib.acquaintance as cca
 import numpy as np
-import openfermion
 import pytest
 import scipy.linalg as la
 import sympy
+import cirq
+import cirq.contrib.acquaintance as cca
 
 import openfermion
 from openfermion.gates.fermionic_simulation import (
