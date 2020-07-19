@@ -9,10 +9,10 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """Operations for preparing useful quantum states."""
 
-from typing import (Iterable, Optional, Sequence, Set, TYPE_CHECKING, Tuple, Union, cast)
+from typing import (Iterable, Optional, Sequence, Set, TYPE_CHECKING, Tuple,
+                    Union, cast)
 
 import numpy
 
@@ -24,14 +24,12 @@ if TYPE_CHECKING:
     import openfermion
 
 
-def prepare_gaussian_state(qubits: Sequence[cirq.Qid],
-                           quadratic_hamiltonian: 'openfermion.QuadraticHamiltonian',
-                           occupied_orbitals: Optional[Union[
-                               Sequence[int],
-                               Tuple[Sequence[int], Sequence[int]]
-                               ]]=None,
-                           initial_state: Union[int, Sequence[int]]=0
-                           ) -> cirq.OP_TREE:
+def prepare_gaussian_state(
+        qubits: Sequence[cirq.Qid],
+        quadratic_hamiltonian: 'openfermion.QuadraticHamiltonian',
+        occupied_orbitals: Optional[
+            Union[Sequence[int], Tuple[Sequence[int], Sequence[int]]]] = None,
+        initial_state: Union[int, Sequence[int]] = 0) -> cirq.OP_TREE:
     """Prepare a fermionic Gaussian state from a computational basis state.
 
     A fermionic Gaussian state is an eigenstate of a quadratic Hamiltonian. If
@@ -69,14 +67,14 @@ def prepare_gaussian_state(qubits: Sequence[cirq.Qid],
     if not occupied_orbitals or isinstance(occupied_orbitals[0], int):
         # Generic
         occupied_orbitals = cast(Sequence[int], occupied_orbitals)
-        yield _generic_gaussian_circuit(
-                qubits, quadratic_hamiltonian, occupied_orbitals, initial_state)
+        yield _generic_gaussian_circuit(qubits, quadratic_hamiltonian,
+                                        occupied_orbitals, initial_state)
     else:
         # Spin symmetry
         occupied_orbitals = cast(Tuple[Sequence[int], Sequence[int]],
                                  occupied_orbitals)
-        yield _spin_symmetric_gaussian_circuit(
-                qubits, quadratic_hamiltonian, occupied_orbitals, initial_state)
+        yield _spin_symmetric_gaussian_circuit(qubits, quadratic_hamiltonian,
+                                               occupied_orbitals, initial_state)
 
 
 def _generic_gaussian_circuit(
@@ -87,21 +85,22 @@ def _generic_gaussian_circuit(
 
     n_qubits = len(qubits)
     circuit_description, start_orbitals = (
-            utils.gaussian_state_preparation_circuit(
-            quadratic_hamiltonian, occupied_orbitals))
+        utils.gaussian_state_preparation_circuit(quadratic_hamiltonian,
+                                                 occupied_orbitals))
 
     if isinstance(initial_state, int):
         initially_occupied_orbitals = _occupied_orbitals(
-                initial_state, n_qubits)
+            initial_state, n_qubits)
     else:
         initially_occupied_orbitals = initial_state  # type: ignore
 
     # Flip bits so that the correct starting orbitals are occupied
-    yield (cirq.X(qubits[j]) for j in range(n_qubits)
+    yield (cirq.X(qubits[j])
+           for j in range(n_qubits)
            if (j in initially_occupied_orbitals) != (j in start_orbitals))
 
     yield _ops_from_givens_rotations_circuit_description(
-            qubits, circuit_description)
+        qubits, circuit_description)
 
 
 def _spin_symmetric_gaussian_circuit(
@@ -114,36 +113,37 @@ def _spin_symmetric_gaussian_circuit(
 
     if isinstance(initial_state, int):
         initially_occupied_orbitals = _occupied_orbitals(
-                initial_state, n_qubits)
+            initial_state, n_qubits)
     else:
         initially_occupied_orbitals = initial_state  # type: ignore
 
     for spin_sector in range(2):
         circuit_description, start_orbitals = (
-                utils.gaussian_state_preparation_circuit(
-                    quadratic_hamiltonian,
-                    occupied_orbitals[spin_sector],
-                    spin_sector=spin_sector)
-        )
+            utils.gaussian_state_preparation_circuit(
+                quadratic_hamiltonian,
+                occupied_orbitals[spin_sector],
+                spin_sector=spin_sector))
 
         def index_map(i):
-            return i + spin_sector*(n_qubits // 2)
+            return i + spin_sector * (n_qubits // 2)
+
         spin_indices = [index_map(i) for i in range(n_qubits // 2)]
         spin_qubits = [qubits[i] for i in spin_indices]
 
         # Flip bits so that the correct starting orbitals are occupied
-        yield (cirq.X(spin_qubits[j]) for j in range(n_qubits // 2)
-               if (index_map(j) in initially_occupied_orbitals)
-               != (index_map(j) in [index_map(k) for k in start_orbitals]))
+        yield (cirq.X(spin_qubits[j])
+               for j in range(n_qubits // 2)
+               if (index_map(j) in initially_occupied_orbitals) != (
+                   index_map(j) in [index_map(k) for k in start_orbitals]))
 
         yield _ops_from_givens_rotations_circuit_description(
-                spin_qubits, circuit_description)
+            spin_qubits, circuit_description)
 
 
 def prepare_slater_determinant(qubits: Sequence[cirq.Qid],
                                slater_determinant_matrix: numpy.ndarray,
-                               initial_state: Union[int, Sequence[int]]=0
-                               ) -> cirq.OP_TREE:
+                               initial_state: Union[int, Sequence[int]] = 0
+                              ) -> cirq.OP_TREE:
     r"""Prepare a Slater determinant from a computational basis state.
 
     A Slater determinant is described by an :math:`\eta \times N` matrix
@@ -182,21 +182,22 @@ def prepare_slater_determinant(qubits: Sequence[cirq.Qid],
     """
     n_qubits = len(qubits)
     circuit_description = utils.slater_determinant_preparation_circuit(
-            slater_determinant_matrix)
+        slater_determinant_matrix)
     n_occupied = slater_determinant_matrix.shape[0]
 
     if isinstance(initial_state, int):
         initially_occupied_orbitals = _occupied_orbitals(
-                initial_state, n_qubits)
+            initial_state, n_qubits)
     else:
         initially_occupied_orbitals = initial_state  # type: ignore
 
     # Flip bits so that the first n_occupied are 1 and the rest 0
-    yield (cirq.X(qubits[j]) for j in range(n_qubits)
+    yield (cirq.X(qubits[j])
+           for j in range(n_qubits)
            if (j < n_occupied) != (j in initially_occupied_orbitals))
 
     yield _ops_from_givens_rotations_circuit_description(
-            qubits, circuit_description)
+        qubits, circuit_description)
 
 
 def _occupied_orbitals(computational_basis_state: int, n_qubits) -> Set[int]:
@@ -207,8 +208,7 @@ def _occupied_orbitals(computational_basis_state: int, n_qubits) -> Set[int]:
 
 
 def _ops_from_givens_rotations_circuit_description(
-        qubits: Sequence[cirq.Qid],
-        circuit_description: Iterable[Iterable[
+        qubits: Sequence[cirq.Qid], circuit_description: Iterable[Iterable[
             Union[str, Tuple[int, int, float, float]]]]) -> cirq.OP_TREE:
     """Yield operations from a Givens rotations circuit obtained from
     OpenFermion.
@@ -220,4 +220,4 @@ def _ops_from_givens_rotations_circuit_description(
             else:
                 i, j, theta, phi = cast(Tuple[int, int, float, float], op)
                 yield gates.Ryxxy(theta).on(qubits[i], qubits[j])
-                yield cirq.Z(qubits[j]) ** (phi / numpy.pi)
+                yield cirq.Z(qubits[j])**(phi / numpy.pi)

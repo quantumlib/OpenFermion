@@ -10,13 +10,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from typing import Any, Dict, Optional, Sequence, Type, Union
 
 import sympy
 
 import cirq
-
 
 _setup_code = ('import cirq\n'
                'import numpy as np\n'
@@ -24,10 +22,8 @@ _setup_code = ('import cirq\n'
                'import openfermion\n')
 
 
-def assert_equivalent_repr(
-        value: Any,
-        *,
-        setup_code: str = _setup_code) -> None:
+def assert_equivalent_repr(value: Any, *,
+                           setup_code: str = _setup_code) -> None:
     """Checks that eval(repr(v)) == v.
 
     Args:
@@ -42,14 +38,13 @@ def assert_equivalent_repr(
 def assert_implements_consistent_protocols(
         val: Any,
         *,
-        exponents: Sequence[Any] = (
-            0, 1, -1, 0.5, 0.25, -0.5, 0.1, sympy.Symbol('s')),
+        exponents: Sequence[Any] = (0, 1, -1, 0.5, 0.25, -0.5, 0.1,
+                                    sympy.Symbol('s')),
         qubit_count: Optional[int] = None,
-        ignoring_global_phase: bool=False,
+        ignoring_global_phase: bool = False,
         setup_code: str = _setup_code,
         global_vals: Optional[Dict[str, Any]] = None,
-        local_vals: Optional[Dict[str, Any]] = None
-        ) -> None:
+        local_vals: Optional[Dict[str, Any]] = None) -> None:
     """Checks that a value is internally consistent and has a good __repr__."""
 
     cirq.testing.assert_implements_consistent_protocols(
@@ -65,11 +60,12 @@ def assert_implements_consistent_protocols(
 def assert_eigengate_implements_consistent_protocols(
         eigen_gate_type: Type[cirq.EigenGate],
         *,
-        exponents: Sequence[Union[sympy.Basic, float]] = (
-            0, 1, -1, 0.25, -0.5, 0.1, sympy.Symbol('s')),
+        exponents: Sequence[Union[sympy.Basic, float]] = (0, 1, -1, 0.25,
+                                                          -0.5, 0.1,
+                                                          sympy.Symbol('s')),
         global_shifts: Sequence[float] = (0, -0.5, 0.1),
         qubit_count: Optional[int] = None,
-        ignoring_global_phase: bool=False,
+        ignoring_global_phase: bool = False,
         setup_code: str = _setup_code,
         global_vals: Optional[Dict[str, Any]] = None,
         local_vals: Optional[Dict[str, Any]] = None) -> None:

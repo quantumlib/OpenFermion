@@ -9,17 +9,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Algorithms for performing Trotter steps."""
 
 from openfermion.trotter.algorithms.linear_swap_network import (
-    LINEAR_SWAP_NETWORK,
-    LinearSwapNetworkTrotterAlgorithm)
+    LINEAR_SWAP_NETWORK, LinearSwapNetworkTrotterAlgorithm)
 
-from openfermion.trotter.algorithms.low_rank import (
-    LOW_RANK,
-    LowRankTrotterAlgorithm)
+from openfermion.trotter.algorithms.low_rank import (LOW_RANK,
+                                                     LowRankTrotterAlgorithm)
 
 from openfermion.trotter.algorithms.split_operator import (
-    SPLIT_OPERATOR,
-    SplitOperatorTrotterAlgorithm)
+    SPLIT_OPERATOR, SplitOperatorTrotterAlgorithm)

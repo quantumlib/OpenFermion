@@ -9,19 +9,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Hamiltonian simulation via Trotter-Suzuki product formulas."""
 
 from openfermion.trotter.simulate_trotter import simulate_trotter
 
-from openfermion.trotter.algorithms import (
-    LINEAR_SWAP_NETWORK,
-    LinearSwapNetworkTrotterAlgorithm,
-    LOW_RANK,
-    LowRankTrotterAlgorithm,
-    SPLIT_OPERATOR,
-    SplitOperatorTrotterAlgorithm)
+from openfermion.trotter.algorithms import (LINEAR_SWAP_NETWORK,
+                                            LinearSwapNetworkTrotterAlgorithm,
+                                            LOW_RANK, LowRankTrotterAlgorithm,
+                                            SPLIT_OPERATOR,
+                                            SplitOperatorTrotterAlgorithm)
 
-from openfermion.trotter.trotter_algorithm import (
-    TrotterStep,
-    TrotterAlgorithm)
+from openfermion.trotter.trotter_algorithm import (TrotterStep,
+                                                   TrotterAlgorithm)

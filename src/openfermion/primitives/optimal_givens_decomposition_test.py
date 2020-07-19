@@ -42,8 +42,8 @@ def test_givens_inverse():
 
     assert numpy.allclose(ab_rotation.dot(numpy.conj(ab_rotation).T),
                           numpy.eye(2))
-    assert numpy.allclose(numpy.conj(ab_rotation).T.dot(ab_rotation),
-                          numpy.eye(2))
+    assert numpy.allclose(
+        numpy.conj(ab_rotation).T.dot(ab_rotation), numpy.eye(2))
 
 
 def test_row_eliminate():
@@ -199,11 +199,11 @@ def test_circuit_generation_and_accuracy():
         true_unitary = scipy.linalg.expm(
             get_sparse_operator(fermion_generator).toarray())
         assert numpy.allclose(true_unitary.conj().T.dot(true_unitary),
-                              numpy.eye(2 ** dim, dtype=complex))
+                              numpy.eye(2**dim, dtype=complex))
 
         test_unitary = cirq.unitary(circuit)
         assert numpy.isclose(
-            abs(numpy.trace(true_unitary.conj().T.dot(test_unitary))), 2 ** dim)
+            abs(numpy.trace(true_unitary.conj().T.dot(test_unitary))), 2**dim)
 
 
 def test_circuit_generation_state():
@@ -213,11 +213,16 @@ def test_circuit_generation_state():
     simulator = cirq.Simulator()
     circuit = cirq.Circuit()
     qubits = cirq.LineQubit.range(4)
-    circuit.append([cirq.X(qubits[0]), cirq.X(qubits[1]), cirq.X(qubits[1]),
-                    cirq.X(qubits[2]), cirq.X(qubits[3]),
-                    cirq.X(qubits[3])])  # alpha-spins are first then beta spins
+    circuit.append([
+        cirq.X(qubits[0]),
+        cirq.X(qubits[1]),
+        cirq.X(qubits[1]),
+        cirq.X(qubits[2]),
+        cirq.X(qubits[3]),
+        cirq.X(qubits[3])
+    ])  # alpha-spins are first then beta spins
 
-    wavefunction = numpy.zeros((2 ** 4, 1), dtype=complex)
+    wavefunction = numpy.zeros((2**4, 1), dtype=complex)
     wavefunction[10, 0] = 1.0
 
     dim = 2

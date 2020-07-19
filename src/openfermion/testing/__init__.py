@@ -11,8 +11,7 @@
 # limitations under the License.
 
 from openfermion.testing.random import (
-    random_interaction_operator_term,
-)
+    random_interaction_operator_term,)
 
 from openfermion.testing.wrapped import (
     assert_eigengate_implements_consistent_protocols,

@@ -9,7 +9,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """A Trotter algorithm using the low rank decomposition strategy."""
 
 from typing import cast, Optional, Sequence, TYPE_CHECKING, Tuple
@@ -19,10 +18,8 @@ import numpy
 import cirq
 
 from openfermion import gates, ops, primitives, utils
-from openfermion.trotter.trotter_algorithm import (
-    Hamiltonian,
-    TrotterStep,
-    TrotterAlgorithm)
+from openfermion.trotter.trotter_algorithm import (Hamiltonian, TrotterStep,
+                                                   TrotterAlgorithm)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import
@@ -59,8 +56,8 @@ class LowRankTrotterAlgorithm(TrotterAlgorithm):
     supported_types = {ops.InteractionOperator}
 
     def __init__(self,
-                 truncation_threshold: Optional[float]=1e-8,
-                 final_rank: Optional[int]=None,
+                 truncation_threshold: Optional[float] = 1e-8,
+                 final_rank: Optional[int] = None,
                  spin_basis=True) -> None:
         """
         Args:
@@ -76,19 +73,16 @@ class LowRankTrotterAlgorithm(TrotterAlgorithm):
         self.spin_basis = spin_basis
 
     def asymmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
-        return AsymmetricLowRankTrotterStep(
-                hamiltonian,
-                self.truncation_threshold,
-                self.final_rank,
-                self.spin_basis)
+        return AsymmetricLowRankTrotterStep(hamiltonian,
+                                            self.truncation_threshold,
+                                            self.final_rank, self.spin_basis)
 
     def controlled_asymmetric(self, hamiltonian: Hamiltonian
-                              ) -> Optional[TrotterStep]:
-        return ControlledAsymmetricLowRankTrotterStep(
-                hamiltonian,
-                self.truncation_threshold,
-                self.final_rank,
-                self.spin_basis)
+                             ) -> Optional[TrotterStep]:
+        return ControlledAsymmetricLowRankTrotterStep(hamiltonian,
+                                                      self.truncation_threshold,
+                                                      self.final_rank,
+                                                      self.spin_basis)
 
 
 LOW_RANK = LowRankTrotterAlgorithm()
@@ -98,8 +92,8 @@ class LowRankTrotterStep(TrotterStep):
 
     def __init__(self,
                  hamiltonian: 'ops.InteractionOperator',
-                 truncation_threshold: Optional[float]=1e-8,
-                 final_rank: Optional[int]=None,
+                 truncation_threshold: Optional[float] = 1e-8,
+                 final_rank: Optional[int] = None,
                  spin_basis=True) -> None:
 
         self.truncation_threshold = truncation_threshold
@@ -115,46 +109,41 @@ class LowRankTrotterStep(TrotterStep):
 
         # Get scaled density-density terms and basis transformation matrices.
         self.scaled_density_density_matrices = []  # type: List[numpy.ndarray]
-        self.basis_change_matrices = []            # type: List[numpy.ndarray]
+        self.basis_change_matrices = []  # type: List[numpy.ndarray]
         for j in range(len(self.eigenvalues)):
             density_density_matrix, basis_change_matrix = (
                 utils.prepare_one_body_squared_evolution(
                     self.one_body_squares[j]))
             self.scaled_density_density_matrices.append(
-                    numpy.real(self.eigenvalues[j] * density_density_matrix))
+                numpy.real(self.eigenvalues[j] * density_density_matrix))
             self.basis_change_matrices.append(basis_change_matrix)
 
         # Get transformation matrix and orbital energies for one-body terms
-        one_body_coefficients = (
-                hamiltonian.one_body_tensor + one_body_correction)
+        one_body_coefficients = (hamiltonian.one_body_tensor +
+                                 one_body_correction)
         quad_ham = ops.QuadraticHamiltonian(one_body_coefficients)
         self.one_body_energies, self.one_body_basis_change_matrix, _ = (
-                quad_ham.diagonalizing_bogoliubov_transform()
-        )
+            quad_ham.diagonalizing_bogoliubov_transform())
 
         super().__init__(hamiltonian)
 
 
 class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
 
-    def trotter_step(
-            self,
-            qubits: Sequence[cirq.Qid],
-            time: float,
-            control_qubit: Optional[cirq.Qid]=None
-            ) -> cirq.OP_TREE:
+    def trotter_step(self,
+                     qubits: Sequence[cirq.Qid],
+                     time: float,
+                     control_qubit: Optional[cirq.Qid] = None) -> cirq.OP_TREE:
 
         n_qubits = len(qubits)
 
         # Change to the basis in which the one-body term is diagonal
         yield primitives.bogoliubov_transform(
-                qubits, self.one_body_basis_change_matrix.T.conj())
+            qubits, self.one_body_basis_change_matrix.T.conj())
 
         # Simulate the one-body terms.
         for p in range(n_qubits):
-            yield cirq.rz(rads=
-                    -self.one_body_energies[p] * time
-                    ).on(qubits[p])
+            yield cirq.rz(rads=-self.one_body_energies[p] * time).on(qubits[p])
 
         # Simulate each singular vector of the two-body terms.
         prior_basis_matrix = self.one_body_basis_change_matrix
@@ -169,20 +158,19 @@ class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
             # current one
             merged_basis_change_matrix = numpy.dot(prior_basis_matrix,
                                                    basis_change_matrix.T.conj())
-            yield primitives.bogoliubov_transform(qubits, merged_basis_change_matrix)
+            yield primitives.bogoliubov_transform(qubits,
+                                                  merged_basis_change_matrix)
 
             # Simulate the off-diagonal two-body terms.
             yield primitives.swap_network(
-                    qubits,
-                    lambda p, q, a, b: gates.rot11(rads=
-                        -2 * two_body_coefficients[p, q] * time).on(a, b))
+                qubits, lambda p, q, a, b: gates.rot11(
+                    rads=-2 * two_body_coefficients[p, q] * time).on(a, b))
             qubits = qubits[::-1]
 
             # Simulate the diagonal two-body terms.
             for p in range(n_qubits):
-                yield cirq.rz(rads=
-                        -two_body_coefficients[p, p] * time
-                        ).on(qubits[p])
+                yield cirq.rz(rads=-two_body_coefficients[p, p] * time).on(
+                    qubits[p])
 
             # Update prior basis change matrix
             prior_basis_matrix = basis_change_matrix
@@ -190,11 +178,11 @@ class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
         # Undo final basis transformation
         yield primitives.bogoliubov_transform(qubits, prior_basis_matrix)
 
-    def step_qubit_permutation(self,
-                               qubits: Sequence[cirq.Qid],
-                               control_qubit: Optional[cirq.Qid]=None
-                               ) -> Tuple[Sequence[cirq.Qid],
-                                          Optional[cirq.Qid]]:
+    def step_qubit_permutation(
+            self,
+            qubits: Sequence[cirq.Qid],
+            control_qubit: Optional[cirq.Qid] = None
+    ) -> Tuple[Sequence[cirq.Qid], Optional[cirq.Qid]]:
         # A Trotter step reverses the qubit ordering when the number of
         # eigenvalues is odd
         if len(self.eigenvalues) & 1:
@@ -205,9 +193,8 @@ class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
     def finish(self,
                qubits: Sequence[cirq.Qid],
                n_steps: int,
-               control_qubit: Optional[cirq.Qid]=None,
-               omit_final_swaps: bool=False
-               ) -> cirq.OP_TREE:
+               control_qubit: Optional[cirq.Qid] = None,
+               omit_final_swaps: bool = False) -> cirq.OP_TREE:
         if not omit_final_swaps:
             # If the number of swap networks was odd, swap the qubits back
             if n_steps & 1 and len(self.eigenvalues) & 1:
@@ -216,12 +203,10 @@ class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
 
 class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
 
-    def trotter_step(
-            self,
-            qubits: Sequence[cirq.Qid],
-            time: float,
-            control_qubit: Optional[cirq.Qid]=None
-            ) -> cirq.OP_TREE:
+    def trotter_step(self,
+                     qubits: Sequence[cirq.Qid],
+                     time: float,
+                     control_qubit: Optional[cirq.Qid] = None) -> cirq.OP_TREE:
 
         if not isinstance(control_qubit, cirq.Qid):
             raise TypeError('Control qudit must be specified.')
@@ -230,13 +215,12 @@ class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
 
         # Change to the basis in which the one-body term is diagonal
         yield primitives.bogoliubov_transform(
-                qubits, self.one_body_basis_change_matrix.T.conj())
+            qubits, self.one_body_basis_change_matrix.T.conj())
 
         # Simulate the one-body terms.
         for p in range(n_qubits):
-            yield gates.rot11(rads=
-                    -self.one_body_energies[p] * time
-                    ).on(control_qubit, qubits[p])
+            yield gates.rot11(rads=-self.one_body_energies[p] * time).on(
+                control_qubit, qubits[p])
 
         # Simulate each singular vector of the two-body terms.
         prior_basis_matrix = self.one_body_basis_change_matrix
@@ -251,21 +235,19 @@ class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
             # current one
             merged_basis_change_matrix = numpy.dot(prior_basis_matrix,
                                                    basis_change_matrix.T.conj())
-            yield primitives.bogoliubov_transform(qubits, merged_basis_change_matrix)
+            yield primitives.bogoliubov_transform(qubits,
+                                                  merged_basis_change_matrix)
 
             # Simulate the off-diagonal two-body terms.
             yield primitives.swap_network(
-                    qubits,
-                    lambda p, q, a, b: gates.rot111(
-                        -2 * two_body_coefficients[p, q] * time).on(
-                            cast(cirq.Qid, control_qubit), a, b))
+                qubits, lambda p, q, a, b: gates.rot111(
+                    -2 * two_body_coefficients[p, q] * time).on(
+                        cast(cirq.Qid, control_qubit), a, b))
             qubits = qubits[::-1]
 
             # Simulate the diagonal two-body terms.
-            yield (gates.rot11(rads=
-                       -two_body_coefficients[k, k] * time).on(
-                           control_qubit, qubits[k])
-                   for k in range(n_qubits))
+            yield (gates.rot11(rads=-two_body_coefficients[k, k] * time).on(
+                control_qubit, qubits[k]) for k in range(n_qubits))
 
             # Update prior basis change matrix.
             prior_basis_matrix = basis_change_matrix
@@ -274,14 +256,13 @@ class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
         yield primitives.bogoliubov_transform(qubits, prior_basis_matrix)
 
         # Apply phase from constant term
-        yield cirq.rz(rads=
-                -self.hamiltonian.constant * time).on(control_qubit)
+        yield cirq.rz(rads=-self.hamiltonian.constant * time).on(control_qubit)
 
-    def step_qubit_permutation(self,
-                               qubits: Sequence[cirq.Qid],
-                               control_qubit: Optional[cirq.Qid]=None
-                               ) -> Tuple[Sequence[cirq.Qid],
-                                          Optional[cirq.Qid]]:
+    def step_qubit_permutation(
+            self,
+            qubits: Sequence[cirq.Qid],
+            control_qubit: Optional[cirq.Qid] = None
+    ) -> Tuple[Sequence[cirq.Qid], Optional[cirq.Qid]]:
         # A Trotter step reverses the qubit ordering when the number of
         # eigenvalues is odd
         if len(self.eigenvalues) & 1:
@@ -292,9 +273,8 @@ class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
     def finish(self,
                qubits: Sequence[cirq.Qid],
                n_steps: int,
-               control_qubit: Optional[cirq.Qid]=None,
-               omit_final_swaps: bool=False
-               ) -> cirq.OP_TREE:
+               control_qubit: Optional[cirq.Qid] = None,
+               omit_final_swaps: bool = False) -> cirq.OP_TREE:
         if not omit_final_swaps:
             # If the number of swap networks was odd, swap the qubits back
             if n_steps & 1 and len(self.eigenvalues) & 1:

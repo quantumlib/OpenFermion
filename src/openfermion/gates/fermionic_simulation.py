@@ -247,7 +247,7 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
         """The matrix G such that the gate's unitary is exp(-i t G) with
         exponent t."""
         return utils.jordan_wigner_sparse(self.fermion_generator,
-                                                self.num_qubits()).toarray()
+                                          self.num_qubits()).toarray()
 
     @property
     def fermion_generator(self) -> 'openfermion.FermionOperator':
@@ -386,7 +386,7 @@ class InteractionOperatorFermionicGate(ParityPreservingFermionicGate):
             n_modes = operator.n_qubits
         fermion_operator = self.fermion_generator
         return transforms.get_interaction_operator(fermion_operator,
-                                                    n_qubits=n_modes)
+                                                   n_qubits=n_modes)
 
 
 class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
@@ -585,8 +585,8 @@ class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
         return components
 
     def __repr__(self):
-        return ('openfermion.CubicFermionicSimulationGate(' + '({})'.format(' ,'.join(
-            cirq._compat.proper_repr(w) for w in self.weights)) +
+        return ('openfermion.CubicFermionicSimulationGate(' + '({})'.format(
+            ' ,'.join(cirq._compat.proper_repr(w) for w in self.weights)) +
                 ('' if self.exponent == 1 else
                  (', exponent=' + cirq._compat.proper_repr(self.exponent))) +
                 ('' if self._global_shift == 0 else

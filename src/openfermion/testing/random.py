@@ -26,7 +26,7 @@ def random_interaction_operator_term(
         order: int,
         real: bool = True,
         seed: Optional[int] = None,
-        ) -> 'openfermion.InteractionOperator':
+) -> 'openfermion.InteractionOperator':
     """Generates a random interaction operator with non-zero coefficients only
     on terms corresponding to the given number of unique orbitals.
 

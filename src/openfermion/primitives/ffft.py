@@ -9,7 +9,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """The fast fermionic Fourier transform."""
 
 from typing import (Iterable, List, Sequence)
@@ -62,16 +61,15 @@ class _F0Gate(cirq.MatrixGate):
 
     def __init__(self):
         """Initializes :math:`F_0` gate."""
-        cirq.MatrixGate.__init__(
-            self,
-            np.array([[1,          0,         0,  0],
-                      [0, -2**(-0.5), 2**(-0.5),  0],
-                      [0,  2**(-0.5), 2**(-0.5),  0],
-                      [0,          0,         0, -1]]),
-            qid_shape = (2, 2))
+        cirq.MatrixGate.__init__(self,
+                                 np.array([[1, 0, 0, 0],
+                                           [0, -2**(-0.5), 2**(-0.5), 0],
+                                           [0, 2**(-0.5), 2**(-0.5), 0],
+                                           [0, 0, 0, -1]]),
+                                 qid_shape=(2, 2))
 
     def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs
-                               ) -> cirq.CircuitDiagramInfo:
+                              ) -> cirq.CircuitDiagramInfo:
         if args.use_unicode_characters:
             symbols = 'F₀', 'F₀'
         else:
@@ -92,6 +90,7 @@ class _TwiddleGate(cirq.SingleQubitGate):
     Under JWT representation this is realized by appropriately rotated pauli Z
     gate acting on qubit x.
     """
+
     def __init__(self, k, n):
         """Initializes Twiddle gate.
 
@@ -103,7 +102,7 @@ class _TwiddleGate(cirq.SingleQubitGate):
         self.n = n
 
     def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs
-                               ) -> cirq.CircuitDiagramInfo:
+                              ) -> cirq.CircuitDiagramInfo:
         if args.use_unicode_characters:
             symbols = 'ω^{}_{}'.format(self.k, self.n),
         else:
@@ -203,9 +202,8 @@ def _ffft_prime(qubits: Sequence[cirq.Qid]) -> cirq.OP_TREE:
 
     def fft_matrix(n):
         unit = np.exp(-2j * np.pi / n)
-        return np.array(
-            [[unit ** (j * k) for k in range(n)] for j in range(n)]
-        ) / np.sqrt(n)
+        return np.array([[unit**(j * k) for k in range(n)] for j in range(n)
+                        ]) / np.sqrt(n)
 
     n = len(qubits)
 
@@ -287,7 +285,5 @@ def _permute(qubits: Sequence[cirq.Qid],
         Gate that reorders the qubits accordingly.
     """
     return cirq.contrib.acquaintance.permutation.LinearPermutationGate(
-        len(qubits),
-        {i: permutation[i] for i in range(len(permutation))},
-        gates.FSWAP
-    ).on(*qubits)
+        len(qubits), {i: permutation[i] for i in range(len(permutation))},
+        gates.FSWAP).on(*qubits)

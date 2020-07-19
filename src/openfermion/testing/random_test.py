@@ -19,8 +19,9 @@ import pytest
 from openfermion.testing import random_interaction_operator_term
 
 
-@pytest.mark.parametrize('order,real,seed', [(k, r, random.randrange(2<<30))
-    for k in [1, 2, 3, 4, 5] for r in [0, 1] for _ in range(5)])
+@pytest.mark.parametrize('order,real,seed', [(k, r, random.randrange(2 << 30))
+                                             for k in [1, 2, 3, 4, 5]
+                                             for r in [0, 1] for _ in range(5)])
 def test_random_interaction_operator_term(order, real, seed):
     op = random_interaction_operator_term(order, real, seed)
 

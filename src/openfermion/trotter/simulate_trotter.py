@@ -9,7 +9,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """Perform Hamiltonian simulation via a Trotter-Suzuki product formula."""
 
 from typing import Optional, Sequence
@@ -17,24 +16,19 @@ from typing import Optional, Sequence
 import cirq
 
 from openfermion import ops
-from openfermion.trotter.trotter_algorithm import (
-        Hamiltonian,
-        TrotterStep,
-        TrotterAlgorithm)
-from openfermion.trotter.algorithms import (
-        LINEAR_SWAP_NETWORK,
-        LOW_RANK)
+from openfermion.trotter.trotter_algorithm import (Hamiltonian, TrotterStep,
+                                                   TrotterAlgorithm)
+from openfermion.trotter.algorithms import (LINEAR_SWAP_NETWORK, LOW_RANK)
 
 
 def simulate_trotter(qubits: Sequence[cirq.Qid],
                      hamiltonian: Hamiltonian,
                      time: float,
-                     n_steps: int=1,
-                     order: int=0,
-                     algorithm: Optional[TrotterAlgorithm]=None,
-                     control_qubit: Optional[cirq.Qid]=None,
-                     omit_final_swaps: bool=False
-                     ) -> cirq.OP_TREE:
+                     n_steps: int = 1,
+                     order: int = 0,
+                     algorithm: Optional[TrotterAlgorithm] = None,
+                     control_qubit: Optional[cirq.Qid] = None,
+                     omit_final_swaps: bool = False) -> cirq.OP_TREE:
     """Simulate Hamiltonian evolution using a Trotter-Suzuki product formula.
 
     The input is a Hamiltonian represented as an InteractionOperator or
@@ -88,15 +82,16 @@ def simulate_trotter(qubits: Sequence[cirq.Qid],
 
     if not isinstance(hamiltonian, tuple(algorithm.supported_types)):
         raise TypeError(
-                'The input Hamiltonian was a {} but the chosen Trotter step '
-                'algorithm only supports Hamiltonians of type {}'.format(
-                    type(hamiltonian).__name__,
-                    {cls.__name__ for cls in algorithm.supported_types}))
+            'The input Hamiltonian was a {} but the chosen Trotter step '
+            'algorithm only supports Hamiltonians of type {}'.format(
+                type(hamiltonian).__name__,
+                {cls.__name__ for cls in algorithm.supported_types}))
 
     # Select the Trotter step to use
-    trotter_step = _select_trotter_step(
-            hamiltonian, order, algorithm,
-            controlled = control_qubit is not None)
+    trotter_step = _select_trotter_step(hamiltonian,
+                                        order,
+                                        algorithm,
+                                        controlled=control_qubit is not None)
 
     # Get ready to perform Trotter steps
     yield trotter_step.prepare(qubits, control_qubit)
@@ -104,21 +99,18 @@ def simulate_trotter(qubits: Sequence[cirq.Qid],
     # Perform Trotter steps
     step_time = time / n_steps
     for _ in range(n_steps):
-        yield _perform_trotter_step(
-                qubits, step_time, order, trotter_step, control_qubit)
+        yield _perform_trotter_step(qubits, step_time, order, trotter_step,
+                                    control_qubit)
         qubits, control_qubit = trotter_step.step_qubit_permutation(
-                qubits, control_qubit)
+            qubits, control_qubit)
 
     # Finish
     yield trotter_step.finish(qubits, n_steps, control_qubit, omit_final_swaps)
 
 
-def _perform_trotter_step(qubits: Sequence[cirq.Qid],
-                          time: float,
-                          order: int,
+def _perform_trotter_step(qubits: Sequence[cirq.Qid], time: float, order: int,
                           trotter_step: TrotterStep,
-                          control_qubit: Optional[cirq.Qid]
-                          ) -> cirq.OP_TREE:
+                          control_qubit: Optional[cirq.Qid]) -> cirq.OP_TREE:
     """Perform a Trotter step."""
     if order <= 1:
         yield trotter_step.trotter_step(qubits, time, control_qubit)
@@ -128,22 +120,21 @@ def _perform_trotter_step(qubits: Sequence[cirq.Qid],
         split_time = time / (4 - 4**(1 / (2 * order - 1)))
 
         for _ in range(2):
-            yield _perform_trotter_step(
-                    qubits, split_time, order - 1, trotter_step, control_qubit)
+            yield _perform_trotter_step(qubits, split_time, order - 1,
+                                        trotter_step, control_qubit)
             qubits, control_qubit = trotter_step.step_qubit_permutation(
-                    qubits, control_qubit)
-
-        yield _perform_trotter_step(
-                qubits, time - 4 * split_time, order - 1,
-                trotter_step, control_qubit)
-        qubits, control_qubit = trotter_step.step_qubit_permutation(
                 qubits, control_qubit)
 
+        yield _perform_trotter_step(qubits, time - 4 * split_time, order - 1,
+                                    trotter_step, control_qubit)
+        qubits, control_qubit = trotter_step.step_qubit_permutation(
+            qubits, control_qubit)
+
         for _ in range(2):
-            yield _perform_trotter_step(
-                    qubits, split_time, order - 1, trotter_step, control_qubit)
+            yield _perform_trotter_step(qubits, split_time, order - 1,
+                                        trotter_step, control_qubit)
             qubits, control_qubit = trotter_step.step_qubit_permutation(
-                    qubits, control_qubit)
+                qubits, control_qubit)
 
 
 def _select_trotter_algorithm(hamiltonian: Hamiltonian) -> TrotterAlgorithm:
@@ -157,8 +148,7 @@ def _select_trotter_algorithm(hamiltonian: Hamiltonian) -> TrotterAlgorithm:
                             type(hamiltonian).__name__))
 
 
-def _select_trotter_step(hamiltonian: Hamiltonian,
-                         order: int,
+def _select_trotter_step(hamiltonian: Hamiltonian, order: int,
                          algorithm: TrotterAlgorithm,
                          controlled: bool) -> TrotterStep:
     """Select a particular Trotter step from a Trotter step algorithm."""
