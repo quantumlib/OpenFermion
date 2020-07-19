@@ -21,8 +21,8 @@ import pytest
 import scipy.linalg as la
 import sympy
 
-import openfermioncirq as ofc
-from openfermioncirq.gates.fermionic_simulation import (
+import openfermion
+from openfermion.gates.fermionic_simulation import (
     sum_of_interaction_operator_gate_generators,
     state_swap_eigen_component,
 )
@@ -64,7 +64,7 @@ def test_interaction_operator_interconversion(n_modes, seed):
     operator = openfermion.random_interaction_operator(n_modes,
                                                        real=False,
                                                        seed=seed)
-    gates = ofc.fermionic_simulation_gates_from_interaction_operator(operator)
+    gates = openfermion.fermionic_simulation_gates_from_interaction_operator(operator)
     other_operator = sum_of_interaction_operator_gate_generators(n_modes, gates)
     operator = openfermion.normal_ordered(operator)
     other_operator = openfermion.normal_ordered(other_operator)
@@ -89,12 +89,12 @@ def random_fermionic_simulation_gate(order):
     exponent = random_real()
     if order == 2:
         weights = (random_complex(), random_real())
-        return ofc.QuadraticFermionicSimulationGate(weights, exponent=exponent)
+        return openfermion.QuadraticFermionicSimulationGate(weights, exponent=exponent)
     weights = random_complex(3)
     if order == 3:
-        return ofc.CubicFermionicSimulationGate(weights, exponent=exponent)
+        return openfermion.CubicFermionicSimulationGate(weights, exponent=exponent)
     if order == 4:
-        return ofc.QuarticFermionicSimulationGate(weights, exponent=exponent)
+        return openfermion.QuarticFermionicSimulationGate(weights, exponent=exponent)
 
 
 def assert_symbolic_decomposition_consistent(gate):
@@ -138,7 +138,7 @@ def assert_fswap_consistent(gate):
     gate = gate.__copy__()
     n_qubits = gate.num_qubits()
     for i in range(n_qubits - 1):
-        fswap = cirq.kron(np.eye(1 << i), cirq.unitary(ofc.FSWAP),
+        fswap = cirq.kron(np.eye(1 << i), cirq.unitary(openfermion.FSWAP),
                           np.eye(1 << (n_qubits - i - 2)))
         assert fswap.shape == (1 << n_qubits,) * 2
         generator = gate.qubit_generator_matrix
@@ -162,10 +162,10 @@ def assert_permute_consistent(gate):
 
         ops = [
             cca.LinearPermutationGate(n_qubits, dict(zip(range(n_qubits), pos)),
-                                      ofc.FSWAP)(*qubits),
+                                      openfermion.FSWAP)(*qubits),
             gate(*qubits),
             cca.LinearPermutationGate(n_qubits, dict(zip(pos, range(n_qubits))),
-                                      ofc.FSWAP)(*qubits)
+                                      openfermion.FSWAP)(*qubits)
         ]
         circuit = cirq.Circuit(ops)
         expected_unitary = cirq.unitary(circuit)
@@ -200,20 +200,20 @@ def assert_interaction_operator_consistent(gate):
 
 random_quadratic_gates = [random_fermionic_simulation_gate(2) for _ in range(5)]
 manual_quadratic_gates = [
-    ofc.QuadraticFermionicSimulationGate(weights)
+    openfermion.QuadraticFermionicSimulationGate(weights)
     for weights in [cast(Tuple[float, float], (1, 1)), (1, 0), (0, 1), (0, 0)]
 ]
 quadratic_gates = random_quadratic_gates + manual_quadratic_gates
-cubic_gates = ([ofc.CubicFermionicSimulationGate()] +
+cubic_gates = ([openfermion.CubicFermionicSimulationGate()] +
                [random_fermionic_simulation_gate(3) for _ in range(5)])
-quartic_gates = ([ofc.QuarticFermionicSimulationGate()] +
+quartic_gates = ([openfermion.QuarticFermionicSimulationGate()] +
                  [random_fermionic_simulation_gate(4) for _ in range(5)])
 gates = quadratic_gates + cubic_gates + quartic_gates
 
 
 @pytest.mark.parametrize('gate', gates)
 def test_fermionic_simulation_gate(gate):
-    ofc.testing.assert_implements_consistent_protocols(gate)
+    openfermion.testing.assert_implements_consistent_protocols(gate)
 
     generator = gate.qubit_generator_matrix
     expected_unitary = la.expm(-1j * gate.exponent * generator)
@@ -233,7 +233,7 @@ def test_fermionic_simulation_gate(gate):
 def test_weights_and_exponent(weights):
     exponents = np.linspace(-1, 1, 8)
     gates = tuple(
-        ofc.QuarticFermionicSimulationGate(
+        openfermion.QuarticFermionicSimulationGate(
             weights / exponent, exponent=exponent, absorb_exponent=True)
         for exponent in exponents)
 
@@ -249,8 +249,8 @@ def test_weights_and_exponent(weights):
 
 def test_zero_weights():
     for gate_type in [
-            ofc.QuadraticFermionicSimulationGate,
-            ofc.CubicFermionicSimulationGate, ofc.QuarticFermionicSimulationGate
+            openfermion.QuadraticFermionicSimulationGate,
+            openfermion.CubicFermionicSimulationGate, openfermion.QuarticFermionicSimulationGate
     ]:
         weights = (0,) * gate_type.num_weights()
         gate = gate_type(weights)
@@ -276,12 +276,12 @@ def test_quadratic_fermionic_simulation_gate_unitary(weights, exponent):
     generator[3, 3] = weights[1]
     expected_unitary = la.expm(-1j * exponent * generator)
 
-    gate = ofc.QuadraticFermionicSimulationGate(weights, exponent=exponent)
+    gate = openfermion.QuadraticFermionicSimulationGate(weights, exponent=exponent)
     actual_unitary = cirq.unitary(gate)
 
     assert np.allclose(expected_unitary, actual_unitary)
 
-    symbolic_gate = (ofc.QuadraticFermionicSimulationGate(
+    symbolic_gate = (openfermion.QuadraticFermionicSimulationGate(
         (sympy.Symbol('w0'), sympy.Symbol('w1')), exponent=sympy.Symbol('t')))
     qubits = cirq.LineQubit.range(2)
     circuit = cirq.Circuit(symbolic_gate._decompose_(qubits))
@@ -300,25 +300,25 @@ def test_quadratic_fermionic_simulation_gate_symbolic_decompose(gate):
 def test_cubic_fermionic_simulation_gate_equality():
     eq = cirq.testing.EqualsTester()
     eq.add_equality_group(
-        ofc.CubicFermionicSimulationGate()**0.5,
-        ofc.CubicFermionicSimulationGate((1,) * 3, exponent=0.5),
-        ofc.CubicFermionicSimulationGate((0.5,) * 3),
+        openfermion.CubicFermionicSimulationGate()**0.5,
+        openfermion.CubicFermionicSimulationGate((1,) * 3, exponent=0.5),
+        openfermion.CubicFermionicSimulationGate((0.5,) * 3),
     )
-    eq.add_equality_group(ofc.CubicFermionicSimulationGate((1j, 0, 0)),)
+    eq.add_equality_group(openfermion.CubicFermionicSimulationGate((1j, 0, 0)),)
     eq.add_equality_group(
-        ofc.CubicFermionicSimulationGate((sympy.Symbol('s'), 0, 0), exponent=2),
-        ofc.CubicFermionicSimulationGate((2 * sympy.Symbol('s'), 0, 0),
+        openfermion.CubicFermionicSimulationGate((sympy.Symbol('s'), 0, 0), exponent=2),
+        openfermion.CubicFermionicSimulationGate((2 * sympy.Symbol('s'), 0, 0),
                                          exponent=1),
     )
     eq.add_equality_group(
-        ofc.CubicFermionicSimulationGate((0, 0.7, 0), global_shift=2),
-        ofc.CubicFermionicSimulationGate((0, 0.35, 0),
+        openfermion.CubicFermionicSimulationGate((0, 0.7, 0), global_shift=2),
+        openfermion.CubicFermionicSimulationGate((0, 0.35, 0),
                                          global_shift=1,
                                          exponent=2),
     )
     eq.add_equality_group(
-        ofc.CubicFermionicSimulationGate((1, 1, 1)),
-        ofc.CubicFermionicSimulationGate(((1 + 2 * np.pi), 1, 1)),
+        openfermion.CubicFermionicSimulationGate((1, 1, 1)),
+        openfermion.CubicFermionicSimulationGate(((1 + 2 * np.pi), 1, 1)),
     )
 
 
@@ -327,7 +327,7 @@ def test_cubic_fermionic_simulation_gate_equality():
                                            [0, 1, 2]))
 def test_cubic_fermionic_simulation_gate_consistency_special(exponent, control):
     weights = tuple(np.eye(1, 3, control)[0] * 0.5 * np.pi)
-    general_gate = ofc.CubicFermionicSimulationGate(weights, exponent=exponent)
+    general_gate = openfermion.CubicFermionicSimulationGate(weights, exponent=exponent)
     general_unitary = cirq.unitary(general_gate)
 
     indices = np.dot(list(itertools.product((0, 1), repeat=3)),
@@ -357,25 +357,25 @@ def test_cubic_fermionic_simulation_gate_consistency_docstring(
     generator[3, 5] = weights[2].conjugate()
     expected_unitary = la.expm(-1j * exponent * generator)
 
-    gate = ofc.CubicFermionicSimulationGate(weights, exponent=exponent)
+    gate = openfermion.CubicFermionicSimulationGate(weights, exponent=exponent)
     actual_unitary = cirq.unitary(gate)
 
     assert np.allclose(expected_unitary, actual_unitary)
 
 
 def test_quartic_fermionic_simulation_consistency():
-    ofc.testing.assert_implements_consistent_protocols(
-        ofc.QuarticFermionicSimulationGate())
+    openfermion.testing.assert_implements_consistent_protocols(
+        openfermion.QuarticFermionicSimulationGate())
 
 
 quartic_fermionic_simulation_simulator_test_cases = [
-    (ofc.QuarticFermionicSimulationGate(
+    (openfermion.QuarticFermionicSimulationGate(
         (0, 0, 0)), 1., np.ones(16) / 4., np.ones(16) / 4., 5e-6),
-    (ofc.QuarticFermionicSimulationGate((0.2, -0.1, 0.7)), 0.,
+    (openfermion.QuarticFermionicSimulationGate((0.2, -0.1, 0.7)), 0.,
      np.array([1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) / 4.,
      np.array([1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) / 4.,
      5e-6),
-    (ofc.QuarticFermionicSimulationGate((0.2, -0.1, 0.7)), 0.3,
+    (openfermion.QuarticFermionicSimulationGate((0.2, -0.1, 0.7)), 0.3,
      np.array([1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) / 4.,
      np.array([
          1, -1, -1, -np.exp(0.21j), -1, -np.exp(-0.03j),
@@ -384,25 +384,25 @@ quartic_fermionic_simulation_simulator_test_cases = [
          np.exp(-0.03j), 1,
          np.exp(0.21j), 1, 1, 1
      ]) / 4., 5e-6),
-    (ofc.QuarticFermionicSimulationGate((1. / 3, 0, 0)), 1.,
+    (openfermion.QuarticFermionicSimulationGate((1. / 3, 0, 0)), 1.,
      np.array([0, 0, 0, 0, 0, 0, 1., 0, 0, 1., 0, 0, 0, 0, 0, 0]) / np.sqrt(2),
      np.array([0, 0, 0, 0, 0, 0, 1., 0, 0, 1., 0, 0, 0, 0, 0, 0]) / np.sqrt(2),
      5e-6),
-    (ofc.QuarticFermionicSimulationGate((0, np.pi / 3, 0)), 1.,
+    (openfermion.QuarticFermionicSimulationGate((0, np.pi / 3, 0)), 1.,
      np.array([1., 1., 0, 0, 0, 1., 0, 0, 0, 0., -1., 0, 0, 0, 0, 0]) / 2.,
      np.array([
          1., 1., 0, 0, 0, -np.exp(4j * np.pi / 3), 0, 0, 0, 0.,
          -np.exp(1j * np.pi / 3), 0, 0, 0, 0, 0
      ]) / 2., 5e-6),
-    (ofc.QuarticFermionicSimulationGate((0, 0, -np.pi / 2)), 1.,
+    (openfermion.QuarticFermionicSimulationGate((0, 0, -np.pi / 2)), 1.,
      np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1., 0, 0,
                0]), np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                               0]), 5e-6),
-    (ofc.QuarticFermionicSimulationGate((0, 0, -0.25 * np.pi)), 1.,
+    (openfermion.QuarticFermionicSimulationGate((0, 0, -0.25 * np.pi)), 1.,
      np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
      np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1j, 0, 0, 0]) / np.sqrt(2),
      5e-6),
-    (ofc.QuarticFermionicSimulationGate(
+    (openfermion.QuarticFermionicSimulationGate(
         (-np.pi / 4, np.pi / 6, -np.pi / 2)), 1.,
      np.array([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0]) / np.sqrt(3),
      np.array([
@@ -430,23 +430,23 @@ def test_quartic_fermionic_simulation_eq():
     eq = cirq.testing.EqualsTester()
 
     eq.add_equality_group(
-        ofc.QuarticFermionicSimulationGate((1.2, 0.4, -0.4), exponent=0.5),
-        ofc.QuarticFermionicSimulationGate((0.3, 0.1, -0.1), exponent=2),
-        ofc.QuarticFermionicSimulationGate((-0.6, -0.2, 0.2), exponent=-1),
-        ofc.QuarticFermionicSimulationGate((0.6, 0.2, 2 * np.pi - 0.2)),
+        openfermion.QuarticFermionicSimulationGate((1.2, 0.4, -0.4), exponent=0.5),
+        openfermion.QuarticFermionicSimulationGate((0.3, 0.1, -0.1), exponent=2),
+        openfermion.QuarticFermionicSimulationGate((-0.6, -0.2, 0.2), exponent=-1),
+        openfermion.QuarticFermionicSimulationGate((0.6, 0.2, 2 * np.pi - 0.2)),
     )
 
     eq.add_equality_group(
-        ofc.QuarticFermionicSimulationGate((-0.6, 0.0, 0.3), exponent=0.5))
+        openfermion.QuarticFermionicSimulationGate((-0.6, 0.0, 0.3), exponent=0.5))
 
-    eq.make_equality_group(lambda: ofc.QuarticFermionicSimulationGate(
+    eq.make_equality_group(lambda: openfermion.QuarticFermionicSimulationGate(
         (0.1, -0.3, 0.0), exponent=0.0))
-    eq.make_equality_group(lambda: ofc.QuarticFermionicSimulationGate(
+    eq.make_equality_group(lambda: openfermion.QuarticFermionicSimulationGate(
         (1., -1., 0.5), exponent=0.75))
 
 
 def test_quadratic_fermionic_simulation_gate_text_diagram():
-    gate = ofc.QuadraticFermionicSimulationGate((1, 1))
+    gate = openfermion.QuadraticFermionicSimulationGate((1, 1))
     a, b, c = cirq.LineQubit.range(3)
     circuit = cirq.Circuit([gate(a, b), gate(b, c)])
 
@@ -476,7 +476,7 @@ def test_quadratic_fermionic_simulation_gate_text_diagram():
 
 
 def test_cubic_fermionic_simulation_gate_text_diagram():
-    gate = ofc.CubicFermionicSimulationGate((1, 1, 1))
+    gate = openfermion.CubicFermionicSimulationGate((1, 1, 1))
     qubits = cirq.LineQubit.range(5)
     circuit = cirq.Circuit([gate(*qubits[:3]), gate(*qubits[2:5])])
 
@@ -522,7 +522,7 @@ test_weights = [1.0, 0.5, 0.25, 0.1, 0.0, -0.5]
                              np.random.rand(10, 3)))
 def test_quartic_fermionic_simulation_decompose(weights):
     cirq.testing.assert_decompose_is_consistent_with_unitary(
-        ofc.QuarticFermionicSimulationGate(weights))
+        openfermion.QuarticFermionicSimulationGate(weights))
 
 
 @pytest.mark.parametrize(
@@ -543,14 +543,14 @@ def test_quartic_fermionic_simulation_unitary(weights, exponent):
     generator[3, 12] = weights[2].conjugate()
     expected_unitary = la.expm(-1j * exponent * generator)
 
-    gate = ofc.QuarticFermionicSimulationGate(weights, exponent=exponent)
+    gate = openfermion.QuarticFermionicSimulationGate(weights, exponent=exponent)
     actual_unitary = cirq.unitary(gate)
 
     assert np.allclose(expected_unitary, actual_unitary)
 
 
 def test_quartic_fermionic_simulation_gate_text_diagram():
-    gate = ofc.QuarticFermionicSimulationGate((1, 1, 1))
+    gate = openfermion.QuarticFermionicSimulationGate((1, 1, 1))
     qubits = cirq.LineQubit.range(6)
     circuit = cirq.Circuit([gate(*qubits[:4]), gate(*qubits[-4:])])
 
@@ -597,5 +597,5 @@ def test_quartic_fermionic_simulation_gate_text_diagram():
     [(np.random.uniform(-5, 5, 3) + 1j * np.random.uniform(-5, 5, 3),
       np.random.uniform(-5, 5)) for _ in range(5)])
 def test_quartic_fermionic_simulation_apply_unitary(weights, exponent):
-    gate = ofc.QuarticFermionicSimulationGate(weights, exponent=exponent)
+    gate = openfermion.QuarticFermionicSimulationGate(weights, exponent=exponent)
     cirq.testing.assert_has_consistent_apply_unitary(gate, atol=5e-6)

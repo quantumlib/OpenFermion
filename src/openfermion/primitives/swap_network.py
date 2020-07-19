@@ -16,7 +16,7 @@ from typing import Callable, cast, Iterable, List, Sequence
 
 import cirq
 
-from openfermioncirq import FSWAP
+from openfermion import FSWAP
 
 
 def swap_network(qubits: Sequence[cirq.Qid],
@@ -42,7 +42,7 @@ def swap_network(qubits: Sequence[cirq.Qid],
     .. testcode::
 
         import cirq
-        from openfermioncirq import swap_network
+        from openfermion import swap_network
 
         qubits = cirq.LineQubit.range(4)
         circuit = cirq.Circuit(swap_network(qubits))

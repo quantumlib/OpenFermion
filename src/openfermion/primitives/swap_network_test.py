@@ -12,7 +12,7 @@
 
 import cirq
 
-from openfermioncirq import swap_network
+from openfermion import swap_network
 
 
 def test_swap_network():

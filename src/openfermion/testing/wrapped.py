@@ -21,8 +21,7 @@ import cirq
 _setup_code = ('import cirq\n'
                'import numpy as np\n'
                'import sympy\n'
-               'import openfermioncirq as ofc\n'
-               'import openfermion as of\n')
+               'import openfermion\n')
 
 
 def assert_equivalent_repr(

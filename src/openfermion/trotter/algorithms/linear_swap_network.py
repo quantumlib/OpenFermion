@@ -17,7 +17,7 @@ from typing import cast, Optional, Sequence, Tuple
 import cirq
 from openfermion import DiagonalCoulombHamiltonian
 
-from openfermioncirq import (
+from openfermion import (
         CRxxyy,
         CRyxxy,
         Rxxyy,
@@ -26,7 +26,7 @@ from openfermioncirq import (
         rot111,
         swap_network)
 
-from openfermioncirq.trotter.trotter_algorithm import (
+from openfermion.trotter.trotter_algorithm import (
         Hamiltonian,
         TrotterStep,
         TrotterAlgorithm)

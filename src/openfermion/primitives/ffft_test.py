@@ -18,8 +18,8 @@ import cirq
 from cirq import LineQubit
 import pytest
 
-from openfermioncirq import (bogoliubov_transform, ffft)
-from openfermioncirq.primitives.ffft import (
+from openfermion import (bogoliubov_transform, ffft)
+from openfermion.primitives.ffft import (
     _F0Gate,
     _TwiddleGate,
 )

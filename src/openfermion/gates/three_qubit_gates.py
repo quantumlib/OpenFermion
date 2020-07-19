@@ -17,7 +17,7 @@ import warnings
 import numpy as np
 import cirq
 
-from openfermioncirq.gates import common_gates
+from openfermion.gates import common_gates
 
 
 def rot111(rads: float) -> cirq.CCZPowGate:
@@ -26,11 +26,11 @@ def rot111(rads: float) -> cirq.CCZPowGate:
 
 
 def CRxxyy(rads: float) -> cirq.ControlledGate:
-    """Controlled version of ofc.Rxxyy"""
+    """Controlled version of openfermion.Rxxyy"""
     return cirq.ControlledGate(cirq.ISwapPowGate(exponent=-2 * rads / np.pi))
 
 
 def CRyxxy(rads: float) -> cirq.ControlledGate:
-    """Controlled version of ofc.Ryxxy"""
+    """Controlled version of openfermion.Ryxxy"""
     return cirq.ControlledGate(
         cirq.PhasedISwapPowGate(exponent=2 * rads / np.pi))

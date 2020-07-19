@@ -16,8 +16,8 @@ import warnings
 import pytest
 import deprecation
 
-import openfermioncirq as ofc
-from openfermioncirq._compat import wrap_module
+import openfermion
+from openfermion._compat import wrap_module
 
 
 def deprecated_test(test: Callable) -> Callable:
@@ -59,7 +59,7 @@ def test_deprecated_test():
 
 
 def test_wrap_module():
-    ofc.deprecated_attribute = None
-    wrapped_ofc = wrap_module(ofc, {'deprecated_attribute': ('', '')})
+    openfermion.deprecated_attribute = None
+    wrapped_openfermion = wrap_module(openfermion, {'deprecated_attribute': ('', '')})
     with pytest.deprecated_call():
-        _ = wrapped_ofc.deprecated_attribute
+        _ = wrapped_openfermion.deprecated_attribute

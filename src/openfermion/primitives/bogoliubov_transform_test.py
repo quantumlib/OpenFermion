@@ -21,7 +21,7 @@ from openfermion.utils import (
         random_quadratic_hamiltonian, random_unitary_matrix)
 import pytest
 
-from openfermioncirq import bogoliubov_transform
+from openfermion import bogoliubov_transform
 
 
 def fourier_transform_matrix(n_modes):

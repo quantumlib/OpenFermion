@@ -14,7 +14,7 @@ from openfermion import FermionOperator
 
 import pytest
 
-from openfermioncirq.trotter import TrotterStep
+from openfermion.trotter import TrotterStep
 
 
 def test_trotter_algorithm_is_abstract_cant_instantiate():

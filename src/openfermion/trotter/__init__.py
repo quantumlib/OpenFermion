@@ -12,9 +12,9 @@
 
 """Hamiltonian simulation via Trotter-Suzuki product formulas."""
 
-from openfermioncirq.trotter.simulate_trotter import simulate_trotter
+from openfermion.trotter.simulate_trotter import simulate_trotter
 
-from openfermioncirq.trotter.algorithms import (
+from openfermion.trotter.algorithms import (
     LINEAR_SWAP_NETWORK,
     LinearSwapNetworkTrotterAlgorithm,
     LOW_RANK,
@@ -22,6 +22,6 @@ from openfermioncirq.trotter.algorithms import (
     SPLIT_OPERATOR,
     SplitOperatorTrotterAlgorithm)
 
-from openfermioncirq.trotter.trotter_algorithm import (
+from openfermion.trotter.trotter_algorithm import (
     TrotterStep,
     TrotterAlgorithm)

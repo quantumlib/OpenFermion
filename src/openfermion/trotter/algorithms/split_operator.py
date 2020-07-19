@@ -17,9 +17,9 @@ from typing import cast, Optional, Sequence, Tuple
 import cirq
 from openfermion import DiagonalCoulombHamiltonian, QuadraticHamiltonian
 
-from openfermioncirq import rot11, rot111, bogoliubov_transform, swap_network
+from openfermion import rot11, rot111, bogoliubov_transform, swap_network
 
-from openfermioncirq.trotter.trotter_algorithm import (
+from openfermion.trotter.trotter_algorithm import (
         Hamiltonian,
         TrotterStep,
         TrotterAlgorithm)

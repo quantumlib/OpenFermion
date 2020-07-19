@@ -143,8 +143,8 @@ class DoubleExcitationGate(cirq.EigenGate):
 
     def __repr__(self):
         if self.exponent == 1:
-            return 'ofc.DoubleExcitation'
-        return '(ofc.DoubleExcitation**{})'.format(proper_repr(self.exponent))
+            return 'openfermion.DoubleExcitation'
+        return '(openfermion.DoubleExcitation**{})'.format(proper_repr(self.exponent))
 
 
 DoubleExcitation = DoubleExcitationGate()

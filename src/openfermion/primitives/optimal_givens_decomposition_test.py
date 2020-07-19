@@ -19,7 +19,7 @@ from openfermion.ops._givens_rotations import (givens_matrix_elements,
 from openfermion.ops import QubitOperator, FermionOperator
 from openfermion.transforms import jordan_wigner, get_sparse_operator
 
-from openfermioncirq.primitives.optimal_givens_decomposition import \
+from openfermion.primitives.optimal_givens_decomposition import \
     optimal_givens_decomposition
 
 

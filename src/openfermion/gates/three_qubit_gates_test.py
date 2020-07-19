@@ -17,15 +17,15 @@ import cirq
 from cirq.testing import EqualsTester
 import pytest
 
-import openfermioncirq as ofc
+import openfermion
 
 
 @pytest.mark.parametrize('rads', [
     2*np.pi, np.pi, 0.5*np.pi, 0.25*np.pi, 0.1*np.pi, 0.0, -0.5*np.pi])
 def test_crxxyy_unitary(rads):
     np.testing.assert_allclose(
-            cirq.unitary(ofc.CRxxyy(rads)),
-            cirq.unitary(cirq.ControlledGate(ofc.Rxxyy(rads))),
+            cirq.unitary(openfermion.CRxxyy(rads)),
+            cirq.unitary(cirq.ControlledGate(openfermion.Rxxyy(rads))),
             atol=1e-8)
 
 
@@ -33,6 +33,6 @@ def test_crxxyy_unitary(rads):
     2*np.pi, np.pi, 0.5*np.pi, 0.25*np.pi, 0.1*np.pi, 0.0, -0.5*np.pi])
 def test_cryxxy_unitary(rads):
     np.testing.assert_allclose(
-            cirq.unitary(ofc.CRyxxy(rads)),
-            cirq.unitary(cirq.ControlledGate(ofc.Ryxxy(rads))),
+            cirq.unitary(openfermion.CRyxxy(rads)),
+            cirq.unitary(cirq.ControlledGate(openfermion.Ryxxy(rads))),
             atol=1e-8)

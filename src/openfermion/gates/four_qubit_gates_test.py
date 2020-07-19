@@ -16,66 +16,66 @@ import cirq
 import openfermion
 import pytest
 
-import openfermioncirq as ofc
+import openfermion
 
 
 def test_double_excitation_init_with_multiple_args_fails():
     with pytest.raises(ValueError):
-        _ = ofc.DoubleExcitationGate(exponent=1.0, duration=numpy.pi/2)
+        _ = openfermion.DoubleExcitationGate(exponent=1.0, duration=numpy.pi/2)
 
 
 def test_double_excitation_eq():
     eq = cirq.testing.EqualsTester()
 
     eq.add_equality_group(
-        ofc.DoubleExcitationGate(exponent=1.5),
-        ofc.DoubleExcitationGate(exponent=-0.5),
-        ofc.DoubleExcitationGate(rads=-0.5 * numpy.pi),
-        ofc.DoubleExcitationGate(degs=-90),
-        ofc.DoubleExcitationGate(duration=-0.5 * numpy.pi / 2))
+        openfermion.DoubleExcitationGate(exponent=1.5),
+        openfermion.DoubleExcitationGate(exponent=-0.5),
+        openfermion.DoubleExcitationGate(rads=-0.5 * numpy.pi),
+        openfermion.DoubleExcitationGate(degs=-90),
+        openfermion.DoubleExcitationGate(duration=-0.5 * numpy.pi / 2))
 
     eq.add_equality_group(
-        ofc.DoubleExcitationGate(exponent=0.5),
-        ofc.DoubleExcitationGate(exponent=-1.5),
-        ofc.DoubleExcitationGate(rads=0.5 * numpy.pi),
-        ofc.DoubleExcitationGate(degs=90),
-        ofc.DoubleExcitationGate(duration=-1.5 * numpy.pi / 2))
+        openfermion.DoubleExcitationGate(exponent=0.5),
+        openfermion.DoubleExcitationGate(exponent=-1.5),
+        openfermion.DoubleExcitationGate(rads=0.5 * numpy.pi),
+        openfermion.DoubleExcitationGate(degs=90),
+        openfermion.DoubleExcitationGate(duration=-1.5 * numpy.pi / 2))
 
-    eq.make_equality_group(lambda: ofc.DoubleExcitationGate(exponent=0.0))
-    eq.make_equality_group(lambda: ofc.DoubleExcitationGate(exponent=0.75))
+    eq.make_equality_group(lambda: openfermion.DoubleExcitationGate(exponent=0.0))
+    eq.make_equality_group(lambda: openfermion.DoubleExcitationGate(exponent=0.75))
 
 
 def test_double_excitation_consistency():
-    ofc.testing.assert_implements_consistent_protocols(
-        ofc.DoubleExcitation)
+    openfermion.testing.assert_implements_consistent_protocols(
+        openfermion.DoubleExcitation)
 
 
 double_excitation_simulator_test_cases = [
-        (ofc.DoubleExcitation, 1.0,
+        (openfermion.DoubleExcitation, 1.0,
          numpy.array([1, 1, 1, 1, 1, 1, 1, 1,
                       1, 1, 1, 1, 1, 1, 1, 1]) / 4.,
          numpy.array([1, 1, 1, -1, 1, 1, 1, 1,
                       1, 1, 1, 1, -1, 1, 1, 1]) / 4.,
          5e-6),
-        (ofc.DoubleExcitation, -1.0,
+        (openfermion.DoubleExcitation, -1.0,
          numpy.array([1, 1, 1, 1, 1, 1, 1, 1,
                       1, 1, 1, 1, 1, 1, 1, 1]) / 4.,
          numpy.array([1, 1, 1, -1, 1, 1, 1, 1,
                       1, 1, 1, 1, -1, 1, 1, 1]) / 4.,
          5e-6),
-        (ofc.DoubleExcitation, 0.5,
+        (openfermion.DoubleExcitation, 0.5,
          numpy.array([1, 1, 1, 1, 1, 1, 1, 1,
                       0, 0, 0, 0, 0, 0, 0, 0]) / numpy.sqrt(8),
          numpy.array([1, 1, 1, 0, 1, 1, 1, 1,
                       0, 0, 0, 0, 1j, 0, 0, 0]) / numpy.sqrt(8),
          5e-6),
-        (ofc.DoubleExcitation, -0.5,
+        (openfermion.DoubleExcitation, -0.5,
          numpy.array([1, -1, -1, -1, -1, -1, 1, 1,
                       1, 1, 1, 1, 1, 1, 1, 1]) / 4.,
          numpy.array([1, -1, -1, -1j, -1, -1, 1, 1,
                       1, 1, 1, 1, 1j, 1, 1, 1]) / 4.,
          5e-6),
-        (ofc.DoubleExcitation, -1. / 7,
+        (openfermion.DoubleExcitation, -1. / 7,
          numpy.array([1, 1j, -1j, -1, 1, 1j, -1j, -1,
                       1, 1j, -1j, -1, 1, 1j, -1j, -1]) / 4.,
          numpy.array([1, 1j, -1j,
@@ -84,7 +84,7 @@ double_excitation_simulator_test_cases = [
                       numpy.cos(numpy.pi / 7) + 1j * numpy.sin(numpy.pi / 7),
                       1j, -1j, -1]) / 4.,
          5e-6),
-        (ofc.DoubleExcitation, 7. / 3,
+        (openfermion.DoubleExcitation, 7. / 3,
          numpy.array([0, 0, 0, 2,
                       (1 + 1j) / numpy.sqrt(2), (1 - 1j) / numpy.sqrt(2),
                       -(1 + 1j) / numpy.sqrt(2), -1,
@@ -96,13 +96,13 @@ double_excitation_simulator_test_cases = [
                       1, 1j, -1j, -1,
                       0.5 + 1j * numpy.sqrt(3), 1j, -1j, -1]) / 4.,
          5e-6),
-        (ofc.DoubleExcitation, 0,
+        (openfermion.DoubleExcitation, 0,
          numpy.array([1, -1, -1, -1, -1, -1, 1, 1,
                       1, 1, 1, 1, 1, 1, 1, 1]) / 4.,
          numpy.array([1, -1, -1, -1, -1, -1, 1, 1,
                       1, 1, 1, 1, 1, 1, 1, 1]) / 4.,
          5e-6),
-        (ofc.DoubleExcitation, 0.25,
+        (openfermion.DoubleExcitation, 0.25,
          numpy.array([1, 0, 0, -2, 0, 0, 0, 0,
                       0, 0, 0, 0, 3, 0, 0, 1]) / numpy.sqrt(15),
          numpy.array([1, 0, 0, +3j / numpy.sqrt(2) - numpy.sqrt(2),
@@ -131,7 +131,7 @@ def test_double_excitation_gate_text_diagrams():
     c = cirq.NamedQubit('c')
     d = cirq.NamedQubit('d')
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(a, b, c, d))
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(a, b, c, d))
     cirq.testing.assert_has_diagram(circuit, """
 a: ───⇅───
       │
@@ -142,7 +142,7 @@ c: ───⇵───
 d: ───⇵───
 """)
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(a, b, c, d)**-0.5)
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(a, b, c, d)**-0.5)
     cirq.testing.assert_has_diagram(circuit, """
 a: ───⇅────────
       │
@@ -153,7 +153,7 @@ c: ───⇵────────
 d: ───⇵^-0.5───
 """)
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(a, c, b, d)**0.2)
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(a, c, b, d)**0.2)
     cirq.testing.assert_has_diagram(circuit, """
 a: ───⇅───────
       │
@@ -164,7 +164,7 @@ c: ───⇅───────
 d: ───⇵^0.2───
 """)
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(d, b, a, c)**0.7)
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(d, b, a, c)**0.7)
     cirq.testing.assert_has_diagram(circuit, """
 a: ───⇵───────
       │
@@ -175,7 +175,7 @@ c: ───⇵───────
 d: ───⇅^0.7───
 """)
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(d, b, a, c)**2.3)
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(d, b, a, c)**2.3)
     cirq.testing.assert_has_diagram(circuit, """
 a: ───⇵───────
       │
@@ -193,7 +193,7 @@ def test_double_excitation_gate_text_diagrams_no_unicode():
     c = cirq.NamedQubit('c')
     d = cirq.NamedQubit('d')
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(a, b, c, d))
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(a, b, c, d))
     # pylint: disable=anomalous-backslash-in-string
     cirq.testing.assert_has_diagram(circuit, """
 a: ---/\ \/---
@@ -205,7 +205,7 @@ c: ---\/ /\---
 d: ---\/ /\---
 """, use_unicode_characters=False)
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(a, b, c, d)**-0.5)
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(a, b, c, d)**-0.5)
     cirq.testing.assert_has_diagram(circuit, """
 a: ---/\ \/--------
       |
@@ -216,7 +216,7 @@ c: ---\/ /\--------
 d: ---\/ /\^-0.5---
 """, use_unicode_characters=False)
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(a, c, b, d)**0.2)
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(a, c, b, d)**0.2)
     cirq.testing.assert_has_diagram(circuit, """
 a: ---/\ \/-------
       |
@@ -227,7 +227,7 @@ c: ---/\ \/-------
 d: ---\/ /\^0.2---
 """, use_unicode_characters=False)
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(d, b, a, c)**0.7)
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(d, b, a, c)**0.7)
     cirq.testing.assert_has_diagram(circuit, """
 a: ---\/ /\-------
       |
@@ -238,7 +238,7 @@ c: ---\/ /\-------
 d: ---/\ \/^0.7---
 """, use_unicode_characters=False)
 
-    circuit = cirq.Circuit(ofc.DoubleExcitation(d, b, a, c)**2.3)
+    circuit = cirq.Circuit(openfermion.DoubleExcitation(d, b, a, c)**2.3)
     cirq.testing.assert_has_diagram(circuit, """
 a: ---\/ /\-------
       |
@@ -252,7 +252,7 @@ d: ---/\ \/^0.3---
 
 @pytest.mark.parametrize('exponent', [1.0, 0.5, 0.25, 0.1, 0.0, -0.5])
 def test_double_excitation_matches_fermionic_evolution(exponent):
-    gate = ofc.DoubleExcitation ** exponent
+    gate = openfermion.DoubleExcitation ** exponent
 
     op = openfermion.FermionOperator('3^ 2^ 1 0')
     op += openfermion.hermitian_conjugated(op)

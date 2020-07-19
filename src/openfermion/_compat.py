@@ -39,7 +39,7 @@ def wrap_module(module: ModuleType,
                 warnings.warn(
                     f'{name} was used but is deprecated.\n'
                     f'It will be removed in '
-                    f'openfermioncirq {version}.\n'
+                    f'openfermion {version}.\n'
                     f'{fix}\n',
                     DeprecationWarning,
                     stacklevel=2)

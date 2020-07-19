@@ -21,7 +21,7 @@ import scipy.linalg as la
 import sympy
 
 if TYPE_CHECKING:
-    import openfermioncirq as ofc
+    import openfermion
 
 
 def _arg(x):
@@ -150,7 +150,7 @@ def sum_of_interaction_operator_gate_generators(
             indices,
           - cirq.ZPowGate, which is interpreted as a "linear" fermionic
             simulation gate,
-          - openfermioncirq.InteractionOperatorFermionicGate.
+          - openfermion.InteractionOperatorFermionicGate.
 
     Args:
         n_modes: The number of modes.
@@ -354,7 +354,7 @@ class InteractionOperatorFermionicGate(ParityPreservingFermionicGate):
     r"""The Jordan-Wigner transform of :math:`\exp(-i H)` for a fermionic
     Hamiltonian :math:`H`, where :math:`H` is an interaction operator.
 
-    See openfermioncirq.ParityPreservingFermionicGate and
+    See openfermion.ParityPreservingFermionicGate and
     openfermion.InteractionOperator for more details.
     """
 
@@ -448,7 +448,7 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
     def __repr__(self):
         exponent_str = ('' if self.exponent == 1 else ', exponent=' +
                         cirq._compat.proper_repr(self.exponent))
-        return ('ofc.QuadraticFermionicSimulationGate(({}){})'.format(
+        return ('openfermion.QuadraticFermionicSimulationGate(({}){})'.format(
             ', '.join(cirq._compat.proper_repr(v) for v in self.weights),
             exponent_str))
 
@@ -584,7 +584,7 @@ class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
         return components
 
     def __repr__(self):
-        return ('ofc.CubicFermionicSimulationGate(' + '({})'.format(' ,'.join(
+        return ('openfermion.CubicFermionicSimulationGate(' + '({})'.format(' ,'.join(
             cirq._compat.proper_repr(w) for w in self.weights)) +
                 ('' if self.exponent == 1 else
                  (', exponent=' + cirq._compat.proper_repr(self.exponent))) +
@@ -869,7 +869,7 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
                                            out=args.available_buffer)
 
     def __repr__(self):
-        return ('ofc.QuarticFermionicSimulationGate(({}), '
+        return ('openfermion.QuarticFermionicSimulationGate(({}), '
                 'absorb_exponent=False, '
                 'exponent={})'.format(
                     ', '.join(

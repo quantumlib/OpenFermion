@@ -23,7 +23,7 @@ from openfermion.ops._givens_rotations import (
         fermionic_gaussian_decomposition,
         givens_decomposition_square)
 
-from openfermioncirq import Ryxxy
+from openfermion import Ryxxy
 
 
 def bogoliubov_transform(

@@ -18,7 +18,7 @@ from openfermion import get_sparse_operator
 from openfermion.utils._testing_utils import random_quadratic_hamiltonian
 import pytest
 
-from openfermioncirq import prepare_gaussian_state, prepare_slater_determinant
+from openfermion import prepare_gaussian_state, prepare_slater_determinant
 
 
 @pytest.mark.parametrize(

@@ -12,15 +12,15 @@
 
 """Building blocks of algorithms for quantum simulation."""
 
-from openfermioncirq.primitives.bogoliubov_transform import bogoliubov_transform
+from openfermion.primitives.bogoliubov_transform import bogoliubov_transform
 
-from openfermioncirq.primitives.ffft import ffft
+from openfermion.primitives.ffft import ffft
 
-from openfermioncirq.primitives.optimal_givens_decomposition import (
+from openfermion.primitives.optimal_givens_decomposition import (
     optimal_givens_decomposition)
 
-from openfermioncirq.primitives.state_preparation import (
+from openfermion.primitives.state_preparation import (
     prepare_gaussian_state,
     prepare_slater_determinant)
 
-from openfermioncirq.primitives.swap_network import swap_network
+from openfermion.primitives.swap_network import swap_network

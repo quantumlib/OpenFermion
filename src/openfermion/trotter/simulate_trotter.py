@@ -17,11 +17,11 @@ from typing import Optional, Sequence
 import cirq
 from openfermion import DiagonalCoulombHamiltonian, InteractionOperator
 
-from openfermioncirq.trotter.trotter_algorithm import (
+from openfermion.trotter.trotter_algorithm import (
         Hamiltonian,
         TrotterStep,
         TrotterAlgorithm)
-from openfermioncirq.trotter.algorithms import (
+from openfermion.trotter.algorithms import (
         LINEAR_SWAP_NETWORK,
         LOW_RANK)
 
@@ -57,7 +57,7 @@ def simulate_trotter(qubits: Sequence[cirq.Qid],
             sometimes known as a fourth-order, Trotter formula. A value of 0
             indicates an asymmetric Trotter formula. Default is 0.
         algorithm: The algorithm to use to simulate a single Trotter step.
-            This is a constant exposed in the openfermioncirq.trotter module.
+            This is a constant exposed in the openfermion.trotter module.
             If not specified, a default option will be chosen based on the
             type of the given Hamiltonian.
             Available options:

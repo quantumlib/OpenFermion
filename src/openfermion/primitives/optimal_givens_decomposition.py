@@ -24,7 +24,7 @@ import cirq
 
 from openfermion.ops._givens_rotations import (givens_matrix_elements,
                                                givens_rotate)
-from openfermioncirq import Ryxxy
+from openfermion import Ryxxy
 
 
 class GivensTranspositionError(Exception):

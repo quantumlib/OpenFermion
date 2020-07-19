@@ -22,7 +22,7 @@ from openfermion import (
         gaussian_state_preparation_circuit,
         slater_determinant_preparation_circuit)
 
-from openfermioncirq import Ryxxy
+from openfermion import Ryxxy
 
 
 def prepare_gaussian_state(qubits: Sequence[cirq.Qid],

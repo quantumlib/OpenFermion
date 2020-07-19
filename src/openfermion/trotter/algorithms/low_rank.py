@@ -19,12 +19,12 @@ import numpy
 import cirq
 import openfermion
 
-from openfermioncirq import (
+from openfermion import (
     rot11,
     rot111,
     bogoliubov_transform,
     swap_network)
-from openfermioncirq.trotter.trotter_algorithm import (
+from openfermion.trotter.trotter_algorithm import (
     Hamiltonian,
     TrotterStep,
     TrotterAlgorithm)

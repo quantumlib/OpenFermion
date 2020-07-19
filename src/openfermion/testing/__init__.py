@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from openfermioncirq.testing.example_classes import (
+from openfermion.testing.example_classes import (
     ExampleAlgorithm,
     ExampleAnsatz,
     ExampleBlackBox,
@@ -21,11 +21,11 @@ from openfermioncirq.testing.example_classes import (
     LazyAlgorithm,
 )
 
-from openfermioncirq.testing.random import (
+from openfermion.testing.random import (
     random_interaction_operator_term,
 )
 
-from openfermioncirq.testing.wrapped import (
+from openfermion.testing.wrapped import (
     assert_eigengate_implements_consistent_protocols,
     assert_equivalent_repr,
     assert_implements_consistent_protocols,
