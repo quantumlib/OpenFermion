@@ -120,7 +120,7 @@ def _spin_symmetric_gaussian_circuit(
 
     for spin_sector in range(2):
         circuit_description, start_orbitals = (
-                gaussian_state_preparation_circuit(
+                utils.gaussian_state_preparation_circuit(
                     quadratic_hamiltonian,
                     occupied_orbitals[spin_sector],
                     spin_sector=spin_sector)

@@ -112,14 +112,14 @@ def test_common_gate_text_diagrams():
     cirq.testing.assert_has_diagram(
         circuit, """
 a: ───×ᶠ───×ᶠ───────
-      │    │        
+      │    │
 b: ───×ᶠ───×ᶠ^0.5───
 """)
 
     cirq.testing.assert_has_diagram(circuit,
                                     """
 a: ---fswap---fswap-------
-      |       |           
+      |       |
 b: ---fswap---fswap^0.5---
 """,
                                     use_unicode_characters=False)

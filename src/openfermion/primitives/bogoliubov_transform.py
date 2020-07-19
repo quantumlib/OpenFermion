@@ -173,7 +173,7 @@ def _slater_basis_change(qubits: Sequence[cirq.Qid],
         initially_occupied_orbitals_set = set(initially_occupied_orbitals)
         yield (cirq.X(qubits[j]) for j in range(n_qubits)
                if (j < n_occupied) != (j in initially_occupied_orbitals_set))
-        circuit_description = slater_determinant_preparation_circuit(
+        circuit_description = utils.slater_determinant_preparation_circuit(
                 transformation_matrix)
 
     yield _ops_from_givens_rotations_circuit_description(
