@@ -46,18 +46,3 @@ from openfermioncirq.gates.four_qubit_gates import (
     DoubleExcitation,
     DoubleExcitationGate,
 )
-
-# Deprecated
-# pylint: disable=wrong-import-order
-import sys as _sys
-from openfermioncirq._compat import wrap_module as _wrap_module
-_deprecated_constants = {
-    'XXYY': ('v0.5.0', 'Use cirq.ISWAP with negated exponent, instead'),
-    'YXXY': ('v0.5.0', 'Use cirq.PhasedISwapPowGate, instead.'),
-    'CXXYY': ('v0.5.0', 'Use cirq.ControlledGate and cirq.ISWAP with '
-              'negated exponent, instead'),
-    'CYXXY': ('v0.5.0', 'Use cirq.ControlledGate and '
-              'cirq.PhasedISwapPowGate, instead.'),
-}
-_sys.modules[__name__] = _wrap_module(_sys.modules[__name__],
-                                      _deprecated_constants)
