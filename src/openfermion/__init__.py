@@ -19,13 +19,38 @@ www.openfermion.org
 """
 
 from openfermion import (
+    gates,
     hamiltonians,
     measurements,
     ops,
+    primitives,
+    testing,
     third_party,
     transforms,
-    utils,
-)
+    trotter,
+    utils)
+
+from openfermion.gates import (
+    FSWAP,
+    CRxxyy,
+    CRyxxy,
+    CubicFermionicSimulationGate,
+    CXXYYPowGate,
+    CYXXYPowGate,
+    DoubleExcitation,
+    DoubleExcitationGate,
+    FSwapPowGate,
+    ParityPreservingFermionicGate,
+    QuadraticFermionicSimulationGate,
+    QuarticFermionicSimulationGate,
+    Rxxyy,
+    Ryxxy,
+    Rzz,
+    XXYYPowGate,
+    YXXYPowGate,
+    fermionic_simulation_gates_from_interaction_operator,
+    rot11,
+    rot111)
 
 from openfermion.hamiltonians import (
     FermiHubbardModel,
@@ -55,8 +80,7 @@ from openfermion.hamiltonians import (
     plane_wave_potential,
     rhf_minimization,
     rhf_params_to_matrix,
-    wigner_seitz_length_scale,
-)
+    wigner_seitz_length_scale)
 
 from openfermion.measurements import (
     apply_constraints,
@@ -68,8 +92,7 @@ from openfermion.measurements import (
     pauli_string_iterator,
     prony,
     two_body_fermion_constraints,
-    unlinearize_term,
-)
+    unlinearize_term)
 
 from openfermion.ops import (
     BinaryCode,
@@ -88,8 +111,20 @@ from openfermion.ops import (
     SymbolicOperator,
     down_index,
     general_basis_change,
-    up_index,
-)
+    up_index)
+
+from openfermion.primitives import (
+    ffft,
+    prepare_gaussian_state,
+    prepare_slater_determinant)
+
+from openfermion.primitives.bogoliubov_transform import (
+    bogoliubov_transform,
+    )
+
+from openfermion.primitives.swap_network import (
+    swap_network,
+    )
 
 from openfermion.third_party import (
     fixed_trace_positive_projection,
@@ -97,8 +132,7 @@ from openfermion.third_party import (
     higham_polynomial,
     higham_root,
     map_to_matrix,
-    map_to_tensor,
-)
+    map_to_tensor)
 
 from openfermion.transforms import (
     binary_code_transform,
@@ -135,8 +169,11 @@ from openfermion.transforms import (
     weight_one_binary_addressing_code,
     weight_one_segment_code,
     weight_two_segment_code,
-    weyl_polynomial_quantization,
-)
+    weyl_polynomial_quantization)
+
+from openfermion.trotter import (
+    simulate_trotter,
+    )
 
 from openfermion.utils import (
     Davidson,
@@ -252,8 +289,7 @@ from openfermion.utils import (
     uccsd_singlet_paramsize,
     up_then_down,
     variance,
-    wedge,
-)
+    wedge)
 
 from ._version import \
     __version__
