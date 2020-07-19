@@ -18,19 +18,11 @@ from openfermion.gates.common_gates import (
     Ryxxy,
     Rzz,
     rot11,
-    XXYY,
-    XXYYPowGate,
-    YXXY,
-    YXXYPowGate,
 )
 
 from openfermion.gates.three_qubit_gates import (
     CRxxyy,
     CRyxxy,
-    CXXYY,
-    CYXXY,
-    CXXYYPowGate,
-    CYXXYPowGate,
     rot111,
 )
 

@@ -35,8 +35,6 @@ from openfermion.gates import (
     CRxxyy,
     CRyxxy,
     CubicFermionicSimulationGate,
-    CXXYYPowGate,
-    CYXXYPowGate,
     DoubleExcitation,
     DoubleExcitationGate,
     FSwapPowGate,
@@ -46,8 +44,6 @@ from openfermion.gates import (
     Rxxyy,
     Ryxxy,
     Rzz,
-    XXYYPowGate,
-    YXXYPowGate,
     fermionic_simulation_gates_from_interaction_operator,
     rot11,
     rot111)
