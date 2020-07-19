@@ -10,17 +10,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from openfermion.testing.example_classes import (
-    ExampleAlgorithm,
-    ExampleAnsatz,
-    ExampleBlackBox,
-    ExampleBlackBoxNoisy,
-    ExampleStatefulBlackBox,
-    ExampleVariationalObjective,
-    ExampleVariationalObjectiveNoisy,
-    LazyAlgorithm,
-)
-
 from openfermion.testing.random import (
     random_interaction_operator_term,
 )
