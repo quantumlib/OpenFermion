@@ -1467,7 +1467,7 @@ def _build_term_op_(term, state_array, int_state_array, sorting_indices):
             the occupation of each mode. See the implementation of
             get_number_preserving_sparse_operator for more details.
         int_state_array(ndarray(int)): A one dimensional Numpy array which
-            encodes the integer representation of the binary number
+            encodes the intFeger representation of the binary number
             corresponding to each determinant in state_array.
         sorting_indices(ndarray.view): A Numpy view which sorts
             int_state_array. This, together with int_state_array, allows for a

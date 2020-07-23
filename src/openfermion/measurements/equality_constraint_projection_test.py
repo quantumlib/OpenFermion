@@ -67,11 +67,8 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
     def test_operator_to_vector_consistency(self):
         vector = operator_to_vector(self.fermion_hamiltonian)
         operator = vector_to_operator(vector, self.n_orbitals)
-        magnitude = 0.
         difference = operator - self.fermion_hamiltonian
-        for _, coefficient in difference.terms.items():
-            magnitude += abs(coefficient)
-        self.assertAlmostEqual(0, magnitude)
+        self.assertEqual(len(difference.terms), 0)
 
     def test_constraint_matrix(self):
 

@@ -608,6 +608,14 @@ class ExpectationTest(unittest.TestCase):
         vector = numpy.array([1j, -1j, -1j, -1j])
         self.assertAlmostEqual(expectation(operator, vector), 0.0)
 
+    def test_execptions(self):
+        operator = LinearQubitOperator(QubitOperator('X0'), n_qubits=2)
+        vector = scipy.sparse.csc_matrix(numpy.array([1, 0, 0, 0]))
+        with self.assertRaises(ValueError):
+            _ = expectation(operator, vector)
+        with self.assertRaises(ValueError):
+            _ = expectation(vector, operator)
+
 
 class VarianceTest(unittest.TestCase):
 
@@ -956,8 +964,6 @@ class ExpectationDualBasisOperatorWithPlaneWaveBasisState(unittest.TestCase):
 
         spinless = True
         n_qubits = n_spatial_orbitals
-        if not spinless:
-            n_qubits *= 2
         n_particles_big = 5
 
         length_scale = wigner_seitz_length_scale(wigner_seitz_radius,
@@ -1269,6 +1275,11 @@ class GetNumberPreservingSparseOperatorIntegrationTestLiH(unittest.TestCase):
                                                  chemical_potential=.2,
                                                  magnetic_field=0.0,
                                                  spinless=False)
+
+    def test_exceptions(self):
+        op = FermionOperator('1')
+        with self.assertRaises(ValueError):
+            _ = get_number_preserving_sparse_operator(op, 2, 1)
 
     def test_number_on_reference(self):
         sum_n_op = FermionOperator()

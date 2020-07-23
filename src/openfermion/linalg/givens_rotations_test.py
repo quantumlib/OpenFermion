@@ -17,9 +17,34 @@ from openfermion.testing.testing_utils import (random_quadratic_hamiltonian,
                                                random_unitary_matrix)
 
 from openfermion.linalg.givens_rotations import (
-    double_givens_rotate, fermionic_gaussian_decomposition,
+    double_givens_rotate, fermionic_gaussian_decomposition, swap_columns,
     givens_matrix_elements, givens_rotate, givens_decomposition, swap_rows)
 
+
+class SwapTests(unittest.TestCase):
+    def test_swap_rows(self):
+        A = numpy.array([0, 1])
+        swap_rows(A, 0, 1)
+        self.assertEqual(A[0], 1)
+        self.assertEqual(A[1], 0)
+        A = numpy.array([[0, 1], [2, 3]])
+        swap_rows(A, 0, 1)
+        self.assertEqual(A[0, 0], 2)
+        self.assertEqual(A[0, 1], 3)
+        self.assertEqual(A[1, 0], 0)
+        self.assertEqual(A[1, 1], 1)
+
+    def test_swap_columns(self):
+        A = numpy.array([0, 1])
+        swap_columns(A, 0, 1)
+        self.assertEqual(A[0], 1)
+        self.assertEqual(A[1], 0)
+        A = numpy.array([[0, 1], [2, 3]])
+        swap_columns(A, 0, 1)
+        self.assertEqual(A[0, 0], 1)
+        self.assertEqual(A[0, 1], 0)
+        self.assertEqual(A[1, 0], 3)
+        self.assertEqual(A[1, 1], 2)
 
 class GivensMatrixElementsTest(unittest.TestCase):
 
