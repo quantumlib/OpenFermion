@@ -61,7 +61,8 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
             # Obtain the circuit
             with self.assertRaises(NotImplementedError):
-                _ = gaussian_state_preparation_circuit(quadratic_hamiltonian, spin_sector=1)
+                _ = gaussian_state_preparation_circuit(quadratic_hamiltonian,
+                                                       spin_sector=1)
 
     def test_ground_state_particle_conserving(self):
         """Test getting the ground state preparation circuit for a Hamiltonian
