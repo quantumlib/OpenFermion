@@ -23,7 +23,8 @@ from openfermion.testing.testing_utils import (
     EqualsTester, haar_random_vector, random_antisymmetric_matrix,
     random_diagonal_coulomb_hamiltonian, random_hermitian_matrix,
     random_interaction_operator, random_quadratic_hamiltonian,
-    random_qubit_operator, random_unitary_matrix)
+    random_qubit_operator, random_unitary_matrix, module_importable,
+    _ClassUnknownToSubjects)
 
 
 def test_random_qubit_operator():
@@ -35,6 +36,17 @@ def test_random_qubit_operator():
     assert op.many_body_order() <= 20
     assert len(op.terms) <= 20
     assert count_qubits(op) <= 20
+
+
+def test_module_importable():
+    assert module_importable('numpy') is True
+    assert module_importable('some_random_crap') is False
+
+
+def test_hashing_unknown_class():
+    unknown_object = _ClassUnknownToSubjects()
+    test_dict = {unknown_object: 0}
+    assert test_dict[unknown_object] == 0
 
 
 class EqualsTesterTest(unittest.TestCase):
