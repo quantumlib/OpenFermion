@@ -1,14 +1,14 @@
 """Code to generate the eigenvalue problem for the ERPA equations"""
 from typing import Dict, Tuple, Union
 from itertools import product
-import numpy as np
+import numpy
 from numpy import einsum
-import scipy as sp
+import scipy
 from openfermion.utils.rdm_mapping_functions import kronecker_delta as kdelta
 from openfermion.utils.rdm_mapping_functions import map_two_pdm_to_one_pdm
 
 
-def erpa_eom_hamiltonian(h_ijkl: np.ndarray, tpdm: np.ndarray, p: int, q: int,
+def erpa_eom_hamiltonian(h_ijkl: numpy.ndarray, tpdm: numpy.ndarray, p: int, q: int,
                          r: int, s: int) -> Union[float, complex]:
     """
     Evaluate sum_{a,b,c,d}h_{a, b, d, c}<psi[p^ q, [a^ b^ c d, r^ s]]psi>
@@ -77,8 +77,8 @@ def erpa_eom_hamiltonian(h_ijkl: np.ndarray, tpdm: np.ndarray, p: int, q: int,
     return h_mat
 
 
-def singlet_erpa(tpdm: np.ndarray, h_ijkl: np.ndarray) \
-        -> Tuple[np.ndarray, np.ndarray, Dict]:
+def singlet_erpa(tpdm: numpy.ndarray, h_ijkl: numpy.ndarray) \
+        -> Tuple[numpy.ndarray, numpy.ndarray, Dict]:
     """
     Generate the singlet ERPA equations
 
@@ -93,9 +93,9 @@ def singlet_erpa(tpdm: np.ndarray, h_ijkl: np.ndarray) \
     Returns:
         Tuple of the erpa system.
     """
-    permuted_hijkl = np.einsum('ijlk', h_ijkl)
-    roots = np.array(np.roots([1, -1, -einsum('ijji', tpdm)]))
-    n_electrons = roots[np.where(roots > 0)[0]].real
+    permuted_hijkl = numpy.einsum('ijlk', h_ijkl)
+    roots = numpy.array(numpy.roots([1, -1, -einsum('ijji', tpdm)]))
+    n_electrons = roots[numpy.where(roots > 0)[0]].real
     opdm = map_two_pdm_to_one_pdm(tpdm, n_electrons)
     dim = tpdm.shape[0] // 2  # dim = num spatial orbitals
     full_basis = {}  # erpa basis.  A, B basis in RPA language
@@ -106,8 +106,8 @@ def singlet_erpa(tpdm: np.ndarray, h_ijkl: np.ndarray) \
             full_basis[(q, p)] = cnt + dim * (dim - 1) // 2
             cnt += 1
 
-    erpa_mat = np.zeros((len(full_basis), len(full_basis)))
-    metric_mat = np.zeros((len(full_basis), len(full_basis)))
+    erpa_mat = numpy.zeros((len(full_basis), len(full_basis)))
+    metric_mat = numpy.zeros((len(full_basis), len(full_basis)))
     for rkey, ridx in full_basis.items():
         p, q = rkey
         for ckey, cidx in full_basis.items():
@@ -124,21 +124,21 @@ def singlet_erpa(tpdm: np.ndarray, h_ijkl: np.ndarray) \
 
     # The metric is hermetian and can be diagonalized
     # this allows us to project into the non-zero eigenvalue space
-    ws, vs = np.linalg.eigh(metric_mat)
-    non_zero_idx = np.where(np.abs(ws) > 1.0E-8)[0]
+    ws, vs = numpy.linalg.eigh(metric_mat)
+    non_zero_idx = numpy.where(numpy.abs(ws) > 1.0E-8)[0]
     left_mat = vs[:, non_zero_idx].T @ erpa_mat @ vs[:, non_zero_idx]
     right_mat = vs[:, non_zero_idx].T @ metric_mat @ vs[:, non_zero_idx]
 
     # solve the matrix pencil using ddgev in lapack
-    w, v = sp.linalg.eig(left_mat, right_mat)
+    w, v = scipy.linalg.eig(left_mat, right_mat)
 
     # the spectrum is symmetric (-w, w)
     # find the positive spectrum eigensystem and return
-    real_eig_idx = np.where(np.abs(w.imag) < 1.0E-8)[0]
+    real_eig_idx = numpy.where(numpy.abs(w.imag) < 1.0E-8)[0]
     real_eigs = w[real_eig_idx]
     real_eig_vecs = v[:, real_eig_idx]
     reverse_projected_eig_vecs = vs[:, non_zero_idx] @ real_eig_vecs
-    pos_indices = np.where(real_eigs > 0)[0]
-    pos_indices = pos_indices[np.argsort(real_eigs[pos_indices])]
+    pos_indices = numpy.where(real_eigs > 0)[0]
+    pos_indices = pos_indices[numpy.argsort(real_eigs[pos_indices])]
     return real_eigs[pos_indices], reverse_projected_eig_vecs[:, pos_indices], \
            full_basis

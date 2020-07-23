@@ -11,11 +11,11 @@
 #   limitations under the License.
 """Class and functions to store quantum chemistry data."""
 
+import os
 import uuid
 import shutil
 import numpy
 import h5py
-import os
 
 from openfermion.config import EQ_TOLERANCE, DATA_DIRECTORY
 import openfermion.ops.representations as reps

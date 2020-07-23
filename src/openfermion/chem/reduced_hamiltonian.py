@@ -21,9 +21,9 @@ def make_reduced_hamiltonian(molecular_hamiltonian: InteractionOperator,
 
         Rewrite each one-body term as an even weighting of all four 2-RDM
         elements with delta functions. Then rearrange terms so that each ijkl
-        term gets a sum of permuted one-body terms multiplied by delta functions
-        One should notice that this results in the same formula if one was to
-        apply the wedge product!
+        term gets a sum of permuted one-body terms multiplied by delta
+        function. One should notice that this results in the same formula
+        if one was to apply the wedge product!
 
     Args:
         molecular_hamiltonian: operator to write reduced hamiltonian for
