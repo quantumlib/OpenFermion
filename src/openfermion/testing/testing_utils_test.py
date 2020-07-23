@@ -147,9 +147,6 @@ class EqualsTesterTest(unittest.TestCase):
             def __ne__(self, other):
                 return not self == other
 
-            def __hash__(self):
-                return hash(self.x)
-
         with self.assertRaises(AttributeError):
             eq.add_equality_group(NoTypeCheckEqualImplementation())
 
@@ -182,15 +179,10 @@ class EqualsTesterTest(unittest.TestCase):
                 self.x = 1
 
             def __eq__(self, other):
-                if not isinstance(other, type(self)):
-                    return NotImplemented
                 return self.x == other.x
 
             def __ne__(self, other):
                 return NotImplemented
-
-            def __hash__(self):
-                return hash(self.x)
 
         with self.assertRaises(AssertionError):
             eq.make_equality_pair(InconsistentNeImplementation)
@@ -204,12 +196,7 @@ class EqualsTesterTest(unittest.TestCase):
                 self.x = 1
 
             def __eq__(self, other):
-                if other is not self:
-                    return NotImplemented
                 return False
-
-            def __ne__(self, other):
-                return not self == other
 
         with self.assertRaises(AssertionError):
             eq.add_equality_group(NotReflexiveImplementation())
@@ -223,8 +210,6 @@ class EqualsTesterTest(unittest.TestCase):
                 self.x = x
 
             def __eq__(self, other):
-                if not isinstance(other, type(self)):
-                    return NotImplemented
                 return self.x <= other.x
 
             def __ne__(self, other):
