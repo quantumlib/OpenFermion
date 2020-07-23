@@ -162,6 +162,13 @@ class SymmetricOrderingTest(unittest.TestCase):
         self.assertTrue(res == expected)
         self.assertTrue(is_hermitian(res))
 
+        op = BosonOperator('0^ 0', 0.5)
+        res = symmetric_ordering(op, ignore_coeff=False)
+        expected = BosonOperator('0^ 0', 0.25) \
+            + BosonOperator('0 0^', 0.25)
+        self.assertTrue(res == expected)
+        self.assertTrue(is_hermitian(res))
+
         op = QuadOperator('q0 p0')
         res = symmetric_ordering(op)
         expected = QuadOperator('q0 p0', 0.5) \

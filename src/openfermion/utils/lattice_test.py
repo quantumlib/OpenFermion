@@ -66,6 +66,7 @@ def test_hubbard_square_lattice(x_dimension, y_dimension, n_dofs, spinless,
             len(neighbor_pairs) == n_neighbor_pairs)
     for i, j in neighbor_pairs:
         assert sum(lattice.delta_mag(i, j, True)) == 1
+        assert lattice.manhattan_distance(i, j, True) == 1
 
     assert len(tuple(lattice.dof_pairs_iter(False))) == \
         n_dofs * (n_dofs + 1) / 2
@@ -127,6 +128,8 @@ def test_hubbard_square_lattice_1xd(d):
                 2 * len(tuple(lattice.neighbors_iter(False))) == 2 *
                 (d - (not periodic)))
         assert (len(tuple(lattice.diagonal_neighbors_iter())) == len(
+            tuple(lattice.diagonal_neighbors_iter(False))) == 0)
+        assert (len(tuple(lattice.site_pairs_iter('diagonal_neighbor'))) == len(
             tuple(lattice.diagonal_neighbors_iter(False))) == 0)
 
 

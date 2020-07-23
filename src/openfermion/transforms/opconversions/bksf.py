@@ -45,7 +45,7 @@ def bravyi_kitaev_fast(operator):
 
 def bravyi_kitaev_fast_interaction_op(iop):
     r"""
-    Transform from InteractionOpeator to QubitOperator for Bravyi-Kitaev fast
+    Transform from InteractionOperator to QubitOperator for Bravyi-Kitaev fast
     algorithm.
 
     The electronic Hamiltonian is represented in terms of creation and
@@ -116,7 +116,8 @@ def bravyi_kitaev_fast_interaction_op(iop):
                             qubit_operator += transformed_term
                             continue
                         elif p != r and q < p:
-                            continue
+                            # TODO: remove pragma if reachable continue
+                            continue  # pragma: no cover
 
                     # Handle the two-body terms.
                     transformed_term = two_body(edge_matrix_indices, p, q, r, s)
@@ -157,7 +158,8 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
 
                     # Skip zero terms.
                     if (not coefficient2) or (p == q) or (r == s):
-                        continue
+                        # TODO: remove pragma if this is a reachable continue
+                        continue  # pragma: no cover
 
                     # Identify and skip one of the complex conjugates.
                     if [p, q, r, s] != [s, r, q, p]:

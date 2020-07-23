@@ -331,3 +331,18 @@ class TaperingTest(unittest.TestCase):
         num_qubits_tap = count_qubits(tap_ham)
 
         self.assertFalse(num_qubits == num_qubits_tap)
+
+        hamiltonian = QubitOperator('X0 X1', 1.0)
+        stab = QubitOperator('Y0 Y1 Y2', -1.0)
+
+        num_qubits = max(count_qubits(hamiltonian), count_qubits(stab))
+        tap_ham = taper_off_qubits(hamiltonian, stab)
+        num_qubits_tap = count_qubits(tap_ham)
+        self.assertFalse(num_qubits == num_qubits_tap)
+
+    def test_taper_x_stab(self):
+        hamiltonian = QubitOperator('X0 X1', 1.0)
+        stab1 = QubitOperator('Y0 Y2', -1.0)
+
+        tham = reduce_number_of_terms(hamiltonian, stab1, maintain_length=True)
+        self.assertTrue(hamiltonian == tham)

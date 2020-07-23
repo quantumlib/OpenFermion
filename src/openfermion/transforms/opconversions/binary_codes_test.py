@@ -107,6 +107,9 @@ class CodeTransformTest(unittest.TestCase):
         qubit_hamiltonian = binary_code_transform(hamiltonian, code)
         self.assertAlmostEqual(gs_energy, eigenspectrum(qubit_hamiltonian)[0])
 
+        with self.assertRaises(ValueError):
+            _ = interleaved_code(9)
+
     def test_weight_one_segment_code(self):
         hamiltonian, gs_energy = lih_hamiltonian()
         code = interleaved_code(6) * (2 * weight_one_segment_code())

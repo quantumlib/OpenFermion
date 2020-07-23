@@ -559,8 +559,17 @@ class SaveLoadOperatorTest(unittest.TestCase):
         self.qubit_operator = jordan_wigner(self.fermion_operator)
         self.file_name = "test_file"
 
+        self.bad_operator_filename = 'bad_file.data'
+        bad_op = "A:\nB"
+        with open(os.path.join(DATA_DIRECTORY, self.bad_operator_filename),
+                  'w') as fid:
+            fid.write(bad_op)
+
     def tearDown(self):
         file_path = os.path.join(DATA_DIRECTORY, self.file_name + '.data')
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+        file_path = os.path.join(DATA_DIRECTORY, self.bad_operator_filename)
         if os.path.isfile(file_path):
             os.remove(file_path)
 
@@ -618,6 +627,10 @@ class SaveLoadOperatorTest(unittest.TestCase):
         save_operator(self.qubit_operator, self.file_name, plain_text=True)
         loaded_qubit_operator = load_operator(self.file_name, plain_text=True)
         self.assertEqual(self.qubit_operator, loaded_qubit_operator)
+
+    def test_load_bad_operator(self):
+        with self.assertRaises(TypeError):
+            load_operator(self.bad_operator_filename, plain_text=True)
 
     def test_save_readably(self):
         save_operator(self.fermion_operator, self.file_name, plain_text=True)

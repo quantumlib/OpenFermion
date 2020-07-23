@@ -17,6 +17,7 @@ import numpy
 import sympy
 
 from openfermion.chem import MolecularData
+from openfermion.config import EQ_TOLERANCE
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops.operators import (FermionOperator, QubitOperator)
 from openfermion.utils import normal_ordered
@@ -52,6 +53,14 @@ class GetInteractionOperatorTest(unittest.TestCase):
         fermion_operator = get_fermion_operator(molecular_operator)
         fermion_operator = normal_ordered(fermion_operator)
         self.assertTrue(normal_ordered(op) == fermion_operator)
+
+        op = FermionOperator('1^ 1')
+        op *= 0.5 * EQ_TOLERANCE
+        molecular_operator = get_interaction_operator(op)
+        self.assertEqual(molecular_operator.constant, 0)
+        self.assertTrue(
+            numpy.allclose(molecular_operator.one_body_tensor,
+                           numpy.zeros((2, 2))))
 
     def test_get_interaction_operator_bad_input(self):
         with self.assertRaises(TypeError):
@@ -92,6 +101,14 @@ class GetInteractionOperatorTest(unittest.TestCase):
                                       basis='aug-cc-pvtz',
                                       multiplicity=2,
                                       n_electrons=1)
+        self.assertTrue(isinstance(molecule, MolecularData))
+
+        molecule = get_molecular_data(molecular_operator,
+                                      geometry=[['H', [0, 0, 0]]],
+                                      basis='aug-cc-pvtz',
+                                      multiplicity=2,
+                                      n_electrons=1,
+                                      reduce_spin=False)
         self.assertTrue(isinstance(molecule, MolecularData))
 
 
@@ -145,6 +162,11 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         fermion_operator = normal_ordered(fermion_operator)
         self.assertTrue(
             normal_ordered(self.hermitian_op_pc) == fermion_operator)
+
+        fop = FermionOperator('1^ 1')
+        fop *= 0.5E-8
+        quad_op = get_quadratic_hamiltonian(fop)
+        self.assertEqual(quad_op.constant, 0)
 
     def test_get_quadratic_hamiltonian_hermitian_bad_term(self):
         """Test an operator with non-quadratic terms."""
@@ -260,4 +282,9 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
 
     def test_threshold(self):
         op = get_diagonal_coulomb_hamiltonian(FermionOperator('1^ 1', 0))
+        self.assertEqual(op.constant, 0)
+
+        fop = FermionOperator('1^ 1')
+        fop *= 0.5 * EQ_TOLERANCE
+        op = get_diagonal_coulomb_hamiltonian(fop)
         self.assertEqual(op.constant, 0)

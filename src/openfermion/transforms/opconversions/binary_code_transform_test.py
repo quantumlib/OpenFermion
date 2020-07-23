@@ -14,7 +14,7 @@ import unittest
 
 from openfermion.ops.operators import BinaryCode, FermionOperator, QubitOperator
 from openfermion.transforms.opconversions.binary_code_transform import \
-    binary_code_transform, dissolve
+    binary_code_transform, dissolve, make_parity_list
 
 
 class CodeTransformTest(unittest.TestCase):
@@ -46,3 +46,7 @@ class CodeTransformTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             dissolve(((1, '1'),))
+
+    def test_make_parity_list_raises(self):
+        with self.assertRaises(TypeError):
+            make_parity_list('A')
