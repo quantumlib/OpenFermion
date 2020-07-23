@@ -120,8 +120,7 @@ def gaussian_state_preparation_circuit(quadratic_hamiltonian,
         if spin_sector is not None:
             raise NotImplementedError(
                 "Specifying spin sector for non-particle-conserving ",
-                "Hamiltonians is not yet supported."
-            )
+                "Hamiltonians is not yet supported.")
         # Rearrange the transformation matrix because the circuit generation
         # routine expects it to describe annihilation operators rather than
         # creation operators
