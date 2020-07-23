@@ -56,8 +56,6 @@ from openfermion.utils.grid import Grid
 from openfermion.utils.jellium_hf_state import (
     lowest_single_particle_energy_states)
 from openfermion.linalg.linear_qubit_operator import LinearQubitOperator
-from openfermion.circuits.slater_determinants_test import (
-    random_quadratic_hamiltonian)
 
 
 class SparseOperatorTest(unittest.TestCase):
@@ -323,9 +321,9 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
     def test_jw_restrict_operator(self):
         """Test the scheme for restricting JW encoded operators to number"""
         # Make a Hamiltonian that cares mostly about number of electrons
-        n_qubits = 6
-        target_electrons = 3
-        penalty_const = 100.
+        n_qubits = 4
+        target_electrons = 2
+        penalty_const = 10.
         number_sparse = jordan_wigner_sparse(number_operator(n_qubits))
         bias_sparse = jordan_wigner_sparse(
             sum([
@@ -342,7 +340,7 @@ class JWNumberRestrictOperatorTest(unittest.TestCase):
         true_eigvals, _ = eigh(hamiltonian_sparse.A)
         test_eigvals, _ = eigh(restricted_hamiltonian.A)
 
-        self.assertAlmostEqual(norm(true_eigvals[:20] - test_eigvals[:20]), 0.0)
+        self.assertAlmostEqual(norm(true_eigvals[:6] - test_eigvals[:6]), 0.0)
 
     def test_jw_restrict_operator_hopping_to_1_particle(self):
         hop = FermionOperator('3^ 1') + FermionOperator('1^ 3')

@@ -12,6 +12,8 @@
 """Tests for slater_determinants.py."""
 import unittest
 
+import pytest
+
 import numpy
 
 from openfermion.linalg.sparse_tools import (
@@ -51,21 +53,6 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
     def setUp(self):
         self.n_qubits_range = range(3, 6)
-
-    def test_catches_spin_sector_non_particle_conserving(self):
-        """Tests that currently un-implemented functionality is caught."""
-        msg = "Specifying spin sector for non-particle-conserving "
-        msg += "Hamiltonians is not yet supported."
-        for n_qubits in [2, 4, 6]:
-            # Initialize a particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(
-                n_qubits, False, True)
-
-            # Obtain the circuit
-
-            with self.assertRaises(NotImplementedError, msg=msg):
-                _ = gaussian_state_preparation_circuit(quadratic_hamiltonian,
-                                                       spin_sector=1)
 
     def test_ground_state_particle_conserving(self):
         """Test getting the ground state preparation circuit for a Hamiltonian
@@ -266,3 +253,18 @@ class JWGetGaussianStateTest(unittest.TestCase):
         """Test bad input."""
         with self.assertRaises(ValueError):
             jw_get_gaussian_state('a')
+
+
+def test_not_implemented_spinr_reduced():
+    """Tests that currently un-implemented functionality is caught."""
+    msg = "Specifying spin sector for non-particle-conserving "
+    msg += "Hamiltonians is not yet supported."
+    for n_qubits in [2, 4, 6]:
+        # Initialize a particle-number-conserving Hamiltonian
+        quadratic_hamiltonian = random_quadratic_hamiltonian(
+            n_qubits, False, True)
+
+        # Obtain the circuit
+        with pytest.raises(NotImplementedError):
+            _ = gaussian_state_preparation_circuit(quadratic_hamiltonian,
+                                                   spin_sector=1)
