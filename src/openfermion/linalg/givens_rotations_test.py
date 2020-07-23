@@ -22,6 +22,7 @@ from openfermion.linalg.givens_rotations import (
 
 
 class SwapTests(unittest.TestCase):
+
     def test_swap_rows(self):
         A = numpy.array([0, 1])
         swap_rows(A, 0, 1)
@@ -45,6 +46,7 @@ class SwapTests(unittest.TestCase):
         self.assertEqual(A[0, 1], 0)
         self.assertEqual(A[1, 0], 3)
         self.assertEqual(A[1, 1], 2)
+
 
 class GivensMatrixElementsTest(unittest.TestCase):
 
