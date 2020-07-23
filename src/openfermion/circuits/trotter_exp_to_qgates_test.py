@@ -19,7 +19,7 @@ from openfermion.utils.operator_utils import count_qubits
 
 from openfermion.circuits.trotter_exp_to_qgates import (
     trotter_operator_grouping, _third_order_trotter_helper,
-    trotterize_exp_qubop_to_qasm)
+    trotterize_exp_qubop_to_qasm, pauli_exp_to_qasm)
 
 
 class TrottQasmTest(unittest.TestCase):
@@ -33,6 +33,18 @@ class TrottQasmTest(unittest.TestCase):
 
     def test_exceptions(self):
         # Test exceptions in trotter_operator_grouping()
+
+        with self.assertRaises(TypeError):
+            _ = [
+                i for i in pauli_exp_to_qasm([QubitOperator()],
+                                             qubit_list='qubit')
+            ]
+
+        with self.assertRaises(TypeError):
+            _ = [
+                i for i in pauli_exp_to_qasm([QubitOperator('X1 Y2')],
+                                             qubit_list=['qubit'])
+            ]
 
         with self.assertRaises(ValueError):
             _ = [

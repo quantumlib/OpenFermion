@@ -52,6 +52,22 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
     def setUp(self):
         self.n_qubits_range = range(3, 6)
 
+    def test_catches_spin_sector_non_particle_conserving(self):
+        """Tests that currently un-implemented functionality is caught."""
+        for n_qubits in [2,4,6]:
+            # Initialize a particle-number-conserving Hamiltonian
+            quadratic_hamiltonian = random_quadratic_hamiltonian(
+                n_qubits, False, True)
+
+            # Compute the true ground state
+            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
+            ground_energy, _ = get_ground_state(sparse_operator)
+
+            # Obtain the circuit
+            with self.assertRaises(NotImplementedError):
+                circuit_description, start_orbitals = (
+                    gaussian_state_preparation_circuit(quadratic_hamiltonian, spin_sector=1))
+
     def test_ground_state_particle_conserving(self):
         """Test getting the ground state preparation circuit for a Hamiltonian
         that conserves particle number."""
