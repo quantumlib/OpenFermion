@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 from itertools import product
 from openfermion.third_party.representability._dualbasis import \
     DualBasisElement, DualBasis
-from openfermion.utils._rdm_mapping_functions import kronecker_delta
+from openfermion.utils.rdm_mapping_functions import kronecker_delta
 
 
 def tpdm_trace_constraint(dim: int, normalization: float) -> DualBasisElement:
