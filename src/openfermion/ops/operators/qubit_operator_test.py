@@ -67,6 +67,11 @@ def test_imul_inplace():
     assert id(qubit_op) == prev_id
 
 
+def test_different_indices_commute():
+    qubit_op = QubitOperator('X1')
+    assert qubit_op.different_indices_commute is True
+
+
 @pytest.mark.parametrize(
     "multiplier",
     [0.5, 0.6j, numpy.float64(2.303),

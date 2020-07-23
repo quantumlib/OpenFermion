@@ -294,10 +294,10 @@ class LowRankTest(unittest.TestCase):
 
             # Get the squared one-body operator via one-body decomposition.
             if abs(eigenvalues[l]) < 1e-6:
-                with self.assertRaises(ValueError): # pragma: no cover
-                    prepare_one_body_squared_evolution( # pragma: no cover
-                        one_body_squares[l]) # pragma: no cover
-                continue # pragma: no cover
+                with self.assertRaises(ValueError):  # pragma: no cover
+                    prepare_one_body_squared_evolution(  # pragma: no cover
+                        one_body_squares[l])  # pragma: no cover
+                continue  # pragma: no cover
             else:
                 density_density_matrix, basis_transformation_matrix = (
                     prepare_one_body_squared_evolution(one_body_squares[l]))

@@ -610,9 +610,6 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         term, coefficient = next(self._iter)
         return self.__class__(term=term, coefficient=coefficient)
 
-    def next(self):
-        return self.__next__()
-
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
         Eliminates all terms with coefficients close to zero and removes

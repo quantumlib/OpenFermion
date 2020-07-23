@@ -292,7 +292,7 @@ class EqualsTester(object):
 
         # Check that group items hash to the same thing, or are all unhashable.
         hashes = [
-            hash(v) if isinstance(v, collections.Hashable) else None
+            hash(v) if isinstance(v, collections.abc.Hashable) else None
             for v in group_items
         ]
         if len(set(hashes)) > 1:

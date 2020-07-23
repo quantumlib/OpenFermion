@@ -80,7 +80,3 @@ class DiagonalCoulombHamiltonian:
         quotient = copy.deepcopy(self)
         quotient /= dividend
         return quotient
-
-    def __div__(self, divisor):
-        """ For compatibility with Python 2. """
-        return self.__truediv__(divisor)

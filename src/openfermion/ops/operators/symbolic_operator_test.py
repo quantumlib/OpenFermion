@@ -306,6 +306,15 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertIn(correct, fermion_op.terms)
         self.assertEqual(fermion_op.terms[correct], -1.0)
 
+    def test_init_long_str_repeated(self):
+        fermion_op = DummyOperator1('-2 [0^ 1] + [0^ 1]')
+        correct = -1 * DummyOperator1('0^ 1')
+        self.assertTrue(fermion_op == correct)
+
+    def test_raises_error_negative_indices(self):
+        with self.assertRaises(ValueError):
+            _ = DummyOperator1('-1^ 0')
+
     def test_init_long_str(self):
         fermion_op = DummyOperator1(
             '(-2.0+3.0j) [0^ 1] +\n\n -1.0[ 2^ 3 ] - []', -1.)

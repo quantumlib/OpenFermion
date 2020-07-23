@@ -176,6 +176,10 @@ class PolynomialTensorTest(unittest.TestCase):
             two_body_spinful
         })
 
+    def test_setitem_0body(self):
+        self.polynomial_tensor_a[()] = 1
+        self.assertEqual(self.polynomial_tensor_a.n_body_tensors[()], 1)
+
     def test_setitem_1body(self):
         expected_one_body_tensor = numpy.array([[0, 3], [2, 0]])
         self.polynomial_tensor_a[(0, 1), (1, 0)] = 3

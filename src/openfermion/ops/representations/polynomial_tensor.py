@@ -303,10 +303,6 @@ class PolynomialTensor(object):
         quotient /= dividend
         return quotient
 
-    def __div__(self, divisor):
-        """ For compatibility with Python 2. """
-        return self.__truediv__(divisor)
-
     def __iter__(self):
         """Iterate over non-zero elements of PolynomialTensor."""
 
