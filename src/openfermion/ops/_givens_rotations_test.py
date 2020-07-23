@@ -17,13 +17,9 @@ from openfermion.utils._testing_utils import (
         random_quadratic_hamiltonian, random_unitary_matrix)
 
 from openfermion.ops._givens_rotations import (
-        double_givens_rotate,
-        fermionic_gaussian_decomposition,
-        givens_matrix_elements,
-        givens_rotate,
-        givens_decomposition,
-        givens_decomposition_square,
-        swap_rows)
+    double_givens_rotate, fermionic_gaussian_decomposition,
+    givens_matrix_elements, givens_rotate, givens_decomposition,
+    givens_decomposition_square, swap_rows)
 
 
 class GivensMatrixElementsTest(unittest.TestCase):
@@ -141,15 +137,14 @@ class GivensDecompositionTest(unittest.TestCase):
                     self.assertAlmostEqual(D[i, j], W[i, j])
 
     def test_forced_insertion(self):
-        Q = numpy.zeros([2,4])
-        Q[0,0] = Q[1,1] = 1
-        givens_rotations, V, diagonal = givens_decomposition(
-            Q, always_insert=True)
+        Q = numpy.zeros([2, 4])
+        Q[0, 0] = Q[1, 1] = 1
+        givens_rotations, _, _ = givens_decomposition(Q, always_insert=True)
         assert len(givens_rotations) == 3
 
     def test_forced_insertion_square(self):
         Q = numpy.eye(4)
-        givens_rotations, diagonal = givens_decomposition_square(
+        givens_rotations, _ = givens_decomposition_square(
             Q, always_insert=True)
         assert len(givens_rotations) == 5
 
