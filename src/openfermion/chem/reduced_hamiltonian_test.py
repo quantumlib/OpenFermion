@@ -4,7 +4,7 @@ from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.representations import InteractionOperator
 from openfermion.chem.reduced_hamiltonian import make_reduced_hamiltonian
-import openfermion.linalg.sparse_tools as sps_tools
+from openfermion.linalg.sparse_tools import get_number_preserving_sparse_operator
 from openfermion.transforms.opconversions import get_fermion_operator
 
 
@@ -32,7 +32,7 @@ def test_fci_energy():
     molecule = MolecularData(filename=filename)
     reduced_ham = make_reduced_hamiltonian(molecule.get_molecular_hamiltonian(),
                                            molecule.n_electrons)
-    np_ham = sps_tools.get_number_preserving_sparse_operator(
+    np_ham = get_number_preserving_sparse_operator(
         get_fermion_operator(reduced_ham),
         molecule.n_qubits,
         num_electrons=molecule.n_electrons,
@@ -45,7 +45,7 @@ def test_fci_energy():
     molecule = MolecularData(filename=filename)
     reduced_ham = make_reduced_hamiltonian(molecule.get_molecular_hamiltonian(),
                                            molecule.n_electrons)
-    np_ham = sps_tools.get_number_preserving_sparse_operator(
+    np_ham = get_number_preserving_sparse_operator(
         get_fermion_operator(reduced_ham),
         molecule.n_qubits,
         num_electrons=molecule.n_electrons,
