@@ -74,7 +74,3 @@ class FenwickTreeTest(unittest.TestCase):
             correct = _parity_set(j - 1)
             self.assertEqual(set(parity_set), set(correct))
             print(parity_set)
-
-
-if __name__ == '__main__':
-    unittest.main()

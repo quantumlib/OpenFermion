@@ -16,6 +16,7 @@ import unittest
 import numpy
 import sympy
 
+from openfermion.chem import MolecularData
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops.operators import (FermionOperator, QubitOperator)
 from openfermion.utils import normal_ordered
@@ -26,11 +27,10 @@ from openfermion.ops.representations.quadratic_hamiltonian import \
     QuadraticHamiltonianError
 from openfermion.testing.testing_utils import (random_quadratic_hamiltonian)
 
-from openfermion.transforms.opconversions import get_fermion_operator, \
-    get_majorana_operator
+from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.transforms.repconversions.conversion import (
     get_diagonal_coulomb_hamiltonian, get_interaction_operator,
-    get_quadratic_hamiltonian, _check_no_sympy)
+    get_quadratic_hamiltonian, _check_no_sympy, get_molecular_data)
 
 
 class RaisesSympyExceptionTest(unittest.TestCase):
@@ -57,6 +57,12 @@ class GetInteractionOperatorTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             get_interaction_operator('3')
 
+    def test_get_interaction_operator_below_threshold(self):
+        op = get_interaction_operator(FermionOperator('1^ 1', 0.0))
+        self.assertEqual(op.constant, 0)
+        self.assertTrue(numpy.allclose(op.one_body_tensor, numpy.zeros((1, 1))))
+        self.assertTrue(numpy.allclose(op.two_body_tensor, numpy.zeros((1, 1, 1, 1))))
+
     def test_get_interaction_operator_too_few_qubits(self):
         with self.assertRaises(ValueError):
             get_interaction_operator(FermionOperator('3^ 2^ 1 0'), 3)
@@ -75,6 +81,17 @@ class GetInteractionOperatorTest(unittest.TestCase):
 
     def test_get_molecular_data(self):
         """Test conversion to MolecularData from InteractionOperator"""
+        coefficient = 3.
+        operators = ((2, 1), (3, 0), (0, 0), (3, 1))
+        op = FermionOperator(operators, coefficient)
+
+        molecular_operator = get_interaction_operator(op)
+        molecule = get_molecular_data(molecular_operator,
+                                      geometry=[['H', [0, 0, 0]]],
+                                      basis='aug-cc-pvtz',
+                                      multiplicity=2,
+                                      n_electrons=1)
+        self.assertTrue(isinstance(molecule, MolecularData))
 
 
 class GetQuadraticHamiltonianTest(unittest.TestCase):
@@ -132,6 +149,11 @@ class GetQuadraticHamiltonianTest(unittest.TestCase):
         """Test an operator with non-quadratic terms."""
         with self.assertRaises(QuadraticHamiltonianError):
             get_quadratic_hamiltonian(self.hermitian_op_bad_term)
+
+    def test_get_quadratic_hamiltonian_threshold(self):
+        """Test an operator with non-quadratic terms."""
+        quad_op = get_quadratic_hamiltonian(FermionOperator('1^ 1', 0))
+        self.assertEqual(quad_op.constant, 0)
 
     def test_get_quadratic_hamiltonian_not_hermitian(self):
         """Test non-Hermitian operators."""
@@ -219,6 +241,7 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
         op4 = FermionOperator('0^ 1^ 2^ 3')
         op5 = FermionOperator('0^ 3')
         op6 = FermionOperator('0^ 0 1^ 1', 1.j)
+        op7 = FermionOperator('0^ 1^ 2 3')
         with self.assertRaises(TypeError):
             _ = get_diagonal_coulomb_hamiltonian(op1)
         with self.assertRaises(ValueError):
@@ -231,3 +254,9 @@ class GetDiagonalCoulombHamiltonianTest(unittest.TestCase):
             _ = get_diagonal_coulomb_hamiltonian(op5)
         with self.assertRaises(ValueError):
             _ = get_diagonal_coulomb_hamiltonian(op6)
+        with self.assertRaises(ValueError):
+            _ = get_diagonal_coulomb_hamiltonian(op7)
+
+    def test_threshold(self):
+        op = get_diagonal_coulomb_hamiltonian(FermionOperator('1^ 1', 0))
+        self.assertEqual(op.constant, 0)

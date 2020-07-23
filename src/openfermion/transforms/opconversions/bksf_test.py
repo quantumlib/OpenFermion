@@ -302,7 +302,3 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
                 evensector_n += 1
         self.assertEqual(evensector_H, 2**(n_qubits - 1))
         self.assertEqual(evensector_n, 2**(n_qubits - 1))
-
-
-if __name__ == '__main__':
-    unittest.main()

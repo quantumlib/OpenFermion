@@ -41,7 +41,8 @@ from openfermion.utils.operator_utils import (
     normal_ordered, is_contextual, group_into_tensor_product_basis_sets,
     save_operator, OperatorUtilsError, OperatorSpecificationError,
     fourier_transform, inverse_fourier_transform, up_then_down, chemist_ordered,
-    freeze_orbitals, prune_unused_indices, is_hermitian, load_operator)
+    freeze_orbitals, prune_unused_indices, is_hermitian, load_operator,
+    get_file_path)
 from openfermion.utils.grid import Grid
 
 
@@ -988,3 +989,18 @@ class IsContextualTest(unittest.TestCase):
 
     def test_commuting_hamiltonian(self):
         self.assertFalse(is_contextual(self.x1 + self.x2 + self.x3 + self.x4))
+
+
+class GetFileDirTest(unittest.TestCase):
+
+    def setUp(self):
+        self.filename = 'foo'
+        self.datadirname = 'data'
+
+    def test_file_load(self):
+        """Test if file name is acquired correctly"""
+        filepath = get_file_path(self.filename, None)
+        self.assertEqual(filepath, DATA_DIRECTORY + '/' + self.filename + '.data')
+
+        filepath = get_file_path(self.filename, self.datadirname)
+        self.assertEqual(filepath, self.datadirname + '/' + self.filename + '.data')
