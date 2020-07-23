@@ -54,13 +54,16 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 
     def test_catches_spin_sector_non_particle_conserving(self):
         """Tests that currently un-implemented functionality is caught."""
+        msg = "Specifying spin sector for non-particle-conserving "
+        msg += "Hamiltonians is not yet supported."
         for n_qubits in [2, 4, 6]:
             # Initialize a particle-number-conserving Hamiltonian
             quadratic_hamiltonian = random_quadratic_hamiltonian(
                 n_qubits, False, True)
 
             # Obtain the circuit
-            with self.assertRaises(NotImplementedError):
+
+            with self.assertRaises(NotImplementedError, msg=msg):
                 _ = gaussian_state_preparation_circuit(quadratic_hamiltonian,
                                                        spin_sector=1)
 

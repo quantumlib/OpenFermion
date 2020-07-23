@@ -18,7 +18,10 @@ import pytest
 
 from openfermion.hamiltonians import fermi_hubbard, FermiHubbardModel
 from openfermion.utils import HubbardSquareLattice, SpinPairs
-from openfermion.hamiltonians.general_hubbard import InteractionParameter
+from openfermion.hamiltonians.general_hubbard import (InteractionParameter,
+                                                      number_operator)
+
+from openfermion.ops import FermionOperator
 
 
 def fermi_hubbard_from_general(x_dimension,
@@ -219,3 +222,12 @@ def test_fermi_hubbard_square_lattice_random_parameters(lattice, parameters,
                 else:
                     expected_n_terms *= 2
             assert n_terms == expected_n_terms
+
+
+def test_number_op():
+    nop = FermionOperator(((0, 1), (0, 0)), coefficient=1.)
+    test_op = number_operator(0)
+    assert test_op == nop
+
+    test_op = number_operator(0, particle_hole_symmetry=True)
+    assert test_op == nop - FermionOperator((), coefficient=0.5)

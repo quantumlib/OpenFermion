@@ -164,6 +164,9 @@ class MajoranaOperatorTest(unittest.TestCase):
         self.assertEqual(op1, op2)
         self.assertEqual(op1, correct)
 
+        with self.assertRaises(ValueError):
+            _ = majorana_operator('A2')
+
     def test_none_term(self):
         majorana_operator()
         self.assertEqual(majorana_operator(), FermionOperator())

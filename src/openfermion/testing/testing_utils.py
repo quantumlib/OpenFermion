@@ -357,7 +357,7 @@ def module_importable(module):
     else:
         # Won't enter unless Python<3.4, so ignore for testing
         import pkgutil  # pragma: ignore
-        plug_spec = pkgutil.find_loader(module)  # pragma: ignore
+        plug_spec = pkgutil.find_loader(module)  # pragma: no cover
     if plug_spec is None:
         return False
     else:
