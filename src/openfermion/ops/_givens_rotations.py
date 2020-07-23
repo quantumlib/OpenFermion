@@ -213,7 +213,7 @@ def givens_decomposition_square(unitary_matrix, always_insert=False):
             # Compute the Givens rotation to zero out the (i, j) element,
             # if needed
             right_element = current_matrix[i, j].conj()
-            if always_insert is True or abs(right_element) > EQ_TOLERANCE:
+            if always_insert or abs(right_element) > EQ_TOLERANCE:
                 # We actually need to perform a Givens rotation
                 left_element = current_matrix[i, j - 1].conj()
                 givens_rotation = givens_matrix_elements(left_element,
