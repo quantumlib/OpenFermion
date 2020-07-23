@@ -38,10 +38,9 @@ from openfermion.testing.testing_utils import random_hermitian_matrix
 from openfermion.linalg.sparse_tools import (
     get_sparse_operator, get_ground_state, expectation,
     jw_number_restrict_state, inner_product, jw_sz_restrict_state,
-    jw_get_ground_state_at_particle_number, jw_get_gaussian_state,
-    jw_sparse_givens_rotation, jw_slater_determinant, pauli_matrix_map,
-    sparse_eigenspectrum, jordan_wigner_sparse, kronecker_operators,
-    identity_csc, pauli_x_csc, qubit_operator_sparse,
+    jw_get_ground_state_at_particle_number, jw_sparse_givens_rotation,
+    pauli_matrix_map, sparse_eigenspectrum, jordan_wigner_sparse,
+    kronecker_operators, identity_csc, pauli_x_csc, qubit_operator_sparse,
     get_linear_qubit_operator_diagonal, jw_number_indices,
     get_number_preserving_sparse_operator, jw_configuration_state,
     jw_hartree_fock_state, jw_sz_restrict_operator, jw_sz_indices,
@@ -560,133 +559,6 @@ class JWGetGroundStatesByParticleNumberTest(unittest.TestCase):
             self.assertAlmostEqual(num, particle_number)
 
 
-class JWGetGaussianStateTest(unittest.TestCase):
-
-    def setUp(self):
-        self.n_qubits_range = range(2, 10)
-
-    def test_ground_state_particle_conserving(self):
-        """Test getting the ground state of a Hamiltonian that conserves
-        particle number."""
-        for n_qubits in self.n_qubits_range:
-            # Initialize a particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, True)
-
-            # Compute the true ground state
-            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, _ = get_ground_state(sparse_operator)
-
-            # Compute the ground state using the circuit
-            circuit_energy, circuit_state = jw_get_gaussian_state(
-                quadratic_hamiltonian)
-
-            # Check that the energies match
-            self.assertAlmostEqual(ground_energy, circuit_energy)
-
-            # Check that the state obtained using the circuit is a ground state
-            difference = (sparse_operator * circuit_state -
-                          ground_energy * circuit_state)
-            discrepancy = numpy.amax(numpy.abs(difference))
-            self.assertAlmostEqual(discrepancy, 0)
-
-    def test_ground_state_particle_nonconserving(self):
-        """Test getting the ground state of a Hamiltonian that does not
-        conserve particle number."""
-        for n_qubits in self.n_qubits_range:
-            # Initialize a non-particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(
-                n_qubits, False)
-
-            # Compute the true ground state
-            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            ground_energy, _ = get_ground_state(sparse_operator)
-
-            # Compute the ground state using the circuit
-            circuit_energy, circuit_state = (
-                jw_get_gaussian_state(quadratic_hamiltonian))
-
-            # Check that the energies match
-            self.assertAlmostEqual(ground_energy, circuit_energy)
-
-            # Check that the state obtained using the circuit is a ground state
-            difference = (sparse_operator * circuit_state -
-                          ground_energy * circuit_state)
-            discrepancy = numpy.amax(numpy.abs(difference))
-            self.assertAlmostEqual(discrepancy, 0)
-
-    def test_excited_state_particle_conserving(self):
-        """Test getting an excited state of a Hamiltonian that conserves
-        particle number."""
-        for n_qubits in self.n_qubits_range:
-            # Initialize a particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, True)
-
-            # Pick some orbitals to occupy
-            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
-            occupied_orbitals = numpy.random.choice(range(n_qubits),
-                                                    num_occupied_orbitals,
-                                                    False)
-
-            # Compute the Gaussian state
-            circuit_energy, gaussian_state = jw_get_gaussian_state(
-                quadratic_hamiltonian, occupied_orbitals)
-
-            # Compute the true energy
-            orbital_energies, constant = (
-                quadratic_hamiltonian.orbital_energies())
-            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
-
-            # Check that the energies match
-            self.assertAlmostEqual(energy, circuit_energy)
-
-            # Check that the state obtained using the circuit is an eigenstate
-            # with the correct eigenvalue
-            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            difference = (sparse_operator * gaussian_state -
-                          energy * gaussian_state)
-            discrepancy = numpy.amax(numpy.abs(difference))
-            self.assertAlmostEqual(discrepancy, 0)
-
-    def test_excited_state_particle_nonconserving(self):
-        """Test getting an excited state of a Hamiltonian that conserves
-        particle number."""
-        for n_qubits in self.n_qubits_range:
-            # Initialize a non-particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(
-                n_qubits, False)
-
-            # Pick some orbitals to occupy
-            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
-            occupied_orbitals = numpy.random.choice(range(n_qubits),
-                                                    num_occupied_orbitals,
-                                                    False)
-
-            # Compute the Gaussian state
-            circuit_energy, gaussian_state = jw_get_gaussian_state(
-                quadratic_hamiltonian, occupied_orbitals)
-
-            # Compute the true energy
-            orbital_energies, constant = (
-                quadratic_hamiltonian.orbital_energies())
-            energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
-
-            # Check that the energies match
-            self.assertAlmostEqual(energy, circuit_energy)
-
-            # Check that the state obtained using the circuit is an eigenstate
-            # with the correct eigenvalue
-            sparse_operator = get_sparse_operator(quadratic_hamiltonian)
-            difference = (sparse_operator * gaussian_state -
-                          energy * gaussian_state)
-            discrepancy = numpy.amax(numpy.abs(difference))
-            self.assertAlmostEqual(discrepancy, 0)
-
-    def test_bad_input(self):
-        """Test bad input."""
-        with self.assertRaises(ValueError):
-            jw_get_gaussian_state('a')
-
-
 class JWSparseGivensRotationTest(unittest.TestCase):
 
     def test_bad_input(self):
@@ -694,29 +566,6 @@ class JWSparseGivensRotationTest(unittest.TestCase):
             jw_sparse_givens_rotation(0, 2, 1., 1., 5)
         with self.assertRaises(ValueError):
             jw_sparse_givens_rotation(4, 5, 1., 1., 5)
-
-
-class JWSlaterDeterminantTest(unittest.TestCase):
-
-    def test_hadamard_transform(self):
-        r"""Test creating the states
-        1 / sqrt(2) (a^\dagger_0 + a^\dagger_1) |vac>
-        and
-        1 / sqrt(2) (a^\dagger_0 - a^\dagger_1) |vac>.
-        """
-        slater_determinant_matrix = numpy.array([[1., 1.]]) / numpy.sqrt(2.)
-        slater_determinant = jw_slater_determinant(slater_determinant_matrix)
-        self.assertAlmostEqual(slater_determinant[1], slater_determinant[2])
-        self.assertAlmostEqual(abs(slater_determinant[1]), 1. / numpy.sqrt(2.))
-        self.assertAlmostEqual(abs(slater_determinant[0]), 0.)
-        self.assertAlmostEqual(abs(slater_determinant[3]), 0.)
-
-        slater_determinant_matrix = numpy.array([[1., -1.]]) / numpy.sqrt(2.)
-        slater_determinant = jw_slater_determinant(slater_determinant_matrix)
-        self.assertAlmostEqual(slater_determinant[1], -slater_determinant[2])
-        self.assertAlmostEqual(abs(slater_determinant[1]), 1. / numpy.sqrt(2.))
-        self.assertAlmostEqual(abs(slater_determinant[0]), 0.)
-        self.assertAlmostEqual(abs(slater_determinant[3]), 0.)
 
 
 class GroundStateTest(unittest.TestCase):

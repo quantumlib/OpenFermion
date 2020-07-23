@@ -17,7 +17,8 @@ from .low_rank import (get_chemist_two_body_coefficients,
                        prepare_one_body_squared_evolution)
 
 from .slater_determinants import (gaussian_state_preparation_circuit,
-                                  slater_determinant_preparation_circuit)
+                                  slater_determinant_preparation_circuit,
+                                  jw_get_gaussian_state, jw_slater_determinant)
 
 from .trotter_exp_to_qgates import (trotter_operator_grouping,
                                     pauli_exp_to_qasm,

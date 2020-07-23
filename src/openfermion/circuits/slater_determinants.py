@@ -14,9 +14,13 @@ Slater determinants and fermionic Gaussian states."""
 
 import numpy
 
-import openfermion.ops.representations.quadratic_hamiltonian as quad_ham
+from openfermion.config import EQ_TOLERANCE
+from openfermion.ops import QuadraticHamiltonian
 from openfermion.linalg.givens_rotations import (
     fermionic_gaussian_decomposition, givens_decomposition)
+from openfermion.linalg.sparse_tools import (
+    jw_configuration_state, jw_sparse_givens_rotation,
+    jw_sparse_particle_hole_transformation_last_mode)
 
 
 def gaussian_state_preparation_circuit(quadratic_hamiltonian,
@@ -91,7 +95,7 @@ def gaussian_state_preparation_circuit(quadratic_hamiltonian,
             be a Slater determinant (in the computational basis) with these
             orbitals filled.
     """
-    if not isinstance(quadratic_hamiltonian, quad_ham.QuadraticHamiltonian):
+    if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
 
     orbital_energies, transformation_matrix, _ = (
@@ -184,3 +188,106 @@ def slater_determinant_preparation_circuit(slater_determinant_matrix):
     decomposition, _, _ = givens_decomposition(slater_determinant_matrix)
     circuit_description = list(reversed(decomposition))
     return circuit_description
+
+
+def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
+    """Compute an eigenvalue and eigenstate of a quadratic Hamiltonian.
+
+    Eigenstates of a quadratic Hamiltonian are also known as fermionic
+    Gaussian states.
+
+    Args:
+        quadratic_hamiltonian(QuadraticHamiltonian):
+            The Hamiltonian whose eigenstate is desired.
+        occupied_orbitals(list):
+            A list of integers representing the indices of the occupied
+            orbitals in the desired Gaussian state. If this is None
+            (the default), then it is assumed that the ground state is
+            desired, i.e., the orbitals with negative energies are filled.
+
+    Returns
+    -------
+        energy (float):
+            The eigenvalue.
+        state (sparse):
+            The eigenstate in scipy.sparse csc format.
+    """
+    if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
+        raise ValueError('Input must be an instance of QuadraticHamiltonian.')
+
+    n_qubits = quadratic_hamiltonian.n_qubits
+
+    # Compute the energy
+    orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+    if occupied_orbitals is None:
+        # The ground energy is desired
+        if quadratic_hamiltonian.conserves_particle_number:
+            num_negative_energies = numpy.count_nonzero(
+                orbital_energies < -EQ_TOLERANCE)
+            occupied_orbitals = range(num_negative_energies)
+        else:
+            occupied_orbitals = []
+    energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
+
+    # Obtain the circuit that prepares the Gaussian state
+    circuit_description, start_orbitals = \
+        gaussian_state_preparation_circuit(quadratic_hamiltonian,
+                                           occupied_orbitals)
+
+    # Initialize the starting state
+    state = jw_configuration_state(start_orbitals, n_qubits)
+
+    # Apply the circuit
+    if not quadratic_hamiltonian.conserves_particle_number:
+        particle_hole_transformation = (
+            jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+    for parallel_ops in circuit_description:
+        for op in parallel_ops:
+            if op == 'pht':
+                state = particle_hole_transformation.dot(state)
+            else:
+                i, j, theta, phi = op
+                state = jw_sparse_givens_rotation(i, j, theta, phi,
+                                                  n_qubits).dot(state)
+
+    return energy, state
+
+
+def jw_slater_determinant(slater_determinant_matrix):
+    r"""Obtain a Slater determinant.
+
+    The input is an :math:`N_f \times N` matrix :math:`Q` with orthonormal
+    rows. Such a matrix describes the Slater determinant
+
+    .. math::
+
+        b^\dagger_1 \cdots b^\dagger_{N_f} \lvert \text{vac} \rangle,
+
+    where
+
+    .. math::
+
+        b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
+
+    Args:
+        slater_determinant_matrix: The matrix :math:`Q` which describes the
+            Slater determinant to be prepared.
+    Returns:
+        The Slater determinant as a sparse matrix.
+    """
+    circuit_description = slater_determinant_preparation_circuit(
+        slater_determinant_matrix)
+    start_orbitals = range(slater_determinant_matrix.shape[0])
+    n_qubits = slater_determinant_matrix.shape[1]
+
+    # Initialize the starting state
+    state = jw_configuration_state(start_orbitals, n_qubits)
+
+    # Apply the circuit
+    for parallel_ops in circuit_description:
+        for op in parallel_ops:
+            i, j, theta, phi = op
+            state = jw_sparse_givens_rotation(i, j, theta, phi,
+                                              n_qubits).dot(state)
+
+    return state
