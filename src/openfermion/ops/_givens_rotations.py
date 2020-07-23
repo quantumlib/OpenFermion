@@ -57,9 +57,6 @@ def givens_matrix_elements(a, b, which='left'):
         sign_b = b / abs(b)
         sign_a = a / abs(a)
         phase = sign_a * sign_b.conjugate()
-        # If phase is a real number, convert it to a float
-        if numpy.isreal(phase):
-            phase = numpy.real(phase)
 
     # Construct matrix and return
     if which == 'left':
@@ -141,7 +138,7 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
         raise ValueError('"which" must be equal to "row" or "col".')
 
 
-def givens_decomposition_square(unitary_matrix):
+def givens_decomposition_square(unitary_matrix, always_insert=False):
     r"""Decompose a square matrix into a sequence of Givens rotations.
 
     The input is a square :math:`n \times n` matrix :math:`Q`.
@@ -213,7 +210,7 @@ def givens_decomposition_square(unitary_matrix):
             # Compute the Givens rotation to zero out the (i, j) element,
             # if needed
             right_element = current_matrix[i, j].conj()
-            if abs(right_element) > EQ_TOLERANCE:
+            if always_insert is True or abs(right_element) > EQ_TOLERANCE:
                 # We actually need to perform a Givens rotation
                 left_element = current_matrix[i, j - 1].conj()
                 givens_rotation = givens_matrix_elements(left_element,
@@ -240,7 +237,7 @@ def givens_decomposition_square(unitary_matrix):
     return decomposition, diagonal
 
 
-def givens_decomposition(unitary_rows):
+def givens_decomposition(unitary_rows, always_insert=False):
     r"""Decompose a matrix into a sequence of Givens rotations.
 
     The input is an :math:`m \times n` matrix :math:`Q` with :math:`m \leq n`.
@@ -306,7 +303,7 @@ def givens_decomposition(unitary_rows):
         # Zero out entries in column k
         for l in range(m - n + k):
             # Zero out entry in row l if needed
-            if abs(current_matrix[l, k]) > EQ_TOLERANCE:
+            if always_insert or abs(current_matrix[l, k]) > EQ_TOLERANCE:
                 givens_rotation = givens_matrix_elements(
                     current_matrix[l, k], current_matrix[l + 1, k])
                 # Apply Givens rotation
@@ -359,7 +356,7 @@ def givens_decomposition(unitary_rows):
                 # Compute the Givens rotation to zero out the (i, j) element,
                 # if needed
                 right_element = current_matrix[i, j].conj()
-                if abs(right_element) > EQ_TOLERANCE:
+                if always_insert or abs(right_element) > EQ_TOLERANCE:
                     # We actually need to perform a Givens rotation
                     left_element = current_matrix[i, j - 1].conj()
                     givens_rotation = givens_matrix_elements(
@@ -484,7 +481,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
         # Zero out entries in column k
         for l in range(n - 1 - k):
             # Zero out entry in row l if needed
-            if abs(current_matrix[l, k]) > EQ_TOLERANCE:
+            if  abs(current_matrix[l, k]) > EQ_TOLERANCE:
                 givens_rotation = givens_matrix_elements(
                     current_matrix[l, k], current_matrix[l + 1, k])
                 # Apply Givens rotation
