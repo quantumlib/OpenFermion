@@ -1000,7 +1000,9 @@ class GetFileDirTest(unittest.TestCase):
     def test_file_load(self):
         """Test if file name is acquired correctly"""
         filepath = get_file_path(self.filename, None)
-        self.assertEqual(filepath, DATA_DIRECTORY + '/' + self.filename + '.data')
+        self.assertEqual(filepath,
+                         DATA_DIRECTORY + '/' + self.filename + '.data')
 
         filepath = get_file_path(self.filename, self.datadirname)
-        self.assertEqual(filepath, self.datadirname + '/' + self.filename + '.data')
+        self.assertEqual(filepath,
+                         self.datadirname + '/' + self.filename + '.data')

@@ -61,7 +61,8 @@ class GetInteractionOperatorTest(unittest.TestCase):
         op = get_interaction_operator(FermionOperator('1^ 1', 0.0))
         self.assertEqual(op.constant, 0)
         self.assertTrue(numpy.allclose(op.one_body_tensor, numpy.zeros((1, 1))))
-        self.assertTrue(numpy.allclose(op.two_body_tensor, numpy.zeros((1, 1, 1, 1))))
+        self.assertTrue(
+            numpy.allclose(op.two_body_tensor, numpy.zeros((1, 1, 1, 1))))
 
     def test_get_interaction_operator_too_few_qubits(self):
         with self.assertRaises(ValueError):
