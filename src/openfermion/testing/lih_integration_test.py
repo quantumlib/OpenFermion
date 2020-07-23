@@ -13,7 +13,6 @@
 import os
 import unittest
 import numpy
-import scipy.sparse
 
 from openfermion.config import THIS_DIRECTORY
 
@@ -129,8 +128,8 @@ class LiHIntegrationTest(unittest.TestCase):
         # Check that frozen core result matches frozen core FCI from psi4.
         # Recore frozen core result from external calculation.
         self.frozen_core_fci_energy = -7.8807607374168
-        no_core_fci_energy = scipy.linalg.eigh(
-            self.hamiltonian_matrix_no_core.todense())[0][0]
+        no_core_fci_energy = numpy.linalg.eigh(
+            self.hamiltonian_matrix_no_core.toarray())[0][0]
         self.assertAlmostEqual(no_core_fci_energy, self.frozen_core_fci_energy)
 
         # Check that the freeze_orbitals function has the same effect as the
