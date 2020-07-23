@@ -57,8 +57,8 @@ def givens_matrix_elements(a, b, which='left'):
         sign_b = b / abs(b)
         sign_a = a / abs(a)
         phase = sign_a * sign_b.conjugate()
-        # If phase is a real number, convert it to a float  
-        if numpy.isreal(phase): 
+        # If phase is a real number, convert it to a float
+        if numpy.isreal(phase):
             phase = numpy.real(phase)
 
     # Construct matrix and return
