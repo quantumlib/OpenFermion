@@ -295,7 +295,8 @@ class LowRankTest(unittest.TestCase):
             # Get the squared one-body operator via one-body decomposition.
             if abs(eigenvalues[l]) < 1e-6:
                 with self.assertRaises(ValueError): # pragma: no cover
-                    prepare_one_body_squared_evolution(one_body_squares[l]) # pragma: no cover
+                    prepare_one_body_squared_evolution( # pragma: no cover
+                        one_body_squares[l]) # pragma: no cover
                 continue # pragma: no cover
             else:
                 density_density_matrix, basis_transformation_matrix = (
@@ -326,6 +327,7 @@ class LowRankTest(unittest.TestCase):
             self.assertAlmostEqual(0., numpy.amax(numpy.absolute(difference)))
 
     def test_one_body_squared_nonhermitian_raises_error(self):
-        one_body_matrix = numpy.array([[0, 1],[0, 0]])
+        one_body_matrix = numpy.array([[0, 1], [0, 0]])
         with self.assertRaises(ValueError):
-            prepare_one_body_squared_evolution(one_body_matrix, spin_basis=False)
+            prepare_one_body_squared_evolution(one_body_matrix,
+                                               spin_basis=False)
