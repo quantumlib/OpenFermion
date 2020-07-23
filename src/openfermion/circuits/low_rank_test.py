@@ -282,7 +282,8 @@ class LowRankTest(unittest.TestCase):
 
         # Decompose.
         eigenvalues, one_body_squares, _, _ = (
-            low_rank_two_body_decomposition(two_body_coefficients))
+            low_rank_two_body_decomposition(two_body_coefficients,
+                                            truncation_threshold=0))
         rank = eigenvalues.size
         for l in range(rank):
             one_body_operator = FermionOperator()
@@ -294,10 +295,9 @@ class LowRankTest(unittest.TestCase):
 
             # Get the squared one-body operator via one-body decomposition.
             if abs(eigenvalues[l]) < 1e-6:
-                with self.assertRaises(ValueError):  # pragma: no cover
-                    prepare_one_body_squared_evolution(  # pragma: no cover
-                        one_body_squares[l])  # pragma: no cover
-                continue  # pragma: no cover
+                with self.assertRaises(ValueError):
+                    prepare_one_body_squared_evolution(one_body_squares[l])
+                continue
             else:
                 density_density_matrix, basis_transformation_matrix = (
                     prepare_one_body_squared_evolution(one_body_squares[l]))

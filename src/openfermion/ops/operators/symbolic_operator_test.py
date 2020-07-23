@@ -313,6 +313,8 @@ class SymbolicOperatorTest1(unittest.TestCase):
 
     def test_raises_error_negative_indices(self):
         with self.assertRaises(ValueError):
+            _ = DummyOperator2('X-1 Y0')
+        with self.assertRaises(ValueError):
             _ = DummyOperator1('-1^ 0')
 
     def test_init_long_str(self):

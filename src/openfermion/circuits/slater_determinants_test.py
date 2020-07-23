@@ -84,16 +84,12 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
             state = jw_configuration_state(start_orbitals, n_qubits)
 
             # Apply the circuit
-            particle_hole_transformation = (
-                jw_sparse_particle_hole_transformation_last_mode(n_qubits))
             for parallel_ops in circuit_description:
                 for op in parallel_ops:
-                    if op == 'pht':
-                        state = particle_hole_transformation.dot(state)
-                    else:
-                        i, j, theta, phi = op
-                        state = jw_sparse_givens_rotation(
-                            i, j, theta, phi, n_qubits).dot(state)
+                    self.assertTrue(op != 'pht')
+                    i, j, theta, phi = op
+                    state = jw_sparse_givens_rotation(
+                        i, j, theta, phi, n_qubits).dot(state)
 
             # Check that the state obtained using the circuit is a ground state
             difference = sparse_operator * state - ground_energy * state

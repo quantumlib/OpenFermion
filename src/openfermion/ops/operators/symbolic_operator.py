@@ -136,12 +136,14 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         if term is None:
             return
 
+        print(term)
         # Parse the term
         # Sequence input
         if isinstance(term, (list, tuple)):
             term = self._parse_sequence(term)
         # String input
         elif isinstance(term, str):
+            print('parsing string')
             term = self._parse_string(term)
         # Invalid input type
         else:
@@ -249,20 +251,30 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         # Convert the string representations of the factors to tuples
         processed_term = []
         for factor in factors:
+            print(factor)
             # Get the index and action string
             if self.action_before_index:
                 # The index is at the end of the string; find where it starts.
                 if not factor[-1].isdigit():
                     raise ValueError('Invalid factor {}.'.format(factor))
                 index_start = len(factor) - 1
+
                 while index_start > 0 and factor[index_start - 1].isdigit():
                     index_start -= 1
+                if factor[index_start - 1] == '-':
+                    raise ValueError('Invalid index in factor {}. '
+                                     'The index should be a non-negative '
+                                     'integer.'.format(factor))
 
                 index = int(factor[index_start:])
                 action_string = factor[:index_start]
             else:
                 # The index is at the beginning of the string; find where
                 # it ends
+                if factor[0] == '-':
+                    raise ValueError('Invalid index in factor {}. '
+                                    'The index should be a non-negative '
+                                    'integer.'.format(factor))
                 if not factor[0].isdigit():
                     raise ValueError('Invalid factor {}.'.format(factor))
                 index_end = 1
@@ -272,11 +284,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
                 index = int(factor[:index_end])
                 action_string = factor[index_end:]
-            # Check that the index is valid
-            if index < 0:
-                raise ValueError('Invalid index in factor {}. '
-                                 'The index should be a non-negative '
-                                 'integer.'.format(factor))
+
             # Convert the action string to an action
             if action_string in self.action_strings:
                 action = self.actions[self.action_strings.index(action_string)]
