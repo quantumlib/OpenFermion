@@ -4,7 +4,8 @@ from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.representations import InteractionOperator
 from openfermion.chem.reduced_hamiltonian import make_reduced_hamiltonian
-from openfermion.linalg.sparse_tools import get_number_preserving_sparse_operator
+from openfermion.linalg.sparse_tools import (
+    get_number_preserving_sparse_operator)
 from openfermion.transforms.opconversions import get_fermion_operator
 
 
