@@ -88,8 +88,8 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
                 for op in parallel_ops:
                     self.assertTrue(op != 'pht')
                     i, j, theta, phi = op
-                    state = jw_sparse_givens_rotation(
-                        i, j, theta, phi, n_qubits).dot(state)
+                    state = jw_sparse_givens_rotation(i, j, theta, phi,
+                                                      n_qubits).dot(state)
 
             # Check that the state obtained using the circuit is a ground state
             difference = sparse_operator * state - ground_energy * state

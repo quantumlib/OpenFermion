@@ -273,8 +273,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                 # it ends
                 if factor[0] == '-':
                     raise ValueError('Invalid index in factor {}. '
-                                    'The index should be a non-negative '
-                                    'integer.'.format(factor))
+                                     'The index should be a non-negative '
+                                     'integer.'.format(factor))
                 if not factor[0].isdigit():
                     raise ValueError('Invalid factor {}.'.format(factor))
                 index_end = 1
