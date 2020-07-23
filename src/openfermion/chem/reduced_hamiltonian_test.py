@@ -1,5 +1,5 @@
 import os
-import numpy as np
+import numpy
 from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.representations import InteractionOperator
@@ -23,8 +23,8 @@ def test_constant_one_body():
     reduced_ham = make_reduced_hamiltonian(molecule.get_molecular_hamiltonian(),
                                            molecule.n_electrons)
 
-    assert np.isclose(reduced_ham.constant, molecule.nuclear_repulsion)
-    assert np.allclose(reduced_ham.one_body_tensor, 0)
+    assert numpy.isclose(reduced_ham.constant, molecule.nuclear_repulsion)
+    assert numpy.allclose(reduced_ham.one_body_tensor, 0)
 
 
 def test_fci_energy():
@@ -32,24 +32,24 @@ def test_fci_energy():
     molecule = MolecularData(filename=filename)
     reduced_ham = make_reduced_hamiltonian(molecule.get_molecular_hamiltonian(),
                                            molecule.n_electrons)
-    np_ham = get_number_preserving_sparse_operator(
+    numpy_ham = get_number_preserving_sparse_operator(
         get_fermion_operator(reduced_ham),
         molecule.n_qubits,
         num_electrons=molecule.n_electrons,
         spin_preserving=True)
 
-    w, _ = np.linalg.eigh(np_ham.toarray())
-    assert np.isclose(molecule.fci_energy, w[0])
+    w, _ = numpy.linalg.eigh(numpy_ham.toarray())
+    assert numpy.isclose(molecule.fci_energy, w[0])
 
     filename = os.path.join(DATA_DIRECTORY, "H1-Li1_sto-3g_singlet_1.45.hdf5")
     molecule = MolecularData(filename=filename)
     reduced_ham = make_reduced_hamiltonian(molecule.get_molecular_hamiltonian(),
                                            molecule.n_electrons)
-    np_ham = get_number_preserving_sparse_operator(
+    numpy_ham = get_number_preserving_sparse_operator(
         get_fermion_operator(reduced_ham),
         molecule.n_qubits,
         num_electrons=molecule.n_electrons,
         spin_preserving=True)
 
-    w, _ = np.linalg.eigh(np_ham.toarray())
-    assert np.isclose(molecule.fci_energy, w[0])
+    w, _ = numpy.linalg.eigh(numpy_ham.toarray())
+    assert numpy.isclose(molecule.fci_energy, w[0])
