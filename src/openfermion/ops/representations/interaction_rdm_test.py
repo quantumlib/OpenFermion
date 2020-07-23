@@ -80,9 +80,11 @@ class InteractionRDMTest(unittest.TestCase):
         temp_rdm = self.molecule.get_molecular_rdm()
         one_body_tensor_test = numpy.eye(4)
         temp_rdm.one_body_tensor = one_body_tensor_test
-        self.assertTrue(numpy.array_equal(temp_rdm.n_body_tensors[(1, 0)],
-                                          one_body_tensor_test))
-        two_body_tensor_test = numpy.zeros([4,4,4,4])
+        self.assertTrue(
+            numpy.array_equal(temp_rdm.n_body_tensors[(1, 0)],
+                              one_body_tensor_test))
+        two_body_tensor_test = numpy.zeros([4, 4, 4, 4])
         temp_rdm.two_body_tensor = two_body_tensor_test
-        self.assertTrue(numpy.array_equal(temp_rdm.n_body_tensors[(1, 1, 0, 0)],
-                                          two_body_tensor_test))
+        self.assertTrue(
+            numpy.array_equal(temp_rdm.n_body_tensors[(1, 1, 0, 0)],
+                              two_body_tensor_test))
