@@ -144,8 +144,7 @@ class GivensDecompositionTest(unittest.TestCase):
 
     def test_forced_insertion_square(self):
         Q = numpy.eye(4)
-        givens_rotations, _ = givens_decomposition_square(
-            Q, always_insert=True)
+        givens_rotations, _ = givens_decomposition_square(Q, always_insert=True)
         assert len(givens_rotations) == 5
 
     def test_real_numbers(self):
