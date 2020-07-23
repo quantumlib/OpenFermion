@@ -15,8 +15,9 @@ import uuid
 import shutil
 import numpy
 import h5py
+import os
 
-from openfermion.config import *
+from openfermion.config import EQ_TOLERANCE, DATA_DIRECTORY
 import openfermion.ops.representations as reps
 r"""NOTE ON PQRS CONVENTION:
   The data structures which hold fermionic operators / integrals /
