@@ -249,7 +249,6 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         # Convert the string representations of the factors to tuples
         processed_term = []
         for factor in factors:
-            print(factor)
             # Get the index and action string
             if self.action_before_index:
                 # The index is at the end of the string; find where it starts.
