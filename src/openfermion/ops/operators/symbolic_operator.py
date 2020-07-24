@@ -136,14 +136,12 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         if term is None:
             return
 
-        print(term)
         # Parse the term
         # Sequence input
         if isinstance(term, (list, tuple)):
             term = self._parse_sequence(term)
         # String input
         elif isinstance(term, str):
-            print('parsing string')
             term = self._parse_string(term)
         # Invalid input type
         else:
@@ -251,7 +249,6 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         # Convert the string representations of the factors to tuples
         processed_term = []
         for factor in factors:
-            print(factor)
             # Get the index and action string
             if self.action_before_index:
                 # The index is at the end of the string; find where it starts.
