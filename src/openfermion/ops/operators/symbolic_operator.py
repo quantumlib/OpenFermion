@@ -136,14 +136,12 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         if term is None:
             return
 
-        print(term)
         # Parse the term
         # Sequence input
         if isinstance(term, (list, tuple)):
             term = self._parse_sequence(term)
         # String input
         elif isinstance(term, str):
-            print('parsing string')
             term = self._parse_string(term)
         # Invalid input type
         else:
