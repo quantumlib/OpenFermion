@@ -18,7 +18,8 @@ from openfermion.testing.testing_utils import (random_quadratic_hamiltonian,
 
 from openfermion.linalg.givens_rotations import (
     double_givens_rotate, fermionic_gaussian_decomposition, swap_columns,
-    givens_matrix_elements, givens_rotate, givens_decomposition, swap_rows)
+    givens_matrix_elements, givens_rotate, givens_decomposition, swap_rows,
+    givens_decomposition_square)
 
 
 class SwapTests(unittest.TestCase):
@@ -127,6 +128,17 @@ class GivensDecompositionTest(unittest.TestCase):
     def setUp(self):
         self.test_dimensions = [(3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9),
                                 (4, 7), (4, 8), (4, 9)]
+
+    def test_forced_insertion(self):
+        Q = numpy.zeros([2, 4])
+        Q[0, 0] = Q[1, 1] = 1
+        givens_rotations, _, _ = givens_decomposition(Q, always_insert=True)
+        assert len(givens_rotations) == 3
+
+    def test_forced_insertion_square(self):
+        Q = numpy.eye(4)
+        givens_rotations, _ = givens_decomposition_square(Q, always_insert=True)
+        assert len(givens_rotations) == 5
 
     def test_main_procedure(self):
         for m, n in self.test_dimensions:
