@@ -11,7 +11,7 @@ from openfermion.third_party.representability._dualbasis import \
 from openfermion.third_party.representability._namedtensor import Tensor
 from openfermion.third_party.representability._multitensor import MultiTensor
 from openfermion.config import DATA_DIRECTORY
-from openfermion import MolecularData
+from openfermion.chem import MolecularData
 from openfermion.utils import map_two_pdm_to_two_hole_dm, \
     map_two_pdm_to_particle_hole_dm
 
