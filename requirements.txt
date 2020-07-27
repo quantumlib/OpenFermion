@@ -5,3 +5,4 @@ networkx
 pubchempy
 requests~=2.18
 sympy
+cirq==0.7.0
