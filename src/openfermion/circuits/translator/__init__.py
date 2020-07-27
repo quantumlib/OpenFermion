@@ -9,5 +9,5 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from .qubitoperator_to_paulisum import (
-    qubit_operator_to_pauli_sum)
+
+from .qubitoperator_to_paulisum import (qubit_operator_to_pauli_sum)
