@@ -10,15 +10,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+
+import pytest
 import numpy
 import openfermion
 import cirq
 from openfermion import QubitOperator
 
-import pytest
-
 from openfermion.circuits.translator import (
-    qubitoperator_to_pauli_sum)
+    qubit_operator_to_pauli_sum)
 from openfermion.circuits.translator.qubitoperator_to_paulisum import (
     _qubit_operator_term_to_pauli_string)
 
