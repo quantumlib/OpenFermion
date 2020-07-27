@@ -17,9 +17,14 @@ import numpy
 
 import cirq
 
-from openfermion import gates, ops, primitives, utils
-from openfermion.trotter.trotter_algorithm import (Hamiltonian, TrotterStep,
-                                                   TrotterAlgorithm)
+import openfermion.ops as ops
+import openfermion.circuits.gates as gates
+import openfermion.circuits.primitives as primitives
+from openfermion.circuits.low_rank import (low_rank_two_body_decomposition,
+                                           prepare_one_body_squared_evolution)
+from openfermion.circuits.trotter.trotter_algorithm import (Hamiltonian,
+                                                            TrotterStep,
+                                                            TrotterAlgorithm)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import
@@ -101,7 +106,7 @@ class LowRankTrotterStep(TrotterStep):
 
         # Perform the low rank decomposition of two-body operator.
         self.eigenvalues, self.one_body_squares, one_body_correction, _ = (
-            utils.low_rank_two_body_decomposition(
+            low_rank_two_body_decomposition(
                 hamiltonian.two_body_tensor,
                 truncation_threshold=self.truncation_threshold,
                 final_rank=self.final_rank,
@@ -112,8 +117,7 @@ class LowRankTrotterStep(TrotterStep):
         self.basis_change_matrices = []  # type: List[numpy.ndarray]
         for j in range(len(self.eigenvalues)):
             density_density_matrix, basis_change_matrix = (
-                utils.prepare_one_body_squared_evolution(
-                    self.one_body_squares[j]))
+                prepare_one_body_squared_evolution(self.one_body_squares[j]))
             self.scaled_density_density_matrices.append(
                 numpy.real(self.eigenvalues[j] * density_density_matrix))
             self.basis_change_matrices.append(basis_change_matrix)

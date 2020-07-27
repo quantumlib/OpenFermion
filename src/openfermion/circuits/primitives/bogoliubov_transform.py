@@ -16,10 +16,11 @@ from typing import (Iterable, List, Optional, Sequence, Tuple, Union, cast)
 import numpy
 
 import cirq
-from openfermion.ops._givens_rotations import (fermionic_gaussian_decomposition,
-                                               givens_decomposition_square)
 
-from openfermion import gates, utils
+from openfermion.linalg import (fermionic_gaussian_decomposition,
+                                givens_decomposition_square)
+import openfermion.circuits as circuits
+from openfermion.circuits.gates import Ryxxy
 
 
 def bogoliubov_transform(
@@ -174,7 +175,7 @@ def _slater_basis_change(qubits: Sequence[cirq.Qid],
         yield (cirq.X(qubits[j])
                for j in range(n_qubits)
                if (j < n_occupied) != (j in initially_occupied_orbitals_set))
-        circuit_description = utils.slater_determinant_preparation_circuit(
+        circuit_description = circuits.slater_determinant_preparation_circuit(
             transformation_matrix)
 
     yield _ops_from_givens_rotations_circuit_description(
@@ -227,5 +228,5 @@ def _ops_from_givens_rotations_circuit_description(
                 yield cirq.X(qubits[-1])
             else:
                 i, j, theta, phi = cast(Tuple[int, int, float, float], op)
-                yield gates.Ryxxy(theta).on(qubits[i], qubits[j])
+                yield Ryxxy(theta).on(qubits[i], qubits[j])
                 yield cirq.Z(qubits[j])**(phi / numpy.pi)

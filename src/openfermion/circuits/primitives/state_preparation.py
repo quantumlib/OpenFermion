@@ -18,7 +18,9 @@ import numpy
 
 import cirq
 
-from openfermion import gates, ops, utils
+from openfermion.circuits.gates import Ryxxy
+from openfermion.circuits import (gaussian_state_preparation_circuit,
+                                  slater_determinant_preparation_circuit)
 
 if TYPE_CHECKING:
     import openfermion
@@ -84,9 +86,8 @@ def _generic_gaussian_circuit(
         initial_state: Union[int, Sequence[int]]) -> cirq.OP_TREE:
 
     n_qubits = len(qubits)
-    circuit_description, start_orbitals = (
-        utils.gaussian_state_preparation_circuit(quadratic_hamiltonian,
-                                                 occupied_orbitals))
+    circuit_description, start_orbitals = (gaussian_state_preparation_circuit(
+        quadratic_hamiltonian, occupied_orbitals))
 
     if isinstance(initial_state, int):
         initially_occupied_orbitals = _occupied_orbitals(
@@ -119,10 +120,9 @@ def _spin_symmetric_gaussian_circuit(
 
     for spin_sector in range(2):
         circuit_description, start_orbitals = (
-            utils.gaussian_state_preparation_circuit(
-                quadratic_hamiltonian,
-                occupied_orbitals[spin_sector],
-                spin_sector=spin_sector))
+            gaussian_state_preparation_circuit(quadratic_hamiltonian,
+                                               occupied_orbitals[spin_sector],
+                                               spin_sector=spin_sector))
 
         def index_map(i):
             return i + spin_sector * (n_qubits // 2)
@@ -181,7 +181,7 @@ def prepare_slater_determinant(qubits: Sequence[cirq.Qid],
             Default is 0, the all zeros state.
     """
     n_qubits = len(qubits)
-    circuit_description = utils.slater_determinant_preparation_circuit(
+    circuit_description = slater_determinant_preparation_circuit(
         slater_determinant_matrix)
     n_occupied = slater_determinant_matrix.shape[0]
 
@@ -219,5 +219,5 @@ def _ops_from_givens_rotations_circuit_description(
                 yield cirq.X(qubits[-1])
             else:
                 i, j, theta, phi = cast(Tuple[int, int, float, float], op)
-                yield gates.Ryxxy(theta).on(qubits[i], qubits[j])
+                yield Ryxxy(theta).on(qubits[i], qubits[j])
                 yield cirq.Z(qubits[j])**(phi / numpy.pi)

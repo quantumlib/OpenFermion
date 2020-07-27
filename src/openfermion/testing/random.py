@@ -16,7 +16,7 @@ import itertools
 from typing import Optional
 
 from openfermion import ops
-from openfermion.utils._testing_utils import random_interaction_operator
+from openfermion.testing.testing_utils import random_interaction_operator
 
 if TYPE_CHECKING:
     import openfermion

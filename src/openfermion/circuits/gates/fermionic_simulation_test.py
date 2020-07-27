@@ -21,7 +21,7 @@ import cirq
 import cirq.contrib.acquaintance as cca
 
 import openfermion
-from openfermion.gates.fermionic_simulation import (
+from openfermion.circuits.gates.fermionic_simulation import (
     sum_of_interaction_operator_gate_generators,
     state_swap_eigen_component,
 )

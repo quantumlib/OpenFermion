@@ -11,11 +11,16 @@
 # limitations under the License.
 """Algorithms for performing Trotter steps."""
 
-from openfermion.trotter.algorithms.linear_swap_network import (
+from openfermion.circuits.trotter.algorithms.linear_swap_network import (
     LINEAR_SWAP_NETWORK, LinearSwapNetworkTrotterAlgorithm)
 
-from openfermion.trotter.algorithms.low_rank import (LOW_RANK,
-                                                     LowRankTrotterAlgorithm)
+from openfermion.circuits.trotter.algorithms.low_rank import (
+    LOW_RANK, LowRankTrotterAlgorithm)
 
-from openfermion.trotter.algorithms.split_operator import (
-    SPLIT_OPERATOR, SplitOperatorTrotterAlgorithm)
+from .split_operator import (SplitOperatorTrotterAlgorithm,
+                             SplitOperatorTrotterStep,
+                             SymmetricSplitOperatorTrotterStep,
+                             ControlledAsymmetricSplitOperatorTrotterStep,
+                             AsymmetricSplitOperatorTrotterStep,
+                             ControlledSymmetricSplitOperatorTrotterStep,
+                             SPLIT_OPERATOR)

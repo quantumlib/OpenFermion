@@ -19,7 +19,10 @@ import scipy.linalg as la
 import sympy
 import cirq
 
-from openfermion import ops, transforms, utils
+import openfermion.ops as ops
+from openfermion.transforms import get_interaction_operator
+from openfermion.linalg import jordan_wigner_sparse
+from openfermion.utils import hermitian_conjugated
 
 if TYPE_CHECKING:
     import openfermion
@@ -246,8 +249,8 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
     def qubit_generator_matrix(self) -> np.ndarray:
         """The matrix G such that the gate's unitary is exp(-i t G) with
         exponent t."""
-        return utils.jordan_wigner_sparse(self.fermion_generator,
-                                          self.num_qubits()).toarray()
+        return jordan_wigner_sparse(self.fermion_generator,
+                                    self.num_qubits()).toarray()
 
     @property
     def fermion_generator(self) -> 'openfermion.FermionOperator':
@@ -257,7 +260,7 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
             w * G
             for w, G in zip(self.weights, self.fermion_generator_components())),
                              ops.FermionOperator())
-        return half_generator + utils.hermitian_conjugated(half_generator)
+        return half_generator + hermitian_conjugated(half_generator)
 
     def _diagram_exponent(self,
                           args: cirq.CircuitDiagramInfoArgs,
@@ -385,8 +388,7 @@ class InteractionOperatorFermionicGate(ParityPreservingFermionicGate):
         else:
             n_modes = operator.n_qubits
         fermion_operator = self.fermion_generator
-        return transforms.get_interaction_operator(fermion_operator,
-                                                   n_qubits=n_modes)
+        return get_interaction_operator(fermion_operator, n_qubits=n_modes)
 
 
 class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,

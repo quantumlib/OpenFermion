@@ -16,9 +16,10 @@ import cirq
 from cirq import LineQubit
 
 import openfermion
-from openfermion import (get_sparse_operator, prepare_gaussian_state,
-                         prepare_slater_determinant)
-from openfermion.utils._testing_utils import random_quadratic_hamiltonian
+from openfermion.linalg import get_sparse_operator
+from openfermion.circuits.primitives.state_preparation import (
+    prepare_slater_determinant, prepare_gaussian_state)
+from openfermion.testing import random_quadratic_hamiltonian
 
 
 @pytest.mark.parametrize(

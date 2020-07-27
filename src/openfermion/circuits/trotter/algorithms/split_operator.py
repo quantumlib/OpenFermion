@@ -15,9 +15,12 @@ from typing import cast, Optional, Sequence, Tuple
 
 import cirq
 
-from openfermion import gates, ops, primitives
-from openfermion.trotter.trotter_algorithm import (Hamiltonian, TrotterStep,
-                                                   TrotterAlgorithm)
+import openfermion.circuits.gates as gates
+import openfermion.ops as ops
+import openfermion.circuits.primitives as primitives
+from openfermion.circuits.trotter.trotter_algorithm import (Hamiltonian,
+                                                            TrotterStep,
+                                                            TrotterAlgorithm)
 
 
 class SplitOperatorTrotterAlgorithm(TrotterAlgorithm):

@@ -9,12 +9,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from openfermion.testing.random import (
-    random_interaction_operator_term,)
+    random_interaction_operator_term)
 
-from openfermion.testing.wrapped import (
-    assert_eigengate_implements_consistent_protocols,
-    assert_equivalent_repr,
-    assert_implements_consistent_protocols,
-)
+from .testing_utils import (
+    haar_random_vector, random_antisymmetric_matrix, random_hermitian_matrix,
+    random_unitary_matrix, random_qubit_operator,
+    random_diagonal_coulomb_hamiltonian, random_interaction_operator,
+    random_quadratic_hamiltonian, EqualsTester, module_importable)
+
+
+from .wrapped import (
+    assert_eigengate_implements_consistent_protocols, assert_equivalent_repr,
+    assert_implements_consistent_protocols)

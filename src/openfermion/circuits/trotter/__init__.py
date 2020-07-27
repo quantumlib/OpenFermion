@@ -9,6 +9,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from .algorithms import *
+
 from .diagonal_coulomb_trotter_error import (
     diagonal_coulomb_potential_and_kinetic_terms_as_arrays,
     bit_mask_of_modes_acted_on_by_fermionic_terms,
@@ -22,5 +24,9 @@ from .low_depth_trotter_error import (
     low_depth_second_order_trotter_error_operator,
     low_depth_second_order_trotter_error_bound,
     simulation_ordered_grouped_low_depth_terms_with_info, stagger_with_info)
+
+from .simulate_trotter import simulate_trotter
+
+from .trotter_algorithm import TrotterAlgorithm, TrotterStep
 
 from .trotter_error import (error_bound, error_operator, trotter_steps_required)

@@ -11,15 +11,10 @@
 # limitations under the License.
 """Building blocks of algorithms for quantum simulation."""
 
-from openfermion.primitives.bogoliubov_transform import bogoliubov_transform
+from .bogoliubov_transform import bogoliubov_transform
 
-from openfermion.primitives.ffft import ffft
+from .ffft import ffft
 
-from openfermion.primitives.optimal_givens_decomposition import (
-    optimal_givens_decomposition)
+from .optimal_givens_decomposition import optimal_givens_decomposition
 
-from openfermion.primitives.state_preparation import (prepare_gaussian_state,
-                                                      prepare_slater_determinant
-                                                     )
-
-from openfermion.primitives.swap_network import swap_network
+from .swap_network import swap_network

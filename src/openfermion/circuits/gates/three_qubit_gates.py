@@ -10,14 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Common gates that target three qubits."""
-
-from typing import Optional
-import warnings
-
 import numpy as np
 import cirq
-
-from openfermion.gates import common_gates
 
 
 def rot111(rads: float) -> cirq.CCZPowGate:

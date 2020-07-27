@@ -11,30 +11,15 @@
 # limitations under the License.
 """Gates useful for simulating fermions."""
 
-from openfermion.gates.common_gates import (
-    FSWAP,
-    FSwapPowGate,
-    Rxxyy,
-    Ryxxy,
-    Rzz,
-    rot11,
-)
+from .common_gates import (FSWAP, FSwapPowGate, Rxxyy, Ryxxy, Rzz, rot11)
 
-from openfermion.gates.three_qubit_gates import (
-    CRxxyy,
-    CRyxxy,
-    rot111,
-)
-
-from openfermion.gates.fermionic_simulation import (
+from .fermionic_simulation import (
+    state_swap_eigen_component,
     fermionic_simulation_gates_from_interaction_operator,
-    ParityPreservingFermionicGate,
-    QuadraticFermionicSimulationGate,
-    CubicFermionicSimulationGate,
-    QuarticFermionicSimulationGate,
-)
+    sum_of_interaction_operator_gate_generators, ParityPreservingFermionicGate,
+    InteractionOperatorFermionicGate, QuadraticFermionicSimulationGate,
+    CubicFermionicSimulationGate, QuarticFermionicSimulationGate)
 
-from openfermion.gates.four_qubit_gates import (
-    DoubleExcitation,
-    DoubleExcitationGate,
-)
+from .four_qubit_gates import DoubleExcitation, DoubleExcitationGate
+
+from .three_qubit_gates import (rot111, CRxxyy, CRyxxy)

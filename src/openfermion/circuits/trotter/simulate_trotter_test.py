@@ -19,14 +19,14 @@ import cirq
 
 import openfermion
 from openfermion import simulate_trotter
-from openfermion.trotter import (
+from openfermion.circuits.trotter import (
     LINEAR_SWAP_NETWORK,
     LOW_RANK,
     LowRankTrotterAlgorithm,
     SPLIT_OPERATOR,
     TrotterAlgorithm,
 )
-from openfermion.trotter.trotter_algorithm import Hamiltonian
+from openfermion.circuits.trotter.trotter_algorithm import Hamiltonian
 
 
 def fidelity(state1, state2):

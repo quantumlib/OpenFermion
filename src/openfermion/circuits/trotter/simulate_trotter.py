@@ -16,9 +16,11 @@ from typing import Optional, Sequence
 import cirq
 
 from openfermion import ops
-from openfermion.trotter.trotter_algorithm import (Hamiltonian, TrotterStep,
-                                                   TrotterAlgorithm)
-from openfermion.trotter.algorithms import (LINEAR_SWAP_NETWORK, LOW_RANK)
+from openfermion.circuits.trotter.trotter_algorithm import (Hamiltonian,
+                                                            TrotterStep,
+                                                            TrotterAlgorithm)
+from openfermion.circuits.trotter.algorithms import (LINEAR_SWAP_NETWORK,
+                                                     LOW_RANK)
 
 
 def simulate_trotter(qubits: Sequence[cirq.Qid],

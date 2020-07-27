@@ -18,7 +18,7 @@ import cirq
 from cirq import LineQubit
 
 from openfermion import bogoliubov_transform, ffft
-from openfermion.primitives.ffft import _F0Gate, _TwiddleGate
+from openfermion.circuits.primitives.ffft import _F0Gate, _TwiddleGate
 
 if TYPE_CHECKING:
     from typing import Dict

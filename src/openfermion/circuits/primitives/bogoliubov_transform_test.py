@@ -19,8 +19,8 @@ from cirq import LineQubit
 
 import openfermion
 from openfermion import bogoliubov_transform, get_sparse_operator
-from openfermion.utils import (random_quadratic_hamiltonian,
-                               random_unitary_matrix)
+from openfermion.testing import (random_quadratic_hamiltonian,
+                                 random_unitary_matrix)
 
 
 def fourier_transform_matrix(n_modes):

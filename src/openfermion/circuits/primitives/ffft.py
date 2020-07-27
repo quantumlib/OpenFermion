@@ -18,8 +18,8 @@ from sympy.ntheory import factorint
 
 import cirq
 import cirq.contrib.acquaintance.permutation
-from openfermion import gates
-from openfermion.primitives import bogoliubov_transform
+from openfermion.circuits.gates import FSWAP
+from .bogoliubov_transform import bogoliubov_transform
 
 
 class _F0Gate(cirq.MatrixGate):
@@ -286,4 +286,4 @@ def _permute(qubits: Sequence[cirq.Qid],
     """
     return cirq.contrib.acquaintance.permutation.LinearPermutationGate(
         len(qubits), {i: permutation[i] for i in range(len(permutation))},
-        gates.FSWAP).on(*qubits)
+        FSWAP).on(*qubits)
