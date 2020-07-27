@@ -10,17 +10,19 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from ._equality_constraint_projection import (apply_constraints,
-                                              constraint_matrix,
-                                              linearize_term,
-                                              unlinearize_term)
+from .equality_constraint_projection import (apply_constraints,
+                                             constraint_matrix, linearize_term,
+                                             unlinearize_term)
 
 from ._quantum_subspace_expansion import (calculate_qse_spectrum,
                                           get_additional_operators)
 
-from ._rdm_equality_constraints import (one_body_fermion_constraints,
-                                        two_body_fermion_constraints)
+from .get_interaction_rdm import get_interaction_rdm
 
-from ._qubit_partitioning import (binary_partition_iterator,
-                                  partition_iterator,
-                                  pauli_string_iterator)
+from .rdm_equality_constraints import (one_body_fermion_constraints,
+                                       two_body_fermion_constraints)
+
+from .qubit_partitioning import (binary_partition_iterator, partition_iterator,
+                                 pauli_string_iterator)
+
+from .prony import prony

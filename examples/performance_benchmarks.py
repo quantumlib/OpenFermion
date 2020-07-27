@@ -16,23 +16,16 @@ import logging
 
 import numpy
 
-from future.utils import iteritems
-
-from openfermion import (commutator,
-                         FermionOperator,
-                         Grid,
-                         jellium_model,
-                         jordan_wigner,
-                         normal_ordered,
-                         QubitOperator)
-from openfermion.transforms import get_fermion_operator
-from openfermion.utils import (
-    jordan_wigner_sparse,
-    LinearQubitOperator,
-    LinearQubitOperatorOptions,
-    ParallelLinearQubitOperator)
-from openfermion.utils._testing_utils import random_interaction_operator
-from openfermion.utils._commutator_diagonal_coulomb_operator import (
+from openfermion.utils import commutator, Grid, normal_ordered
+from openfermion.ops import FermionOperator, QubitOperator
+from openfermion.hamiltonians import jellium_model
+from openfermion.transforms.opconversions import (jordan_wigner,
+                                                  get_fermion_operator)
+from openfermion.linalg import (jordan_wigner_sparse,
+                                LinearQubitOperatorOptions, LinearQubitOperator,
+                                ParallelLinearQubitOperator)
+from openfermion.testing.testing_utils import random_interaction_operator
+from openfermion.utils.commutator_diagonal_coulomb_operator import (
     commutator_ordered_diagonal_coulomb_with_two_body_operator)
 
 
@@ -216,7 +209,7 @@ def benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(
     part_a = FermionOperator.zero()
     part_b = FermionOperator.zero()
     add_to_a_or_b = 0  # add to a if 0; add to b if 1
-    for term, coeff in iteritems(hamiltonian.terms):
+    for term, coeff in hamiltonian.terms.items():
         # Partition terms in the Hamiltonian into part_a or part_b
         if add_to_a_or_b:
             part_a += FermionOperator(term, coeff)
