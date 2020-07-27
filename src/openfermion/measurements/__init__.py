@@ -16,7 +16,6 @@ from .equality_constraint_projection import (apply_constraints,
 
 from .get_interaction_rdm import get_interaction_rdm
 
-
 from .rdm_equality_constraints import (one_body_fermion_constraints,
                                        two_body_fermion_constraints)
 
