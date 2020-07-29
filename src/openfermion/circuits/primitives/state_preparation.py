@@ -19,8 +19,8 @@ import numpy
 import cirq
 
 from openfermion.circuits.gates import Ryxxy
-from openfermion.circuits import (gaussian_state_preparation_circuit,
-                                  slater_determinant_preparation_circuit)
+from openfermion.circuits.slater_determinants import (
+    gaussian_state_preparation_circuit, slater_determinant_preparation_circuit)
 
 if TYPE_CHECKING:
     import openfermion

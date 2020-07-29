@@ -19,7 +19,7 @@ import cirq
 
 from openfermion.linalg import (fermionic_gaussian_decomposition,
                                 givens_decomposition_square)
-import openfermion.circuits as circuits
+from openfermion.circuits.primitives.state_preparation import slater_determinant_preparation_circuit
 from openfermion.circuits.gates import Ryxxy
 
 
@@ -175,7 +175,7 @@ def _slater_basis_change(qubits: Sequence[cirq.Qid],
         yield (cirq.X(qubits[j])
                for j in range(n_qubits)
                if (j < n_occupied) != (j in initially_occupied_orbitals_set))
-        circuit_description = circuits.slater_determinant_preparation_circuit(
+        circuit_description = slater_determinant_preparation_circuit(
             transformation_matrix)
 
     yield _ops_from_givens_rotations_circuit_description(
