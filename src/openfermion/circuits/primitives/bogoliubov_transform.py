@@ -17,10 +17,7 @@ import numpy
 
 import cirq
 
-from openfermion.linalg import (fermionic_gaussian_decomposition,
-                                givens_decomposition_square)
-from openfermion.circuits.primitives.state_preparation import slater_determinant_preparation_circuit
-from openfermion.circuits.gates import Ryxxy
+from openfermion import circuits, linalg
 
 
 def bogoliubov_transform(
@@ -157,7 +154,7 @@ def _slater_basis_change(qubits: Sequence[cirq.Qid],
     n_qubits = len(qubits)
 
     if initially_occupied_orbitals is None:
-        decomposition, diagonal = givens_decomposition_square(
+        decomposition, diagonal = linalg.givens_decomposition_square(
             transformation_matrix)
         circuit_description = list(reversed(decomposition))
         # The initial state is not a computational basis state so the
@@ -175,7 +172,7 @@ def _slater_basis_change(qubits: Sequence[cirq.Qid],
         yield (cirq.X(qubits[j])
                for j in range(n_qubits)
                if (j < n_occupied) != (j in initially_occupied_orbitals_set))
-        circuit_description = slater_determinant_preparation_circuit(
+        circuit_description = circuits.slater_determinant_preparation_circuit(
             transformation_matrix)
 
     yield _ops_from_givens_rotations_circuit_description(
@@ -198,7 +195,7 @@ def _gaussian_basis_change(qubits: Sequence[cirq.Qid],
          numpy.conjugate(left_block)])
 
     decomposition, left_decomposition, _, left_diagonal = (
-        fermionic_gaussian_decomposition(transformation_matrix))
+        linalg.fermionic_gaussian_decomposition(transformation_matrix))
 
     if (initially_occupied_orbitals is not None and
             len(initially_occupied_orbitals) == 0):
@@ -228,5 +225,5 @@ def _ops_from_givens_rotations_circuit_description(
                 yield cirq.X(qubits[-1])
             else:
                 i, j, theta, phi = cast(Tuple[int, int, float, float], op)
-                yield Ryxxy(theta).on(qubits[i], qubits[j])
+                yield circuits.Ryxxy(theta).on(qubits[i], qubits[j])
                 yield cirq.Z(qubits[j])**(phi / numpy.pi)
