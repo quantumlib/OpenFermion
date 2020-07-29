@@ -17,6 +17,5 @@ from .testing_utils import (
     random_diagonal_coulomb_hamiltonian, random_interaction_operator,
     random_quadratic_hamiltonian, EqualsTester, module_importable)
 
-from .wrapped import (assert_eigengate_implements_consistent_protocols,
-                      assert_equivalent_repr,
+from .wrapped import (assert_equivalent_repr,
                       assert_implements_consistent_protocols)

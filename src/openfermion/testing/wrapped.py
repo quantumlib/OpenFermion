@@ -55,29 +55,3 @@ def assert_implements_consistent_protocols(
         setup_code=setup_code,
         global_vals=global_vals,
         local_vals=local_vals)
-
-
-def assert_eigengate_implements_consistent_protocols(
-        eigen_gate_type: Type[cirq.EigenGate],
-        *,
-        exponents: Sequence[Union[sympy.Basic, float]] = (0, 1, -1, 0.25,
-                                                          -0.5, 0.1,
-                                                          sympy.Symbol('s')),
-        global_shifts: Sequence[float] = (0, -0.5, 0.1),
-        qubit_count: Optional[int] = None,
-        ignoring_global_phase: bool = False,
-        setup_code: str = _setup_code,
-        global_vals: Optional[Dict[str, Any]] = None,
-        local_vals: Optional[Dict[str, Any]] = None) -> None:
-    """Checks that an EigenGate subclass is internally consistent and has a
-    good __repr__."""
-
-    cirq.testing.assert_eigengate_implements_consistent_protocols(
-        eigen_gate_type,
-        exponents=exponents,
-        global_shifts=global_shifts,
-        qubit_count=qubit_count,
-        ignoring_global_phase=ignoring_global_phase,
-        setup_code=setup_code,
-        global_vals=global_vals,
-        local_vals=local_vals)
