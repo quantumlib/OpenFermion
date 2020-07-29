@@ -144,8 +144,8 @@ class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
         n_qubits = len(qubits)
 
         # Change to the basis in which the one-body term is diagonal
-        yield bogoliubov_transform(
-            qubits, self.one_body_basis_change_matrix.T.conj())
+        yield bogoliubov_transform(qubits,
+                                   self.one_body_basis_change_matrix.T.conj())
 
         # Simulate the one-body terms.
         for p in range(n_qubits):
@@ -164,8 +164,7 @@ class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
             # current one
             merged_basis_change_matrix = numpy.dot(prior_basis_matrix,
                                                    basis_change_matrix.T.conj())
-            yield bogoliubov_transform(qubits,
-                                                  merged_basis_change_matrix)
+            yield bogoliubov_transform(qubits, merged_basis_change_matrix)
 
             # Simulate the off-diagonal two-body terms.
             yield swap_network(
@@ -220,8 +219,8 @@ class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
         n_qubits = len(qubits)
 
         # Change to the basis in which the one-body term is diagonal
-        yield bogoliubov_transform(
-            qubits, self.one_body_basis_change_matrix.T.conj())
+        yield bogoliubov_transform(qubits,
+                                   self.one_body_basis_change_matrix.T.conj())
 
         # Simulate the one-body terms.
         for p in range(n_qubits):
@@ -241,14 +240,12 @@ class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
             # current one
             merged_basis_change_matrix = numpy.dot(prior_basis_matrix,
                                                    basis_change_matrix.T.conj())
-            yield bogoliubov_transform(qubits,
-                                                  merged_basis_change_matrix)
+            yield bogoliubov_transform(qubits, merged_basis_change_matrix)
 
             # Simulate the off-diagonal two-body terms.
             yield swap_network(
-                qubits, lambda p, q, a, b: rot111(
-                    -2 * two_body_coefficients[p, q] * time).on(
-                        cast(cirq.Qid, control_qubit), a, b))
+                qubits, lambda p, q, a, b: rot111(-2 * two_body_coefficients[
+                    p, q] * time).on(cast(cirq.Qid, control_qubit), a, b))
             qubits = qubits[::-1]
 
             # Simulate the diagonal two-body terms.

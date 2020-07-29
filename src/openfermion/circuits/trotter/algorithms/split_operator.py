@@ -95,8 +95,8 @@ class SymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
 
         # Simulate the two-body terms for the full time
         def two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield rot11(rads=-2 * self.hamiltonian.two_body[p, q] *
-                              time).on(a, b)
+            yield rot11(rads=-2 * self.hamiltonian.two_body[p, q] * time).on(
+                a, b)
 
         yield swap_network(qubits, two_body_interaction)
         # The qubit ordering has been reversed
@@ -207,8 +207,8 @@ class AsymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
 
         # Simulate the two-body terms for the full time
         def two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield rot11(rads=-2 * self.hamiltonian.two_body[p, q] *
-                              time).on(a, b)
+            yield rot11(rads=-2 * self.hamiltonian.two_body[p, q] * time).on(
+                a, b)
 
         yield swap_network(qubits, two_body_interaction)
         # The qubit ordering has been reversed

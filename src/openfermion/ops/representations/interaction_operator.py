@@ -134,9 +134,9 @@ class InteractionOperator(PolynomialTensor):
                             for key in [(), (1, 0), (1, 1, 0, 0)]))
 
     def with_function_applied_elementwise(self, func):
-        return type(self)(*(
-            func(tensor) for tensor in
-            [self.constant, self.one_body_tensor, self.two_body_tensor]))
+        return type(self)(
+            *(func(tensor) for tensor in
+              [self.constant, self.one_body_tensor, self.two_body_tensor]))
 
 
 def _symmetric_two_body_terms(quad, complex_valued):
