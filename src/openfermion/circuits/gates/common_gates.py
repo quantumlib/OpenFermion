@@ -63,7 +63,7 @@ class FSwapPowGate(cirq.EigenGate, cirq.InterchangeableQubitsGate,
     def _apply_unitary_(self,
                         args: cirq.ApplyUnitaryArgs) -> Optional[np.ndarray]:
         if self.exponent != 1:
-            return None
+            return NotImplemented
 
         oi = args.subspace_index(0b01)
         io = args.subspace_index(0b10)

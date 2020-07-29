@@ -131,7 +131,7 @@ lih_initial_state, lih_exact_state = produce_simulation_test_parameters(
         (hubbard_hamiltonian, long_time, hubbard_initial_state,
          hubbard_exact_state, 0, 6, SPLIT_OPERATOR, .9999),
         (h2_hamiltonian, longer_time, h2_initial_state, h2_exact_state, 0, 1,
-         LOW_RANK, .99),
+         None, .99),
         (h2_hamiltonian, longer_time, h2_initial_state, h2_exact_state, 0, 10,
          LOW_RANK, .9999),
         (lih_hamiltonian, longer_time, lih_initial_state, lih_exact_state, 0, 1,

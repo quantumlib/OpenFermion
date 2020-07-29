@@ -22,6 +22,10 @@ def test_fswap_interchangeable():
     assert openfermion.FSWAP(a, b) == openfermion.FSWAP(b, a)
 
 
+def test_fswap_num_qubits():
+    assert openfermion.FSWAP.num_qubits() == 2
+
+
 def test_fswap_inverse():
     assert openfermion.FSWAP**-1 == openfermion.FSWAP
 
@@ -53,7 +57,7 @@ def test_fswap_matrix():
                   [0, 0.5 - 0.5j, 0.5 + 0.5j, 0], [0, 0, 0, 1j]]))
 
     cirq.testing.assert_has_consistent_apply_unitary_for_various_exponents(
-        val=openfermion.FSWAP, exponents=[1])
+        val=openfermion.FSWAP, exponents=[1, 0.5])
 
 
 @pytest.mark.parametrize('rads', [
