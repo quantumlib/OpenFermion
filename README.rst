@@ -7,8 +7,8 @@ for obtaining and manipulating representations of fermionic and qubit
 Hamiltonians. For more information, see our
 `release paper <https://arxiv.org/abs/1710.07629>`__.
 
-.. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=master
-    :target: https://travis-ci.org/quantumlib/OpenFermion
+
+![Continuous Integration](https://github.com/quantumlib/OpenFermion/workflows/Continuous%20Integration/badge.svg)
 
 .. image:: https://readthedocs.org/projects/openfermion/badge/?version=latest
     :target: http://openfermion.readthedocs.io/en/latest/?badge=latest
