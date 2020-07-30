@@ -11,7 +11,8 @@
 #   limitations under the License.
 from typing import Optional, Sequence
 import cirq
-from openfermion import QubitOperator, count_qubits
+from openfermion.ops.operators import QubitOperator
+from openfermion.utils import count_qubits
 
 
 def _qubit_operator_term_to_pauli_string(term: dict, qubits: Sequence[cirq.Qid]
