@@ -11,7 +11,7 @@
 #   limitations under the License.
 """tests for contextuality.py"""
 import unittest
-from openfermion.ops.operators import QubitOperator
+from openfermion.ops.operators import QubitOperator, FermionOperator
 
 from openfermion.functionals.contextuality import is_contextual
 
@@ -27,6 +27,10 @@ class IsContextualTest(unittest.TestCase):
         self.z2 = QubitOperator('Z2', 1.)
         self.x1x2 = QubitOperator('X1 X2', 1.)
         self.y1y2 = QubitOperator('Y1 Y2', 1.)
+
+    def test_raises_exception(self):
+        with self.assertRaises(TypeError):
+            is_contextual(FermionOperator())
 
     def test_empty_qubit_operator(self):
         self.assertFalse(is_contextual(QubitOperator()))
