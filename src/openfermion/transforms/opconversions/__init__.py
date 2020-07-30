@@ -20,6 +20,8 @@ from .fenwick_tree import FenwickNode, FenwickTree
 
 from .jordan_wigner import jordan_wigner
 
+from .qubitoperator_to_paulisum import qubit_operator_to_pauli_sum
+
 from .reverse_jordan_wigner import reverse_jordan_wigner
 
 from .remove_symmetry_qubits import symmetry_conserving_bravyi_kitaev
