@@ -21,7 +21,6 @@ from openfermion.ops.representations import (PolynomialTensor,
 
 from openfermion.utils.operator_utils import count_qubits
 
-
 def get_quad_operator(operator, hbar=1.):
     """Convert to QuadOperator.
 
