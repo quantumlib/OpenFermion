@@ -7,8 +7,10 @@ for obtaining and manipulating representations of fermionic and qubit
 Hamiltonians. For more information, see our
 `release paper <https://arxiv.org/abs/1710.07629>`__.
 
-.. image:: https://travis-ci.org/quantumlib/OpenFermion.svg?branch=master
-    :target: https://travis-ci.org/quantumlib/OpenFermion
+
+
+.. image:: https://github.com/quantumlib/OpenFermion/workflows/Continuous%20Integration/badge.svg
+    :target: https://github.com/quantumlib/OpenFermion/workflows/Continuous%20Integration/badge.svg
 
 .. image:: https://readthedocs.org/projects/openfermion/badge/?version=latest
     :target: http://openfermion.readthedocs.io/en/latest/?badge=latest
@@ -16,8 +18,6 @@ Hamiltonians. For more information, see our
     
 .. image:: https://badge.fury.io/py/openfermion.svg
     :target: https://badge.fury.io/py/openfermion
-
-.. image:: https://img.shields.io/badge/python-3.4%2C%203.5%2C%203.6-brightgreen.svg
 
 
 Run the interactive Jupyter Notebooks on MyBinder:

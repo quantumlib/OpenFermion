@@ -101,6 +101,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
 
                     # Skip zero terms.
                     if (not coefficient) or (p == q) or (r == s):
+                        # coverage: ignore
                         continue
 
                     # Identify and skip one of the complex conjugates.
