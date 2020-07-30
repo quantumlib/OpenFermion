@@ -17,7 +17,8 @@ import numpy
 from openfermion.ops.operators import (FermionOperator, QubitOperator,
                                        BosonOperator, QuadOperator)
 from openfermion.transforms import jordan_wigner
-from openfermion.utils import hermitian_conjugated, normal_ordered
+from openfermion.utils import hermitian_conjugated
+from openfermion.transforms.opconversions import normal_ordered
 from openfermion.linalg.sparse_tools import pauli_matrix_map
 from openfermion.utils.commutators import (
     commutator, anticommutator, double_commutator,

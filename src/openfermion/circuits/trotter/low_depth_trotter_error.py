@@ -13,7 +13,8 @@
 import numpy
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.utils import count_qubits, normal_ordered
+from openfermion.utils import count_qubits
+from openfermion.transforms.opconversions import normal_ordered
 from openfermion.utils.commutators import (
     double_commutator, trivially_double_commutes_dual_basis,
     trivially_double_commutes_dual_basis_using_term_info)

@@ -15,8 +15,9 @@ import unittest
 
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.transforms.opconversions import (jordan_wigner,
-                                                  reverse_jordan_wigner)
-from openfermion.utils import normal_ordered
+                                                  normal_ordered)
+from openfermion.transforms.opconversions.reverse_jordan_wigner import (
+    reverse_jordan_wigner)
 
 
 class ReverseJWTest(unittest.TestCase):

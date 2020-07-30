@@ -19,6 +19,7 @@ www.openfermion.org
 """
 from openfermion.chem import *
 from openfermion.circuits import *
+from openfermion.functionals import *
 from openfermion.hamiltonians import *
 from openfermion.linalg import *
 from openfermion.measurements import *

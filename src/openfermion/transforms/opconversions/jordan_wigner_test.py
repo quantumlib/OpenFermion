@@ -23,11 +23,11 @@ from openfermion.chem import MolecularData
 from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
                                        QubitOperator)
 from openfermion.ops.representations import InteractionOperator
-from openfermion.transforms.opconversions import (get_fermion_operator,
-                                                  reverse_jordan_wigner)
-from openfermion.transforms.repconversions import (
+from openfermion.transforms.opconversions import (
+    get_fermion_operator, reverse_jordan_wigner,
     get_diagonal_coulomb_hamiltonian, get_interaction_operator)
-from openfermion.utils import (hermitian_conjugated, normal_ordered)
+from openfermion.utils import hermitian_conjugated
+from openfermion.transforms.opconversions import normal_ordered
 from openfermion.testing.testing_utils import (random_interaction_operator,
                                                random_quadratic_hamiltonian)
 

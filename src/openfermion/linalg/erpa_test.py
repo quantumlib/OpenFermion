@@ -10,7 +10,7 @@ from openfermion.ops.representations import InteractionRDM
 from openfermion.ops.operators import FermionOperator
 from openfermion.utils.operator_utils import normal_ordered
 from openfermion.utils.commutators import commutator
-from openfermion.transforms.repconversions import get_interaction_operator
+from openfermion.transforms.opconversions import get_interaction_operator
 
 
 def test_h2_rpa():

@@ -14,13 +14,21 @@ from .bravyi_kitaev import bravyi_kitaev
 from .bravyi_kitaev_tree import bravyi_kitaev_tree
 
 from .conversions import (get_fermion_operator, get_boson_operator,
-                          get_majorana_operator, get_quad_operator)
+                          get_majorana_operator, get_quad_operator,
+                          get_interaction_operator,
+                          get_diagonal_coulomb_hamiltonian, get_molecular_data,
+                          get_quadratic_hamiltonian, check_no_sympy)
 
 from .fenwick_tree import FenwickNode, FenwickTree
 
 from .jordan_wigner import jordan_wigner
 
 from .reverse_jordan_wigner import reverse_jordan_wigner
+
+# Out of order to fix circular import
+from .term_reordering import (chemist_ordered, normal_ordered,
+                              normal_ordered_ladder_term, normal_ordered_quad_term,
+                              reorder)
 
 from .remove_symmetry_qubits import symmetry_conserving_bravyi_kitaev
 

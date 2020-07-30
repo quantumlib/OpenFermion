@@ -12,11 +12,10 @@
 """Construct Hamiltonians in plan wave basis and its dual in 3D."""
 import numpy as np
 
-import openfermion.utils.operator_utils
-
 from openfermion.hamiltonians.jellium import (jellium_model,
                                               jordan_wigner_dual_basis_jellium)
 from openfermion.ops.operators import FermionOperator, QubitOperator
+from openfermion.transforms.repconversions import inverse_fourier_transform
 
 import openfermion.chem.molecular_data as md
 
@@ -112,8 +111,7 @@ def plane_wave_external_potential(grid,
     dual_basis_operator = dual_basis_external_potential(grid, geometry,
                                                         spinless, non_periodic,
                                                         period_cutoff)
-    operator = (openfermion.utils.inverse_fourier_transform(
-        dual_basis_operator, grid, spinless))
+    operator = inverse_fourier_transform(dual_basis_operator, grid, spinless)
 
     return operator
 

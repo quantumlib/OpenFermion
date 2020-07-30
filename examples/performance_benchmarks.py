@@ -16,11 +16,12 @@ import logging
 
 import numpy
 
-from openfermion.utils import commutator, Grid, normal_ordered
+from openfermion.utils import commutator, Grid
 from openfermion.ops import FermionOperator, QubitOperator
 from openfermion.hamiltonians import jellium_model
 from openfermion.transforms.opconversions import (jordan_wigner,
-                                                  get_fermion_operator)
+                                                  get_fermion_operator,
+                                                  normal_ordered)
 from openfermion.linalg import (jordan_wigner_sparse,
                                 LinearQubitOperatorOptions, LinearQubitOperator,
                                 ParallelLinearQubitOperator)
