@@ -100,6 +100,7 @@ def _decoder_checksum(modes, odd):
     Returns (list): list of BinaryPolynomial
     """
     if odd:
+        # coverage: ignore
         all_in = BinaryPolynomial('1')
     else:
         all_in = BinaryPolynomial()
