@@ -22,8 +22,8 @@ from openfermion.chem.molecular_data import (
     name_molecule, angstroms_to_bohr, bohr_to_angstroms,
     load_molecular_hamiltonian, MolecularData, MoleculeNameError,
     geometry_from_file, MissingCalculationError, periodic_table)
-from openfermion.transforms.repconversions import (get_interaction_operator,
-                                                   get_molecular_data)
+from openfermion.transforms.opconversions import (get_interaction_operator,
+                                                  get_molecular_data)
 from openfermion.utils import count_qubits, Grid
 
 

@@ -15,7 +15,7 @@ import os
 
 from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
-from openfermion.transforms.repconversions import get_interaction_operator
+from openfermion.transforms.opconversions import get_interaction_operator
 from openfermion.measurements import (one_body_fermion_constraints,
                                       two_body_fermion_constraints)
 
