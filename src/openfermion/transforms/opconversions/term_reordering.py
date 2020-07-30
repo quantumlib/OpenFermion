@@ -61,6 +61,7 @@ def chemist_ordered(fermion_operator):
                                                         -coefficient)
     return chemist_ordered_operator
 
+
 def normal_ordered(operator, hbar=1.):
     r"""Compute and return the normal ordered form of a FermionOperator,
     BosonOperator, QuadOperator, or InteractionOperator.

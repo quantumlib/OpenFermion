@@ -13,7 +13,7 @@
 
 import unittest
 from openfermion.ops.operators import FermionOperator, BosonOperator
-from openfermion.transforms.repconversions.operator_tapering import(
+from openfermion.transforms.repconversions.operator_tapering import (
     freeze_orbitals, prune_unused_indices)
 
 

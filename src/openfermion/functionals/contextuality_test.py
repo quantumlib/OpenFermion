@@ -15,6 +15,7 @@ from openfermion.ops.operators import QubitOperator
 
 from openfermion.functionals.contextuality import is_contextual
 
+
 class IsContextualTest(unittest.TestCase):
 
     def setUp(self):
