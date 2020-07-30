@@ -20,8 +20,8 @@ from openfermion.hamiltonians.special_operators import majorana_operator
 from openfermion.ops.operators import FermionOperator
 from openfermion.ops.representations import QuadraticHamiltonian
 from openfermion.transforms.opconversions import (get_fermion_operator,
-                                                  get_quadratic_hamiltonian,
                                                   normal_ordered, reorder)
+from openfermion.transforms.repconversions import get_quadratic_hamiltonian
 from openfermion.linalg.sparse_tools import (get_ground_state,
                                              get_sparse_operator)
 from openfermion.testing.testing_utils import (random_antisymmetric_matrix,

@@ -25,9 +25,9 @@ from openfermion.linalg.sparse_tools import (get_sparse_operator,
 from openfermion.measurements import get_interaction_rdm
 from openfermion.transforms.opconversions import (jordan_wigner,
                                                   get_fermion_operator,
-                                                  reverse_jordan_wigner)
-from openfermion.transforms.opconversions import (get_interaction_operator,
+                                                  reverse_jordan_wigner,
                                                   normal_ordered)
+from openfermion.transforms.repconversions import get_interaction_operator
 
 
 class HydrogenIntegrationTest(unittest.TestCase):

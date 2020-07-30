@@ -12,7 +12,7 @@
 from typing import Optional, Sequence
 import cirq
 from openfermion.ops.operators import QubitOperator
-from openfermion.utils import count_qubits
+import openfermion.utils.operator_utils as op_utils
 
 
 def _qubit_operator_term_to_pauli_string(term: dict, qubits: Sequence[cirq.Qid]
@@ -54,7 +54,7 @@ def qubit_operator_to_pauli_sum(operator: QubitOperator,
         raise TypeError('Input must be a QubitOperator.')
 
     if qubits is None:
-        qubits = cirq.LineQubit.range(count_qubits(operator))
+        qubits = cirq.LineQubit.range(op_utils.count_qubits(operator))
 
     pauli_sum = cirq.PauliSum()
     for pauli in operator.terms.items():

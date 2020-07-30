@@ -15,9 +15,7 @@ from .bravyi_kitaev_tree import bravyi_kitaev_tree
 
 from .conversions import (get_fermion_operator, get_boson_operator,
                           get_majorana_operator, get_quad_operator,
-                          get_interaction_operator,
-                          get_diagonal_coulomb_hamiltonian, get_molecular_data,
-                          get_quadratic_hamiltonian, check_no_sympy)
+                          check_no_sympy)
 
 from .fenwick_tree import FenwickNode, FenwickTree
 

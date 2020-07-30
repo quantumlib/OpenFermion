@@ -35,9 +35,9 @@ from openfermion.ops.operators import (FermionOperator, BosonOperator,
 from openfermion.ops.representations import DiagonalCoulombHamiltonian
 from openfermion.transforms.opconversions import (jordan_wigner,
                                                   get_fermion_operator,
-                                                  get_interaction_operator,
                                                   normal_ordered)
-from openfermion.transforms.repconversions import fourier_transform
+from openfermion.transforms.repconversions import (fourier_transform,
+                                                   get_interaction_operator)
 
 from openfermion.testing.testing_utils import random_hermitian_matrix
 from openfermion.linalg.sparse_tools import (

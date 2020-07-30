@@ -1,3 +1,7 @@
+from .conversions import (get_interaction_operator,
+                          get_diagonal_coulomb_hamiltonian, get_molecular_data,
+                          get_quadratic_hamiltonian)
+
 from .fourier_transforms import fourier_transform, inverse_fourier_transform
 
 from .operator_tapering import freeze_orbitals, prune_unused_indices
