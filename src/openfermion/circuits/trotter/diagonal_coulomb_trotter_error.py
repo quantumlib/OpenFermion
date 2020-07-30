@@ -14,8 +14,9 @@
 import numpy
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.transforms.opconversions import get_fermion_operator
-from openfermion.utils.operator_utils import count_qubits, normal_ordered
+from openfermion.transforms.opconversions import (get_fermion_operator,
+                                                  normal_ordered)
+from openfermion.utils.operator_utils import count_qubits
 from openfermion.circuits.trotter.low_depth_trotter_error import (
     simulation_ordered_grouped_low_depth_terms_with_info)
 from openfermion.utils.commutator_diagonal_coulomb_operator import (

@@ -21,6 +21,8 @@ from openfermion.ops.representations import (PolynomialTensor,
                                              DiagonalCoulombHamiltonian,
                                              InteractionOperator,
                                              InteractionOperatorError)
+from openfermion.transforms.opconversions.term_reordering import\
+    normal_ordered
 
 # for breaking cyclic imports
 import openfermion.utils.operator_utils as op_utils
@@ -104,7 +106,7 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
         raise ValueError('Invalid number of qubits specified.')
 
     # Normal order the terms and initialize.
-    fermion_operator = op_utils.normal_ordered(fermion_operator)
+    fermion_operator = normal_ordered(fermion_operator)
     constant = 0.
     one_body = numpy.zeros((n_qubits, n_qubits), complex)
     two_body = numpy.zeros((n_qubits, n_qubits, n_qubits, n_qubits), complex)
@@ -384,7 +386,7 @@ def get_quadratic_hamiltonian(fermion_operator,
         raise ValueError('Invalid number of qubits specified.')
 
     # Normal order the terms and initialize.
-    fermion_operator = op_utils.normal_ordered(fermion_operator)
+    fermion_operator = normal_ordered(fermion_operator)
     constant = 0.
     combined_hermitian_part = numpy.zeros((n_qubits, n_qubits), complex)
     antisymmetric_part = numpy.zeros((n_qubits, n_qubits), complex)
@@ -502,7 +504,7 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator,
     if n_qubits < op_utils.count_qubits(fermion_operator):
         raise ValueError('Invalid number of qubits specified.')
 
-    fermion_operator = op_utils.normal_ordered(fermion_operator)
+    fermion_operator = normal_ordered(fermion_operator)
     constant = 0.
     one_body = numpy.zeros((n_qubits, n_qubits), complex)
     two_body = numpy.zeros((n_qubits, n_qubits), float)

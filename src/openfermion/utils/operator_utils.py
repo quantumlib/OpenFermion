@@ -26,7 +26,8 @@ from openfermion.ops.representations import (PolynomialTensor,
                                              DiagonalCoulombHamiltonian,
                                              InteractionOperator,
                                              InteractionRDM)
-from openfermion.transforms.opconversions import normal_ordered
+from openfermion.transforms.opconversions.term_reordering\
+    import normal_ordered
 
 
 class OperatorUtilsError(Exception):
@@ -108,8 +109,8 @@ def is_hermitian(operator):
     # Handle FermionOperator, BosonOperator, and InteractionOperator
     if isinstance(operator,
                   (FermionOperator, BosonOperator, InteractionOperator)):
-        return (normal_ordered(operator) == normal_ordered(
-            hermitian_conjugated(operator)))
+        return (normal_ordered(operator) ==
+                normal_ordered(hermitian_conjugated(operator)))
 
     # Handle QubitOperator and QuadOperator
     if isinstance(operator, (QubitOperator, QuadOperator)):

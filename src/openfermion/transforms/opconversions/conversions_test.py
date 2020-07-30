@@ -28,7 +28,7 @@ from openfermion.transforms.opconversions import (
     get_fermion_operator, get_diagonal_coulomb_hamiltonian,
     get_interaction_operator, get_quadratic_hamiltonian, check_no_sympy,
     get_molecular_data)
-from openfermion.utils.operator_utils import normal_ordered
+from openfermion.transforms.opconversions.term_reordering import normal_ordered
 from openfermion.testing.testing_utils import random_quadratic_hamiltonian
 from openfermion.transforms.opconversions.conversions import (
     _fermion_operator_to_majorana_operator, _fermion_term_to_majorana_operator)

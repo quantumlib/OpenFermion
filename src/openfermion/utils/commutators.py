@@ -14,7 +14,8 @@
 import numpy
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.utils.operator_utils import normal_ordered
+import openfermion.transforms.opconversions.term_reordering\
+    as term_reordering
 
 
 def commutator(operator_a, operator_b):
@@ -105,9 +106,9 @@ def double_commutator(op1,
             ((index2, 1), (index3, 0)), coeff2 * coeff3) + FermionOperator(
                 ((index3, 1), (index2, 0)), -coeff2 * coeff3))
     else:
-        commutator23 = normal_ordered(commutator(op2, op3))
+        commutator23 = term_reordering.normal_ordered(commutator(op2, op3))
 
-    return normal_ordered(commutator(op1, commutator23))
+    return term_reordering.normal_ordered(commutator(op1, commutator23))
 
 
 def trivially_double_commutes_dual_basis_using_term_info(

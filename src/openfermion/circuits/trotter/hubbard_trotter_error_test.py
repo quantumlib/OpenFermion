@@ -14,11 +14,12 @@ import unittest
 
 from openfermion.ops.operators import FermionOperator
 from openfermion.hamiltonians import fermi_hubbard
-from openfermion.circuits.trotter.hubbard_trotter_error import *
+from openfermion.circuits.trotter.hubbard_trotter_error import (
+    simulation_ordered_grouped_hubbard_terms_with_info)
 from openfermion.circuits.trotter.low_depth_trotter_error import (
     low_depth_second_order_trotter_error_bound,
     low_depth_second_order_trotter_error_operator)
-from openfermion.utils.operator_utils import normal_ordered
+from openfermion.transforms.opconversions import normal_ordered
 
 
 class ErrorOperatorTest(unittest.TestCase):
