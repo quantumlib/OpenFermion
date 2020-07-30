@@ -29,8 +29,8 @@ from .reverse_jordan_wigner import reverse_jordan_wigner
 
 # Out of order to fix circular import
 from .term_reordering import (chemist_ordered, normal_ordered,
-                              normal_ordered_ladder_term, normal_ordered_quad_term,
-                              reorder)
+                              normal_ordered_ladder_term,
+                              normal_ordered_quad_term, reorder)
 
 from .remove_symmetry_qubits import symmetry_conserving_bravyi_kitaev
 

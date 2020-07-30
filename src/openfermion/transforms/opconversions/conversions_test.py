@@ -31,8 +31,7 @@ from openfermion.transforms.opconversions import (
 from openfermion.utils.operator_utils import normal_ordered
 from openfermion.testing.testing_utils import random_quadratic_hamiltonian
 from openfermion.transforms.opconversions.conversions import (
-    _fermion_operator_to_majorana_operator,
-    _fermion_term_to_majorana_operator)
+    _fermion_operator_to_majorana_operator, _fermion_term_to_majorana_operator)
 
 
 class GetQuadOperatorTest(unittest.TestCase):

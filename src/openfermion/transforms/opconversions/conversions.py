@@ -28,7 +28,6 @@ import openfermion.ops.representations.quadratic_hamiltonian as quad
 import openfermion.chem as chem
 
 
-
 def get_quad_operator(operator, hbar=1.):
     """Convert to QuadOperator.
 

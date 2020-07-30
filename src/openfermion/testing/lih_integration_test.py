@@ -18,8 +18,7 @@ from openfermion.config import THIS_DIRECTORY
 
 from openfermion.chem import MolecularData
 from openfermion.transforms.opconversions import (get_fermion_operator,
-                                                  normal_ordered,
-                                                  jordan_wigner,
+                                                  normal_ordered, jordan_wigner,
                                                   reverse_jordan_wigner)
 from openfermion.transforms.repconversions import freeze_orbitals
 from openfermion.measurements import get_interaction_rdm

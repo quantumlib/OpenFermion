@@ -21,8 +21,7 @@ from openfermion.config import THIS_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.operators import FermionOperator
 from openfermion.transforms.opconversions import (get_fermion_operator,
-                                                  jordan_wigner,
-                                                  normal_ordered)
+                                                  jordan_wigner, normal_ordered)
 
 from openfermion.hamiltonians.special_operators import (s_squared_operator,
                                                         sz_operator)

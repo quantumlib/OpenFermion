@@ -14,8 +14,7 @@
 import unittest
 
 from openfermion.ops.operators import FermionOperator, QubitOperator
-from openfermion.transforms.opconversions import (jordan_wigner,
-                                                  normal_ordered)
+from openfermion.transforms.opconversions import jordan_wigner, normal_ordered
 from openfermion.transforms.opconversions.reverse_jordan_wigner import (
     reverse_jordan_wigner)
 

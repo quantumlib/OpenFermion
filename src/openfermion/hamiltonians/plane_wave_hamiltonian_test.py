@@ -15,9 +15,7 @@ import unittest
 import numpy as np
 
 from openfermion.hamiltonians.plane_wave_hamiltonian import (
-    jellium_model,
-    jordan_wigner_dual_basis_hamiltonian,
-    plane_wave_hamiltonian)
+    jellium_model, jordan_wigner_dual_basis_hamiltonian, plane_wave_hamiltonian)
 from openfermion.transforms.opconversions import jordan_wigner
 from openfermion.linalg import eigenspectrum, get_sparse_operator
 from openfermion.utils import Grid, is_hermitian

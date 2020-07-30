@@ -33,10 +33,11 @@ from openfermion.transforms.opconversions import (jordan_wigner,
                                                   bravyi_kitaev,
                                                   get_interaction_operator)
 from openfermion.testing.testing_utils import random_interaction_operator
-from openfermion.utils.operator_utils import (
-    count_qubits, hermitian_conjugated, is_identity,
-    save_operator, OperatorUtilsError,
-    is_hermitian, load_operator, get_file_path)
+from openfermion.utils.operator_utils import (count_qubits,
+                                              hermitian_conjugated, is_identity,
+                                              save_operator, OperatorUtilsError,
+                                              is_hermitian, load_operator,
+                                              get_file_path)
 
 
 class OperatorUtilsTest(unittest.TestCase):
