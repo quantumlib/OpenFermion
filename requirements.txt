@@ -7,4 +7,3 @@ pubchempy
 requests~=2.18
 scipy>=1.1.0
 sympy
-cirq==0.7.0
