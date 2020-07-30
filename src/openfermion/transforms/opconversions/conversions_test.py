@@ -24,8 +24,8 @@ from openfermion.transforms.opconversions.term_reordering import normal_ordered
 
 from openfermion.transforms.opconversions.conversions import (
     get_quad_operator, get_boson_operator, get_majorana_operator,
-    get_fermion_operator, check_no_sympy, _fermion_operator_to_majorana_operator,
-    _fermion_term_to_majorana_operator)
+    get_fermion_operator, check_no_sympy,
+    _fermion_operator_to_majorana_operator, _fermion_term_to_majorana_operator)
 
 
 class GetQuadOperatorTest(unittest.TestCase):

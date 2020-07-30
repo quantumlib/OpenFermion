@@ -12,6 +12,7 @@ from openfermion.transforms.opconversions import normal_ordered
 from openfermion.transforms.repconversions import get_interaction_operator
 from openfermion.utils.commutators import commutator
 
+
 def test_h2_rpa():
     filename = os.path.join(DATA_DIRECTORY, "H2_sto-3g_singlet_0.7414.hdf5")
     molecule = MolecularData(filename=filename)

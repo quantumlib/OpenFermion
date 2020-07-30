@@ -13,7 +13,7 @@
 
 from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
                                        QubitOperator)
-import openfermion.utils.operator_utils as op_utils
+from openfermion.utils.operator_utils import count_qubits
 
 
 def bravyi_kitaev(operator, n_qubits=None):
@@ -99,7 +99,7 @@ def _parity_set(index):
 
 def _bravyi_kitaev_majorana_operator(operator, n_qubits):
     # Compute the number of qubits.
-    N = op_utils.count_qubits(operator)
+    N = count_qubits(operator)
     if n_qubits is None:
         n_qubits = N
     if n_qubits < N:
@@ -157,7 +157,7 @@ def _transform_operator_term(term, coefficient, n_qubits):
 
 def _bravyi_kitaev_fermion_operator(operator, n_qubits):
     # Compute the number of qubits.
-    N = op_utils.count_qubits(operator)
+    N = count_qubits(operator)
     if n_qubits is None:
         n_qubits = N
     if n_qubits < N:

@@ -58,7 +58,7 @@ from openfermion.utils.operator_utils import (is_hermitian, count_qubits,
                                               hermitian_conjugated)
 from openfermion.utils.indexing import up_index, down_index
 from openfermion.utils.grid import Grid
-from openfermion.utils.jellium_hf_state import (
+from openfermion.hamiltonians.jellium_hf_state import (
     lowest_single_particle_energy_states)
 from openfermion.linalg.linear_qubit_operator import LinearQubitOperator
 

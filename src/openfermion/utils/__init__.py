@@ -24,15 +24,9 @@ from .grid import Grid
 
 from .indexing import up_index, down_index, up_then_down
 
-from .operator_utils import (
-    count_qubits,
-    get_file_path,
-    hermitian_conjugated,
-    is_hermitian,
-    is_identity,
-    load_operator,
-    save_operator
-)
+from .operator_utils import (count_qubits, get_file_path, hermitian_conjugated,
+                             is_hermitian, is_identity, load_operator,
+                             save_operator)
 
 from .rdm_mapping_functions import (
     kronecker_delta, map_two_pdm_to_two_hole_dm, map_two_pdm_to_one_pdm,
@@ -40,6 +34,3 @@ from .rdm_mapping_functions import (
     map_two_pdm_to_particle_hole_dm, map_two_hole_dm_to_two_pdm,
     map_two_hole_dm_to_one_hole_dm, map_particle_hole_dm_to_one_pdm,
     map_particle_hole_dm_to_two_pdm)
-
-# Imports out of alphabetical order to avoid circular dependency.
-from .jellium_hf_state import hartree_fock_state_jellium

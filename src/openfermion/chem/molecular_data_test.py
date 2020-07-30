@@ -23,7 +23,7 @@ from openfermion.chem.molecular_data import (
     load_molecular_hamiltonian, MolecularData, MoleculeNameError,
     geometry_from_file, MissingCalculationError, periodic_table)
 from openfermion.transforms.repconversions import (get_interaction_operator,
-                                                  get_molecular_data)
+                                                   get_molecular_data)
 from openfermion.utils import count_qubits, Grid
 
 

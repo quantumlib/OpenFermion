@@ -29,8 +29,7 @@ from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
                                        BosonOperator, QubitOperator,
                                        QuadOperator)
 from openfermion.ops.representations import InteractionOperator
-from openfermion.transforms.opconversions import (jordan_wigner,
-                                                  bravyi_kitaev)
+from openfermion.transforms.opconversions import (jordan_wigner, bravyi_kitaev)
 from openfermion.transforms.repconversions import get_interaction_operator
 from openfermion.testing.testing_utils import random_interaction_operator
 from openfermion.utils.operator_utils import (count_qubits,

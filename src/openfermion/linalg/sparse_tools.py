@@ -23,10 +23,9 @@ from openfermion.ops.operators import (FermionOperator, QubitOperator,
                                        BosonOperator, QuadOperator)
 from openfermion.ops.representations import (DiagonalCoulombHamiltonian,
                                              PolynomialTensor)
-
+from openfermion.transforms.opconversions import normal_ordered
 from openfermion.utils.indexing import up_index, down_index
 from openfermion.utils.operator_utils import count_qubits, is_hermitian
-from openfermion.transforms.opconversions import normal_ordered
 
 # Make global definitions.
 identity_csc = scipy.sparse.identity(2, format='csc', dtype=complex)

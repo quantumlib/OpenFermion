@@ -21,8 +21,7 @@ from openfermion.ops.representations import (PolynomialTensor,
                                              InteractionOperator,
                                              InteractionOperatorError)
 
-# for breaking cyclic imports
-import openfermion.utils.operator_utils as op_utils
+from openfermion.utils.operator_utils import count_qubits
 
 
 def get_quad_operator(operator, hbar=1.):
@@ -132,7 +131,7 @@ def _polynomial_tensor_to_fermion_operator(operator):
 
 def _diagonal_coulomb_hamiltonian_to_fermion_operator(operator):
     fermion_operator = FermionOperator()
-    n_qubits = op_utils.count_qubits(operator)
+    n_qubits = count_qubits(operator)
     fermion_operator += FermionOperator((), operator.constant)
     for p, q in itertools.product(range(n_qubits), repeat=2):
         fermion_operator += FermionOperator(((p, 1), (q, 0)),
