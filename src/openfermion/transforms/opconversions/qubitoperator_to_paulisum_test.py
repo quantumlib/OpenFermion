@@ -15,8 +15,8 @@ import openfermion
 import cirq
 from openfermion.ops.operators import QubitOperator
 
-from openfermion.circuits.translator import (qubit_operator_to_pauli_sum)
-from openfermion.circuits.translator.qubitoperator_to_paulisum import (
+from openfermion.transforms.opconversions import (qubit_operator_to_pauli_sum)
+from openfermion.transforms.opconversions.qubitoperator_to_paulisum import (
     _qubit_operator_term_to_pauli_string)
 
 
