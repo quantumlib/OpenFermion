@@ -129,10 +129,9 @@ def get_quadratic_hamiltonian(fermion_operator,
                 antisymmetric_part[q, p] += .5 * coefficient.conjugate()
         elif not ignore_incompatible_terms:
             # Operator contains non-quadratic terms
-            raise QuadraticHamiltonianError(
-                'FermionOperator does not map '
-                'to QuadraticHamiltonian '
-                '(contains non-quadratic terms).')
+            raise QuadraticHamiltonianError('FermionOperator does not map '
+                                            'to QuadraticHamiltonian '
+                                            '(contains non-quadratic terms).')
 
     # Compute Hermitian part
     hermitian_part = (combined_hermitian_part +
@@ -154,8 +153,10 @@ def get_quadratic_hamiltonian(fermion_operator,
             chemical_potential=chemical_potential)
     else:
         # Hamiltonian does not conserve particle number
-        quadratic_hamiltonian = QuadraticHamiltonian(
-            hermitian_part, antisymmetric_part, constant, chemical_potential)
+        quadratic_hamiltonian = QuadraticHamiltonian(hermitian_part,
+                                                     antisymmetric_part,
+                                                     constant,
+                                                     chemical_potential)
 
     return quadratic_hamiltonian
 
