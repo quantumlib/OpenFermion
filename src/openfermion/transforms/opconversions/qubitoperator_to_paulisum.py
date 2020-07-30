@@ -41,6 +41,8 @@ def qubit_operator_to_pauli_sum(operator: QubitOperator,
     Args:
         operator (QubitOperator): operator to convert.
         qubits (List): Optional list of qubit names.
+            If `None` a list of `cirq.LineQubit` of length number of qubits
+            in operator is created.
 
     Returns:
         pauli_sum (PauliSum): cirq PauliSum object.
