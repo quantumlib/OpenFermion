@@ -30,3 +30,5 @@ from .unitary_cc import (uccsd_generator, uccsd_convert_amplitude_format,
                          uccsd_singlet_generator)
 
 from .trotter import *
+
+from .translator import *
