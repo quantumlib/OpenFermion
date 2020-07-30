@@ -17,9 +17,7 @@ import sympy
 from openfermion.ops.operators import (QuadOperator, BosonOperator,
                                        FermionOperator, MajoranaOperator)
 from openfermion.ops.representations import (PolynomialTensor,
-                                             DiagonalCoulombHamiltonian,
-                                             InteractionOperator,
-                                             InteractionOperatorError)
+                                             DiagonalCoulombHamiltonian)
 
 from openfermion.utils.operator_utils import count_qubits
 

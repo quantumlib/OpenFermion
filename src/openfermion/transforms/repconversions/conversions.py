@@ -17,10 +17,10 @@ from openfermion.ops.operators import FermionOperator
 from openfermion.ops.representations import (DiagonalCoulombHamiltonian,
                                              InteractionOperator,
                                              InteractionOperatorError)
-from openfermion.transforms.opconversions.term_reordering import\
-    normal_ordered
-from openfermion.transforms.opconversions import check_no_sympy
-import openfermion.ops.representations.quadratic_hamiltonian as quad
+from openfermion.transforms.opconversions import (check_no_sympy,
+                                                  normal_ordered)
+from openfermion.ops.representations.quadratic_hamiltonian import (
+    QuadraticHamiltonian, QuadraticHamiltonianError)
 import openfermion.chem as chem
 
 # for breaking cyclic imports
@@ -96,7 +96,7 @@ def get_quadratic_hamiltonian(fermion_operator,
                 # Need to check that the corresponding [0, 0] term is present
                 conjugate_term = ((p, 0), (q, 0))
                 if conjugate_term not in fermion_operator.terms:
-                    raise quad.QuadraticHamiltonianError(
+                    raise QuadraticHamiltonianError(
                         'FermionOperator does not map '
                         'to QuadraticHamiltonian (not Hermitian).')
                 else:
@@ -104,7 +104,7 @@ def get_quadratic_hamiltonian(fermion_operator,
                         conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
-                        raise quad.QuadraticHamiltonianError(
+                        raise QuadraticHamiltonianError(
                             'FermionOperator does not map '
                             'to QuadraticHamiltonian (not Hermitian).')
                 antisymmetric_part[p, q] += .5 * coefficient
@@ -114,7 +114,7 @@ def get_quadratic_hamiltonian(fermion_operator,
                 # Need to check that the corresponding [1, 1] term is present
                 conjugate_term = ((p, 1), (q, 1))
                 if conjugate_term not in fermion_operator.terms:
-                    raise quad.QuadraticHamiltonianError(
+                    raise QuadraticHamiltonianError(
                         'FermionOperator does not map '
                         'to QuadraticHamiltonian (not Hermitian).')
                 else:
@@ -122,14 +122,14 @@ def get_quadratic_hamiltonian(fermion_operator,
                         conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
-                        raise quad.QuadraticHamiltonianError(
+                        raise QuadraticHamiltonianError(
                             'FermionOperator does not map '
                             'to QuadraticHamiltonian (not Hermitian).')
                 antisymmetric_part[p, q] -= .5 * coefficient.conjugate()
                 antisymmetric_part[q, p] += .5 * coefficient.conjugate()
         elif not ignore_incompatible_terms:
             # Operator contains non-quadratic terms
-            raise quad.QuadraticHamiltonianError(
+            raise QuadraticHamiltonianError(
                 'FermionOperator does not map '
                 'to QuadraticHamiltonian '
                 '(contains non-quadratic terms).')
@@ -140,7 +140,7 @@ def get_quadratic_hamiltonian(fermion_operator,
 
     # Check that the operator is Hermitian
     if not op_utils.is_hermitian(hermitian_part):
-        raise quad.QuadraticHamiltonianError(
+        raise QuadraticHamiltonianError(
             'FermionOperator does not map '
             'to QuadraticHamiltonian (not Hermitian).')
 
@@ -148,13 +148,13 @@ def get_quadratic_hamiltonian(fermion_operator,
     discrepancy = numpy.max(numpy.abs(antisymmetric_part))
     if discrepancy < EQ_TOLERANCE:
         # Hamiltonian conserves particle number
-        quadratic_hamiltonian = quad.QuadraticHamiltonian(
+        quadratic_hamiltonian = QuadraticHamiltonian(
             hermitian_part,
             constant=constant,
             chemical_potential=chemical_potential)
     else:
         # Hamiltonian does not conserve particle number
-        quadratic_hamiltonian = quad.QuadraticHamiltonian(
+        quadratic_hamiltonian = QuadraticHamiltonian(
             hermitian_part, antisymmetric_part, constant, chemical_potential)
 
     return quadratic_hamiltonian
