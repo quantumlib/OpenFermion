@@ -24,8 +24,10 @@ from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.transforms.opconversions.term_reordering import normal_ordered
 
 from openfermion.transforms.repconversions.conversions import(
-    get_diagonal_coulomb_hamiltonian, get_molecular_data,
-    get_interaction_operator, get_quadratic_hamiltonian,
+    get_diagonal_coulomb_hamiltonian,
+    get_molecular_data,
+    get_interaction_operator,
+    get_quadratic_hamiltonian,
 )
 
 

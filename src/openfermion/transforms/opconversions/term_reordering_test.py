@@ -11,15 +11,13 @@
 #   limitations under the License.
 """Tests for term_reordering."""
 
-
 import unittest
 import itertools
 import numpy
 
-
 from openfermion.hamiltonians import number_operator
-from openfermion.ops.operators import (
-    FermionOperator, BosonOperator, QuadOperator)
+from openfermion.ops.operators import (FermionOperator, BosonOperator,
+                                       QuadOperator)
 from openfermion.transforms.opconversions import (jordan_wigner,
                                                   get_fermion_operator)
 from openfermion.testing.testing_utils import random_interaction_operator
@@ -233,6 +231,7 @@ class TestNormalOrdering(unittest.TestCase):
 
 
 class TestReorder(unittest.TestCase):
+
     def test_reorder(self):
 
         def shift_by_one(x, y):

@@ -14,7 +14,6 @@
 import itertools
 import numpy
 
-
 from openfermion.ops.operators import (BosonOperator, FermionOperator,
                                        QuadOperator)
 from openfermion.ops.representations import InteractionOperator
@@ -42,8 +41,7 @@ def chemist_ordered(fermion_operator):
     """
     # Make sure we're dealing with a fermion operator from a molecule.
     if not fermion_operator.is_two_body_number_conserving():
-        raise TypeError(
-            'Operator is not two-body number conserving.')
+        raise TypeError('Operator is not two-body number conserving.')
 
     # Normal order and begin looping.
     normal_ordered_input = normal_ordered(fermion_operator)

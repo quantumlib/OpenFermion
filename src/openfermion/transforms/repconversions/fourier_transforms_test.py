@@ -19,7 +19,7 @@ from openfermion.transforms.opconversions import normal_ordered
 from openfermion.linalg import get_sparse_operator
 from openfermion.utils import is_hermitian
 
-from openfermion.transforms.repconversions.fourier_transforms import(
+from openfermion.transforms.repconversions.fourier_transforms import (
     fourier_transform, inverse_fourier_transform)
 
 

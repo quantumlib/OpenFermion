@@ -18,7 +18,7 @@ import sympy
 from openfermion.ops.operators import (QuadOperator, BosonOperator,
                                        FermionOperator, MajoranaOperator,
                                        QubitOperator)
-from openfermion.transforms.repconversions.conversions import(
+from openfermion.transforms.repconversions.conversions import (
     get_diagonal_coulomb_hamiltonian)
 from openfermion.transforms.opconversions.term_reordering import normal_ordered
 
