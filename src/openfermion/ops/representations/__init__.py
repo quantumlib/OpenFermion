@@ -9,3 +9,4 @@ from .interaction_rdm import InteractionRDM, InteractionRDMError
 
 from .quadratic_hamiltonian import (QuadraticHamiltonian,
                                     QuadraticHamiltonianError)
+from .doci_hamiltonian import DOCIHamiltonian
