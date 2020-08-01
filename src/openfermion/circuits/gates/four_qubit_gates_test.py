@@ -191,7 +191,7 @@ def test_double_excitation_gate_text_diagrams_no_unicode():
     circuit = cirq.Circuit(openfermion.DoubleExcitation(a, b, c, d))
     # pylint: disable=anomalous-backslash-in-string
     cirq.testing.assert_has_diagram(circuit,
-                                    """
+                                    r"""
 a: ---/\ \/---
       |
 b: ---/\ \/---
@@ -204,7 +204,7 @@ d: ---\/ /\---
 
     circuit = cirq.Circuit(openfermion.DoubleExcitation(a, b, c, d)**-0.5)
     cirq.testing.assert_has_diagram(circuit,
-                                    """
+                                    r"""
 a: ---/\ \/--------
       |
 b: ---/\ \/--------
@@ -217,7 +217,7 @@ d: ---\/ /\^-0.5---
 
     circuit = cirq.Circuit(openfermion.DoubleExcitation(a, c, b, d)**0.2)
     cirq.testing.assert_has_diagram(circuit,
-                                    """
+                                    r"""
 a: ---/\ \/-------
       |
 b: ---\/ /\-------
@@ -230,7 +230,7 @@ d: ---\/ /\^0.2---
 
     circuit = cirq.Circuit(openfermion.DoubleExcitation(d, b, a, c)**0.7)
     cirq.testing.assert_has_diagram(circuit,
-                                    """
+                                    r"""
 a: ---\/ /\-------
       |
 b: ---/\ \/-------
@@ -243,7 +243,7 @@ d: ---/\ \/^0.7---
 
     circuit = cirq.Circuit(openfermion.DoubleExcitation(d, b, a, c)**2.3)
     cirq.testing.assert_has_diagram(circuit,
-                                    """
+                                    r"""
 a: ---\/ /\-------
       |
 b: ---/\ \/-------

@@ -21,7 +21,7 @@ from openfermion.config import THIS_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.operators import FermionOperator
 from openfermion.transforms.opconversions import (get_fermion_operator,
-                                                  jordan_wigner)
+                                                  jordan_wigner, normal_ordered)
 
 from openfermion.hamiltonians.special_operators import (s_squared_operator,
                                                         sz_operator)
@@ -29,8 +29,7 @@ from openfermion.linalg.sparse_tools import (expectation, jordan_wigner_sparse,
                                              jw_hartree_fock_state,
                                              get_sparse_operator)
 
-from openfermion.utils import (commutator, count_qubits, hermitian_conjugated,
-                               normal_ordered)
+from openfermion.utils import (commutator, count_qubits, hermitian_conjugated)
 from openfermion.circuits.unitary_cc import (
     uccsd_generator, uccsd_singlet_generator,
     uccsd_singlet_get_packed_amplitudes, uccsd_singlet_paramsize)

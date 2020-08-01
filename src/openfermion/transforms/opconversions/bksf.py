@@ -16,7 +16,7 @@ import networkx
 
 from openfermion.ops.operators import QubitOperator
 from openfermion.ops.representations import InteractionOperator
-import openfermion.utils.operator_utils as op_utils
+from openfermion.utils.operator_utils import count_qubits
 
 
 def bravyi_kitaev_fast(operator):
@@ -77,7 +77,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
     Returns:
         qubit_operator: An instance of the QubitOperator class.
     """
-    n_qubits = op_utils.count_qubits(iop)
+    n_qubits = count_qubits(iop)
 
     # Initialize qubit operator as constant.
     qubit_operator = QubitOperator((), iop.constant)
@@ -141,7 +141,7 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
         edge_matrix (Numpy array): A square numpy array containing information
             about the edges present in the model.
     """
-    n_qubits = op_utils.count_qubits(iop)
+    n_qubits = count_qubits(iop)
     edge_matrix = 1j * numpy.zeros((n_qubits, n_qubits))
     # Loop through all indices.
     for p in range(n_qubits):

@@ -10,23 +10,4 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""
-OpenFermion
-
-For more information, examples, or tutorials visit our website:
-
-www.openfermion.org
-"""
-from openfermion.ops import *
-from openfermion.chem import *
-from openfermion.circuits import *
-from openfermion.functionals import *
-from openfermion.hamiltonians import *
-from openfermion.linalg import *
-from openfermion.measurements import *
-from openfermion.testing import *
-from openfermion.third_party import *
-from openfermion.transforms import *
-from openfermion.utils import *
-
-from ._version import __version__
+from .contextuality import is_contextual

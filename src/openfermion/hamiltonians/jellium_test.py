@@ -17,8 +17,8 @@ import numpy
 from openfermion.hamiltonians.jellium import *
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.transforms.opconversions import jordan_wigner
-from openfermion.linalg import get_sparse_operator
-from openfermion.utils import count_qubits, eigenspectrum, Grid, is_hermitian
+from openfermion.linalg import get_sparse_operator, eigenspectrum
+from openfermion.utils import count_qubits, Grid, is_hermitian
 
 
 class WignerSeitzRadiusTest(unittest.TestCase):

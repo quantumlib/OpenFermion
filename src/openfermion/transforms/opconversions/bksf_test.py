@@ -20,12 +20,12 @@ from openfermion.config import THIS_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.ops.representations import InteractionOperator
-from openfermion.transforms.opconversions import bksf
-from openfermion.transforms.opconversions import get_fermion_operator
+from openfermion.transforms.opconversions import (bksf, get_fermion_operator,
+                                                  normal_ordered)
 from openfermion.transforms.opconversions.jordan_wigner import (
     jordan_wigner, jordan_wigner_one_body)
-from openfermion.linalg.sparse_tools import get_sparse_operator
-from openfermion.utils import count_qubits, eigenspectrum, normal_ordered
+from openfermion.linalg import get_sparse_operator, eigenspectrum
+from openfermion.utils import count_qubits
 
 
 class bravyi_kitaev_fastTransformTest(unittest.TestCase):

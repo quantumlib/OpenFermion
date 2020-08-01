@@ -15,8 +15,9 @@
 """
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.transforms.opconversions import bravyi_kitaev_tree
-import openfermion.utils.operator_utils as op_utils
+from openfermion.transforms.opconversions import bravyi_kitaev_tree, reorder
+from openfermion.transforms.repconversions import prune_unused_indices
+from openfermion.utils.indexing import up_then_down
 
 
 def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
@@ -68,8 +69,7 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
         raise ValueError('Number of active fermions should be an integer.')
 
     # Arrange spins up then down, then BK map to qubit Hamiltonian.
-    fermion_hamiltonian_reorder = op_utils.reorder(fermion_hamiltonian,
-                                                   op_utils.up_then_down)
+    fermion_hamiltonian_reorder = reorder(fermion_hamiltonian, up_then_down)
     qubit_hamiltonian = bravyi_kitaev_tree(fermion_hamiltonian_reorder)
     qubit_hamiltonian.compress()
 
@@ -95,7 +95,7 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
     qubit_hamiltonian = edit_hamiltonian_for_spin(qubit_hamiltonian,
                                                   active_orbitals / 2,
                                                   parity_middle_orb)
-    qubit_hamiltonian = op_utils.prune_unused_indices(qubit_hamiltonian)
+    qubit_hamiltonian = prune_unused_indices(qubit_hamiltonian)
 
     return qubit_hamiltonian
 

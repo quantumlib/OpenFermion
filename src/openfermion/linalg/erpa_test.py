@@ -8,9 +8,9 @@ from openfermion.linalg.erpa import singlet_erpa, erpa_eom_hamiltonian
 from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.ops.representations import InteractionRDM
 from openfermion.ops.operators import FermionOperator
-from openfermion.utils.operator_utils import normal_ordered
-from openfermion.utils.commutators import commutator
+from openfermion.transforms.opconversions import normal_ordered
 from openfermion.transforms.repconversions import get_interaction_operator
+from openfermion.utils.commutators import commutator
 
 
 def test_h2_rpa():

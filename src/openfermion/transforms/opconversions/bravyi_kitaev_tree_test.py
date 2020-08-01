@@ -18,7 +18,7 @@ import numpy
 from openfermion.ops.operators import (FermionOperator, QubitOperator)
 from openfermion.transforms.opconversions import bravyi_kitaev_tree, \
     jordan_wigner
-from openfermion.utils import eigenspectrum
+from openfermion.linalg import eigenspectrum
 from openfermion.hamiltonians import number_operator
 
 

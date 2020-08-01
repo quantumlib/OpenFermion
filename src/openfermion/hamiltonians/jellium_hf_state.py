@@ -10,11 +10,14 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This module constructs the uniform electron gas' Hartree-Fock state."""
+# TODO: Move this to linalg after circular import issue has been fixed.
 
 import numpy
 from openfermion.ops.operators import FermionOperator
-from openfermion.utils import (count_qubits, inverse_fourier_transform,
-                               normal_ordered)
+from openfermion.transforms.opconversions import normal_ordered
+from openfermion.transforms.repconversions import inverse_fourier_transform
+from openfermion.utils import count_qubits
+from openfermion.hamiltonians.jellium import plane_wave_kinetic
 
 
 def lowest_single_particle_energy_states(hamiltonian, n_states):
@@ -57,7 +60,7 @@ def hartree_fock_state_jellium(grid,
         single-particle states in the plane-wave Hamiltonian until
         n_electrons states are filled.
     """
-    from openfermion.hamiltonians import plane_wave_kinetic
+
     # Get the jellium Hamiltonian in the plane wave basis.
     # For determining the Hartree-Fock state in the PW basis, only the
     # kinetic energy terms matter.

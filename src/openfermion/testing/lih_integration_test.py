@@ -17,15 +17,15 @@ import numpy
 from openfermion.config import THIS_DIRECTORY
 
 from openfermion.chem import MolecularData
-from openfermion.transforms.opconversions import get_fermion_operator, \
-    jordan_wigner, reverse_jordan_wigner
+from openfermion.transforms.opconversions import (get_fermion_operator,
+                                                  normal_ordered, jordan_wigner,
+                                                  reverse_jordan_wigner)
+from openfermion.transforms.repconversions import freeze_orbitals
 from openfermion.measurements import get_interaction_rdm
 from openfermion.linalg import get_sparse_operator, get_ground_state
 from openfermion.linalg.sparse_tools import (expectation, jw_hartree_fock_state,
                                              get_density_matrix)
-
-from openfermion.utils.operator_utils import normal_ordered, count_qubits, \
-    freeze_orbitals
+from openfermion.utils.operator_utils import count_qubits
 
 
 class LiHIntegrationTest(unittest.TestCase):

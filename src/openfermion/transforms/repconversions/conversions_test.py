@@ -9,37 +9,26 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Tests for conversion.py."""
-
+'''Tests for conversions.py'''
 import unittest
-
 import numpy
-import sympy
 
 from openfermion.chem import MolecularData
 from openfermion.config import EQ_TOLERANCE
-from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops.operators import (FermionOperator, QubitOperator)
-from openfermion.utils import normal_ordered
-
-from openfermion.ops.representations.interaction_operator import \
-    InteractionOperatorError
-from openfermion.ops.representations.quadratic_hamiltonian import \
-    QuadraticHamiltonianError
-from openfermion.testing.testing_utils import (random_quadratic_hamiltonian)
-
+from openfermion.hamiltonians import fermi_hubbard
+from openfermion.ops.representations import (InteractionOperatorError,
+                                             QuadraticHamiltonianError)
+from openfermion.testing.testing_utils import random_quadratic_hamiltonian
 from openfermion.transforms.opconversions import get_fermion_operator
-from openfermion.transforms.repconversions.conversion import (
-    get_diagonal_coulomb_hamiltonian, get_interaction_operator,
-    get_quadratic_hamiltonian, _check_no_sympy, get_molecular_data)
+from openfermion.transforms.opconversions.term_reordering import normal_ordered
 
-
-class RaisesSympyExceptionTest(unittest.TestCase):
-
-    def test_raises_sympy_expression(self):
-        operator = FermionOperator('0^', sympy.Symbol('x'))
-        with self.assertRaises(TypeError):
-            _check_no_sympy(operator)
+from openfermion.transforms.repconversions.conversions import (
+    get_diagonal_coulomb_hamiltonian,
+    get_molecular_data,
+    get_interaction_operator,
+    get_quadratic_hamiltonian,
+)
 
 
 class GetInteractionOperatorTest(unittest.TestCase):
