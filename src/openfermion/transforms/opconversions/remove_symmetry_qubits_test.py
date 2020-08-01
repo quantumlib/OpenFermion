@@ -21,7 +21,7 @@ from openfermion.chem import MolecularData
 from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.linalg.sparse_tools import (
     get_sparse_operator, jw_get_ground_state_at_particle_number)
-from openfermion.utils.operator_utils import eigenspectrum
+from openfermion.linalg import eigenspectrum
 
 from openfermion.transforms.opconversions.remove_symmetry_qubits import (
     symmetry_conserving_bravyi_kitaev)

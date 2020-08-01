@@ -13,7 +13,7 @@
 
 from openfermion.ops.operators import (FermionOperator, QubitOperator)
 from openfermion.hamiltonians.special_operators import number_operator
-import openfermion.utils.operator_utils as op_utils
+from openfermion.utils.operator_utils import count_qubits
 
 
 def reverse_jordan_wigner(qubit_operator, n_qubits=None):
@@ -41,8 +41,8 @@ def reverse_jordan_wigner(qubit_operator, n_qubits=None):
     if not isinstance(qubit_operator, QubitOperator):
         raise TypeError('Input must be a QubitOperator.')
     if n_qubits is None:
-        n_qubits = op_utils.count_qubits(qubit_operator)
-    if n_qubits < op_utils.count_qubits(qubit_operator):
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
         raise ValueError('Invalid number of qubits specified.')
 
     # Loop through terms.

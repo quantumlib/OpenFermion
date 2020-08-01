@@ -8,7 +8,7 @@ from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
 from openfermion.linalg import (get_sparse_operator, get_ground_state,
                                 expectation, jw_number_restrict_operator)
 from openfermion.utils.grid import Grid
-from openfermion.utils.jellium_hf_state import hartree_fock_state_jellium
+from openfermion.hamiltonians.jellium_hf_state import hartree_fock_state_jellium
 
 
 class JelliumHartreeFockStateTest(unittest.TestCase):

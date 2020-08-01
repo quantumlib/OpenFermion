@@ -9,22 +9,23 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+'''Tests for conversions.py'''
 import unittest
 import pytest
 import numpy
+import sympy
+
 from openfermion.ops.operators import (QuadOperator, BosonOperator,
                                        FermionOperator, MajoranaOperator,
                                        QubitOperator)
-from openfermion.transforms.opconversions import (get_quad_operator,
-                                                  get_boson_operator,
-                                                  get_majorana_operator,
-                                                  get_fermion_operator)
-from openfermion.transforms.repconversions import \
-    get_diagonal_coulomb_hamiltonian
-from openfermion.utils.operator_utils import normal_ordered
+from openfermion.transforms.repconversions.conversions import (
+    get_diagonal_coulomb_hamiltonian)
+from openfermion.transforms.opconversions.term_reordering import normal_ordered
 
-from openfermion.transforms.opconversions.conversions import \
-    _fermion_operator_to_majorana_operator, _fermion_term_to_majorana_operator
+from openfermion.transforms.opconversions.conversions import (
+    get_quad_operator, get_boson_operator, get_majorana_operator,
+    get_fermion_operator, check_no_sympy,
+    _fermion_operator_to_majorana_operator, _fermion_term_to_majorana_operator)
 
 
 class GetQuadOperatorTest(unittest.TestCase):
@@ -202,3 +203,11 @@ class GetMajoranaOperatorTest(unittest.TestCase):
         self.assertTrue(
             get_majorana_operator(diagonal_ham) == get_majorana_operator(
                 fermion_op))
+
+
+class RaisesSympyExceptionTest(unittest.TestCase):
+
+    def test_raises_sympy_expression(self):
+        operator = FermionOperator('0^', sympy.Symbol('x'))
+        with self.assertRaises(TypeError):
+            check_no_sympy(operator)

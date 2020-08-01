@@ -9,113 +9,22 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Transformations acting on operators and RDMs."""
+
 import numpy
-import sympy
 
 from openfermion.config import EQ_TOLERANCE
-from openfermion.ops.representations import (DiagonalCoulombHamiltonian,
-                                             InteractionOperator)
 from openfermion.ops.operators import FermionOperator
-
-from openfermion.ops.representations import InteractionOperatorError
+from openfermion.ops.representations import (DiagonalCoulombHamiltonian,
+                                             InteractionOperator,
+                                             InteractionOperatorError)
+from openfermion.transforms.opconversions import (check_no_sympy,
+                                                  normal_ordered)
+from openfermion.ops.representations.quadratic_hamiltonian import (
+    QuadraticHamiltonian, QuadraticHamiltonianError)
+import openfermion.chem as chem
 
 # for breaking cyclic imports
 import openfermion.utils.operator_utils as op_utils
-import openfermion.ops.representations.quadratic_hamiltonian as quad
-import openfermion.chem as chem
-
-
-def _check_no_sympy(operator):
-    """Checks whether a SymbolicOperator contains any
-    sympy expressions, which will prevent it being converted
-    to a PolynomialTensor or DiagonalCoulombHamiltonian
-
-    Args:
-        operator(SymbolicOperator): the operator to be tested
-    """
-    for key in operator.terms:
-        if isinstance(operator.terms[key], sympy.Expr):
-            raise TypeError('This conversion is currently not supported ' +
-                            'for operators with sympy expressions ' +
-                            'as coefficients')
-
-
-def get_interaction_operator(fermion_operator, n_qubits=None):
-    r"""Convert a 2-body fermionic operator to InteractionOperator.
-
-    This function should only be called on fermionic operators which
-    consist of only a_p^\dagger a_q and a_p^\dagger a_q^\dagger a_r a_s
-    terms. The one-body terms are stored in a matrix, one_body[p, q], and
-    the two-body terms are stored in a tensor, two_body[p, q, r, s].
-
-    Returns:
-       interaction_operator: An instance of the InteractionOperator class.
-
-    Raises:
-        TypeError: Input must be a FermionOperator.
-        TypeError: FermionOperator does not map to InteractionOperator.
-
-    Warning:
-        Even assuming that each creation or annihilation operator appears
-        at most a constant number of times in the original operator, the
-        runtime of this method is exponential in the number of qubits.
-    """
-    if not isinstance(fermion_operator, FermionOperator):
-        raise TypeError('Input must be a FermionOperator.')
-
-    _check_no_sympy(fermion_operator)
-
-    if n_qubits is None:
-        n_qubits = op_utils.count_qubits(fermion_operator)
-    if n_qubits < op_utils.count_qubits(fermion_operator):
-        raise ValueError('Invalid number of qubits specified.')
-
-    # Normal order the terms and initialize.
-    fermion_operator = op_utils.normal_ordered(fermion_operator)
-    constant = 0.
-    one_body = numpy.zeros((n_qubits, n_qubits), complex)
-    two_body = numpy.zeros((n_qubits, n_qubits, n_qubits, n_qubits), complex)
-
-    # Loop through terms and assign to matrix.
-    for term in fermion_operator.terms:
-        coefficient = fermion_operator.terms[term]
-        # Ignore this term if the coefficient is zero
-        if abs(coefficient) < EQ_TOLERANCE:
-            # not testable because normal_ordered kills
-            # fermion terms lower than EQ_TOLERANCE
-            continue  # pragma: no cover
-
-        # Handle constant shift.
-        if len(term) == 0:
-            constant = coefficient
-
-        elif len(term) == 2:
-            # Handle one-body terms.
-            if [operator[1] for operator in term] == [1, 0]:
-                p, q = [operator[0] for operator in term]
-                one_body[p, q] = coefficient
-            else:
-                raise InteractionOperatorError('FermionOperator does not map '
-                                               'to InteractionOperator.')
-
-        elif len(term) == 4:
-            # Handle two-body terms.
-            if [operator[1] for operator in term] == [1, 1, 0, 0]:
-                p, q, r, s = [operator[0] for operator in term]
-                two_body[p, q, r, s] = coefficient
-            else:
-                raise InteractionOperatorError('FermionOperator does not map '
-                                               'to InteractionOperator.')
-
-        else:
-            # Handle non-molecular Hamiltonian.
-            raise InteractionOperatorError('FermionOperator does not map '
-                                           'to InteractionOperator.')
-
-    # Form InteractionOperator and return.
-    interaction_operator = InteractionOperator(constant, one_body, two_body)
-    return interaction_operator
 
 
 def get_quadratic_hamiltonian(fermion_operator,
@@ -152,7 +61,7 @@ def get_quadratic_hamiltonian(fermion_operator,
     if not isinstance(fermion_operator, FermionOperator):
         raise TypeError('Input must be a FermionOperator.')
 
-    _check_no_sympy(fermion_operator)
+    check_no_sympy(fermion_operator)
 
     if n_qubits is None:
         n_qubits = op_utils.count_qubits(fermion_operator)
@@ -160,7 +69,7 @@ def get_quadratic_hamiltonian(fermion_operator,
         raise ValueError('Invalid number of qubits specified.')
 
     # Normal order the terms and initialize.
-    fermion_operator = op_utils.normal_ordered(fermion_operator)
+    fermion_operator = normal_ordered(fermion_operator)
     constant = 0.
     combined_hermitian_part = numpy.zeros((n_qubits, n_qubits), complex)
     antisymmetric_part = numpy.zeros((n_qubits, n_qubits), complex)
@@ -187,7 +96,7 @@ def get_quadratic_hamiltonian(fermion_operator,
                 # Need to check that the corresponding [0, 0] term is present
                 conjugate_term = ((p, 0), (q, 0))
                 if conjugate_term not in fermion_operator.terms:
-                    raise quad.QuadraticHamiltonianError(
+                    raise QuadraticHamiltonianError(
                         'FermionOperator does not map '
                         'to QuadraticHamiltonian (not Hermitian).')
                 else:
@@ -195,7 +104,7 @@ def get_quadratic_hamiltonian(fermion_operator,
                         conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
-                        raise quad.QuadraticHamiltonianError(
+                        raise QuadraticHamiltonianError(
                             'FermionOperator does not map '
                             'to QuadraticHamiltonian (not Hermitian).')
                 antisymmetric_part[p, q] += .5 * coefficient
@@ -205,7 +114,7 @@ def get_quadratic_hamiltonian(fermion_operator,
                 # Need to check that the corresponding [1, 1] term is present
                 conjugate_term = ((p, 1), (q, 1))
                 if conjugate_term not in fermion_operator.terms:
-                    raise quad.QuadraticHamiltonianError(
+                    raise QuadraticHamiltonianError(
                         'FermionOperator does not map '
                         'to QuadraticHamiltonian (not Hermitian).')
                 else:
@@ -213,17 +122,16 @@ def get_quadratic_hamiltonian(fermion_operator,
                         conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
-                        raise quad.QuadraticHamiltonianError(
+                        raise QuadraticHamiltonianError(
                             'FermionOperator does not map '
                             'to QuadraticHamiltonian (not Hermitian).')
                 antisymmetric_part[p, q] -= .5 * coefficient.conjugate()
                 antisymmetric_part[q, p] += .5 * coefficient.conjugate()
         elif not ignore_incompatible_terms:
             # Operator contains non-quadratic terms
-            raise quad.QuadraticHamiltonianError(
-                'FermionOperator does not map '
-                'to QuadraticHamiltonian '
-                '(contains non-quadratic terms).')
+            raise QuadraticHamiltonianError('FermionOperator does not map '
+                                            'to QuadraticHamiltonian '
+                                            '(contains non-quadratic terms).')
 
     # Compute Hermitian part
     hermitian_part = (combined_hermitian_part +
@@ -231,7 +139,7 @@ def get_quadratic_hamiltonian(fermion_operator,
 
     # Check that the operator is Hermitian
     if not op_utils.is_hermitian(hermitian_part):
-        raise quad.QuadraticHamiltonianError(
+        raise QuadraticHamiltonianError(
             'FermionOperator does not map '
             'to QuadraticHamiltonian (not Hermitian).')
 
@@ -239,14 +147,16 @@ def get_quadratic_hamiltonian(fermion_operator,
     discrepancy = numpy.max(numpy.abs(antisymmetric_part))
     if discrepancy < EQ_TOLERANCE:
         # Hamiltonian conserves particle number
-        quadratic_hamiltonian = quad.QuadraticHamiltonian(
+        quadratic_hamiltonian = QuadraticHamiltonian(
             hermitian_part,
             constant=constant,
             chemical_potential=chemical_potential)
     else:
         # Hamiltonian does not conserve particle number
-        quadratic_hamiltonian = quad.QuadraticHamiltonian(
-            hermitian_part, antisymmetric_part, constant, chemical_potential)
+        quadratic_hamiltonian = QuadraticHamiltonian(hermitian_part,
+                                                     antisymmetric_part,
+                                                     constant,
+                                                     chemical_potential)
 
     return quadratic_hamiltonian
 
@@ -271,14 +181,14 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator,
     if not isinstance(fermion_operator, FermionOperator):
         raise TypeError('Input must be a FermionOperator.')
 
-    _check_no_sympy(fermion_operator)
+    check_no_sympy(fermion_operator)
 
     if n_qubits is None:
         n_qubits = op_utils.count_qubits(fermion_operator)
     if n_qubits < op_utils.count_qubits(fermion_operator):
         raise ValueError('Invalid number of qubits specified.')
 
-    fermion_operator = op_utils.normal_ordered(fermion_operator)
+    fermion_operator = normal_ordered(fermion_operator)
     constant = 0.
     one_body = numpy.zeros((n_qubits, n_qubits), complex)
     two_body = numpy.zeros((n_qubits, n_qubits), float)
@@ -324,6 +234,83 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator,
             '(not Hermitian).')
 
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
+
+
+def get_interaction_operator(fermion_operator, n_qubits=None):
+    r"""Convert a 2-body fermionic operator to InteractionOperator.
+
+    This function should only be called on fermionic operators which
+    consist of only a_p^\dagger a_q and a_p^\dagger a_q^\dagger a_r a_s
+    terms. The one-body terms are stored in a matrix, one_body[p, q], and
+    the two-body terms are stored in a tensor, two_body[p, q, r, s].
+
+    Returns:
+       interaction_operator: An instance of the InteractionOperator class.
+
+    Raises:
+        TypeError: Input must be a FermionOperator.
+        TypeError: FermionOperator does not map to InteractionOperator.
+
+    Warning:
+        Even assuming that each creation or annihilation operator appears
+        at most a constant number of times in the original operator, the
+        runtime of this method is exponential in the number of qubits.
+    """
+    if not isinstance(fermion_operator, FermionOperator):
+        raise TypeError('Input must be a FermionOperator.')
+
+    check_no_sympy(fermion_operator)
+
+    if n_qubits is None:
+        n_qubits = op_utils.count_qubits(fermion_operator)
+    if n_qubits < op_utils.count_qubits(fermion_operator):
+        raise ValueError('Invalid number of qubits specified.')
+
+    # Normal order the terms and initialize.
+    fermion_operator = normal_ordered(fermion_operator)
+    constant = 0.
+    one_body = numpy.zeros((n_qubits, n_qubits), complex)
+    two_body = numpy.zeros((n_qubits, n_qubits, n_qubits, n_qubits), complex)
+
+    # Loop through terms and assign to matrix.
+    for term in fermion_operator.terms:
+        coefficient = fermion_operator.terms[term]
+        # Ignore this term if the coefficient is zero
+        if abs(coefficient) < EQ_TOLERANCE:
+            # not testable because normal_ordered kills
+            # fermion terms lower than EQ_TOLERANCE
+            continue  # pragma: no cover
+
+        # Handle constant shift.
+        if len(term) == 0:
+            constant = coefficient
+
+        elif len(term) == 2:
+            # Handle one-body terms.
+            if [operator[1] for operator in term] == [1, 0]:
+                p, q = [operator[0] for operator in term]
+                one_body[p, q] = coefficient
+            else:
+                raise InteractionOperatorError('FermionOperator does not map '
+                                               'to InteractionOperator.')
+
+        elif len(term) == 4:
+            # Handle two-body terms.
+            if [operator[1] for operator in term] == [1, 1, 0, 0]:
+                p, q, r, s = [operator[0] for operator in term]
+                two_body[p, q, r, s] = coefficient
+            else:
+                raise InteractionOperatorError('FermionOperator does not map '
+                                               'to InteractionOperator.')
+
+        else:
+            # Handle non-molecular Hamiltonian.
+            raise InteractionOperatorError('FermionOperator does not map '
+                                           'to InteractionOperator.')
+
+    # Form InteractionOperator and return.
+    interaction_operator = InteractionOperator(constant, one_body, two_body)
+    return interaction_operator
 
 
 def get_molecular_data(interaction_operator,

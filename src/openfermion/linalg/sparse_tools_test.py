@@ -30,13 +30,18 @@ from openfermion.hamiltonians import (fermi_hubbard, jellium_model,
                                       wigner_seitz_length_scale,
                                       number_operator)
 from openfermion.ops.operators import (FermionOperator, BosonOperator,
-                                       QuadOperator, QubitOperator)
+                                       QuadOperator, QubitOperator,
+                                       MajoranaOperator)
 from openfermion.ops.representations import DiagonalCoulombHamiltonian
-from openfermion.transforms.opconversions import jordan_wigner, \
-    get_fermion_operator
+from openfermion.transforms.opconversions import (jordan_wigner,
+                                                  get_fermion_operator,
+                                                  normal_ordered)
+from openfermion.transforms.repconversions import (fourier_transform,
+                                                   get_interaction_operator)
+
 from openfermion.testing.testing_utils import random_hermitian_matrix
 from openfermion.linalg.sparse_tools import (
-    get_sparse_operator, get_ground_state, expectation,
+    get_sparse_operator, get_ground_state, eigenspectrum, expectation,
     jw_number_restrict_state, inner_product, jw_sz_restrict_state,
     jw_get_ground_state_at_particle_number, jw_sparse_givens_rotation,
     pauli_matrix_map, sparse_eigenspectrum, jordan_wigner_sparse,
@@ -50,12 +55,41 @@ from openfermion.linalg.sparse_tools import (
     boson_operator_sparse, single_quad_op_sparse, _iterate_basis_)
 
 from openfermion.utils.operator_utils import (is_hermitian, count_qubits,
-                                              normal_ordered, fourier_transform)
+                                              hermitian_conjugated)
 from openfermion.utils.indexing import up_index, down_index
 from openfermion.utils.grid import Grid
-from openfermion.utils.jellium_hf_state import (
+from openfermion.hamiltonians.jellium_hf_state import (
     lowest_single_particle_energy_states)
 from openfermion.linalg.linear_qubit_operator import LinearQubitOperator
+
+
+class EigenSpectrumTest(unittest.TestCase):
+
+    def setUp(self):
+        self.n_qubits = 5
+        self.majorana_operator = MajoranaOperator((1, 4, 9))
+        self.fermion_term = FermionOperator('1^ 2^ 3 4', -3.17)
+        self.fermion_operator = self.fermion_term + hermitian_conjugated(
+            self.fermion_term)
+        self.qubit_operator = jordan_wigner(self.fermion_operator)
+        self.interaction_operator = get_interaction_operator(
+            self.fermion_operator)
+
+    def test_eigenspectrum(self):
+        fermion_eigenspectrum = eigenspectrum(self.fermion_operator)
+        qubit_eigenspectrum = eigenspectrum(self.qubit_operator)
+        interaction_eigenspectrum = eigenspectrum(self.interaction_operator)
+        for i in range(2**self.n_qubits):
+            self.assertAlmostEqual(fermion_eigenspectrum[i],
+                                   qubit_eigenspectrum[i])
+            self.assertAlmostEqual(fermion_eigenspectrum[i],
+                                   interaction_eigenspectrum[i])
+
+        with self.assertRaises(TypeError):
+            _ = eigenspectrum(BosonOperator())
+
+        with self.assertRaises(TypeError):
+            _ = eigenspectrum(QuadOperator())
 
 
 class SparseOperatorTest(unittest.TestCase):

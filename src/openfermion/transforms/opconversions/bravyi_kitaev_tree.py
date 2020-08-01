@@ -12,10 +12,9 @@
 """Bravyi-Kitaev transform on fermionic operators."""
 
 from openfermion.ops.operators import QubitOperator
-from openfermion.transforms.opconversions.bravyi_kitaev import inline_product
+from openfermion.transforms.opconversions.bravyi_kitaev import (inline_product,
+                                                                inline_sum)
 from openfermion.transforms.opconversions.fenwick_tree import FenwickTree
-
-import openfermion.utils.operator_utils as op_utils
 
 
 def bravyi_kitaev_tree(operator, n_qubits=None):
@@ -57,7 +56,7 @@ def bravyi_kitaev_tree(operator, n_qubits=None):
     transformed_terms = (_transform_operator_term(
         term=term, coefficient=operator.terms[term], fenwick_tree=fenwick_tree)
                          for term in operator.terms)
-    return op_utils.inline_sum(summands=transformed_terms, seed=QubitOperator())
+    return inline_sum(summands=transformed_terms, seed=QubitOperator())
 
 
 def _transform_operator_term(term, coefficient, fenwick_tree):

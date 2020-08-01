@@ -18,7 +18,7 @@ from openfermion.transforms.opconversions import (binary_code_transform,
                                                   bravyi_kitaev,
                                                   get_fermion_operator,
                                                   jordan_wigner)
-from openfermion.utils import eigenspectrum
+from openfermion.linalg import eigenspectrum
 
 from openfermion.transforms.opconversions.binary_codes import (
     bravyi_kitaev_code, checksum_code, interleaved_code, jordan_wigner_code,

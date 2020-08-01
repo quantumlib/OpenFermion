@@ -25,6 +25,8 @@ from .jellium import (dual_basis_kinetic, dual_basis_potential,
                       plane_wave_kinetic, plane_wave_potential,
                       wigner_seitz_length_scale)
 
+from .jellium_hf_state import hartree_fock_state_jellium
+
 from .mean_field_dwave import mean_field_dwave
 
 from .plane_wave_hamiltonian import (dual_basis_external_potential,

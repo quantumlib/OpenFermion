@@ -13,7 +13,7 @@
 
 from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
                                        QubitOperator)
-import openfermion.utils.operator_utils as op_utils
+from openfermion.utils.operator_utils import count_qubits
 
 
 def bravyi_kitaev(operator, n_qubits=None):
@@ -99,7 +99,7 @@ def _parity_set(index):
 
 def _bravyi_kitaev_majorana_operator(operator, n_qubits):
     # Compute the number of qubits.
-    N = op_utils.count_qubits(operator)
+    N = count_qubits(operator)
     if n_qubits is None:
         n_qubits = N
     if n_qubits < N:
@@ -110,7 +110,7 @@ def _bravyi_kitaev_majorana_operator(operator, n_qubits):
                                                   coefficient=coeff,
                                                   n_qubits=n_qubits)
                          for term, coeff in operator.terms.items())
-    return op_utils.inline_sum(summands=transformed_terms, seed=QubitOperator())
+    return inline_sum(summands=transformed_terms, seed=QubitOperator())
 
 
 def _transform_majorana_term(term, coefficient, n_qubits):
@@ -157,7 +157,7 @@ def _transform_operator_term(term, coefficient, n_qubits):
 
 def _bravyi_kitaev_fermion_operator(operator, n_qubits):
     # Compute the number of qubits.
-    N = op_utils.count_qubits(operator)
+    N = count_qubits(operator)
     if n_qubits is None:
         n_qubits = N
     if n_qubits < N:
@@ -167,7 +167,7 @@ def _bravyi_kitaev_fermion_operator(operator, n_qubits):
     transformed_terms = (_transform_operator_term(
         term=term, coefficient=operator.terms[term], n_qubits=n_qubits)
                          for term in operator.terms)
-    return op_utils.inline_sum(summands=transformed_terms, seed=QubitOperator())
+    return inline_sum(summands=transformed_terms, seed=QubitOperator())
 
 
 def _transform_ladder_operator(ladder_operator, n_qubits):
@@ -201,6 +201,19 @@ def _transform_ladder_operator(ladder_operator, n_qubits):
         transformed_operator -= transformed_majorana_difference
 
     return transformed_operator
+
+
+def inline_sum(summands, seed):
+    """Computes a sum, using the __iadd__ operator.
+    Args:
+        seed (T): The starting total. The zero value.
+        summands (iterable[T]): Values to add (with +=) into the total.
+    Returns:
+        T: The result of adding all the factors into the zero value.
+    """
+    for r in summands:
+        seed += r
+    return seed
 
 
 def inline_product(factors, seed):

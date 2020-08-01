@@ -27,7 +27,7 @@ from .linear_qubit_operator import (generate_linear_qubit_operator,
 
 from .sparse_tools import (
     wrapped_kronecker, kronecker_operators, jordan_wigner_ladder_sparse,
-    jordan_wigner_sparse, qubit_operator_sparse,
+    jordan_wigner_sparse, qubit_operator_sparse, eigenspectrum,
     get_linear_qubit_operator_diagonal, jw_configuration_state,
     jw_hartree_fock_state, jw_number_indices, jw_sz_indices,
     jw_number_restrict_operator, jw_sz_restrict_operator,

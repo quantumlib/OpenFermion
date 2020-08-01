@@ -21,7 +21,7 @@ from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
 
 from openfermion.transforms.opconversions import (jordan_wigner, bravyi_kitaev,
                                                   get_fermion_operator)
-from openfermion.utils import eigenspectrum
+from openfermion.linalg import eigenspectrum
 from openfermion.hamiltonians import number_operator
 
 

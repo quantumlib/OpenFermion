@@ -27,7 +27,8 @@ from openfermion.transforms.opconversions import (get_fermion_operator,
                                                   reverse_jordan_wigner)
 from openfermion.transforms.repconversions import (
     get_diagonal_coulomb_hamiltonian, get_interaction_operator)
-from openfermion.utils import (hermitian_conjugated, normal_ordered)
+from openfermion.utils import hermitian_conjugated
+from openfermion.transforms.opconversions import normal_ordered
 from openfermion.testing.testing_utils import (random_interaction_operator,
                                                random_quadratic_hamiltonian)
 
