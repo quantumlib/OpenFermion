@@ -372,6 +372,7 @@ class QuadraticHamiltonian(PolynomialTensor):
                 and :math:`\varphi`.
         """
         # Adding inline import here to prevent circular issues
+        # TODO: move this out once we have a better solution
         from openfermion.linalg.givens_rotations import (
             fermionic_gaussian_decomposition, givens_decomposition_square)
         _, transformation_matrix, _ = self.diagonalizing_bogoliubov_transform()
@@ -472,6 +473,8 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
         canonical(ndarray): The canonical form C of antisymmetric_matrix
         orthogonal(ndarray): The orthogonal transformation R.
     """
+    # Shifted here to prevent circular import issues
+    # TODO: move this out when a better solution is found.
     from openfermion.linalg.givens_rotations import swap_columns, swap_rows
     m, p = antisymmetric_matrix.shape
 

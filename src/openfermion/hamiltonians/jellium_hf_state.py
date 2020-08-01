@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This module constructs the uniform electron gas' Hartree-Fock state."""
+# TODO: Move this to linalg after circular import issue has been fixed.
 
 import numpy
 from openfermion.ops.operators import FermionOperator
