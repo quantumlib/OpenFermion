@@ -37,6 +37,8 @@ class _HR1(object):
         if len(args) != 2:
             raise IndexError('hr1 is a two-indexed array')
         p, q = args
+        if p == q:
+            raise IndexError('hr1 has no diagonal term')
         return self._hr1[p, q]
 
     def __setitem__(self, args, value):
@@ -246,8 +248,9 @@ class DOCIHamiltonian(PolynomialTensor):
         qubitop = QubitOperator()
         n_qubits = self.hr1.shape[0]
         for p in range(n_qubits):
-            qubitop += (QubitOperator((), self.hr1[p, p] / 2) -
-                        QubitOperator("Z"+str(p), self.hr1[p, p] / 2))
+            qubitop += (QubitOperator((), (self.hc[p] + self.hr2[p, p]) / 2) -
+                        QubitOperator("Z"+str(p),
+                                      (self.hc[p] + self.hr2[p, p]) / 2))
             for q in range(n_qubits):
                 if p == q:
                     continue
@@ -359,10 +362,11 @@ def get_projected_integrals_from_doci(hc, hr1, hr2):
                                                n_qubits))
     for p in range(n_qubits):
         projected_onebody_integrals[p, p] = hc[p]
+        projected_twobody_integrals[p, p, p, p] = hr2[p, p]
         for q in range(n_qubits):
-            projected_twobody_integrals[p, q, q, p] = hr2[p, q] / 2
             if p == q:
                 continue
+            projected_twobody_integrals[p, q, q, p] = hr2[p, q] / 2
             projected_twobody_integrals[p, p, q, q] = hr1[p, q]
 
     return projected_onebody_integrals, projected_twobody_integrals

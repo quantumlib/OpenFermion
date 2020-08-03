@@ -15,6 +15,7 @@ import unittest
 
 import numpy
 
+from openfermion.config import EQ_TOLERANCE
 from openfermion.chem.molecular_data import MolecularData
 from openfermion.config import THIS_DIRECTORY
 from openfermion.transforms import jordan_wigner
@@ -37,13 +38,6 @@ class HOpsTest(unittest.TestCase):
         hr1 = _HR1(hr1_mat, self.n_body_tensors)
         hr1[0, 1] = 2
         self.assertEqual(hr1[0, 1], 2)
-        for i in range(4):
-            for j in range(4):
-                for k in range(4):
-                    for l in range(4):
-                        if hr1._n_body_tensors[(1, 1, 0, 0)][i,j,k,l] != 0:
-                            print(i,j,k,l)
-        print(hr1._n_body_tensors[(1, 1, 0, 0)])
         self.assertEqual(hr1._n_body_tensors[(1, 1, 0, 0)][0, 1, 3, 2], 1)
         self.assertEqual(hr1._n_body_tensors[(1, 1, 0, 0)][1, 0, 2, 3], 1)
 
@@ -62,6 +56,8 @@ class HOpsTest(unittest.TestCase):
             hr1[1, 2, 3] = 2
         with self.assertRaises(IndexError):
             hr1[1, 1] = 2
+        with self.assertRaises(IndexError):
+            _ = hr1[1, 1]
 
     def test_hr2_init_set_get(self):
         hr2_mat = numpy.zeros((2, 2))
@@ -113,6 +109,36 @@ class HOpsTest(unittest.TestCase):
             hc[0, 0] = 1
 
 
+class IntegralTransformsTest(unittest.TestCase):
+
+    def setUp(self):
+        self.geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
+        self.basis = 'sto-3g'
+        self.multiplicity = 1
+        self.filename = os.path.join(THIS_DIRECTORY, 'data',
+                                     'H2_sto-3g_singlet_0.7414')
+        self.molecule = MolecularData(self.geometry,
+                                      self.basis,
+                                      self.multiplicity,
+                                      filename=self.filename)
+        self.molecule.load()
+
+    def test_integrals_self_inverse(self):
+        hc, hr1, hr2 = get_doci_from_integrals(
+            self.molecule.one_body_integrals,
+            self.molecule.two_body_integrals)
+        proj_one_body, proj_two_body = get_projected_integrals_from_doci(hc,
+                                                                         hr1,
+                                                                         hr2)
+        hc_test, hr1_test, hr2_test = get_doci_from_integrals(
+            proj_one_body, proj_two_body)
+        self.assertTrue(numpy.allclose(hc, hc_test))
+        self.assertTrue(numpy.allclose(hr1, hr1_test))
+        print(hr2)
+        print(hr2_test)
+        self.assertTrue(numpy.allclose(hr2, hr2_test))
+
+
 class DOCIHamiltonianTest(unittest.TestCase):
 
     def setUp(self):
@@ -149,7 +175,7 @@ class DOCIHamiltonianTest(unittest.TestCase):
                         closest_in_diagonal - doci_eigval):
                     closest_in_diagonal = eig
                     position_of_doci_diag_in_h[idx] = idx2
-            assert abs(closest_in_diagonal - doci_eigval) < 1e-8, (
+            assert abs(closest_in_diagonal - doci_eigval) < EQ_TOLERANCE, (
                 "Value " + str(doci_eigval) + " of the DOCI Hamiltonian " +
                 "diagonal did not appear in the diagonal of the full " +
                 "Hamiltonian. The closest value was "+str(closest_in_diagonal))
