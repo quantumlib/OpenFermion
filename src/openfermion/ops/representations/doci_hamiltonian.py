@@ -361,7 +361,7 @@ def get_projected_integrals_from_doci(hc, hr1, hr2):
     projected_twobody_integrals = numpy.zeros((n_qubits, n_qubits, n_qubits,
                                                n_qubits))
     for p in range(n_qubits):
-        projected_onebody_integrals[p, p] = hc[p]
+        projected_onebody_integrals[p, p] = hc[p] / 2
         projected_twobody_integrals[p, p, p, p] = hr2[p, p]
         for q in range(n_qubits):
             if p == q:
@@ -393,9 +393,9 @@ def get_doci_from_integrals(one_body_integrals,
     hr2 = numpy.zeros((n_qubits, n_qubits))
 
     for p in range(n_qubits):
-        hc[p] = one_body_integrals[p, p]
+        hc[p] = 2 * one_body_integrals[p, p]
         for q in range(n_qubits):
-            hr2[p, q] = (2*two_body_integrals[p, q, q, p] -
+            hr2[p, q] = (2 * two_body_integrals[p, q, q, p] -
                          two_body_integrals[p, q, p, q])
             if p == q:
                 continue

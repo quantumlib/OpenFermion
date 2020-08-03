@@ -99,7 +99,6 @@ class HOpsTest(unittest.TestCase):
         self.assertEqual(hc[(0, )], 2)
         self.assertEqual(hc._n_body_tensors[(1, 0)][0, 0], 2)
 
-
     def test_hc_raises_errors(self):
         hc_mat = numpy.zeros((2))
         hc = _HC(hc_mat, self.n_body_tensors)
@@ -137,6 +136,25 @@ class IntegralTransformsTest(unittest.TestCase):
         print(hr2)
         print(hr2_test)
         self.assertTrue(numpy.allclose(hr2, hr2_test))
+
+    def test_integrals_to_doci(self):
+        one_body_integrals = self.molecule.one_body_integrals
+        two_body_integrals = self.molecule.two_body_integrals
+        hc, hr1, hr2 = get_doci_from_integrals(one_body_integrals, two_body_integrals)
+        self.assertEqual(hc.shape[0], 2)
+        self.assertEqual(hr1.shape[0], 2)
+        self.assertEqual(hr2.shape[0], 2)
+
+        for p in range(2):
+            self.assertEqual(hc[p] + hr2[p, p],
+                             2 * one_body_integrals[p, p] +
+                             two_body_integrals[p, p, p, p])
+            for q in range(2):
+                if p != q:
+                    self.assertEqual(hr1[p, q], two_body_integrals[p, p, q, q])
+                    self.assertEqual(hr2[p, q], 2*two_body_integrals[p, q, q, p] -
+                                     two_body_integrals[p, q, p, q])
+
 
 
 class DOCIHamiltonianTest(unittest.TestCase):
