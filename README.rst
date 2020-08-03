@@ -54,9 +54,9 @@ Getting started
 
 Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
 For information about getting started beyond what is provided below please see our
-`tutorial <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_tutorial.ipynb>`__
+`tutorial <https://github.com/quantumlib/OpenFermion/blob/master/docs/tutorials/intro_to_openfermion.ipynb>`__
 in the
-`examples <https://github.com/quantumlib/OpenFermion/blob/master/examples>`__ folder
+`tutorials <https://github.com/quantumlib/OpenFermion/blob/master/docs/tutorials>`__ folder
 as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
 Currently, OpenFermion is only tested on Mac and Linux for the reason that both
