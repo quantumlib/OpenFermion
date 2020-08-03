@@ -13,9 +13,134 @@
 import numpy
 
 from openfermion.ops import QubitOperator
+from openfermion.ops.representations import (PolynomialTensor,
+                                             get_tensor_from_integrals)
 
 
-class DOCIHamiltonian(object):
+class _HR1(object):
+    """class for storing the DOCI hr1 tensor alongside an nbody tensor rep
+    """
+    def __init__(self, hr1, n_body_tensors):
+        self._hr1 = hr1
+        self._n_body_tensors = n_body_tensors
+
+    @property
+    def shape(self):
+        return self._hr1.shape
+
+    def __getitem__(self, args):
+        """Look up matrix element.
+
+        Args:
+            args: i, j
+        """
+        if len(args) != 2:
+            raise ValueError('hr1 is a two-indexed array')
+        p, q = args
+        return self._hr1[p, q]
+
+    def __setitem__(self, args, value):
+        """Set matrix element.
+
+        Args:
+            args: Tuples indicating which coefficient to set.
+        """
+        if len(args) != 2:
+            raise ValueError('hr1 is a two-indexed array')
+        p, q = args
+        self._hr1[p, q] = value
+        two_body_coefficients = self._n_body_tensors[(1, 1, 0, 0)]
+
+        # Mixed spin
+        two_body_coefficients[2 * p, 2 * p + 1, 2 * q + 1, 2 * q] = (value / 2)
+        two_body_coefficients[2 * p + 1, 2 * p, 2 * q, 2 * q + 1] = (value / 2)
+
+        # Same spin
+        two_body_coefficients[2 * p, 2 * p, 2 * q, 2 * q] = (value / 2)
+        two_body_coefficients[2 * p + 1, 2 * p + 1, 2 * q + 1, 2 * q + 1] = (
+            value / 2)
+
+
+class _HR2(object):
+    """class for storing the DOCI hr2 tensor alongside an nbody tensor rep
+    """
+    def __init__(self, hr2, n_body_tensors):
+        self._hr2 = hr2
+        self._n_body_tensors = n_body_tensors
+
+    @property
+    def shape(self):
+        return self._hr2.shape
+
+    def __getitem__(self, args):
+        """Look up matrix element.
+
+        Args:
+            args: i, j
+        """
+        if len(args) != 2:
+            raise ValueError('hr1 is a two-indexed array')
+        return self._hr2[args[0], args[1]]
+
+    def __setitem__(self, args, value):
+        """Set matrix element.
+
+        Args:
+            args: Tuples indicating which coefficient to set.
+        """
+        if len(args) != 2:
+            raise ValueError('hr1 is a two-indexed array')
+        p, q = args
+        self._hr2[p, q] = value
+        two_body_coefficients = self._n_body_tensors[(1, 1, 0, 0)]
+
+        # Mixed spin
+        two_body_coefficients[2 * p, 2 * q + 1, 2 * q + 1, 2 * p] = (value / 2)
+        two_body_coefficients[2 * p + 1, 2 * q, 2 * q, 2 * p + 1] = (value / 2)
+
+        # Same spin
+        two_body_coefficients[2 * p, 2 * q, 2 * q, 2 * p] = (value / 2)
+        two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * q + 1, 2 * p + 1] = (
+            value / 2)
+
+
+class _HC(object):
+    """class for storing the DOCI hr2 tensor alongside an nbody tensor rep
+    """
+    def __init__(self, hc, n_body_tensors):
+        self._hc = hc
+        self._n_body_tensors = n_body_tensors
+
+    @property
+    def shape(self):
+        return self._hc.shape
+
+    def __getitem__(self, args):
+        """Look up matrix element.
+
+        Args:
+            args: i, j
+        """
+        if len(args) != 1:
+            raise ValueError('hc is a one-indexed array')
+        return self._hc[args[0]]
+
+    def __setitem__(self, args, value):
+        """Set matrix element.
+
+        Args:
+            args: Tuples indicating which coefficient to set.
+        """
+        if len(args) != 1:
+            raise ValueError('hc is a one-indexed array')
+        p, = args
+        self._hc[p] = value
+        one_body_coefficients = self._n_body_tensors[(1, 0)]
+        one_body_coefficients[2 * p, 2 * p] = value
+        one_body_coefficients[2 * p + 1, 2 * p + 1] = value
+
+
+class DOCIHamiltonian(PolynomialTensor):
     r"""Class for storing DOCI hamiltonians which are defined to be
     restrictions of fermionic operators to doubly occupied configurations.
     As such they are by nature hard-core boson Hamiltonians, but the
@@ -64,7 +189,7 @@ class DOCIHamiltonian(object):
             This is an n_qubits x n_qubits numpy array of floats.
     """
 
-    def __init__(self, constant, hr1, hr2):
+    def __init__(self, constant, hc, hr1, hr2):
         r"""
         Initialize the DOCIHamiltonian class.
 
@@ -76,12 +201,20 @@ class DOCIHamiltonian(object):
             hr2: The coefficients of (:math:`h^{(r2)}_{p, q}`).
                 This is an n_qubits x n_qubits array of floats.
         """
-        self._constant = None
+        one_body_coefficients, two_body_coefficients =\
+            make_tensors_from_doci(hc, hr1, hr2)
+        n_body_tensors = {
+            (): constant,
+            (1, 0): one_body_coefficients,
+            (1, 1, 0, 0): two_body_coefficients
+        }
+        super(n_body_tensors)
         self._hr1 = None
         self._hr2 = None
-        self.constant = constant
-        self.hr1 = hr1
-        self.hr2 = hr2
+        self._hc = None
+        self.hr1 = _HR1(hr1, n_body_tensors)
+        self.hr2 = _HR2(hr2, n_body_tensors)
+        self.hc = _HC(hc, n_body_tensors)
 
     @property
     def qubit_operator(self):
@@ -90,86 +223,173 @@ class DOCIHamiltonian(object):
 
     @property
     def xy_part(self):
-        """Return the XX and YY part of the QubitOperator representation of this DOCI Hamiltonian"""
+        """Return the XX and YY part of the QubitOperator representation of this
+        DOCI Hamiltonian"""
         qubitop = QubitOperator()
         n_qubits = self.hr1.shape[0]
         for p in range(n_qubits):
             for q in range(n_qubits):
                 if p == q:
                     continue
-                qubitop += QubitOperator("X"+str(p)+" X"+str(q), self.hr1[p, q]/4) + QubitOperator("Y"+str(p)+" Y"+str(q), self.hr1[p, q]/4)
+                qubitop +=  (QubitOperator("X"+str(p)+" X"+str(q),
+                                           self.hr1[p, q]/4) +
+                             QubitOperator("Y"+str(p)+" Y"+str(q),
+                                           self.hr1[p, q]/4))
 
         return qubitop
 
     @property
     def z_part(self):
-        """Return the Z and ZZ part of the QubitOperator representation of this DOCI Hamiltonian"""
+        """Return the Z and ZZ part of the QubitOperator representation of this
+        DOCI Hamiltonian"""
         qubitop = QubitOperator()
         n_qubits = self.hr1.shape[0]
         for p in range(n_qubits):
-            qubitop += QubitOperator((), self.hr1[p, p]/2) - QubitOperator("Z"+str(p), self.hr1[p, p]/2)
+            qubitop += (QubitOperator((), self.hr1[p, p] / 2) -
+                        QubitOperator("Z"+str(p), self.hr1[p, p] / 2))
             for q in range(n_qubits):
                 if p == q:
                     continue
-                coef = self.hr2[p,q]/4
-                qubitop += QubitOperator((), coef) + QubitOperator("Z"+str(p), -coef) + QubitOperator("Z"+str(q), -coef) + QubitOperator("Z"+str(p)+" Z"+str(q), coef)
-
+                coef = self.hr2[p, q]/4
+                qubitop += (QubitOperator((), coef) +
+                            QubitOperator("Z"+str(p), -coef) +
+                            QubitOperator("Z"+str(q), -coef) +
+                            QubitOperator("Z"+str(p)+" Z"+str(q), coef))
         return qubitop
 
     @property
-    def constant(self):
-        """The value of constant."""
-        return self._constant
-
-    @constant.setter
-    def constant(self, value):
-        """Set the value of constant."""
-        self._constant = value
+    def hc(self):
+        return self._hc
 
     @property
     def hr1(self):
         """The value of hr1."""
         return self._hr1
 
-    @hr1.setter
-    def hr1(self, value):
-        """Set the value of hr1."""
-        self._hr1 = value
-
     @property
     def hr2(self):
         """The value of hr2."""
         return self._hr2
 
-    @hr2.setter
-    def hr2(self, value):
-        """Set the value of hr2."""
-        self._hr2 = value
+    # Override root class 
+    def __getitem__(self, args):
+        """Look up matrix element.
+
+        Args:
+            args: Tuples indicating which coefficient to get. For instance,
+                `my_tensor[(6, 1), (8, 1), (2, 0)]`
+                returns
+                `my_tensor.n_body_tensors[1, 1, 0][6, 8, 2]`
+        """
+        if len(args) == 0:
+            return self.n_body_tensors[()]
+        index = tuple([operator[0] for operator in args])
+        key = tuple([operator[1] for operator in args])
+        return self.n_body_tensors[key][index]
+
+    # Override root class
+    def __setitem__(self, args, value):
+        # This is not well-defined for a DOCIHamiltonian as we want to keep
+        # certain tensor elements within the class the same. Better to
+        # make the user update the hr1/hr2/hc terms --- if they really
+        # want to play around with the n_body_tensors here they should
+        # be castimt this to a raw PolynomialTensor.
+        raise TypeError('Raw edits of the n_body_tensors of a DOCIHamiltonian '
+                        'is not allowed. Either adjust the hc/hr1/hr2 terms '
+                        'or cast to another PolynomialTensor class.')
 
     @classmethod
     def from_integrals(cls, constant, one_body_integrals, two_body_integrals):
-        r"""Construct a DOCI Hamiltonian from electron integrals
-
-        Args:
-            constant: A constant term in the operator given as a
-                float. For instance, the nuclear repulsion energy.
-            one_body_integrals: Numpy array of one-electron integrals
-            two_body_integrals: Numpy array of two-electron integrals
-        """
-        n_qubits = one_body_integrals.shape[0]
-        hr1 = numpy.zeros((n_qubits, n_qubits))
-        hr2 = numpy.zeros((n_qubits, n_qubits))
-        for p in range(n_qubits):
-            hr1[p, p] = 2*one_body_integrals[p, p] + two_body_integrals[p, p, p, p]
-            for q in range(n_qubits):
-                if p == q:
-                    continue
-                hr1[p, q] = two_body_integrals[p, p, q, q]
-                hr2[p, q] = 2*two_body_integrals[p, q, q, p] - two_body_integrals[p, q, p, q]
-
-        return cls(constant, hr1, hr2)
+        # TODO: discuss whether this is is an appropriate design pattern
+        # to include.
+        hc, hr1, hr2 = get_doci_from_integrals(one_body_integrals,
+                                               two_body_integrals)
+        return cls(constant, hc, hr1, hr2)
 
     @classmethod
     def zero(cls, n_qubits):
-        return cls(0, numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
+        return cls(0,
+                   numpy.zeros((n_qubits,), dtype=numpy.complex128),
+                   numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
                    numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128))
+
+
+def make_tensors_from_doci(hc, hr1, hr2):
+    '''Makes the one and two-body tensors from the DOCI wavefunctions
+
+    Args:
+        hc [numpy array]: The single-particle DOCI terms in matrix form
+        hr1 [numpy array]: The off-diagonal DOCI Hamiltonian terms in matrix
+            form
+        hr2 [numpy array]: The diagonal DOCI Hamiltonian terms in matrix form
+
+    Returns:
+        one_body_coefficients [numpy array]: The corresponding one-body
+            tensor for the electronic structure Hamiltonian
+        two_body_coefficients [numpy array]: The corresponding two body
+            tensor for the electronic structure Hamiltonian
+    '''
+    one_body_integrals, two_body_integrals =\
+        make_projected_integrals_from_doci(hc, hr1, hr2)
+    one_body_coefficients, two_body_coefficients = get_tensor_from_integrals(
+        one_body_integrals, two_body_integrals)
+    return one_body_coefficients, two_body_coefficients
+
+
+def make_projected_integrals_from_doci(hc, hr1, hr2):
+    '''Makes the one and two-body integrals from the DOCI projection
+    from the hr1 and hr2 matrices.
+
+    Args:
+        hc [numpy array]: The single-particle DOCI terms in matrix form
+        hr1 [numpy array]: The off-diagonal DOCI Hamiltonian terms in matrix
+            form
+        hr2 [numpy array]: The diagonal DOCI Hamiltonian terms in matrix form
+
+    Returns:
+        projected_onebody_integrals [numpy array]: The corresponding one-body
+            integrals for the electronic structure Hamiltonian
+        projected_twobody_integrals [numpy array]: The corresponding two body
+            integrals for the electronic structure Hamiltonian
+    '''
+    n_qubits = hr1.shape[0]
+    projected_onebody_integrals = numpy.zeros((n_qubits, n_qubits))
+    projected_twobody_integrals = numpy.zeros((n_qubits, n_qubits, n_qubits,
+                                               n_qubits))
+    for p in range(n_qubits):
+        projected_onebody_integrals[p, p] = hc[p]
+        for q in range(n_qubits):
+            projected_twobody_integrals[p, p, q, q] = hr1[p, q]
+            projected_twobody_integrals[p, q, q, p] = hr2[p, q] / 2
+
+    return projected_onebody_integrals, projected_twobody_integrals
+
+
+def get_doci_from_integrals(one_body_integrals,
+                            two_body_integrals):
+    r"""Construct a DOCI Hamiltonian from electron integrals
+
+    Args:
+        one_body_integrals [numpy array]: one-electron integrals
+        two_body_integrals [numpy array]: two-electron integrals
+
+    Returns:
+        hc [numpy array]: The single-particle DOCI terms in matrix form
+        hr1 [numpy array]: The off-diagonal DOCI Hamiltonian terms in matrix
+            form
+        hr2 [numpy array]: The diagonal DOCI Hamiltonian terms in matrix form
+    """
+
+    n_qubits = one_body_integrals.shape[0]
+    hc = numpy.zeros(n_qubits)
+    hr1 = numpy.zeros((n_qubits, n_qubits))
+    hr2 = numpy.zeros((n_qubits, n_qubits))
+
+    for p in range(n_qubits):
+        hc[p] = one_body_integrals[p, p]
+        for q in range(n_qubits):
+            hr1[p, q] = two_body_integrals[p, p, q, q]
+            hr2[p, q] = (2*two_body_integrals[p, q, q, p] -
+                         two_body_integrals[p, q, p, q])
+
+    return hc, hr1, hr2

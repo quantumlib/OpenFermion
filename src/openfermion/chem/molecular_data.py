@@ -778,37 +778,13 @@ class MolecularData(object):
             **two_body_integrals_new**: two-electron integrals over active
             space.
         """
-        # Fix data type for a few edge cases
-        occupied_indices = [] if occupied_indices is None else occupied_indices
-        if (len(active_indices) < 1):
-            raise ValueError('Some active indices required for reduction.')
 
         # Get integrals.
         one_body_integrals, two_body_integrals = self.get_integrals()
-
-        # Determine core constant
-        core_constant = 0.0
-        for i in occupied_indices:
-            core_constant += 2 * one_body_integrals[i, i]
-            for j in occupied_indices:
-                core_constant += (2 * two_body_integrals[i, j, j, i] -
-                                  two_body_integrals[i, j, i, j])
-
-        # Modified one electron integrals
-        one_body_integrals_new = numpy.copy(one_body_integrals)
-        for u in active_indices:
-            for v in active_indices:
-                for i in occupied_indices:
-                    one_body_integrals_new[u, v] += (
-                        2 * two_body_integrals[i, u, v, i] -
-                        two_body_integrals[i, u, i, v])
-
-        # Restrict integral ranges and change M appropriately
-        return (core_constant,
-                one_body_integrals_new[numpy.ix_(active_indices,
-                                                 active_indices)],
-                two_body_integrals[numpy.ix_(active_indices, active_indices,
-                                             active_indices, active_indices)])
+        return reps.get_active_space_integrals(one_body_integrals,
+                                               two_body_integrals,
+                                               occupied_indices,
+                                               active_indices)
 
     def get_molecular_hamiltonian(self,
                                   occupied_indices=None,
@@ -838,47 +814,9 @@ class MolecularData(object):
                 get_active_space_integrals(occupied_indices, active_indices)
             constant = self.nuclear_repulsion + core_adjustment
 
-        n_qubits = 2 * one_body_integrals.shape[0]
-
-        # Initialize Hamiltonian coefficients.
-        one_body_coefficients = numpy.zeros((n_qubits, n_qubits))
-        two_body_coefficients = numpy.zeros(
-            (n_qubits, n_qubits, n_qubits, n_qubits))
-        # Loop through integrals.
-        for p in range(n_qubits // 2):
-            for q in range(n_qubits // 2):
-
-                # Populate 1-body coefficients. Require p and q have same spin.
-                one_body_coefficients[2 * p, 2 * q] = one_body_integrals[p, q]
-                one_body_coefficients[2 * p + 1, 2 * q +
-                                      1] = one_body_integrals[p, q]
-                # Continue looping to prepare 2-body coefficients.
-                for r in range(n_qubits // 2):
-                    for s in range(n_qubits // 2):
-
-                        # Mixed spin
-                        two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 *
-                                              s] = (
-                                                  two_body_integrals[p, q, r, s]
-                                                  / 2.)
-                        two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s +
-                                              1] = (
-                                                  two_body_integrals[p, q, r, s]
-                                                  / 2.)
-
-                        # Same spin
-                        two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = (
-                            two_body_integrals[p, q, r, s] / 2.)
-                        two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r +
-                                              1, 2 * s + 1] = (
-                                                  two_body_integrals[p, q, r, s]
-                                                  / 2.)
-
-        # Truncate.
-        one_body_coefficients[
-            numpy.absolute(one_body_coefficients) < EQ_TOLERANCE] = 0.
-        two_body_coefficients[
-            numpy.absolute(two_body_coefficients) < EQ_TOLERANCE] = 0.
+        one_body_coefficients, two_body_coefficients =\
+            reps.get_tensor_from_integrals(one_body_integrals,
+                                           two_body_integrals)
 
         # Cast to InteractionOperator class and return.
         molecular_hamiltonian = reps.InteractionOperator(
@@ -906,17 +844,15 @@ class MolecularData(object):
                 raise MissingCalculationError(
                     'Missing FCI RDM in {}'.format(self.filename) +
                     'Run FCI calculation before loading FCI RDMs.')
-            else:
-                one_rdm = self.fci_one_rdm
-                two_rdm = self.fci_two_rdm
+            one_rdm = self.fci_one_rdm
+            two_rdm = self.fci_two_rdm
         else:
             if self.cisd_energy is None:
                 raise MissingCalculationError(
                     'Missing CISD RDM in {}'.format(self.filename) +
                     'Run CISD calculation before loading CISD RDMs.')
-            else:
-                one_rdm = self.cisd_one_rdm
-                two_rdm = self.cisd_two_rdm
+            one_rdm = self.cisd_one_rdm
+            two_rdm = self.cisd_two_rdm
 
         # Truncate.
         one_rdm[numpy.absolute(one_rdm) < EQ_TOLERANCE] = 0.

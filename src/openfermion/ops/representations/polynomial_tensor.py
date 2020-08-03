@@ -128,6 +128,8 @@ class PolynomialTensor(object):
             n_body_tensors(dict): A dictionary storing the tensors describing
                 n-body interactions.
         """
+        # TODO: discuss if this should be given with a getter and setter instead
+        # of current format
         self.n_body_tensors = n_body_tensors
 
         # Set n_qubits

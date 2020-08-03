@@ -16,8 +16,9 @@ import unittest
 import numpy
 
 from openfermion.chem.molecular_data import MolecularData
-from openfermion.config import THIS_DIRECTORY, DATA_DIRECTORY
-from openfermion.transforms import get_sparse_operator, jordan_wigner
+from openfermion.config import THIS_DIRECTORY
+from openfermion.transforms import jordan_wigner
+from openfermion.linalg import get_sparse_operator
 from openfermion.ops.representations import DOCIHamiltonian
 
 class DOCIHamiltonianTest(unittest.TestCase):

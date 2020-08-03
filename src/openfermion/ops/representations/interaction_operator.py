@@ -15,6 +15,7 @@ import itertools
 import numpy
 
 from openfermion.ops.representations.polynomial_tensor import PolynomialTensor
+from openfermion.config import EQ_TOLERANCE
 
 
 class InteractionOperatorError(Exception):
@@ -150,3 +151,119 @@ def _symmetric_two_body_terms(quad, complex_valued):
         yield q, r, s, p
         yield s, p, q, r
         yield r, q, p, s
+
+
+def get_tensor_from_integrals(one_body_integrals, two_body_integrals):
+    '''Converts one and two-body integrals into tensor form
+    
+    Arguments:
+        one_body_integrals [numpy array] -- the one-body integrals
+            of the given Hamiltonian
+        two_body_integrals [numpy array] -- the two-body integrals
+            of the given Hamiltonian
+    '''
+
+    n_qubits = 2 * one_body_integrals.shape[0]
+
+    # Initialize Hamiltonian coefficients.
+    one_body_coefficients = numpy.zeros((n_qubits, n_qubits))
+    two_body_coefficients = numpy.zeros(
+        (n_qubits, n_qubits, n_qubits, n_qubits))
+    # Loop through integrals.
+    for p in range(n_qubits // 2):
+        for q in range(n_qubits // 2):
+
+            # Populate 1-body coefficients. Require p and q have same spin.
+            one_body_coefficients[2 * p, 2 * q] = one_body_integrals[p, q]
+            one_body_coefficients[2 * p + 1, 2 * q +
+                                  1] = one_body_integrals[p, q]
+            # Continue looping to prepare 2-body coefficients.
+            for r in range(n_qubits // 2):
+                for s in range(n_qubits // 2):
+
+                    # Mixed spin
+                    two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 *
+                                          s] = (
+                                              two_body_integrals[p, q, r, s]
+                                              / 2.)
+                    two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s +
+                                          1] = (
+                                              two_body_integrals[p, q, r, s]
+                                              / 2.)
+
+                    # Same spin
+                    two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = (
+                        two_body_integrals[p, q, r, s] / 2.)
+                    two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r +
+                                          1, 2 * s + 1] = (
+                                              two_body_integrals[p, q, r, s]
+                                              / 2.)
+
+    # Truncate.
+    one_body_coefficients[
+        numpy.absolute(one_body_coefficients) < EQ_TOLERANCE] = 0.
+    two_body_coefficients[
+        numpy.absolute(two_body_coefficients) < EQ_TOLERANCE] = 0.
+
+    return one_body_coefficients, two_body_coefficients
+
+
+def get_active_space_integrals(one_body_integrals,
+                               two_body_integrals,
+                               occupied_indices=None,
+                               active_indices=None):
+    """Restricts a molecule at a spatial orbital level to an active space
+
+    This active space may be defined by a list of active indices and
+        doubly occupied indices. Note that one_body_integrals and
+        two_body_integrals must be defined
+        n an orthonormal basis set.
+
+    Args:
+        one_body_integrals: One-body integrals of the target Hamiltonian
+        two_body_integrals: Two-body integrals of the target Hamiltonian
+        occupied_indices: A list of spatial orbital indices
+            indicating which orbitals should be considered doubly occupied.
+        active_indices: A list of spatial orbital indices indicating
+            which orbitals should be considered active.
+
+    Returns:
+        tuple: Tuple with the following entries:
+
+        **core_constant**: Adjustment to constant shift in Hamiltonian
+        from integrating out core orbitals
+
+        **one_body_integrals_new**: one-electron integrals over active
+        space.
+
+        **two_body_integrals_new**: two-electron integrals over active
+        space.
+    """
+    # Fix data type for a few edge cases
+    occupied_indices = [] if occupied_indices is None else occupied_indices
+    if (len(active_indices) < 1):
+        raise ValueError('Some active indices required for reduction.')
+
+    # Determine core constant
+    core_constant = 0.0
+    for i in occupied_indices:
+        core_constant += 2 * one_body_integrals[i, i]
+        for j in occupied_indices:
+            core_constant += (2 * two_body_integrals[i, j, j, i] -
+                              two_body_integrals[i, j, i, j])
+
+    # Modified one electron integrals
+    one_body_integrals_new = numpy.copy(one_body_integrals)
+    for u in active_indices:
+        for v in active_indices:
+            for i in occupied_indices:
+                one_body_integrals_new[u, v] += (
+                    2 * two_body_integrals[i, u, v, i] -
+                    two_body_integrals[i, u, i, v])
+
+    # Restrict integral ranges and change M appropriately
+    return (core_constant,
+            one_body_integrals_new[numpy.ix_(active_indices,
+                                             active_indices)],
+            two_body_integrals[numpy.ix_(active_indices, active_indices,
+                                         active_indices, active_indices)])
