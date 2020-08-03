@@ -19,7 +19,8 @@ from openfermion.chem import MolecularData
 from openfermion.ops.operators import QubitOperator
 from openfermion.transforms.opconversions import (jordan_wigner,
                                                   get_fermion_operator)
-from openfermion.utils.operator_utils import eigenspectrum, count_qubits
+from openfermion.linalg import eigenspectrum
+from openfermion.utils.operator_utils import count_qubits
 
 from openfermion.transforms.repconversions.qubit_tapering_from_stabilizer \
     import (StabilizerError, check_commuting_stabilizers,

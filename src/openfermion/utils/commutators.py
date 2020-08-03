@@ -14,7 +14,8 @@
 import numpy
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.utils.operator_utils import normal_ordered
+from openfermion.transforms.opconversions.term_reordering\
+    import normal_ordered
 
 
 def commutator(operator_a, operator_b):

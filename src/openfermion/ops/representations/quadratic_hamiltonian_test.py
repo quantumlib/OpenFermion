@@ -19,17 +19,18 @@ import scipy.sparse
 from openfermion.hamiltonians.special_operators import majorana_operator
 from openfermion.ops.operators import FermionOperator
 from openfermion.ops.representations import QuadraticHamiltonian
-from openfermion.transforms.opconversions import get_fermion_operator
+from openfermion.transforms.opconversions import (get_fermion_operator,
+                                                  normal_ordered, reorder)
 from openfermion.transforms.repconversions import get_quadratic_hamiltonian
-from openfermion.linalg.sparse_tools import \
-    get_ground_state, get_sparse_operator
+from openfermion.linalg.sparse_tools import (get_ground_state,
+                                             get_sparse_operator)
 from openfermion.testing.testing_utils import (random_antisymmetric_matrix,
                                                random_hermitian_matrix,
                                                random_quadratic_hamiltonian)
-from openfermion.utils import up_then_down, reorder, normal_ordered
+from openfermion.utils import up_then_down
 
-from openfermion.ops.representations.quadratic_hamiltonian import \
-    antisymmetric_canonical_form
+from openfermion.ops.representations.quadratic_hamiltonian import (
+    antisymmetric_canonical_form)
 from openfermion.linalg.sparse_tools import (
     jw_sparse_givens_rotation, jw_sparse_particle_hole_transformation_last_mode)
 

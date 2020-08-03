@@ -19,14 +19,13 @@ import scipy
 import scipy.sparse
 import scipy.sparse.linalg
 
-from openfermion.config import EQ_TOLERANCE
 from openfermion.ops.operators import (FermionOperator, QubitOperator,
                                        BosonOperator, QuadOperator)
 from openfermion.ops.representations import (DiagonalCoulombHamiltonian,
                                              PolynomialTensor)
-
+from openfermion.transforms.opconversions import normal_ordered
 from openfermion.utils.indexing import up_index, down_index
-import openfermion.utils.operator_utils as op_utils
+from openfermion.utils.operator_utils import count_qubits, is_hermitian
 
 # Make global definitions.
 identity_csc = scipy.sparse.identity(2, format='csc', dtype=complex)
@@ -97,7 +96,7 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
         The corresponding Scipy sparse matrix.
     """
     if n_qubits is None:
-        n_qubits = op_utils.count_qubits(fermion_operator)
+        n_qubits = count_qubits(fermion_operator)
 
     # Create a list of raising and lowering operators for each orbital.
     jw_operators = []
@@ -149,8 +148,8 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
         The corresponding Scipy sparse matrix.
     """
     if n_qubits is None:
-        n_qubits = op_utils.count_qubits(qubit_operator)
-    if n_qubits < op_utils.count_qubits(qubit_operator):
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
         raise ValueError('Invalid number of qubits specified.')
 
     # Construct the Scipy sparse matrix.
@@ -222,8 +221,8 @@ def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
             LinearQubitOperator(qubit_operator).
     """
     if n_qubits is None:
-        n_qubits = op_utils.count_qubits(qubit_operator)
-    if n_qubits < op_utils.count_qubits(qubit_operator):
+        n_qubits = count_qubits(qubit_operator)
+    if n_qubits < count_qubits(qubit_operator):
         raise ValueError('Invalid number of qubits specified.')
 
     n_hilbert = 2**n_qubits
@@ -625,6 +624,31 @@ def get_ground_state(sparse_operator, initial_guess=None):
     return eigenvalue, eigenstate.T
 
 
+def eigenspectrum(operator, n_qubits=None):
+    """Compute the eigenspectrum of an operator.
+
+    WARNING: This function has cubic runtime in dimension of
+        Hilbert space operator, which might be exponential.
+
+    NOTE: This function does not currently support
+        QuadOperator and BosonOperator.
+
+    Args:
+        operator: QubitOperator, InteractionOperator, FermionOperator,
+            PolynomialTensor, or InteractionRDM.
+        n_qubits (int): number of qubits/modes in operator. if None, will
+            be counted.
+
+    Returns:
+        spectrum: dense numpy array of floats giving eigenspectrum.
+    """
+    if isinstance(operator, (QuadOperator, BosonOperator)):
+        raise TypeError('Operator of invalid type.')
+    sparse_operator = get_sparse_operator(operator, n_qubits)
+    spectrum = sparse_eigenspectrum(sparse_operator)
+    return spectrum
+
+
 def sparse_eigenspectrum(sparse_operator):
     """Perform a dense diagonalization.
 
@@ -632,7 +656,7 @@ def sparse_eigenspectrum(sparse_operator):
         eigenspectrum: The lowest eigenvalues in a numpy array.
     """
     dense_operator = sparse_operator.todense()
-    if op_utils.is_hermitian(sparse_operator):
+    if is_hermitian(sparse_operator):
         eigenspectrum = numpy.linalg.eigvalsh(dense_operator)
     else:
         eigenspectrum = numpy.linalg.eigvals(dense_operator)
@@ -1039,7 +1063,7 @@ def get_gap(sparse_operator, initial_guess=None):
             guess dramatically reduces the cost required to converge.
     Returns: A real float giving eigenvalue gap.
     """
-    if not op_utils.is_hermitian(sparse_operator):
+    if not is_hermitian(sparse_operator):
         raise ValueError('sparse_operator must be Hermitian.')
 
     values, _ = scipy.sparse.linalg.eigsh(sparse_operator,
@@ -1313,7 +1337,7 @@ def get_number_preserving_sparse_operator(fermion_op,
 
     space_size = state_array.shape[0]
 
-    fermion_op = op_utils.normal_ordered(fermion_op)
+    fermion_op = normal_ordered(fermion_op)
 
     sparse_op = scipy.sparse.csc_matrix((space_size, space_size), dtype=float)
 

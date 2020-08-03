@@ -17,9 +17,6 @@ import numpy
 from scipy.linalg import schur
 
 from openfermion.ops.representations import PolynomialTensor
-from openfermion.linalg.givens_rotations import (
-    fermionic_gaussian_decomposition, givens_decomposition_square, swap_columns,
-    swap_rows)
 
 
 class QuadraticHamiltonianError(Exception):
@@ -51,7 +48,6 @@ class QuadraticHamiltonian(PolynomialTensor):
     Attributes:
         chemical_potential(float): The chemical potential :math:`\mu`.
     """
-
     def __init__(self,
                  hermitian_part,
                  antisymmetric_part=None,
@@ -375,6 +371,10 @@ class QuadraticHamiltonian(PolynomialTensor):
                 of modes :math:`i` and :math:`j` by angles :math:`\theta`
                 and :math:`\varphi`.
         """
+        # Adding inline import here to prevent circular issues
+        # TODO: move this out once we have a better solution
+        from openfermion.linalg.givens_rotations import (
+            fermionic_gaussian_decomposition, givens_decomposition_square)
         _, transformation_matrix, _ = self.diagonalizing_bogoliubov_transform()
 
         if self.conserves_particle_number:
@@ -473,6 +473,9 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
         canonical(ndarray): The canonical form C of antisymmetric_matrix
         orthogonal(ndarray): The orthogonal transformation R.
     """
+    # Shifted here to prevent circular import issues
+    # TODO: move this out when a better solution is found.
+    from openfermion.linalg.givens_rotations import swap_columns, swap_rows
     m, p = antisymmetric_matrix.shape
 
     if m != p or p % 2 != 0:

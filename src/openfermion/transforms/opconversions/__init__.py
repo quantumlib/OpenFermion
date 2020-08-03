@@ -1,3 +1,8 @@
+# Out of order to fix circular import
+from .term_reordering import (chemist_ordered, normal_ordered,
+                              normal_ordered_ladder_term,
+                              normal_ordered_quad_term, reorder)
+
 from .binary_codes import (linearize_decoder, checksum_code, bravyi_kitaev_code,
                            jordan_wigner_code, parity_code,
                            weight_one_binary_addressing_code,
@@ -14,11 +19,14 @@ from .bravyi_kitaev import bravyi_kitaev
 from .bravyi_kitaev_tree import bravyi_kitaev_tree
 
 from .conversions import (get_fermion_operator, get_boson_operator,
-                          get_majorana_operator, get_quad_operator)
+                          get_majorana_operator, get_quad_operator,
+                          check_no_sympy)
 
 from .fenwick_tree import FenwickNode, FenwickTree
 
 from .jordan_wigner import jordan_wigner
+
+from .qubitoperator_to_paulisum import qubit_operator_to_pauli_sum
 
 from .reverse_jordan_wigner import reverse_jordan_wigner
 

@@ -17,7 +17,7 @@ import numpy
 
 from openfermion.config import THIS_DIRECTORY
 from openfermion.chem import MolecularData
-from openfermion.utils.operator_utils import normal_ordered, count_qubits
+from openfermion.utils.operator_utils import count_qubits
 from openfermion.linalg.sparse_tools import (get_sparse_operator,
                                              get_ground_state, expectation,
                                              get_density_matrix,
@@ -25,7 +25,8 @@ from openfermion.linalg.sparse_tools import (get_sparse_operator,
 from openfermion.measurements import get_interaction_rdm
 from openfermion.transforms.opconversions import (jordan_wigner,
                                                   get_fermion_operator,
-                                                  reverse_jordan_wigner)
+                                                  reverse_jordan_wigner,
+                                                  normal_ordered)
 from openfermion.transforms.repconversions import get_interaction_operator
 
 

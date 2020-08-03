@@ -10,12 +10,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """ Code to generate Pauli strings for measurement of local operators"""
-from itertools import chain
+from itertools import chain, zip_longest
 import numpy
-try:
-    from itertools import zip_longest
-except ImportError:
-    from itertools import izip_longest as zip_longest
+
+from openfermion.ops.operators import QubitOperator
 
 
 def binary_partition_iterator(qubit_list, num_iterations=None):
@@ -157,3 +155,81 @@ def pauli_string_iterator(num_qubits, max_word_size=2):
                     pauli_string[qubit] = letter
                 lettering = lettering // 3
             yield tuple(pauli_string)
+
+
+def _find_compatible_basis(term, bases):
+    for basis in bases:
+        basis_qubits = {op[0] for op in basis}
+        conflicts = ((i, P)
+                     for (i, P) in term
+                     if i in basis_qubits and (i, P) not in basis)
+        if any(conflicts):
+            continue
+        return basis
+    return None
+
+
+def group_into_tensor_product_basis_sets(operator, seed=None):
+    """
+    Split an operator (instance of QubitOperator) into `sub-operator`
+    QubitOperators, where each sub-operator has terms that are diagonal
+    in the same tensor product basis.
+
+    Each `sub-operator` can be measured using the same qubit post-rotations
+    in expectation estimation. Grouping into these tensor product basis
+    sets has been found to improve the efficiency of expectation estimation
+    significantly for some Hamiltonians in the context of
+    VQE (see section V(A) in the supplementary material of
+    https://arxiv.org/pdf/1704.05018v2.pdf). The more general problem
+    of grouping operators into commutitative groups is discussed in
+    section IV (B2) of https://arxiv.org/pdf/1509.04279v1.pdf. The
+    original input operator is the union of all output sub-operators,
+    and all sub-operators are disjoint (do not share any terms).
+
+    Args:
+        operator (QubitOperator): the operator that will be split into
+            sub-operators (tensor product basis sets).
+        seed (int): default None. Random seed used to initialize the
+            numpy.RandomState pseudo-random number generator.
+
+    Returns:
+        sub_operators (dict): a dictionary where each key defines a
+            tensor product basis, and each corresponding value is a
+            QubitOperator with terms that are all diagonal in
+            that basis.
+            **key** (tuple of tuples): Each key is a term, which defines
+                a tensor product basis. A term is a product of individual
+                factors; each factor is represented by a tuple of the form
+                (`index`, `action`), and these tuples are collected into a
+                larger tuple which represents the term as the product of
+                its factors. `action` is from the set {'X', 'Y', 'Z'} and
+                `index` is a non-negative integer corresponding to the
+                index of a qubit.
+            **value** (QubitOperator): A QubitOperator with terms that are
+                diagonal in the basis defined by the key it is stored in.
+
+    Raises:
+       TypeError: Operator of invalid type.
+    """
+    if not isinstance(operator, QubitOperator):
+        raise TypeError('Can only split QubitOperator into tensor product'
+                        ' basis sets. {} is not supported.'.format(
+                            type(operator).__name__))
+
+    sub_operators = {}
+    r = numpy.random.RandomState(seed)
+    for term, coefficient in operator.terms.items():
+        bases = list(sub_operators.keys())
+        r.shuffle(bases)
+        basis = _find_compatible_basis(term, bases)
+        if basis is None:
+            sub_operators[term] = QubitOperator(term, coefficient)
+        else:
+            sub_operator = sub_operators.pop(basis)
+            sub_operator += QubitOperator(term, coefficient)
+            additions = tuple(op for op in term if op not in basis)
+            basis = tuple(
+                sorted(basis + additions, key=lambda factor: factor[0]))
+            sub_operators[basis] = sub_operator
+
+    return sub_operators

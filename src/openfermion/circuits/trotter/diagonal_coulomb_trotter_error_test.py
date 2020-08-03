@@ -17,7 +17,8 @@ import numpy
 
 from openfermion.ops.operators import FermionOperator
 from openfermion.ops.representations import DiagonalCoulombHamiltonian
-from openfermion.utils.operator_utils import count_qubits, normal_ordered
+from openfermion.transforms.opconversions import normal_ordered
+from openfermion.utils.operator_utils import count_qubits
 from openfermion.utils.commutators import commutator
 from openfermion.utils.grid import Grid
 

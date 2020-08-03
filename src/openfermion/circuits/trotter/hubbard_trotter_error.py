@@ -13,7 +13,8 @@
 
 import numpy
 
-from openfermion.utils import count_qubits, normal_ordered
+from openfermion.utils import count_qubits
+from openfermion.transforms.opconversions import normal_ordered
 from openfermion.circuits.trotter.low_depth_trotter_error import \
     stagger_with_info
 

@@ -12,11 +12,14 @@
 from typing import Union
 import itertools
 import numpy
+import sympy
+
 from openfermion.ops.operators import (QuadOperator, BosonOperator,
                                        FermionOperator, MajoranaOperator)
 from openfermion.ops.representations import (PolynomialTensor,
                                              DiagonalCoulombHamiltonian)
-import openfermion.utils.operator_utils as op_utils
+
+from openfermion.utils.operator_utils import count_qubits
 
 
 def get_quad_operator(operator, hbar=1.):
@@ -47,6 +50,21 @@ def get_quad_operator(operator, hbar=1.):
                         "supported for get_quad_operator.")
 
     return quad_operator
+
+
+def check_no_sympy(operator):
+    """Checks whether a SymbolicOperator contains any
+    sympy expressions, which will prevent it being converted
+    to a PolynomialTensor or DiagonalCoulombHamiltonian
+
+    Args:
+        operator(SymbolicOperator): the operator to be tested
+    """
+    for key in operator.terms:
+        if isinstance(operator.terms[key], sympy.Expr):
+            raise TypeError('This conversion is currently not supported ' +
+                            'for operators with sympy expressions ' +
+                            'as coefficients')
 
 
 def get_boson_operator(operator, hbar=1.):
@@ -111,7 +129,7 @@ def _polynomial_tensor_to_fermion_operator(operator):
 
 def _diagonal_coulomb_hamiltonian_to_fermion_operator(operator):
     fermion_operator = FermionOperator()
-    n_qubits = op_utils.count_qubits(operator)
+    n_qubits = count_qubits(operator)
     fermion_operator += FermionOperator((), operator.constant)
     for p, q in itertools.product(range(n_qubits), repeat=2):
         fermion_operator += FermionOperator(((p, 1), (q, 0)),

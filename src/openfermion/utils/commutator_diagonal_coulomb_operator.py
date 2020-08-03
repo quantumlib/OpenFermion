@@ -14,7 +14,8 @@
 import warnings
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.utils.operator_utils import normal_ordered
+import openfermion.transforms.opconversions.term_reordering\
+    as term_reordering
 
 
 def commutator_ordered_diagonal_coulomb_with_two_body_operator(
@@ -78,7 +79,7 @@ def commutator_ordered_diagonal_coulomb_with_two_body_operator(
                 additional = FermionOperator.zero()
                 additional.terms[term_a + term_b] = coefficient
                 additional.terms[term_b + term_a] = -coefficient
-                additional = normal_ordered(additional)
+                additional = term_reordering.normal_ordered(additional)
 
                 prior_terms += additional
 

@@ -18,7 +18,7 @@ from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
                                        QubitOperator)
 from openfermion.ops.representations import (DiagonalCoulombHamiltonian,
                                              InteractionOperator)
-import openfermion.utils.operator_utils as op_utils
+from openfermion.utils.operator_utils import count_qubits
 
 
 def jordan_wigner(operator):
@@ -91,7 +91,7 @@ def jordan_wigner_majorana_operator(operator):
 
 
 def jordan_wigner_diagonal_coulomb_hamiltonian(operator):
-    n_qubits = op_utils.count_qubits(operator)
+    n_qubits = count_qubits(operator)
     qubit_operator = QubitOperator((), operator.constant)
 
     # Transform diagonal one-body terms
@@ -137,8 +137,8 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
         qubit_operator: An instance of the QubitOperator class.
     """
     if n_qubits is None:
-        n_qubits = op_utils.count_qubits(iop)
-    if n_qubits < op_utils.count_qubits(iop):
+        n_qubits = count_qubits(iop)
+    if n_qubits < count_qubits(iop):
         raise ValueError('Invalid number of qubits specified.')
 
     # Initialize qubit operator as constant.

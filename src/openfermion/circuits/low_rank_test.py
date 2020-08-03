@@ -18,9 +18,10 @@ import numpy
 from openfermion.config import THIS_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.operators import FermionOperator
-from openfermion.transforms.opconversions import get_fermion_operator
-from openfermion.utils.operator_utils import (eigenspectrum, normal_ordered,
-                                              is_hermitian)
+from openfermion.transforms.opconversions import (get_fermion_operator,
+                                                  normal_ordered)
+from openfermion.linalg import eigenspectrum
+from openfermion.utils.operator_utils import is_hermitian
 from openfermion.testing.testing_utils import random_interaction_operator
 from openfermion.circuits.low_rank import (get_chemist_two_body_coefficients,
                                            low_rank_two_body_decomposition,

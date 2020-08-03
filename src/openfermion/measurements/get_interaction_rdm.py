@@ -5,7 +5,7 @@ from openfermion.ops.operators import FermionOperator
 from openfermion.ops.representations import InteractionRDM
 
 from openfermion.utils.operator_utils import count_qubits
-from openfermion.transforms.repconversions.conversion import _check_no_sympy
+from openfermion.transforms.opconversions.conversions import check_no_sympy
 
 
 def get_interaction_rdm(qubit_operator, n_qubits=None):
@@ -14,7 +14,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
     Returns: An InteractionRDM object.
     """
 
-    _check_no_sympy(qubit_operator)
+    check_no_sympy(qubit_operator)
 
     # Avoid circular import.
     from openfermion.transforms import jordan_wigner
