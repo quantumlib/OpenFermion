@@ -90,13 +90,13 @@ class HOpsTest(unittest.TestCase):
     def test_hc_init_set_get(self):
         hc_mat = numpy.zeros((2))
         hc = _HC(hc_mat, self.n_body_tensors)
-        hc[0] = 1
-        self.assertEqual(hc[0], 1)
-        self.assertEqual(hc[(0, )], 1)
-        self.assertEqual(hc._n_body_tensors[(1, 0)][0, 0], 1)
-        hc[(0, )] = 2
+        hc[0] = 2
         self.assertEqual(hc[0], 2)
         self.assertEqual(hc[(0, )], 2)
+        self.assertEqual(hc._n_body_tensors[(1, 0)][0, 0], 1)
+        hc[(0, )] = 4
+        self.assertEqual(hc[0], 4)
+        self.assertEqual(hc[(0, )], 4)
         self.assertEqual(hc._n_body_tensors[(1, 0)][0, 0], 2)
 
     def test_hc_raises_errors(self):
@@ -170,6 +170,55 @@ class DOCIHamiltonianTest(unittest.TestCase):
                                       self.multiplicity,
                                       filename=self.filename)
         self.molecule.load()
+
+    def test_error(self):
+        doci_hamiltonian = DOCIHamiltonian.from_integrals(
+            constant=self.molecule.nuclear_repulsion,
+            one_body_integrals=self.molecule.one_body_integrals,
+            two_body_integrals=self.molecule.two_body_integrals)
+        with self.assertRaises(TypeError):
+            doci_hamiltonian[((1, 0), (0, 1))] = 1
+        with self.assertRaises(IndexError):
+            _ = doci_hamiltonian[((1, 0), )]
+        with self.assertRaises(IndexError):
+            _ = doci_hamiltonian[((1, 1), (0, 0))]
+        with self.assertRaises(IndexError):
+            _ = doci_hamiltonian[((0, 1), (1, 1), (0, 0), (2, 0))]
+
+    def test_getting_setting_constant(self):
+        doci_hamiltonian = DOCIHamiltonian.zero(n_qubits=2)
+        doci_hamiltonian.constant = 1
+        self.assertEqual(doci_hamiltonian[()], 1)
+
+    def test_getting_setting_1body(self):
+        doci_hamiltonian = DOCIHamiltonian.zero(n_qubits=2)
+        doci_hamiltonian.hc[0] = 2
+        doci_hamiltonian.hc[1] = 4
+        self.assertEqual(doci_hamiltonian[((0, 1), (0, 0))], 1)
+        self.assertEqual(doci_hamiltonian[((1, 1), (1, 0))], 1)
+        self.assertEqual(doci_hamiltonian[((2, 1), (2, 0))], 2)
+        self.assertEqual(doci_hamiltonian[((3, 1), (3, 0))], 2)
+
+    def test_getting_setting_hr2(self):
+        doci_hamiltonian = DOCIHamiltonian.zero(n_qubits=2)
+        doci_hamiltonian.hr2[0, 0] = 2
+        doci_hamiltonian.hr2[1, 1] = 4
+        self.assertEqual(doci_hamiltonian[((0, 1), (1, 1), (1, 0), (0, 0))], 1)
+        self.assertEqual(doci_hamiltonian[((1, 1), (0, 1), (0, 0), (1, 0))], 1)
+        self.assertEqual(doci_hamiltonian[((2, 1), (3, 1), (3, 0), (2, 0))], 2)
+        self.assertEqual(doci_hamiltonian[((3, 1), (2, 1), (2, 0), (3, 0))], 2)
+
+        doci_hamiltonian.hr2[0, 1] = 2
+        self.assertEqual(doci_hamiltonian[((0, 1), (2, 1), (2, 0), (0, 0))], 1)
+        self.assertEqual(doci_hamiltonian[((0, 1), (3, 1), (3, 0), (0, 0))], 1)
+        self.assertEqual(doci_hamiltonian[((1, 1), (2, 1), (2, 0), (1, 0))], 1)
+        self.assertEqual(doci_hamiltonian[((1, 1), (3, 1), (3, 0), (1, 0))], 1)
+
+    def test_getting_setting_hr1(self):
+        doci_hamiltonian = DOCIHamiltonian.zero(n_qubits=2)
+        doci_hamiltonian.hr1[0, 1] = 2
+        self.assertEqual(doci_hamiltonian[(0, 1), (1, 1), (3, 0), (2, 0)], 1)
+        self.assertEqual(doci_hamiltonian[(1, 1), (0, 1), (2, 0), (3, 0)], 1)
 
     def test_from_integrals_to_qubit(self):
         hamiltonian = jordan_wigner(
