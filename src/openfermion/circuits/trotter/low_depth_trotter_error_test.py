@@ -15,7 +15,14 @@ import unittest
 from openfermion.hamiltonians import (
     jellium_model, hypercube_grid_with_given_wigner_seitz_radius_and_filling,
     wigner_seitz_length_scale)
-from openfermion.circuits.trotter.low_depth_trotter_error import *
+from openfermion.circuits.trotter.low_depth_trotter_error import (
+    FermionOperator,
+    low_depth_second_order_trotter_error_bound,
+    low_depth_second_order_trotter_error_operator,
+    normal_ordered,
+    ordered_low_depth_terms_no_info,
+    simulation_ordered_grouped_low_depth_terms_with_info,
+)
 from openfermion.utils import Grid
 
 
