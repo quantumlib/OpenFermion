@@ -42,7 +42,7 @@ python3 -m pip install --user openfermion
 
 ## Build the docs
 
-## Narrative docs
+### Narrative docs
 
 The guides and tutorials are built from the `docs/` directory. Preview Markdown
 files directly in GitHub. Notebooks can be loaded, viewed, and executed in Colab
