@@ -1,4 +1,4 @@
-.. image:: https://github.com/quantumlib/openfermion/blob/master/docs/second_logo.svg
+.. image:: docs/images/logo_horizontal.svg
 
 OpenFermion is an open source library for compiling and analyzing quantum
 algorithms to simulate fermionic systems, including quantum chemistry. Among
@@ -54,9 +54,9 @@ Getting started
 
 Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
 For information about getting started beyond what is provided below please see our
-`tutorial <https://github.com/quantumlib/OpenFermion/blob/master/examples/openfermion_tutorial.ipynb>`__
+`tutorial <https://github.com/quantumlib/OpenFermion/blob/master/docs/tutorials/intro_to_openfermion.ipynb>`__
 in the
-`examples <https://github.com/quantumlib/OpenFermion/blob/master/examples>`__ folder
+`tutorials <https://github.com/quantumlib/OpenFermion/blob/master/docs/tutorials>`__ folder
 as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
 
 Currently, OpenFermion is only tested on Mac and Linux for the reason that both
@@ -72,7 +72,7 @@ You might also want to explore the alpha release of the
 `OpenFermion Cloud Library <https://github.com/quantumlib/OpenFermion/tree/master/cloud_library>`__
 where users can share and download precomputed molecular benchmark files.
 
-Check out other `projects and papers using OpenFermion <docs/other_projects.md>`__ for inspiration,
+Check out other `projects and papers using OpenFermion <docs/projects.md>`__ for inspiration,
 and let us know if you've been using OpenFermion!
 
 Developer install
