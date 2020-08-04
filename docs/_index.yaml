@@ -1,0 +1,67 @@
+# Copyright 2020 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+book_path: /quark/openfermion/_book.yaml
+project_path: /quark/openfermion/_project.yaml
+description: >
+  OpenFermion is a library for compiling and analyzing quantum algorithms to
+  simulate fermionic systems, including quantum chemistry.
+landing_page:
+  custom_css_path: /site-assets/css/style.css
+  rows:
+  - heading: Write algorithms to simulate fermionic systems, including quantum chemistry.
+
+    items:
+    - classname: devsite-landing-row-50
+      description: >
+        <p>
+        OpenFermion is an open source library for compiling and analyzing
+        quantum algorithms to simulate fermionic systems, including quantum
+        chemistry. Among other functionalities, this version features data
+        structures and tools for obtaining and manipulating representations of
+        fermionic and qubit Hamiltonians. For more information, see the
+        <a href="https://arxiv.org/abs/1710.07629" class="external">release paper</a>.
+        </p>
+
+      code_block: |
+        <pre class = "prettyprint">
+        from openfermion.ops import QubitOperator
+
+        my_first_qubit_operator = QubitOperator("X1 Y2 Z3")
+        print(my_first_qubit_operator.terms)
+
+        operator_2 = QubitOperator("X3 Z4", 3.17)
+        operator_2 -= 77. * my_first_qubit_operator
+        print(operator_2)
+        </pre>
+
+  - classname: devsite-landing-row-cards
+    items:
+    - heading: "Announcing OpenFermion"
+      image_path: /resources/images/google-research-card-16x9.png
+      path: https://ai.googleblog.com/2017/10/announcing-openfermion-open-source.html
+      buttons:
+      - label: "Read on the Google AI blog"
+        path: https://ai.googleblog.com/2017/10/announcing-openfermion-open-source.html
+    - heading: "Experimentally Scaling Up Variational Quantum Simulations of Fermions"
+      youtube_id: 6AjdlefcS4s
+      buttons:
+      - label: Watch the video
+        path: https://www.youtube.com/watch?v=6AjdlefcS4s
+    - heading: "OpenFermion on GitHub"
+      image_path: /resources/images/github-card-16x9.png
+      path: https://github.com/quantumlib/OpenFermion
+      buttons:
+      - label: "View on GitHub"
+        path: https://github.com/quantumlib/OpenFermion

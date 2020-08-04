@@ -45,13 +45,16 @@ setup(
     package_dir={'': 'src'},
     include_package_data=True,
     package_data={
-        '': [os.path.join('src', 'openfermion', 'data', '*.hdf5'),
-             os.path.join('src', 'openfermion', 'data', '*.npy')]
+        '': [
+            os.path.join('src', 'openfermion', 'data', '*.hdf5'),
+            os.path.join('src', 'openfermion', 'data', '*.npy')
+        ]
     },
     data_files=[('openfermion/examples', [
-                 'examples/binary_code_transforms_demo.ipynb',
-                 'examples/bosonic_operator_tutorial.ipynb',
-                 'examples/jordan_wigner_and_bravyi_kitaev_transforms.ipynb',
-                 'examples/openfermion_tutorial.ipynb',
-                 'examples/performance_benchmarks.py'])],
-    )
+        'docs/tutorials/binary_code_transforms_demo.ipynb',
+        'docs/tutorials/bosonic_operator_tutorial.ipynb',
+        'docs/tutorials/jordan_wigner_and_bravyi_kitaev_transforms.ipynb',
+        'docs/tutorials/openfermion_tutorial.ipynb',
+        'docs/tutorials/performance_benchmarks.py'
+    ])],
+)
