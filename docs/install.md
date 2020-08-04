@@ -29,7 +29,7 @@ To install the latest version of OpenFermion (in development mode):
 ```bash
 git clone https://github.com/quantumlib/OpenFermion
 cd OpenFermion
-python -m pip install -e .
+python3 -m pip install -e .
 ```
 
 ## Library install
@@ -37,5 +37,42 @@ python -m pip install -e .
 To install the latest PyPI release as a library (in user mode):
 
 ```bash
-python -m pip install --user openfermion
+python3 -m pip install --user openfermion
+```
+
+## Build the docs
+
+## Narrative docs
+
+The guides and tutorials are built from the `docs/` directory. Preview Markdown
+files directly in GitHub. Notebooks can be loaded, viewed, and executed in Colab
+by passing the GitHub location in the URL, for example:
+<a href="https://colab.research.google.com/github/quantumlib/OpenFermion/blob/master/docs/tutorials/intro_to_openfermion.ipynb"
+class="external">https://colab.research.google.com/github/quantumlib/OpenFermion/blob/master/docs/tutorials/intro_to_openfermion.ipynb</a>
+
+See the
+<a href="https://www.tensorflow.org/community/contribute/docs_style" class="external">TensorFlow docs style guide</a>
+for Markdown and MathJax usage.
+
+### API reference
+
+The API reference is generated from docstrings in the OpenFermion package using
+the latest *stable* release in PyPI. See the
+<a href="https://www.tensorflow.org/community/contribute/docs_ref" class="external">API reference style guide</a>
+for examples of docstrings and testable code snippets.
+
+To build the Markdown files from your local repo (to preview or for archive),
+install the `tensorflow-docs` package to use the
+<a href="https://github.com/tensorflow/docs/tree/master/tools/tensorflow_docs/api_generator" class="external">API docs generator</a>
+library:
+
+```
+python3 -m pip install -U --user git+https://github.com/tensorflow/docs
+```
+
+Run the OpenFermion docs build script to generate the Markdown files. These can
+be previewed in GitHub:
+
+```
+python3 dev_tools/docs/build_api_docs.py --output_dir=docs/api_docs
 ```
