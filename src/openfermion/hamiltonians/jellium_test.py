@@ -14,7 +14,17 @@ import unittest
 
 import numpy
 
-from openfermion.hamiltonians.jellium import *
+from openfermion.hamiltonians.jellium import (
+    dual_basis_jellium_model,
+    dual_basis_kinetic,
+    dual_basis_potential,
+    hypercube_grid_with_given_wigner_seitz_radius_and_filling,
+    jellium_model,
+    jordan_wigner_dual_basis_jellium,
+    plane_wave_kinetic,
+    plane_wave_potential,
+    wigner_seitz_length_scale,
+)
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.transforms.opconversions import jordan_wigner
 from openfermion.linalg import get_sparse_operator, eigenspectrum
