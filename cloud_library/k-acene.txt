@@ -1,0 +1,17 @@
+# Linear k-acenes k = 2-12 in 6-31g* basis
+# Geometries taken from J. Chem. Theory Comput. 2019, 15, 1, 276–289
+# The MolecularData integrals are for the active space
+# of size [4k + 2o, 4k + 2e]. The core energy is the
+# nuclear repulsion + the active space adjustment
+# The MO coefficients are computed with pyscf and included in the "general_calculation"
+# attribute field. H10-C14_6-31g*_singlet.hdf5
+H12-C18_6-31g*_singlet.hdf5
+H14-C22_6-31g*_singlet.hdf5
+H16-C26_6-31g*_singlet.hdf5
+H18-C30_6-31g*_singlet.hdf5
+H20-C34_6-31g*_singlet.hdf5
+H22-C38_6-31g*_singlet.hdf5
+H24-C42_6-31g*_singlet.hdf5
+H26-C46_6-31g*_singlet.hdf5
+H28-C50_6-31g*_singlet.hdf5
+H8-C10_6-31g*_singlet.hdf5
