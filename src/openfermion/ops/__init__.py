@@ -16,5 +16,31 @@ serve as storage of the operators.  The abstract instance objects derive from
 the PolynomialTensor.  Here we differentiate between generic storage objects and
 particular instantiations.
 """
-from .operators import *
-from .representations import *
+from .operators import (
+    BinaryPolynomial,
+    BinaryPolynomialError,
+    BosonOperator,
+    FermionOperator,
+    IsingOperator,
+    MajoranaOperator,
+    QuadOperator,
+    QubitOperator,
+    SymbolicOperator,
+    double_decoding,
+    shift_decoder,
+    BinaryCode,
+    BinaryCodeError,
+)
+
+from .representations import (
+    PolynomialTensor,
+    PolynomialTensorError,
+    general_basis_change,
+    DiagonalCoulombHamiltonian,
+    InteractionOperator,
+    InteractionOperatorError,
+    InteractionRDM,
+    InteractionRDMError,
+    QuadraticHamiltonian,
+    QuadraticHamiltonianError,
+)

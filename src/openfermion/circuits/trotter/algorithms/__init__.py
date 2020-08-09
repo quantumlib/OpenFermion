@@ -12,15 +12,21 @@
 """Algorithms for performing Trotter steps."""
 
 from openfermion.circuits.trotter.algorithms.linear_swap_network import (
-    LINEAR_SWAP_NETWORK, LinearSwapNetworkTrotterAlgorithm)
+    LINEAR_SWAP_NETWORK,
+    LinearSwapNetworkTrotterAlgorithm,
+)
 
 from openfermion.circuits.trotter.algorithms.low_rank import (
-    LOW_RANK, LowRankTrotterAlgorithm)
+    LOW_RANK,
+    LowRankTrotterAlgorithm,
+)
 
-from .split_operator import (SplitOperatorTrotterAlgorithm,
-                             SplitOperatorTrotterStep,
-                             SymmetricSplitOperatorTrotterStep,
-                             ControlledAsymmetricSplitOperatorTrotterStep,
-                             AsymmetricSplitOperatorTrotterStep,
-                             ControlledSymmetricSplitOperatorTrotterStep,
-                             SPLIT_OPERATOR)
+from .split_operator import (
+    SplitOperatorTrotterAlgorithm,
+    SplitOperatorTrotterStep,
+    SymmetricSplitOperatorTrotterStep,
+    ControlledAsymmetricSplitOperatorTrotterStep,
+    AsymmetricSplitOperatorTrotterStep,
+    ControlledSymmetricSplitOperatorTrotterStep,
+    SPLIT_OPERATOR,
+)
