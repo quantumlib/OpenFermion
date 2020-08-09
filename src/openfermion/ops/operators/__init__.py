@@ -27,5 +27,9 @@ from .qubit_operator import QubitOperator
 from .symbolic_operator import SymbolicOperator
 
 # out of alphabetical order to avoid circular import
-from .binary_code import (double_decoding, shift_decoder, BinaryCode,
-                          BinaryCodeError)
+from .binary_code import (
+    double_decoding,
+    shift_decoder,
+    BinaryCode,
+    BinaryCodeError,
+)
