@@ -11,24 +11,28 @@
 #   limitations under the License.
 
 import unittest
-from numpy import dot, zeros
+import numpy as np
 from scipy.linalg import norm
 
-from .channel_state import *
+from .channel_state import (
+    amplitude_damping_channel,
+    dephasing_channel,
+    depolarizing_channel,
+)
 
 
 class ChannelTest(unittest.TestCase):
 
     def setUp(self):
         """Initialize a few density matrices"""
-        zero_state = array([[1], [0]], dtype=complex)
-        one_state = array([[0], [1]], dtype=complex)
-        one_one_state = kron(one_state, one_state)
-        zero_zero_state = kron(zero_state, zero_state)
-        cat_state = 1. / sqrt(2) * (zero_zero_state + one_one_state)
+        zero_state = np.array([[1], [0]], dtype=complex)
+        one_state = np.array([[0], [1]], dtype=complex)
+        one_one_state = np.kron(one_state, one_state)
+        zero_zero_state = np.kron(zero_state, zero_state)
+        cat_state = 1. / np.sqrt(2) * (zero_zero_state + one_one_state)
 
-        self.density_matrix = dot(one_one_state, one_one_state.T)
-        self.cat_matrix = dot(cat_state, cat_state.T)
+        self.density_matrix = np.dot(one_one_state, one_one_state.T)
+        self.cat_matrix = np.dot(cat_state, cat_state.T)
 
     def test_amplitude_damping(self):
         """Test amplitude damping on a simple qubit state"""
@@ -47,7 +51,7 @@ class ChannelTest(unittest.TestCase):
                                 0.0)
 
         # With probability 1
-        correct_density_matrix = zeros((4, 4), dtype=complex)
+        correct_density_matrix = np.zeros((4, 4), dtype=complex)
         correct_density_matrix[2, 2] = 1
 
         test_density_matrix = (amplitude_damping_channel(
@@ -69,8 +73,8 @@ class ChannelTest(unittest.TestCase):
                                                  1,
                                                  transpose=True))
 
-        correct_matrix = array([[0., 0., 0., 0.], [0., 0., 0., 0.],
-                                [0., 0., 0.5, -0.5], [0., 0., -0.5, 1.]])
+        correct_matrix = np.array([[0., 0., 0., 0.], [0., 0., 0., 0.],
+                                   [0., 0., 0.5, -0.5], [0., 0., -0.5, 1.]])
         self.assertAlmostEquals(norm(correct_matrix - test_density_matrix), 0.0)
 
         # Check for correct action on cat state
@@ -80,10 +84,10 @@ class ChannelTest(unittest.TestCase):
                                 0.0)
         # With probability = 1
 
-        correct_matrix = array([[0.50, 0.25, 0.00, 0.00],
-                                [0.25, 0.25, 0.00, -0.25],
-                                [0.00, 0.00, 0.00, 0.00],
-                                [0.00, -0.25, 0.00, 0.50]])
+        correct_matrix = np.array([[0.50, 0.25, 0.00, 0.00],
+                                   [0.25, 0.25, 0.00, -0.25],
+                                   [0.00, 0.00, 0.00, 0.00],
+                                   [0.00, -0.25, 0.00, 0.50]])
         test_density_matrix = (dephasing_channel(self.cat_matrix, 1, 1))
         self.assertAlmostEquals(norm(correct_matrix - test_density_matrix), 0.0)
 
@@ -103,7 +107,7 @@ class ChannelTest(unittest.TestCase):
                                 0.0)
 
         # With probability 1 on both qubits
-        correct_density_matrix = (array(
+        correct_density_matrix = (np.array(
             [[0.27777778, 0.00000000, 0.00000000, 0.05555556],
              [0.00000000, 0.22222222, 0.00000000, 0.00000000],
              [0.00000000, 0.00000000, 0.22222222, 0.00000000],
@@ -133,7 +137,7 @@ class ChannelTest(unittest.TestCase):
                                 places=6)
 
         # With probability 1 for total depolarization
-        correct_density_matrix = eye(4) / 4.0
+        correct_density_matrix = np.eye(4) / 4.0
         test_density_matrix = (depolarizing_channel(self.cat_matrix, 1, 'All'))
         self.assertAlmostEquals(norm(correct_density_matrix -
                                      test_density_matrix),
@@ -149,5 +153,5 @@ class ChannelTest(unittest.TestCase):
             _ = amplitude_damping_channel(self.density_matrix, 0.5, 3)
 
         with self.assertRaises(ValueError):
-            bad_density = zeros((3, 4))
+            bad_density = np.zeros((3, 4))
             _ = amplitude_damping_channel(bad_density, 0.5, 3)

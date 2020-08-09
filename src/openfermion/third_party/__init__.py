@@ -11,5 +11,10 @@
 #   limitations under the License.
 
 from openfermion.third_party.representability._higham import (
-    fixed_trace_positive_projection, map_to_tensor, map_to_matrix,
-    higham_polynomial, higham_root, heaviside)
+    fixed_trace_positive_projection,
+    map_to_tensor,
+    map_to_matrix,
+    higham_polynomial,
+    higham_root,
+    heaviside,
+)
