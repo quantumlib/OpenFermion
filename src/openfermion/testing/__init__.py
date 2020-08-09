@@ -12,10 +12,19 @@
 from openfermion.testing.random import (random_interaction_operator_term)
 
 from .testing_utils import (
-    haar_random_vector, random_antisymmetric_matrix, random_hermitian_matrix,
-    random_unitary_matrix, random_qubit_operator,
-    random_diagonal_coulomb_hamiltonian, random_interaction_operator,
-    random_quadratic_hamiltonian, EqualsTester, module_importable)
+    haar_random_vector,
+    random_antisymmetric_matrix,
+    random_hermitian_matrix,
+    random_unitary_matrix,
+    random_qubit_operator,
+    random_diagonal_coulomb_hamiltonian,
+    random_interaction_operator,
+    random_quadratic_hamiltonian,
+    EqualsTester,
+    module_importable,
+)
 
-from .wrapped import (assert_equivalent_repr,
-                      assert_implements_consistent_protocols)
+from .wrapped import (
+    assert_equivalent_repr,
+    assert_implements_consistent_protocols,
+)
