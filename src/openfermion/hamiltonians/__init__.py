@@ -12,28 +12,48 @@
 
 from .general_hubbard import FermiHubbardModel
 
-from .hartree_fock import (rhf_minimization, HartreeFockFunctional,
-                           rhf_params_to_matrix, get_matrix_of_eigs,
-                           generate_hamiltonian)
+from .hartree_fock import (
+    rhf_minimization,
+    HartreeFockFunctional,
+    rhf_params_to_matrix,
+    get_matrix_of_eigs,
+    generate_hamiltonian,
+)
 
-from .hubbard import bose_hubbard, fermi_hubbard
+from .hubbard import (
+    bose_hubbard,
+    fermi_hubbard,
+)
 
-from .jellium import (dual_basis_kinetic, dual_basis_potential,
-                      dual_basis_jellium_model, jellium_model,
-                      jordan_wigner_dual_basis_jellium,
-                      hypercube_grid_with_given_wigner_seitz_radius_and_filling,
-                      plane_wave_kinetic, plane_wave_potential,
-                      wigner_seitz_length_scale)
+from .jellium import (
+    dual_basis_kinetic,
+    dual_basis_potential,
+    dual_basis_jellium_model,
+    jellium_model,
+    jordan_wigner_dual_basis_jellium,
+    hypercube_grid_with_given_wigner_seitz_radius_and_filling,
+    plane_wave_kinetic,
+    plane_wave_potential,
+    wigner_seitz_length_scale,
+)
 
 from .jellium_hf_state import hartree_fock_state_jellium
 
 from .mean_field_dwave import mean_field_dwave
 
-from .plane_wave_hamiltonian import (dual_basis_external_potential,
-                                     plane_wave_external_potential,
-                                     plane_wave_hamiltonian,
-                                     jordan_wigner_dual_basis_hamiltonian)
+from .plane_wave_hamiltonian import (
+    dual_basis_external_potential,
+    plane_wave_external_potential,
+    plane_wave_hamiltonian,
+    jordan_wigner_dual_basis_hamiltonian,
+)
 
-from .special_operators import (s_plus_operator, s_squared_operator,
-                                sx_operator, sy_operator, sz_operator,
-                                majorana_operator, number_operator)
+from .special_operators import (
+    s_plus_operator,
+    s_squared_operator,
+    sx_operator,
+    sy_operator,
+    sz_operator,
+    majorana_operator,
+    number_operator,
+)
