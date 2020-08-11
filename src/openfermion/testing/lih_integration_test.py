@@ -14,7 +14,7 @@ import os
 import unittest
 import numpy
 
-from openfermion.config import THIS_DIRECTORY
+from openfermion.config import DATA_DIRECTORY
 
 from openfermion.chem import MolecularData
 from openfermion.transforms.opconversions import (get_fermion_operator,
@@ -35,8 +35,7 @@ class LiHIntegrationTest(unittest.TestCase):
         geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., 1.45))]
         basis = 'sto-3g'
         multiplicity = 1
-        filename = os.path.join(THIS_DIRECTORY, 'data',
-                                'H1-Li1_sto-3g_singlet_1.45')
+        filename = os.path.join(DATA_DIRECTORY, 'H1-Li1_sto-3g_singlet_1.45')
         self.molecule = MolecularData(geometry,
                                       basis,
                                       multiplicity,

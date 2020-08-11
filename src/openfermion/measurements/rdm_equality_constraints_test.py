@@ -13,7 +13,7 @@
 import unittest
 import os
 
-from openfermion.config import THIS_DIRECTORY
+from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.transforms.repconversions import get_interaction_operator
 from openfermion.measurements import (one_body_fermion_constraints,
@@ -28,8 +28,7 @@ class FermionConstraintsTest(unittest.TestCase):
         geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
         basis = 'sto-3g'
         multiplicity = 1
-        filename = os.path.join(THIS_DIRECTORY, 'data',
-                                'H2_sto-3g_singlet_0.7414')
+        filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
         molecule = MolecularData(geometry,
                                  basis,
                                  multiplicity,
