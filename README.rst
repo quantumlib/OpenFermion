@@ -22,8 +22,8 @@ Hamiltonians. For more information, see our
 
 Run the interactive Jupyter Notebooks in Colab_ or MyBinder_:
 
-.. Colab_: https://colab.research.google.com/github/quantumlib/OpenFermion
-.. MyBinder_:  https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
+.. _Colab: https://colab.research.google.com/github/quantumlib/OpenFermion
+.. _MyBinder:  https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
 
 Plugins
 =======
