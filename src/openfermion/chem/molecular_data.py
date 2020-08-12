@@ -778,6 +778,10 @@ class MolecularData(object):
             **two_body_integrals_new**: two-electron integrals over active
             space.
         """
+        # Fix data type for a few edge cases
+        occupied_indices = [] if occupied_indices is None else occupied_indices
+        if (len(active_indices) < 1):
+            raise ValueError('Some active indices required for reduction.')
 
         # Get integrals.
         one_body_integrals, two_body_integrals = self.get_integrals()

@@ -155,7 +155,7 @@ def _symmetric_two_body_terms(quad, complex_valued):
 
 def get_tensor_from_integrals(one_body_integrals, two_body_integrals):
     '''Converts one and two-body integrals into tensor form
-    
+
     Arguments:
         one_body_integrals [numpy array] -- the one-body integrals
             of the given Hamiltonian
