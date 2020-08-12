@@ -16,9 +16,13 @@ from .common_gates import (FSWAP, FSwapPowGate, Rxxyy, Ryxxy, Rzz, rot11)
 from .fermionic_simulation import (
     state_swap_eigen_component,
     fermionic_simulation_gates_from_interaction_operator,
-    sum_of_interaction_operator_gate_generators, ParityPreservingFermionicGate,
-    InteractionOperatorFermionicGate, QuadraticFermionicSimulationGate,
-    CubicFermionicSimulationGate, QuarticFermionicSimulationGate)
+    sum_of_interaction_operator_gate_generators,
+    ParityPreservingFermionicGate,
+    InteractionOperatorFermionicGate,
+    QuadraticFermionicSimulationGate,
+    CubicFermionicSimulationGate,
+    QuarticFermionicSimulationGate,
+)
 
 from .four_qubit_gates import DoubleExcitation, DoubleExcitationGate
 

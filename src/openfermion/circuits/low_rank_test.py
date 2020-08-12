@@ -15,7 +15,7 @@ import os
 import unittest
 import numpy
 
-from openfermion.config import THIS_DIRECTORY
+from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.operators import FermionOperator
 from openfermion.transforms.opconversions import (get_fermion_operator,
@@ -125,8 +125,7 @@ class LowRankTest(unittest.TestCase):
 
         # Initialize H2 InteractionOperator.
         n_qubits = 4
-        filename = os.path.join(THIS_DIRECTORY, 'data',
-                                'H2_sto-3g_singlet_0.7414')
+        filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
         molecule = MolecularData(filename=filename)
         molecule_interaction = molecule.get_molecular_hamiltonian()
         molecule_operator = get_fermion_operator(molecule_interaction)
@@ -183,8 +182,7 @@ class LowRankTest(unittest.TestCase):
         # Initialize H2 InteractionOperator.
         n_qubits = 4
         n_orbitals = 2
-        filename = os.path.join(THIS_DIRECTORY, 'data',
-                                'H2_sto-3g_singlet_0.7414')
+        filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
         molecule = MolecularData(filename=filename)
         molecule_interaction = molecule.get_molecular_hamiltonian()
         fermion_operator = get_fermion_operator(molecule_interaction)
@@ -273,8 +271,7 @@ class LowRankTest(unittest.TestCase):
 
         # Initialize H2 InteractionOperator.
         n_qubits = 4
-        filename = os.path.join(THIS_DIRECTORY, 'data',
-                                'H2_sto-3g_singlet_0.7414')
+        filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
         molecule = MolecularData(filename=filename)
         molecule_interaction = molecule.get_molecular_hamiltonian()
         get_fermion_operator(molecule_interaction)
