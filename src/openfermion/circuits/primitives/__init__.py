@@ -17,4 +17,6 @@ from .ffft import ffft
 
 from .optimal_givens_decomposition import optimal_givens_decomposition
 
+from .state_preparation import prepare_gaussian_state
+
 from .swap_network import swap_network
