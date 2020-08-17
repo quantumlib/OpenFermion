@@ -1,6 +1,9 @@
-numpy>=1.11.0
-scipy>=1.1.0
+cirq==0.8.2
+deprecation
 h5py>=2.8
 networkx
+numpy>=1.11.0
 pubchempy
 requests~=2.18
+scipy>=1.1.0
+sympy

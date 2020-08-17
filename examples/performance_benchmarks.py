@@ -16,21 +16,17 @@ import logging
 
 import numpy
 
-from openfermion import (commutator,
-                         FermionOperator,
-                         Grid,
-                         jellium_model,
-                         jordan_wigner,
-                         normal_ordered,
-                         QubitOperator)
-from openfermion.transforms import get_fermion_operator
-from openfermion.utils import (
-    jordan_wigner_sparse,
-    LinearQubitOperator,
-    LinearQubitOperatorOptions,
-    ParallelLinearQubitOperator)
-from openfermion.utils._testing_utils import random_interaction_operator
-from openfermion.utils._commutator_diagonal_coulomb_operator import (
+from openfermion.utils import commutator, Grid
+from openfermion.ops import FermionOperator, QubitOperator
+from openfermion.hamiltonians import jellium_model
+from openfermion.transforms.opconversions import (jordan_wigner,
+                                                  get_fermion_operator,
+                                                  normal_ordered)
+from openfermion.linalg import (jordan_wigner_sparse,
+                                LinearQubitOperatorOptions, LinearQubitOperator,
+                                ParallelLinearQubitOperator)
+from openfermion.testing.testing_utils import random_interaction_operator
+from openfermion.utils.commutator_diagonal_coulomb_operator import (
     commutator_ordered_diagonal_coulomb_with_two_body_operator)
 
 

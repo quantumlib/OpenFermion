@@ -10,36 +10,50 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from ._chemical_series import (make_atomic_ring,
-                               make_atomic_lattice,
-                               make_atom)
+from .general_hubbard import FermiHubbardModel
 
-from ._general_hubbard import FermiHubbardModel
+from .hartree_fock import (
+    rhf_minimization,
+    HartreeFockFunctional,
+    rhf_params_to_matrix,
+    get_matrix_of_eigs,
+    generate_hamiltonian,
+)
 
-from ._hartree_fock import (rhf_minimization, HartreeFockFunctional,
-                            rhf_params_to_matrix, get_matrix_of_eigs,
-                            generate_hamiltonian)
+from .hubbard import (
+    bose_hubbard,
+    fermi_hubbard,
+)
 
-from ._jellium import (
-    dual_basis_kinetic, dual_basis_potential,
-    dual_basis_jellium_model, jellium_model,
+from .jellium import (
+    dual_basis_kinetic,
+    dual_basis_potential,
+    dual_basis_jellium_model,
+    jellium_model,
     jordan_wigner_dual_basis_jellium,
     hypercube_grid_with_given_wigner_seitz_radius_and_filling,
-    plane_wave_kinetic, plane_wave_potential,
-    wigner_seitz_length_scale)
+    plane_wave_kinetic,
+    plane_wave_potential,
+    wigner_seitz_length_scale,
+)
 
-from ._molecular_data import (
-        MolecularData,
-        load_molecular_hamiltonian,
-        periodic_table)
+from .jellium_hf_state import hartree_fock_state_jellium
 
-from ._plane_wave_hamiltonian import (dual_basis_external_potential,
-                                      plane_wave_external_potential,
-                                      plane_wave_hamiltonian,
-                                      jordan_wigner_dual_basis_hamiltonian)
+from .mean_field_dwave import mean_field_dwave
 
-# Imports out of alphabetical order to avoid circular dependancy.
+from .plane_wave_hamiltonian import (
+    dual_basis_external_potential,
+    plane_wave_external_potential,
+    plane_wave_hamiltonian,
+    jordan_wigner_dual_basis_hamiltonian,
+)
 
-from ._hubbard import bose_hubbard, fermi_hubbard
-
-from ._mean_field_dwave import mean_field_dwave
+from .special_operators import (
+    s_plus_operator,
+    s_squared_operator,
+    sx_operator,
+    sy_operator,
+    sz_operator,
+    majorana_operator,
+    number_operator,
+)
