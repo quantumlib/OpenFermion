@@ -571,8 +571,22 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         return exponentiated
 
     def __eq__(self, other):
-        """
-        Returns True if other (SymbolicOperator) is close to self.
+        """Approximate numerical equality (not true equality)."""
+        return self.isclose(other)
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __iter__(self):
+        self._iter = iter(self.terms.items())
+        return self
+
+    def __next__(self):
+        term, coefficient = next(self._iter)
+        return self.__class__(term=term, coefficient=coefficient)
+
+    def isclose(self, other, tol=EQ_TOLERANCE):
+        """Check if other (SymbolicOperator) is close to self.
 
         Comparison is done for each term individually. Return True
         if the difference between each term in self and other is
@@ -588,32 +602,19 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         for term in set(self.terms).intersection(set(other.terms)):
             a = self.terms[term]
             b = other.terms[term]
-            if isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr):
-                tol = EQ_TOLERANCE
-            else:
-                tol = EQ_TOLERANCE * max(1, abs(a), abs(b))
+            if not (isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr)):
+                tol *= max(1, abs(a), abs(b))
             if _issmall(a - b, tol) is False:
                 return False
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if _issmall(self.terms[term]) is False:
+                if _issmall(self.terms[term], tol) is False:
                     return False
             else:
-                if _issmall(other.terms[term]) is False:
+                if _issmall(other.terms[term], tol) is False:
                     return False
         return True
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def __iter__(self):
-        self._iter = iter(self.terms.items())
-        return self
-
-    def __next__(self):
-        term, coefficient = next(self._iter)
-        return self.__class__(term=term, coefficient=coefficient)
 
     def compress(self, abs_tol=EQ_TOLERANCE):
         """
@@ -721,13 +722,3 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             yield self.accumulate(
                 itertools.islice(operators,
                                  len(range(i, len(self.terms), num_groups))))
-
-    # DEPRECATED FUNCTIONS
-    # ====================
-    def isclose(self, other):
-        warnings.warn(
-            'The method `isclose` is deprecated and will '
-            'be removed in a future version. Use == '
-            'instead. For instance, a == b instead of '
-            'a.isclose(b).', DeprecationWarning)
-        return self == other
