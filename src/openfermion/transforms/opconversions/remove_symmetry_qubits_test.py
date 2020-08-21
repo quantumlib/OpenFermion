@@ -146,7 +146,9 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
     def test_single_operator(self):
         # Dummy operator acting only on 2 qubits of overall 4-qubit system
         op = FermionOperator("0^ 1^ 1 0") + FermionOperator("1^ 0^ 0 1")
-        trafo_op = symmetry_conserving_bravyi_kitaev(op, active_fermions=2, active_orbitals=4)
+        trafo_op = symmetry_conserving_bravyi_kitaev(op,
+                                                     active_fermions=2,
+                                                     active_orbitals=4)
         # Check via eigenspectrum -- needs to stay the same
         e_op = eigenspectrum(op)
         e_trafo = eigenspectrum(trafo_op)
