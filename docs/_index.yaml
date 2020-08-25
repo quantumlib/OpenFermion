@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-book_path: /quark/openfermion/_book.yaml
-project_path: /quark/openfermion/_project.yaml
+book_path: /openfermion/_book.yaml
+project_path: /openfermion/_project.yaml
 description: >
   OpenFermion is a library for compiling and analyzing quantum algorithms to
   simulate fermionic systems, including quantum chemistry.
@@ -49,7 +49,7 @@ landing_page:
   - classname: devsite-landing-row-cards
     items:
     - heading: "Announcing OpenFermion"
-      image_path: /resources/images/google-research-card-16x9.png
+      image_path: /site-assets/images/cards/google-research-card-16x9.png
       path: https://ai.googleblog.com/2017/10/announcing-openfermion-open-source.html
       buttons:
       - label: "Read on the Google AI blog"
@@ -60,7 +60,7 @@ landing_page:
       - label: Watch the video
         path: https://www.youtube.com/watch?v=6AjdlefcS4s
     - heading: "OpenFermion on GitHub"
-      image_path: /resources/images/github-card-16x9.png
+      image_path: /site-assets/images/cards/github-card-16x9.png
       path: https://github.com/quantumlib/OpenFermion
       buttons:
       - label: "View on GitHub"
