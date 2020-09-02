@@ -22,6 +22,7 @@ from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.linalg.sparse_tools import (
     get_sparse_operator, jw_get_ground_state_at_particle_number)
 from openfermion.linalg import eigenspectrum
+from openfermion.ops.operators import FermionOperator
 
 from openfermion.transforms.opconversions.remove_symmetry_qubits import (
     symmetry_conserving_bravyi_kitaev)
@@ -138,3 +139,18 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
                 sparse_op, n_ferm)
 
             self.assertAlmostEqual(eigenspectrum(hub_qbt)[0], ground_energy)
+
+    # Check if single operator of a Hamiltonian is transformed consistently,
+    # e.g. system with 2 particles, 4 spin-orbitals, and want to determine
+    # elements of one- and two-particle reduced density matrix
+    def test_single_operator(self):
+        # Dummy operator acting only on 2 qubits of overall 4-qubit system
+        op = FermionOperator("0^ 1^ 1 0") + FermionOperator("1^ 0^ 0 1")
+        trafo_op = symmetry_conserving_bravyi_kitaev(op,
+                                                     active_fermions=2,
+                                                     active_orbitals=4)
+        # Check via eigenspectrum -- needs to stay the same
+        e_op = eigenspectrum(op)
+        e_trafo = eigenspectrum(trafo_op)
+        # Check eigenvalues
+        self.assertSequenceEqual(e_op.tolist(), e_trafo.tolist())
