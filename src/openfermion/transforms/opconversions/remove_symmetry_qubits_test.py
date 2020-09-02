@@ -142,7 +142,7 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
 
     # Check if single operator of a Hamiltonian is transformed consistently,
     # e.g. system with 2 particles, 4 spin-orbitals, and want to determine
-    # elements of 1- and 2-particle reduced density matrix
+    # elements of one- and two-particle reduced density matrix
     def test_single_operator(self):
         # Dummy operator acting only on 2 qubits of overall 4-qubit system
         op = FermionOperator("0^ 1^ 1 0") + FermionOperator("1^ 0^ 0 1")
