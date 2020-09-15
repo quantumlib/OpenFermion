@@ -31,7 +31,7 @@ upper_tabs:
       skip_translation: true
       contents:
       - title: "All Symbols"
-        path: /openfermion/api_docs/python/
-      - include: /openfermion/api_docs/python/_toc.yaml
+        path: /openfermion/api_docs/python/openfermion/all_symbols
+      - include: /openfermion/api_docs/python/openfermion/_toc.yaml
 
 - include: /_book/upper_tabs_right.yaml
