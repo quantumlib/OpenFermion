@@ -366,9 +366,9 @@ class DOCIHamiltonian(PolynomialTensor):
             for q in range(n_qubits):
                 if p == q:
                     continue
-                qubitop += (QubitOperator("X" + str(p) + "X" + str(q),
+                qubitop += (QubitOperator("X" + str(p) + " X" + str(q),
                                           self.hr1[p, q] / 4) +
-                            QubitOperator("Y" + str(p) + "Y" + str(q),
+                            QubitOperator("Y" + str(p) + " Y" + str(q),
                                           self.hr1[p, q] / 4))
         return qubitop
 
@@ -389,7 +389,7 @@ class DOCIHamiltonian(PolynomialTensor):
                 qubitop += (QubitOperator(
                     (), coef) + QubitOperator("Z" + str(p), -coef) +
                             QubitOperator("Z" + str(q), -coef) +
-                            QubitOperator("Z" + str(p) + "Z" + str(q), coef))
+                            QubitOperator("Z" + str(p) + " Z" + str(q), coef))
         return qubitop
 
     @property
