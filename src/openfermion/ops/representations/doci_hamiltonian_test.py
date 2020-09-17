@@ -24,6 +24,7 @@ from openfermion.ops.representations.doci_hamiltonian import (
     DOCIHamiltonian, _HR1, _HR2, _HC, get_tensors_from_doci,
     get_projected_integrals_from_doci, get_doci_from_integrals)
 
+
 class HOpsTest(unittest.TestCase):
 
     def setUp(self):
@@ -213,7 +214,6 @@ class IntegralTransformsTest(unittest.TestCase):
                     self.assertEqual(
                         hr2[p, q], 2 * two_body_integrals[p, q, q, p] -
                         two_body_integrals[p, q, p, q])
-
 
 
 class DOCIHamiltonianTest(unittest.TestCase):
