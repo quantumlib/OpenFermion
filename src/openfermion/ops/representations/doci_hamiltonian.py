@@ -143,8 +143,8 @@ class _HR2:
 
         # Same spin
         two_body_coefficients[2 * p, 2 * q, 2 * q, 2 * p] = (value / 2)
-        two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * q + 1,
-                              2 * p + 1] = (value / 2)
+        two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * q + 1, 2 * p +
+                              1] = (value / 2)
 
     def __iadd__(self, addend):
         self._hr2 += addend._hr2
@@ -366,10 +366,10 @@ class DOCIHamiltonian(PolynomialTensor):
             for q in range(n_qubits):
                 if p == q:
                     continue
-                qubitop +=  (QubitOperator("X" + str(p) + "X" + str(q),
-                                           self.hr1[p, q] / 4) +
-                             QubitOperator("Y" + str(p) + "Y" + str(q),
-                                           self.hr1[p, q] / 4))
+                qubitop += (QubitOperator("X" + str(p) + "X" + str(q),
+                                          self.hr1[p, q] / 4) +
+                            QubitOperator("Y" + str(p) + "Y" + str(q),
+                                          self.hr1[p, q] / 4))
         return qubitop
 
     @property
