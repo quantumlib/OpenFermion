@@ -9,7 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Tests for interaction_operator.py."""
+"""Tests for doci_hamiltonian.py."""
 import os
 import unittest
 
@@ -17,7 +17,7 @@ import numpy
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.chem.molecular_data import MolecularData
-from openfermion.config import THIS_DIRECTORY
+from openfermion.config import DATA_DIRECTORY
 from openfermion.transforms import jordan_wigner
 from openfermion.linalg import get_sparse_operator
 from openfermion.ops.representations.doci_hamiltonian import(
@@ -40,6 +40,26 @@ class HOpsTest(unittest.TestCase):
         self.assertEqual(hr1[0, 1], 2)
         self.assertEqual(hr1._n_body_tensors[(1, 1, 0, 0)][0, 1, 3, 2], 1)
         self.assertEqual(hr1._n_body_tensors[(1, 1, 0, 0)][1, 0, 2, 3], 1)
+
+    def test_hr1_ops(self):
+        hr1a_mat = numpy.zeros((2, 2))
+        hr1a = _HR1(hr1a_mat, self.n_body_tensors)
+
+        hr1b_mat = numpy.zeros((2, 2))
+        hr1b = _HR1(hr1b_mat, self.n_body_tensors)
+
+        hr1a[0, 1] = 2
+        hr1c = hr1a + hr1b
+        self.assertEqual(hr1c[0, 1], 2)
+
+        hr1c = hr1b - hr1a
+        self.assertEqual(hr1c[0, 1], -2)
+
+        hr1c = hr1a * 2
+        self.assertEqual(hr1c[0, 1], 4)
+
+        hr1c = hr1a / 2
+        self.assertAlmostEqual(hr1c[0, 1], 1)
 
     def test_hr1_shape(self):
         hr1_mat = numpy.zeros((2, 2))
@@ -72,6 +92,26 @@ class HOpsTest(unittest.TestCase):
         self.assertEqual(hr2._n_body_tensors[(1, 1, 0, 0)][1, 2, 2, 1], 2)
         self.assertEqual(hr2._n_body_tensors[(1, 1, 0, 0)][0, 2, 2, 0], 2)
         self.assertEqual(hr2._n_body_tensors[(1, 1, 0, 0)][1, 3, 3, 1], 2)
+
+    def test_hr2_ops(self):
+        hr2a_mat = numpy.zeros((2, 2))
+        hr2a = _HR2(hr2a_mat, self.n_body_tensors)
+
+        hr2b_mat = numpy.zeros((2, 2))
+        hr2b = _HR2(hr2b_mat, self.n_body_tensors)
+
+        hr2a[0, 1] = 2
+        hr2c = hr2a + hr2b
+        self.assertEqual(hr2c[0, 1], 2)
+
+        hr2c = hr2b - hr2a
+        self.assertEqual(hr2c[0, 1], -2)
+
+        hr2c = hr2a * 2
+        self.assertEqual(hr2c[0, 1], 4)
+
+        hr2c = hr2a / 2
+        self.assertAlmostEqual(hr2c[0, 1], 1)
 
     def test_hr2_shape(self):
         hr2_mat = numpy.zeros((2, 2))
@@ -107,6 +147,26 @@ class HOpsTest(unittest.TestCase):
         with self.assertRaises(IndexError):
             hc[0, 0] = 1
 
+    def test_hc_ops(self):
+        hca_mat = numpy.zeros((2))
+        hca = _HC(hca_mat, self.n_body_tensors)
+
+        hcb_mat = numpy.zeros((2))
+        hcb = _HC(hcb_mat, self.n_body_tensors)
+
+        hca[0] = 2
+        hcc = hca + hcb
+        self.assertEqual(hcc[0], 2)
+
+        hcc = hcb - hca
+        self.assertEqual(hcc[0], -2)
+
+        hcc = hca * 2
+        self.assertEqual(hcc[0], 4)
+
+        hcc = hca / 2
+        self.assertAlmostEqual(hcc[0], 1)
+
 
 class IntegralTransformsTest(unittest.TestCase):
 
@@ -114,7 +174,7 @@ class IntegralTransformsTest(unittest.TestCase):
         self.geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
         self.basis = 'sto-3g'
         self.multiplicity = 1
-        self.filename = os.path.join(THIS_DIRECTORY, 'data',
+        self.filename = os.path.join(DATA_DIRECTORY,
                                      'H2_sto-3g_singlet_0.7414')
         self.molecule = MolecularData(self.geometry,
                                       self.basis,
@@ -163,7 +223,7 @@ class DOCIHamiltonianTest(unittest.TestCase):
         self.geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
         self.basis = 'sto-3g'
         self.multiplicity = 1
-        self.filename = os.path.join(THIS_DIRECTORY, 'data',
+        self.filename = os.path.join(DATA_DIRECTORY,
                                      'H2_sto-3g_singlet_0.7414')
         self.molecule = MolecularData(self.geometry,
                                       self.basis,

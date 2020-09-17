@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Class and functions to store interaction operators."""
+import copy
 import numpy
 
 from openfermion.ops import QubitOperator
@@ -17,7 +18,7 @@ from openfermion.ops.representations import (PolynomialTensor,
                                              get_tensor_from_integrals)
 
 
-class _HR1(object):
+class _HR1:
     """class for storing the DOCI hr1 tensor alongside an nbody tensor rep
     """
     def __init__(self, hr1, n_body_tensors):
@@ -59,8 +60,48 @@ class _HR1(object):
         two_body_coefficients[2 * p, 2 * p + 1, 2 * q + 1, 2 * q] = (value / 2)
         two_body_coefficients[2 * p + 1, 2 * p, 2 * q, 2 * q + 1] = (value / 2)
 
+    def __iadd__(self, addend):
+        self._hr1 += addend._hr1
+        return self
 
-class _HR2(object):
+    def __isub__(self, subtrahend):
+        self._hr1 -= subtrahend._hr1
+        return self
+
+    def __imul__(self, multiplier):
+        self._hr1 *= multiplier
+        return self
+
+    def __itruediv__(self, dividend):
+        self._hr1 /= dividend
+        return self
+
+    def __add__(self, addend):
+        summand = copy.deepcopy(self)
+        summand += addend
+        return summand
+
+    def __sub__(self, subtrahend):
+        r = copy.deepcopy(self)
+        r -= subtrahend
+        return r
+
+    def __mul__(self, multiplier):
+        product = copy.deepcopy(self)
+        product *= multiplier
+        return product
+
+    def __rmul__(self, multiplier):
+        product = copy.deepcopy(self)
+        product *= multiplier
+        return product
+
+    def __truediv__(self, dividend):
+        quotient = copy.deepcopy(self)
+        quotient /= dividend
+        return quotient
+
+class _HR2:
     """class for storing the DOCI hr2 tensor alongside an nbody tensor rep
     """
     def __init__(self, hr2, n_body_tensors):
@@ -102,8 +143,49 @@ class _HR2(object):
         two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * q + 1, 2 * p + 1] = (
             value / 2)
 
+    def __iadd__(self, addend):
+        self._hr2 += addend._hr2
+        return self
 
-class _HC(object):
+    def __isub__(self, subtrahend):
+        self._hr2 -= subtrahend._hr2
+        return self
+
+    def __imul__(self, multiplier):
+        self._hr2 *= multiplier
+        return self
+
+    def __itruediv__(self, dividend):
+        self._hr2 /= dividend
+        return self
+
+    def __add__(self, addend):
+        summand = copy.deepcopy(self)
+        summand += addend
+        return summand
+
+    def __sub__(self, subtrahend):
+        r = copy.deepcopy(self)
+        r -= subtrahend
+        return r
+
+    def __mul__(self, multiplier):
+        product = copy.deepcopy(self)
+        product *= multiplier
+        return product
+
+    def __rmul__(self, multiplier):
+        product = copy.deepcopy(self)
+        product *= multiplier
+        return product
+
+    def __truediv__(self, dividend):
+        quotient = copy.deepcopy(self)
+        quotient /= dividend
+        return quotient
+
+
+class _HC:
     """class for storing the DOCI hr2 tensor alongside an nbody tensor rep
     """
     def __init__(self, hc, n_body_tensors):
@@ -144,6 +226,47 @@ class _HC(object):
         one_body_coefficients = self._n_body_tensors[(1, 0)]
         one_body_coefficients[2 * p, 2 * p] = value / 2
         one_body_coefficients[2 * p + 1, 2 * p + 1] = value / 2
+
+    def __iadd__(self, addend):
+        self._hc += addend._hc
+        return self
+
+    def __isub__(self, subtrahend):
+        self._hc -= subtrahend._hc
+        return self
+
+    def __imul__(self, multiplier):
+        self._hc *= multiplier
+        return self
+
+    def __itruediv__(self, dividend):
+        self._hc /= dividend
+        return self
+
+    def __add__(self, addend):
+        summand = copy.deepcopy(self)
+        summand += addend
+        return summand
+
+    def __sub__(self, subtrahend):
+        r = copy.deepcopy(self)
+        r -= subtrahend
+        return r
+
+    def __mul__(self, multiplier):
+        product = copy.deepcopy(self)
+        product *= multiplier
+        return product
+
+    def __rmul__(self, multiplier):
+        product = copy.deepcopy(self)
+        product *= multiplier
+        return product
+
+    def __truediv__(self, dividend):
+        quotient = copy.deepcopy(self)
+        quotient /= dividend
+        return quotient
 
 
 class DOCIHamiltonian(PolynomialTensor):
@@ -322,6 +445,43 @@ class DOCIHamiltonian(PolynomialTensor):
         raise TypeError('Raw edits of the n_body_tensors of a DOCIHamiltonian '
                         'is not allowed. Either adjust the hc/hr1/hr2 terms '
                         'or cast to another PolynomialTensor class.')
+
+    # Override root class
+    def __iadd__(self, addend):
+        if not issubclass(type(addend), DOCIHamiltonian):
+            raise TypeError('Invalid type.')
+        if self.n_qubits != addend.n_qubits:
+            raise TypeError('Invalid tensor shape.')
+        self.hc += addend.hc
+        self.hr1 += addend.hr1
+        self.hr2 += addend.hr2
+        return self
+
+    def __isub__(self, subtrahend):
+        if not issubclass(type(subtrahend), DOCIHamiltonian):
+            raise TypeError('Invalid type.')
+        if self.n_qubits != subtrahend.n_qubits:
+            raise TypeError('Invalid tensor shape.')
+        self.hc -= subtrahend.hc
+        self.hr1 -= subtrahend.hr1
+        self.hr2 -= subtrahend.hr2
+        return self
+
+    def __imul__(self, multiplier):
+        if not isinstance(multiplier, (int, float, complex)):
+            raise TypeError('Invalid type.')
+        self.hc *= multiplier
+        self.hr1 *= multiplier
+        self.hr2 *= multiplier
+        return self
+
+    def __itruediv__(self, dividend):
+        if not isinstance(dividend, (int, float, complex)):
+            raise TypeError('Invalid type.')
+        self.hc /= dividend
+        self.hr1 /= dividend
+        self.hr2 /= dividend
+        return self
 
     @classmethod
     def from_integrals(cls, constant, one_body_integrals, two_body_integrals):
