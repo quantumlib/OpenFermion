@@ -149,6 +149,14 @@ class PolynomialTensor(object):
         """Set the value of the constant term."""
         self.n_body_tensors[()] = value
 
+    @property
+    def n_body_tensors(self):
+        return self._n_body_tensors
+
+    @n_body_tensors.setter
+    def n_body_tensors(self, value):
+        self._n_body_tensors = value
+
     def __getitem__(self, args):
         """Look up matrix element.
 

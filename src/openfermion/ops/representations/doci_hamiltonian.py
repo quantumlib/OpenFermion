@@ -456,9 +456,17 @@ class DOCIHamiltonian(PolynomialTensor):
             raise TypeError('Invalid type.')
         if self.n_qubits != addend.n_qubits:
             raise TypeError('Invalid tensor shape.')
-        self.hc += addend.hc
-        self.hr1 += addend.hr1
-        self.hr2 += addend.hr2
+        hc = self.hc
+        print(self.n_body_tensors)
+        print(self.hc._hc)
+        hc += addend.hc
+        print(hc._hc)
+        print(self.hc._hc)
+        print(self.n_body_tensors)
+        hr1 = self.hr1
+        hr1 += addend.hr1
+        hr2 = self.hr2
+        hr2 += addend.hr2
         return self
 
     def __isub__(self, subtrahend):
@@ -466,9 +474,12 @@ class DOCIHamiltonian(PolynomialTensor):
             raise TypeError('Invalid type.')
         if self.n_qubits != subtrahend.n_qubits:
             raise TypeError('Invalid tensor shape.')
-        self.hc -= subtrahend.hc
-        self.hr1 -= subtrahend.hr1
-        self.hr2 -= subtrahend.hr2
+        hc = self.hc
+        hc -= subtrahend.hc
+        hr1 = self.hr1
+        hr1 -= subtrahend.hr1
+        hr2 = self.hr2
+        hr2 -= subtrahend.hr2
         return self
 
     def __imul__(self, multiplier):
@@ -482,9 +493,12 @@ class DOCIHamiltonian(PolynomialTensor):
     def __itruediv__(self, dividend):
         if not isinstance(dividend, (int, float, complex)):
             raise TypeError('Invalid type.')
-        self.hc /= dividend
-        self.hr1 /= dividend
-        self.hr2 /= dividend
+        hc = self.hc
+        hc /= dividend
+        hr1 = self.hr1
+        hr1 /= dividend
+        hr2 = self.hr2
+        hr2 /= dividend
         return self
 
     @classmethod

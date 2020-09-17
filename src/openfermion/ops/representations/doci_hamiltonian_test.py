@@ -229,6 +229,18 @@ class DOCIHamiltonianTest(unittest.TestCase):
                                       filename=self.filename)
         self.molecule.load()
 
+    def test_basic_operations(self):
+        doci_hamiltonian1 = DOCIHamiltonian.zero(n_qubits=2)
+        doci_hamiltonian2 = DOCIHamiltonian.from_integrals(
+            constant=self.molecule.nuclear_repulsion,
+            one_body_integrals=self.molecule.one_body_integrals,
+            two_body_integrals=self.molecule.two_body_integrals)
+        self.assertTrue(doci_hamiltonian2 == doci_hamiltonian1 +
+                        doci_hamiltonian2)
+        self.assertTrue(doci_hamiltonian1 - doci_hamiltonian2 == 
+                        doci_hamiltonian2 / -1)
+        self.assertTrue(doci_hamiltonian2 * 0 == doci_hamiltonian1)
+
     def test_error(self):
         doci_hamiltonian = DOCIHamiltonian.from_integrals(
             constant=self.molecule.nuclear_repulsion,
