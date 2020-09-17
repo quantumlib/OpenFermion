@@ -211,7 +211,7 @@ class IntegralTransformsTest(unittest.TestCase):
                 if p != q:
                     self.assertEqual(hr1[p, q], two_body_integrals[p, p, q, q])
                     self.assertEqual(
-                        hr2[p, q], 2*two_body_integrals[p, q, q, p] -
+                        hr2[p, q], 2 * two_body_integrals[p, q, q, p] -
                         two_body_integrals[p, q, p, q])
 
 
