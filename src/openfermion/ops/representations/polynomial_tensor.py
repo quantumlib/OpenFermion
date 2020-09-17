@@ -125,19 +125,18 @@ class PolynomialTensor(object):
         """Initialize the PolynomialTensor class.
 
         Args:
-            n_body_tensors(dict): A dictionary storing the tensors describing
+            n_body_tensors(dict or None): A dictionary storing the tensors describing
                 n-body interactions.
         """
-        # TODO: discuss if this should be given with a getter and setter instead
-        # of current format
-        self.n_body_tensors = n_body_tensors
+        self._n_body_tensors = n_body_tensors
 
-        # Set n_qubits
-        key_iterator = iter(n_body_tensors.keys())
-        key = next(key_iterator)
-        if key == ():
+        if n_body_tensors:
+            # Set n_qubits
+            key_iterator = iter(n_body_tensors.keys())
             key = next(key_iterator)
-        self.n_qubits = n_body_tensors[key].shape[0]
+            if key == ():
+                key = next(key_iterator)
+            self.n_qubits = n_body_tensors[key].shape[0]
 
     @property
     def constant(self):

@@ -182,7 +182,8 @@ class DOCIHamiltonian(PolynomialTensor):
         }
         return n_body_tensors
 
-    @n_body_tensors.setter(self):
+    @n_body_tensors.setter
+    def n_body_tensors(self, value):
         raise TypeError('Raw edits of the n_body_tensors of a DOCIHamiltonian '
                         'is not allowed. Either adjust the hc/hr1/hr2 terms '
                         'or cast to another PolynomialTensor class.')
@@ -201,13 +202,12 @@ class DOCIHamiltonian(PolynomialTensor):
             raise IndexError('DOCIHamiltonian class only contains '
                              'two-body terms in the (1, 1, 0, 0) sector.')
         if index[0] // 2 == index[1] // 2 and index[2] // 2 == index[3] // 2:
-            return self._hr1[p // 2, q // 2]
-        elif index[0] == index[3] and index[1] == index[2]:
-            return self._hr2[p // 2, q // 2]
-        else:
-            raise IndexError('DOCIHamiltonian class only contains '
-                             'two-electron integrals corresponding '
-                             'to a double excitation.')
+            return self._hr1[index[0] // 2, index[2] // 2]
+        if index[0] == index[3] and index[1] == index[2]:
+            return self._hr2[index[0] // 2, index[1] // 2]
+        raise IndexError('DOCIHamiltonian class only contains '
+                         'two-electron integrals corresponding '
+                         'to a double excitation.')
 
     # Override base class
     def __getitem__(self, args):
@@ -224,12 +224,11 @@ class DOCIHamiltonian(PolynomialTensor):
         index = tuple([operator[0] for operator in args])
         key = tuple([operator[1] for operator in args])
         if len(index) == 2:
-            return _get_onebody_term(key, index)
-        elif len(index) == 4:
-            return _get_twobody_term(key, index)
-        else:
-            raise IndexError('DOCIHamiltonian class only contains '
-                             'one and two-electron and constant terms.')
+            return self._get_onebody_term(key, index)
+        if len(index) == 4:
+            return self._get_twobody_term(key, index)
+        raise IndexError('DOCIHamiltonian class only contains '
+                         'one and two-electron and constant terms.')
 
     # Override root class
     def __setitem__(self, args, value):

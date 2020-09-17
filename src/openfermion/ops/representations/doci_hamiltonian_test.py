@@ -21,7 +21,7 @@ from openfermion.config import DATA_DIRECTORY
 from openfermion.transforms import jordan_wigner
 from openfermion.linalg import get_sparse_operator
 from openfermion.ops.representations.doci_hamiltonian import (
-    DOCIHamiltonian, _HR1, _HR2, _HC, get_tensors_from_doci,
+    DOCIHamiltonian, get_tensors_from_doci,
     get_projected_integrals_from_doci, get_doci_from_integrals)
 
 
