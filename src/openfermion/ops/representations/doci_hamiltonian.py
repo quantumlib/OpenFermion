@@ -21,6 +21,7 @@ from openfermion.ops.representations import (PolynomialTensor,
 class _HR1:
     """class for storing the DOCI hr1 tensor alongside an nbody tensor rep
     """
+
     def __init__(self, hr1, n_body_tensors):
         self._hr1 = hr1
         self._n_body_tensors = n_body_tensors
@@ -101,9 +102,11 @@ class _HR1:
         quotient /= dividend
         return quotient
 
+
 class _HR2:
     """class for storing the DOCI hr2 tensor alongside an nbody tensor rep
     """
+
     def __init__(self, hr2, n_body_tensors):
         self._hr2 = hr2
         self._n_body_tensors = n_body_tensors
@@ -140,8 +143,8 @@ class _HR2:
 
         # Same spin
         two_body_coefficients[2 * p, 2 * q, 2 * q, 2 * p] = (value / 2)
-        two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * q + 1, 2 * p + 1] = (
-            value / 2)
+        two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * q + 1,
+                              2 * p + 1] = (value / 2)
 
     def __iadd__(self, addend):
         self._hr2 += addend._hr2
@@ -188,6 +191,7 @@ class _HR2:
 class _HC:
     """class for storing the DOCI hr2 tensor alongside an nbody tensor rep
     """
+
     def __init__(self, hc, n_body_tensors):
         self._hc = hc
         self._n_body_tensors = n_body_tensors
@@ -362,10 +366,10 @@ class DOCIHamiltonian(PolynomialTensor):
             for q in range(n_qubits):
                 if p == q:
                     continue
-                qubitop +=  (QubitOperator("X"+str(p)+" X"+str(q),
-                                           self.hr1[p, q]/4) +
-                             QubitOperator("Y"+str(p)+" Y"+str(q),
-                                           self.hr1[p, q]/4))
+                qubitop +=  (QubitOperator("X" + str(p) + "X" + str(q),
+                                           self.hr1[p, q] / 4) +
+                             QubitOperator("Y" + str(p) + "Y" + str(q),
+                                           self.hr1[p, q] / 4))
         return qubitop
 
     @property
@@ -376,16 +380,16 @@ class DOCIHamiltonian(PolynomialTensor):
         n_qubits = self.hr1.shape[0]
         for p in range(n_qubits):
             qubitop += (QubitOperator((), (self.hc[p] + self.hr2[p, p]) / 2) -
-                        QubitOperator("Z"+str(p),
+                        QubitOperator("Z" + str(p),
                                       (self.hc[p] + self.hr2[p, p]) / 2))
             for q in range(n_qubits):
                 if p == q:
                     continue
-                coef = self.hr2[p, q]/4
-                qubitop += (QubitOperator((), coef) +
-                            QubitOperator("Z"+str(p), -coef) +
-                            QubitOperator("Z"+str(q), -coef) +
-                            QubitOperator("Z"+str(p)+" Z"+str(q), coef))
+                coef = self.hr2[p, q] / 4
+                qubitop += (QubitOperator(
+                    (), coef) + QubitOperator("Z" + str(p), -coef) +
+                            QubitOperator("Z" + str(q), -coef) +
+                            QubitOperator("Z" + str(p) + "Z" + str(q), coef))
         return qubitop
 
     @property
@@ -402,7 +406,7 @@ class DOCIHamiltonian(PolynomialTensor):
         """The value of hr2."""
         return self._hr2
 
-    # Override root class 
+    # Override root class
     def __getitem__(self, args):
         """Look up matrix element.
 
@@ -493,8 +497,7 @@ class DOCIHamiltonian(PolynomialTensor):
 
     @classmethod
     def zero(cls, n_qubits):
-        return cls(0,
-                   numpy.zeros((n_qubits,), dtype=numpy.complex128),
+        return cls(0, numpy.zeros((n_qubits,), dtype=numpy.complex128),
                    numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
                    numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128))
 
@@ -539,8 +542,8 @@ def get_projected_integrals_from_doci(hc, hr1, hr2):
     '''
     n_qubits = hr1.shape[0]
     projected_onebody_integrals = numpy.zeros((n_qubits, n_qubits))
-    projected_twobody_integrals = numpy.zeros((n_qubits, n_qubits, n_qubits,
-                                               n_qubits))
+    projected_twobody_integrals = numpy.zeros(
+        (n_qubits, n_qubits, n_qubits, n_qubits))
     for p in range(n_qubits):
         projected_onebody_integrals[p, p] = hc[p] / 2
         projected_twobody_integrals[p, p, p, p] = hr2[p, p]
@@ -553,8 +556,7 @@ def get_projected_integrals_from_doci(hc, hr1, hr2):
     return projected_onebody_integrals, projected_twobody_integrals
 
 
-def get_doci_from_integrals(one_body_integrals,
-                            two_body_integrals):
+def get_doci_from_integrals(one_body_integrals, two_body_integrals):
     r"""Construct a DOCI Hamiltonian from electron integrals
 
     Args:

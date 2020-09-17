@@ -787,8 +787,7 @@ class MolecularData(object):
         one_body_integrals, two_body_integrals = self.get_integrals()
         return reps.get_active_space_integrals(one_body_integrals,
                                                two_body_integrals,
-                                               occupied_indices,
-                                               active_indices)
+                                               occupied_indices, active_indices)
 
     def get_molecular_hamiltonian(self,
                                   occupied_indices=None,

@@ -183,21 +183,20 @@ def get_tensor_from_integrals(one_body_integrals, two_body_integrals):
 
                     # Mixed spin
                     two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 *
-                                          s] = (
-                                              two_body_integrals[p, q, r, s]
-                                              / 2.)
+                                          s] = (two_body_integrals[p, q, r, s] /
+                                                2.)
                     two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s +
-                                          1] = (
-                                              two_body_integrals[p, q, r, s]
-                                              / 2.)
+                                          1] = (two_body_integrals[p, q, r, s] /
+                                                2.)
 
                     # Same spin
-                    two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = (
-                        two_body_integrals[p, q, r, s] / 2.)
+                    two_body_coefficients[2 * p, 2 * q, 2 * r, 2 *
+                                          s] = (two_body_integrals[p, q, r, s] /
+                                                2.)
                     two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r +
-                                          1, 2 * s + 1] = (
-                                              two_body_integrals[p, q, r, s]
-                                              / 2.)
+                                          1, 2 * s +
+                                          1] = (two_body_integrals[p, q, r, s] /
+                                                2.)
 
     # Truncate.
     one_body_coefficients[
@@ -263,7 +262,6 @@ def get_active_space_integrals(one_body_integrals,
 
     # Restrict integral ranges and change M appropriately
     return (core_constant,
-            one_body_integrals_new[numpy.ix_(active_indices,
-                                             active_indices)],
+            one_body_integrals_new[numpy.ix_(active_indices, active_indices)],
             two_body_integrals[numpy.ix_(active_indices, active_indices,
                                          active_indices, active_indices)])
