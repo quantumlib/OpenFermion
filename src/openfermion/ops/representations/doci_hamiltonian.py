@@ -18,261 +18,6 @@ from openfermion.ops.representations import (PolynomialTensor,
                                              get_tensor_from_integrals)
 
 
-class _HR1:
-    """class for storing the DOCI hr1 tensor alongside an nbody tensor rep
-    """
-
-    def __init__(self, hr1, n_body_tensors):
-        self._hr1 = hr1
-        self._n_body_tensors = n_body_tensors
-
-    @property
-    def shape(self):
-        return self._hr1.shape
-
-    def __getitem__(self, args):
-        """Look up matrix element.
-
-        Args:
-            args: i, j
-        """
-        if len(args) != 2:
-            raise IndexError('hr1 is a two-indexed array')
-        p, q = args
-        if p == q:
-            raise IndexError('hr1 has no diagonal term')
-        return self._hr1[p, q]
-
-    def __setitem__(self, args, value):
-        """Set matrix element.
-
-        Args:
-            args: Tuples indicating which coefficient to set.
-        """
-        if len(args) != 2:
-            raise IndexError('hr1 is a two-indexed array')
-        p, q = args
-        if p == q:
-            raise IndexError('hr1 has no diagonal term')
-        self._hr1[p, q] = value
-        two_body_coefficients = self._n_body_tensors[(1, 1, 0, 0)]
-
-        # Mixed spin
-        two_body_coefficients[2 * p, 2 * p + 1, 2 * q + 1, 2 * q] = (value / 2)
-        two_body_coefficients[2 * p + 1, 2 * p, 2 * q, 2 * q + 1] = (value / 2)
-
-    def __iadd__(self, addend):
-        self._hr1 += addend._hr1
-        return self
-
-    def __isub__(self, subtrahend):
-        self._hr1 -= subtrahend._hr1
-        return self
-
-    def __imul__(self, multiplier):
-        self._hr1 *= multiplier
-        return self
-
-    def __itruediv__(self, dividend):
-        self._hr1 /= dividend
-        return self
-
-    def __add__(self, addend):
-        summand = copy.deepcopy(self)
-        summand += addend
-        return summand
-
-    def __sub__(self, subtrahend):
-        r = copy.deepcopy(self)
-        r -= subtrahend
-        return r
-
-    def __mul__(self, multiplier):
-        product = copy.deepcopy(self)
-        product *= multiplier
-        return product
-
-    def __rmul__(self, multiplier):
-        product = copy.deepcopy(self)
-        product *= multiplier
-        return product
-
-    def __truediv__(self, dividend):
-        quotient = copy.deepcopy(self)
-        quotient /= dividend
-        return quotient
-
-
-class _HR2:
-    """class for storing the DOCI hr2 tensor alongside an nbody tensor rep
-    """
-
-    def __init__(self, hr2, n_body_tensors):
-        self._hr2 = hr2
-        self._n_body_tensors = n_body_tensors
-
-    @property
-    def shape(self):
-        return self._hr2.shape
-
-    def __getitem__(self, args):
-        """Look up matrix element.
-
-        Args:
-            args: i, j
-        """
-        if len(args) != 2:
-            raise IndexError('hr2 is a two-indexed array')
-        return self._hr2[args[0], args[1]]
-
-    def __setitem__(self, args, value):
-        """Set matrix element.
-
-        Args:
-            args: Tuples indicating which coefficient to set.
-        """
-        if len(args) != 2:
-            raise IndexError('hr2 is a two-indexed array')
-        p, q = args
-        self._hr2[p, q] = value
-        two_body_coefficients = self._n_body_tensors[(1, 1, 0, 0)]
-
-        # Mixed spin
-        two_body_coefficients[2 * p, 2 * q + 1, 2 * q + 1, 2 * p] = (value / 2)
-        two_body_coefficients[2 * p + 1, 2 * q, 2 * q, 2 * p + 1] = (value / 2)
-
-        # Same spin
-        two_body_coefficients[2 * p, 2 * q, 2 * q, 2 * p] = (value / 2)
-        two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * q + 1, 2 * p +
-                              1] = (value / 2)
-
-    def __iadd__(self, addend):
-        self._hr2 += addend._hr2
-        return self
-
-    def __isub__(self, subtrahend):
-        self._hr2 -= subtrahend._hr2
-        return self
-
-    def __imul__(self, multiplier):
-        self._hr2 *= multiplier
-        return self
-
-    def __itruediv__(self, dividend):
-        self._hr2 /= dividend
-        return self
-
-    def __add__(self, addend):
-        summand = copy.deepcopy(self)
-        summand += addend
-        return summand
-
-    def __sub__(self, subtrahend):
-        r = copy.deepcopy(self)
-        r -= subtrahend
-        return r
-
-    def __mul__(self, multiplier):
-        product = copy.deepcopy(self)
-        product *= multiplier
-        return product
-
-    def __rmul__(self, multiplier):
-        product = copy.deepcopy(self)
-        product *= multiplier
-        return product
-
-    def __truediv__(self, dividend):
-        quotient = copy.deepcopy(self)
-        quotient /= dividend
-        return quotient
-
-
-class _HC:
-    """class for storing the DOCI hr2 tensor alongside an nbody tensor rep
-    """
-
-    def __init__(self, hc, n_body_tensors):
-        self._hc = hc
-        self._n_body_tensors = n_body_tensors
-
-    @property
-    def shape(self):
-        return self._hc.shape
-
-    def __getitem__(self, args):
-        """Look up matrix element.
-
-        Args:
-            args: i, j
-        """
-        if type(args) is tuple:
-            if len(args) != 1:
-                raise IndexError('hc is a one-indexed array')
-            p, = args
-        else:
-            p = args
-        return self._hc[p]
-
-    def __setitem__(self, args, value):
-        """Set matrix element.
-
-        Args:
-            args: Tuples indicating which coefficient to set.
-        """
-        if type(args) is tuple:
-            if len(args) != 1:
-                raise IndexError('hc is a one-indexed array')
-            p, = args
-        else:
-            p = args
-        self._hc[p] = value
-        one_body_coefficients = self._n_body_tensors[(1, 0)]
-        one_body_coefficients[2 * p, 2 * p] = value / 2
-        one_body_coefficients[2 * p + 1, 2 * p + 1] = value / 2
-
-    def __iadd__(self, addend):
-        self._hc += addend._hc
-        return self
-
-    def __isub__(self, subtrahend):
-        self._hc -= subtrahend._hc
-        return self
-
-    def __imul__(self, multiplier):
-        self._hc *= multiplier
-        return self
-
-    def __itruediv__(self, dividend):
-        self._hc /= dividend
-        return self
-
-    def __add__(self, addend):
-        summand = copy.deepcopy(self)
-        summand += addend
-        return summand
-
-    def __sub__(self, subtrahend):
-        r = copy.deepcopy(self)
-        r -= subtrahend
-        return r
-
-    def __mul__(self, multiplier):
-        product = copy.deepcopy(self)
-        product *= multiplier
-        return product
-
-    def __rmul__(self, multiplier):
-        product = copy.deepcopy(self)
-        product *= multiplier
-        return product
-
-    def __truediv__(self, dividend):
-        quotient = copy.deepcopy(self)
-        quotient /= dividend
-        return quotient
-
-
 class DOCIHamiltonian(PolynomialTensor):
     r"""Class for storing DOCI hamiltonians which are defined to be
     restrictions of fermionic operators to doubly occupied configurations.
@@ -334,22 +79,20 @@ class DOCIHamiltonian(PolynomialTensor):
         Args:
             constant: A constant term in the operator given as a
                 float. For instance, the nuclear repulsion energy.
+            hc: the coefficients of (:math:`h^{(c)}_{p}`)
             hr1: The coefficients of (:math:`h^{(r1)}_{p, q}`).
                This is an n_qubits x n_qubits numpy array of floats.
             hr2: The coefficients of (:math:`h^{(r2)}_{p, q}`).
                 This is an n_qubits x n_qubits array of floats.
         """
-        one_body_coefficients, two_body_coefficients =\
-            get_tensors_from_doci(hc, hr1, hr2)
-        n_body_tensors = {
-            (): constant,
-            (1, 0): one_body_coefficients,
-            (1, 1, 0, 0): two_body_coefficients
-        }
-        super(DOCIHamiltonian, self).__init__(n_body_tensors)
-        self._hr1 = _HR1(hr1, n_body_tensors)
-        self._hr2 = _HR2(hr2, n_body_tensors)
-        self._hc = _HC(hc, n_body_tensors)
+        super(DOCIHamiltonian, self).__init__(None)
+        del self._n_body_tensors
+
+        self.num_qubits = hc.shape[0]
+        self._constant = constant
+        self._hr1 = hr1
+        self._hr2 = hr2
+        self._hc = hc
 
     @property
     def qubit_operator(self):
@@ -396,17 +139,77 @@ class DOCIHamiltonian(PolynomialTensor):
     def hc(self):
         return self._hc
 
+    @hc.setter
+    def hc(self, value):
+        self._hc = value
+
     @property
     def hr1(self):
         """The value of hr1."""
         return self._hr1
+
+    @hr1.setter
+    def hr1(self, value):
+        self._hr1 = value
 
     @property
     def hr2(self):
         """The value of hr2."""
         return self._hr2
 
-    # Override root class
+    @hr2.setter
+    def hr1(self, value):
+        self._hr2 = value
+
+    # Override base class
+    @property
+    def constant(self):
+        return self._constant
+
+    @constant.setter
+    def constant(self, value):
+        self._constant = value
+
+    # Override base class to generate on the fly
+    @property
+    def n_body_tensors(self):
+        one_body_coefficients, two_body_coefficients =\
+            get_tensors_from_doci(self.hc, self.hr1, self.hr2)
+        n_body_tensors = {
+            (): self.constant,
+            (1, 0): one_body_coefficients,
+            (1, 1, 0, 0): two_body_coefficients
+        }
+        return n_body_tensors
+
+    @n_body_tensors.setter(self):
+        raise TypeError('Raw edits of the n_body_tensors of a DOCIHamiltonian '
+                        'is not allowed. Either adjust the hc/hr1/hr2 terms '
+                        'or cast to another PolynomialTensor class.')
+
+    def _get_onebody_term(self, key, index):
+        if key[0] != 1 or key[1] != 0:
+            raise IndexError('DOCIHamiltonian class only contains '
+                             'one-body terms in the (1, 0) sector.')
+        if index[0] != index[1]:
+            raise IndexError('DOCIHamiltonian class only contains '
+                             'diagonal one-body electron integrals.')
+        return self.hc[index // 2] / 2
+
+    def _get_twobody_term(self, key, index):
+        if key[0] != 1 or key[1] != 1 or key[2] != 0 or key[3] != 0:
+            raise IndexError('DOCIHamiltonian class only contains '
+                             'two-body terms in the (1, 1, 0, 0) sector.')
+        if index[0] // 2 == index[1] // 2 and index[2] // 2 == index[3] // 2:
+            return self._hr1[p // 2, q // 2]
+        elif index[0] == index[3] and index[1] == index[2]:
+            return self._hr2[p // 2, q // 2]
+        else:
+            raise IndexError('DOCIHamiltonian class only contains '
+                             'two-electron integrals corresponding '
+                             'to a double excitation.')
+
+    # Override base class
     def __getitem__(self, args):
         """Look up matrix element.
 
@@ -417,27 +220,16 @@ class DOCIHamiltonian(PolynomialTensor):
                 `my_tensor.n_body_tensors[1, 1, 0][6, 8, 2]`
         """
         if len(args) == 0:
-            return self.n_body_tensors[()]
+            return self.constant
         index = tuple([operator[0] for operator in args])
         key = tuple([operator[1] for operator in args])
         if len(index) == 2:
-            if index[0] != index[1]:
-                raise IndexError('DOCIHamiltonian class only contains '
-                                 'diagonal one-body electron integrals.')
+            return _get_onebody_term(key, index)
         elif len(index) == 4:
-            if not ((index[0] // 2 == index[1] // 2 and
-                     index[2] // 2 == index[3] // 2) or
-                    (index[0] // 2 == index[2] // 2 and
-                     index[1] // 2 == index[3] // 2) or
-                    (index[0] // 2 == index[3] // 2 and
-                     index[1] // 2 == index[2] // 2)):
-                raise IndexError('DOCIHamiltonian class only contains '
-                                 'two-electron integrals corresponding '
-                                 'to a double excitation.')
+            return _get_twobody_term(key, index)
         else:
             raise IndexError('DOCIHamiltonian class only contains '
                              'one and two-electron and constant terms.')
-        return self.n_body_tensors[key][index]
 
     # Override root class
     def __setitem__(self, args, value):
@@ -456,17 +248,10 @@ class DOCIHamiltonian(PolynomialTensor):
             raise TypeError('Invalid type.')
         if self.n_qubits != addend.n_qubits:
             raise TypeError('Invalid tensor shape.')
-        hc = self.hc
-        print(self.n_body_tensors)
-        print(self.hc._hc)
-        hc += addend.hc
-        print(hc._hc)
-        print(self.hc._hc)
-        print(self.n_body_tensors)
-        hr1 = self.hr1
-        hr1 += addend.hr1
-        hr2 = self.hr2
-        hr2 += addend.hr2
+        self.hc += addend.hc
+        self.hr1 += addend.hr1
+        self.hr2 += addend.hr2
+        self.constant += addend.constant
         return self
 
     def __isub__(self, subtrahend):
@@ -474,12 +259,10 @@ class DOCIHamiltonian(PolynomialTensor):
             raise TypeError('Invalid type.')
         if self.n_qubits != subtrahend.n_qubits:
             raise TypeError('Invalid tensor shape.')
-        hc = self.hc
-        hc -= subtrahend.hc
-        hr1 = self.hr1
-        hr1 -= subtrahend.hr1
-        hr2 = self.hr2
-        hr2 -= subtrahend.hr2
+        self.hc -= subtrahend.hc
+        self.hr1 -= subtrahend.hr1
+        self.hr2 -= subtrahend.hr2
+        self.constant -= subtrahend.constant
         return self
 
     def __imul__(self, multiplier):
@@ -488,23 +271,20 @@ class DOCIHamiltonian(PolynomialTensor):
         self.hc *= multiplier
         self.hr1 *= multiplier
         self.hr2 *= multiplier
+        self.constant *= multiplier
         return self
 
     def __itruediv__(self, dividend):
         if not isinstance(dividend, (int, float, complex)):
             raise TypeError('Invalid type.')
-        hc = self.hc
-        hc /= dividend
-        hr1 = self.hr1
-        hr1 /= dividend
-        hr2 = self.hr2
-        hr2 /= dividend
+        self.hc /= dividend
+        self.hr1 /= dividend
+        self.hr2 /= dividend
+        self.constant /= dividend
         return self
 
     @classmethod
     def from_integrals(cls, constant, one_body_integrals, two_body_integrals):
-        # TODO: discuss whether this is is an appropriate design pattern
-        # to include.
         hc, hr1, hr2 = get_doci_from_integrals(one_body_integrals,
                                                two_body_integrals)
         return cls(constant, hc, hr1, hr2)
