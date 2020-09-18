@@ -463,7 +463,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """In-place method for -= subtraction of SymbolicOperator.
 
         Args:
-            subtrahend (A SymbolicOperator, or scalar): The operator to subtract.
+            subtrahend (A SymbolicOperator, or scalar): The operator to subtract
                 if scalar, subtracts from the constant term.
 
         Returns:
