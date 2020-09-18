@@ -20,6 +20,8 @@ import numpy
 
 from openfermion.config import EQ_TOLERANCE
 
+COEFFICIENT_TYPES = (int, float, complex)
+
 
 class PolynomialTensorError(Exception):
     pass
@@ -214,6 +216,11 @@ class PolynomialTensor(object):
         return not (self == other)
 
     def __iadd__(self, addend):
+
+        if isinstance(addend, COEFFICIENT_TYPES):
+            self.constant += addend
+            return self
+
         if not issubclass(type(addend), PolynomialTensor):
             raise TypeError('Invalid type.')
 
@@ -237,9 +244,6 @@ class PolynomialTensor(object):
     def __radd__(self, addend):
         return self + addend
 
-    def __rsub__(self, subtrahend):
-        return -1 * self + subtrahend
-
     def with_function_applied_elementwise(self, func):
         new_n_body_tensors = dict()
         for key in self.n_body_tensors:
@@ -253,6 +257,11 @@ class PolynomialTensor(object):
         return self.with_function_applied_elementwise(lambda x: x % other)
 
     def __isub__(self, subtrahend):
+
+        if isinstance(subtrahend, COEFFICIENT_TYPES):
+            self.constant -= subtrahend
+            return self
+
         if not issubclass(type(subtrahend), PolynomialTensor):
             raise TypeError('Invalid type.')
 
@@ -272,6 +281,9 @@ class PolynomialTensor(object):
         r = copy.deepcopy(self)
         r -= subtrahend
         return r
+
+    def __rsub__(self, subtrahend):
+        return -1 * self + subtrahend
 
     def __imul__(self, multiplier):
         if isinstance(multiplier, (int, float, complex)):

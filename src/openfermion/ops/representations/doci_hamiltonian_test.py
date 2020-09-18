@@ -114,6 +114,13 @@ class DOCIHamiltonianTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             doci_hamiltonian -= doci_hamiltonian2
 
+    def test_adding_constants(self):
+        doci_hamiltonian = DOCIHamiltonian.zero(n_qubits=2)
+        doci_hamiltonian += 2
+        self.assertAlmostEqual(doci_hamiltonian.constant, 2)
+        doci_hamiltonian -= 3
+        self.assertAlmostEqual(doci_hamiltonian.constant, -1)
+
     def test_basic_operations(self):
         doci_hamiltonian1 = DOCIHamiltonian.zero(n_qubits=2)
         doci_hamiltonian2 = DOCIHamiltonian.from_integrals(
