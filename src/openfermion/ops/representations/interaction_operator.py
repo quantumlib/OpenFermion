@@ -153,7 +153,7 @@ def _symmetric_two_body_terms(quad, complex_valued):
         yield r, q, p, s
 
 
-def get_tensor_from_integrals(one_body_integrals, two_body_integrals):
+def get_tensors_from_integrals(one_body_integrals, two_body_integrals):
     '''Converts one and two-body integrals into tensor form
 
     Arguments:

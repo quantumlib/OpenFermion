@@ -14,7 +14,7 @@ import numpy
 
 from openfermion.ops import QubitOperator
 from openfermion.ops.representations import (PolynomialTensor,
-                                             get_tensor_from_integrals)
+                                             get_tensors_from_integrals)
 
 
 class DOCIHamiltonian(PolynomialTensor):
@@ -383,7 +383,7 @@ def get_tensors_from_doci(hc, hr1, hr2):
     '''
     one_body_integrals, two_body_integrals =\
         get_projected_integrals_from_doci(hc, hr1, hr2)
-    one_body_coefficients, two_body_coefficients = get_tensor_from_integrals(
+    one_body_coefficients, two_body_coefficients = get_tensors_from_integrals(
         one_body_integrals, two_body_integrals)
     return one_body_coefficients, two_body_coefficients
 

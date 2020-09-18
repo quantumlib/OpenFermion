@@ -818,7 +818,7 @@ class MolecularData(object):
             constant = self.nuclear_repulsion + core_adjustment
 
         one_body_coefficients, two_body_coefficients =\
-            reps.get_tensor_from_integrals(one_body_integrals,
+            reps.get_tensors_from_integrals(one_body_integrals,
                                            two_body_integrals)
 
         # Cast to InteractionOperator class and return.
