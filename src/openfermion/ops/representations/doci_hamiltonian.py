@@ -10,7 +10,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Class and functions to store interaction operators."""
-import copy
 import numpy
 
 from openfermion.ops import QubitOperator
@@ -99,41 +98,96 @@ class DOCIHamiltonian(PolynomialTensor):
         """Return the QubitOperator representation of this DOCI Hamiltonian"""
         return QubitOperator((), self.constant) + self.z_part + self.xy_part
 
+    def xx_term(self, p, q):
+        """Returns the XX term on a single pair of qubits as a QubitOperator
+        Arguments:
+            p, q [int] -- qubit indices
+        Returns:
+            [QubitOperator] -- XX term on the chosen qubits.
+        """
+        return QubitOperator("X" + str(p) + " X" + str(q), self.hr1[p, q] / 2)
+
+    def yy_term(self, p, q):
+        """Returns the YY term on a single pair of qubits as a QubitOperator
+        Arguments:
+            p, q [int] -- qubit indices
+        Returns:
+            [QubitOperator] -- YY term on the chosen qubits.
+        """
+        return QubitOperator("Y" + str(p) + " Y" + str(q), self.hr1[p, q] / 2)
+
+    def z_term(self, p):
+        """Returns the Z term on a single qubit as a QubitOperator
+        Arguments:
+            p [int] -- qubit index
+        Returns:
+            [QubitOperator] -- Z term on the chosen qubit.
+        """
+        return QubitOperator("Z" + str(p),
+                             self.hc[p] / 2 + sum(self.hr2[:, p]) / 2)
+
+    def zz_term(self, p, q):
+        """Returns the ZZ term on a single pair of qubits as a QubitOperator
+        Arguments:
+            p, q [int] -- qubit indices
+        Returns:
+            [QubitOperator] -- ZZ term on the chosen qubits.
+        """
+        print('entering')
+        return QubitOperator("Z" + str(p) + " Z" + str(q), self.hr2[p, q] / 2)
+
+    @property
+    def identity_part(self):
+        """Returns identity term of this operator (i.e. trace-ful term)
+        in QubitOperator form.
+        """
+        return QubitOperator((),
+                             numpy.sum(self.hc) / 2 + numpy.sum(self.hr2) / 4 +
+                             numpy.sum(numpy.diag(self.hr2)) / 4)
+
+    @property
+    def xx_part(self):
+        """Returns the XX part of the QubitOperator representation of this
+        DOCIHamiltonian
+        """
+        return sum([self.xx_term(p, q) for p in range(self.n_qubits)
+                    for q in range(p+1, self.n_qubits)])
+
+    @property
+    def yy_part(self):
+        """Returns the YY part of the QubitOperator representation of this
+        DOCIHamiltonian
+        """
+        return sum([self.yy_term(p, q) for p in range(self.n_qubits)
+                    for q in range(p+1, self.n_qubits)])
+
     @property
     def xy_part(self):
-        """Return the XX and YY part of the QubitOperator representation of this
-        DOCI Hamiltonian"""
-        qubitop = QubitOperator()
-        n_qubits = self.hr1.shape[0]
-        for p in range(n_qubits):
-            for q in range(n_qubits):
-                if p == q:
-                    continue
-                qubitop += (QubitOperator("X" + str(p) + " X" + str(q),
-                                          self.hr1[p, q] / 4) +
-                            QubitOperator("Y" + str(p) + " Y" + str(q),
-                                          self.hr1[p, q] / 4))
-        return qubitop
+        """Returns the XX+YY part of the QubitOperator representation of this
+        DOCIHamiltonian
+        """
+        return self.xx_part + self.yy_part
+
+    @property
+    def zz_part(self):
+        """Returns the ZZ part of the QubitOperator representation of this
+        DOCIHamiltonian
+        """
+        return sum([self.zz_term(p, q) for p in range(self.n_qubits)
+                    for q in range(p+1, self.n_qubits)])
 
     @property
     def z_part(self):
         """Return the Z and ZZ part of the QubitOperator representation of this
         DOCI Hamiltonian"""
-        qubitop = QubitOperator()
-        n_qubits = self.hr1.shape[0]
-        for p in range(n_qubits):
-            qubitop += (QubitOperator((), (self.hc[p] + self.hr2[p, p]) / 2) -
-                        QubitOperator("Z" + str(p),
-                                      (self.hc[p] + self.hr2[p, p]) / 2))
-            for q in range(n_qubits):
-                if p == q:
-                    continue
-                coef = self.hr2[p, q] / 4
-                qubitop += (QubitOperator(
-                    (), coef) + QubitOperator("Z" + str(p), -coef) +
-                            QubitOperator("Z" + str(q), -coef) +
-                            QubitOperator("Z" + str(p) + " Z" + str(q), coef))
-        return qubitop
+        return self.identity_part + self.zz_part + sum([
+            self.z_term(p) for p in range(self.n_qubits)])
+
+    @property
+    def qubitop(self):
+        """Returns the full QubitOperator representation of the DOCI Hamiltonian
+        """
+        return self.z_part + self.xy_part
 
     @property
     def hc(self):

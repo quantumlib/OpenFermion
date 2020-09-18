@@ -232,6 +232,15 @@ class PolynomialTensor(object):
         summand += addend
         return summand
 
+    def __radd__(self, addend):
+        return self + addend
+
+    def __rsub__(self, subtrahend):
+        return -1 * self + subtrahend
+
+    def __rmul__(self, multiplier):
+        return multiplier * self
+
     def with_function_applied_elementwise(self, func):
         new_n_body_tensors = dict()
         for key in self.n_body_tensors:
