@@ -265,8 +265,7 @@ class DOCIHamiltonian(PolynomialTensor):
                              'two-body terms in the (1, 1, 0, 0) sector.')
         if index[0] == index[3] and index[1] == index[2]:
             return self.hr2[index[0] // 2, index[1] // 2] / 2
-        if (index[0] // 2 == index[1] // 2
-                and index[2] // 2 == index[3] // 2):
+        if index[0] // 2 == index[1] // 2 and index[2] // 2 == index[3] // 2:
             return self.hr1[index[0] // 2, index[2] // 2] / 2
         raise IndexError('DOCIHamiltonian class only contains '
                          'two-electron integrals corresponding '
