@@ -125,9 +125,10 @@ class PolynomialTensor(object):
         """Initialize the PolynomialTensor class.
 
         Args:
-            n_body_tensors(dict or None): A dictionary storing the tensors describing
-                n-body interactions. If None, n_body_tensors are assumed to be
-                generated on-the-fly by other data (for subclassing purposes).
+            n_body_tensors(dict or None): A dictionary storing the tensors
+                describing n-body interactions. If None, n_body_tensors are
+                assumed to be generated on-the-fly by other data (for
+                subclassing purposes).
         """
 
         if n_body_tensors:
@@ -238,9 +239,6 @@ class PolynomialTensor(object):
 
     def __rsub__(self, subtrahend):
         return -1 * self + subtrahend
-
-    def __rmul__(self, multiplier):
-        return multiplier * self
 
     def with_function_applied_elementwise(self, func):
         new_n_body_tensors = dict()

@@ -149,16 +149,22 @@ class DOCIHamiltonian(PolynomialTensor):
         """Returns the XX part of the QubitOperator representation of this
         DOCIHamiltonian
         """
-        return sum([self.xx_term(p, q) for p in range(self.n_qubits)
-                    for q in range(p+1, self.n_qubits)])
+        return sum([
+            self.xx_term(p, q)
+            for p in range(self.n_qubits)
+            for q in range(p + 1, self.n_qubits)
+        ])
 
     @property
     def yy_part(self):
         """Returns the YY part of the QubitOperator representation of this
         DOCIHamiltonian
         """
-        return sum([self.yy_term(p, q) for p in range(self.n_qubits)
-                    for q in range(p+1, self.n_qubits)])
+        return sum([
+            self.yy_term(p, q)
+            for p in range(self.n_qubits)
+            for q in range(p + 1, self.n_qubits)
+        ])
 
     @property
     def xy_part(self):
@@ -172,15 +178,18 @@ class DOCIHamiltonian(PolynomialTensor):
         """Returns the ZZ part of the QubitOperator representation of this
         DOCIHamiltonian
         """
-        return sum([self.zz_term(p, q) for p in range(self.n_qubits)
-                    for q in range(p+1, self.n_qubits)])
+        return sum([
+            self.zz_term(p, q)
+            for p in range(self.n_qubits)
+            for q in range(p + 1, self.n_qubits)
+        ])
 
     @property
     def z_part(self):
         """Return the Z and ZZ part of the QubitOperator representation of this
         DOCI Hamiltonian"""
-        return self.identity_part + self.zz_part + sum([
-            self.z_term(p) for p in range(self.n_qubits)])
+        return self.identity_part + self.zz_part + sum(
+            [self.z_term(p) for p in range(self.n_qubits)])
 
     @property
     def qubitop(self):
@@ -256,28 +265,11 @@ class DOCIHamiltonian(PolynomialTensor):
                              'two-body terms in the (1, 1, 0, 0) sector.')
         if index[0] == index[3] and index[1] == index[2]:
             return self.hr2[index[0] // 2, index[1] // 2] / 2
-        if index[0] // 2 == index[1] // 2 and index[2] // 2 == index[3] // 2:
+        if (index[0] // 2 == index[1] // 2and index[2] // 2 == index[3] // 2):
             return self.hr1[index[0] // 2, index[2] // 2] / 2
         raise IndexError('DOCIHamiltonian class only contains '
                          'two-electron integrals corresponding '
                          'to a double excitation.')
-
-        # self._hr2[p, q] = value
-        # two_body_coefficients = self._n_body_tensors[(1, 1, 0, 0)]
-
-        # # Mixed spin
-        # two_body_coefficients[2 * p, 2 * q + 1, 2 * q + 1, 2 * p] = (value / 2)
-        # two_body_coefficients[2 * p + 1, 2 * q, 2 * q, 2 * p + 1] = (value / 2)
-
-        # # Same spin
-        # two_body_coefficients[2 * p, 2 * q, 2 * q, 2 * p] = (value / 2)
-        # two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * q + 1, 2 * p +
-        #                       1] = (value / 2)
-
-        # ###HR1
-        #         # Mixed spin
-        # two_body_coefficients[2 * p, 2 * p + 1, 2 * q + 1, 2 * q] = (value / 2)
-        # two_body_coefficients[2 * p + 1, 2 * p, 2 * q, 2 * q + 1] = (value / 2)
 
     # Override base class
     def __getitem__(self, args):
