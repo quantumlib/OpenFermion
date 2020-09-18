@@ -85,7 +85,6 @@ class DOCIHamiltonian(PolynomialTensor):
                 This is an n_qubits x n_qubits array of floats.
         """
         super(DOCIHamiltonian, self).__init__(None)
-        del self._n_body_tensors
 
         self.n_qubits = hc.shape[0]
         self._constant = constant

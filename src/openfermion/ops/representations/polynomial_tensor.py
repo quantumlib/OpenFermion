@@ -126,11 +126,12 @@ class PolynomialTensor(object):
 
         Args:
             n_body_tensors(dict or None): A dictionary storing the tensors describing
-                n-body interactions.
+                n-body interactions. If None, n_body_tensors are assumed to be
+                generated on-the-fly by other data (for subclassing purposes).
         """
-        self._n_body_tensors = n_body_tensors
 
         if n_body_tensors:
+            self._n_body_tensors = n_body_tensors
             # Set n_qubits
             key_iterator = iter(n_body_tensors.keys())
             key = next(key_iterator)
