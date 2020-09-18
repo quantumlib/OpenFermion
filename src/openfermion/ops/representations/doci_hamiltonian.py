@@ -142,10 +142,9 @@ class DOCIHamiltonian(PolynomialTensor):
         """Returns identity term of this operator (i.e. trace-ful term)
         in QubitOperator form.
         """
-        return QubitOperator((),
-                             self.constant + numpy.sum(self.hc) / 2 +
-                             numpy.sum(self.hr2) / 4 +
-                             numpy.sum(numpy.diag(self.hr2)) / 4)
+        return QubitOperator(
+            (), self.constant + numpy.sum(self.hc) / 2 +
+            numpy.sum(self.hr2) / 4 + numpy.sum(numpy.diag(self.hr2)) / 4)
 
     @property
     def xx_part(self):
