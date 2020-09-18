@@ -20,10 +20,10 @@ Hamiltonians. For more information, see our
     :target: https://badge.fury.io/py/openfermion
 
 
-Run the interactive Jupyter Notebooks on MyBinder:
+Run the interactive Jupyter Notebooks in Colab_ or MyBinder_:
 
-.. image:: https://mybinder.org/badge_logo.svg
-    :target: https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
+.. _Colab: https://colab.research.google.com/github/quantumlib/OpenFermion
+.. _MyBinder:  https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
 
 Plugins
 =======

@@ -14,7 +14,7 @@ import os
 import unittest
 import numpy
 
-from openfermion.config import THIS_DIRECTORY, EQ_TOLERANCE
+from openfermion.config import EQ_TOLERANCE, DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.operators import QubitOperator
 from openfermion.ops.representations.interaction_rdm import InteractionRDMError
@@ -27,8 +27,7 @@ class InteractionRDMTest(unittest.TestCase):
         geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
         basis = 'sto-3g'
         multiplicity = 1
-        filename = os.path.join(THIS_DIRECTORY, 'data',
-                                'H2_sto-3g_singlet_0.7414')
+        filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
         self.molecule = MolecularData(geometry,
                                       basis,
                                       multiplicity,
