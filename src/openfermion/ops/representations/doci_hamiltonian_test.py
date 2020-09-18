@@ -21,8 +21,8 @@ from openfermion.config import DATA_DIRECTORY
 from openfermion.transforms import jordan_wigner
 from openfermion.linalg import get_sparse_operator
 from openfermion.ops.representations.doci_hamiltonian import (
-    DOCIHamiltonian, get_tensors_from_doci,
-    get_projected_integrals_from_doci, get_doci_from_integrals)
+    DOCIHamiltonian, get_tensors_from_doci, get_projected_integrals_from_doci,
+    get_doci_from_integrals)
 
 
 class IntegralTransformsTest(unittest.TestCase):
@@ -93,8 +93,8 @@ class DOCIHamiltonianTest(unittest.TestCase):
             two_body_integrals=self.molecule.two_body_integrals)
         self.assertTrue(doci_hamiltonian2 == doci_hamiltonian1 +
                         doci_hamiltonian2)
-        self.assertTrue(doci_hamiltonian1 - doci_hamiltonian2 == 
-                        doci_hamiltonian2 / -1)
+        self.assertTrue(doci_hamiltonian1 -
+                        doci_hamiltonian2 == doci_hamiltonian2 / -1)
         self.assertTrue(doci_hamiltonian2 * 0 == doci_hamiltonian1)
 
     def test_error(self):
