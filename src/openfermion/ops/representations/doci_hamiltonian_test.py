@@ -85,6 +85,35 @@ class DOCIHamiltonianTest(unittest.TestCase):
                                       filename=self.filename)
         self.molecule.load()
 
+    def test_n_body_tensor_errors(self):
+        doci_hamiltonian = DOCIHamiltonian.zero(n_qubits=2)
+        with self.assertRaises(TypeError):
+            doci_hamiltonian.n_body_tensors = 0
+        with self.assertRaises(IndexError):
+            _ = doci_hamiltonian[((0, 0), (0, 0))]
+        with self.assertRaises(IndexError):
+            _ = doci_hamiltonian[((0, 0), (0, 0), (0, 0), (0, 0))]
+        with self.assertRaises(IndexError):
+            _ = doci_hamiltonian[((1, 1), (0, 0))]
+        with self.assertRaises(IndexError):
+            _ = doci_hamiltonian[((0, 1), (2, 1), (3, 0), (8, 0))]
+
+    def test_errors_operations(self):
+        doci_hamiltonian = DOCIHamiltonian.zero(n_qubits=2)
+        doci_hamiltonian2 = DOCIHamiltonian.zero(n_qubits=3)
+        with self.assertRaises(TypeError):
+            doci_hamiltonian += 'a'
+        with self.assertRaises(TypeError):
+            doci_hamiltonian -= 'a'
+        with self.assertRaises(TypeError):
+            doci_hamiltonian *= 'a'
+        with self.assertRaises(TypeError):
+            doci_hamiltonian /= 'a'
+        with self.assertRaises(TypeError):
+            doci_hamiltonian += doci_hamiltonian2
+        with self.assertRaises(TypeError):
+            doci_hamiltonian -= doci_hamiltonian2
+
     def test_basic_operations(self):
         doci_hamiltonian1 = DOCIHamiltonian.zero(n_qubits=2)
         doci_hamiltonian2 = DOCIHamiltonian.from_integrals(

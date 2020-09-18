@@ -16,6 +16,8 @@ from openfermion.ops import QubitOperator
 from openfermion.ops.representations import (PolynomialTensor,
                                              get_tensors_from_integrals)
 
+COEFFICIENT_TYPES = (int, float, complex)
+
 
 class DOCIHamiltonian(PolynomialTensor):
     r"""Class for storing DOCI hamiltonians which are defined to be
@@ -95,7 +97,7 @@ class DOCIHamiltonian(PolynomialTensor):
     @property
     def qubit_operator(self):
         """Return the QubitOperator representation of this DOCI Hamiltonian"""
-        return QubitOperator((), self.constant) + self.z_part + self.xy_part
+        return self.identity_part + self.z_part + self.xy_part
 
     def xx_term(self, p, q):
         """Returns the XX term on a single pair of qubits as a QubitOperator
@@ -141,7 +143,8 @@ class DOCIHamiltonian(PolynomialTensor):
         in QubitOperator form.
         """
         return QubitOperator((),
-                             numpy.sum(self.hc) / 2 + numpy.sum(self.hr2) / 4 +
+                             self.constant + numpy.sum(self.hc) / 2 +
+                             numpy.sum(self.hr2) / 4 +
                              numpy.sum(numpy.diag(self.hr2)) / 4)
 
     @property
@@ -188,14 +191,8 @@ class DOCIHamiltonian(PolynomialTensor):
     def z_part(self):
         """Return the Z and ZZ part of the QubitOperator representation of this
         DOCI Hamiltonian"""
-        return self.identity_part + self.zz_part + sum(
+        return self.zz_part + sum(
             [self.z_term(p) for p in range(self.n_qubits)])
-
-    @property
-    def qubitop(self):
-        """Returns the full QubitOperator representation of the DOCI Hamiltonian
-        """
-        return self.z_part + self.xy_part
 
     @property
     def hc(self):
@@ -305,6 +302,9 @@ class DOCIHamiltonian(PolynomialTensor):
 
     # Override root class
     def __iadd__(self, addend):
+        if isinstance(addend, COEFFICIENT_TYPES):
+            self.constant += addend
+            return self
         if not issubclass(type(addend), DOCIHamiltonian):
             raise TypeError('Invalid type.')
         if self.n_qubits != addend.n_qubits:
@@ -316,6 +316,9 @@ class DOCIHamiltonian(PolynomialTensor):
         return self
 
     def __isub__(self, subtrahend):
+        if isinstance(subtrahend, COEFFICIENT_TYPES):
+            self.constant -= subtrahend
+            return self
         if not issubclass(type(subtrahend), DOCIHamiltonian):
             raise TypeError('Invalid type.')
         if self.n_qubits != subtrahend.n_qubits:
@@ -327,7 +330,7 @@ class DOCIHamiltonian(PolynomialTensor):
         return self
 
     def __imul__(self, multiplier):
-        if not isinstance(multiplier, (int, float, complex)):
+        if not isinstance(multiplier, COEFFICIENT_TYPES):
             raise TypeError('Invalid type.')
         self.hc *= multiplier
         self.hr1 *= multiplier
@@ -336,7 +339,7 @@ class DOCIHamiltonian(PolynomialTensor):
         return self
 
     def __itruediv__(self, dividend):
-        if not isinstance(dividend, (int, float, complex)):
+        if not isinstance(dividend, COEFFICIENT_TYPES):
             raise TypeError('Invalid type.')
         self.hc /= dividend
         self.hr1 /= dividend
