@@ -88,7 +88,7 @@ class DOCIHamiltonian(PolynomialTensor):
         super(DOCIHamiltonian, self).__init__(None)
         del self._n_body_tensors
 
-        self.num_qubits = hc.shape[0]
+        self.n_qubits = hc.shape[0]
         self._constant = constant
         self._hr1 = hr1
         self._hr2 = hr2
@@ -158,7 +158,7 @@ class DOCIHamiltonian(PolynomialTensor):
         return self._hr2
 
     @hr2.setter
-    def hr1(self, value):
+    def hr2(self, value):
         self._hr2 = value
 
     # Override base class
@@ -195,19 +195,36 @@ class DOCIHamiltonian(PolynomialTensor):
         if index[0] != index[1]:
             raise IndexError('DOCIHamiltonian class only contains '
                              'diagonal one-body electron integrals.')
-        return self.hc[index // 2] / 2
+        return self.hc[index[0] // 2] / 2
 
     def _get_twobody_term(self, key, index):
         if key[0] != 1 or key[1] != 1 or key[2] != 0 or key[3] != 0:
             raise IndexError('DOCIHamiltonian class only contains '
                              'two-body terms in the (1, 1, 0, 0) sector.')
-        if index[0] // 2 == index[1] // 2 and index[2] // 2 == index[3] // 2:
-            return self._hr1[index[0] // 2, index[2] // 2]
         if index[0] == index[3] and index[1] == index[2]:
-            return self._hr2[index[0] // 2, index[1] // 2]
+            return self.hr2[index[0] // 2, index[1] // 2] / 2
+        if index[0] // 2 == index[1] // 2 and index[2] // 2 == index[3] // 2:
+            return self.hr1[index[0] // 2, index[2] // 2] / 2
         raise IndexError('DOCIHamiltonian class only contains '
                          'two-electron integrals corresponding '
                          'to a double excitation.')
+
+        # self._hr2[p, q] = value
+        # two_body_coefficients = self._n_body_tensors[(1, 1, 0, 0)]
+
+        # # Mixed spin
+        # two_body_coefficients[2 * p, 2 * q + 1, 2 * q + 1, 2 * p] = (value / 2)
+        # two_body_coefficients[2 * p + 1, 2 * q, 2 * q, 2 * p + 1] = (value / 2)
+
+        # # Same spin
+        # two_body_coefficients[2 * p, 2 * q, 2 * q, 2 * p] = (value / 2)
+        # two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * q + 1, 2 * p +
+        #                       1] = (value / 2)
+
+        # ###HR1
+        #         # Mixed spin
+        # two_body_coefficients[2 * p, 2 * p + 1, 2 * q + 1, 2 * q] = (value / 2)
+        # two_body_coefficients[2 * p + 1, 2 * p, 2 * q, 2 * q + 1] = (value / 2)
 
     # Override base class
     def __getitem__(self, args):
