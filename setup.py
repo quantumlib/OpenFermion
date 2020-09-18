@@ -51,10 +51,10 @@ setup(
         ]
     },
     data_files=[('openfermion/examples', [
-        'docs/tutorials/binary_code_transforms_demo.ipynb',
-        'docs/tutorials/bosonic_operator_tutorial.ipynb',
+        'docs/tutorials/binary_code_transforms.ipynb',
+        'docs/tutorials/bosonic_operators.ipynb',
+        'docs/tutorials/intro_to_openfermion.ipynb',
         'docs/tutorials/jordan_wigner_and_bravyi_kitaev_transforms.ipynb',
-        'docs/tutorials/openfermion_tutorial.ipynb',
-        'docs/tutorials/performance_benchmarks.py'
+        'examples/performance_benchmarks.py'
     ])],
 )

@@ -69,8 +69,11 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
         raise ValueError('Number of active fermions should be an integer.')
 
     # Arrange spins up then down, then BK map to qubit Hamiltonian.
-    fermion_hamiltonian_reorder = reorder(fermion_hamiltonian, up_then_down)
-    qubit_hamiltonian = bravyi_kitaev_tree(fermion_hamiltonian_reorder)
+    fermion_hamiltonian_reorder = reorder(fermion_hamiltonian,
+                                          up_then_down,
+                                          num_modes=active_orbitals)
+    qubit_hamiltonian = bravyi_kitaev_tree(fermion_hamiltonian_reorder,
+                                           n_qubits=active_orbitals)
     qubit_hamiltonian.compress()
 
     # Allocates the parity factors for the orbitals as in arXiv:1704.05018.
