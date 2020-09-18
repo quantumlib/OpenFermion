@@ -134,7 +134,7 @@ class PolynomialTensor(object):
         """
 
         if n_body_tensors:
-            self._n_body_tensors = n_body_tensors
+            self.n_body_tensors = n_body_tensors
             # Set n_qubits
             key_iterator = iter(n_body_tensors.keys())
             key = next(key_iterator)
