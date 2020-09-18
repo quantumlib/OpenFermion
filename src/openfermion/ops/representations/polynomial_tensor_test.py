@@ -237,6 +237,16 @@ class PolynomialTensorTest(unittest.TestCase):
         new_tensor = self.polynomial_tensor_a + self.polynomial_tensor_b
         self.assertEqual(new_tensor, self.polynomial_tensor_ab)
 
+    def test_radd(self):
+        new_tensor = 2 + self.polynomial_tensor_a
+        self.assertEqual(new_tensor.constant, self.polynomial_tensor_a.constant + 2)
+
+    def test_rsub(self):
+        new_tensor = 2 - self.polynomial_tensor_a
+        self.assertEqual(new_tensor.constant, 2 - self.polynomial_tensor_a.constant)
+        new_tensor = new_tensor - 2
+        self.assertEqual(new_tensor, self.polynomial_tensor_a * -1)
+
     def test_mod(self):
         new_constant = 2.0
         new_one_body = numpy.zeros_like(self.one_body_a)
@@ -258,7 +268,7 @@ class PolynomialTensorTest(unittest.TestCase):
 
     def test_invalid_addend(self):
         with self.assertRaises(TypeError):
-            _ = self.polynomial_tensor_a + 2
+            _ = self.polynomial_tensor_a + 'a'
 
     def test_invalid_tensor_shape_add(self):
         with self.assertRaises(TypeError):
@@ -292,7 +302,7 @@ class PolynomialTensorTest(unittest.TestCase):
 
     def test_invalid_subtrahend(self):
         with self.assertRaises(TypeError):
-            _ = self.polynomial_tensor_a - 2
+            _ = self.polynomial_tensor_a - 'b'
 
     def test_invalid_tensor_shape_sub(self):
         with self.assertRaises(TypeError):

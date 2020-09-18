@@ -703,6 +703,22 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] - coeff_b - 0.5 == 0)
 
+    def test_radd(self):
+        term_a = ((1, 1), (3, 0), (8, 1))
+        coeff_a = 1
+        a = DummyOperator1(term_a, coeff_a)
+        b = 2 + a
+        self.assertTrue(b.constant == 2)
+
+    def test_rsub(self):
+        term_a = ((1, 1), (3, 0), (8, 1))
+        coeff_a = 1
+        a = DummyOperator1(term_a, coeff_a)
+        b = 2 - a
+        self.assertTrue(b.constant == 2)
+        b = b - 2
+        self.assertEqual(b, -1 * a)
+
     def test_iadd_sympy_term_removal(self):
         term_a = ((1, 1), (3, 0), (8, 1))
         coeff_a = sympy.Symbol('a')
