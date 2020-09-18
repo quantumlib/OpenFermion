@@ -710,6 +710,17 @@ class SymbolicOperatorTest1(unittest.TestCase):
         b = 2 + a
         self.assertTrue(b.constant == 2)
 
+    def test_sum_list(self):
+        term_a = ((1, 1), (3, 0), (8, 1))
+        coeff_a = 1
+        term_b = ((1, 1), (3, 1), (8, 0))
+        coeff_b = 2
+        a = DummyOperator1(term_a, coeff_a)
+        b = DummyOperator1(term_b, coeff_b)
+        aplusb1 = sum([a, b])
+        aplusb2 = a + b
+        self.assertEqual(aplusb1, aplusb2)
+
     def test_rsub(self):
         term_a = ((1, 1), (3, 0), (8, 1))
         coeff_a = 1

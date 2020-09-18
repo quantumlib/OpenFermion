@@ -241,6 +241,11 @@ class PolynomialTensorTest(unittest.TestCase):
         new_tensor = 2 + self.polynomial_tensor_a
         self.assertEqual(new_tensor.constant, self.polynomial_tensor_a.constant + 2)
 
+    def test_sum_list(self):
+        new_tensor1 = self.polynomial_tensor_a + self.polynomial_tensor_b
+        new_tensor2 = sum([self.polynomial_tensor_a, self.polynomial_tensor_b])
+        self.assertEqual(new_tensor1, new_tensor2)
+
     def test_rsub(self):
         new_tensor = 2 - self.polynomial_tensor_a
         self.assertEqual(new_tensor.constant, 2 - self.polynomial_tensor_a.constant)
