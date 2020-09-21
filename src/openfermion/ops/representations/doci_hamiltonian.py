@@ -88,7 +88,7 @@ class DOCIHamiltonian(PolynomialTensor):
         """
         super(DOCIHamiltonian, self).__init__(None)
 
-        self.n_qubits = hc.shape[0]
+        self._n_qubits = hc.shape[0]
         self._constant = constant
         self._hr1 = hr1
         self._hr2 = hr2
@@ -294,7 +294,7 @@ class DOCIHamiltonian(PolynomialTensor):
         # certain tensor elements within the class the same. Better to
         # make the user update the hr1/hr2/hc terms --- if they really
         # want to play around with the n_body_tensors here they should
-        # be castimt this to a raw PolynomialTensor.
+        # be casting this to a raw PolynomialTensor.
         raise TypeError('Raw edits of the n_body_tensors of a DOCIHamiltonian '
                         'is not allowed. Either adjust the hc/hr1/hr2 terms '
                         'or cast to another PolynomialTensor class.')
@@ -360,7 +360,7 @@ class DOCIHamiltonian(PolynomialTensor):
 
 
 def get_tensors_from_doci(hc, hr1, hr2):
-    '''Makes the one and two-body tensors from the DOCI wavefunctions
+    '''Makes the one and two-body tensors from the DOCI Hamiltonian matrices
 
     Args:
         hc [numpy array]: The single-particle DOCI terms in matrix form
@@ -382,8 +382,21 @@ def get_tensors_from_doci(hc, hr1, hr2):
 
 
 def get_projected_integrals_from_doci(hc, hr1, hr2):
-    '''Makes the one and two-body integrals from the DOCI projection
-    from the hr1 and hr2 matrices.
+    '''Generates a set of atomic integrals corresponding to this Hamiltonian
+    
+    Makes the one and two-body integrals from the DOCI projectionof the hr1,
+    hr2, and hc matrices. This is technically not well-defined, as hr2 is
+    not generated in a one-to-one fashion. In particular, here we assume
+    hr2 corresponds entirely to a pqqp term, while this could be equally well
+    added to the pqpq term. This implies that calling
+
+    get_doci_from_integrals(*get_projected_integrals_from_doci(hc, hr1, hr2))
+
+    should return the same hc, hr1, and hr2, but there is no such guarantee
+    for
+
+    get_projected_integrals_from_doci(*get_doci_from_integrals(
+        one_body_integrals, two_body_integrals))
 
     Args:
         hc [numpy array]: The single-particle DOCI terms in matrix form

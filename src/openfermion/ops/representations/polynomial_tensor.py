@@ -132,15 +132,16 @@ class PolynomialTensor(object):
                 assumed to be generated on-the-fly by other data (for
                 subclassing purposes).
         """
-
-        if n_body_tensors:
-            self.n_body_tensors = n_body_tensors
+        self._n_body_tensors = n_body_tensors
+        if n_body_tensors is None:
+            self._n_qubits = None
+        else:
             # Set n_qubits
             key_iterator = iter(n_body_tensors.keys())
             key = next(key_iterator)
             if key == ():
                 key = next(key_iterator)
-            self.n_qubits = n_body_tensors[key].shape[0]
+            self._n_qubits = n_body_tensors[key].shape[0]
 
     @property
     def constant(self):
@@ -159,6 +160,10 @@ class PolynomialTensor(object):
     @n_body_tensors.setter
     def n_body_tensors(self, value):
         self._n_body_tensors = value
+
+    @property
+    def n_qubits(self):
+        return self._n_qubits
 
     def __getitem__(self, args):
         """Look up matrix element.
