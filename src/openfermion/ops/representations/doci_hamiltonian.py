@@ -134,7 +134,6 @@ class DOCIHamiltonian(PolynomialTensor):
         Returns:
             [QubitOperator] -- ZZ term on the chosen qubits.
         """
-        print('entering')
         return QubitOperator("Z" + str(p) + " Z" + str(q), self.hr2[p, q] / 2)
 
     @property
