@@ -383,7 +383,7 @@ def get_tensors_from_doci(hc, hr1, hr2):
 
 def get_projected_integrals_from_doci(hc, hr1, hr2):
     '''Generates a set of atomic integrals corresponding to this Hamiltonian
-    
+
     Makes the one and two-body integrals from the DOCI projectionof the hr1,
     hr2, and hc matrices. This is technically not well-defined, as hr2 is
     not generated in a one-to-one fashion. In particular, here we assume
