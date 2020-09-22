@@ -16,7 +16,7 @@ import cirq
 from openfermion import (
     QubitOperator,)
 from openfermion.circuits.design_utils import (
-        check_circuit_implements_trotterized_evolution,)
+    check_circuit_implements_trotterized_evolution,)
 
 
 class TestCircuitChecker(unittest.TestCase):
