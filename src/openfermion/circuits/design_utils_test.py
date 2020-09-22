@@ -14,11 +14,9 @@
 import unittest
 import cirq
 from openfermion import (
-    QubitOperator,
-)
+    QubitOperator,)
 from openfermion.circuits.design_utils import (
-        check_circuit_implements_trotterized_evolution,
-)
+        check_circuit_implements_trotterized_evolution,)
 
 
 class TestCircuitChecker(unittest.TestCase):
@@ -41,8 +39,10 @@ class TestCircuitChecker(unittest.TestCase):
         z_rotation_op = anglez * QubitOperator('Z0')
         x_rotation_op = anglex * QubitOperator('X0')
         qubits = [cirq.GridQubit(0, 0)]
-        circuit = cirq.Circuit([cirq.rz(-2 * anglez).on(qubits[0]),
-                                cirq.rx(-2 * anglex).on(qubits[0])])
+        circuit = cirq.Circuit([
+            cirq.rz(-2 * anglez).on(qubits[0]),
+            cirq.rx(-2 * anglex).on(qubits[0])
+        ])
         res = check_circuit_implements_trotterized_evolution(
             circuit, [z_rotation_op, x_rotation_op], qubits)
         self.assertTrue(res)

@@ -11,7 +11,6 @@
 #   limitations under the License.
 '''Tools to assist in circuit/primitive design'''
 
-
 import numpy
 from scipy import linalg
 import openfermion
@@ -49,10 +48,11 @@ def check_circuit_implements_trotterized_evolution(circuit, op_list, qubits):
         target_unitary = op_unitary.dot(target_unitary)
 
     actual_unitary = circuit.unitary(qubit_order=qubits)
-    overlap = float(numpy.abs(
-        numpy.trace(target_unitary.dot(actual_unitary.conj().T)))) / hs_dim
+    overlap = float(
+        numpy.abs(numpy.trace(target_unitary.dot(
+            actual_unitary.conj().T)))) / hs_dim
     if 1 - overlap > EQ_TOLERANCE:
         raise ValueError('Unitaries do not agree within tolerance {}. Found '
-                         'overlap {} (should be 1).'.format(EQ_TOLERANCE,
-                                                            overlap))
+                         'overlap {} (should be 1).'.format(
+                             EQ_TOLERANCE, overlap))
     return True

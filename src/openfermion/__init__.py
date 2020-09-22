@@ -35,7 +35,7 @@ from openfermion.chem import (
 )
 
 from openfermion.circuits import (
-   check_circuit_implements_trotterized_evolution,
+    check_circuit_implements_trotterized_evolution,
     FSWAP,
     FSwapPowGate,
     Rxxyy,

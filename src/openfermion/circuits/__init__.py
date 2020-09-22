@@ -11,8 +11,7 @@
 #   limitations under the License.
 
 from .design_utils import(
-    check_circuit_implements_trotterized_evolution,
-)
+    check_circuit_implements_trotterized_evolution,)
 
 from .gates import (
     FSWAP,
