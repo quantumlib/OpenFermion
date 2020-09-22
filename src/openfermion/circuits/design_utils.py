@@ -41,10 +41,10 @@ def check_circuit_implements_trotterized_evolution(circuit, op_list, qubits):
     n_qubits = len(qubits)
     hs_dim = 2**n_qubits
     qubit_op = op_list[0]
-    op_matrix = openfermion.get_sparse_operator(qubit_op)
+    op_matrix = openfermion.get_sparse_operator(qubit_op, n_qubits=n_qubits)
     target_unitary = linalg.expm(1j * op_matrix)
     for qubit_op in op_list[1:]:
-        op_matrix = openfermion.get_sparse_operator(qubit_op)
+        op_matrix = openfermion.get_sparse_operator(qubit_op, n_qubits=n_qubits)
         op_unitary = linalg.expm(1j * op_matrix)
         target_unitary = op_unitary.dot(target_unitary)
 
