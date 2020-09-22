@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from .design_utils import(
+from .design_utils import (
     check_circuit_implements_trotterized_evolution,)
 
 from .gates import (
