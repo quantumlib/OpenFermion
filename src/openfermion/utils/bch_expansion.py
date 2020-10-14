@@ -43,28 +43,28 @@ def bch_expand(*ops, **kwargs):
     if len(set(type(op) for op in ops)) != 1:
         raise TypeError('Operators must all be of the same type.')
 
-    return bch_expand_multiple_terms(*ops, **kwargs)
+    return _bch_expand_multiple_terms(*ops, **kwargs)
 
 
-def bch_expand_multiple_terms(*ops, **kwargs):
+def _bch_expand_multiple_terms(*ops, **kwargs):
     order = kwargs.get('order', 6)
     n_ops = len(ops)
 
     if n_ops == 1:
         return ops[0]
     if n_ops == 2:
-        return bch_expand_two_terms(ops[0], ops[1], order=order)
+        return _bch_expand_two_terms(ops[0], ops[1], order=order)
     else:
         left_ops = ops[:n_ops // 2]
         right_ops = ops[n_ops // 2:]
-        return bch_expand_two_terms(bch_expand_multiple_terms(*left_ops,
-                                                              order=order),
-                                    bch_expand_multiple_terms(*right_ops,
-                                                              order=order),
-                                    order=order)
+        return _bch_expand_two_terms(_bch_expand_multiple_terms(*left_ops,
+                                                                order=order),
+                                     _bch_expand_multiple_terms(*right_ops,
+                                                                order=order),
+                                     order=order)
 
 
-def bch_expand_two_terms(x, y, order=6):
+def _bch_expand_two_terms(x, y, order=6):
     """Compute log[e^x e^y] using the Baker-Campbell-Hausdorff formula.
 
     Args:
@@ -79,9 +79,9 @@ def bch_expand_two_terms(x, y, order=6):
         z: The truncated BCH operator.
     """
     z = None
-    term_list, coeff_list = generate_nested_commutator(order)
+    term_list, coeff_list = _generate_nested_commutator(order)
     for bin_str, coeff in zip(term_list, coeff_list):
-        term = bin_str_to_commutator(bin_str, x, y)
+        term = _bin_str_to_commutator(bin_str, x, y)
         if z is None:
             z = term * coeff
         else:
@@ -91,7 +91,7 @@ def bch_expand_two_terms(x, y, order=6):
     return z
 
 
-def bin_str_to_commutator(bin_str, x, y):
+def _bin_str_to_commutator(bin_str, x, y):
     """
     Generate nested commutator in Dynkin's style with binary string
     representation e.g. '010...' -> [X,[Y,[X, ...]]]
@@ -109,10 +109,10 @@ def bin_str_to_commutator(bin_str, x, y):
     if len(bin_str) == 1:
         return next_term
     else:
-        return commutator(next_term, bin_str_to_commutator(later_terms, x, y))
+        return commutator(next_term, _bin_str_to_commutator(later_terms, x, y))
 
 
-def generate_nested_commutator(order):
+def _generate_nested_commutator(order):
     """
     using bin strings to encode nested commutators up to given order
     e.g. terms like [X,[Y,[X, ...]]] as '010...'
@@ -133,12 +133,12 @@ def generate_nested_commutator(order):
         term_list += term_of_order_i
 
     for term in term_list:
-        split_bin_str = split_by_descending_edge(term)
-        coeff_list.append(compute_coeff(split_bin_str))
+        split_bin_str = _split_by_descending_edge(term)
+        coeff_list.append(_compute_coeff(split_bin_str))
     return term_list, coeff_list
 
 
-def split_by_descending_edge(bin_str):
+def _split_by_descending_edge(bin_str):
     """
     Split binary string representation by descending edges,
     i.e. '0101' -> '01 | 01'
@@ -160,7 +160,7 @@ def split_by_descending_edge(bin_str):
         return [bin_str[i:j] for i, j in zip(split_idx, split_idx[1:] + [None])]
 
 
-def compute_coeff(split_bin_str):
+def _compute_coeff(split_bin_str):
     """
     Compute coefficient from split binary string representation
     """
@@ -168,14 +168,14 @@ def compute_coeff(split_bin_str):
     num_block = len(split_bin_str) - 1
 
     def cn(n):
-        return coeff_monomial(split_bin_str, n, len(split_bin_str))
+        return _coeff_monomial(split_bin_str, n, len(split_bin_str))
 
     c = sum([(-1)**(n + 1) / float(n) * cn(n)
              for n in range(num_block + 1, order + 1)])
     return c / order
 
 
-def coeff_monomial(split_bin_str, n, l):
+def _coeff_monomial(split_bin_str, n, l):
     """
     Compute Coefficient for each monomial in Dynkin's formula represented by
     split binary string. Sum over all possible combinations of number of
@@ -206,7 +206,7 @@ def coeff_monomial(split_bin_str, n, l):
         elif cur_idx == l:
             if cur_sum == n:
                 partition_list = sol
-                context.coeff += coeff_monomial_with_partition(
+                context.coeff += _coeff_monomial_with_partition(
                     split_bin_str, partition_list)
 
     # start from the root
@@ -214,35 +214,35 @@ def coeff_monomial(split_bin_str, n, l):
     return context.coeff
 
 
-def coeff_monomial_with_partition(split_bin_str, parition_lst):
+def _coeff_monomial_with_partition(split_bin_str, parition_lst):
     "Given fixed parition numbers in blocks, return monomial coefficient"
     assert len(split_bin_str) == len(parition_lst)
     ret = 1
     for block, num_partition in zip(split_bin_str, parition_lst):
         cnt_x = block.count('0')
         cnt_y = block.count('1')
-        ret *= coeff_for_non_descending_block(cnt_x, cnt_y, num_partition)
+        ret *= _coeff_for_non_descending_block(cnt_x, cnt_y, num_partition)
     return ret
 
 
-def coeff_for_non_descending_block(cnt_x, cnt_y, eta):
+def _coeff_for_non_descending_block(cnt_x, cnt_y, eta):
     "Coefficient component within one block of non-descending bin_string"
     if cnt_x == 0:
-        return coeff_for_consectutive_op(cnt_y, eta)
+        return _coeff_for_consectutive_op(cnt_y, eta)
     if cnt_y == 0:
-        return coeff_for_consectutive_op(cnt_x, eta)
+        return _coeff_for_consectutive_op(cnt_x, eta)
 
     ret = 0
     for eta_x in range(1, eta):
-        ret += (coeff_for_consectutive_op(cnt_x, eta_x) *
-                coeff_for_consectutive_op(cnt_y, eta - eta_x))
+        ret += (_coeff_for_consectutive_op(cnt_x, eta_x) *
+                _coeff_for_consectutive_op(cnt_y, eta - eta_x))
     for eta_x in range(1, eta + 1):
-        ret += (coeff_for_consectutive_op(cnt_x, eta_x) *
-                coeff_for_consectutive_op(cnt_y, eta + 1 - eta_x))
+        ret += (_coeff_for_consectutive_op(cnt_x, eta_x) *
+                _coeff_for_consectutive_op(cnt_y, eta + 1 - eta_x))
     return ret
 
 
-def coeff_for_consectutive_op(cnt_x, num_partition):
+def _coeff_for_consectutive_op(cnt_x, num_partition):
     """
     Coefficient component within only X or only Y block with given numbers of
     partition eta

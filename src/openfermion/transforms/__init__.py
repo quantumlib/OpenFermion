@@ -39,6 +39,8 @@ from .opconversions import (
     FenwickNode,
     FenwickTree,
     jordan_wigner,
+    jordan_wigner_one_body,
+    jordan_wigner_two_body,
     qubit_operator_to_pauli_sum,
     reverse_jordan_wigner,
     symmetry_conserving_bravyi_kitaev,
