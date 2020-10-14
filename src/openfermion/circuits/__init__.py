@@ -52,6 +52,7 @@ from .primitives import (
     ffft,
     optimal_givens_decomposition,
     prepare_gaussian_state,
+    prepare_slater_determinant,
     swap_network,
 )
 

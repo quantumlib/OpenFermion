@@ -15,6 +15,9 @@ from .davidson import (
     DavidsonError,
     QubitDavidson,
     SparseDavidson,
+    generate_random_vectors,
+    append_random_vectors,
+    orthonormalize,
 )
 
 from .erpa import (
@@ -29,6 +32,8 @@ from .givens_rotations import (
     givens_decomposition_square,
     givens_matrix_elements,
     fermionic_gaussian_decomposition,
+    swap_rows,
+    swap_columns,
 )
 
 from .linear_qubit_operator import (
