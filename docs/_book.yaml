@@ -27,11 +27,12 @@ upper_tabs:
       - title: "The Jordan-Wigner and Bravyi-Kitaev transforms"
         path: /openfermion/tutorials/jordan_wigner_and_bravyi_kitaev_transforms
 
-    - name: "API"
+    - name: "Reference"
       skip_translation: true
       contents:
       - title: "All Symbols"
         path: /openfermion/api_docs/python/openfermion/all_symbols
       - include: /openfermion/api_docs/python/openfermion/_toc.yaml
+
 
 - include: /_book/upper_tabs_right.yaml
