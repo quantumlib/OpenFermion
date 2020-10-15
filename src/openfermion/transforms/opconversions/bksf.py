@@ -111,8 +111,8 @@ def bravyi_kitaev_fast_interaction_op(iop):
                                 continue
                         # Handle case of 3 unique indices
                         elif len(set([p, q, r, s])) == 3:
-                            transformed_term = _two_body(edge_matrix_indices, p,
-                                                         q, r, s)
+                            transformed_term = _two_body(
+                                edge_matrix_indices, p, q, r, s)
                             transformed_term *= .5 * coefficient
                             qubit_operator += transformed_term
                             continue
@@ -121,7 +121,8 @@ def bravyi_kitaev_fast_interaction_op(iop):
                             continue  # pragma: no cover
 
                     # Handle the two-body terms.
-                    transformed_term = _two_body(edge_matrix_indices, p, q, r, s)
+                    transformed_term = _two_body(edge_matrix_indices, p, q, r,
+                                                 s)
                     transformed_term *= coefficient
                     qubit_operator += transformed_term
     return qubit_operator
