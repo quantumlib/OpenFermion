@@ -9,11 +9,20 @@ or papers, please contact us or submit a pull request.
 
 ### Libraries
 
-[OpenFermion-Cirq](https://github.com/quantumlib/OpenFermion-Cirq)
+[OpenFermion-Psi4](http://github.com/quantumlib/OpenFermion-Psi4)
 
-This plugin library integrates OpenFermion with Google's
-[Cirq](https://github.com/quantumlib/Cirq) framework in order to compile
-quantum simulation algorithms to NISQ circuits using Cirq.
+This plugin library integrates OpenFermion with the electronic structure
+package [Psi4](http://psicode.org).
+
+[OpenFermion-PySCF](http://github.com/quantumlib/OpenFermion-PySCF)
+
+This plugin library integrates OpenFermion with the electronic structure package
+[PySCF](https://github.com/sunqm/pyscf).
+
+[OpenFermion-Dirac](https://github.com/bsenjean/Openfermion-Dirac)
+
+This plugin library integrates OpenFermion with the electronic structure package
+[DIRAC](http://diracprogram.org/doku.php)
 
 [Forest-OpenFermion](https://github.com/rigetticomputing/forestopenfermion) 
 
@@ -35,20 +44,6 @@ This plugin library integrates OpenFermion with Xanadu's
 framework in order to compile quantum simulation algorithms that
 pertain to the simulation of bosons.
 
-[OpenFermion-Psi4](http://github.com/quantumlib/OpenFermion-Psi4)
-
-This plugin library integrates OpenFermion with the electronic structure
-package [Psi4](http://psicode.org).
-
-[OpenFermion-PySCF](http://github.com/quantumlib/OpenFermion-PySCF)
-
-This plugin library integrates OpenFermion with the electronic structure package
-[PySCF](https://github.com/sunqm/pyscf).
-
-[OpenFermion-Dirac](https://github.com/bsenjean/Openfermion-Dirac)
-
-This plugin library integrates OpenFermion with the electronic structure package
-[DIRAC](http://diracprogram.org/doku.php)
 
 [OpenFermion-ProjectQ](https://github.com/quantumlib/OpenFermion-ProjectQ) - Deprecated
 
