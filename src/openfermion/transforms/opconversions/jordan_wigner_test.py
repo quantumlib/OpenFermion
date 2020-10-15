@@ -330,7 +330,7 @@ class InteractionOperatorsJWTest(unittest.TestCase):
     def test_jordan_wigner_interaction_op_too_few_n_qubits(self):
         with self.assertRaises(ValueError):
             _jordan_wigner_interaction_op(self.interaction_operator,
-                                         self.n_qubits - 2)
+                                          self.n_qubits - 2)
 
     def test_jordan_wigner_interaction_op_with_zero_term(self):
         test_op = FermionOperator('1^ 2^ 3 4')
