@@ -16,8 +16,6 @@ learn more!
 
 ### Circuit compilation and simulation plugins
 
-* [OpenFermion-Cirq](https://github.com/quantumlib/OpenFermion-Cirq) to support
-  integration with [Cirq](https://github.com/quantumlib/Cirq).
 * [Forest-OpenFermion](https://github.com/rigetticomputing/forestopenfermion) to
   support integration with [Forest](https://www.rigetti.com/forest).
 * [SFOpenBoson](https://github.com/XanaduAI/SFOpenBoson) to support integration
