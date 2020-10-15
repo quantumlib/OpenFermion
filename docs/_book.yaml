@@ -20,12 +20,18 @@ upper_tabs:
       - heading: "Tutorials"
       - title: "Introduction to OpenFermion"
         path: /openfermion/tutorials/intro_to_openfermion
-      - title: "Bosonic operators"
-        path: /openfermion/tutorials/bosonic_operators
-      - title: "Lowering qubit requirements using binary codes"
-        path: /openfermion/tutorials/binary_code_transforms
       - title: "The Jordan-Wigner and Bravyi-Kitaev transforms"
         path: /openfermion/tutorials/jordan_wigner_and_bravyi_kitaev_transforms
+      - title: "Lowering qubit requirements using binary codes"
+        path: /openfermion/tutorials/binary_code_transforms
+      - title: "Bosonic operators"
+        path: /openfermion/tutorials/bosonic_operators
+      - title: "Constructing a Basis Change Circuits"
+        path: /openfermion/tutorials/circuits_1_basis_change
+      - title: "Constructing a Diagonal Coulomb Trotter Step"
+        path: /openfermion/tutorials/circuits_2_diagonal_coulomb_trotter
+      - title: "Constructing Trotter Steps With Low-Rank Decomposition"
+        path: /openfermion/tutorials/circuits_3_arbitrary_basis_trotter
 
     - name: "Reference"
       skip_translation: true
