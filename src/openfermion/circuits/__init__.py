@@ -46,6 +46,7 @@ from .primitives import (
     bogoliubov_transform,
     ffft,
     optimal_givens_decomposition,
+    prepare_gaussian_state,
     swap_network,
 )
 

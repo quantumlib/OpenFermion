@@ -62,6 +62,7 @@ from openfermion.circuits import (
     bogoliubov_transform,
     ffft,
     optimal_givens_decomposition,
+    prepare_gaussian_state,
     swap_network,
     gaussian_state_preparation_circuit,
     slater_determinant_preparation_circuit,

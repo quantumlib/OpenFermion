@@ -20,10 +20,10 @@ Hamiltonians. For more information, see our
     :target: https://badge.fury.io/py/openfermion
 
 
-Run the interactive Jupyter Notebooks on MyBinder:
+Run the interactive Jupyter Notebooks in Colab_ or MyBinder_:
 
-.. image:: https://mybinder.org/badge_logo.svg
-    :target: https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
+.. _Colab: https://colab.research.google.com/github/quantumlib/OpenFermion
+.. _MyBinder:  https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
 
 Plugins
 =======
@@ -35,8 +35,6 @@ Follow the links below to learn more!
 
 Circuit compilation and simulation plugins
 ------------------------------------------
-* `OpenFermion-Cirq <https://github.com/quantumlib/OpenFermion-Cirq>`__ to support integration with `Cirq <https://github.com/quantumlib/Cirq>`__.
-
 * `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion>`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
 
 * `SFOpenBoson <https://github.com/XanaduAI/SFOpenBoson>`__ to support integration with `Strawberry Fields <https://github.com/XanaduAI/strawberryfields>`__.
