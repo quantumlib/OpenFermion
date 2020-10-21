@@ -301,6 +301,10 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """The value of the constant term."""
         return self.terms.get((), 0.0)
 
+    @constant.setter
+    def constant(self, value):
+        self.terms[()] = value
+
     @classmethod
     def zero(cls):
         """
@@ -411,7 +415,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """In-place method for += addition of SymbolicOperator.
 
         Args:
-            addend (SymbolicOperator): The operator to add.
+            addend (SymbolicOperator, or scalar): The operator to add.
+                If scalar, adds to the constant term
 
         Returns:
             sum (SymbolicOperator): Mutated self.
@@ -425,6 +430,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                                     addend.terms[term])
                 if _issmall(self.terms[term]):
                     del self.terms[term]
+        elif isinstance(addend, COEFFICIENT_TYPES):
+            self.constant += addend
         else:
             raise TypeError('Cannot add invalid type to {}.'.format(type(self)))
 
@@ -442,11 +449,22 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         summand += addend
         return summand
 
+    def __radd__(self, addend):
+        """
+        Args:
+            addend (SymbolicOperator): The operator to add.
+
+        Returns:
+            sum (SymbolicOperator)
+        """
+        return self + addend
+
     def __isub__(self, subtrahend):
         """In-place method for -= subtraction of SymbolicOperator.
 
         Args:
-            subtrahend (A SymbolicOperator): The operator to subtract.
+            subtrahend (A SymbolicOperator, or scalar): The operator to subtract
+                if scalar, subtracts from the constant term.
 
         Returns:
             difference (SymbolicOperator): Mutated self.
@@ -460,6 +478,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                                     subtrahend.terms[term])
                 if _issmall(self.terms[term]):
                     del self.terms[term]
+        elif isinstance(subtrahend, COEFFICIENT_TYPES):
+            self.constant -= subtrahend
         else:
             raise TypeError('Cannot subtract invalid type from {}.'.format(
                 type(self)))
@@ -476,6 +496,16 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         minuend = copy.deepcopy(self)
         minuend -= subtrahend
         return minuend
+
+    def __rsub__(self, subtrahend):
+        """
+        Args:
+            subtrahend (SymbolicOperator): The operator to subtract.
+
+        Returns:
+            difference (SymbolicOperator)
+        """
+        return -1 * self + subtrahend
 
     def __rmul__(self, multiplier):
         """
