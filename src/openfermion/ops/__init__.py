@@ -43,4 +43,5 @@ from .representations import (
     InteractionRDMError,
     QuadraticHamiltonian,
     QuadraticHamiltonianError,
+    antisymmetric_canonical_form,
 )
