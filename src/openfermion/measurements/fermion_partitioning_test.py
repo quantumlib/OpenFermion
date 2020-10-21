@@ -20,6 +20,7 @@ from .fermion_partitioning import (pair_within, pair_within_simultaneously,
 
 
 class TestPairWithin(unittest.TestCase):
+
     def test_zero(self):
         count = 0
         for _ in pair_within([]):
