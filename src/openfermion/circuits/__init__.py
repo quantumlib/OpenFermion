@@ -10,10 +10,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from .design_utils import(
-    validate_trotterized_evolution,
-)
-
 from .gates import (
     FSWAP,
     FSwapPowGate,
@@ -103,4 +99,5 @@ from .trotter import (
     error_bound,
     error_operator,
     trotter_steps_required,
+    validate_trotterized_evolution,
 )

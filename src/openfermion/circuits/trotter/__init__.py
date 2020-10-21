@@ -24,8 +24,7 @@ from .algorithms import (
 )
 
 from circuit_validation import(
-    validate_trotterized_evolution,
-)
+    validate_trotterized_evolution,)
 
 from .diagonal_coulomb_trotter_error import (
     diagonal_coulomb_potential_and_kinetic_terms_as_arrays,

@@ -29,8 +29,7 @@ class TestCircuitChecker(unittest.TestCase):
         z_rotation_op = angle * QubitOperator('Z0')
         qubits = [cirq.GridQubit(0, 0)]
         circuit = cirq.Circuit([cirq.rz(-2 * angle).on(qubits[0])])
-        res = validate_trotterized_evolution(
-            circuit, [z_rotation_op], qubits)
+        res = validate_trotterized_evolution(circuit, [z_rotation_op], qubits)
         self.assertTrue(res)
 
     def test_checking_passes_twoops(self):
@@ -44,8 +43,9 @@ class TestCircuitChecker(unittest.TestCase):
             cirq.rz(-2 * anglez).on(qubits[0]),
             cirq.rx(-2 * anglex).on(qubits[0])
         ])
-        res = validate_trotterized_evolution(
-            circuit, [z_rotation_op, x_rotation_op], qubits)
+        res = validate_trotterized_evolution(circuit,
+                                             [z_rotation_op, x_rotation_op],
+                                             qubits)
         self.assertTrue(res)
 
     def test_checking_fails(self):
@@ -55,5 +55,4 @@ class TestCircuitChecker(unittest.TestCase):
         qubits = [cirq.GridQubit(0, 0)]
         circuit = cirq.Circuit([cirq.rz(angle).on(qubits[0])])
         with self.assertRaises(ValueError):
-            validate_trotterized_evolution(
-                circuit, [z_rotation_op], qubits)
+            validate_trotterized_evolution(circuit, [z_rotation_op], qubits)
