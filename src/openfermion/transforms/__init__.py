@@ -11,6 +11,7 @@
 #   limitations under the License.
 
 from .opconversions import (
+    commutator_ordered_diagonal_coulomb_with_two_body_operator,
     chemist_ordered,
     normal_ordered,
     normal_ordered_ladder_term,
