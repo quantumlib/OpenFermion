@@ -180,6 +180,7 @@ from openfermion.ops import (
     antisymmetric_canonical_form,
 )
 
+# Shifted here to fix circular dependencies
 from openfermion.circuits import (
     prepare_slater_determinant,
     FSWAP,
