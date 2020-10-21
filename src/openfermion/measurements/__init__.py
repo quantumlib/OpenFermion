@@ -23,7 +23,7 @@ from .qubit_partitioning import (
     pauli_string_iterator,
 )
 
-from .fermion_partitioning import(
+from .fermion_partitioning import (
     pair_within,
     pair_between,
     pair_within_simultaneously,

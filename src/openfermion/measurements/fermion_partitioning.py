@@ -344,7 +344,7 @@ def _asynchronous_iter_small_lists(iterator_lists, flatten=False):
     """
     for partitions in partition_iterator(iterator_lists, 2):
         for res in _asynchronous_iter(
-                [_parallel_iter(partition, flatten) for partition in partitions],
+            [_parallel_iter(partition, flatten) for partition in partitions],
                 flatten):
             yield res
 
