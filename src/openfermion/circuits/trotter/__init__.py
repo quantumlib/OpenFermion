@@ -23,7 +23,7 @@ from .algorithms import (
     SPLIT_OPERATOR,
 )
 
-from circuit_validation import (
+from .circuit_validation import (
     validate_trotterized_evolution,)
 
 from .diagonal_coulomb_trotter_error import (
