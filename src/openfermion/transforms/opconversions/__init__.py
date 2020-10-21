@@ -45,6 +45,9 @@ from .bravyi_kitaev import (
 
 from .bravyi_kitaev_tree import bravyi_kitaev_tree
 
+from commutator_diagonal_coulomb_operator import(
+    commutator_ordered_diagonal_coulomb_with_two_body_operator,)
+
 from .conversions import (
     get_fermion_operator,
     get_boson_operator,
