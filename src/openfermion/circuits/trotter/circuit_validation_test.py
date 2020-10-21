@@ -9,14 +9,14 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-'''Tests for design_utils.py'''
+'''Tests for circuit_validation.py'''
 
 import unittest
 import cirq
 from openfermion import (
     QubitOperator,)
 
-from openfermion.circuits.design_utils import (
+from openfermion.circuits.trotter.circuit_validation import (
     validate_trotterized_evolution,)
 
 
