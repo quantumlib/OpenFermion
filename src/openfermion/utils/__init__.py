@@ -35,9 +35,6 @@ from .commutators import (
     trivially_double_commutes_dual_basis,
 )
 
-from .commutator_diagonal_coulomb_operator import (
-    commutator_ordered_diagonal_coulomb_with_two_body_operator,)
-
 from .grid import Grid
 
 from .indexing import (
