@@ -17,7 +17,7 @@ from setuptools import setup, find_packages
 
 # This reads the __version__ variable from openfermion/_version.py
 __version__ = ''
-exec(open('src/openfermion/_version.py').read())
+exec(open('openfermion/_version.py').read())
 
 # Readme file as long_description:
 long_description = ('===========\n' +
@@ -41,13 +41,13 @@ setup(
     long_description=long_description,
     install_requires=requirements,
     license='Apache 2',
-    packages=find_packages(where='src'),
-    package_dir={'': 'src'},
+    packages=find_packages(where='openfermion'),
+    package_dir={'': 'openfermion'},
     include_package_data=True,
     package_data={
         '': [
-            os.path.join('src', 'openfermion', 'data', '*.hdf5'),
-            os.path.join('src', 'openfermion', 'data', '*.npy')
+            os.path.join('openfermion', 'data', '*.hdf5'),
+            os.path.join('openfermion', 'data', '*.npy')
         ]
     },
     data_files=[('openfermion/examples', [

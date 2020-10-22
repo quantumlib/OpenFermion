@@ -19,7 +19,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src'))
+sys.path.insert(0, os.path.abspath('../openfermion'))
 
 # -- General configuration ------------------------------------------------
 
@@ -64,7 +64,7 @@ author = 'OpenFermion developers'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-exec(open('../src/openfermion/_version.py').read())
+exec(open('../openfermion/_version.py').read())
 # The short X.Y version.
 version = __version__
 # The full version, including alpha/beta/rc tags.

@@ -5,4 +5,4 @@ include README.rst
 include requirements.txt
 include setup.py
 include examples/*.py docs/tutorials/*.ipynb
-recursive-include src *.py *.hdf5 *.npy bad_type_operator.data geometry_example.txt
+recursive-include openfermion *.py *.hdf5 *.npy bad_type_operator.data geometry_example.txt
