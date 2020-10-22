@@ -1,38 +1,43 @@
 upper_tabs:
-# Tabs left of dropdown menu
-- include: /_upper_tabs_left.yaml
-- include: /api_docs/_upper_tabs_api.yaml
 # Dropdown menu
-- name: Resources
-  path: /resources
+- name: "Software"
+  path: /software
   is_default: true
   menu:
-  - include: /resources/_menu_toc.yaml
+  - include: /_book/menu_software.yaml
   lower_tabs:
     # Subsite tabs
     other:
-    - name: Guide & Tutorials
+    - name: "Guide & Tutorials"
       contents:
       - title: "Overview"
-        path: /quark/openfermion/overview
+        path: /openfermion/overview
       - title: "Install"
-        path: /quark/openfermion/install
+        path: /openfermion/install
       - title: "Projects"
-        path: /quark/openfermion/projects
+        path: /openfermion/projects
 
-      - heading: Tutorials
+      - heading: "Tutorials"
       - title: "Introduction to OpenFermion"
-        path: /quark/openfermion/tutorials/intro_to_openfermion
-      - title: "Bosonic operators"
-        path: /quark/openfermion/tutorials/bosonic_operators
-      - title: "Lowering qubit requirements using binary codes"
-        path: /quark/openfermion/tutorials/binary_code_transforms
+        path: /openfermion/tutorials/intro_to_openfermion
       - title: "The Jordan-Wigner and Bravyi-Kitaev transforms"
-        path: /quark/openfermion/tutorials/jordan_wigner_and_bravyi_kitaev_transforms
+        path: /openfermion/tutorials/jordan_wigner_and_bravyi_kitaev_transforms
+      - title: "Lowering qubit requirements using binary codes"
+        path: /openfermion/tutorials/binary_code_transforms
+      - title: "Bosonic operators"
+        path: /openfermion/tutorials/bosonic_operators
+      - title: "Constructing a Basis Change Circuits"
+        path: /openfermion/tutorials/circuits_1_basis_change
+      - title: "Constructing a Diagonal Coulomb Trotter Step"
+        path: /openfermion/tutorials/circuits_2_diagonal_coulomb_trotter
+      - title: "Constructing Trotter Steps With Low-Rank Decomposition"
+        path: /openfermion/tutorials/circuits_3_arbitrary_basis_trotter
 
-    - name: API
+    - name: "Reference"
       skip_translation: true
       contents:
-      - include: /quark/openfermion/api_docs/python/_toc.yaml
+      - title: "All Symbols"
+        path: /reference/python/openfermion/all_symbols
+      - include: /reference/python/openfermion/_toc.yaml
 
-- include: /_upper_tabs_right.yaml
+- include: /_book/upper_tabs_right.yaml
