@@ -54,5 +54,5 @@ class TestCircuitChecker(unittest.TestCase):
         z_rotation_op = angle * QubitOperator('Z0')
         qubits = [cirq.GridQubit(0, 0)]
         circuit = cirq.Circuit([cirq.rz(angle).on(qubits[0])])
-        res =  validate_trotterized_evolution(circuit, [z_rotation_op], qubits)
+        res = validate_trotterized_evolution(circuit, [z_rotation_op], qubits)
         self.assertFalse(res)
