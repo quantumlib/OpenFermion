@@ -206,7 +206,6 @@ def is_identity(operator):
     raise TypeError('Operator of invalid type.')
 
 
-
 def get_file_path(file_name, data_directory):
     """Compute file_path for the file that stores operator.
 

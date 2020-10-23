@@ -9,6 +9,5 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """Define version number here and read it from setup.py automatically"""
 __version__ = "0.11.1.dev"

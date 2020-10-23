@@ -48,6 +48,7 @@ class QuadraticHamiltonian(PolynomialTensor):
     Attributes:
         chemical_potential(float): The chemical potential :math:`\mu`.
     """
+
     def __init__(self,
                  hermitian_part,
                  antisymmetric_part=None,
