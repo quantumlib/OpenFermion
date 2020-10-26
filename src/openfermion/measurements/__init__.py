@@ -17,17 +17,25 @@ from .equality_constraint_projection import (
     unlinearize_term,
 )
 
+from .qubit_partitioning import (
+    binary_partition_iterator,
+    partition_iterator,
+    pauli_string_iterator,
+)
+
+from .fermion_partitioning import (
+    pair_within,
+    pair_between,
+    pair_within_simultaneously,
+    pair_within_simultaneously_binned,
+    pair_within_simultaneously_symmetric,
+)
+
 from .get_interaction_rdm import get_interaction_rdm
 
 from .rdm_equality_constraints import (
     one_body_fermion_constraints,
     two_body_fermion_constraints,
-)
-
-from .qubit_partitioning import (
-    binary_partition_iterator,
-    partition_iterator,
-    pauli_string_iterator,
 )
 
 from .prony import prony
