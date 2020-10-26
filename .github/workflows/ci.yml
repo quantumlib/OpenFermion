@@ -57,7 +57,7 @@ jobs:
           pip install -r dev_tools/conf/pip-list-dev-tools.txt
           git config --global user.name ${GITHUB_ACTOR}
       - name: Pytest check
-        run: check/pytest --actually-quiet
+        run: check/pytest -s
   pytest37:
     name: Pytest Ubuntu
     runs-on: ubuntu-16.04
