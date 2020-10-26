@@ -3,7 +3,7 @@
 
 # Data files.
 *.out
-*.hdf5
+# *.hdf5
 openfermion/data/
 
 # Byte-compiled / optimized / DLL files

@@ -17,7 +17,5 @@ EQ_TOLERANCE = 1e-8
 
 # Molecular data directory.
 THIS_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-print("THIS DIRECTORY")
-print(THIS_DIRECTORY)
 DATA_DIRECTORY = os.path.abspath(
     os.path.join(THIS_DIRECTORY, '../examples/data'))
