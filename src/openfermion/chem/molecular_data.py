@@ -173,6 +173,44 @@ def geometry_from_file(file_name):
                 geometry += [(atom, coordinates)]
     return geometry
 
+def antisymint(two_body_integrals):
+    """
+    Args:
+    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
+        Ordering.
+
+    Returns:
+    antisymints : Numpy array of anti-symmetrized integrals <ij||kl>
+    """
+    symints = numpy.copy(two_body_integrals.transpose(0,1,3,2), order='C')
+    antisymints = symints - two_body_integrals
+    return antisymints
+
+def J_matr(two_body_integrals):
+    """
+    Args:
+    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
+        Ordering.
+
+    Returns:
+    J_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
+        (in chemist notation).
+    """
+    chem_ordering = numpy.copy(two_body_integrals.transpose(0,3,1,2), order='C')
+    return numpy.einsum('iijj -> ij', chem_ordering)
+
+def K_matr(two_body_integrals):
+    """
+    Args:
+    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
+        Ordering.
+
+    Returns:
+    J_matr : Numpy array of the exchange integrals J_{p,q} = (pq|qp)
+        (in chemist notation).
+    """
+    chem_ordering = numpy.copy(two_body_integrals.transpose(0,3,1,2), order='C')
+    return numpy.einsum('ijji -> ij', chem_ordering)
 
 class MolecularData(object):
     """Class for storing molecule data from a fixed basis set at a fixed
@@ -741,7 +779,7 @@ class MolecularData(object):
                 shape of (n_orbitals, n_orbitals, n_orbitals, n_orbitals).
 
         Raises:
-          MisissingCalculationError: If integrals are not calculated.
+          MissingCalculationError: If integrals are not calculated.
         """
         # Make sure integrals have been computed.
         if self.one_body_integrals is None or self.two_body_integrals is None:
@@ -925,8 +963,58 @@ class MolecularData(object):
         # Cast to InteractionRDM class.
         rdm = reps.InteractionRDM(one_rdm, two_rdm)
         return rdm
+    
+    def get_J(self):
+        """Method to return coulomb matrix.
 
+        Returns:
+          J_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
+            (in chemist notation).
+        
+        Raises:
+          MissingCalculationError: If integrals are not calculated.
+        """
+        # Make sure integrals have been computed.
+        if self.two_body_integrals is None:
+            raise MissingCalculationError(
+                'Missing integral calculation in {}, run before loading '
+                'integrals.'.format(self.filename))
+        return J_matr(self.two_body_integrals)
+    
+    def get_K(self):
+        """Method to return exchange matrix.
 
+        Returns:
+          K_matr : Numpy array of the coulomb integrals K_{p,q} = (pq|qp)
+            (in chemist notation).
+        
+        Raises:
+          MissingCalculationError: If integrals are not calculated.
+        """
+        # Make sure integrals have been computed.
+        if self.two_body_integrals is None:
+            raise MissingCalculationError(
+                'Missing integral calculation in {}, run before loading '
+                'integrals.'.format(self.filename))
+        return K_matr(self.two_body_integrals)
+    
+    def get_antisym(self):
+        """Method to return anti-symmetrized integrals.
+
+        Returns:
+          antisymints : Numpy array of anti-symmetrized integrals
+            <ij||kl> = <ij|kl> - <ij|lk> (physicist ordering)
+        
+        Raises:
+          MissingCalculationError: If integrals are not calculated.
+        """
+        # Make sure integrals have been computed.
+        if self.two_body_integrals is None:
+            raise MissingCalculationError(
+                'Missing integral calculation in {}, run before loading '
+                'integrals.'.format(self.filename))
+        return antisymint(self.two_body_integrals)\
+    
 def load_molecular_hamiltonian(geometry,
                                basis,
                                multiplicity,
