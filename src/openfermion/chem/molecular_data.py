@@ -180,7 +180,8 @@ def antisymint(two_body_integrals):
         Ordering.
 
     Returns:
-    antisymints : Numpy array of anti-symmetrized integrals <ij||kl>
+    antisymints : Numpy array of anti-symmetrized integrals
+        <ij||kl> = <ij|kl> - <ij|lk> (physicist ordering).
     """
     symints = numpy.copy(two_body_integrals.transpose(0,1,3,2), order='C')
     antisymints = symints - two_body_integrals
@@ -206,7 +207,7 @@ def K_matr(two_body_integrals):
         Ordering.
 
     Returns:
-    J_matr : Numpy array of the exchange integrals J_{p,q} = (pq|qp)
+    K_matr : Numpy array of the exchange integrals K_{p,q} = (pq|qp)
         (in chemist notation).
     """
     chem_ordering = numpy.copy(two_body_integrals.transpose(0,3,1,2), order='C')
