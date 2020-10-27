@@ -25,6 +25,9 @@ from .molecular_data import (
     periodic_table,
     periodic_hash_table,
     periodic_polarization,
+    antisymint,
+    J_matr,
+    K_matr
 )
 
 from .pubchem import geometry_from_pubchem
