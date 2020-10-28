@@ -187,27 +187,27 @@ def antisymint(two_body_integrals):
     antisymints = symints - two_body_integrals
     return antisymints
 
-def J_matr(two_body_integrals):
+def j_matr(two_body_integrals):
     """
     Args:
     two_body_integrals : Numpy array of two-electron integrals with OpenFermion
         Ordering.
 
     Returns:
-    J_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
+    j_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
         (in chemist notation).
     """
     chem_ordering = numpy.copy(two_body_integrals.transpose(0,3,1,2), order='C')
     return numpy.einsum('iijj -> ij', chem_ordering)
 
-def K_matr(two_body_integrals):
+def k_matr(two_body_integrals):
     """
     Args:
     two_body_integrals : Numpy array of two-electron integrals with OpenFermion
         Ordering.
 
     Returns:
-    K_matr : Numpy array of the exchange integrals K_{p,q} = (pq|qp)
+    k_matr : Numpy array of the exchange integrals K_{p,q} = (pq|qp)
         (in chemist notation).
     """
     chem_ordering = numpy.copy(two_body_integrals.transpose(0,3,1,2), order='C')
@@ -965,11 +965,11 @@ class MolecularData(object):
         rdm = reps.InteractionRDM(one_rdm, two_rdm)
         return rdm
     
-    def get_J(self):
+    def get_j(self):
         """Method to return coulomb matrix.
 
         Returns:
-          J_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
+          k_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
             (in chemist notation).
         
         Raises:
@@ -980,13 +980,13 @@ class MolecularData(object):
             raise MissingCalculationError(
                 'Missing integral calculation in {}, run before loading '
                 'integrals.'.format(self.filename))
-        return J_matr(self.two_body_integrals)
+        return j_matr(self.two_body_integrals)
     
-    def get_K(self):
+    def get_k(self):
         """Method to return exchange matrix.
 
         Returns:
-          K_matr : Numpy array of the coulomb integrals K_{p,q} = (pq|qp)
+          k_matr : Numpy array of the coulomb integrals K_{p,q} = (pq|qp)
             (in chemist notation).
         
         Raises:
@@ -997,7 +997,7 @@ class MolecularData(object):
             raise MissingCalculationError(
                 'Missing integral calculation in {}, run before loading '
                 'integrals.'.format(self.filename))
-        return K_matr(self.two_body_integrals)
+        return k_matr(self.two_body_integrals)
     
     def get_antisym(self):
         """Method to return anti-symmetrized integrals.

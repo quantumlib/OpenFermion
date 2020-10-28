@@ -314,3 +314,16 @@ class MolecularDataTest(unittest.TestCase):
                                                      format(bond_length), None,
                                                      None)
         self.assertEqual(count_qubits(lih_hamiltonian), 12)
+    def test_jk_matr(self):
+        self.setUp()
+        h2mol = self.molecule
+        j = h2mol.get_j()
+        k = h2mol.get_k()
+        pyscf_j = [[0.67448877, 0.6634681 ], [0.6634681, 0.69739377]] 
+        pyscf_k = [[0.67448877, 0.18128881], [0.18128881, 0.69739377]]
+        for p in range(j.shape[0]):
+            for q in range(j.shape[1]):
+                self.assertAlmostEqual(j[p][q],pyscf_j[p][q])
+                self.assertAlmostEqual(k[p][q],pyscf_k[p][q])
+        
+                
