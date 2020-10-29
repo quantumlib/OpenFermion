@@ -198,6 +198,11 @@ from openfermion.linalg import (
 )
 
 from openfermion.measurements import (
+    pair_within,
+    pair_between,
+    pair_within_simultaneously,
+    pair_within_simultaneously_binned,
+    pair_within_simultaneously_symmetric,
     apply_constraints,
     constraint_matrix,
     linearize_term,
