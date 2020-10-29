@@ -14,8 +14,8 @@
 import cirq
 from openfermion import QubitOperator
 
-from openfermion.testing.circuit_validation import (
-    validate_trotterized_evolution,)
+from openfermion.testing.circuit_validation import\
+    validate_trotterized_evolution
 
 
 def test_checking_passes():
