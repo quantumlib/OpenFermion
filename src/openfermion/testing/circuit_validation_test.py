@@ -41,8 +41,7 @@ def test_checking_passes_twoops():
         cirq.rx(-2 * anglex).on(qubits[0])
     ])
     res = validate_trotterized_evolution(circuit,
-                                         [z_rotation_op, x_rotation_op],
-                                         qubits)
+                                         [z_rotation_op, x_rotation_op], qubits)
     assert res is True
 
 
