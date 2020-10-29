@@ -11,9 +11,15 @@
 #   limitations under the License.
 """Tests for vpe_estimators.py"""
 
+import pytest
 import numpy
+import pandas
+import cirq
 
-from .vpe_estimators import PhaseFitEstimator
+from .vpe_estimators import (
+    PhaseFitEstimator,
+    get_phase_function,
+)
 
 rng = numpy.random.RandomState(seed=42)
 
@@ -55,3 +61,33 @@ def test_estimates_expectation_value_scattered_nonoise():
     test_expectation_value = estimator.get_expectation_value(phase_function)
 
     assert numpy.isclose(true_expectation_value, test_expectation_value)
+
+
+def test_phase_function_gen_raises_error():
+    results = [0, 0]
+    qubits = [cirq.GridQubit(0, 0), cirq.GridQubit(0, 1)]
+    target_qid = 0
+    with pytest.raises(ValueError):
+        get_phase_function(results, qubits, target_qid)
+
+
+def test_phase_function_gen():
+    class FakeResult:
+        def __init__(self, data):
+            self.data = {
+                'msmt': pandas.Series(data)
+            }
+
+    datasets = [[] for j in range(8)]
+    for xindex in [2, 3, 6, 7]:
+        datasets[xindex] = [0] * 50 + [2] * 50
+    for z0index in [0, 4]:
+        datasets[z0index] = [0] * 100
+    for z1index in [1, 5]:
+        datasets[z1index] = [2] * 100
+
+    results = [FakeResult(dataset) for dataset in datasets]
+    qubits = [cirq.GridQubit(0, 0), cirq.GridQubit(0, 1)]
+    target_qid = 0
+    phase_function_est = get_phase_function(results, qubits, target_qid)
+    assert phase_function_est == 1

@@ -12,7 +12,7 @@
 """Classes to assist in processing of VPE (ArXiv:2010.02538) signal data"""
 
 import abc
-from typing import Tuple, Optional
+from typing import Sequence, Optional
 import numpy
 
 import cirq
@@ -20,7 +20,7 @@ import cirq
 from openfermion.linalg import fit_known_frequencies
 
 
-class _VPEEstimator(abc.ABCMeta):
+class _VPEEstimator(metaclass=abc.ABCMeta):
     """Generic class for any VPE estimator"""
 
     @abc.abstractmethod
@@ -144,16 +144,17 @@ standard_rotation_set = [
 ]
 
 
-def get_phase_function(results: Tuple[cirq.TrialResult],
+def get_phase_function(results: Sequence[cirq.TrialResult],
+                       qubits: Sequence[cirq.Qid],
                        target_qid: int,
-                       rotation_set: Optional[Tuple] = None):
+                       rotation_set: Optional[Sequence] = None):
     """Generates an estimate of the phase function g(t) from circuit output
 
     The output from a VPE circuit is a set of measurements; from the frequency
     that these measurements occur, we can estimate the phase function.
 
     Arguments:
-        measurements [Tuple[cirq.TrialResult]] -- A list of measurement results
+        measurements [Sequence[cirq.TrialResult]] -- A list of measurement results
             from the different circuits to be run at each point. We assume that
             these circuits are correlated to the order of rotation_set, and the
             only difference should be the initial and final rotation (following)
@@ -161,9 +162,18 @@ def get_phase_function(results: Tuple[cirq.TrialResult],
             is tagged with a label of 'msmt' (and that this is a measurement of
             all qubits, with the target qubit in the bit position indicated by
             target_qid)
-        target_qid [Int] -- The index of the target qubit in the list of
-            measurements.
-        rotation_set [Tuple or None] -- The set of rotations performed to
+        qubits [Sequence[cirq.Qid]] -- The list of qubits in the order that was
+            passed to the final measurement call.
+
+            Note: we flip from small endian to big endian notation within this
+            function, no need to do this externally.
+
+        target_qid [Int] -- The index of the target qubit in qubits.
+
+            Note: we flip from small endian to big endian notation within this
+            function, no need to do this externally.
+
+        rotation_set [Sequence or None] -- The set of rotations performed to
             generate the input data in measurements. These in turn need to be
             summed together weighted by the first entry in the set (we do not
             use the other entries in the set here).
@@ -171,7 +181,9 @@ def get_phase_function(results: Tuple[cirq.TrialResult],
     Returns:
         phase_function [complex] -- An estimate of g(t).
     """
-    hs_index = 2**target_qid
+    hs_index = 2**(len(qubits) - target_qid - 1)
+    if rotation_set is None:
+        rotation_set = standard_rotation_set
     phase_function = 0
     if len(results) != len(rotation_set):
         raise ValueError("I have an incorrect number of TrialResults "
@@ -182,7 +194,11 @@ def get_phase_function(results: Tuple[cirq.TrialResult],
         msmt_counts = result.data['msmt'].value_counts()
         if 0 in msmt_counts:
             vprob0 = msmt_counts[0] / total_shots
+        else:
+            vprob0 = 0
         if hs_index in msmt_counts:
             vprob1 = msmt_counts[hs_index] / total_shots
+        else:
+            vprob1 = 0
         phase_function += rdata[0] * (vprob0 - vprob1)
     return phase_function
