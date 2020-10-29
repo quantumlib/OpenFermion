@@ -9,7 +9,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from openfermion.testing.random import (random_interaction_operator_term)
+from .circuit_validation import validate_trotterized_evolution
+
+from .random import random_interaction_operator_term
 
 from .testing_utils import (
     haar_random_vector,
