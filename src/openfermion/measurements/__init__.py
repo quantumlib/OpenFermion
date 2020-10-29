@@ -38,4 +38,7 @@ from .rdm_equality_constraints import (
     two_body_fermion_constraints,
 )
 
-from .vpe_estimators import PhaseFitEstimator
+from .vpe_estimators import (
+    PhaseFitEstimator,
+    get_phase_function,
+)

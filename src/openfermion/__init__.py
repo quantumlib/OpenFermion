@@ -215,6 +215,7 @@ from openfermion.measurements import (
     partition_iterator,
     pauli_string_iterator,
     PhaseFitEstimator,
+    get_phase_function,
 )
 
 from openfermion.ops import (
