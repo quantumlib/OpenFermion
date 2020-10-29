@@ -15,6 +15,8 @@ import abc
 from typing import Tuple, Optional
 import numpy
 
+import cirq
+
 from openfermion.linalg import fit_known_frequencies
 
 
@@ -130,6 +132,57 @@ class PhaseFitEstimator(_VPEEstimator):
         return expectation_value
 
 
-def get_phase_function(measurements: Tuple,
+standard_rotation_set = [
+    [0.25, cirq.ry(numpy.pi / 2), cirq.ry(-numpy.pi / 2)],
+    [-0.25, cirq.ry(numpy.pi / 2), cirq.ry(numpy.pi / 2)],
+    [-0.25j, cirq.ry(numpy.pi / 2), cirq.rx(-numpy.pi / 2)],
+    [0.25j, cirq.ry(numpy.pi / 2), cirq.rx(numpy.pi / 2)],
+    [0.25, cirq.rx(numpy.pi / 2), cirq.rx(-numpy.pi / 2)],
+    [-0.25, cirq.rx(numpy.pi / 2), cirq.rx(numpy.pi / 2)],
+    [0.25j, cirq.rx(numpy.pi / 2), cirq.ry(-numpy.pi / 2)],
+    [-0.25j, cirq.rx(numpy.pi / 2), cirq.ry(numpy.pi / 2)],
+]
+
+
+def get_phase_function(results: Tuple[cirq.TrialResult],
+                       target_qid: int,
                        rotation_set: Optional[Tuple] = None):
-    raise NotImplementedError
+    """Generates an estimate of the phase function g(t) from circuit output
+
+    The output from a VPE circuit is a set of measurements; from the frequency
+    that these measurements occur, we can estimate the phase function.
+
+    Arguments:
+        measurements [Tuple[cirq.TrialResult]] -- A list of measurement results
+            from the different circuits to be run at each point. We assume that
+            these circuits are correlated to the order of rotation_set, and the
+            only difference should be the initial and final rotation (following)
+            that data in rotation_set. We also assume that the final measurement
+            is tagged with a label of 'msmt' (and that this is a measurement of
+            all qubits, with the target qubit in the bit position indicated by
+            target_qid)
+        target_qid [Int] -- The index of the target qubit in the list of
+            measurements.
+        rotation_set [Tuple or None] -- The set of rotations performed to
+            generate the input data in measurements. These in turn need to be
+            summed together weighted by the first entry in the set (we do not
+            use the other entries in the set here).
+
+    Returns:
+        phase_function [complex] -- An estimate of g(t).
+    """
+    hs_index = 2**target_qid
+    phase_function = 0
+    if len(results) != len(rotation_set):
+        raise ValueError("I have an incorrect number of TrialResults "
+                         "in results. Correct length should be: {}".format(
+                             len(rotation_set)))
+    for result, rdata in zip(results, rotation_set):
+        total_shots = result.data['msmt'].count()
+        msmt_counts = result.data['msmt'].value_counts()
+        if 0 in msmt_counts:
+            vprob0 = msmt_counts[0] / total_shots
+        if hs_index in msmt_counts:
+            vprob1 = msmt_counts[hs_index] / total_shots
+        phase_function += rdata[0] * (vprob0 - vprob1)
+    return phase_function
