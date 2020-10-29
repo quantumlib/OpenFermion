@@ -9,15 +9,37 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""An implementation of Prony's method (or the matrix pencil method)
-This fits a signal f(t) to sum_i=1^M a_i gamma_i^t, where a_i, gamma_i
-are complex numbers
-"""
+'''Functions for fitting simple oscillating functions'''
+
+from typing import Tuple
 import numpy
 import scipy
 
 
-def prony(signal):
+def fit_known_frequencies(signal: numpy.ndarray,
+                          times: numpy.ndarray,
+                          frequencies: numpy.ndarray) -> numpy.ndarray:
+    """Fits a set of known exponential components to a dataset
+
+    Decomposes a function g(t) as g(t)=sum_jA_jexp(iw_jt), where the frequencies
+    w_j are already known. Namely, makes a least-squares fit.
+
+    Arguments:
+        signal {numpy.ndarray} -- the signal g(t) to be fit
+        times {numpy.ndarray} -- t values of the signal
+        frequencies {numpy.ndarray} -- known frequencies w_j
+
+    Returns:
+        amplitudes {numpy.ndarray} -- the found amplitudes A_j
+    """
+    generation_matrix = numpy.array(
+        [[numpy.exp(1j * time * freq) for freq in frequencies]
+         for time in times])
+    amplitudes = scipy.linalg.lstsq(generation_matrix, signal)[0]
+    return amplitudes
+
+
+def prony(signal: numpy.ndarray) -> Tuple[numpy.ndarray, numpy.ndarray]:
     """Estimates amplitudes and phases of a sparse signal using Prony's method.
 
     Single-ancilla quantum phase estimation returns a signal

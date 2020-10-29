@@ -76,6 +76,11 @@ from .sparse_tools import (
     get_number_preserving_sparse_operator,
 )
 
+from .wave_fitting import(
+    fit_known_frequencies,
+    prony,
+)
+
 from .wedge_product import (
     generate_parity_permutations,
     wedge,
