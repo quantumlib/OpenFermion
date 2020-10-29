@@ -21,7 +21,7 @@ from openfermion.config import EQ_TOLERANCE
 
 
 def validate_trotterized_evolution(circuit: cirq.Circuit,
-                                   op_list: List['openfermion.QubitOperator'],
+                                   ops: List['openfermion.QubitOperator'],
                                    qubits: List['cirq.Qid']):
     r'''Checks whether a circuit implements Trotterized evolution
 
@@ -36,18 +36,18 @@ def validate_trotterized_evolution(circuit: cirq.Circuit,
 
     Arguments:
         circuit: 'cirq.Circuit' {[type]} -- circuit to be checked
-        op_list {List['openfermion.QubitOperator']} -- list of operators $O_j$
-            in application order (i.e. op_list[0] is the first operator to be
+        ops {List['openfermion.QubitOperator']} -- list of operators $O_j$
+            in application order (i.e. ops[0] is the first operator to be
             applied).
         qubits {List['cirq.Qid']} -- list of qubits in circuit in index order
     '''
 
     n_qubits = len(qubits)
     hs_dim = 2**n_qubits
-    qubit_op = op_list[0]
+    qubit_op = ops[0]
     op_matrix = openfermion.get_sparse_operator(qubit_op, n_qubits=n_qubits)
     target_unitary = linalg.expm(1j * op_matrix)
-    for qubit_op in op_list[1:]:
+    for qubit_op in ops[1:]:
         op_matrix = openfermion.get_sparse_operator(qubit_op, n_qubits=n_qubits)
         op_unitary = linalg.expm(1j * op_matrix)
         target_unitary = op_unitary.dot(target_unitary)

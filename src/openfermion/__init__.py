@@ -35,7 +35,6 @@ from openfermion.chem import (
 )
 
 from openfermion.circuits import (
-    validate_trotterized_evolution,
     FSWAP,
     FSwapPowGate,
     Rxxyy,
@@ -243,6 +242,7 @@ from openfermion.ops import (
 )
 
 from openfermion.testing import (
+    validate_trotterized_evolution,
     random_interaction_operator_term,
     haar_random_vector,
     random_antisymmetric_matrix,

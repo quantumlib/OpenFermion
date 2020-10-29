@@ -23,9 +23,6 @@ from .algorithms import (
     SPLIT_OPERATOR,
 )
 
-from .circuit_validation import (
-    validate_trotterized_evolution,)
-
 from .diagonal_coulomb_trotter_error import (
     diagonal_coulomb_potential_and_kinetic_terms_as_arrays,
     bit_mask_of_modes_acted_on_by_fermionic_terms,

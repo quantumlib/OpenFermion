@@ -99,5 +99,4 @@ from .trotter import (
     error_bound,
     error_operator,
     trotter_steps_required,
-    validate_trotterized_evolution,
 )
