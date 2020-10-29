@@ -12,6 +12,7 @@
 """Classes to assist in processing of VPE (ArXiv:2010.02538) signal data"""
 
 import abc
+from typing import Tuple, Optional
 import numpy
 
 from openfermion.linalg import fit_known_frequencies
@@ -127,3 +128,8 @@ class PhaseFitEstimator(_VPEEstimator):
             numpy.abs(amplitudes),
             self.evals) / numpy.sum(numpy.abs(amplitudes))
         return expectation_value
+
+
+def get_phase_function(measurements: Tuple,
+                       rotation_set: Optional[Tuple] = None):
+    raise NotImplementedError
