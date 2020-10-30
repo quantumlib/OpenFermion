@@ -40,14 +40,14 @@ class ChannelTest(unittest.TestCase):
         # With probability 0
         test_density_matrix = (amplitude_damping_channel(
             self.density_matrix, 0, 1))
-        self.assertAlmostEquals(norm(self.density_matrix - test_density_matrix),
+        self.assertAlmostEqual(norm(self.density_matrix - test_density_matrix),
                                 0.0)
 
         test_density_matrix = (amplitude_damping_channel(self.density_matrix,
                                                          0,
                                                          1,
                                                          transpose=True))
-        self.assertAlmostEquals(norm(self.density_matrix - test_density_matrix),
+        self.assertAlmostEqual(norm(self.density_matrix - test_density_matrix),
                                 0.0)
 
         # With probability 1
@@ -57,7 +57,7 @@ class ChannelTest(unittest.TestCase):
         test_density_matrix = (amplitude_damping_channel(
             self.density_matrix, 1, 1))
 
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             norm(correct_density_matrix - test_density_matrix), 0.0)
 
     def test_dephasing(self):
@@ -65,7 +65,7 @@ class ChannelTest(unittest.TestCase):
 
         # Check for identity on |11> state
         test_density_matrix = (dephasing_channel(self.density_matrix, 1, 1))
-        self.assertAlmostEquals(norm(self.density_matrix - test_density_matrix),
+        self.assertAlmostEqual(norm(self.density_matrix - test_density_matrix),
                                 0.0)
 
         test_density_matrix = (dephasing_channel(self.density_matrix,
@@ -75,12 +75,12 @@ class ChannelTest(unittest.TestCase):
 
         correct_matrix = np.array([[0., 0., 0., 0.], [0., 0., 0., 0.],
                                    [0., 0., 0.5, -0.5], [0., 0., -0.5, 1.]])
-        self.assertAlmostEquals(norm(correct_matrix - test_density_matrix), 0.0)
+        self.assertAlmostEqual(norm(correct_matrix - test_density_matrix), 0.0)
 
         # Check for correct action on cat state
         # With probability = 0
         test_density_matrix = (dephasing_channel(self.cat_matrix, 0, 1))
-        self.assertAlmostEquals(norm(self.cat_matrix - test_density_matrix),
+        self.assertAlmostEqual(norm(self.cat_matrix - test_density_matrix),
                                 0.0)
         # With probability = 1
 
@@ -89,21 +89,21 @@ class ChannelTest(unittest.TestCase):
                                    [0.00, 0.00, 0.00, 0.00],
                                    [0.00, -0.25, 0.00, 0.50]])
         test_density_matrix = (dephasing_channel(self.cat_matrix, 1, 1))
-        self.assertAlmostEquals(norm(correct_matrix - test_density_matrix), 0.0)
+        self.assertAlmostEqual(norm(correct_matrix - test_density_matrix), 0.0)
 
     def test_depolarizing(self):
         """Test depolarizing on a simple qubit state"""
 
         # With probability = 0
         test_density_matrix = (depolarizing_channel(self.cat_matrix, 0, 1))
-        self.assertAlmostEquals(norm(self.cat_matrix - test_density_matrix),
+        self.assertAlmostEqual(norm(self.cat_matrix - test_density_matrix),
                                 0.0)
 
         test_density_matrix = (depolarizing_channel(self.cat_matrix,
                                                     0,
                                                     1,
                                                     transpose=True))
-        self.assertAlmostEquals(norm(self.cat_matrix - test_density_matrix),
+        self.assertAlmostEqual(norm(self.cat_matrix - test_density_matrix),
                                 0.0)
 
         # With probability 1 on both qubits
@@ -116,7 +116,7 @@ class ChannelTest(unittest.TestCase):
         test_density_matrix = (depolarizing_channel(self.cat_matrix, 1, 0))
         test_density_matrix = (depolarizing_channel(test_density_matrix, 1, 1))
 
-        self.assertAlmostEquals(norm(correct_density_matrix -
+        self.assertAlmostEqual(norm(correct_density_matrix -
                                      test_density_matrix),
                                 0.0,
                                 places=6)
@@ -131,7 +131,7 @@ class ChannelTest(unittest.TestCase):
                                                     1,
                                                     transpose=True))
 
-        self.assertAlmostEquals(norm(correct_density_matrix -
+        self.assertAlmostEqual(norm(correct_density_matrix -
                                      test_density_matrix),
                                 0.0,
                                 places=6)
@@ -139,7 +139,7 @@ class ChannelTest(unittest.TestCase):
         # With probability 1 for total depolarization
         correct_density_matrix = np.eye(4) / 4.0
         test_density_matrix = (depolarizing_channel(self.cat_matrix, 1, 'All'))
-        self.assertAlmostEquals(norm(correct_density_matrix -
+        self.assertAlmostEqual(norm(correct_density_matrix -
                                      test_density_matrix),
                                 0.0,
                                 places=6)
