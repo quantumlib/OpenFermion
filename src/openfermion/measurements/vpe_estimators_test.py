@@ -80,7 +80,9 @@ def test_phase_function_gen_raises_error():
 
 
 def test_phase_function_gen():
+
     class FakeResult:
+
         def __init__(self, data):
             self.data = {'msmt': pandas.Series(data)}
 

@@ -130,6 +130,7 @@ class PhaseFitEstimator(_VPEEstimator):
                                           numpy.abs(amplitudes))
         return expectation_value
 
+
 # disabling yapf here as its proposed formatting decreases readability
 # yapf: disable
 standard_rotation_set = [
