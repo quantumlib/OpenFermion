@@ -156,7 +156,7 @@ def get_phase_function(results: Sequence[cirq.TrialResult],
     that these measurements occur, we can estimate the phase function.
 
     Arguments:
-        measurements [Sequence[cirq.TrialResult]] -- A list of measurement results
+        measurements [Sequence[cirq.TrialResult]] -- A list of TrialResults
             from the different circuits to be run at each point. We assume that
             these circuits are correlated to the order of rotation_set, and the
             only difference should be the initial and final rotation (following)
