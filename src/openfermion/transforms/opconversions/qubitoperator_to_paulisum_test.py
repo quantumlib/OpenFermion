@@ -11,8 +11,8 @@
 #   limitations under the License.
 import pytest
 import numpy
-import openfermion
 import cirq
+import openfermion
 from openfermion.ops.operators import QubitOperator
 
 from openfermion.transforms.opconversions import (qubit_operator_to_pauli_sum)
@@ -64,7 +64,7 @@ def test_expectation_values(qubitop, state_binary):
     op_mat = openfermion.get_sparse_operator(qubitop, n_qubits)
 
     expct_qop = openfermion.expectation(op_mat, state)
-    expct_pauli = pauli_str.expectation_from_wavefunction(state, qubit_map)
+    expct_pauli = pauli_str.expectation_from_state_vector(state, qubit_map)
 
     numpy.testing.assert_allclose(expct_qop, expct_pauli)
 
@@ -85,6 +85,6 @@ def test_expectation_values_paulisum(qubitop, state_binary):
     op_mat = openfermion.get_sparse_operator(qubitop, n_qubits)
 
     expct_qop = openfermion.expectation(op_mat, state)
-    expct_pauli = pauli_str.expectation_from_wavefunction(state, qubit_map)
+    expct_pauli = pauli_str.expectation_from_state_vector(state, qubit_map)
 
     numpy.testing.assert_allclose(expct_qop, expct_pauli)

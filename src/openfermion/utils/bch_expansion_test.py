@@ -91,14 +91,14 @@ class BCHTest(unittest.TestCase):
 
             test = bch_expand(x, y, order=self.test_order)
             baseline = bch_expand_baseline(x, y, order=self.test_order)
-            self.assertAlmostEquals(norm(test - baseline), 0.0)
+            self.assertAlmostEqual(norm(test - baseline), 0.0)
 
             test = bch_expand(x, y, z, order=self.test_order)
             baseline = bch_expand_baseline(x,
                                            bch_expand_baseline(
                                                y, z, order=self.test_order),
                                            order=self.test_order)
-            self.assertAlmostEquals(norm(test - baseline), 0.0)
+            self.assertAlmostEqual(norm(test - baseline), 0.0)
 
     def test_verification(self):
         """Verify basic sanity checking on inputs"""
