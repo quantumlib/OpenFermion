@@ -12,18 +12,24 @@
 """Tests the code in the examples directory of the git repo."""
 
 import os
-import sys
 import unittest
 
 import numpy
 import nbformat
 
+from .performance_benchmarks import (
+    run_diagonal_commutator,
+    run_fermion_math_and_normal_order,
+    run_jordan_wigner_sparse,
+    run_molecular_operator_jordan_wigner,
+    run_linear_qubit_operator,
+)
+
 
 class ExamplesTest(unittest.TestCase):
 
     def setUp(self):
-
-        self.examples_folder = os.path.join(
+        self.testing_folder = os.path.join(
             os.path.dirname(__file__),  # Start at this file's directory.
         )
 
@@ -31,14 +37,8 @@ class ExamplesTest(unittest.TestCase):
         """Unit test for examples/performance_benchmark.py."""
 
         # Import performance benchmarks and seed random number generator.
-        sys.path.append(self.examples_folder)
-        from performance_benchmarks import (
-            run_diagonal_commutator,
-            run_fermion_math_and_normal_order,
-            run_jordan_wigner_sparse,
-            run_molecular_operator_jordan_wigner,
-            run_linear_qubit_operator,
-        )
+        # sys.path.append(self.examples_folder)
+
         numpy.random.seed(1)
 
         runtime_upper_bound = 600
@@ -69,12 +69,11 @@ class ExamplesTest(unittest.TestCase):
         self.assertLess(runtime_parallel, runtime_upper_bound)
 
     def test_can_run_examples_jupyter_notebooks(self):
-        print("Examples folder ", self.examples_folder)
-        for filename in os.listdir(self.examples_folder):
+        for filename in os.listdir(self.testing_folder):
             if not filename.endswith('.ipynb'):
                 continue
 
-            path = os.path.join(self.examples_folder, filename)
+            path = os.path.join(self.testing_folder, filename)
             notebook = nbformat.read(path, nbformat.NO_CONVERT)
             state = {}
 
