@@ -1,7 +1,7 @@
 """
 test coverage for performance benchmarks. Check type returns.
 """
-from performance_benchmarks import (
+from .performance_benchmarks import (
     benchmark_molecular_operator_jordan_wigner,
     benchmark_fermion_math_and_normal_order,
     benchmark_jordan_wigner_sparse,
@@ -10,7 +10,6 @@ from performance_benchmarks import (
     run_molecular_operator_jordan_wigner,
     run_fermion_math_and_normal_order,
     run_jordan_wigner_sparse,
-    run_linear_qubit_operator,
     run_linear_qubit_operator,
     run_diagonal_commutator,
 )
