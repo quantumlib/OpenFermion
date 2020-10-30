@@ -11,8 +11,8 @@
 #   limitations under the License.
 import pytest
 import numpy
-import openfermion
 import cirq
+import openfermion
 from openfermion.ops.operators import QubitOperator
 
 from openfermion.transforms.opconversions import (qubit_operator_to_pauli_sum)
