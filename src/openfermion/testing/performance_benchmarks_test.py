@@ -67,6 +67,6 @@ def test_run_linear_qop():
 
 
 def test_run_diag_comm():
-    r1, r2 = run_diagonal_commutator(1)
+    r1, r2 = run_diagonal_commutator(4)
     assert isinstance(r1, float)
     assert isinstance(r2, float)
