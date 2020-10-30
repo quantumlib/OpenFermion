@@ -57,7 +57,7 @@ def test_prepare_gaussian_state(n_qubits,
                                initial_state=initial_state))
     if isinstance(initial_state, list):
         initial_state = sum(1 << (n_qubits - 1 - i) for i in initial_state)
-    state = circuit.final_wavefunction(initial_state)
+    state = circuit.final_state_vector(initial_state=initial_state)
 
     # Check that the result is an eigenstate with the correct eigenvalue
     numpy.testing.assert_allclose(quad_ham_sparse.dot(state),
@@ -110,7 +110,7 @@ def test_prepare_gaussian_state_with_spin_symmetry(n_spatial_orbitals,
 
     if isinstance(initial_state, list):
         initial_state = sum(1 << (n_qubits - 1 - i) for i in initial_state)
-    state = circuit.final_wavefunction(initial_state)
+    state = circuit.final_state_vector(initial_state=initial_state)
 
     # Check that the result is an eigenstate with the correct eigenvalue
     numpy.testing.assert_allclose(quad_ham_sparse.dot(state),
@@ -157,6 +157,6 @@ def test_prepare_slater_determinant(slater_determinant_matrix,
                                    initial_state=initial_state))
     if isinstance(initial_state, list):
         initial_state = sum(1 << (n_qubits - 1 - i) for i in initial_state)
-    state = circuit.final_wavefunction(initial_state)
+    state = circuit.final_state_vector(initial_state=initial_state)
 
     assert cirq.allclose_up_to_global_phase(state, correct_state, atol=atol)

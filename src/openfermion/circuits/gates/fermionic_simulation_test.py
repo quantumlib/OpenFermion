@@ -427,7 +427,7 @@ def test_quartic_fermionic_simulation_on_simulator(gate, exponent,
 
     a, b, c, d = cirq.LineQubit.range(4)
     circuit = cirq.Circuit(gate(a, b, c, d)**exponent)
-    result = circuit.final_wavefunction(initial_state)
+    result = circuit.final_state_vector(initial_state=initial_state)
     cirq.testing.assert_allclose_up_to_global_phase(result,
                                                     correct_state,
                                                     atol=atol)
