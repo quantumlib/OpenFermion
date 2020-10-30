@@ -298,17 +298,3 @@ def run_diagonal_commutator(side_length=4):
         runtime_commutator / runtime_diagonal_commutator)
 
     return runtime_commutator, runtime_diagonal_commutator
-
-
-# Run benchmarks.
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-
-    # Seed random number generator.
-    numpy.random.seed(8)
-
-    run_molecular_operator_jordan_wigner()
-    run_fermion_math_and_normal_order()
-    run_jordan_wigner_sparse()
-    run_linear_qubit_operator()
-    run_diagonal_commutator()
