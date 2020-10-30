@@ -53,7 +53,8 @@ def benchmark_molecular_operator_jordan_wigner(n_qubits):
     return runtime
 
 
-def benchmark_fermion_math_and_normal_order(n_qubits, term_length, power):
+def benchmark_fermion_math_and_normal_order(n_qubits, term_length,
+                                            power):
     """Benchmark both arithmetic operators and normal ordering on fermions.
 
     The idea is we generate two random FermionTerms, A and B, each acting
@@ -131,7 +132,8 @@ def benchmark_jordan_wigner_sparse(n_qubits):
     return runtime
 
 
-def benchmark_linear_qubit_operator(n_qubits, n_terms, processes=None):
+def benchmark_linear_qubit_operator(n_qubits, n_terms,
+                                    processes=None):
     """Test speed with getting a linear operator from a Qubit Operator.
 
     Args:
@@ -241,7 +243,8 @@ def run_molecular_operator_jordan_wigner(n_qubits=18):
     return runtime
 
 
-def run_fermion_math_and_normal_order(n_qubits=20, term_length=10, power=15):
+def run_fermion_math_and_normal_order(n_qubits=20, term_length=10,
+                                      power=15):
     """Run benchmark on FermionOperator math and normal-ordering."""
     logging.info('Starting test on FermionOperator math and normal ordering.')
     logging.info('(n_qubits, term_length, power) = (%d, %d, %d).', n_qubits,
@@ -264,7 +267,8 @@ def run_jordan_wigner_sparse(n_qubits=10):
     return runtime
 
 
-def run_linear_qubit_operator(n_qubits=16, n_terms=10, processes=10):
+def run_linear_qubit_operator(n_qubits=16, n_terms=10,
+                              processes=10):
     """Run linear_qubit_operator benchmark."""
 
     logging.info('Starting test on linear_qubit_operator().')
