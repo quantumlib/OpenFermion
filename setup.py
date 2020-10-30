@@ -27,9 +27,18 @@ stream = io.open('README.rst', encoding='utf-8')
 stream.readline()
 long_description += stream.read()
 
-# Read in requirements.txt
+# Read in package requirements.txt
 requirements = open('requirements.txt').readlines()
 requirements = [r.strip() for r in requirements]
+
+docs_files_gen = os.walk('docs')
+docs_data_files_tuples = []
+for cwd, subdirs, files in list(docs_files_gen)[1:]:
+    if 'ipynb_checkpoints' in cwd:
+        continue
+    docs_data_files_tuples.append(
+        (os.path.join('openfermion',
+                      cwd), [os.path.join(cwd, file) for file in files]))
 
 setup(
     name='openfermion',
@@ -46,15 +55,9 @@ setup(
     include_package_data=True,
     package_data={
         '': [
-            os.path.join('src', 'openfermion', 'data', '*.hdf5'),
-            os.path.join('src', 'openfermion', 'data', '*.npy')
-        ]
+            os.path.join('src', 'openfermion', 'testing', '*.npy'),
+            os.path.join('src', 'openfermion', 'testing', '*.hdf5'),
+        ],
     },
-    data_files=[('openfermion/examples', [
-        'docs/tutorials/binary_code_transforms.ipynb',
-        'docs/tutorials/bosonic_operators.ipynb',
-        'docs/tutorials/intro_to_openfermion.ipynb',
-        'docs/tutorials/jordan_wigner_and_bravyi_kitaev_transforms.ipynb',
-        'examples/performance_benchmarks.py'
-    ])],
+    data_files=docs_data_files_tuples,
 )

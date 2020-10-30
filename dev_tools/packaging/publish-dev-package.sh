@@ -37,7 +37,7 @@
 #
 # Test installation:
 #
-#     pip install -r requirements.txt
+#     pip install -r tutorial-requirements.txt
 #     pip install --index-url https://test.pypi.org/simple/ openfermion==VERSION_YOU_UPLOADED
 ################################################################################
 
