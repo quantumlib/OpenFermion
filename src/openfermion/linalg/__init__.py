@@ -76,7 +76,7 @@ from .sparse_tools import (
     get_number_preserving_sparse_operator,
 )
 
-from .wave_fitting import(
+from .wave_fitting import (
     fit_known_frequencies,
     prony,
 )

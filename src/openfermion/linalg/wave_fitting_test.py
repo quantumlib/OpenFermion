@@ -9,8 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-""" Tests for prony.py"""
-
+""" Tests for wave_fitting.py"""
 
 import numpy
 from .wave_fitting import prony, fit_known_frequencies
@@ -54,12 +53,14 @@ def test_fitting_signal():
     frequencies = numpy.array([0.4, 0.5, 0.8])
     amplitudes = numpy.array([0.2, 0.4, 0.4])
     times = numpy.linspace(0, 10, 21)
-    signal = numpy.array([numpy.sum([amp * numpy.exp(1j * time * freq)
-                                     for freq, amp in zip(frequencies,
-                                                          amplitudes)])
-                          for time in times])
+    signal = numpy.array([
+        numpy.sum([
+            amp * numpy.exp(1j * time * freq)
+            for freq, amp in zip(frequencies, amplitudes)
+        ])
+        for time in times
+    ])
     amplitudes_guess = fit_known_frequencies(signal, times, frequencies)
     assert len(amplitudes_guess == 3)
     for index in range(3):
         assert numpy.isclose(amplitudes_guess[index], amplitudes[index])
-

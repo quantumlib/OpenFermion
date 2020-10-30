@@ -16,8 +16,7 @@ import numpy
 import scipy
 
 
-def fit_known_frequencies(signal: numpy.ndarray,
-                          times: numpy.ndarray,
+def fit_known_frequencies(signal: numpy.ndarray, times: numpy.ndarray,
                           frequencies: numpy.ndarray) -> numpy.ndarray:
     """Fits a set of known exponential components to a dataset
 
@@ -32,9 +31,9 @@ def fit_known_frequencies(signal: numpy.ndarray,
     Returns:
         amplitudes {numpy.ndarray} -- the found amplitudes A_j
     """
-    generation_matrix = numpy.array(
-        [[numpy.exp(1j * time * freq) for freq in frequencies]
-         for time in times])
+    generation_matrix = numpy.array([
+        [numpy.exp(1j * time * freq) for freq in frequencies] for time in times
+    ])
     amplitudes = scipy.linalg.lstsq(generation_matrix, signal)[0]
     return amplitudes
 

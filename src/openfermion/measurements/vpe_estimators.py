@@ -96,8 +96,7 @@ class PhaseFitEstimator(_VPEEstimator):
         times = numpy.linspace(0, maxtime, numsteps)
         return times
 
-    def get_amplitudes(self,
-                       phase_function: numpy.ndarray) -> numpy.ndarray:
+    def get_amplitudes(self, phase_function: numpy.ndarray) -> numpy.ndarray:
         """Fits the amplitudes in the phase function to the input signal data.
 
         Arguments:
@@ -110,8 +109,8 @@ class PhaseFitEstimator(_VPEEstimator):
         times = self.get_simulation_points()
         phase_function_shifted = numpy.array(phase_function) *\
             numpy.exp(1j * times * self.ref_eval)
-        amplitudes = fit_known_frequencies(
-            phase_function_shifted, times, self.evals)
+        amplitudes = fit_known_frequencies(phase_function_shifted, times,
+                                           self.evals)
         return amplitudes
 
     def get_expectation_value(self,
@@ -126,12 +125,13 @@ class PhaseFitEstimator(_VPEEstimator):
             expectation_value [float] -- the estimated expectation value
         """
         amplitudes = self.get_amplitudes(phase_function)
-        expectation_value = numpy.dot(
-            numpy.abs(amplitudes),
-            self.evals) / numpy.sum(numpy.abs(amplitudes))
+        expectation_value = numpy.dot(numpy.abs(amplitudes),
+                                      self.evals) / numpy.sum(
+                                          numpy.abs(amplitudes))
         return expectation_value
 
-
+# disabling yapf here as its proposed formatting decreases readability
+# yapf: disable
 standard_rotation_set = [
     [0.25, cirq.ry(numpy.pi / 2), cirq.ry(-numpy.pi / 2)],
     [-0.25, cirq.ry(numpy.pi / 2), cirq.ry(numpy.pi / 2)],
@@ -142,6 +142,7 @@ standard_rotation_set = [
     [0.25j, cirq.rx(numpy.pi / 2), cirq.ry(-numpy.pi / 2)],
     [-0.25j, cirq.rx(numpy.pi / 2), cirq.ry(numpy.pi / 2)],
 ]
+# yapf: enable
 
 
 def get_phase_function(results: Sequence[cirq.TrialResult],

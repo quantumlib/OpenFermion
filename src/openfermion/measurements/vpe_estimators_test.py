@@ -39,9 +39,13 @@ def test_estimates_expectation_value_pauli_nonoise():
 
     estimator = PhaseFitEstimator(evals)
     sim_points = estimator.get_simulation_points()
-    phase_function = numpy.array([numpy.sum([
-        amp * numpy.exp(1j * ev * time) for ev, amp in zip(evals, true_amps)])
-                                  for time in sim_points])
+    phase_function = numpy.array([
+        numpy.sum([
+            amp * numpy.exp(1j * ev * time)
+            for ev, amp in zip(evals, true_amps)
+        ])
+        for time in sim_points
+    ])
     print(phase_function)
     test_expectation_value = estimator.get_expectation_value(phase_function)
     assert numpy.isclose(true_expectation_value, test_expectation_value)
@@ -55,9 +59,13 @@ def test_estimates_expectation_value_scattered_nonoise():
 
     estimator = PhaseFitEstimator(evals)
     sim_points = estimator.get_simulation_points()
-    phase_function = numpy.array([numpy.sum([
-        amp * numpy.exp(1j * ev * time) for ev, amp in zip(evals, true_amps)])
-                                  for time in sim_points])
+    phase_function = numpy.array([
+        numpy.sum([
+            amp * numpy.exp(1j * ev * time)
+            for ev, amp in zip(evals, true_amps)
+        ])
+        for time in sim_points
+    ])
     test_expectation_value = estimator.get_expectation_value(phase_function)
 
     assert numpy.isclose(true_expectation_value, test_expectation_value)
@@ -74,9 +82,7 @@ def test_phase_function_gen_raises_error():
 def test_phase_function_gen():
     class FakeResult:
         def __init__(self, data):
-            self.data = {
-                'msmt': pandas.Series(data)
-            }
+            self.data = {'msmt': pandas.Series(data)}
 
     datasets = [[] for j in range(8)]
     for xindex in [2, 3, 6, 7]:
