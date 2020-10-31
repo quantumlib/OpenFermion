@@ -927,7 +927,7 @@ class MolecularData(object):
 
         # Cast to InteractionOperator class and return.
         molecular_hamiltonian = reps.InteractionOperator(
-            constant, one_body_coefficients, 2*two_body_coefficients)
+            constant, one_body_coefficients, 1/2*two_body_coefficients)
 
         return molecular_hamiltonian
 
