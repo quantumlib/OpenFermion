@@ -1,4 +1,4 @@
-cirq==0.8.2
+cirq==0.9.1
 deprecation
 h5py>=2.8
 networkx
@@ -7,3 +7,4 @@ pubchempy
 requests~=2.18
 scipy>=1.1.0
 sympy
+nbformat
