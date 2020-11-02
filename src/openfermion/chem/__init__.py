@@ -15,20 +15,11 @@ from .chemical_series import (
     make_atomic_ring,
 )
 
-from .molecular_data import (
-    angstroms_to_bohr,
-    bohr_to_angstroms,
-    MolecularData,
-    name_molecule,
-    geometry_from_file,
-    load_molecular_hamiltonian,
-    periodic_table,
-    periodic_hash_table,
-    periodic_polarization,
-    antisymint,
-    j_matr,
-    k_matr
-)
+from .molecular_data import (angstroms_to_bohr, bohr_to_angstroms,
+                             MolecularData, name_molecule, geometry_from_file,
+                             load_molecular_hamiltonian, periodic_table,
+                             periodic_hash_table, periodic_polarization,
+                             antisymint, j_matr, k_matr)
 
 from .pubchem import geometry_from_pubchem
 
