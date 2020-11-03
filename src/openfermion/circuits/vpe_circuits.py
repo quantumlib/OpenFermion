@@ -86,8 +86,8 @@ def vpe_circuits_single_timestep(qubits: Sequence[cirq.Qid],
             target qubit. We average the phase function estimation over multiple
             such rotations to cancel out readout noise, final T1 decay, etc.
             The standard rotation set is typically sufficient for these
-            purposes. The first element of each gate is the multiplier to get the
-            phase function; we do not need this for this function.
+            purposes. The first element of each gate is the multiplier to get
+            the phase function; we do not need this for this function.
 
             If rotation_set is set to None, the 'standard rotation set' of all
             possible X and Y rotations before and after the circuit is used.
