@@ -14,6 +14,7 @@ import os
 import unittest
 import numpy.random
 import scipy.linalg
+import numpy as np
 
 from openfermion.config import THIS_DIRECTORY, DATA_DIRECTORY
 from openfermion.hamiltonians import jellium_model
@@ -314,3 +315,42 @@ class MolecularDataTest(unittest.TestCase):
                                                      format(bond_length), None,
                                                      None)
         self.assertEqual(count_qubits(lih_hamiltonian), 12)
+
+    def test_jk_matr(self):
+        h2mol = self.molecule
+        j = h2mol.get_j()
+        k = h2mol.get_k()
+        pyscf_j = [[0.67448877, 0.6634681], [0.6634681, 0.69739377]]
+        pyscf_k = [[0.67448877, 0.18128881], [0.18128881, 0.69739377]]
+        for p in range(j.shape[0]):
+            for q in range(j.shape[1]):
+                self.assertAlmostEqual(j[p][q], pyscf_j[p][q])
+                self.assertAlmostEqual(k[p][q], pyscf_k[p][q])
+        ndocc = h2mol.n_electrons // 2
+        E1bdy = 2 * h2mol.one_body_integrals[:ndocc, :ndocc]
+        E2bdy = (2 * j[:ndocc, :ndocc]) - k[:ndocc, :ndocc]
+        E_test = h2mol.nuclear_repulsion + E1bdy + E2bdy
+        self.assertAlmostEqual(E_test, h2mol.hf_energy)
+
+    def test_antisymint(self):
+        h2mol = self.molecule
+        antisymm_spin_orb_tei = h2mol.get_antisym()
+        nocc = h2mol.n_electrons
+        mol_H = h2mol.get_molecular_hamiltonian()
+        E1bdy = np.sum(np.diag(mol_H.one_body_tensor[:nocc, :nocc]))
+        E2bdy = 1/2.*np.einsum('ijij',\
+                                 antisymm_spin_orb_tei[:nocc,:nocc,:nocc,:nocc])
+        E_test = h2mol.nuclear_repulsion + E1bdy + E2bdy
+        self.assertAlmostEqual(E_test, h2mol.hf_energy)
+
+    def test_missing_calcs_for_integrals(self):
+        geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.8764))]
+        basis = 'sto-3g'
+        multiplicity = 1
+        molecule = MolecularData(geometry, basis, multiplicity)
+        with self.assertRaises(MissingCalculationError):
+            molecule.get_j()
+        with self.assertRaises(MissingCalculationError):
+            molecule.get_k()
+        with self.assertRaises(MissingCalculationError):
+            molecule.get_antisym()
