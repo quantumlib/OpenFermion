@@ -26,7 +26,7 @@ rng = numpy.random.RandomState(seed=42)
 
 def test_requests_simulation_at_pi_for_pauli():
     estimator = PhaseFitEstimator(evals=[-1, +1])
-    sim_points = estimator.get_simulation_points()
+    sim_points = estimator.get_simulation_points(safe=False)
     assert len(sim_points) == 2
     assert numpy.isclose(sim_points[0], 0)
     assert numpy.isclose(sim_points[1], numpy.pi / 2)

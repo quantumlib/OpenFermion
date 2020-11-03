@@ -18,6 +18,7 @@ import numpy
 import cirq
 
 from openfermion.linalg import fit_known_frequencies
+from openfermion.circuits import standard_vpe_rotation_set
 
 
 class _VPEEstimator(metaclass=abc.ABCMeta):
@@ -74,7 +75,7 @@ class PhaseFitEstimator(_VPEEstimator):
         self.evals = evals
         self.ref_eval = ref_eval
 
-    def get_simulation_points(self) -> numpy.ndarray:
+    def get_simulation_points(self, safe: bool = True) -> numpy.ndarray:
         """Generates time points for estimation
 
         VPE requires estimating the phase function g(t) at multiple points t,
@@ -83,15 +84,28 @@ class PhaseFitEstimator(_VPEEstimator):
 
         In this case, we fit len(self.energies) complex amplitudes to a complex
         valued signal, we need precisely this number of points in the signal.
+
+        However, it appears numerically that approximately twice as many points
+        are needed to prevent aliasing, so we double this number here.
+
         Then, to prevent aliasing, we need to make sure that the time step
         dt < 2*pi / (E_max-E_min). Here, we choose dt = pi / (E_max-E_min).
         (Importantly, for Pauli operators this reproduces the H test.)
 
+        Args:
+            safe [bool, default True] -- numerical testing shows that taking
+                approximately twice as many points is better for the stability
+                of the estimator; this
+
         Returns:
             times: a set of times t that g(t) should be estimated at.
         """
-        numsteps = len(self.evals)
-        step_size = numpy.pi / (max(self.evals) - min(self.evals))
+        if safe:
+            numsteps = len(self.evals) * 2
+            step_size = numpy.pi / (max(self.evals) - min(self.evals))
+        else:
+            numsteps = len(self.evals)
+            step_size = numpy.pi / (max(self.evals) - min(self.evals))
         maxtime = step_size * (numsteps - 1)
         times = numpy.linspace(0, maxtime, numsteps)
         return times
@@ -129,21 +143,6 @@ class PhaseFitEstimator(_VPEEstimator):
                                       self.evals) / numpy.sum(
                                           numpy.abs(amplitudes))
         return expectation_value
-
-
-# disabling yapf here as its proposed formatting decreases readability
-# yapf: disable
-standard_rotation_set = [
-    [0.25, cirq.ry(numpy.pi / 2), cirq.ry(-numpy.pi / 2)],
-    [-0.25, cirq.ry(numpy.pi / 2), cirq.ry(numpy.pi / 2)],
-    [-0.25j, cirq.ry(numpy.pi / 2), cirq.rx(-numpy.pi / 2)],
-    [0.25j, cirq.ry(numpy.pi / 2), cirq.rx(numpy.pi / 2)],
-    [0.25, cirq.rx(numpy.pi / 2), cirq.rx(-numpy.pi / 2)],
-    [-0.25, cirq.rx(numpy.pi / 2), cirq.rx(numpy.pi / 2)],
-    [0.25j, cirq.rx(numpy.pi / 2), cirq.ry(-numpy.pi / 2)],
-    [-0.25j, cirq.rx(numpy.pi / 2), cirq.ry(numpy.pi / 2)],
-]
-# yapf: enable
 
 
 def get_phase_function(results: Sequence[cirq.TrialResult],
@@ -185,7 +184,7 @@ def get_phase_function(results: Sequence[cirq.TrialResult],
     """
     hs_index = 2**(len(qubits) - target_qid - 1)
     if rotation_set is None:
-        rotation_set = standard_rotation_set
+        rotation_set = standard_vpe_rotation_set
     phase_function = 0
     if len(results) != len(rotation_set):
         raise ValueError("I have an incorrect number of TrialResults "
