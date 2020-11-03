@@ -193,6 +193,8 @@ from openfermion.linalg import (
     get_sparse_operator,
     get_number_preserving_sparse_operator,
     generate_parity_permutations,
+    fit_known_frequencies,
+    prony,
     wedge,
 )
 
@@ -212,7 +214,8 @@ from openfermion.measurements import (
     binary_partition_iterator,
     partition_iterator,
     pauli_string_iterator,
-    prony,
+    PhaseFitEstimator,
+    get_phase_function,
 )
 
 from openfermion.ops import (
