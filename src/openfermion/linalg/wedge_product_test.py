@@ -88,7 +88,7 @@ def test_random_two_wedge_two():
     (a, b, h, g) wedge (c, d, f, e) -> (a, b, c, d, e, f, g, h)
 
     """
-    dim = 3
+    dim = 2
     n_tensor = numpy.random.random((dim, dim, dim, dim))
     m_tensor = numpy.random.random((dim, dim, dim, dim))
     true_tensor = numpy.zeros(tuple([dim] * 8))
