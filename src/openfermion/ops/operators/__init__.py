@@ -10,7 +10,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from .binary_polynomial import BinaryPolynomial, BinaryPolynomialError
+from .binary_polynomial import (
+    BinaryPolynomial,
+    BinaryPolynomialError,
+    binary_sum_rule,
+)
 
 from .boson_operator import BosonOperator
 
