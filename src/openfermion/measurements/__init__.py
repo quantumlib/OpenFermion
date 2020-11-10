@@ -15,10 +15,13 @@ from .equality_constraint_projection import (
     constraint_matrix,
     linearize_term,
     unlinearize_term,
+    operator_to_vector,
+    vector_to_operator,
 )
 
 from .qubit_partitioning import (
     binary_partition_iterator,
+    group_into_tensor_product_basis_sets,
     partition_iterator,
     pauli_string_iterator,
 )

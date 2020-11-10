@@ -21,6 +21,7 @@ from .channel_state import (
 # Imports out of alphabetical order to avoid circular dependency.
 from .lattice import (
     HubbardSquareLattice,
+    HubbardLattice,
     SpinPairs,
     Spin,
 )
@@ -29,11 +30,18 @@ from .commutators import (
     anticommutator,
     commutator,
     double_commutator,
+    trivially_double_commutes_dual_basis_using_term_info,
+    trivially_commutes_dual_basis,
+    trivially_double_commutes_dual_basis,
 )
 
 from .grid import Grid
 
-from .indexing import up_index, down_index, up_then_down
+from .indexing import (
+    up_index,
+    down_index,
+    up_then_down,
+)
 
 from .operator_utils import (
     count_qubits,
@@ -43,6 +51,8 @@ from .operator_utils import (
     is_identity,
     load_operator,
     save_operator,
+    OperatorUtilsError,
+    OperatorSpecificationError,
 )
 
 from .rdm_mapping_functions import (

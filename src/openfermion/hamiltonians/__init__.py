@@ -10,9 +10,16 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from .general_hubbard import FermiHubbardModel
+from .general_hubbard import (
+    FermiHubbardModel,
+    number_operator,
+    interaction_operator,
+    tunneling_operator,
+    number_difference_operator,
+)
 
 from .hartree_fock import (
+    rhf_func_generator,
     rhf_minimization,
     HartreeFockFunctional,
     rhf_params_to_matrix,
@@ -37,7 +44,10 @@ from .jellium import (
     wigner_seitz_length_scale,
 )
 
-from .jellium_hf_state import hartree_fock_state_jellium
+from .jellium_hf_state import (
+    hartree_fock_state_jellium,
+    lowest_single_particle_energy_states,
+)
 
 from .mean_field_dwave import mean_field_dwave
 

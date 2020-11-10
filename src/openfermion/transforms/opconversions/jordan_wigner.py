@@ -42,20 +42,20 @@ def jordan_wigner(operator):
             DiagonalCoulombHamiltonian, or InteractionOperator.
     """
     if isinstance(operator, FermionOperator):
-        return jordan_wigner_fermion_operator(operator)
+        return _jordan_wigner_fermion_operator(operator)
     if isinstance(operator, MajoranaOperator):
-        return jordan_wigner_majorana_operator(operator)
+        return _jordan_wigner_majorana_operator(operator)
     if isinstance(operator, DiagonalCoulombHamiltonian):
-        return jordan_wigner_diagonal_coulomb_hamiltonian(operator)
+        return _jordan_wigner_diagonal_coulomb_hamiltonian(operator)
     if isinstance(operator, InteractionOperator):
-        return jordan_wigner_interaction_op(operator)
+        return _jordan_wigner_interaction_op(operator)
     raise TypeError("Operator must be a FermionOperator, "
                     "MajoranaOperator, "
                     "DiagonalCoulombHamiltonian, or "
                     "InteractionOperator.")
 
 
-def jordan_wigner_fermion_operator(operator):
+def _jordan_wigner_fermion_operator(operator):
     transformed_operator = QubitOperator()
     for term in operator.terms:
         # Initialize identity matrix.
@@ -77,7 +77,7 @@ def jordan_wigner_fermion_operator(operator):
     return transformed_operator
 
 
-def jordan_wigner_majorana_operator(operator):
+def _jordan_wigner_majorana_operator(operator):
     transformed_operator = QubitOperator()
     for term, coeff in operator.terms.items():
         transformed_term = QubitOperator((), coeff)
@@ -90,7 +90,7 @@ def jordan_wigner_majorana_operator(operator):
     return transformed_operator
 
 
-def jordan_wigner_diagonal_coulomb_hamiltonian(operator):
+def _jordan_wigner_diagonal_coulomb_hamiltonian(operator):
     n_qubits = count_qubits(operator)
     qubit_operator = QubitOperator((), operator.constant)
 
@@ -125,7 +125,7 @@ def jordan_wigner_diagonal_coulomb_hamiltonian(operator):
     return qubit_operator
 
 
-def jordan_wigner_interaction_op(iop, n_qubits=None):
+def _jordan_wigner_interaction_op(iop, n_qubits=None):
     """Output InteractionOperator as QubitOperator class under JW transform.
 
     One could accomplish this very easily by first mapping to fermions and
