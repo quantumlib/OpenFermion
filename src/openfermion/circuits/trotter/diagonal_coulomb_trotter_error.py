@@ -19,8 +19,8 @@ from openfermion.transforms.opconversions import (get_fermion_operator,
 from openfermion.utils.operator_utils import count_qubits
 from openfermion.circuits.trotter.low_depth_trotter_error import (
     simulation_ordered_grouped_low_depth_terms_with_info)
-from openfermion.utils.commutator_diagonal_coulomb_operator import (
-    commutator_ordered_diagonal_coulomb_with_two_body_operator)
+from openfermion.transforms.opconversions import \
+    commutator_ordered_diagonal_coulomb_with_two_body_operator
 
 
 def diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian):

@@ -92,7 +92,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
             coefficient = complex(iop[(p, 1), (q, 0)])
             if coefficient and p >= q:
                 qubit_operator += (coefficient *
-                                   one_body(edge_matrix_indices, p, q))
+                                   _one_body(edge_matrix_indices, p, q))
 
             # Keep looping for the two-body terms.
             for r in range(n_qubits):
@@ -111,8 +111,8 @@ def bravyi_kitaev_fast_interaction_op(iop):
                                 continue
                         # Handle case of 3 unique indices
                         elif len(set([p, q, r, s])) == 3:
-                            transformed_term = two_body(edge_matrix_indices, p,
-                                                        q, r, s)
+                            transformed_term = _two_body(
+                                edge_matrix_indices, p, q, r, s)
                             transformed_term *= .5 * coefficient
                             qubit_operator += transformed_term
                             continue
@@ -121,7 +121,8 @@ def bravyi_kitaev_fast_interaction_op(iop):
                             continue  # pragma: no cover
 
                     # Handle the two-body terms.
-                    transformed_term = two_body(edge_matrix_indices, p, q, r, s)
+                    transformed_term = _two_body(edge_matrix_indices, p, q, r,
+                                                 s)
                     transformed_term *= coefficient
                     qubit_operator += transformed_term
     return qubit_operator
@@ -204,7 +205,7 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
     return edge_matrix.transpose()
 
 
-def one_body(edge_matrix_indices, p, q):
+def _one_body(edge_matrix_indices, p, q):
     r"""
     Map the term a^\dagger_p a_q + a^\dagger_q a_p to QubitOperator.
 
@@ -234,7 +235,7 @@ def one_body(edge_matrix_indices, p, q):
     return qubit_operator
 
 
-def two_body(edge_matrix_indices, p, q, r, s):
+def _two_body(edge_matrix_indices, p, q, r, s):
     r"""
     Map the term a^\dagger_p a^\dagger_q a_r a_s + h.c. to QubitOperator.
 

@@ -25,8 +25,8 @@ from openfermion.linalg import (jordan_wigner_sparse,
                                 LinearQubitOperatorOptions, LinearQubitOperator,
                                 ParallelLinearQubitOperator)
 from openfermion.testing.testing_utils import random_interaction_operator
-from openfermion.utils.commutator_diagonal_coulomb_operator import (
-    commutator_ordered_diagonal_coulomb_with_two_body_operator)
+from openfermion.transforms import \
+    commutator_ordered_diagonal_coulomb_with_two_body_operator
 
 
 def benchmark_molecular_operator_jordan_wigner(n_qubits):
