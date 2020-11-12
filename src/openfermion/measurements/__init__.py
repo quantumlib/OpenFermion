@@ -15,10 +15,13 @@ from .equality_constraint_projection import (
     constraint_matrix,
     linearize_term,
     unlinearize_term,
+    operator_to_vector,
+    vector_to_operator,
 )
 
 from .qubit_partitioning import (
     binary_partition_iterator,
+    group_into_tensor_product_basis_sets,
     partition_iterator,
     pauli_string_iterator,
 )
@@ -38,4 +41,7 @@ from .rdm_equality_constraints import (
     two_body_fermion_constraints,
 )
 
-from .prony import prony
+from .vpe_estimators import (
+    PhaseFitEstimator,
+    get_phase_function,
+)

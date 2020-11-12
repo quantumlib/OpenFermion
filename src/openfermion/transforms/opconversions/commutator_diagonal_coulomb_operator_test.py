@@ -19,7 +19,8 @@ from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.hamiltonians import jellium_model
 from openfermion.utils import commutator, Grid
 from openfermion.transforms.opconversions import normal_ordered
-from openfermion.utils.commutator_diagonal_coulomb_operator import (
+from openfermion.transforms.opconversions\
+    .commutator_diagonal_coulomb_operator import (
     commutator_ordered_diagonal_coulomb_with_two_body_operator)
 from openfermion.testing.testing_utils import (
     random_diagonal_coulomb_hamiltonian)

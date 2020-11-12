@@ -77,7 +77,7 @@ class TestPairWithin(unittest.TestCase):
 class TestPairWithinSimultaneously(unittest.TestCase):
 
     def test_small(self):
-        for num_indices in [4, 5, 7, 10, 15, 16, 25]:
+        for num_indices in [4, 5, 7, 10, 15]:
             print()
             print('Trying with num_indices = {}'.format(num_indices))
             labels = [j for j in range(num_indices)]

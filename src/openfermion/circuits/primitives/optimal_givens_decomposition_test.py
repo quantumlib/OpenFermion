@@ -241,5 +241,6 @@ def test_circuit_generation_state():
     test_unitary = scipy.linalg.expm(
         get_sparse_operator(fermion_generator, 4).toarray())
     test_final_state = test_unitary.dot(wavefunction)
-    cirq_wf = simulator.simulate(circuit).final_state
+    cirq_wf = simulator.simulate(circuit).final_state_vector
+
     assert numpy.allclose(cirq_wf, test_final_state.flatten())
