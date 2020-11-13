@@ -12,13 +12,15 @@
 """ The transform function that does Fermion-qubit mappings
     based on a BinaryCode (arXiv:1712.07067) """
 
+from typing import Any, List, Tuple, Union
+
 import numpy
 
 from openfermion.ops.operators import (BinaryCode, FermionOperator,
                                        QubitOperator, BinaryPolynomial)
 
 
-def extractor(binary_op):
+def extractor(binary_op: BinaryPolynomial) -> QubitOperator:
     """ Applies the extraction superoperator to a binary expression
      to obtain the corresponding qubit operators.
 
@@ -44,7 +46,7 @@ def extractor(binary_op):
     return return_fn
 
 
-def dissolve(term):
+def dissolve(term: Tuple[Any, Any]) -> QubitOperator:
     """Decomposition helper. Takes a product of binary variables
     and outputs the Pauli-string sum that corresponds to the
     decomposed multi-qubit operator.
@@ -65,7 +67,7 @@ def dissolve(term):
     return QubitOperator((), 1.0) - prod
 
 
-def make_parity_list(code):
+def make_parity_list(code: BinaryCode) -> List[BinaryPolynomial]:
     """Create the parity list from the decoder of the input code.
     The output parity list has a similar structure as code.decoder.
 
@@ -85,7 +87,8 @@ def make_parity_list(code):
     return parity_binaries
 
 
-def binary_code_transform(hamiltonian, code):
+def binary_code_transform(hamiltonian: FermionOperator,
+                          code: BinaryCode) -> QubitOperator:
     """ Transforms a Hamiltonian written in fermionic basis into a Hamiltonian
     written in qubit basis, via a binary code.
 
