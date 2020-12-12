@@ -19,8 +19,8 @@ from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.utils.grid import Grid
 
 
-def wigner_seitz_length_scale(wigner_seitz_radius: float,
-                                n_particles: int, dimension: int) -> float:
+def wigner_seitz_length_scale(wigner_seitz_radius: float, n_particles: int,
+                              dimension: int) -> float:
     """Function to give length_scale associated with Wigner-Seitz radius.
 
     Args:
@@ -54,8 +54,9 @@ def wigner_seitz_length_scale(wigner_seitz_radius: float,
     return length_scale
 
 
-def plane_wave_kinetic(grid: Grid, spinless: bool = False,
-                        e_cutoff: Optional[float] = None) -> FermionOperator:
+def plane_wave_kinetic(grid: Grid,
+                       spinless: bool = False,
+                       e_cutoff: Optional[float] = None) -> FermionOperator:
     """Return the kinetic energy operator in the plane wave basis.
 
     Args:
@@ -95,7 +96,7 @@ def plane_wave_potential(grid: Grid,
                          e_cutoff: float = None,
                          non_periodic: bool = False,
                          period_cutoff: Optional[float] = None
-                         ) -> FermionOperator:
+                        ) -> FermionOperator:
     """Return the e-e potential operator in the plane wave basis.
 
     Args:
@@ -196,7 +197,7 @@ def dual_basis_jellium_model(grid: Grid,
                              include_constant: bool = False,
                              non_periodic: bool = False,
                              period_cutoff: Optional[float] = None
-                             ) -> FermionOperator:
+                            ) -> FermionOperator:
     """Return jellium Hamiltonian in the dual basis of arXiv:1706.00023
 
     Args:
@@ -316,7 +317,7 @@ def dual_basis_potential(grid: Grid,
                          spinless: bool = False,
                          non_periodic: bool = False,
                          period_cutoff: Optional[float] = None
-                         ) -> FermionOperator:
+                        ) -> FermionOperator:
     """Return the potential operator in the dual basis of arXiv:1706.00023
 
     Args:
@@ -377,7 +378,7 @@ def jellium_model(grid: Grid,
 def jordan_wigner_dual_basis_jellium(grid: Grid,
                                      spinless: bool = False,
                                      include_constant: bool = False
-                                     ) -> QubitOperator:
+                                    ) -> QubitOperator:
     """Return the jellium Hamiltonian as QubitOperator in the dual basis.
 
     Args:

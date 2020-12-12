@@ -206,7 +206,7 @@ def s_squared_operator(n_spatial_orbitals: int) -> FermionOperator:
 
 
 def majorana_operator(term: Optional[Union[Tuple[int, int], str]] = None,
-                        coefficient=1.) -> FermionOperator:
+                      coefficient=1.) -> FermionOperator:
     r"""Initialize a Majorana operator.
 
     Args:
@@ -276,8 +276,7 @@ def majorana_operator(term: Optional[Union[Tuple[int, int], str]] = None,
 def number_operator(n_modes: int,
                     mode: Optional[int] = None,
                     coefficient=1.,
-                    parity: int = -1
-                    ) -> Union[BosonOperator, FermionOperator]:
+                    parity: int = -1) -> Union[BosonOperator, FermionOperator]:
     """Return a fermionic or bosonic number operator.
 
     Args:
