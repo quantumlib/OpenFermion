@@ -16,15 +16,19 @@ from openfermion.hamiltonians.jellium import (jellium_model,
                                               jordan_wigner_dual_basis_jellium)
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.transforms.repconversions import inverse_fourier_transform
+from openfermion.utils.grid import Grid
 
 import openfermion.chem.molecular_data as md
 
+from typing import List, Tuple, Optional
 
-def dual_basis_external_potential(grid,
-                                  geometry,
-                                  spinless,
-                                  non_periodic=False,
-                                  period_cutoff=None):
+
+def dual_basis_external_potential(grid: Grid,
+                                  geometry: List[Tuple[str, Tuple[int, int, int]]],
+                                  spinless: bool,
+                                  non_periodic: bool = False,
+                                  period_cutoff: Optional[float] = None
+                                  ) -> FermionOperator:
     """Return the external potential in the dual basis of arXiv:1706.00023.
 
     The external potential resulting from electrons interacting with nuclei
@@ -80,12 +84,13 @@ def dual_basis_external_potential(grid,
     return operator
 
 
-def plane_wave_external_potential(grid,
-                                  geometry,
-                                  spinless,
-                                  e_cutoff=None,
-                                  non_periodic=False,
-                                  period_cutoff=None):
+def plane_wave_external_potential(grid: Grid,
+                                  geometry: List[Tuple[str, Tuple[int, int, int]]],
+                                  spinless: bool,
+                                  e_cutoff: Optional[float] = None,
+                                  non_periodic: bool = False,
+                                  period_cutoff: Optional[float] = None
+                                  ) -> FermionOperator:
     """Return the external potential operator in plane wave basis.
 
     The external potential resulting from electrons interacting with nuclei.
@@ -116,14 +121,15 @@ def plane_wave_external_potential(grid,
     return operator
 
 
-def plane_wave_hamiltonian(grid,
-                           geometry=None,
-                           spinless=False,
-                           plane_wave=True,
-                           include_constant=False,
-                           e_cutoff=None,
-                           non_periodic=False,
-                           period_cutoff=None):
+def plane_wave_hamiltonian(grid: Grid,
+                           geometry: Optional[List[Tuple[str, Tuple[int, int, int]]]] = None,
+                           spinless: bool = False,
+                           plane_wave: bool = True,
+                           include_constant: bool = False,
+                           e_cutoff: Optional[float] = None,
+                           non_periodic: bool = False,
+                           period_cutoff: Optional[float] = None
+                           ) -> FermionOperator:
     """Returns Hamiltonian as FermionOperator class.
 
     Args:
@@ -168,10 +174,11 @@ def plane_wave_hamiltonian(grid,
     return jellium_op + external_potential
 
 
-def jordan_wigner_dual_basis_hamiltonian(grid,
-                                         geometry=None,
-                                         spinless=False,
-                                         include_constant=False):
+def jordan_wigner_dual_basis_hamiltonian(grid: Grid,
+                                         geometry: Optional[List[Tuple[str, Tuple[int, int, int]]]] = None,
+                                         spinless: bool = False,
+                                         include_constant: bool = False
+                                         ) -> QubitOperator:
     """Return the dual basis Hamiltonian as QubitOperator.
 
     Args:
