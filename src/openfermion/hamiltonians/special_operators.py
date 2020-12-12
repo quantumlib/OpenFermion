@@ -205,7 +205,7 @@ def s_squared_operator(n_spatial_orbitals: int) -> FermionOperator:
     return operator
 
 
-def majorana_operator(term: Optional[Tuple[int, int], str] = None,
+def majorana_operator(term: Optional[Union[Tuple[int, int], str]] = None,
                         coefficient=1.) -> FermionOperator:
     r"""Initialize a Majorana operator.
 
