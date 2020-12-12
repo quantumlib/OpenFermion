@@ -10,6 +10,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Construct Hamiltonians in plan wave basis and its dual in 3D."""
+from typing import List, Tuple, Optional
+
 import numpy as np
 
 from openfermion.hamiltonians.jellium import (jellium_model,
@@ -19,8 +21,6 @@ from openfermion.transforms.repconversions import inverse_fourier_transform
 from openfermion.utils.grid import Grid
 
 import openfermion.chem.molecular_data as md
-
-from typing import List, Tuple, Optional
 
 
 def dual_basis_external_potential(grid: Grid,

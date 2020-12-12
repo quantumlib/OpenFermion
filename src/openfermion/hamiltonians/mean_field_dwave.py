@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This module constructs Hamiltonians for the BCS mean-field d-wave model."""
+from typing import Optional
 
 from openfermion.ops.operators import FermionOperator
 from openfermion.utils.indexing import down_index, up_index
@@ -17,8 +18,6 @@ from openfermion.hamiltonians.special_operators import number_operator
 
 # Preventing cyclical imports
 import openfermion.utils as op_utils
-
-from typing import Optional
 
 
 def mean_field_dwave(x_dimension: int,

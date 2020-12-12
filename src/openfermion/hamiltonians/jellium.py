@@ -11,12 +11,12 @@
 #   limitations under the License.
 """This module constructs Hamiltonians for the uniform electron gas."""
 
+from typing import Optional
+
 import numpy
 
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.utils.grid import Grid
-
-from typing import Optional
 
 
 def wigner_seitz_length_scale(wigner_seitz_radius: float,
@@ -94,7 +94,8 @@ def plane_wave_potential(grid: Grid,
                          spinless: bool = False,
                          e_cutoff: float = None,
                          non_periodic: bool = False,
-                         period_cutoff: Optional[float] = None) -> FermionOperator:
+                         period_cutoff: Optional[float] = None
+                         ) -> FermionOperator:
     """Return the e-e potential operator in the plane wave basis.
 
     Args:
