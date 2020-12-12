@@ -18,13 +18,15 @@ from openfermion.hamiltonians.special_operators import number_operator
 # Preventing cyclical imports
 import openfermion.utils as op_utils
 
+from typing import Optional
 
-def mean_field_dwave(x_dimension,
-                     y_dimension,
-                     tunneling,
-                     sc_gap,
-                     chemical_potential=0.,
-                     periodic=True):
+
+def mean_field_dwave(x_dimension: int,
+                     y_dimension: int,
+                     tunneling: float,
+                     sc_gap: float,
+                     chemical_potential: Optional[float] = 0.,
+                     periodic: bool = True) -> FermionOperator:
     r"""Return symbolic representation of a BCS mean-field d-wave Hamiltonian.
 
     The Hamiltonians of this model live on a grid of dimensions
