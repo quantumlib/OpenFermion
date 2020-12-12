@@ -150,7 +150,6 @@ class NumberOperatorTest(unittest.TestCase):
             number_operator(4, parity=2)
 
 
-
 class MajoranaOperatorTest(unittest.TestCase):
 
     def test_init(self):
