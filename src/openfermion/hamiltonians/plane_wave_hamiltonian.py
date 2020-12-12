@@ -85,12 +85,12 @@ def dual_basis_external_potential(
 
 
 def plane_wave_external_potential(
-         grid: Grid,
-         geometry: List[Tuple[str, Tuple[int, int, int]]],
-         spinless: bool,
-         e_cutoff: Optional[float] = None,
-         non_periodic: bool = False,
-         period_cutoff: Optional[float] = None
+        grid: Grid,
+        geometry: List[Tuple[str, Tuple[int, int, int]]],
+        spinless: bool,
+        e_cutoff: Optional[float] = None,
+        non_periodic: bool = False,
+        period_cutoff: Optional[float] = None
         ) -> FermionOperator:
     """Return the external potential operator in plane wave basis.
 
