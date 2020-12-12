@@ -90,8 +90,7 @@ def plane_wave_external_potential(
         spinless: bool,
         e_cutoff: Optional[float] = None,
         non_periodic: bool = False,
-        period_cutoff: Optional[float] = None
-        ) -> FermionOperator:
+        period_cutoff: Optional[float] = None) -> FermionOperator:
     """Return the external potential operator in plane wave basis.
 
     The external potential resulting from electrons interacting with nuclei.
