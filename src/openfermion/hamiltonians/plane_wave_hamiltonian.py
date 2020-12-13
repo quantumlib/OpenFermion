@@ -26,7 +26,7 @@ import openfermion.chem.molecular_data as md
 def dual_basis_external_potential(
         grid: Grid,
         geometry: List[Tuple[str, Tuple[Union[int, float], Union[int, float],
-                       Union[int, float]]]],
+                                        Union[int, float]]]],
         spinless: bool,
         non_periodic: bool = False,
         period_cutoff: Optional[float] = None) -> FermionOperator:
@@ -88,7 +88,7 @@ def dual_basis_external_potential(
 def plane_wave_external_potential(
         grid: Grid,
         geometry: List[Tuple[str, Tuple[Union[int, float], Union[int, float],
-                       Union[int, float]]]],
+                                        Union[int, float]]]],
         spinless: bool,
         e_cutoff: Optional[float] = None,
         non_periodic: bool = False,
@@ -126,7 +126,7 @@ def plane_wave_external_potential(
 def plane_wave_hamiltonian(
         grid: Grid,
         geometry: Optional[List[Tuple[str, Tuple[Union[int, float],
-                           Union[int, float], Union[int, float]]]]] = None,
+            Union[int, float], Union[int, float]]]]] = None,
         spinless: bool = False,
         plane_wave: bool = True,
         include_constant: bool = False,
@@ -180,7 +180,7 @@ def plane_wave_hamiltonian(
 def jordan_wigner_dual_basis_hamiltonian(
         grid: Grid,
         geometry: Optional[List[Tuple[str, Tuple[Union[int, float],
-                           Union[int, float], Union[int, float]]]]] = None,
+            Union[int, float], Union[int, float]]]]] = None,
         spinless: bool = False,
         include_constant: bool = False) -> QubitOperator:
     """Return the dual basis Hamiltonian as QubitOperator.
