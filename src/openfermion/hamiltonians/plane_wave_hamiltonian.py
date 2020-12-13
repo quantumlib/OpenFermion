@@ -125,8 +125,8 @@ def plane_wave_external_potential(
 
 def plane_wave_hamiltonian(
         grid: Grid,
-        geometry: Optional[List[Tuple[str, Tuple[Union[int, float],
-            Union[int, float], Union[int, float]]]]] = None,
+        geometry: Optional[List[Tuple[str, Tuple[
+            Union[int, float], Union[int, float], Union[int, float]]]]] = None,
         spinless: bool = False,
         plane_wave: bool = True,
         include_constant: bool = False,
@@ -179,8 +179,8 @@ def plane_wave_hamiltonian(
 
 def jordan_wigner_dual_basis_hamiltonian(
         grid: Grid,
-        geometry: Optional[List[Tuple[str, Tuple[Union[int, float],
-            Union[int, float], Union[int, float]]]]] = None,
+        geometry: Optional[List[Tuple[str, Tuple[
+            Union[int, float], Union[int, float], Union[int, float]]]]] = None,
         spinless: bool = False,
         include_constant: bool = False) -> QubitOperator:
     """Return the dual basis Hamiltonian as QubitOperator.
