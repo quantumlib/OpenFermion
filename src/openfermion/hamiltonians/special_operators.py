@@ -10,11 +10,13 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Commonly used operators (mainly instances of SymbolicOperator)."""
+from typing import Optional, Union, Tuple
+
 from openfermion.ops.operators import BosonOperator, FermionOperator
 from openfermion.utils.indexing import down_index, up_index
 
 
-def s_plus_operator(n_spatial_orbitals):
+def s_plus_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the s+ operator.
 
     .. math::
@@ -44,7 +46,7 @@ def s_plus_operator(n_spatial_orbitals):
     return operator
 
 
-def s_minus_operator(n_spatial_orbitals):
+def s_minus_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the s+ operator.
 
     .. math::
@@ -74,7 +76,7 @@ def s_minus_operator(n_spatial_orbitals):
     return operator
 
 
-def sx_operator(n_spatial_orbitals):
+def sx_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the sx operator.
 
     .. math::
@@ -107,7 +109,7 @@ def sx_operator(n_spatial_orbitals):
     return operator
 
 
-def sy_operator(n_spatial_orbitals):
+def sy_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the sy operator.
 
     .. math::
@@ -140,7 +142,7 @@ def sy_operator(n_spatial_orbitals):
     return operator
 
 
-def sz_operator(n_spatial_orbitals):
+def sz_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the sz operator.
 
     .. math::
@@ -172,7 +174,7 @@ def sz_operator(n_spatial_orbitals):
     return operator
 
 
-def s_squared_operator(n_spatial_orbitals):
+def s_squared_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the s^{2} operator.
 
     .. math::
@@ -203,7 +205,8 @@ def s_squared_operator(n_spatial_orbitals):
     return operator
 
 
-def majorana_operator(term=None, coefficient=1.):
+def majorana_operator(term: Optional[Union[Tuple[int, int], str]] = None,
+                      coefficient=1.) -> FermionOperator:
     r"""Initialize a Majorana operator.
 
     Args:
@@ -270,7 +273,10 @@ def majorana_operator(term=None, coefficient=1.):
         raise ValueError('Operator specified incorrectly.')
 
 
-def number_operator(n_modes, mode=None, coefficient=1., parity=-1):
+def number_operator(n_modes: int,
+                    mode: Optional[int] = None,
+                    coefficient=1.,
+                    parity: int = -1) -> Union[BosonOperator, FermionOperator]:
     """Return a fermionic or bosonic number operator.
 
     Args:
@@ -285,10 +291,13 @@ def number_operator(n_modes, mode=None, coefficient=1., parity=-1):
     Returns:
         operator (BosonOperator or FermionOperator)
     """
+
     if parity == -1:
         Op = FermionOperator
     elif parity == 1:
         Op = BosonOperator
+    else:
+        raise ValueError('Invalid parity value: {}'.format(parity))
 
     if mode is None:
         operator = Op()

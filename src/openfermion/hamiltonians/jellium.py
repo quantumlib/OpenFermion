@@ -11,13 +11,16 @@
 #   limitations under the License.
 """This module constructs Hamiltonians for the uniform electron gas."""
 
+from typing import Optional
+
 import numpy
 
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.utils.grid import Grid
 
 
-def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
+def wigner_seitz_length_scale(wigner_seitz_radius: float, n_particles: int,
+                              dimension: int) -> float:
     """Function to give length_scale associated with Wigner-Seitz radius.
 
     Args:
@@ -51,7 +54,9 @@ def wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension):
     return length_scale
 
 
-def plane_wave_kinetic(grid, spinless=False, e_cutoff=None):
+def plane_wave_kinetic(grid: Grid,
+                       spinless: bool = False,
+                       e_cutoff: Optional[float] = None) -> FermionOperator:
     """Return the kinetic energy operator in the plane wave basis.
 
     Args:
@@ -86,11 +91,12 @@ def plane_wave_kinetic(grid, spinless=False, e_cutoff=None):
     return operator
 
 
-def plane_wave_potential(grid,
-                         spinless=False,
-                         e_cutoff=None,
-                         non_periodic=False,
-                         period_cutoff=None):
+def plane_wave_potential(grid: Grid,
+                         spinless: bool = False,
+                         e_cutoff: float = None,
+                         non_periodic: bool = False,
+                         period_cutoff: Optional[float] = None
+                        ) -> FermionOperator:
     """Return the e-e potential operator in the plane wave basis.
 
     Args:
@@ -184,13 +190,14 @@ def plane_wave_potential(grid,
     return operator
 
 
-def dual_basis_jellium_model(grid,
-                             spinless=False,
-                             kinetic=True,
-                             potential=True,
-                             include_constant=False,
-                             non_periodic=False,
-                             period_cutoff=None):
+def dual_basis_jellium_model(grid: Grid,
+                             spinless: bool = False,
+                             kinetic: bool = True,
+                             potential: bool = True,
+                             include_constant: bool = False,
+                             non_periodic: bool = False,
+                             period_cutoff: Optional[float] = None
+                            ) -> FermionOperator:
     """Return jellium Hamiltonian in the dual basis of arXiv:1706.00023
 
     Args:
@@ -293,7 +300,7 @@ def dual_basis_jellium_model(grid,
     return operator
 
 
-def dual_basis_kinetic(grid, spinless=False):
+def dual_basis_kinetic(grid: Grid, spinless: bool = False) -> FermionOperator:
     """Return the kinetic operator in the dual basis of arXiv:1706.00023.
 
     Args:
@@ -306,10 +313,11 @@ def dual_basis_kinetic(grid, spinless=False):
     return dual_basis_jellium_model(grid, spinless, True, False)
 
 
-def dual_basis_potential(grid,
-                         spinless=False,
-                         non_periodic=False,
-                         period_cutoff=None):
+def dual_basis_potential(grid: Grid,
+                         spinless: bool = False,
+                         non_periodic: bool = False,
+                         period_cutoff: Optional[float] = None
+                        ) -> FermionOperator:
     """Return the potential operator in the dual basis of arXiv:1706.00023
 
     Args:
@@ -326,13 +334,13 @@ def dual_basis_potential(grid,
                                     non_periodic, period_cutoff)
 
 
-def jellium_model(grid,
-                  spinless=False,
-                  plane_wave=True,
-                  include_constant=False,
-                  e_cutoff=None,
-                  non_periodic=False,
-                  period_cutoff=None):
+def jellium_model(grid: Grid,
+                  spinless: bool = False,
+                  plane_wave: bool = True,
+                  include_constant: bool = False,
+                  e_cutoff: float = None,
+                  non_periodic: bool = False,
+                  period_cutoff: Optional[float] = None) -> FermionOperator:
     """Return jellium Hamiltonian as FermionOperator class.
 
     Args:
@@ -367,9 +375,10 @@ def jellium_model(grid,
     return hamiltonian
 
 
-def jordan_wigner_dual_basis_jellium(grid,
-                                     spinless=False,
-                                     include_constant=False):
+def jordan_wigner_dual_basis_jellium(grid: Grid,
+                                     spinless: bool = False,
+                                     include_constant: bool = False
+                                    ) -> QubitOperator:
     """Return the jellium Hamiltonian as QubitOperator in the dual basis.
 
     Args:
@@ -482,11 +491,11 @@ def jordan_wigner_dual_basis_jellium(grid,
 
 
 def hypercube_grid_with_given_wigner_seitz_radius_and_filling(
-        dimension,
-        grid_length,
-        wigner_seitz_radius,
-        filling_fraction=0.5,
-        spinless=True):
+        dimension: int,
+        grid_length: int,
+        wigner_seitz_radius: float,
+        filling_fraction: float = 0.5,
+        spinless: bool = True) -> Grid:
     """Return a Grid with the same number of orbitals along each dimension
     with the specified Wigner-Seitz radius.
 
