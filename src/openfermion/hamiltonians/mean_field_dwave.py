@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This module constructs Hamiltonians for the BCS mean-field d-wave model."""
+from typing import Optional
 
 from openfermion.ops.operators import FermionOperator
 from openfermion.utils.indexing import down_index, up_index
@@ -19,12 +20,12 @@ from openfermion.hamiltonians.special_operators import number_operator
 import openfermion.utils as op_utils
 
 
-def mean_field_dwave(x_dimension,
-                     y_dimension,
-                     tunneling,
-                     sc_gap,
-                     chemical_potential=0.,
-                     periodic=True):
+def mean_field_dwave(x_dimension: int,
+                     y_dimension: int,
+                     tunneling: float,
+                     sc_gap: float,
+                     chemical_potential: Optional[float] = 0.,
+                     periodic: bool = True) -> FermionOperator:
     r"""Return symbolic representation of a BCS mean-field d-wave Hamiltonian.
 
     The Hamiltonians of this model live on a grid of dimensions
