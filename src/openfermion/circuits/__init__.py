@@ -101,3 +101,9 @@ from .trotter import (
     error_operator,
     trotter_steps_required,
 )
+
+from .vpe_circuits import (
+    vpe_single_circuit,
+    vpe_circuits_single_timestep,
+    standard_vpe_rotation_set,
+)
