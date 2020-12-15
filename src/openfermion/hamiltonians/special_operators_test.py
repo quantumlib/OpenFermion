@@ -145,6 +145,10 @@ class NumberOperatorTest(unittest.TestCase):
                 ((3, 1), (3, 0))))
         self.assertTrue(op == expected)
 
+    def test_bad_parity(self):
+        with self.assertRaises(ValueError):
+            number_operator(4, parity=2)
+
 
 class MajoranaOperatorTest(unittest.TestCase):
 
