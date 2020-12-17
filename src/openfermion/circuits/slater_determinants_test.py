@@ -58,9 +58,11 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
         """Test getting the ground state preparation circuit for a Hamiltonian
         that conserves particle number."""
         for n_qubits in self.n_qubits_range:
+            print(n_qubits)
             # Initialize a particle-number-conserving Hamiltonian
             quadratic_hamiltonian = random_quadratic_hamiltonian(
                 n_qubits, True, True)
+            print(quadratic_hamiltonian)
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
@@ -268,3 +270,8 @@ def test_not_implemented_spinr_reduced():
         with pytest.raises(NotImplementedError):
             _ = gaussian_state_preparation_circuit(quadratic_hamiltonian,
                                                    spin_sector=1)
+
+# if __name__ == "__main__":
+#     inst = GaussianStatePreparationCircuitTest()
+#     inst.setUp()
+#     inst.test_ground_state_particle_conserving()

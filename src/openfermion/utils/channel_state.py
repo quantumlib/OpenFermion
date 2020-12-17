@@ -13,7 +13,7 @@
 
 from functools import reduce
 from itertools import chain
-from numpy import array, conj, dot, eye, kron, log2, sqrt
+from numpy import array, dot, eye, kron, log2, sqrt
 
 
 def _verify_channel_inputs(density_matrix, probability, target_qubit):

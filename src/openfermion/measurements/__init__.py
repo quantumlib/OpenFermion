@@ -15,6 +15,23 @@ from .equality_constraint_projection import (
     constraint_matrix,
     linearize_term,
     unlinearize_term,
+    operator_to_vector,
+    vector_to_operator,
+)
+
+from .qubit_partitioning import (
+    binary_partition_iterator,
+    group_into_tensor_product_basis_sets,
+    partition_iterator,
+    pauli_string_iterator,
+)
+
+from .fermion_partitioning import (
+    pair_within,
+    pair_between,
+    pair_within_simultaneously,
+    pair_within_simultaneously_binned,
+    pair_within_simultaneously_symmetric,
 )
 
 from .get_interaction_rdm import get_interaction_rdm
@@ -24,10 +41,7 @@ from .rdm_equality_constraints import (
     two_body_fermion_constraints,
 )
 
-from .qubit_partitioning import (
-    binary_partition_iterator,
-    partition_iterator,
-    pauli_string_iterator,
+from .vpe_estimators import (
+    PhaseFitEstimator,
+    get_phase_function,
 )
-
-from .prony import prony

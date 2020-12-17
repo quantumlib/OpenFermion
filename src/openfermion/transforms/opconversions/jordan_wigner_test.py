@@ -34,7 +34,7 @@ from openfermion.testing.testing_utils import (random_interaction_operator,
 
 from openfermion.transforms.opconversions.jordan_wigner import (
     jordan_wigner, jordan_wigner_one_body, jordan_wigner_two_body,
-    jordan_wigner_interaction_op)
+    _jordan_wigner_interaction_op)
 
 
 class JordanWignerTransformTest(unittest.TestCase):
@@ -270,7 +270,7 @@ class InteractionOperatorsJWTest(unittest.TestCase):
 
         self.assertEqual(op1, op2)
 
-    def test_jordan_wigner_one_body(self):
+    def testjordan_wigner_one_body(self):
         # Make sure it agrees with jordan_wigner(FermionTerm).
         for p in range(self.n_qubits):
             for q in range(self.n_qubits):
@@ -289,7 +289,7 @@ class InteractionOperatorsJWTest(unittest.TestCase):
 
                 self.assertTrue(test_operator == correct_op)
 
-    def test_jordan_wigner_two_body(self):
+    def testjordan_wigner_two_body(self):
         # Make sure it agrees with jordan_wigner(FermionTerm).
         for p, q, r, s in itertools.product(range(self.n_qubits), repeat=4):
             coefficient = numpy.random.randn()
@@ -329,8 +329,8 @@ class InteractionOperatorsJWTest(unittest.TestCase):
 
     def test_jordan_wigner_interaction_op_too_few_n_qubits(self):
         with self.assertRaises(ValueError):
-            jordan_wigner_interaction_op(self.interaction_operator,
-                                         self.n_qubits - 2)
+            _jordan_wigner_interaction_op(self.interaction_operator,
+                                          self.n_qubits - 2)
 
     def test_jordan_wigner_interaction_op_with_zero_term(self):
         test_op = FermionOperator('1^ 2^ 3 4')

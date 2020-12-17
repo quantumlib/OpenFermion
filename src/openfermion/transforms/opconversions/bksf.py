@@ -11,6 +11,8 @@
 #   limitations under the License.
 """bravyi_kitaev_fast transform on fermionic operators."""
 
+from typing import Optional
+
 import numpy
 import networkx
 
@@ -19,7 +21,7 @@ from openfermion.ops.representations import InteractionOperator
 from openfermion.utils.operator_utils import count_qubits
 
 
-def bravyi_kitaev_fast(operator):
+def bravyi_kitaev_fast(operator: InteractionOperator) -> QubitOperator:
     """
     Find the Pauli-representation of InteractionOperator for Bravyi-Kitaev
     Super fast (BKSF) algorithm. Pauli-representation of general
@@ -28,7 +30,7 @@ def bravyi_kitaev_fast(operator):
     transformation for a restricted set of fermion operator.
 
     Args:
-        operator: Interaction Operator.
+        operator: InteractionOperator.
 
     Returns:
         transformed_operator: An instance of the QubitOperator class.
@@ -43,7 +45,8 @@ def bravyi_kitaev_fast(operator):
         raise TypeError("operator must be an InteractionOperator.")
 
 
-def bravyi_kitaev_fast_interaction_op(iop):
+def bravyi_kitaev_fast_interaction_op(iop: InteractionOperator
+                                     ) -> QubitOperator:
     r"""
     Transform from InteractionOperator to QubitOperator for Bravyi-Kitaev fast
     algorithm.
@@ -71,7 +74,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
     of the electronic Hamiltonian are provided in (arXiv 1712.00446).
 
     Args:
-        iop (Interaction Operator):
+        iop (InteractionOperator):
         n_qubit (int): Number of qubits
 
     Returns:
@@ -92,7 +95,7 @@ def bravyi_kitaev_fast_interaction_op(iop):
             coefficient = complex(iop[(p, 1), (q, 0)])
             if coefficient and p >= q:
                 qubit_operator += (coefficient *
-                                   one_body(edge_matrix_indices, p, q))
+                                   _one_body(edge_matrix_indices, p, q))
 
             # Keep looping for the two-body terms.
             for r in range(n_qubits):
@@ -111,8 +114,8 @@ def bravyi_kitaev_fast_interaction_op(iop):
                                 continue
                         # Handle case of 3 unique indices
                         elif len(set([p, q, r, s])) == 3:
-                            transformed_term = two_body(edge_matrix_indices, p,
-                                                        q, r, s)
+                            transformed_term = _two_body(
+                                edge_matrix_indices, p, q, r, s)
                             transformed_term *= .5 * coefficient
                             qubit_operator += transformed_term
                             continue
@@ -121,13 +124,16 @@ def bravyi_kitaev_fast_interaction_op(iop):
                             continue  # pragma: no cover
 
                     # Handle the two-body terms.
-                    transformed_term = two_body(edge_matrix_indices, p, q, r, s)
+                    transformed_term = _two_body(edge_matrix_indices, p, q, r,
+                                                 s)
                     transformed_term *= coefficient
                     qubit_operator += transformed_term
     return qubit_operator
 
 
-def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
+def bravyi_kitaev_fast_edge_matrix(iop: InteractionOperator,
+                                   n_qubits: Optional[int] = None
+                                  ) -> numpy.ndarray:
     """
     Use InteractionOperator to construct edge matrix required for the algorithm
 
@@ -135,7 +141,8 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
     Edge matrix is required to build the operators in bravyi_kitaev_fast model.
 
     Args:
-        iop (Interaction Operator):
+        iop (InteractionOperator):
+        n_qubits (int): number of qubits
 
     Returns:
         edge_matrix (Numpy array): A square numpy array containing information
@@ -204,7 +211,8 @@ def bravyi_kitaev_fast_edge_matrix(iop, n_qubits=None):
     return edge_matrix.transpose()
 
 
-def one_body(edge_matrix_indices, p, q):
+def _one_body(edge_matrix_indices: numpy.ndarray, p: int,
+              q: int) -> QubitOperator:
     r"""
     Map the term a^\dagger_p a_q + a^\dagger_q a_p to QubitOperator.
 
@@ -234,7 +242,8 @@ def one_body(edge_matrix_indices, p, q):
     return qubit_operator
 
 
-def two_body(edge_matrix_indices, p, q, r, s):
+def _two_body(edge_matrix_indices: numpy.ndarray, p: int, q: int, r: int,
+              s: int) -> QubitOperator:
     r"""
     Map the term a^\dagger_p a^\dagger_q a_r a_s + h.c. to QubitOperator.
 
@@ -317,7 +326,8 @@ def two_body(edge_matrix_indices, p, q, r, s):
     return qubit_operator
 
 
-def edge_operator_b(edge_matrix_indices, i):
+def edge_operator_b(edge_matrix_indices: numpy.ndarray,
+                    i: int) -> QubitOperator:
     """Calculate the edge operator B_i. The definitions used here are
     consistent with arXiv:quant-ph/0003137
 
@@ -339,7 +349,8 @@ def edge_operator_b(edge_matrix_indices, i):
     return B_i
 
 
-def edge_operator_aij(edge_matrix_indices, i, j):
+def edge_operator_aij(edge_matrix_indices: numpy.ndarray, i: int,
+                      j: int) -> QubitOperator:
     """Calculate the edge operator A_ij. The definitions used here are
     consistent with arXiv:quant-ph/0003137
 
@@ -374,7 +385,7 @@ def edge_operator_aij(edge_matrix_indices, i, j):
     return a_ij
 
 
-def vacuum_operator(edge_matrix_indices):
+def vacuum_operator(edge_matrix_indices: numpy.ndarray) -> QubitOperator:
     """Use the stabilizers to find the vacuum state in bravyi_kitaev_fast.
 
     Args:
@@ -436,12 +447,14 @@ def number_operator(iop, mode_number=None):
     return num_operator
 
 
-def generate_fermions(edge_matrix_indices, i, j):
+def generate_fermions(edge_matrix_indices: numpy.ndarray, i: int,
+                      j: int) -> QubitOperator:
     """The QubitOperator for generating fermions in bravyi_kitaev_fast
     representation
 
     Args:
         edge_matrix_indices(numpy array): specifying the edges
+        i and j (int)
 
     Return:
         A QubitOperator
