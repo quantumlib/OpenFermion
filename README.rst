@@ -15,7 +15,7 @@ Hamiltonians. For more information, see our
 .. image:: https://readthedocs.org/projects/openfermion/badge/?version=latest
     :target: http://openfermion.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
-    
+
 .. image:: https://badge.fury.io/py/openfermion.svg
     :target: https://badge.fury.io/py/openfermion
 
@@ -24,6 +24,57 @@ Run the interactive Jupyter Notebooks in Colab_ or MyBinder_:
 
 .. _Colab: https://colab.research.google.com/github/quantumlib/OpenFermion
 .. _MyBinder:  https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
+
+
+Installation and Documentation
+==============================
+
+Installing the latest **stable** OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
+
+Documentation can be found at `quantumai.google/openfermion <https://quantumai.google/openfermion>`__ and the following links
+
+* `Installation <https://quantumai.google/openfermion/install>`__
+
+* `API Docs <https://quantumai.google/reference/python/openfermion/all_symbols>`__
+
+* `Tutorials <https://quantumai.google/openfermion/tutorials/intro_to_openfermion>`__
+
+Currently, OpenFermion is tested on Mac, Windows, and Linux. We recommend using Mac or Linux because
+the electronic structure plugins are only compatible on these platforms. However,
+for those who would like to use Windows, or for anyone having other difficulties
+with installing OpenFermion or its plugins, we have provided a Docker image
+and usage instructions in the
+`docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
+The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
+The Docker installation should run on any operating system.
+
+You might also want to explore the alpha release of the
+`OpenFermion Cloud Library <https://github.com/quantumlib/OpenFermion/tree/master/cloud_library>`__
+where users can share and download precomputed molecular benchmark files.
+
+Check out other `projects and papers using OpenFermion <https://quantumai.google/openfermion/projects>`__ for inspiration,
+and let us know if you've been using OpenFermion!
+
+
+Developer install
+-----------------
+
+To install the latest version of OpenFermion (in development mode):
+
+.. code-block:: bash
+
+  git clone https://github.com/quantumlib/OpenFermion
+  cd OpenFermion
+  python -m pip install -e .
+
+Library install
+---------------
+
+To install the latest PyPI release as a library (in user mode):
+
+.. code-block:: bash
+
+  python -m pip install --user openfermion
 
 Plugins
 =======
@@ -46,52 +97,6 @@ Electronic structure package plugins
 * `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__ to support integration with `PySCF <https://github.com/sunqm/pyscf>`__.
 
 * `OpenFermion-Dirac <https://github.com/bsenjean/Openfermion-Dirac>`__ to support integration with `DIRAC <http://diracprogram.org/doku.php>`__.
-
-Getting started
-===============
-
-Installing OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
-For information about getting started beyond what is provided below please see our
-`tutorial <https://github.com/quantumlib/OpenFermion/blob/master/docs/tutorials/intro_to_openfermion.ipynb>`__
-in the
-`tutorials <https://github.com/quantumlib/OpenFermion/blob/master/docs/tutorials>`__ folder
-as well as our detailed `code documentation <http://openfermion.readthedocs.io/en/latest/openfermion.html>`__.
-
-Currently, OpenFermion is only tested on Mac and Linux for the reason that both
-electronic structure plugins are only compatible with Mac and Linux. However,
-for those who would like to use Windows, or for anyone having other difficulties
-with installing OpenFermion or its plugins, we have provided a Docker image
-and usage instructions in the
-`docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
-The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
-The Docker installation should run on any operating system.
-
-You might also want to explore the alpha release of the
-`OpenFermion Cloud Library <https://github.com/quantumlib/OpenFermion/tree/master/cloud_library>`__
-where users can share and download precomputed molecular benchmark files.
-
-Check out other `projects and papers using OpenFermion <docs/projects.md>`__ for inspiration,
-and let us know if you've been using OpenFermion!
-
-Developer install
------------------
-
-To install the latest version of OpenFermion (in development mode):
-
-.. code-block:: bash
-
-  git clone https://github.com/quantumlib/OpenFermion
-  cd OpenFermion
-  python -m pip install -e .
-
-Library install
----------------
-
-To install the latest PyPI release as a library (in user mode):
-
-.. code-block:: bash
-
-  python -m pip install --user openfermion
 
 How to contribute
 =================
@@ -126,6 +131,7 @@ Authors
 
 `Ryan Babbush <http://ryanbabbush.com>`__ (Google),
 `Jarrod McClean <http://jarrodmcclean.com>`__ (Google),
+`Nicholas Rubin <https://github.com/ncrubin>`__ (Google),
 `Kevin Sung <https://github.com/kevinsung>`__ (University of Michigan),
 `Ian Kivlichan <http://aspuru.chem.harvard.edu/ian-kivlichan/>`__ (Harvard),
 `Dave Bacon <https://github.com/dabacon>`__ (Google),
@@ -152,7 +158,6 @@ Authors
 `Isil Ozfidan <https://github.com/conta877>`__ (D-Wave Systems),
 `Max Radin <https://github.com/max-radin>`__ (UC Santa Barbara),
 `Jhonathan Romero <https://github.com/jromerofontalvo>`__ (Harvard),
-`Nicholas Rubin <https://github.com/ncrubin>`__ (Google),
 `Daniel Sank <https://github.com/DanielSank>`__ (Google),
 `Nicolas Sawaya <https://github.com/nicolassawaya>`__ (Harvard),
 `Bruno Senjean <https://github.com/bsenjean>`__ (Leiden University),
