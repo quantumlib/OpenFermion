@@ -15,7 +15,7 @@ using stabilizer conditions. Based on ideas of arXiv:1701.08213. """
 import numpy
 from openfermion.ops.operators import QubitOperator
 from openfermion.config import EQ_TOLERANCE
-import openfermion.utils.operator_utils as op_utils
+from openfermion.utils import operator_utils as op_utils
 
 
 class StabilizerError(Exception):

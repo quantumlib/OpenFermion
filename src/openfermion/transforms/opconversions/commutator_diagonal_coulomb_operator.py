@@ -14,8 +14,7 @@
 import warnings
 
 from openfermion.ops.operators import FermionOperator
-import openfermion.transforms.opconversions.term_reordering\
-    as term_reordering
+from openfermion.transforms.opconversions import term_reordering
 
 
 def commutator_ordered_diagonal_coulomb_with_two_body_operator(

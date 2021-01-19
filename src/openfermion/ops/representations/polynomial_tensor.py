@@ -291,7 +291,7 @@ class PolynomialTensor(object):
         return -1 * self + subtrahend
 
     def __imul__(self, multiplier):
-        if isinstance(multiplier, (int, float, complex)):
+        if isinstance(multiplier, COEFFICIENT_TYPES):
             for key in self.n_body_tensors:
                 self.n_body_tensors[key] *= multiplier
 
@@ -324,7 +324,7 @@ class PolynomialTensor(object):
         return product
 
     def __itruediv__(self, dividend):
-        if isinstance(dividend, (int, float, complex)):
+        if isinstance(dividend, COEFFICIENT_TYPES):
             for key in self.n_body_tensors:
                 self.n_body_tensors[key] /= dividend
         else:

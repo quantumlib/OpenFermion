@@ -174,6 +174,92 @@ def geometry_from_file(file_name):
     return geometry
 
 
+def antisymtei(two_body_integrals):
+    """
+    Args:
+    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
+        Ordering.
+
+    Returns:
+    antisymints : Numpy array of anti-symmetrized integrals
+        <ij||kl> = <ij|kl> - <ij|lk> (physicist ordering).
+    """
+    symints = numpy.copy(two_body_integrals.transpose(0, 1, 3, 2), order='C')
+    antisymints = symints - two_body_integrals
+    return antisymints
+
+
+def j_mat(two_body_integrals):
+    """
+    Args:
+    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
+        Ordering.
+
+    Returns:
+    j_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
+        (in chemist notation).
+    """
+    chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2),
+                               order='C')
+    return numpy.einsum('iijj -> ij', chem_ordering)
+
+
+def k_mat(two_body_integrals):
+    """
+    Args:
+    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
+        Ordering.
+
+    Returns:
+    k_matr : Numpy array of the exchange integrals K_{p,q} = (pq|qp)
+        (in chemist notation).
+    """
+    chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2),
+                               order='C')
+    return numpy.einsum('ijji -> ij', chem_ordering)
+
+
+def spinorb_from_spatial(one_body_integrals, two_body_integrals):
+    n_qubits = 2 * one_body_integrals.shape[0]
+
+    # Initialize Hamiltonian coefficients.
+    one_body_coefficients = numpy.zeros((n_qubits, n_qubits))
+    two_body_coefficients = numpy.zeros(
+        (n_qubits, n_qubits, n_qubits, n_qubits))
+    # Loop through integrals.
+    for p in range(n_qubits // 2):
+        for q in range(n_qubits // 2):
+
+            # Populate 1-body coefficients. Require p and q have same spin.
+            one_body_coefficients[2 * p, 2 * q] = one_body_integrals[p, q]
+            one_body_coefficients[2 * p + 1, 2 * q +
+                                  1] = one_body_integrals[p, q]
+            # Continue looping to prepare 2-body coefficients.
+            for r in range(n_qubits // 2):
+                for s in range(n_qubits // 2):
+
+                    # Mixed spin
+                    two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 *
+                                          s] = (two_body_integrals[p, q, r, s])
+                    two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s +
+                                          1] = (two_body_integrals[p, q, r, s])
+
+                    # Same spin
+                    two_body_coefficients[2 * p, 2 * q, 2 * r, 2 *
+                                          s] = (two_body_integrals[p, q, r, s])
+                    two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r +
+                                          1, 2 * s +
+                                          1] = (two_body_integrals[p, q, r, s])
+
+    # Truncate.
+    one_body_coefficients[
+        numpy.absolute(one_body_coefficients) < EQ_TOLERANCE] = 0.
+    two_body_coefficients[
+        numpy.absolute(two_body_coefficients) < EQ_TOLERANCE] = 0.
+
+    return one_body_coefficients, two_body_coefficients
+
+
 class MolecularData(object):
     """Class for storing molecule data from a fixed basis set at a fixed
     geometry that is obtained from classical electronic structure
@@ -741,7 +827,7 @@ class MolecularData(object):
                 shape of (n_orbitals, n_orbitals, n_orbitals, n_orbitals).
 
         Raises:
-          MisissingCalculationError: If integrals are not calculated.
+          MissingCalculationError: If integrals are not calculated.
         """
         # Make sure integrals have been computed.
         if self.one_body_integrals is None or self.two_body_integrals is None:
@@ -817,13 +903,12 @@ class MolecularData(object):
                 get_active_space_integrals(occupied_indices, active_indices)
             constant = self.nuclear_repulsion + core_adjustment
 
-        one_body_coefficients, two_body_coefficients =\
-            reps.get_tensors_from_integrals(one_body_integrals,
-                                           two_body_integrals)
+        one_body_coefficients, two_body_coefficients = spinorb_from_spatial(
+            one_body_integrals, two_body_integrals)
 
         # Cast to InteractionOperator class and return.
         molecular_hamiltonian = reps.InteractionOperator(
-            constant, one_body_coefficients, two_body_coefficients)
+            constant, one_body_coefficients, 1 / 2 * two_body_coefficients)
 
         return molecular_hamiltonian
 
@@ -864,6 +949,59 @@ class MolecularData(object):
         # Cast to InteractionRDM class.
         rdm = reps.InteractionRDM(one_rdm, two_rdm)
         return rdm
+
+    def get_j(self):
+        """Method to return coulomb matrix.
+
+        Returns:
+          k_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
+            (in chemist notation).
+
+        Raises:
+          MissingCalculationError: If integrals are not calculated.
+        """
+        # Make sure integrals have been computed.
+        if self.two_body_integrals is None:
+            raise MissingCalculationError(
+                'Missing integral calculation in {}, run before loading '
+                'integrals.'.format(self.filename))
+        return j_mat(self.two_body_integrals)
+
+    def get_k(self):
+        """Method to return exchange matrix.
+
+        Returns:
+          k_matr : Numpy array of the coulomb integrals K_{p,q} = (pq|qp)
+            (in chemist notation).
+
+        Raises:
+          MissingCalculationError: If integrals are not calculated.
+        """
+        # Make sure integrals have been computed.
+        if self.two_body_integrals is None:
+            raise MissingCalculationError(
+                'Missing integral calculation in {}, run before loading '
+                'integrals.'.format(self.filename))
+        return k_mat(self.two_body_integrals)
+
+    def get_antisym(self):
+        """Method to return anti-symmetrized integrals in spin-orbital basis.
+
+        Returns:
+          antisymints : Numpy array of anti-symmetrized integrals in spin-
+            orbital basis <ij||kl> = <ij|kl> - <ij|lk> (physicist ordering)
+
+        Raises:
+          MissingCalculationError: If integrals are not calculated.
+        """
+        # Make sure integrals have been computed.
+        if self.two_body_integrals is None:
+            raise MissingCalculationError(
+                'Missing integral calculation in {}, run before loading '
+                'integrals.'.format(self.filename))
+        _, two_body_coefficients = spinorb_from_spatial(self.one_body_integrals,
+                                                        self.two_body_integrals)
+        return antisymtei(two_body_coefficients)
 
 
 def load_molecular_hamiltonian(geometry,

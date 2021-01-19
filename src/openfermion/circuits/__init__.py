@@ -48,6 +48,7 @@ from .primitives import (
     ffft,
     optimal_givens_decomposition,
     prepare_gaussian_state,
+    prepare_slater_determinant,
     swap_network,
 )
 
@@ -99,4 +100,10 @@ from .trotter import (
     error_bound,
     error_operator,
     trotter_steps_required,
+)
+
+from .vpe_circuits import (
+    vpe_single_circuit,
+    vpe_circuits_single_timestep,
+    standard_vpe_rotation_set,
 )

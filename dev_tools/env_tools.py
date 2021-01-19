@@ -112,11 +112,11 @@ def prepare_temporary_test_environment(
     # Create virtual environment.
     base_path = cast(str, env.destination_directory)
     env_path = os.path.join(base_path, env_name)
-    req_path = os.path.join(base_path, 'requirements.txt')
+    req_path = os.path.join(base_path, 'tutorial-requirements.txt')
     dev_req_path = os.path.join(base_path, 'dev_tools', 'conf',
                                 'pip-list-dev-tools.txt')
     contrib_req_path = os.path.join(base_path, 'cirq', 'contrib',
-                                    'contrib-requirements.txt')
+                                    'contrib-tutorial-requirements.txt')
     rev_paths = [req_path, dev_req_path, contrib_req_path]
     create_virtual_env(venv_path=env_path,
                        python_path=python_path,

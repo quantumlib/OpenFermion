@@ -44,4 +44,5 @@ from .representations import (
     QuadraticHamiltonian,
     QuadraticHamiltonianError,
     DOCIHamiltonian,
+    antisymmetric_canonical_form,
 )

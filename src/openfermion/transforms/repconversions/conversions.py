@@ -21,10 +21,11 @@ from openfermion.transforms.opconversions import (check_no_sympy,
                                                   normal_ordered)
 from openfermion.ops.representations.quadratic_hamiltonian import (
     QuadraticHamiltonian, QuadraticHamiltonianError)
-import openfermion.chem as chem
+
+from openfermion.chem import MolecularData
 
 # for breaking cyclic imports
-import openfermion.utils.operator_utils as op_utils
+from openfermion.utils import operator_utils as op_utils
 
 
 def get_quadratic_hamiltonian(fermion_operator,
@@ -345,10 +346,10 @@ def get_molecular_data(interaction_operator,
     n_spin_orbitals = interaction_operator.n_qubits
 
     # Introduce bare molecular operator to fill
-    molecule = chem.MolecularData(geometry=geometry,
-                                  basis=basis,
-                                  multiplicity=multiplicity,
-                                  data_directory=data_directory)
+    molecule = MolecularData(geometry=geometry,
+                             basis=basis,
+                             multiplicity=multiplicity,
+                             data_directory=data_directory)
 
     molecule.nuclear_repulsion = interaction_operator.constant
 
