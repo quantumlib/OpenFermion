@@ -1,5 +1,5 @@
 import numpy as np
-from openfermion.linalg import wedge
+from openfermion.linalg.wedge_product import wedge
 
 
 def valdemaro_reconstruction(tpdm, n_electrons):
