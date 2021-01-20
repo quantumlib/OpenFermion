@@ -43,7 +43,6 @@ from .linear_qubit_operator import (
     ParallelLinearQubitOperator,
 )
 
-
 from .rdm_reconstruction import (
     valdemaro_reconstruction,)
 
@@ -94,4 +93,3 @@ from .wedge_product import (
     generate_parity_permutations,
     wedge,
 )
-
