@@ -12,7 +12,7 @@ from scipy.optimize.optimize import OptimizeResult
 from openfermion.ops.representations import (InteractionOperator,
                                              InteractionRDM,
                                              general_basis_change)
-from openfermion.linalg.wedge_product import wedge
+import openfermion.linalg as linalg
 
 
 def get_matrix_of_eigs(w: np.ndarray) -> np.ndarray:
@@ -134,7 +134,7 @@ class HartreeFockFunctional():
                         dtype=np.complex128)
         opdm[::2, ::2] = opdm_aa
         opdm[1::2, 1::2] = opdm_aa
-        tpdm = wedge(opdm, opdm, (1, 1), (1, 1))
+        tpdm = linalg.wedge(opdm, opdm, (1, 1), (1, 1))
         rdms = InteractionRDM(opdm, 2 * tpdm)
         return rdms
 
@@ -166,7 +166,7 @@ class HartreeFockFunctional():
                         dtype=np.complex128)
         opdm[::2, ::2] = alpha_opdm
         opdm[1::2, 1::2] = alpha_opdm
-        tpdm = 2 * wedge(opdm, opdm, (1, 1), (1, 1))
+        tpdm = 2 * linalg.wedge(opdm, opdm, (1, 1), (1, 1))
 
         # now go through and generate all the necessary Z, Y, Y_kl matrices
         kappa_matrix = rhf_params_to_matrix(params,
