@@ -136,6 +136,7 @@ from openfermion.linalg import (
     fit_known_frequencies,
     prony,
     wedge,
+    valdemaro_reconstruction,
 )
 
 from openfermion.measurements import (
