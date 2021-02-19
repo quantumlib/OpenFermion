@@ -24,24 +24,6 @@ from openfermion.config import EQ_TOLERANCE
 COEFFICIENT_TYPES = (int, float, complex, sympy.Expr)
 
 
-def _issmall(val, tol=EQ_TOLERANCE):
-    '''Checks whether a value is near-zero
-
-    Parses the allowed coefficients above for near-zero tests.
-
-    Args:
-        val (COEFFICIENT_TYPES) -- the value to be tested
-        tol (float) -- tolerance for inequality
-    '''
-    if isinstance(val, sympy.Expr):
-        if sympy.simplify(abs(val) < tol) == True:
-            return True
-        return False
-    if abs(val) < tol:
-        return True
-    return False
-
-
 class SymbolicOperator(metaclass=abc.ABCMeta):
     """Base class for FermionOperator and QubitOperator.
 
@@ -81,6 +63,24 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             these tuples are collected into a larger tuple which represents
             the term as the product of its factors.
     """
+
+    @staticmethod
+    def _issmall(val, tol=EQ_TOLERANCE):
+        '''Checks whether a value is near-zero
+
+        Parses the allowed coefficients above for near-zero tests.
+
+        Args:
+            val (COEFFICIENT_TYPES) -- the value to be tested
+            tol (float) -- tolerance for inequality
+        '''
+        if isinstance(val, sympy.Expr):
+            if sympy.simplify(abs(val) < tol) == True:
+                return True
+            return False
+        if abs(val) < tol:
+            return True
+        return False
 
     @abc.abstractproperty
     def actions(self):
@@ -331,7 +331,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             return '0'
         string_rep = ''
         for term, coeff in sorted(self.terms.items()):
-            if _issmall(coeff):
+            if self._issmall(coeff):
                 continue
             tmp_string = '{} ['.format(coeff)
             for factor in term:
@@ -428,7 +428,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             for term in addend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) +
                                     addend.terms[term])
-                if _issmall(self.terms[term]):
+                if self._issmall(self.terms[term]):
                     del self.terms[term]
         elif isinstance(addend, COEFFICIENT_TYPES):
             self.constant += addend
@@ -476,7 +476,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             for term in subtrahend.terms:
                 self.terms[term] = (self.terms.get(term, 0.0) -
                                     subtrahend.terms[term])
-                if _issmall(self.terms[term]):
+                if self._issmall(self.terms[term]):
                     del self.terms[term]
         elif isinstance(subtrahend, COEFFICIENT_TYPES):
             self.constant -= subtrahend
@@ -634,15 +634,15 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             b = other.terms[term]
             if not (isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr)):
                 tol *= max(1, abs(a), abs(b))
-            if _issmall(a - b, tol) is False:
+            if self._issmall(a - b, tol) is False:
                 return False
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if _issmall(self.terms[term], tol) is False:
+                if self._issmall(self.terms[term], tol) is False:
                     return False
             else:
-                if _issmall(other.terms[term], tol) is False:
+                if self._issmall(other.terms[term], tol) is False:
                     return False
         return True
 
@@ -713,7 +713,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             return max(
                 len(term)
                 for term, coeff in self.terms.items()
-                if (_issmall(coeff) is False))
+                if (self._issmall(coeff) is False))
 
     @classmethod
     def accumulate(cls, operators, start=None):
