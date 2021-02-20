@@ -136,7 +136,9 @@ class JordanWignerSparseTest(unittest.TestCase):
                 jordan_wigner_sparse(FermionOperator('1')).A, expected.A))
 
     def test_jw_sparse_0create_2annihilate(self):
-        expected = csc_matrix(([-1j, 1j], ([4, 6], [1, 3])), shape=(8, 8))
+        expected = csc_matrix(([-1j, 1j], ([4, 6], [1, 3])),
+                              shape=(8, 8),
+                              dtype=numpy.complex128)
         self.assertTrue(
             numpy.allclose(
                 jordan_wigner_sparse(FermionOperator('0^ 2', -1j)).A,
@@ -145,7 +147,8 @@ class JordanWignerSparseTest(unittest.TestCase):
     def test_jw_sparse_0create_3annihilate(self):
         expected = csc_matrix(
             ([-1j, 1j, 1j, -1j], ([8, 10, 12, 14], [1, 3, 5, 7])),
-            shape=(16, 16))
+            shape=(16, 16),
+            dtype=numpy.complex128)
         self.assertTrue(
             numpy.allclose(
                 jordan_wigner_sparse(FermionOperator('0^ 3', -1j)).A,
@@ -606,7 +609,9 @@ class GroundStateTest(unittest.TestCase):
         ground = get_ground_state(
             get_sparse_operator(
                 QubitOperator('Y0 X1') + QubitOperator('Z0 Z1')))
-        expected_state = csc_matrix(([1j, 1], ([1, 2], [0, 0])), shape=(4, 1)).A
+        expected_state = csc_matrix(([1j, 1], ([1, 2], [0, 0])),
+                                    shape=(4, 1),
+                                    dtype=numpy.complex128).A
         expected_state /= numpy.sqrt(2.0)
 
         self.assertAlmostEqual(ground[0], -2)
