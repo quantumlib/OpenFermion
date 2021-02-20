@@ -44,7 +44,7 @@ from .linear_qubit_operator import (
 )
 
 from .rdm_reconstruction import (
-    valdemaro_reconstruction,)
+    valdemoro_reconstruction,)
 
 from .sparse_tools import (
     wrapped_kronecker,
