@@ -1,6 +1,6 @@
+import numpy as np
 from openfermion.linalg.rdm_reconstruction import valdemaro_reconstruction
 from openfermion.linalg.wedge_product import wedge
-import numpy as np
 
 
 def test_valdemoro_correct_size():
