@@ -186,6 +186,7 @@ from openfermion.ops import (
     InteractionRDMError,
     QuadraticHamiltonian,
     QuadraticHamiltonianError,
+    DOCIHamiltonian,
     antisymmetric_canonical_form,
 )
 
