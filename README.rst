@@ -175,16 +175,15 @@ How to cite
 ===========
 When using OpenFermion for research projects, please cite:
 
-    Jarrod R. McClean, Kevin J. Sung, Ian D. Kivlichan, Xavier Bonet-Monroig, Yudong Cao,
-    Chengyu Dai, E. Schuyler Fried, Craig Gidney, Brendan Gimby,
-    Pranav Gokhale, Thomas Häner, Tarini Hardikar, Vojtĕch Havlíček,
-    Oscar Higgott, Cupjin Huang, Josh Izaac, Zhang Jiang, William Kirby, Xinle Liu,
-    Sam McArdle, Matthew Neeley, Thomas O'Brien, Bryan O'Gorman, Isil Ozfidan,
-    Maxwell D. Radin, Jhonathan Romero, Nicholas Rubin, Nicolas P. D. Sawaya,
-    Kanav Setia, Sukin Sim, Damian S. Steiger, Mark Steudtner, Qiming Sun,
-    Wei Sun, Daochen Wang, Fang Zhang and Ryan Babbush.
+    Jarrod R McClean, Nicholas C Rubin, Kevin J Sung, Ian D Kivlichan, Xavier Bonet-Monroig,
+    Yudong Cao, Chengyu Dai, E Schuyler Fried, Craig Gidney, Brendan Gimby, Pranav Gokhale,
+    Thomas Häner, Tarini Hardikar, Vojtěch Havlíček, Oscar Higgott, Cupjin Huang, Josh Izaac,
+    Zhang Jiang, Xinle Liu, Sam McArdle, Matthew Neeley, Thomas O'Brien, Bryan O'Gorman,
+    Isil Ozfidan, Maxwell D Radin, Jhonathan Romero, Nicolas P D Sawaya, Bruno Senjean,
+    Kanav Setia, Sukin Sim, Damian S Steiger, Mark Steudtner, Qiming Sun, Wei Sun, Daochen Wang,
+    Fang Zhang, and Ryan Babbush
     *OpenFermion: The Electronic Structure Package for Quantum Computers*.
-    `arXiv:1710.07629 <https://arxiv.org/abs/1710.07629>`__. 2017.
+    `Quantum Science and Technology 5.3 (2020): 034014 <https://iopscience.iop.org/article/10.1088/2058-9565/ab8ebc/meta>`__.
 
 We are happy to include future contributors as authors on later releases.
 
