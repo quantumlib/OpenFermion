@@ -278,11 +278,16 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
         """The symbol to use in circuit diagrams."""
         return cls.__name__
 
-    def _resolve_parameters_(self, resolver):
-        resolved_weights = cirq.resolve_parameters(self.weights, resolver)
-        resolved_exponent = cirq.resolve_parameters(self._exponent, resolver)
+    def _resolve_parameters_(self, resolver, recursive: bool = True):
+        resolved_weights = cirq.resolve_parameters(self.weights,
+                                                   resolver,
+                                                   recursive=recursive)
+        resolved_exponent = cirq.resolve_parameters(self._exponent,
+                                                    resolver,
+                                                    recursive=recursive)
         resolved_global_shift = cirq.resolve_parameters(self._global_shift,
-                                                        resolver)
+                                                        resolver,
+                                                        recursive=recursive)
         return type(self)(resolved_weights,
                           exponent=resolved_exponent,
                           global_shift=resolved_global_shift)
