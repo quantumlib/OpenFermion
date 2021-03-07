@@ -17,6 +17,14 @@ import itertools
 import numpy
 
 from openfermion.ops.representations import InteractionOperator
+from openfermion.ops.representations import get_active_space_integrals
+
+
+class ActiveSpaceIntegralsTest(unittest.TestCase):
+
+    def test_raises_error(self):
+        with self.assertRaises(ValueError):
+            _ = get_active_space_integrals(None, None, [], [])
 
 
 class InteractionOperatorTest(unittest.TestCase):

@@ -136,7 +136,7 @@ from openfermion.linalg import (
     fit_known_frequencies,
     prony,
     wedge,
-    valdemaro_reconstruction,
+    valdemoro_reconstruction,
 )
 
 from openfermion.measurements import (
@@ -186,6 +186,7 @@ from openfermion.ops import (
     InteractionRDMError,
     QuadraticHamiltonian,
     QuadraticHamiltonianError,
+    DOCIHamiltonian,
     antisymmetric_canonical_form,
 )
 

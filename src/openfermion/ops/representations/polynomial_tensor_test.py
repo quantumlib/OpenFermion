@@ -176,6 +176,11 @@ class PolynomialTensorTest(unittest.TestCase):
             two_body_spinful
         })
 
+    def test_set_n_body_tensors(self):
+        pt_temp = copy.deepcopy(self.polynomial_tensor_a)
+        pt_temp.n_body_tensors = {(): 3}
+        self.assertEqual(pt_temp.constant, 3)
+
     def test_setitem_0body(self):
         self.polynomial_tensor_a[()] = 1
         self.assertEqual(self.polynomial_tensor_a.n_body_tensors[()], 1)

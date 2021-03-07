@@ -564,7 +564,8 @@ def jw_sparse_givens_rotation(i, j, theta, phi, n_qubits):
     rotation_matrix = scipy.sparse.csc_matrix(
         ([1., phase * cosine, -phase * sine, sine, cosine, phase],
          ((0, 1, 1, 2, 2, 3), (0, 1, 2, 1, 2, 3))),
-        shape=(4, 4))
+        shape=(4, 4),
+        dtype=numpy.complex128)
 
     # Initialize identity operators
     left_eye = scipy.sparse.eye(2**i, format='csc')

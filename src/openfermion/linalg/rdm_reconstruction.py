@@ -2,7 +2,7 @@ import numpy as np
 from openfermion.linalg.wedge_product import wedge
 
 
-def valdemaro_reconstruction(tpdm, n_electrons):
+def valdemoro_reconstruction(tpdm, n_electrons):
     """
     Build a 3-RDM by cumulant expansion and setting 3rd cumulant to zero
 
