@@ -1,4 +1,4 @@
-cirq==0.9.1
+cirq==0.10.0
 deprecation
 h5py>=2.8
 networkx
