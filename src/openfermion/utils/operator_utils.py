@@ -21,7 +21,7 @@ from scipy.sparse import spmatrix
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 from openfermion.ops.operators import (BosonOperator, FermionOperator,
                                        MajoranaOperator, QuadOperator,
-                                       QubitOperator)
+                                       QubitOperator, IsingOperator)
 from openfermion.ops.representations import (PolynomialTensor,
                                              DiagonalCoulombHamiltonian,
                                              InteractionOperator,
@@ -183,6 +183,15 @@ def count_qubits(operator):
     # Handle PolynomialTensor
     elif isinstance(operator, PolynomialTensor):
         return operator.n_qubits
+
+    # Handle IsingOperator
+    elif isinstance(operator, IsingOperator):
+        num_qubits = 0
+        for term in operator.terms:
+            if term:
+                if term[-1][0] + 1 > num_qubits:
+                    num_qubits = term[-1][0] + 1
+        return num_qubits
 
     # Raise for other classes.
     else:

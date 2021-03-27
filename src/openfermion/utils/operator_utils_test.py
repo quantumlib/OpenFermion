@@ -27,7 +27,7 @@ from openfermion.config import DATA_DIRECTORY
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
                                        BosonOperator, QubitOperator,
-                                       QuadOperator)
+                                       QuadOperator, IsingOperator)
 from openfermion.ops.representations import InteractionOperator
 from openfermion.transforms.opconversions import (jordan_wigner, bravyi_kitaev)
 from openfermion.transforms.repconversions import get_interaction_operator
@@ -50,6 +50,7 @@ class OperatorUtilsTest(unittest.TestCase):
         self.qubit_operator = jordan_wigner(self.fermion_operator)
         self.interaction_operator = get_interaction_operator(
             self.fermion_operator)
+        self.ising_operator = IsingOperator("[Z0] + [Z1] + [Z2] + [Z3] + [Z4]")
 
     def test_n_qubits_majorana_operator(self):
         self.assertEqual(self.n_qubits, count_qubits(self.majorana_operator))
@@ -65,6 +66,9 @@ class OperatorUtilsTest(unittest.TestCase):
 
     def test_n_qubits_interaction_operator(self):
         self.assertEqual(self.n_qubits, count_qubits(self.interaction_operator))
+
+    def test_n_qubits_ising_operator(self):
+        self.assertEqual(self.n_qubits, count_qubits(self.ising_operator))
 
     def test_n_qubits_bad_type(self):
         with self.assertRaises(TypeError):
