@@ -33,6 +33,10 @@ upper_tabs:
       - title: "Constructing Trotter Steps With Low-Rank Decomposition"
         path: /openfermion/tutorials/circuits_3_arbitrary_basis_trotter
 
+    - name: "FQE"
+      contents:
+      - include: /openfermion/fqe/_toc.yaml
+
     - name: "Reference"
       skip_translation: true
       contents:
