@@ -11,7 +11,8 @@
 #   limitations under the License.
 """
 Function to calculate the 1-Norm of a molecular Hamiltonian after
-fermion-to-qubit transformation from an InteractionOperator
+fermion-to-qubit transformation from a MolecularData class.
+See https://arxiv.org/abs/2103.14753
 """
 
 import numpy as np
@@ -21,7 +22,9 @@ from openfermion import MolecularData
 
 def get_one_norm(mol_or_int, return_constant=True):
     r"""
-    Returns the 1-Norm of the Hamiltonian after a fermion-to-qubit
+
+    Returns the 1-Norm of the Hamiltonian described in
+    https://arxiv.org/abs/2103.14753 after a fermion-to-qubit
     transformation given nuclear constant, one-body (2D np.array)
     and two-body (4D np.array) integrals.
 
@@ -30,7 +33,7 @@ def get_one_norm(mol_or_int, return_constant=True):
 
     mol_or_int : Tuple of (constant, one_body_integrals, two_body_integrals)
     constant : Nuclear repulsion or adjustment to constant shift in Hamiltonian
-            from integrating out core orbitals
+                from integrating out core orbitals
     one_body_integrals : An array of the one-electron integrals having
                 shape of (n_orb, n_orb).
     two_body_integrals : An array of the two-electron integrals having
