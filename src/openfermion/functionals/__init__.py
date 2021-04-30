@@ -11,3 +11,5 @@
 #   limitations under the License.
 
 from .contextuality import is_contextual
+
+from .get_one_norm import get_one_norm

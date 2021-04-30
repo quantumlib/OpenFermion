@@ -34,7 +34,7 @@ from openfermion.chem import (
     make_reduced_hamiltonian,
 )
 
-from openfermion.functionals import contextuality
+from openfermion.functionals import (contextuality, get_one_norm)
 
 from openfermion.hamiltonians import (
     FermiHubbardModel,
