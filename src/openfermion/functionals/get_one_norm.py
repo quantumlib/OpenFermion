@@ -18,6 +18,7 @@ import numpy as np
 
 from openfermion import MolecularData
 
+
 def get_one_norm(mol_or_int, return_constant=True):
     r"""
     Returns the 1-Norm of the Hamiltonian after a fermion-to-qubit
@@ -53,13 +54,11 @@ def get_one_norm(mol_or_int, return_constant=True):
     else:
         if return_constant:
             constant, one_body_integrals, two_body_integrals = mol_or_int
-            return _get_one_norm(constant,
-                                 one_body_integrals,
+            return _get_one_norm(constant, one_body_integrals,
                                  two_body_integrals)
         else:
             _, one_body_integrals, two_body_integrals = mol_or_int
-            return _get_one_norm_woconst(one_body_integrals,
-                                         two_body_integrals)
+            return _get_one_norm_woconst(one_body_integrals, two_body_integrals)
 
 
 def _get_one_norm_mol(molecule, return_constant):
@@ -71,23 +70,24 @@ def _get_one_norm_mol(molecule, return_constant):
         return _get_one_norm_woconst(molecule.one_body_integrals,
                                      molecule.two_body_integrals)
 
+
 def _get_one_norm(constant, one_body_integrals, two_body_integrals):
     n_orb = one_body_integrals.shape[0]
 
     htilde = constant
     for p in range(n_orb):
-        htilde += one_body_integrals[p,p]
+        htilde += one_body_integrals[p, p]
         for q in range(n_orb):
-            htilde += ((1/2 * two_body_integrals[p,q,q,p]) -
-                       (1/4 * two_body_integrals[p,q,p,q]))
+            htilde += ((1 / 2 * two_body_integrals[p, q, q, p]) -
+                       (1 / 4 * two_body_integrals[p, q, p, q]))
 
     htildepq = np.zeros(one_body_integrals.shape)
     for p in range(n_orb):
         for q in range(n_orb):
-            htildepq[p,q] = one_body_integrals[p,q]
+            htildepq[p, q] = one_body_integrals[p, q]
             for r in range(n_orb):
-                htildepq[p,q] += ((two_body_integrals[p,r,r,q]) -
-                                  (1/2 * two_body_integrals[p,r,q,r]))
+                htildepq[p, q] += ((two_body_integrals[p, r, r, q]) -
+                                   (1 / 2 * two_body_integrals[p, r, q, r]))
 
     one_norm = abs(htilde) + np.sum(np.absolute(htildepq))
 
@@ -95,10 +95,10 @@ def _get_one_norm(constant, one_body_integrals, two_body_integrals):
         for q in range(n_orb):
             for r in range(n_orb):
                 for s in range(n_orb):
-                    if p>q and r>s:
-                        one_norm += 1/2  * abs(two_body_integrals[p,q,r,s] -
-                                               two_body_integrals[p,q,s,r])
-                    one_norm += 1/4 * abs(two_body_integrals[p,q,r,s])
+                    if p > q and r > s:
+                        one_norm += 1 / 2 * abs(two_body_integrals[p, q, r, s] -
+                                                two_body_integrals[p, q, s, r])
+                    one_norm += 1 / 4 * abs(two_body_integrals[p, q, r, s])
 
     return one_norm
 
@@ -109,10 +109,10 @@ def _get_one_norm_woconst(one_body_integrals, two_body_integrals):
     htildepq = np.zeros(one_body_integrals.shape)
     for p in range(n_orb):
         for q in range(n_orb):
-            htildepq[p,q] = one_body_integrals[p,q]
+            htildepq[p, q] = one_body_integrals[p, q]
             for r in range(n_orb):
-                htildepq[p,q] += ((two_body_integrals[p,r,r,q]) -
-                                  (1/2 * two_body_integrals[p,r,q,r]))
+                htildepq[p, q] += ((two_body_integrals[p, r, r, q]) -
+                                   (1 / 2 * two_body_integrals[p, r, q, r]))
 
     one_norm = np.sum(np.absolute(htildepq))
 
@@ -120,8 +120,8 @@ def _get_one_norm_woconst(one_body_integrals, two_body_integrals):
         for q in range(n_orb):
             for r in range(n_orb):
                 for s in range(n_orb):
-                    if p>q and r>s:
-                        one_norm += 1/2  * abs(two_body_integrals[p,q,r,s] -
-                                               two_body_integrals[p,q,s,r])
-                    one_norm += 1/4 * abs(two_body_integrals[p,q,r,s])
+                    if p > q and r > s:
+                        one_norm += 1 / 2 * abs(two_body_integrals[p, q, r, s] -
+                                                two_body_integrals[p, q, s, r])
+                    one_norm += 1 / 4 * abs(two_body_integrals[p, q, r, s])
     return one_norm

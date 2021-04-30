@@ -16,6 +16,7 @@ import unittest
 from openfermion import get_one_norm, MolecularData, jordan_wigner
 from openfermion.config import DATA_DIRECTORY
 
+
 class test_get_one_norm(unittest.TestCase):
 
     def setUp(self):
@@ -42,8 +43,8 @@ class test_get_one_norm(unittest.TestCase):
         ints = (self.molecule.nuclear_repulsion,
                 self.molecule.one_body_integrals,
                 self.molecule.two_body_integrals)
+        self.assertAlmostEqual(
+            one_norm_woconst, get_one_norm(self.molecule,
+                                           return_constant=False))
         self.assertAlmostEqual(one_norm_woconst,
-                               get_one_norm(self.molecule,
-                                            return_constant=False))
-        self.assertAlmostEqual(one_norm_woconst,
-                               get_one_norm(ints,return_constant=False))
+                               get_one_norm(ints, return_constant=False))
