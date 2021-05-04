@@ -33,9 +33,17 @@ upper_tabs:
       - title: "Constructing Trotter Steps With Low-Rank Decomposition"
         path: /openfermion/tutorials/circuits_3_arbitrary_basis_trotter
 
-    - name: "FQE"
-      contents:
-      - include: /openfermion/fqe/_toc.yaml
+      - heading: "FQE Guide & Tutorials"
+      - title: "Overview"
+        path: /openfermion/fqe/index.md
+      - title: "Introduction"
+        path: /openfermion/fqe/guide/introduction
+      - title: "Hamiltonian time evolution and expectation estimation"
+        path: /openfermion/fqe/tutorials/hamiltonian_time_evolution_and_expectation_estimation
+      - title: "Quadratic Hamiltonian evolution"
+        path: /openfermion/fqe/tutorials/fqe_vs_openfermion_quadratic_hamiltonians
+      - title: "Diagonal Coulomb evolution"
+        path: /openfermion/fqe/tutorials/diagonal_coulomb_evolution
 
     - name: "Reference"
       skip_translation: true
