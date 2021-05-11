@@ -15,4 +15,3 @@ import os
 def pytest_configure(config):
     # fail tests when using deprecated cirq functionality
     os.environ['CIRQ_TESTING'] = "true"
-

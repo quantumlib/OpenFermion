@@ -70,6 +70,7 @@ def test_wrap_module():
 
 
 def test_cirq_deprecations():
+
     @deprecated(deadline="v0.12", fix="use new_func")
     def old_func():
         pass
