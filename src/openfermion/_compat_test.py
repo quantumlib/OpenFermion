@@ -75,5 +75,5 @@ def test_cirq_deprecations():
     def old_func():
         pass
 
-    with assert_deprecated(deadline="v0.12"):
+    with pytest.raises(ValueError, match="should not use deprecated"):
         old_func()
