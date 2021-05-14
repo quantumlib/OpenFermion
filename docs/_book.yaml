@@ -44,6 +44,8 @@ upper_tabs:
         path: /openfermion/fqe/tutorials/fqe_vs_openfermion_quadratic_hamiltonians
       - title: "Diagonal Coulomb evolution"
         path: /openfermion/fqe/tutorials/diagonal_coulomb_evolution
+      - title: "Simulating the Fermi-Hubbard model"
+        path: /openfermion/fqe/tutorials/fermi_hubbard
 
     - name: "Reference"
       skip_translation: true
