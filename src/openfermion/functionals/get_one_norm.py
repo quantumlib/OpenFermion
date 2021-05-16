@@ -20,61 +20,75 @@ import numpy as np
 from openfermion import MolecularData
 
 
-def get_one_norm(mol_or_int, return_constant=True):
+def get_one_norm(mol_or_int, no_constant=None):
     r"""
 
     Returns the 1-Norm of the Hamiltonian described in
     https://arxiv.org/abs/2103.14753 after a fermion-to-qubit
     transformation given nuclear constant, one-body (2D np.array)
-    and two-body (4D np.array) integrals.
+    and two-body (4D np.array) integrals in spatial orbital basis.
 
     Parameters
     ----------
 
-    mol_or_int : Tuple of (constant, one_body_integrals, two_body_integrals)
-    constant : Nuclear repulsion or adjustment to constant shift in Hamiltonian
-                from integrating out core orbitals
-    one_body_integrals : An array of the one-electron integrals having
-                shape of (n_orb, n_orb).
-    two_body_integrals : An array of the two-electron integrals having
-                shape of (n_orb, n_orb, n_orb, n_orb).
+    mol_or_int(tuple) : Tuple of (constant, one_body_integrals,
+                                  two_body_integrals)
+    constant(float) : Nuclear repulsion or adjustment to constant shift in
+        Hamiltonian from integrating out core orbitals
+    one_body_integrals(ndarray) : An array of the one-electron integrals having
+        shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
+    two_body_integrals(ndarray) : An array of the two-electron integrals having
+        shape of (n_orb, n_orb, n_orb, n_orb).
 
     -----OR----
 
-    mol_or_int : MolecularData class object
+    mol_or_int(MolecularData) : MolecularData class object
 
     -----------
 
-    return_constant (optional) : If False, do not return the constant term in
+    no_constant (default: None) : If True, do not return the constant term in
                 in the (majorana/qubit) Hamiltonian
 
     Returns
     -------
-    one_norm : 1-Norm of the Qubit Hamiltonian
+    one_norm : 1-Norm of the qubit Hamiltonian
     """
     if isinstance(mol_or_int, MolecularData):
-        return _get_one_norm_mol(mol_or_int, return_constant)
+        return _get_one_norm_mol(mol_or_int, no_constant=no_constant)
     else:
-        if return_constant:
+        if no_constant is not None:
+            if no_constant:
+                _, one_body_integrals, two_body_integrals = mol_or_int
+                return _get_one_norm_woconst(one_body_integrals,
+                                             two_body_integrals)
+            else:
+                constant, one_body_integrals, two_body_integrals = mol_or_int
+                return _get_one_norm(constant, one_body_integrals,
+                                     two_body_integrals)
+        else:
             constant, one_body_integrals, two_body_integrals = mol_or_int
             return _get_one_norm(constant, one_body_integrals,
                                  two_body_integrals)
+
+
+def _get_one_norm_mol(molecule, no_constant=None):
+    """Compute one_norm for a MolecularData class"""
+    if no_constant is not None:
+        if no_constant:
+            return _get_one_norm_woconst(molecule.one_body_integrals,
+                                         molecule.two_body_integrals)
         else:
-            _, one_body_integrals, two_body_integrals = mol_or_int
-            return _get_one_norm_woconst(one_body_integrals, two_body_integrals)
-
-
-def _get_one_norm_mol(molecule, return_constant):
-    if return_constant:
+            return _get_one_norm(molecule.nuclear_repulsion,
+                                 molecule.one_body_integrals,
+                                 molecule.two_body_integrals)
+    else:
         return _get_one_norm(molecule.nuclear_repulsion,
                              molecule.one_body_integrals,
                              molecule.two_body_integrals)
-    else:
-        return _get_one_norm_woconst(molecule.one_body_integrals,
-                                     molecule.two_body_integrals)
 
 
 def _get_one_norm(constant, one_body_integrals, two_body_integrals):
+    """Compute 1-norm given molecular integrals"""
     n_orb = one_body_integrals.shape[0]
 
     htilde = constant
@@ -94,19 +108,18 @@ def _get_one_norm(constant, one_body_integrals, two_body_integrals):
 
     one_norm = abs(htilde) + np.sum(np.absolute(htildepq))
 
-    for p in range(n_orb):
-        for q in range(n_orb):
-            for r in range(n_orb):
-                for s in range(n_orb):
-                    if p > q and r > s:
-                        one_norm += 1 / 2 * abs(two_body_integrals[p, q, r, s] -
-                                                two_body_integrals[p, q, s, r])
-                    one_norm += 1 / 4 * abs(two_body_integrals[p, q, r, s])
+    anti_sym_integrals = two_body_integrals - np.transpose(
+        two_body_integrals, (0, 1, 3, 2))
+
+    one_norm += 1 / 8 * np.sum(np.absolute(anti_sym_integrals))
+    one_norm += 1 / 4 * np.sum(np.absolute(two_body_integrals))
 
     return one_norm
 
 
 def _get_one_norm_woconst(one_body_integrals, two_body_integrals):
+    """Compute 1-norm given molecular integrals and emit the constant term
+    in the qubit Hamiltonian"""
     n_orb = one_body_integrals.shape[0]
 
     htildepq = np.zeros(one_body_integrals.shape)
@@ -119,12 +132,10 @@ def _get_one_norm_woconst(one_body_integrals, two_body_integrals):
 
     one_norm = np.sum(np.absolute(htildepq))
 
-    for p in range(n_orb):
-        for q in range(n_orb):
-            for r in range(n_orb):
-                for s in range(n_orb):
-                    if p > q and r > s:
-                        one_norm += 1 / 2 * abs(two_body_integrals[p, q, r, s] -
-                                                two_body_integrals[p, q, s, r])
-                    one_norm += 1 / 4 * abs(two_body_integrals[p, q, r, s])
+    anti_sym_integrals = two_body_integrals - np.transpose(
+        two_body_integrals, (0, 1, 3, 2))
+
+    one_norm += 1 / 8 * np.sum(np.absolute(anti_sym_integrals))
+    one_norm += 1 / 4 * np.sum(np.absolute(two_body_integrals))
+
     return one_norm

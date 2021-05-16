@@ -39,6 +39,6 @@ def test_one_norm_woconst():
     ints = (molecule.nuclear_repulsion, molecule.one_body_integrals,
             molecule.two_body_integrals)
     assert one_norm_woconst == pytest.approx(
-        get_one_norm(molecule, return_constant=False))
+        get_one_norm(molecule, no_constant=True))
     assert one_norm_woconst == pytest.approx(
-        get_one_norm(ints, return_constant=False))
+        get_one_norm(ints, no_constant=True))
