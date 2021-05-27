@@ -57,6 +57,6 @@ upper_tabs:
       - heading: "OpenFermion-FQE"
       - title: "All Symbols"
         path: /reference/python/openfermion_fqe/all_symbols
-      - include: /reference/python/openfermion/fqe/_toc.yaml
+      - include: /reference/python/openfermion_fqe/_toc.yaml
 
 - include: /_book/upper_tabs_right.yaml
