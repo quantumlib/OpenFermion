@@ -10,9 +10,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """
-Function to calculate the 1-Norm of a molecular Hamiltonian after
-fermion-to-qubit transformation from a MolecularData class.
-See https://arxiv.org/abs/2103.14753
+Function to calculate the 1-Norm of a molecular Hamiltonian
+(in the restricted formalism) after fermion-to-qubit transformation
+from a MolecularData class. See https://arxiv.org/abs/2103.14753
+for more information on the 1-norm.
 """
 
 import numpy as np
@@ -23,7 +24,7 @@ from openfermion import MolecularData
 def get_one_norm(mol_or_int, no_constant=None):
     r"""
 
-    Returns the 1-Norm of the Hamiltonian described in
+    Returns the 1-Norm of a RHF or ROHF Hamiltonian described in
     https://arxiv.org/abs/2103.14753 after a fermion-to-qubit
     transformation given nuclear constant, one-body (2D np.array)
     and two-body (4D np.array) integrals in spatial orbital basis.
