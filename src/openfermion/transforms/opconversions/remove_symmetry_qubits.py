@@ -14,6 +14,8 @@
     arXiv:1701.08213 and Phys. Rev. X 6, 031007.
 """
 
+import copy
+
 from openfermion.ops.operators import FermionOperator
 from openfermion.transforms.opconversions import bravyi_kitaev_tree, reorder
 from openfermion.transforms.repconversions import prune_unused_indices
@@ -98,7 +100,7 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
     qubit_hamiltonian = edit_hamiltonian_for_spin(qubit_hamiltonian,
                                                   active_orbitals / 2,
                                                   parity_middle_orb)
-    qubit_hamiltonian = prune_unused_indices(qubit_hamiltonian)
+    qubit_hamiltonian = remove_indices(qubit_hamiltonian, (active_orbitals / 2, active_orbitals))
 
     return qubit_hamiltonian
 
@@ -131,3 +133,23 @@ def edit_hamiltonian_for_spin(qubit_hamiltonian, spin_orbital, orbital_parity):
     qubit_hamiltonian.compress()
 
     return qubit_hamiltonian
+
+
+def remove_indices(symbolic_operator, indices):
+    """Remove the given indices.
+    """
+    map = {}
+    def new_index(index):
+        if index in map:
+            return map[index]
+        map[index] = index - len(list(i for i in indices if (i - 1) < index)) 
+        return map[index]
+
+    new_operator = copy.deepcopy(symbolic_operator)
+    new_operator.terms.clear()
+
+    for term in symbolic_operator.terms:
+        new_term = [(new_index(op[0]), op[1]) for op in term]
+        new_operator.terms[tuple(new_term)] = symbolic_operator.terms[term]
+
+    return new_operator
