@@ -28,13 +28,15 @@ class _F0Gate(cirq.MatrixGate):
     Realizes unitary gate $F_0$ that transforms Fermionic creation
     operators $a_0^\dagger$ and $a_1^\dagger$ according to:
 
-    .. math::
+    $$
         F_0^\dagger a_0^\dagger F_0 =
             {1 \over \sqrt{2}} (a_0^\dagger + a_1^\dagger)
+    $$
 
-    .. math::
+    $$
         F_0^\dagger a_1^\dagger F_0 =
             {1 \over \sqrt{2}} (a_0^\dagger - a_1^\dagger) \, .
+    $$
 
     This gate assumes JWT representation of fermionic modes which are big-endian
     encoded on consecutive qubits:
@@ -43,20 +45,24 @@ class _F0Gate(cirq.MatrixGate):
 
     Internally, this leads to expansion of $F_0^\dagger$:
 
-    .. math::
+    $$
         \langle 00 \rvert F_0^\dagger \lvert 00 \rangle = 1
+    $$
 
-    .. math::
+    $$
         \langle 01 \rvert F_0^\dagger \lvert 01 \rangle =
             -{1 \over \sqrt{2}}
+    $$
 
-    .. math::
+    $$
         \langle 10 \rvert F_0^\dagger \lvert 10 \rangle =
         \langle 10 \rvert F_0^\dagger \lvert 01 \rangle =
         \langle 01 \rvert F_0^\dagger \lvert 10 \rangle = {1 \over \sqrt{2}}
+    $$
 
-    .. math::
+    $$
         \langle 11 \rvert F_0^\dagger \lvert 11 \rangle = -1 \, .
+    $$
     """
 
     def __init__(self):
@@ -83,9 +89,10 @@ class _TwiddleGate(cirq.SingleQubitGate):
     Realizes unitary gate $\omega^{k\dagger}_n$ that phases creation
     operator $a^\dagger_x$ according to:
 
-    .. math::
+    $$
         \omega^{k\dagger}_n a^\dagger_x \omega^k_n =
             e^{-2 \pi i {k \over n}} a^\dagger_x \, .
+    $$
 
     Under JWT representation this is realized by appropriately rotated pauli Z
     gate acting on qubit x.
@@ -125,10 +132,11 @@ def ffft(qubits: Sequence[cirq.Qid]) -> cirq.OP_TREE:
     which transforms a set of fermionic creation operators
     $\hat{a}_n^\dagger$, $n \in 1, 2, \dots, N$ according to:
 
-    .. math::
+    $$
         \mathit{FFFT}^\dagger \tilde{a}_k^\dagger \mathit{FFFT} =
             {1 \over \sqrt{N}}
             \sum_{n=0}^{N-1} e^{-i {2\pi \over N} n k} \hat{a}^\dagger_n \, ,
+    $$
 
     where $\tilde{a}_k^\dagger$ are transformed operators and $N$ is
     size of the input `qubits` sequence.

@@ -404,21 +404,24 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
     With weights $(w_0, w_1)$ and exponent $t$, this gate's matrix
     is defined as
 
-    .. math::
+    $$
         e^{-i t H},
+    $$
 
     where
 
-    .. math::
+    $$
         H = \left(w_0 \left| 10 \right\rangle\left\langle 01 \right| +
                 \text{h.c.}\right) -
             w_1 \left| 11 \right\rangle \left\langle 11 \right|.
+    $$
 
     This corresponds to the Jordan-Wigner transform of
 
-    .. math::
+    $$
         H = (w_0 a^{\dagger}_i a_{i+1} + \text{h.c.}) +
              w_1 a_{i}^{\dagger} a_{i+1}^{\dagger} a_{i} a_{i+1},
+    $$
 
     where $a_i$ and  $a_{i+1}$ are the annihilation operators for
     the fermionic modes $i$ and $(i+1)$, respectively mapped to the
@@ -535,28 +538,31 @@ class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
     With weights $(w_0, w_1, w_2)$ and exponent $t$, this gate's
     matrix is defined as
 
-    .. math::
+    $$
         e^{-i t H},
+    $$
 
     where
 
-    .. math::
+    $$
         H = \left(w_0 \left| 110 \right\rangle\left\langle 101 \right| +
                 \text{h.c.}\right) +
             \left(w_1 \left| 110 \right\rangle\left\langle 011 \right| +
                 \text{h.c.}\right) +
             \left(w_2 \left| 101 \right\rangle\left\langle 011 \right| +
                 \text{h.c.}\right)
+    $$
 
     This corresponds to the Jordan-Wigner transform of
 
-    .. math::
+    $$
         H = -\left(w_0 a^{\dagger}_i a^{\dagger}_{i+1} a_{i} a_{i+2} +
                    \text{h.c.}\right) -
             \left(w_1 a^{\dagger}_i a^{\dagger}_{i+1} a_{i+1} a_{i+2} +
                   \text{h.c.}\right) -
             \left(w_2 a^{\dagger}_i a^{\dagger}_{i+2} a_{i+1} a_{i+2} +
                   \text{h.c.}\right),
+    $$
 
     where $a_i$, $a_{i+1}$, $a_{i+2}$ are the annihilation
     operators for the fermionic modes $i$, $(i+1)$ $(i+2)$,
@@ -684,28 +690,31 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
     With weights $(w_0, w_1, w_2)$ and exponent $t$, this gate's
     matrix is defined as
 
-    .. math::
+    $$
         e^{-i t H},
+    $$
 
     where
 
-    .. math::
+    $$
         H = \left(w_0 \left| 1001 \right\rangle\left\langle 0110 \right| +
                 \text{h.c.}\right) +
             \left(w_1 \left| 1010 \right\rangle\left\langle 0101 \right| +
                 \text{h.c.}\right) +
             \left(w_2 \left| 1100 \right\rangle\left\langle 0011 \right| +
                 \text{h.c.}\right)
+    $$
 
     This corresponds to the Jordan-Wigner transform of
 
-    .. math::
+    $$
         H = -\left(w_0 a^{\dagger}_i a^{\dagger}_{i+3} a_{i+1} a_{i+2} +
                    \text{h.c.}\right) -
             \left(w_1 a^{\dagger}_i a^{\dagger}_{i+2} a_{i+1} a_{i+3} +
                   \text{h.c.}\right) -
             \left(w_2 a^{\dagger}_i a^{\dagger}_{i+1} a_{i+2} a_{i+3} +
                   \text{h.c.}\right),
+    $$
 
     where $a_i$, ..., $a_{i+3}$ are the annihilation operators for
     the fermionic modes $i$, ..., $(i+3)$, respectively

@@ -151,15 +151,15 @@ def prepare_slater_determinant(qubits: Sequence[cirq.Qid],
     and $N$ is the total number of modes. The state corresponding to this
     matrix is
 
-    .. math::
-
+    $$
         b^\dagger_1 \cdots b^\dagger_{\eta} \lvert \text{vac} \rangle,
+    $$
 
     where
 
-    .. math::
-
+    $$
         b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
+    $$
 
     The algorithm used is described in arXiv:1711.05395. It assumes the
     Jordan-Wigner transform.
