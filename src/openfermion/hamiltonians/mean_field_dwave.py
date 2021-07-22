@@ -37,8 +37,7 @@ def mean_field_dwave(x_dimension: int,
 
     The Hamiltonian for this model has the form
 
-    .. math::
-
+    $$
         \begin{align}
         H = &- t \sum_{\langle i,j \rangle} \sum_\sigma
                 (a^\dagger_{i, \sigma} a_{j, \sigma} +
@@ -51,26 +50,27 @@ def mean_field_dwave(x_dimension: int,
                a_{j, \downarrow} a_{i, \uparrow} -
                a_{j, \uparrow} a_{i, \downarrow})
         \end{align}
+    $$
 
     where
 
-        - The indices :math:`\langle i, j \rangle` run over pairs
-          :math:`i` and :math:`j` of sites that are connected to each other
+        - The indices $\langle i, j \rangle$ run over pairs
+          $i$ and $j$ of sites that are connected to each other
           in the grid
-        - :math:`\sigma \in \{\uparrow, \downarrow\}` is the spin
-        - :math:`t` is the tunneling amplitude
-        - :math:`\Delta_{ij}` is equal to :math:`+\Delta/2` for
-          horizontal edges and :math:`-\Delta/2` for vertical edges,
-          where :math:`\Delta` is the superconducting gap.
-        - :math:`\mu` is the chemical potential
+        - $\sigma \in \{\uparrow, \downarrow\}$ is the spin
+        - $t$ is the tunneling amplitude
+        - $\Delta_{ij}$ is equal to $+\Delta/2$ for
+          horizontal edges and $-\Delta/2$ for vertical edges,
+          where $\Delta$ is the superconducting gap.
+        - $\mu$ is the chemical potential
 
     Args:
         x_dimension (int): The width of the grid.
         y_dimension (int): The height of the grid.
-        tunneling (float): The tunneling amplitude :math:`t`.
-        sc_gap (float): The superconducting gap :math:`\Delta`
+        tunneling (float): The tunneling amplitude $t$.
+        sc_gap (float): The superconducting gap $\Delta$
         chemical_potential (float, optional): The chemical potential
-            :math:`\mu` at each site. Default value is 0.
+            $\mu$ at each site. Default value is 0.
         periodic (bool, optional): If True, add periodic boundary conditions.
             Default is True.
 

@@ -150,28 +150,28 @@ def givens_decomposition_square(unitary_matrix, always_insert=False):
     The input is a square :math:`n \times n` matrix :math:`Q`.
     :math:`Q` can be decomposed as follows:
 
-    .. math::
-
+    $$
         Q = DU
+    $$
 
     where :math:`U` is unitary and :math:`D` is diagonal.
     Furthermore, we can decompose :math:`U` as
 
-    .. math::
-
+    $$
         U = G_k ... G_1
+    $$
 
     where :math:`G_1, \ldots, G_k` are complex Givens rotations.
     A Givens rotation is a rotation within the two-dimensional subspace
     spanned by two coordinate axes. Within the two relevant coordinate
     axes, a Givens rotation has the form
 
-    .. math::
-
+    $$
         \begin{pmatrix}
             \cos(\theta) & -e^{i \varphi} \sin(\theta) \\
             \sin(\theta) &     e^{i \varphi} \cos(\theta)
         \end{pmatrix}.
+    $$
 
     Args:
         unitary_matrix: A numpy array with orthonormal rows,
@@ -253,30 +253,30 @@ def givens_decomposition(unitary_rows, always_insert=False):
     The rows of :math:`Q` are orthonormal.
     :math:`Q` can be decomposed as follows:
 
-    .. math::
-
+    $$
         V Q U^\dagger = D
+    $$
 
     where :math:`V` and :math:`U` are unitary matrices, and :math:`D`
     is an :math:`m \times n` matrix with the
     first :math:`m` columns forming a diagonal matrix and the rest of the
     columns being zero. Furthermore, we can decompose :math:`U` as
 
-    .. math::
-
+    $$
         U = G_k ... G_1
+    $$
 
     where :math:`G_1, \ldots, G_k` are complex Givens rotations.
     A Givens rotation is a rotation within the two-dimensional subspace
     spanned by two coordinate axes. Within the two relevant coordinate
     axes, a Givens rotation has the form
 
-    .. math::
-
+    $$
         \begin{pmatrix}
             \cos(\theta) & -e^{i \varphi} \sin(\theta) \\
             \sin(\theta) &     e^{i \varphi} \cos(\theta)
         \end{pmatrix}.
+    $$
 
     Args:
         unitary_rows: A numpy array or matrix with orthonormal rows,
@@ -402,31 +402,31 @@ def fermionic_gaussian_decomposition(unitary_rows):
     The input is an :math:`N \times 2N` matrix :math:`W` with orthonormal
     rows. Furthermore, :math:`W` must have the block form
 
-    .. math::
-
+    $$
         W = ( W_1 \hspace{4pt} W_2 )
+    $$
 
     where :math:`W_1` and :math:`W_2` satisfy
 
-    .. math::
-
+    $$
         W_1  W_1^\dagger + W_2  W_2^\dagger &= I
+    $$
 
         W_1  W_2^T + W_2  W_1^T &= 0.
 
     Then :math:`W` can be decomposed as
 
-    .. math::
-
+    $$
         V  W  U^\dagger = ( 0 \hspace{6pt} D )
+    $$
 
     where :math:`V` and :math:`U` are unitary matrices and :math:`D`
     is a diagonal unitary matrix. Furthermore, :math:`U` can be decomposed
     as follows:
 
-    .. math::
-
+    $$
         U = B G_{k} \cdots B G_3 G_2 B G_1 B,
+    $$
 
     where each :math:`G_i` is a Givens rotation, and :math:`B` represents
     swapping the :math:`N`-th column with the :math:`2N`-th column,
