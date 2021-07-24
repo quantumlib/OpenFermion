@@ -30,8 +30,9 @@ class DualBasisElement(object):
         Define a linear operator on a tensor `A', a bias `b', and a result `c'
         satisfying
 
-        .. math::
+        $$
             Ax + b = c
+        $$
 
         Args:
             tensor_names: Names of tensor subspace to act on.

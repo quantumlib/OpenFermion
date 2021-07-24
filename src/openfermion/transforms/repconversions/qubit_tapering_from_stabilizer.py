@@ -313,19 +313,19 @@ def reduce_number_of_terms(operator,
     manually indicate the qubits to be fixed.
 
     It is possible to reduce the number of terms in a Hamiltonian by
-    merging Pauli strings :math:`H_1, \, H_2` that are related by a
-    stabilizer :math:`S` such that  :math:`H_1 = H_2 \cdot S`. Given
-    a stabilizer generator :math:`\pm X \otimes p` this algorithm fixes the
+    merging Pauli strings $H_1, \, H_2$ that are related by a
+    stabilizer $S$ such that  $H_1 = H_2 \cdot S$. Given
+    a stabilizer generator $\pm X \otimes p$ this algorithm fixes the
     first qubit, such that every Pauli string in the Hamiltonian acts with
-    either :math:`Z` or the identity on it. Where necessary, this is achieved
-    by multiplications with :math:`\pm X \otimes p`: a string
-    :math:`Y \otimes h`, for instance,  is turned into
-    :math:`Z \otimes (\mp ih\cdot p)`. Qubits on which a generator acts as
-    :math:`Y` (:math:`Z`) are constrained to be acted on by the Hamiltonian as
-    :math:`Z` (:math:`X`) or the identity. Fixing a different qubit for every
+    either $Z$ or the identity on it. Where necessary, this is achieved
+    by multiplications with $\pm X \otimes p$: a string
+    $Y \otimes h$, for instance,  is turned into
+    $Z \otimes (\mp ih\cdot p)$. Qubits on which a generator acts as
+    $Y$ ($Z$) are constrained to be acted on by the Hamiltonian as
+    $Z$ ($X$) or the identity. Fixing a different qubit for every
     stabilizer generator eliminates all redundant strings. The fixed
     representations are in the end re-expressed as the shortest of the
-    original strings, :math:`H_1` or :math:`H_2`.
+    original strings, $H_1$ or $H_2$.
 
 
     Args:
@@ -415,16 +415,16 @@ def taper_off_qubits(operator,
 
     Qubits can be disregarded from the Hamiltonian when the effect of all its
     terms on them is rendered trivial. This algorithm employs a stabilizers
-    like :math:`\pm X \otimes p` to fix the action of every Pauli
-    string on the first qubit to :math:`Z` or the identity. A string
-    :math:`X \otimes h` would for instance be multiplied with the stabilizer
-    to obtain :math:`1 \otimes (\pm h\cdot p)` while a string
-    :math:`Z \otimes h^\prime` would pass without correction. The first
+    like $\pm X \otimes p$ to fix the action of every Pauli
+    string on the first qubit to $Z$ or the identity. A string
+    $X \otimes h$ would for instance be multiplied with the stabilizer
+    to obtain $1 \otimes (\pm h\cdot p)$ while a string
+    $Z \otimes h^\prime$ would pass without correction. The first
     qubit can subsequently be removed as it must be in the computational basis
     in Hamiltonian eigenstates.
-    For stabilizers acting as :math:`Y` (:math:`Z`) on selected qubits,
+    For stabilizers acting as $Y$ ($Z$) on selected qubits,
     the algorithm would fix the action of every Hamiltonian string to
-    :math:`Z` (:math:`X`). Updating also the list of remaining stabilizer
+    $Z$ ($X$). Updating also the list of remaining stabilizer
     generators, the algorithm is run iteratively.
 
     Args:
