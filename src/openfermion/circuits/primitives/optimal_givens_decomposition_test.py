@@ -27,12 +27,12 @@ def test_givens_inverse():
     r"""
     The Givens rotation in OpenFermion is defined as
 
-    .. math::
-
+    $$
         \begin{pmatrix}
             \cos(\theta) & -e^{i \varphi} \sin(\theta) \\
             \sin(\theta) &     e^{i \varphi} \cos(\theta)
         \end{pmatrix}.
+    $$
 
     confirm numerically its hermitian conjugate is it's inverse
     """

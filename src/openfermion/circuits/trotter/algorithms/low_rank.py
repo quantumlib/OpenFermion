@@ -43,20 +43,20 @@ class LowRankTrotterAlgorithm(TrotterAlgorithm):
     singular components and possibly truncating. Then, each singular component
     is simulated in the appropriate basis using a (non-fermionic) swap network.
     The general idea is based on expressing the two-body operator as
-    :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a^\dagger_q a_r a_s =
-    \sum_{j=0}^{J-1} \lambda_j (\sum_{pq} g_{jpq} a^\dagger_p a_q)^2`
+    $\sum_{pqrs} h_{pqrs} a^\dagger_p a^\dagger_q a_r a_s =
+    \sum_{j=0}^{J-1} \lambda_j (\sum_{pq} g_{jpq} a^\dagger_p a_q)^2$
     One can then diagonalize the squared one-body component as
     math:`\sum_{pq} g_{pqj} a^\dagger_p a_q =
     R_j (\sum_{p} f_{pj} n_p) R_j^\dagger`
     Then, a 'low rank' Trotter step of the two-body tensor can be simulated as
-    :math:`\prod_{j=0}^{J-1}
-    R_j e^{-i \lambda_j \sum_{pq} f_{pj} f_{qj} n_p n_q} R_j^\dagger`.
-    The :math:`R_j` are Bogoliubov transformations, and one can
-    use a swap network to simulate the diagonal :math:`n_p n_q` terms.
+    $\prod_{j=0}^{J-1}
+    R_j e^{-i \lambda_j \sum_{pq} f_{pj} f_{qj} n_p n_q} R_j^\dagger$.
+    The $R_j$ are Bogoliubov transformations, and one can
+    use a swap network to simulate the diagonal $n_p n_q$ terms.
     The value of J is either fully the square of the number of qubits,
     which would imply no truncation, or it is specified by the user,
     or it is chosen so that
-    :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
+    $\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x$
     where x is a truncation threshold specified by user.
     """
 
