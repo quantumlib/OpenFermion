@@ -92,7 +92,6 @@ High performance simulators
   particle number. It is built as plugin because C++ backends for
   OpenFermion-FQE must be compiled.
 
-
 Circuit compilation plugins
 ------------------------------------------
 * `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion>`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
