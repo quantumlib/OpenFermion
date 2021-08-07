@@ -87,10 +87,10 @@ Follow the links below to learn more!
 High performance simulators
 ------------------------------------------
 * `OpenFermion-FQE <https://github.com/quantumlib/OpenFermion-FQE>`__ is
-  a high performance emulator of quantum circuit specified by a sequence of
-  fermion operators, which can exploit fermionic symmetries such as spin and
-  particle number. It is built as plugin because C++ backends for
-  OpenFermion-FQE must be compiled.
+  a high performance emulator of fermionic quantum evolutions specified 
+  by a sequence of fermion operators, which can exploit fermionic 
+  symmetries such as spin and particle number. It is built as a 
+  plugin because C++ backends for OpenFermion-FQE must be compiled.
 
 Circuit compilation plugins
 ------------------------------------------
