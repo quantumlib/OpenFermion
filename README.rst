@@ -19,6 +19,9 @@ Hamiltonians. For more information, see our
 .. image:: https://badge.fury.io/py/openfermion.svg
     :target: https://badge.fury.io/py/openfermion
 
+.. image:: https://img.shields.io/pypi/dm/openfermion
+   :target: https://img.shields.io/pypi/dm/openfermion
+
 
 Run the interactive Jupyter Notebooks in Colab_ or MyBinder_:
 
