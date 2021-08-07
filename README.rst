@@ -84,7 +84,16 @@ Specifically, plugins are used to simulate and compile quantum circuits and to p
 classical electronic structure calculations.
 Follow the links below to learn more!
 
-Circuit compilation and simulation plugins
+High performance simulators
+------------------------------------------
+* `OpenFermion-FQE <https://github.com/quantumlib/OpenFermion-FQE>`__ is
+  a high performance emulator of quantum circuit specified by a sequence of
+  fermion operators, which can exploit fermionic symmetries such as spin and
+  particle number. It is built as plugin because C++ backends for
+  OpenFermion-FQE must be compiled.
+
+
+Circuit compilation plugins
 ------------------------------------------
 * `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion>`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
 
