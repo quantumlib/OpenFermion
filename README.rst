@@ -19,6 +19,9 @@ Hamiltonians. For more information, see our
 .. image:: https://badge.fury.io/py/openfermion.svg
     :target: https://badge.fury.io/py/openfermion
 
+.. image:: https://img.shields.io/pypi/dm/openfermion
+   :target: https://img.shields.io/pypi/dm/openfermion
+
 
 Run the interactive Jupyter Notebooks in Colab_ or MyBinder_:
 
@@ -52,9 +55,6 @@ You might also want to explore the alpha release of the
 `OpenFermion Cloud Library <https://github.com/quantumlib/OpenFermion/tree/master/cloud_library>`__
 where users can share and download precomputed molecular benchmark files.
 
-Check out other `projects and papers using OpenFermion <https://quantumai.google/openfermion/projects>`__ for inspiration,
-and let us know if you've been using OpenFermion!
-
 
 Developer install
 -----------------
@@ -84,7 +84,14 @@ Specifically, plugins are used to simulate and compile quantum circuits and to p
 classical electronic structure calculations.
 Follow the links below to learn more!
 
-Circuit compilation and simulation plugins
+High performance simulators
+------------------------------------------
+* `OpenFermion-FQE <https://github.com/quantumlib/OpenFermion-FQE>`__ is
+  a high performance emulator of fermionic quantum evolutions specified 
+  by a sequence of fermion operators, which can exploit fermionic 
+  symmetries such as spin and particle number. 
+
+Circuit compilation plugins
 ------------------------------------------
 * `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion>`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
 
