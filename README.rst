@@ -55,9 +55,6 @@ You might also want to explore the alpha release of the
 `OpenFermion Cloud Library <https://github.com/quantumlib/OpenFermion/tree/master/cloud_library>`__
 where users can share and download precomputed molecular benchmark files.
 
-Check out other `projects and papers using OpenFermion <https://quantumai.google/openfermion/projects>`__ for inspiration,
-and let us know if you've been using OpenFermion!
-
 
 Developer install
 -----------------
@@ -92,8 +89,7 @@ High performance simulators
 * `OpenFermion-FQE <https://github.com/quantumlib/OpenFermion-FQE>`__ is
   a high performance emulator of fermionic quantum evolutions specified 
   by a sequence of fermion operators, which can exploit fermionic 
-  symmetries such as spin and particle number. It is built as a 
-  plugin because C++ backends for OpenFermion-FQE must be compiled.
+  symmetries such as spin and particle number. 
 
 Circuit compilation plugins
 ------------------------------------------
