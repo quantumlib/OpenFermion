@@ -42,8 +42,7 @@ def fermi_hubbard(x_dimension,
 
     The Hamiltonian for the spinful model has the form
 
-    .. math::
-
+    $$
         \begin{align}
         H = &- t \sum_{\langle i,j \rangle} \sum_{\sigma}
                      (a^\dagger_{i, \sigma} a_{j, \sigma} +
@@ -55,35 +54,36 @@ def fermi_hubbard(x_dimension,
              - h \sum_i (a^\dagger_{i, \uparrow} a_{i, \uparrow} -
                        a^\dagger_{i, \downarrow} a_{i, \downarrow})
         \end{align}
+    $$
 
     where
 
-        - The indices :math:`\langle i, j \rangle` run over pairs
-          :math:`i` and :math:`j` of sites that are connected to each other
+        - The indices $\langle i, j \rangle$ run over pairs
+          $i$ and $j$ of sites that are connected to each other
           in the grid
-        - :math:`\sigma \in \{\uparrow, \downarrow\}` is the spin
-        - :math:`t` is the tunneling amplitude
-        - :math:`U` is the Coulomb potential
-        - :math:`\mu` is the chemical potential
-        - :math:`h` is the magnetic field
+        - $\sigma \in \{\uparrow, \downarrow\}$ is the spin
+        - $t$ is the tunneling amplitude
+        - $U$ is the Coulomb potential
+        - $\mu$ is the chemical potential
+        - $h$ is the magnetic field
 
     One can also construct the Hamiltonian for the spinless model, which
     has the form
 
-    .. math::
-
+    $$
         H = - t \sum_{\langle i, j \rangle} (a^\dagger_i a_j + a^\dagger_j a_i)
             + U \sum_{\langle i, j \rangle} a^\dagger_i a_i a^\dagger_j a_j
             - \mu \sum_i a_i^\dagger a_i.
+    $$
 
     Args:
         x_dimension (int): The width of the grid.
         y_dimension (int): The height of the grid.
-        tunneling (float): The tunneling amplitude :math:`t`.
-        coulomb (float): The attractive local interaction strength :math:`U`.
+        tunneling (float): The tunneling amplitude $t$.
+        coulomb (float): The attractive local interaction strength $U$.
         chemical_potential (float, optional): The chemical potential
-            :math:`\mu` at each site. Default value is 0.
-        magnetic_field (float, optional): The magnetic field :math:`h`
+            $\mu$ at each site. Default value is 0.
+        magnetic_field (float, optional): The magnetic field $h$
             at each site. Default value is 0. Ignored for the spinless case.
         periodic (bool, optional): If True, add periodic boundary conditions.
             Default is True.
@@ -92,16 +92,16 @@ def fermi_hubbard(x_dimension,
         particle_hole_symmetry (bool, optional): If False, the repulsion
             term corresponds to:
 
-            .. math::
-
+            $$
                 U \sum_{k=1}^{N-1} a_k^\dagger a_k a_{k+1}^\dagger a_{k+1}
+            $$
 
             If True, the repulsion term is replaced by:
 
-            .. math::
-
+            $$
                 U \sum_{k=1}^{N-1} (a_k^\dagger a_k - \frac12)
                                    (a_{k+1}^\dagger a_{k+1} - \frac12)
+            $$
 
             which is unchanged under a particle-hole transformation.
             Default is False
@@ -240,34 +240,34 @@ def bose_hubbard(x_dimension,
 
     The Hamiltonian for the Bose-Hubbard model has the form
 
-    .. math::
-
+    $$
         H = - t \sum_{\langle i, j \rangle} (b_i^\dagger b_j + b_j^\dagger b_i)
          + V \sum_{\langle i, j \rangle} b_i^\dagger b_i b_j^\dagger b_j
          + \frac{U}{2} \sum_i b_i^\dagger b_i (b_i^\dagger b_i - 1)
          - \mu \sum_i b_i^\dagger b_i.
+    $$
 
     where
 
-        - The indices :math:`\langle i, j \rangle` run over pairs
-          :math:`i` and :math:`j` of nodes that are connected to each other
+        - The indices $\langle i, j \rangle$ run over pairs
+          $i$ and $j$ of nodes that are connected to each other
           in the grid
-        - :math:`t` is the tunneling amplitude
-        - :math:`U` is the on-site interaction potential
-        - :math:`\mu` is the chemical potential
-        - :math:`V` is the dipole or nearest-neighbour interaction potential
+        - $t$ is the tunneling amplitude
+        - $U$ is the on-site interaction potential
+        - $\mu$ is the chemical potential
+        - $V$ is the dipole or nearest-neighbour interaction potential
 
     Args:
         x_dimension (int): The width of the grid.
         y_dimension (int): The height of the grid.
-        tunneling (float): The tunneling amplitude :math:`t`.
+        tunneling (float): The tunneling amplitude $t$.
         interaction (float): The attractive local interaction
-            strength :math:`U`.
+            strength $U$.
         chemical_potential (float, optional): The chemical potential
-            :math:`\mu` at each site. Default value is 0.
+            $\mu$ at each site. Default value is 0.
         periodic (bool, optional): If True, add periodic boundary conditions.
             Default is True.
-        dipole (float): The attractive dipole interaction strength :math:`V`.
+        dipole (float): The attractive dipole interaction strength $V$.
 
     Returns:
         bose_hubbard_model: An instance of the BosonOperator class.

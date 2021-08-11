@@ -146,27 +146,27 @@ def prepare_slater_determinant(qubits: Sequence[cirq.Qid],
                               ) -> cirq.OP_TREE:
     r"""Prepare a Slater determinant from a computational basis state.
 
-    A Slater determinant is described by an :math:`\eta \times N` matrix
-    :math:`Q` with orthonormal rows, where :math:`\eta` is the particle number
-    and :math:`N` is the total number of modes. The state corresponding to this
+    A Slater determinant is described by an $\eta \times N$ matrix
+    $Q$ with orthonormal rows, where $\eta$ is the particle number
+    and $N$ is the total number of modes. The state corresponding to this
     matrix is
 
-    .. math::
-
+    $$
         b^\dagger_1 \cdots b^\dagger_{\eta} \lvert \text{vac} \rangle,
+    $$
 
     where
 
-    .. math::
-
+    $$
         b^\dagger_j = \sum_{k = 1}^N Q_{jk} a^\dagger_k.
+    $$
 
     The algorithm used is described in arXiv:1711.05395. It assumes the
     Jordan-Wigner transform.
 
     Args:
         qubits: The qubits to which to apply the circuit.
-        slater_determinant_matrix: The matrix :math:`Q` which describes the
+        slater_determinant_matrix: The matrix $Q$ which describes the
             Slater determinant to be prepared.
         initial_state: The computational basis state that the qubits start in.
             This can be either an integer or a container of integers.

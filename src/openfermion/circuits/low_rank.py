@@ -22,10 +22,10 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
     r"""Convert two-body operator coefficients to low rank tensor.
 
     The input is a two-body fermionic Hamiltonian expressed as
-    :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a^\dagger_q a_r a_s`
+    $\sum_{pqrs} h_{pqrs} a^\dagger_p a^\dagger_q a_r a_s$
 
     We will convert this to the chemistry convention expressing it as
-    :math:`\sum_{pqrs} g_{pqrs} a^\dagger_p a_q a^\dagger_r a_s`
+    $\sum_{pqrs} g_{pqrs} a^\dagger_p a_q a^\dagger_r a_s$
     but without the spin degree of freedom.
 
     In the process of performing this conversion, constants and one-body
@@ -33,15 +33,15 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
 
     Args:
         two_body_coefficients (ndarray): an N x N x N x N
-            numpy array giving the :math:`h_{pqrs}` tensor.
+            numpy array giving the $h_{pqrs}$ tensor.
         spin_basis (bool): True if the two-body terms are passed in spin
             orbital basis. False if already in spatial orbital basis.
 
     Returns:
         one_body_correction (ndarray): an N x N array of floats giving
-            coefficients of the :math:`a^\dagger_p a_q` terms that come out.
+            coefficients of the $a^\dagger_p a_q$ terms that come out.
         chemist_two_body_coefficients (ndarray): an N x N x N x N numpy array
-            giving the :math:`g_{pqrs}` tensor in chemist notation.
+            giving the $g_{pqrs}$ tensor in chemist notation.
 
     Raises:
         TypeError: Input must be two-body number conserving
@@ -80,14 +80,14 @@ def low_rank_two_body_decomposition(two_body_coefficients,
     r"""Convert two-body operator into sum of squared one-body operators.
 
     As in arXiv:1808.02625, this function decomposes
-    :math:`\sum_{pqrs} h_{pqrs} a^\dagger_p a^\dagger_q a_r a_s` as
-    :math:`\sum_{l} \lambda_l (\sum_{pq} g_{lpq} a^\dagger_p a_q)^2`
+    $\sum_{pqrs} h_{pqrs} a^\dagger_p a^\dagger_q a_r a_s$ as
+    $\sum_{l} \lambda_l (\sum_{pq} g_{lpq} a^\dagger_p a_q)^2$
     l is truncated to take max value L so that
-    :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
+    $\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x$
 
     Args:
         two_body_coefficients (ndarray): an N x N x N x N
-            numpy array giving the :math:`h_{pqrs}` tensor.
+            numpy array giving the $h_{pqrs}$ tensor.
             This tensor must be 8-fold symmetric (real integrals).
         truncation_threshold (optional Float): the value of x, above.
         final_rank (optional int): if provided, this specifies the value of
@@ -97,13 +97,13 @@ def low_rank_two_body_decomposition(two_body_coefficients,
 
     Returns:
         eigenvalues (ndarray of floats): length L array
-            giving the :math:`\lambda_l`.
+            giving the $\lambda_l$.
         one_body_squares (ndarray of floats): L x N x N array of floats
-            corresponding to the value of :math:`g_{pql}`.
+            corresponding to the value of $g_{pql}$.
         one_body_correction (ndarray): One-body correction terms that result
             from reordering to chemist ordering, in spin-orbital basis.
         truncation_value (float): after truncation, this is the value
-            :math:`\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x`
+            $\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x$
 
     Raises:
         TypeError: Invalid two-body coefficient tensor specification.
@@ -163,22 +163,22 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
     r"""Get Givens angles and DiagonalHamiltonian to simulate squared one-body.
 
     The goal here will be to prepare to simulate evolution under
-    :math:`(\sum_{pq} h_{pq} a^\dagger_p a_q)^2` by decomposing as
-    :math:`R e^{-i \sum_{pq} V_{pq} n_p n_q} R^\dagger' where
-    :math:`R` is a basis transformation matrix.
+    $(\sum_{pq} h_{pq} a^\dagger_p a_q)^2$ by decomposing as
+    $R e^{-i \sum_{pq} V_{pq} n_p n_q} R^\dagger$ where
+    $R$ is a basis transformation matrix.
 
     TODO: Add option for truncation based on one-body eigenvalues.
 
     Args:
         one_body_matrix (ndarray of floats): an N by N array storing the
             coefficients of a one-body operator to be squared. For instance,
-            in the above the elements of this matrix are :math:`h_{pq}`.
+            in the above the elements of this matrix are $h_{pq}$.
         spin_basis (bool): Whether the matrix is passed in the
             spin orbital basis.
 
     Returns:
         density_density_matrix(ndarray of floats) an N by N array storing
-            the diagonal two-body coefficeints :math:`V_{pq}` above.
+            the diagonal two-body coefficeints $V_{pq}$ above.
         basis_transformation_matrix (ndarray of floats) an N by N array
             storing the values of the basis transformation.
 

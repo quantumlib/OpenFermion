@@ -147,31 +147,31 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
 def givens_decomposition_square(unitary_matrix, always_insert=False):
     r"""Decompose a square matrix into a sequence of Givens rotations.
 
-    The input is a square :math:`n \times n` matrix :math:`Q`.
-    :math:`Q` can be decomposed as follows:
+    The input is a square $n \times n$ matrix $Q$.
+    $Q$ can be decomposed as follows:
 
-    .. math::
-
+    $$
         Q = DU
+    $$
 
-    where :math:`U` is unitary and :math:`D` is diagonal.
-    Furthermore, we can decompose :math:`U` as
+    where $U$ is unitary and $D$ is diagonal.
+    Furthermore, we can decompose $U$ as
 
-    .. math::
-
+    $$
         U = G_k ... G_1
+    $$
 
-    where :math:`G_1, \ldots, G_k` are complex Givens rotations.
+    where $G_1, \ldots, G_k$ are complex Givens rotations.
     A Givens rotation is a rotation within the two-dimensional subspace
     spanned by two coordinate axes. Within the two relevant coordinate
     axes, a Givens rotation has the form
 
-    .. math::
-
+    $$
         \begin{pmatrix}
             \cos(\theta) & -e^{i \varphi} \sin(\theta) \\
             \sin(\theta) &     e^{i \varphi} \cos(\theta)
         \end{pmatrix}.
+    $$
 
     Args:
         unitary_matrix: A numpy array with orthonormal rows,
@@ -184,12 +184,12 @@ def givens_decomposition_square(unitary_matrix, always_insert=False):
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
-            form :math:`(i, j, \theta, \varphi)`, which represents a
+            form $(i, j, \theta, \varphi)$, which represents a
             Givens rotation of coordinates
-            :math:`i` and :math:`j` by angles :math:`\theta` and
-            :math:`\varphi`.
+            $i$ and $j$ by angles $\theta$ and
+            $\varphi$.
         diagonal (ndarray):
-            A list of the nonzero entries of :math:`D`.
+            A list of the nonzero entries of $D$.
     """
     current_matrix = numpy.copy(unitary_matrix)
     n = current_matrix.shape[0]
@@ -249,34 +249,34 @@ def givens_decomposition_square(unitary_matrix, always_insert=False):
 def givens_decomposition(unitary_rows, always_insert=False):
     r"""Decompose a matrix into a sequence of Givens rotations.
 
-    The input is an :math:`m \times n` matrix :math:`Q` with :math:`m \leq n`.
-    The rows of :math:`Q` are orthonormal.
-    :math:`Q` can be decomposed as follows:
+    The input is an $m \times n$ matrix $Q$ with $m \leq n$.
+    The rows of $Q$ are orthonormal.
+    $Q$ can be decomposed as follows:
 
-    .. math::
-
+    $$
         V Q U^\dagger = D
+    $$
 
-    where :math:`V` and :math:`U` are unitary matrices, and :math:`D`
-    is an :math:`m \times n` matrix with the
-    first :math:`m` columns forming a diagonal matrix and the rest of the
-    columns being zero. Furthermore, we can decompose :math:`U` as
+    where $V$ and $U$ are unitary matrices, and $D$
+    is an $m \times n$ matrix with the
+    first $m$ columns forming a diagonal matrix and the rest of the
+    columns being zero. Furthermore, we can decompose $U$ as
 
-    .. math::
-
+    $$
         U = G_k ... G_1
+    $$
 
-    where :math:`G_1, \ldots, G_k` are complex Givens rotations.
+    where $G_1, \ldots, G_k$ are complex Givens rotations.
     A Givens rotation is a rotation within the two-dimensional subspace
     spanned by two coordinate axes. Within the two relevant coordinate
     axes, a Givens rotation has the form
 
-    .. math::
-
+    $$
         \begin{pmatrix}
             \cos(\theta) & -e^{i \varphi} \sin(\theta) \\
             \sin(\theta) &     e^{i \varphi} \cos(\theta)
         \end{pmatrix}.
+    $$
 
     Args:
         unitary_rows: A numpy array or matrix with orthonormal rows,
@@ -289,15 +289,15 @@ def givens_decomposition(unitary_rows, always_insert=False):
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
             The Givens rotations within a tuple can be implemented in parallel.
             The description of a Givens rotation is itself a tuple of the
-            form :math:`(i, j, \theta, \varphi)`, which represents a
+            form $(i, j, \theta, \varphi)$, which represents a
             Givens rotation of coordinates
-            :math:`i` and :math:`j` by angles :math:`\theta` and
-            :math:`\varphi`.
+            $i$ and $j$ by angles $\theta$ and
+            $\varphi$.
         left_unitary (ndarray):
-            An :math:`m \times m` numpy array representing the matrix
-            :math:`V`.
+            An $m \times m$ numpy array representing the matrix
+            $V$.
         diagonal (ndarray):
-            A list of the nonzero entries of :math:`D`.
+            A list of the nonzero entries of $D$.
     """
     current_matrix = numpy.copy(unitary_rows)
     m, n = current_matrix.shape
@@ -399,52 +399,52 @@ def fermionic_gaussian_decomposition(unitary_rows):
     r"""Decompose a matrix into a sequence of Givens rotations and
     particle-hole transformations on the last fermionic mode.
 
-    The input is an :math:`N \times 2N` matrix :math:`W` with orthonormal
-    rows. Furthermore, :math:`W` must have the block form
+    The input is an $N \times 2N$ matrix $W$ with orthonormal
+    rows. Furthermore, $W$ must have the block form
 
-    .. math::
-
+    $$
         W = ( W_1 \hspace{4pt} W_2 )
+    $$
 
-    where :math:`W_1` and :math:`W_2` satisfy
+    where $W_1$ and $W_2$ satisfy
 
-    .. math::
-
+    $$
         W_1  W_1^\dagger + W_2  W_2^\dagger &= I
+    $$
 
         W_1  W_2^T + W_2  W_1^T &= 0.
 
-    Then :math:`W` can be decomposed as
+    Then $W$ can be decomposed as
 
-    .. math::
-
+    $$
         V  W  U^\dagger = ( 0 \hspace{6pt} D )
+    $$
 
-    where :math:`V` and :math:`U` are unitary matrices and :math:`D`
-    is a diagonal unitary matrix. Furthermore, :math:`U` can be decomposed
+    where $V$ and $U$ are unitary matrices and $D$
+    is a diagonal unitary matrix. Furthermore, $U$ can be decomposed
     as follows:
 
-    .. math::
-
+    $$
         U = B G_{k} \cdots B G_3 G_2 B G_1 B,
+    $$
 
-    where each :math:`G_i` is a Givens rotation, and :math:`B` represents
-    swapping the :math:`N`-th column with the :math:`2N`-th column,
+    where each $G_i$ is a Givens rotation, and $B$ represents
+    swapping the $N$-th column with the $2N$-th column,
     which corresponds to a particle-hole transformation
     on the last fermionic mode. This particle-hole transformation maps
-    :math:`a^\dagger_N` to :math:`a_N` and vice versa, while leaving the
+    $a^\dagger_N$ to $a_N$ and vice versa, while leaving the
     other fermionic ladder operators invariant.
 
-    The decomposition of :math:`U` is returned as a list of tuples of objects
+    The decomposition of $U$ is returned as a list of tuples of objects
     describing rotations and particle-hole transformations. The list looks
     something like [('pht', ), (G_1, ), ('pht', G_2), ... ].
     The objects within a tuple are either the string 'pht', which indicates
     a particle-hole transformation on the last fermionic mode, or a tuple
-    of the form :math:`(i, j, \theta, \varphi)`, which indicates a
-    Givens rotation of rows :math:`i` and :math:`j` by angles
-    :math:`\theta` and :math:`\varphi`.
+    of the form $(i, j, \theta, \varphi)$, which indicates a
+    Givens rotation of rows $i$ and $j$ by angles
+    $\theta$ and $\varphi$.
 
-    The matrix :math:`V^T D^*` can also be decomposed as a sequence of
+    The matrix $V^T D^*$ can also be decomposed as a sequence of
     Givens rotations. This decomposition is needed for a circuit that
     prepares an excited state.
 
@@ -455,14 +455,14 @@ def fermionic_gaussian_decomposition(unitary_rows):
     Returns
     -------
         decomposition (list[tuple]):
-            The decomposition of :math:`U`.
+            The decomposition of $U$.
         left_decomposition (list[tuple]):
-            The decomposition of :math:`V^T D^*`.
+            The decomposition of $V^T D^*$.
         diagonal (ndarray):
-            A list of the nonzero entries of :math:`D`.
+            A list of the nonzero entries of $D$.
         left_diagonal (ndarray):
             A list of the nonzero entries left from the decomposition
-            of :math:`V^T D^*`.
+            of $V^T D^*$.
     """
     current_matrix = numpy.copy(unitary_rows)
     n, p = current_matrix.shape

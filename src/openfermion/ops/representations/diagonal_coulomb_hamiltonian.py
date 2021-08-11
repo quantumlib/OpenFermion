@@ -19,20 +19,20 @@ import numpy
 class DiagonalCoulombHamiltonian:
     r"""Class for storing Hamiltonians of the form
 
-    .. math::
-
+    $$
         \sum_{p, q} T_{pq} a^\dagger_p a_q +
         \sum_{p, q} V_{pq} a^\dagger_p a_p a^\dagger_q a_q +
         \text{constant}
+    $$
 
     where
 
-        - :math:`T` is a Hermitian matrix.
-        - :math:`V` is a real symmetric matrix.
+        - $T$ is a Hermitian matrix.
+        - $V$ is a real symmetric matrix.
 
     Attributes:
-        one_body(ndarray): The Hermitian matrix :math:`T`.
-        two_body(ndarray): The real symmetric matrix :math:`V`.
+        one_body(ndarray): The Hermitian matrix $T$.
+        two_body(ndarray): The real symmetric matrix $V$.
         constant(float): The constant.
     """
 

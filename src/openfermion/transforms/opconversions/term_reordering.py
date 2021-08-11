@@ -24,9 +24,9 @@ def chemist_ordered(fermion_operator):
 
     The normal ordering convention for chemists is different.
     Rather than ordering the two-body term as physicists do, as
-    :math:`a^\dagger a^\dagger a a`
+    $a^\dagger a^\dagger a a$
     the chemist ordering of the two-body term is
-    :math:`a^\dagger a a^\dagger a`
+    $a^\dagger a a^\dagger a$
 
     TODO: This routine can be made more efficient.
 

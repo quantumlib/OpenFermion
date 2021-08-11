@@ -19,23 +19,24 @@ class MajoranaOperator:
     r"""A linear combination of products of Majorana operators.
 
     A system of N fermionic modes can be described using 2N Majorana operators
-    :math:`\gamma_1, \ldots, \gamma_{2N}`
+    $\gamma_1, \ldots, \gamma_{2N}$
     as an alternative to using N fermionic annihilation operators. The algebra
     of Majorana operators amounts to the relation
 
-    .. math::
+    $$
         \{\gamma_i, \gamma_j\}
          = \gamma_i \gamma_j + \gamma_j \gamma_i
          = 2 \delta_{ij}
+    $$
 
-    Note that this implies :math:`\gamma_i^2 = 1`.
+    Note that this implies $\gamma_i^2 = 1$.
 
     The MajoranaOperator class stores a linear combination of products
     of Majorana operators. Each product is represented as a tuple of
     integers representing the indices of the operators. As an example,
     `MajoranaOperator((2, 3, 5), -1.5)` initializes an operator with
     a single term which represents the operator
-    :math:`-1.5 \gamma_2 \gamma_3 \gamma_5`. MajoranaOperators can be
+    $-1.5 \gamma_2 \gamma_3 \gamma_5$. MajoranaOperators can be
     added, subtracted, multiplied, and divided by scalars. They can be
     compared for approximate numerical equality using `==`.
 
@@ -89,16 +90,16 @@ class MajoranaOperator:
     def with_basis_rotated_by(self, transformation_matrix):
         r"""Change to a basis of new Majorana operators.
 
-        The input to this method is a real orthogonal matrix :math:`O`.
+        The input to this method is a real orthogonal matrix $O$.
         It returns a new MajoranaOperator which is equivalent to the old one
         but rewritten in terms of a new basis of Majorana operators.
         Let the original Majorana operators be denoted by
-        :math:`\gamma_i` and the new operators be denoted by
-        :math:`\tilde{\gamma_i}`. Then they are related by the equation
+        $\gamma_i$ and the new operators be denoted by
+        $\tilde{\gamma_i}$. Then they are related by the equation
 
-        .. math::
-
+        $$
             \tilde{\gamma_i} = \sum_j O_{ij} \gamma_j.
+        $$
 
         Args:
             transformation_matrix: A real orthogonal matrix representing
