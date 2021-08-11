@@ -18,10 +18,8 @@ for more information on the 1-norm.
 
 import numpy as np
 
-from openfermion import MolecularData
 
-
-def get_one_norm(mol_or_int, no_constant=None):
+def get_one_norm_mol(molecule, no_constant=True):
     r"""
 
     Returns the 1-Norm of a RHF or ROHF Hamiltonian described in
@@ -32,60 +30,55 @@ def get_one_norm(mol_or_int, no_constant=None):
     Parameters
     ----------
 
-    mol_or_int(tuple) : Tuple of (constant, one_body_integrals,
-                                  two_body_integrals)
+    molecule : MolecularData class representing a molecular Hamiltonian
     constant(float) : Nuclear repulsion or adjustment to constant shift in
         Hamiltonian from integrating out core orbitals
     one_body_integrals(ndarray) : An array of the one-electron integrals having
         shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
     two_body_integrals(ndarray) : An array of the two-electron integrals having
         shape of (n_orb, n_orb, n_orb, n_orb).
-
-    -----OR----
-
-    mol_or_int(MolecularData) : MolecularData class object
-
-    -----------
-
-    no_constant (default: None) : If True, do not return the constant term in
+    no_constant (default: True) : If True, do not return the constant term in
                 in the (majorana/qubit) Hamiltonian
 
     Returns
     -------
     one_norm : 1-Norm of the qubit Hamiltonian
     """
-    if isinstance(mol_or_int, MolecularData):
-        return _get_one_norm_mol(mol_or_int, no_constant=no_constant)
-    else:
-        if no_constant is not None:
-            if no_constant:
-                _, one_body_integrals, two_body_integrals = mol_or_int
-                return _get_one_norm_woconst(one_body_integrals,
-                                             two_body_integrals)
-            else:
-                constant, one_body_integrals, two_body_integrals = mol_or_int
-                return _get_one_norm(constant, one_body_integrals,
-                                     two_body_integrals)
-        else:
-            constant, one_body_integrals, two_body_integrals = mol_or_int
-            return _get_one_norm(constant, one_body_integrals,
-                                 two_body_integrals)
-
-
-def _get_one_norm_mol(molecule, no_constant=None):
-    """Compute one_norm for a MolecularData class"""
-    if no_constant is not None:
-        if no_constant:
-            return _get_one_norm_woconst(molecule.one_body_integrals,
-                                         molecule.two_body_integrals)
-        else:
-            return _get_one_norm(molecule.nuclear_repulsion,
-                                 molecule.one_body_integrals,
-                                 molecule.two_body_integrals)
+    if no_constant:
+        return _get_one_norm_woconst(molecule.one_body_integrals,
+                                     molecule.two_body_integrals)
     else:
         return _get_one_norm(molecule.nuclear_repulsion,
                              molecule.one_body_integrals,
                              molecule.two_body_integrals)
+
+
+def get_one_norm_int(constant,
+                     one_body_integrals,
+                     two_body_integrals,
+                     no_constant=True):
+    """
+
+    Parameters
+    ----------
+    constant(float) : Nuclear repulsion or adjustment to constant shift in
+        Hamiltonian from integrating out core orbitals
+    one_body_integrals(ndarray) : An array of the one-electron integrals having
+        shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
+    two_body_integrals(ndarray) : An array of the two-electron integrals having
+        shape of (n_orb, n_orb, n_orb, n_orb).
+    no_constant (default: True) : If True, do not return the constant term in
+                in the (majorana/qubit) Hamiltonian
+
+    Returns
+    -------
+    one_norm : 1-Norm of the qubit Hamiltonian
+
+    """
+    if no_constant:
+        return _get_one_norm_woconst(one_body_integrals, two_body_integrals)
+    else:
+        return _get_one_norm(constant, one_body_integrals, two_body_integrals)
 
 
 def _get_one_norm(constant, one_body_integrals, two_body_integrals):
