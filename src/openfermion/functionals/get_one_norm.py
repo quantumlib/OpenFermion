@@ -19,7 +19,7 @@ for more information on the 1-norm.
 import numpy as np
 
 
-def get_one_norm_mol(molecule, no_constant=True):
+def get_one_norm_mol(molecule):
     r"""
 
     Returns the 1-Norm of a RHF or ROHF Hamiltonian described in
@@ -31,32 +31,23 @@ def get_one_norm_mol(molecule, no_constant=True):
     ----------
 
     molecule : MolecularData class representing a molecular Hamiltonian
-    constant(float) : Nuclear repulsion or adjustment to constant shift in
-        Hamiltonian from integrating out core orbitals
-    one_body_integrals(ndarray) : An array of the one-electron integrals having
-        shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
-    two_body_integrals(ndarray) : An array of the two-electron integrals having
-        shape of (n_orb, n_orb, n_orb, n_orb).
-    no_constant (default: True) : If True, do not return the constant term in
-                in the (majorana/qubit) Hamiltonian
 
     Returns
     -------
     one_norm : 1-Norm of the qubit Hamiltonian
     """
-    if no_constant:
-        return _get_one_norm_woconst(molecule.one_body_integrals,
-                                     molecule.two_body_integrals)
-    else:
-        return _get_one_norm(molecule.nuclear_repulsion,
-                             molecule.one_body_integrals,
-                             molecule.two_body_integrals)
+    return get_one_norm_int(molecule.nuclear_repulsion,
+                            molecule.one_body_integrals,
+                            molecule.two_body_integrals)
 
 
-def get_one_norm_int(constant,
-                     one_body_integrals,
-                     two_body_integrals,
-                     no_constant=True):
+def get_one_norm_mol_woconst(molecule):
+    """Returns 1-norm without the constant"""
+    return get_one_norm_int_woconst(molecule.one_body_integrals,
+                                    molecule.two_body_integrals)
+
+
+def get_one_norm_int(constant, one_body_integrals, two_body_integrals):
     """
 
     Parameters
@@ -69,20 +60,11 @@ def get_one_norm_int(constant,
         shape of (n_orb, n_orb, n_orb, n_orb).
     no_constant (default: True) : If True, do not return the constant term in
                 in the (majorana/qubit) Hamiltonian
-
     Returns
     -------
     one_norm : 1-Norm of the qubit Hamiltonian
 
     """
-    if no_constant:
-        return _get_one_norm_woconst(one_body_integrals, two_body_integrals)
-    else:
-        return _get_one_norm(constant, one_body_integrals, two_body_integrals)
-
-
-def _get_one_norm(constant, one_body_integrals, two_body_integrals):
-    """Compute 1-norm given molecular integrals"""
     n_orb = one_body_integrals.shape[0]
 
     htilde = constant
@@ -111,7 +93,7 @@ def _get_one_norm(constant, one_body_integrals, two_body_integrals):
     return one_norm
 
 
-def _get_one_norm_woconst(one_body_integrals, two_body_integrals):
+def get_one_norm_int_woconst(one_body_integrals, two_body_integrals):
     """Compute 1-norm given molecular integrals and emit the constant term
     in the qubit Hamiltonian"""
     n_orb = one_body_integrals.shape[0]

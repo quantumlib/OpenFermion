@@ -5,11 +5,12 @@
 #       http://www.apache.org/licenses/LICENSE-2.0
 #
 #   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
+#   distributed under the License is distributed on an "AS IS" BASIS,s
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
 from .contextuality import is_contextual
 
-from .get_one_norm import get_one_norm_mol, get_one_norm_int
+from .get_one_norm import (get_one_norm_mol, get_one_norm_mol_woconst,
+                           get_one_norm_int, get_one_norm_int_woconst)
