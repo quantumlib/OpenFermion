@@ -175,8 +175,11 @@ Authors
 `Qiming Sun <https://github.com/sunqm>`__ (Caltech),
 `Wei Sun <https://github.com/Spaceenter>`__ (Google),
 `Daochen Wang <https://github.com/daochenw>`__ (River Lane Research),
-`Chris Winkler <https://github.com/quid256>`__ (University of Chicago) and
-`Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan).
+`Chris Winkler <https://github.com/quid256>`__ (University of Chicago),
+`Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan) and
+`Emiel Koridon <https://github.com/Emieeel>`__ (Leiden University).
+
+
 
 How to cite
 ===========

@@ -16,9 +16,10 @@ https://arxiv.org/abs/2103.14753 for more information on the 1-norm.
 """
 
 import numpy as np
+from openfermion import MolecularData
 
 
-def get_one_norm_mol(molecule):
+def get_one_norm_mol(molecule: MolecularData):
     """
     Returns the 1-Norm of a RHF or ROHF Hamiltonian described in
     https://arxiv.org/abs/2103.14753 after a fermion-to-qubit
@@ -38,7 +39,7 @@ def get_one_norm_mol(molecule):
                             molecule.two_body_integrals)
 
 
-def get_one_norm_mol_woconst(molecule):
+def get_one_norm_mol_woconst(molecule: MolecularData):
     """
     Returns 1-norm, emitting the constant term in the qubit Hamiltonian.
     See get_one_norm_mol.
@@ -56,7 +57,8 @@ def get_one_norm_mol_woconst(molecule):
                                     molecule.two_body_integrals)
 
 
-def get_one_norm_int(constant, one_body_integrals, two_body_integrals):
+def get_one_norm_int(constant: float, one_body_integrals: np.ndarray,
+                     two_body_integrals: np.ndarray):
     """
     Returns the 1-Norm of a RHF or ROHF Hamiltonian described in
     https://arxiv.org/abs/2103.14753 after a fermion-to-qubit
@@ -104,7 +106,8 @@ def get_one_norm_int(constant, one_body_integrals, two_body_integrals):
     return one_norm
 
 
-def get_one_norm_int_woconst(one_body_integrals, two_body_integrals):
+def get_one_norm_int_woconst(one_body_integrals: np.ndarray,
+                             two_body_integrals: np.ndarray):
     """
     Returns 1-norm, emitting the constant term in the qubit Hamiltonian.
     See get_one_norm_int.
