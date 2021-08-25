@@ -11,21 +11,18 @@
 #   limitations under the License.
 """
 Function to calculate the 1-Norm of a molecular Hamiltonian
-(in the restricted formalism) after fermion-to-qubit transformation
-from a MolecularData class. See https://arxiv.org/abs/2103.14753
-for more information on the 1-norm.
+in spatial orbital basis after fermion-to-qubit transformation. See
+https://arxiv.org/abs/2103.14753 for more information on the 1-norm.
 """
 
 import numpy as np
 
 
 def get_one_norm_mol(molecule):
-    r"""
-
+    """
     Returns the 1-Norm of a RHF or ROHF Hamiltonian described in
     https://arxiv.org/abs/2103.14753 after a fermion-to-qubit
-    transformation given nuclear constant, one-body (2D np.array)
-    and two-body (4D np.array) integrals in spatial orbital basis.
+    transformation given a MolecularData class.
 
     Parameters
     ----------
@@ -42,28 +39,42 @@ def get_one_norm_mol(molecule):
 
 
 def get_one_norm_mol_woconst(molecule):
-    """Returns 1-norm without the constant"""
+    """
+    Returns 1-norm, emitting the constant term in the qubit Hamiltonian.
+    See get_one_norm_mol.
+
+    Parameters
+    ----------
+
+    molecule : MolecularData class representing a molecular Hamiltonian
+
+    Returns
+    -------
+    one_norm : 1-Norm of the qubit Hamiltonian
+    """
     return get_one_norm_int_woconst(molecule.one_body_integrals,
                                     molecule.two_body_integrals)
 
 
 def get_one_norm_int(constant, one_body_integrals, two_body_integrals):
     """
+    Returns the 1-Norm of a RHF or ROHF Hamiltonian described in
+    https://arxiv.org/abs/2103.14753 after a fermion-to-qubit
+    transformation given nuclear constant, one-body (2D np.array)
+    and two-body (4D np.array) integrals in spatial orbital basis.
 
     Parameters
     ----------
     constant(float) : Nuclear repulsion or adjustment to constant shift in
-        Hamiltonian from integrating out core orbitals
+        Hamiltonian from integrating out core orbitals.
     one_body_integrals(ndarray) : An array of the one-electron integrals having
         shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
     two_body_integrals(ndarray) : An array of the two-electron integrals having
         shape of (n_orb, n_orb, n_orb, n_orb).
-    no_constant (default: True) : If True, do not return the constant term in
-                in the (majorana/qubit) Hamiltonian
+
     Returns
     -------
     one_norm : 1-Norm of the qubit Hamiltonian
-
     """
     n_orb = one_body_integrals.shape[0]
 
@@ -94,8 +105,21 @@ def get_one_norm_int(constant, one_body_integrals, two_body_integrals):
 
 
 def get_one_norm_int_woconst(one_body_integrals, two_body_integrals):
-    """Compute 1-norm given molecular integrals and emit the constant term
-    in the qubit Hamiltonian"""
+    """
+    Returns 1-norm, emitting the constant term in the qubit Hamiltonian.
+    See get_one_norm_int.
+
+    Parameters
+    ----------
+    one_body_integrals(ndarray) : An array of the one-electron integrals having
+        shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
+    two_body_integrals(ndarray) : An array of the two-electron integrals having
+        shape of (n_orb, n_orb, n_orb, n_orb).
+
+    Returns
+    -------
+    one_norm : 1-Norm of the qubit Hamiltonian
+    """
     n_orb = one_body_integrals.shape[0]
 
     htildepq = np.zeros(one_body_integrals.shape)
