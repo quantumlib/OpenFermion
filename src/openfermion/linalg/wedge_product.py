@@ -73,7 +73,7 @@ def wedge(left_tensor, right_tensor, left_index_ranks, right_index_ranks):
 
     The wedge product is defined as
 
-    .. math::
+    $$
         \\begin{align}
         a_{j_{1}, j_{2}, ...,j_{p}}^{i_{1}, i_{2}, ..., i_{p}} \\wedge
         b_{j_{p+1}, j_{p+2}, ..., j_{N}}^{i_{p+1}, i_{p + 2}, ..., i_{N}} =
@@ -82,6 +82,7 @@ def wedge(left_tensor, right_tensor, left_index_ranks, right_index_ranks):
         a_{j_{1}, j_{2}, ...,j_{p}}^{i_{1}, i_{2}, ..., i_{p}}
         b_{j_{p+1}, j_{p+2}, ..., j_{N}}^{i_{p+1}, i_{p + 2}, ..., i_{N}}
         \\end{align}
+    $$
 
     The top indices are those that transform contravariently.  The bottom
     indices transform covariently.

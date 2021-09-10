@@ -28,8 +28,7 @@ class DOCIHamiltonian(PolynomialTensor):
 
     Note that the operators stored in this class take the form:
 
-        .. math::
-
+        $$
             constant + \sum_{p} h^{(r1)}_{p, p}/2 (1 - \sigma^Z_p) +
             \sum_{p \neq q} h^{(r1)}_{p, q}/4
                 * (\sigma^X_p \sigma^X_q + \sigma^Y_p \sigma^Y_q) +
@@ -39,11 +38,11 @@ class DOCIHamiltonian(PolynomialTensor):
             constant + \sum_{p} h_{p, p} N_p +
             \sum_{p \neq q} w_{p, p} N_p N_q +
             \sum_{p \neq q} v_{p, p} P_p^\dagger P_q,
+        $$
 
     where
 
-        .. math::
-
+        $$
             N_p = (1 - \sigma^Z_p)/2,
             P_p = a_{i,\beta} a_{i,\alpha},
             h_p = h^{(r1)}_{p, p} = \langle p|h|p \rangle =
@@ -54,22 +53,23 @@ class DOCIHamiltonian(PolynomialTensor):
                                         I^{(2)}_{p, q, p, q},
             v_{p, q} = h^{(r1)}_{p, q} = \langle pp|v|qq \rangle =
                 I^{(2)}_{p, p, q, q},
+        $$
 
-    with (:math:`I^{(1)}_{p, q}`) and (:math:`I^{(2)}_{p, q, r, s}`) are the one
-    and two body electron integrals and (:math:`h`) and (:math:`v`) are the
+    with ($I^{(1)}_{p, q}$) and ($I^{(2)}_{p, q, r, s}$) are the one
+    and two body electron integrals and ($h$) and ($v$) are the
     coefficients of the corresponding InteractionOperator
 
-        .. math::
-
+        $$
             constant + \sum_{p, q} h_{p, q} a^\dagger_p a_q +
             \sum_{p, q, r, s} h_{p, q, r, s} a^\dagger_p a^\dagger_q a_r a_s.
+        $$
 
 
     Attributes:
         constant: The constant offset.
-        hr1: The coefficients of (:math:`h^{r1}_{p, q}`).
+        hr1: The coefficients of ($h^{r1}_{p, q}$).
             This is an n_qubits x n_qubits numpy array of floats.
-        hr2: The coefficients of (:math:`h^{r2}_{p, q}`).
+        hr2: The coefficients of ($h^{r2}_{p, q}$).
             This is an n_qubits x n_qubits numpy array of floats.
     """
 
@@ -80,10 +80,10 @@ class DOCIHamiltonian(PolynomialTensor):
         Args:
             constant: A constant term in the operator given as a
                 float. For instance, the nuclear repulsion energy.
-            hc: the coefficients of (:math:`h^{(c)}_{p}`)
-            hr1: The coefficients of (:math:`h^{(r1)}_{p, q}`).
+            hc: the coefficients of ($h^{(c)}_{p}$)
+            hr1: The coefficients of ($`h^{(r1)}_{p, q}$).
                This is an n_qubits x n_qubits numpy array of floats.
-            hr2: The coefficients of (:math:`h^{(r2)}_{p, q}`).
+            hr2: The coefficients of ($h^{(r2)}_{p, q}$).
                 This is an n_qubits x n_qubits array of floats.
         """
         super(DOCIHamiltonian, self).__init__(None)

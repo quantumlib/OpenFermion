@@ -25,7 +25,7 @@ def map_two_pdm_to_one_pdm(tpdm, particle_number):
     Args:
         tpdm (numpy.ndarray): The 2-RDM as a 4-index tensor. Indices follow the
             internal convention of tpdm[p, q, r, s] ==
-            :math:`a_{p}^{\dagger}a_{q}^{\dagger}a_{r}a_{s}`.
+            $a_{p}^{\dagger}a_{q}^{\dagger}a_{r}a_{s}$.
         particle_number (float): number of particles in the system
 
     Returns:
@@ -41,10 +41,10 @@ def map_two_pdm_to_two_hole_dm(tpdm, opdm):
     Args:
         tpdm (numpy.ndarray): The 2-RDM as a 4-index tensor. Indices follow the
             internal convention of tpdm[p, q, r, s] ==
-            :math:`a_{p}^{\dagger}a_{q}^{\dagger}a_{r}a_{s}`.
+            $a_{p}^{\dagger}a_{q}^{\dagger}a_{r}a_{s}$.
         opdm (numpy.ndarray): The 1-RDM as a 2-index tensor. Indices follow the
             internal convention of opdm[p, q] ==
-            :math:`a_{p}^{\dagger}a_{q}`.
+            $a_{p}^{\dagger}a_{q}$.
 
     Returns:
         tqdm (numpy.ndarray): The 2-hole matrix.
@@ -70,10 +70,10 @@ def map_two_hole_dm_to_two_pdm(tqdm, opdm):
     Args:
         tqdm (numpy.ndarray): The 2-hole-RDM as a 4-index tensor. Indices
             follow the internal convention of tqdm[p, q, r, s] ==
-            :math:`a_{p}a_{q}a_{r}^{\dagger}a_{s}^{\dagger}`.
+            $a_{p}a_{q}a_{r}^{\dagger}a_{s}^{\dagger}$.
         opdm (numpy.ndarray): The 1-RDM as a 2-index tensor. Indices follow the
             internal convention of opdm[p, q] ==
-            :math:`a_{p}^{\dagger}a_{q}`.
+            $a_{p}^{\dagger}a_{q}$.
 
     Returns:
         tpdm (numpy.ndarray): The 2-RDM matrix.
@@ -99,7 +99,7 @@ def map_two_hole_dm_to_one_hole_dm(tqdm, hole_number):
     Args:
         tqdm (numpy.ndarray): The 2-hole-RDM as a 4-index tensor. Indices
             follow the internal convention of tqdm[p, q, r, s] ==
-            :math:`a_{p}a_{q}a_{r}^{\dagger}a_{s}^{\dagger}`.
+            $a_{p}a_{q}a_{r}^{\dagger}a_{s}^{\dagger}$.
         hole_number (float): Number of holes in the system.  For chemical
                              systems this is usually the number of spin
                              orbitals minus the number of electrons.
@@ -117,7 +117,7 @@ def map_one_pdm_to_one_hole_dm(opdm):
     Args:
         opdm (numpy.ndarray): The 1-RDM as a 2-index tensor. Indices follow the
             internal convention of opdm[p, q] ==
-            :math:`a_{p}^{\dagger}a_{q}`.
+            $a_{p}^{\dagger}a_{q}$.
 
     Returns:
         oqdm (numpy.ndarray): the 1-hole-RDM transformed from a 1-RDM.
@@ -133,7 +133,7 @@ def map_one_hole_dm_to_one_pdm(oqdm):
     Args:
         oqdm (numpy.ndarray): The 1-hole-RDM as a 2-index tensor. Indices
             follow the internal convention of oqdm[p, q] ==
-            :math:`a_{p}a_{q}^{\dagger}`.
+            $a_{p}a_{q}^{\dagger}$.
 
     Returns:
         oqdm (numpy.ndarray): the 1-hole-RDM transformed from a 1-RDM.
@@ -149,10 +149,10 @@ def map_two_pdm_to_particle_hole_dm(tpdm, opdm):
     Args:
         tpdm (numpy.ndarray): The 2-RDM as a 4-index tensor. Indices follow the
             internal convention of tpdm[p, q, r, s] ==
-            :math:`a_{p}^{\dagger}a_{q}^{\dagger}a_{r}a_{s}`.
+            $a_{p}^{\dagger}a_{q}^{\dagger}a_{r}a_{s}$.
         opdm (numpy.ndarray): The 1-RDM as a 2-index tensor. Indices follow the
             internal convention of opdm[p, q] ==
-            :math:`a_{p}^{\dagger}a_{q}`.
+            $a_{p}^{\dagger}a_{q}$.
 
     Returns:
         phdm (numpy.ndarray): The particle-hole matrix.
@@ -173,10 +173,10 @@ def map_particle_hole_dm_to_two_pdm(phdm, opdm):
     Args:
         phdm (numpy.ndarray): The 2-particle-hole-RDM as a 4-index tensor.
             Indices follow the internal convention of phdm[p, q, r, s] ==
-            :math:`a_{p}^{\dagger}a_{q}a_{r}^{\dagger}a_{s}`.
+            $a_{p}^{\dagger}a_{q}a_{r}^{\dagger}a_{s}$.
         opdm (numpy.ndarray): The 1-RDM as a 2-index tensor. Indices follow the
             internal convention of opdm[p, q] ==
-            :math:`a_{p}^{\dagger}a_{q}`.
+            $a_{p}^{\dagger}a_{q}$.
 
     Returns:
         tpdm (numpy.ndarray): The 2-RDM matrix.
@@ -197,7 +197,7 @@ def map_particle_hole_dm_to_one_pdm(phdm, num_particles, num_basis_functions):
     Args:
         phdm (numpy.ndarray): The 2-particle-hole-RDM as a 4-index tensor.
             Indices follow the internal convention of phdm[p, q, r, s] ==
-            :math:`a_{p}^{\dagger}a_{q}a_{r}^{\dagger}a_{s}`.
+            $a_{p}^{\dagger}a_{q}a_{r}^{\dagger}a_{s}$.
         num_particles: number of particles in the system.
         num_basis_functions: number of spin-orbitals
             (usually the number of qubits)
