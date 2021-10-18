@@ -5,7 +5,7 @@ on: [pull_request]
 jobs:
   format:
     name: Format check
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -18,7 +18,7 @@ jobs:
         run: check/format-incremental
   mypy:
     name: Type check
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -31,7 +31,7 @@ jobs:
         run: check/mypy
   lint:
     name: Lint check
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -44,7 +44,7 @@ jobs:
         run: check/pylint
   pytest:
     name: Pytest Ubuntu
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -60,7 +60,7 @@ jobs:
         run: check/pytest --actually-quiet
   pytest37:
     name: Pytest Ubuntu
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -76,7 +76,7 @@ jobs:
         run: check/pytest --actually-quiet
   coverage:
     name: Coverage check
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
