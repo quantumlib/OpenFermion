@@ -398,7 +398,7 @@ class InteractionOperatorFermionicGate(ParityPreservingFermionicGate):
 
 class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
                                        cirq.InterchangeableQubitsGate,
-                                       cirq.TwoQubitGate, cirq.EigenGate):
+                                       cirq.EigenGate):
     r"""``(w0 |10⟩⟨01| + h.c.) + w1 |11⟩⟨11|`` interaction.
 
     With weights $(w_0, w_1)$ and exponent $t$, this gate's matrix
@@ -433,6 +433,9 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
 
     @classmethod
     def num_weights(cls):
+        return 2
+
+    def _num_qubits_(self) -> int:
         return 2
 
     def _decompose_(self, qubits):
@@ -532,7 +535,7 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
 
 
 class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
-                                   cirq.ThreeQubitGate, cirq.EigenGate):
+                                   cirq.EigenGate):
     r"""``w0|110⟩⟨101| + w1|110⟩⟨011| + w2|101⟩⟨011|`` + h.c. interaction.
 
     With weights $(w_0, w_1, w_2)$ and exponent $t$, this gate's
@@ -574,6 +577,9 @@ class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
 
     @classmethod
     def num_weights(cls):
+        return 3
+
+    def _num_qubits_(self) -> int:
         return 3
 
     @classmethod
