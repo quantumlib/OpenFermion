@@ -18,8 +18,7 @@ import sympy
 import cirq
 
 
-class FSwapPowGate(cirq.EigenGate, cirq.InterchangeableQubitsGate,
-                   cirq.TwoQubitGate):
+class FSwapPowGate(cirq.EigenGate, cirq.InterchangeableQubitsGate):
     """The FSWAP gate, possibly raised to a power.
 
     FSwapPowGate()**t = FSwapPowGate(exponent=t) and acts on two qubits in the
