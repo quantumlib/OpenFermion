@@ -1,0 +1,8 @@
+cirq-core
+cirq-google
+deprecation
+h5py>=2.8
+networkx
+numpy>=1.11.0
+scipy>=1.1.0
+sympy

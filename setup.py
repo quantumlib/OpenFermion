@@ -44,6 +44,7 @@ setup(
     url='http://www.openfermion.org',
     description=('The electronic structure package for quantum computers.'),
     long_description=long_description,
+    # The following should exactly match dev_tools/pip-compile-requirements/requirements.in
     install_requires=[
         'cirq-core',
         'cirq-google',
