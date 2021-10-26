@@ -136,7 +136,14 @@ def edit_hamiltonian_for_spin(qubit_hamiltonian, spin_orbital, orbital_parity):
 
 
 def remove_indices(symbolic_operator, indices):
-    """Remove the given indices.
+    """Returns the symbolic operator from which the operator with the specified index was removed.
+
+    Args:
+        symbolic_operator: An instance of the SymbolicOperator class.
+        indices: A sequence of Int type object. The indices to be removed.
+
+    Returns:
+        The symbolic operator. The removed indices will be filled by shifting.
     """
     map = {}
     def new_index(index):
