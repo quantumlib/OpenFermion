@@ -27,10 +27,6 @@ stream = io.open('README.rst', encoding='utf-8')
 stream.readline()
 long_description += stream.read()
 
-# Read in package requirements.txt
-requirements = open('requirements.txt').readlines()
-requirements = [r.strip() for r in requirements]
-
 docs_files_gen = os.walk('docs')
 docs_data_files_tuples = []
 for cwd, subdirs, files in list(docs_files_gen)[1:]:
@@ -48,7 +44,16 @@ setup(
     url='http://www.openfermion.org',
     description=('The electronic structure package for quantum computers.'),
     long_description=long_description,
-    install_requires=requirements,
+    install_requires=[
+        'cirq-core',
+        'cirq-google',
+        'deprecation',
+        'h5py>=2.8',
+        'networkx',
+        'numpy>=1.11.0',
+        'scipy>=1.1.0',
+        'sympy',
+    ],
     license='Apache 2',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
