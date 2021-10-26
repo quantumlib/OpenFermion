@@ -71,6 +71,6 @@ class FenwickTreeTest(unittest.TestCase):
         for j in range(1, 16):
             parity_set_nodes = f.get_parity_set(j)
             parity_set = [node.index for node in parity_set_nodes]
-            correct = _parity_set(j - 1)
+            correct = _parity_set(j)
             self.assertEqual(set(parity_set), set(correct))
             print(parity_set)
