@@ -1,3 +1,4 @@
+# Auto-generated from setup.py with generate-requirements.in.py
 cirq-core
 cirq-google
 deprecation
