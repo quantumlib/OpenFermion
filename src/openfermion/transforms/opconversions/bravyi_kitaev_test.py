@@ -18,15 +18,13 @@ import sympy
 
 from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
                                        QubitOperator)
-from openfermion.ops.representations import InteractionOperator
 
-from openfermion.transforms.opconversions import (normal_ordered)
+from openfermion.transforms.opconversions import (jordan_wigner, bravyi_kitaev,
+                                                  get_fermion_operator, normal_ordered)
+
 from openfermion.transforms import (get_interaction_operator, get_fermion_operator)
 from openfermion.testing.testing_utils import (random_interaction_operator)
 from openfermion.utils.operator_utils import (count_qubits)
-
-from openfermion.transforms.opconversions import (jordan_wigner, bravyi_kitaev,
-                                                  get_fermion_operator)
 from openfermion.linalg import eigenspectrum
 from openfermion.hamiltonians import number_operator
 
@@ -259,8 +257,7 @@ class BravyiKitaevInterOpTest(unittest.TestCase):
 
 
     def test_case_one_body_op_success(self):
-      # Case A: Simplest class of operators (Number operators)
-      # Case B: Excitation operators (also tests case A)
+      # Case A: Simplest class of operators (Number operators and Excitation operators)
       for i in range(self.test_range):
         for j in range(i):
             ham = self.two_op(i, j) + self.two_op(j, i)
@@ -288,7 +285,7 @@ class BravyiKitaevInterOpTest(unittest.TestCase):
 
 
     def test_number_excitation_op_success(self):
-        # Case D: Number-excitation operator
+        # Case C: Number-excitation operator
         for i in range(self.test_range):
             for j in range(self.test_range):
                 if i != j:
@@ -303,7 +300,7 @@ class BravyiKitaevInterOpTest(unittest.TestCase):
 
 
     def test_double_excitation_op_success(self):
-        # Case E: Double-excitation operator
+        # Case D: Double-excitation operator
         for i in range(self.test_range):
             for j in range(self.test_range):
                 for k in range(self.test_range):

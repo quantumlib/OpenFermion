@@ -263,7 +263,7 @@ def _bravyi_kitaev_interaction_operator(interaction_operator, n_qubits):
             qubit_hamiltonian += _qubit_operator_creation(*_seeley_richard_love(i, i, one_body[i, i], n_qubits))
 
         for j in range(i):
-            # C. Products of the form: a_i^d a_j
+            # Case B: Coulomb and exchange operators
             if abs(one_body[i, j]) > 0:
                 operators, coef_list = _seeley_richard_love(i, j, one_body[i, j], n_qubits)
                 qubit_hamiltonian_op.extend(operators)
@@ -273,7 +273,6 @@ def _bravyi_kitaev_interaction_operator(interaction_operator, n_qubits):
                 qubit_hamiltonian_op.extend(operators)
                 qubit_hamiltonian_coef.extend(coef_list)
 
-            # B. Coulomb and exchange operators: n_i n_j
             coef = _two_body_coef(two_body, i, j, j, i) / 4
             if abs(coef) > 0:
                 qubit_hamiltonian_op.append(tuple((index, "Z") for index in _occupation_set(i)))
@@ -285,7 +284,7 @@ def _bravyi_kitaev_interaction_operator(interaction_operator, n_qubits):
                 qubit_hamiltonian_coef.append(coef)
                 constant_term += coef
 
-    # E. Number-excitation operators: n_i a_j^d a_k
+    # C. Number-excitation operators: n_i a_j^d a_k
     for i in range(n_qubits):
         for j in range(n_qubits):
             for k in range(j):
@@ -304,7 +303,7 @@ def _bravyi_kitaev_interaction_operator(interaction_operator, n_qubits):
                         number *= excitation
                         qubit_hamiltonian += number
 
-    # F. Double-excitation operators: c_i^d c_j^d c_k c_l
+    # D. Double-excitation operators: c_i^d c_j^d c_k c_l
     for i in range(n_qubits):
         for j in range(i):
             for k in range(j):
