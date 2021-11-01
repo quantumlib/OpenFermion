@@ -132,14 +132,12 @@ def _transform_majorana_operator(majorana_index, n_qubits):
     parity_set = _parity_set(q)
 
     if b:
-        return QubitOperator([(q, 'Y')] + [(i, 'X')
-                                           for i in update_set - {q}] +
+        return QubitOperator([(q, 'Y')] + [(i, 'X') for i in update_set - {q}] +
                              [(i, 'Z')
                               for i in (parity_set ^ occupation_set) - {q}])
     else:
-        return QubitOperator([(i, 'X')
-                              for i in update_set] + [(i, 'Z')
-                                                      for i in parity_set])
+        return QubitOperator([(i, 'X') for i in update_set] +
+                             [(i, 'Z') for i in parity_set])
 
 
 def _transform_operator_term(term, coefficient, n_qubits):
@@ -236,10 +234,11 @@ def inline_product(factors, seed):
 
 
 def _bravyi_kitaev_interaction_operator(interaction_operator, n_qubits):
-    """Implementation of the Bravyi-Kitaev transformation for OpenFermion Interaction Operators.
-    This implementation is equivalent to that described in arXiv:1208.5986, and has been written to
-    optimize compute time by using algebraic expressions for general products
-    a_i^dagger a_j^dagger as outlined in Table II of Seeley, Richard, Love.
+    """Implementation of the Bravyi-Kitaev transformation for OpenFermion
+    Interaction Operators. This implementation is equivalent to that described
+    in arXiv:1208.5986, and has been written to optimize compute time by using
+    algebraic expressions for general products a_i^dagger a_j^dagger as outlined
+    in Table II of Seeley, Richard, Love.
     """
 
     one_body = interaction_operator.one_body_tensor
@@ -348,9 +347,10 @@ def _two_body_coef(two_body, a, b, c, d):
 
 
 def _hermitian_one_body_product(a, b, c, d, coef, n_qubits):
-    """ Takes the 4 indices for a two-body operator and constructs the Bravyi-Kitaev form by
-    splitting the two-body into 2 one-body operators, multiplying them together and then re-adding
-    the Hermitian conjugate to give a Hermitian operator. """
+    """ Takes the 4 indices for a two-body operator and constructs the
+    Bravyi-Kitaev form by splitting the two-body into 2 one-body operators,
+    multiplying them together and then re-adding the Hermitian conjugate to
+    give a Hermitian operator. """
 
     c_dag_c_ac = _qubit_operator_creation(
         *_seeley_richard_love(a, c, coef, n_qubits))
@@ -370,7 +370,9 @@ def _hermitian_one_body_product(a, b, c, d, coef, n_qubits):
 
 
 def _qubit_operator_creation(operators, coefficents):
-    """ Takes a list of tuples for operators/indices, and another for coefficents"""
+    """ Takes a list of tuples for operators/indices, and another for
+    coefficents"""
+
     qubit_operator = QubitOperator()
 
     for index in zip(operators, coefficents):
@@ -380,9 +382,10 @@ def _qubit_operator_creation(operators, coefficents):
 
 
 def _seeley_richard_love(i, j, coef, n_qubits):
-    """Algebraic expressions for general products of the form a_i^d a_j term in the Bravyi-Kitaev
-    basis. These expressions vary in form depending on the parity of the indices i and j, as well
-    as onthe overlaps between the parity and update sets of the indices"""
+    """Algebraic expressions for general products of the form a_i^d a_j term in
+    the Bravyi-Kitaev basis. These expressions vary in form depending on the
+    parity of the indices i and j, as well as onthe overlaps between the parity
+    and update sets of the indices"""
 
     seeley_richard_love_op = []
     seeley_richard_love_coef = []
@@ -530,37 +533,36 @@ def _seeley_richard_love(i, j, coef, n_qubits):
         z_range_2 = _P1_ij_set(i, j).union({j})
         right_pad_2 = tuple((index, "Z") for index in z_range_2)
 
-        seeley_richard_love_op.append(left_pad_2 + ((i, "Y"), ) + right_pad_1)
+        seeley_richard_love_op.append(left_pad_2 + ((i, "Y"),) + right_pad_1)
         seeley_richard_love_coef.append(-coef)
 
-        seeley_richard_love_op.append(left_pad_2 + ((i, "X"), ) + right_pad_1)
+        seeley_richard_love_op.append(left_pad_2 + ((i, "X"),) + right_pad_1)
         seeley_richard_love_coef.append(complex(
             0, -coef))  # Phase flip of -1 relative to original paper
 
-        seeley_richard_love_op.append(left_pad_1 + ((i, "Y"), ) + right_pad_2)
+        seeley_richard_love_op.append(left_pad_1 + ((i, "Y"),) + right_pad_2)
         seeley_richard_love_coef.append(complex(0, coef))
 
-        seeley_richard_love_op.append(left_pad_1 + ((i, "X"), ) + right_pad_2)
+        seeley_richard_love_op.append(left_pad_1 + ((i, "X"),) + right_pad_2)
         seeley_richard_love_coef.append(-coef)
 
     # Case 6
-    elif i % 2 == 0 and j % 2 == 1 and i in _parity_set(
-            j) and j in _update_set(i, n_qubits):
+    elif i % 2 == 0 and j % 2 == 1 and i in _parity_set(j) and j in _update_set(
+            i, n_qubits):
         left_pad = tuple(
             (index, "X") for index in _U_ij_set(i, j, n_qubits) - {j})
-        right_pad = tuple(
-            (index, "Z") for index in _P1_ij_set(i, j).union({j}))
+        right_pad = tuple((index, "Z") for index in _P1_ij_set(i, j).union({j}))
 
-        seeley_richard_love_op.append(left_pad + ((i, "X"), ))
+        seeley_richard_love_op.append(left_pad + ((i, "X"),))
         seeley_richard_love_coef.append(coef)
 
-        seeley_richard_love_op.append(left_pad + ((i, "Y"), ))
+        seeley_richard_love_op.append(left_pad + ((i, "Y"),))
         seeley_richard_love_coef.append(complex(0, -coef))
 
-        seeley_richard_love_op.append(left_pad + ((i, "Y"), ) + right_pad)
+        seeley_richard_love_op.append(left_pad + ((i, "Y"),) + right_pad)
         seeley_richard_love_coef.append(complex(0, coef))
 
-        seeley_richard_love_op.append(left_pad + ((i, "X"), ) + right_pad)
+        seeley_richard_love_op.append(left_pad + ((i, "X"),) + right_pad)
         seeley_richard_love_coef.append(-coef)
 
     # Case 7
@@ -677,7 +679,7 @@ def _seeley_richard_love(i, j, coef, n_qubits):
         z_range_4 = _P3_ij_set(i, j).union({j})
         right_pad_4 = tuple((index, "Z") for index in z_range_4)
 
-        seeley_richard_love_op.append(left_pad_1 + ((i, "Y"), ) + right_pad_1)
+        seeley_richard_love_op.append(left_pad_1 + ((i, "Y"),) + right_pad_1)
         seeley_richard_love_coef.append(
             -coef)  # phase of -j relative to original paper
 
@@ -685,15 +687,15 @@ def _seeley_richard_love(i, j, coef, n_qubits):
         seeley_richard_love_coef.append(complex(
             0, -coef))  # phase of -j relative to original paper
 
-        seeley_richard_love_op.append(left_pad_3 + ((i, "X"), ) + right_pad_3)
+        seeley_richard_love_op.append(left_pad_3 + ((i, "X"),) + right_pad_3)
         seeley_richard_love_coef.append(-coef)
 
-        seeley_richard_love_op.append(left_pad_3 + ((i, "Y"), ) + right_pad_4)
+        seeley_richard_love_op.append(left_pad_3 + ((i, "Y"),) + right_pad_4)
         seeley_richard_love_coef.append(complex(0, coef))
 
     # Case 10
-    elif i % 2 == 1 and j % 2 == 1 and i in _parity_set(
-            j) and j in _update_set(i, n_qubits):
+    elif i % 2 == 1 and j % 2 == 1 and i in _parity_set(j) and j in _update_set(
+            i, n_qubits):
         left_pad = tuple(
             (index, "X") for index in _U_ij_set(i, j, n_qubits) - {j})
         right_pad_1 = tuple((index, "Z") for index in _P0_ij_set(i, j) - {i})
@@ -701,10 +703,10 @@ def _seeley_richard_love(i, j, coef, n_qubits):
         right_pad_3 = tuple((index, "Z") for index in _P1_ij_set(i, j))
         right_pad_4 = tuple((index, "Z") for index in _P3_ij_set(i, j))
 
-        seeley_richard_love_op.append(left_pad + ((i, "Y"), ) + right_pad_1)
+        seeley_richard_love_op.append(left_pad + ((i, "Y"),) + right_pad_1)
         seeley_richard_love_coef.append(complex(0, -coef))
 
-        seeley_richard_love_op.append(left_pad + ((i, "X"), ) + right_pad_2)
+        seeley_richard_love_op.append(left_pad + ((i, "X"),) + right_pad_2)
         seeley_richard_love_coef.append(coef)
 
         seeley_richard_love_op.append(left_pad + ((j, "Z"),

@@ -31,10 +31,11 @@ from openfermion.hamiltonians import number_operator
 
 
 class BravyiKitaevTransformTest(unittest.TestCase):
+
     def test_bravyi_kitaev_transform(self):
         # Check that the QubitOperators are two-term.
-        lowering = bravyi_kitaev(FermionOperator(((3, 0), )))
-        raising = bravyi_kitaev(FermionOperator(((3, 1), )))
+        lowering = bravyi_kitaev(FermionOperator(((3, 0),)))
+        raising = bravyi_kitaev(FermionOperator(((3, 1),)))
         self.assertEqual(len(raising.terms), 2)
         self.assertEqual(len(lowering.terms), 2)
 
@@ -43,7 +44,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         n_qubits = 16
         invariant = numpy.log2(n_qubits) + 1
         for index in range(n_qubits):
-            operator = bravyi_kitaev(FermionOperator(((index, 0), )), n_qubits)
+            operator = bravyi_kitaev(FermionOperator(((index, 0),)), n_qubits)
             qubit_terms = operator.terms.items()  # Get the majorana terms.
 
             for item in qubit_terms:
@@ -55,8 +56,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
                     self.assertEqual(len(item[0]), invariant)
 
         #  Hardcoded coefficient test on 16 qubits
-        lowering = bravyi_kitaev(FermionOperator(((9, 0), )), n_qubits)
-        raising = bravyi_kitaev(FermionOperator(((9, 1), )), n_qubits)
+        lowering = bravyi_kitaev(FermionOperator(((9, 0),)), n_qubits)
+        raising = bravyi_kitaev(FermionOperator(((9, 1),)), n_qubits)
 
         correct_operators_c = ((7, 'Z'), (8, 'Z'), (9, 'X'), (11, 'X'), (15,
                                                                          'X'))
@@ -73,11 +74,11 @@ class BravyiKitaevTransformTest(unittest.TestCase):
 
         #  Hardcoded coefficient test on 16 qubits
         n_qubits = 16
-        lowering = bravyi_kitaev(FermionOperator(((9, 0), )) * coeff, n_qubits)
-        raising = bravyi_kitaev(FermionOperator(((9, 1), )) * coeff, n_qubits)
+        lowering = bravyi_kitaev(FermionOperator(((9, 0),)) * coeff, n_qubits)
+        raising = bravyi_kitaev(FermionOperator(((9, 1),)) * coeff, n_qubits)
         sum_lr = bravyi_kitaev(
-            FermionOperator(((9, 0), )) * coeff + FermionOperator(
-                ((9, 1), )) * coeff, n_qubits)
+            FermionOperator(((9, 0),)) * coeff + FermionOperator(
+                ((9, 1),)) * coeff, n_qubits)
 
         correct_operators_c = ((7, 'Z'), (8, 'Z'), (9, 'X'), (11, 'X'), (15,
                                                                          'X'))
@@ -92,8 +93,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         self.assertEqual(sum_lr, sum_lr_correct)
 
     def test_bk_identity(self):
-        self.assertTrue(
-            bravyi_kitaev(FermionOperator(())) == QubitOperator(()))
+        self.assertTrue(bravyi_kitaev(FermionOperator(())) == QubitOperator(()))
 
     def test_bk_n_qubits_too_small(self):
         with self.assertRaises(ValueError):
@@ -170,8 +170,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         # Check if the Majorana operators have the same spectrum
         # irrespectively of the transform.
 
-        a = FermionOperator(((1, 0), ))
-        a_dag = FermionOperator(((1, 1), ))
+        a = FermionOperator(((1, 0),))
+        a_dag = FermionOperator(((1, 1),))
 
         c = a + a_dag
         d = 1j * (a_dag - a)
@@ -192,7 +192,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         # optimization for hermitian operators was used.
 
         # Minimal failing example:
-        fo = FermionOperator(((3, 1), ))
+        fo = FermionOperator(((3, 1),))
 
         jw = jordan_wigner(fo)
         bk = bravyi_kitaev(fo)
@@ -252,15 +252,15 @@ class BravyiKitaevInterOpTest(unittest.TestCase):
     def number_excitation_operator(self, a, b, c):
         return normal_ordered(
             FermionOperator(((a, 1), (b, 1), (b, 0),
-                             (c, 0))) + FermionOperator(((b, 1), (c, 1),
-                                                         (a, 0), (b, 0))))
+                             (c, 0))) + FermionOperator(((b, 1), (c, 1), (a, 0),
+                                                         (b, 0))))
 
     def four_op(self, a, b, c, d):
-        return normal_ordered(FermionOperator(
-            ((a, 1), (b, 1), (c, 0), (d, 0))))
+        return normal_ordered(FermionOperator(((a, 1), (b, 1), (c, 0), (d, 0))))
 
     def test_case_one_body_op_success(self):
-        # Case A: Simplest class of operators (Number operators and Excitation operators)
+        # Case A: Simplest class of operators
+        # (Number operators and Excitation operators)
         for i in range(self.test_range):
             for j in range(i):
                 ham = self.two_op(i, j) + self.two_op(j, i)
