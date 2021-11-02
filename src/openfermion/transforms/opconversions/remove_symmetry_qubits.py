@@ -18,7 +18,6 @@ import copy
 
 from openfermion.ops.operators import FermionOperator
 from openfermion.transforms.opconversions import bravyi_kitaev_tree, reorder
-from openfermion.transforms.repconversions import prune_unused_indices
 from openfermion.utils.indexing import up_then_down
 
 
@@ -63,12 +62,12 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
     """
     # Catch errors if inputs are of wrong type.
     if type(fermion_hamiltonian) is not FermionOperator:
-        raise ValueError('Supplied operator should be an instance '
-                         'of FermionOperator class')
+        raise ValueError(
+            "Supplied operator should be an instance of FermionOperator class")
     if type(active_orbitals) is not int:
-        raise ValueError('Number of active orbitals should be an integer.')
+        raise ValueError("Number of active orbitals should be an integer.")
     if type(active_fermions) is not int:
-        raise ValueError('Number of active fermions should be an integer.')
+        raise ValueError("Number of active fermions should be an integer.")
 
     # Arrange spins up then down, then BK map to qubit Hamiltonian.
     fermion_hamiltonian_reorder = reorder(fermion_hamiltonian,
@@ -100,7 +99,8 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
     qubit_hamiltonian = edit_hamiltonian_for_spin(qubit_hamiltonian,
                                                   active_orbitals / 2,
                                                   parity_middle_orb)
-    qubit_hamiltonian = remove_indices(qubit_hamiltonian, (active_orbitals / 2, active_orbitals))
+    qubit_hamiltonian = remove_indices(qubit_hamiltonian,
+                                       (active_orbitals / 2, active_orbitals))
 
     return qubit_hamiltonian
 
@@ -112,9 +112,9 @@ def edit_hamiltonian_for_spin(qubit_hamiltonian, spin_orbital, orbital_parity):
     for term, coefficient in qubit_hamiltonian.terms.items():
         # If Z acts on the specified orbital, precompute its effect and
         # remove it from the Hamiltonian.
-        if (spin_orbital - 1, 'Z') in term:
+        if (spin_orbital - 1, "Z") in term:
             new_coefficient = coefficient * orbital_parity
-            new_term = tuple(i for i in term if i != (spin_orbital - 1, 'Z'))
+            new_term = tuple(i for i in term if i != (spin_orbital - 1, "Z"))
             # Make sure to combine terms comprised of the same operators.
             if new_qubit_dict.get(new_term) is None:
                 new_qubit_dict[new_term] = new_coefficient
@@ -136,7 +136,8 @@ def edit_hamiltonian_for_spin(qubit_hamiltonian, spin_orbital, orbital_parity):
 
 
 def remove_indices(symbolic_operator, indices):
-    """Returns the symbolic operator from which the operator with the specified index was removed.
+    """Returns the symbolic operator from which the operator with the specified
+    index was removed.
 
     Args:
         symbolic_operator: An instance of the SymbolicOperator class.
@@ -146,10 +147,11 @@ def remove_indices(symbolic_operator, indices):
         The symbolic operator. The removed indices will be filled by shifting.
     """
     map = {}
+
     def new_index(index):
         if index in map:
             return map[index]
-        map[index] = index - len(list(i for i in indices if (i - 1) < index)) 
+        map[index] = index - len(list(i for i in indices if (i - 1) < index))
         return map[index]
 
     new_operator = copy.deepcopy(symbolic_operator)
