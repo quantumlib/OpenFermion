@@ -50,7 +50,7 @@ jobs:
         # On each operating system, check latest version of python and cirq
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         python-version: [ '3.9' ]
-        cirq-version: [ '~=0.13.0', '>=0.14.0.dev' ]
+        cirq-version: [ '~=0.13.0' ]
         # Also check least-supported versions (linux only)
         include:
           - os: ubuntu-latest
