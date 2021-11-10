@@ -1,5 +1,5 @@
 # For testing and analyzing code.
-mypy~=0.701.0
+mypy~=0.782.0
 pylint~=2.4.0
 pytest-cov~=2.5.0
 yapf~=0.27.0

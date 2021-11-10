@@ -33,11 +33,30 @@ upper_tabs:
       - title: "Constructing Trotter Steps With Low-Rank Decomposition"
         path: /openfermion/tutorials/circuits_3_arbitrary_basis_trotter
 
+      - heading: "OpenFermion-FQE Guide & Tutorials"
+      - title: "Overview"
+        path: /openfermion/fqe/index.md
+      - title: "Introduction"
+        path: /openfermion/fqe/guide/introduction
+      - title: "Hamiltonian time evolution and expectation estimation"
+        path: /openfermion/fqe/tutorials/hamiltonian_time_evolution_and_expectation_estimation
+      - title: "Quadratic Hamiltonian evolution"
+        path: /openfermion/fqe/tutorials/fqe_vs_openfermion_quadratic_hamiltonians
+      - title: "Diagonal Coulomb evolution"
+        path: /openfermion/fqe/tutorials/diagonal_coulomb_evolution
+      - title: "Simulating the Fermi-Hubbard model"
+        path: /openfermion/fqe/tutorials/fermi_hubbard
+
     - name: "Reference"
       skip_translation: true
       contents:
+      - heading: "OpenFermion"
       - title: "All Symbols"
         path: /reference/python/openfermion/all_symbols
       - include: /reference/python/openfermion/_toc.yaml
+      - heading: "OpenFermion-FQE"
+      - title: "All Symbols"
+        path: /reference/python/openfermion_fqe/all_symbols
+      - include: /reference/python/fqe/_toc.yaml
 
 - include: /_book/upper_tabs_right.yaml

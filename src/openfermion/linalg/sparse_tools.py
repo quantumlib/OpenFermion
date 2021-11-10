@@ -312,10 +312,11 @@ def jw_sz_indices(sz_value,
     The returned indices label computational basis vectors which lie within
     the corresponding eigenspace of the Sz operator,
 
-    .. math::
+    $$
         \begin{align}
         S^{z} = \frac{1}{2}\sum_{i = 1}^{n}(n_{i, \alpha} - n_{i, \beta})
         \end{align}
+    $$
 
     Args:
         sz_value(float): Desired Sz value. Should be an integer or

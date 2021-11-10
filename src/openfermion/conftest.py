@@ -9,8 +9,9 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+import os
 
-from .contextuality import is_contextual
 
-from .get_one_norm import (get_one_norm_mol, get_one_norm_mol_woconst,
-                           get_one_norm_int, get_one_norm_int_woconst)
+def pytest_configure(config):
+    # fail tests when using deprecated cirq functionality
+    os.environ['CIRQ_TESTING'] = "true"

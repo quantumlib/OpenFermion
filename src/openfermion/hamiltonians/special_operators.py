@@ -19,10 +19,11 @@ from openfermion.utils.indexing import down_index, up_index
 def s_plus_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the s+ operator.
 
-    .. math::
+    $$
         \begin{align}
         S^{+} = \sum_{i=1}^{n} a_{i, \alpha}^{\dagger}a_{i, \beta}
         \end{align}
+    $$
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
@@ -49,10 +50,11 @@ def s_plus_operator(n_spatial_orbitals: int) -> FermionOperator:
 def s_minus_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the s+ operator.
 
-    .. math::
+    $$
         \begin{align}
         S^{-} = \sum_{i=1}^{n} a_{i, \beta}^{\dagger}a_{i, \alpha}
         \end{align}
+    $$
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
@@ -79,10 +81,11 @@ def s_minus_operator(n_spatial_orbitals: int) -> FermionOperator:
 def sx_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the sx operator.
 
-    .. math::
+    $$
         \begin{align}
         S^{x} = \frac{1}{2}\sum_{i = 1}^{n}(S^{+} + S^{-})
         \end{align}
+    $$
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
@@ -112,10 +115,11 @@ def sx_operator(n_spatial_orbitals: int) -> FermionOperator:
 def sy_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the sy operator.
 
-    .. math::
+    $$
         \begin{align}
         S^{y} = \frac{-i}{2}\sum_{i = 1}^{n}(S^{+} - S^{-})
         \end{align}
+    $$
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
@@ -145,10 +149,11 @@ def sy_operator(n_spatial_orbitals: int) -> FermionOperator:
 def sz_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the sz operator.
 
-    .. math::
+    $$
         \begin{align}
         S^{z} = \frac{1}{2}\sum_{i = 1}^{n}(n_{i, \alpha} - n_{i, \beta})
         \end{align}
+    $$
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits // 2).
@@ -177,10 +182,11 @@ def sz_operator(n_spatial_orbitals: int) -> FermionOperator:
 def s_squared_operator(n_spatial_orbitals: int) -> FermionOperator:
     r"""Return the s^{2} operator.
 
-    .. math::
+    $$
         \begin{align}
         S^{2} = S^{-} S^{+} + S^{z}( S^{z} + 1)
         \end{align}
+    $$
 
     Args:
         n_spatial_orbitals: number of spatial orbitals (n_qubits + 1 // 2).
@@ -215,11 +221,11 @@ def majorana_operator(term: Optional[Union[Tuple[int, int], str]] = None,
             The second element of the tuple is an integer, either 0 or 1,
             indicating which type of Majorana operator it is:
 
-                Type 0: :math:`a^\dagger_p + a_p`
+                Type 0: $a^\dagger_p + a_p$
 
-                Type 1: :math:`i (a^\dagger_p - a_p)`
+                Type 1: $i (a^\dagger_p - a_p)$
 
-            where the :math:`a^\dagger_p` and :math:`a_p` are the usual
+            where the $a^\dagger_p$ and $a_p$ are the usual
             fermionic ladder operators.
             Alternatively, one can provide a string such as 'c2', which
             is a Type 0 operator on mode 2, or 'd3', which is a Type 1

@@ -19,6 +19,9 @@ import deprecation
 import openfermion
 from openfermion._compat import wrap_module
 
+from cirq._compat import deprecated
+from cirq.testing import assert_deprecated
+
 
 def deprecated_test(test: Callable) -> Callable:
     """Marks a test as using deprecated functionality.
@@ -64,3 +67,13 @@ def test_wrap_module():
                                       {'deprecated_attribute': ('', '')})
     with pytest.deprecated_call():
         _ = wrapped_openfermion.deprecated_attribute
+
+
+def test_cirq_deprecations():
+
+    @deprecated(deadline="v0.12", fix="use new_func")
+    def old_func():
+        pass
+
+    with pytest.raises(ValueError, match="deprecated .* not allowed"):
+        old_func()

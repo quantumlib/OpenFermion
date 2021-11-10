@@ -20,7 +20,12 @@ from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
                                        QubitOperator)
 
 from openfermion.transforms.opconversions import (jordan_wigner, bravyi_kitaev,
-                                                  get_fermion_operator)
+                                                  get_fermion_operator,
+                                                  normal_ordered)
+
+from openfermion.transforms import (get_interaction_operator)
+from openfermion.testing.testing_utils import (random_interaction_operator)
+from openfermion.utils.operator_utils import (count_qubits)
 from openfermion.linalg import eigenspectrum
 from openfermion.hamiltonians import number_operator
 
@@ -95,6 +100,10 @@ class BravyiKitaevTransformTest(unittest.TestCase):
             bravyi_kitaev(FermionOperator('2^ 3^ 5 0'), n_qubits=4)
         with self.assertRaises(ValueError):
             bravyi_kitaev(MajoranaOperator((2, 3, 9, 0)), n_qubits=4)
+        with self.assertRaises(ValueError):
+            bravyi_kitaev(get_interaction_operator(
+                FermionOperator('2^ 3^ 5 0')),
+                          n_qubits=4)
 
     def test_bk_jw_number_operator(self):
         # Check if number operator has the same spectrum in both
@@ -223,3 +232,97 @@ def test_bravyi_kitaev_majorana_op_consistent():
     op = (MajoranaOperator((1, 3, 4), 0.5) + MajoranaOperator(
         (3, 7, 8, 9, 10, 12), 1.8) + MajoranaOperator((0, 4)))
     assert bravyi_kitaev(op) == bravyi_kitaev(get_fermion_operator(op))
+
+
+class BravyiKitaevInterOpTest(unittest.TestCase):
+
+    test_range = 8
+
+    def one_op(self, a, b):
+        return FermionOperator(((a, 1), (b, 0)))
+
+    def two_op(self, a, b):
+        return self.one_op(a, b) + self.one_op(b, a)
+
+    def coulomb_exchange_operator(self, a, b):
+        return FermionOperator(
+            ((a, 1), (b, 1), (a, 0), (b, 0))) + FermionOperator(
+                ((a, 1), (b, 1), (b, 0), (a, 0)))
+
+    def number_excitation_operator(self, a, b, c):
+        return normal_ordered(
+            FermionOperator(((a, 1), (b, 1), (b, 0),
+                             (c, 0))) + FermionOperator(((b, 1), (c, 1), (a, 0),
+                                                         (b, 0))))
+
+    def four_op(self, a, b, c, d):
+        return normal_ordered(FermionOperator(((a, 1), (b, 1), (c, 0), (d, 0))))
+
+    def test_case_one_body_op_success(self):
+        # Case A: Simplest class of operators
+        # (Number operators and Excitation operators)
+        for i in range(self.test_range):
+            for j in range(i):
+                ham = self.two_op(i, j) + self.two_op(j, i)
+                n_qubits = count_qubits(ham)
+
+                opf_ham = bravyi_kitaev(ham, n_qubits)
+                custom = bravyi_kitaev(get_interaction_operator(ham))
+
+                assert custom == opf_ham
+
+    def test_coulomb_and_exchange_ops_success(self):
+        # Case B: Coulomb and exchange operators
+        for i in range(self.test_range):
+            for j in range(i):
+                ham = self.coulomb_exchange_operator(i, j)
+
+                opf_ham = bravyi_kitaev(ham)
+                custom = bravyi_kitaev(get_interaction_operator(ham))
+
+                print(opf_ham)
+                print(custom)
+
+                assert custom == opf_ham
+
+    def test_number_excitation_op_success(self):
+        # Case C: Number-excitation operator
+        for i in range(self.test_range):
+            for j in range(self.test_range):
+                if i != j:
+                    for k in range(self.test_range):
+                        if k not in (i, j):
+                            ham = self.number_excitation_operator(i, j, k)
+
+                            opf_ham = bravyi_kitaev(ham)
+                            custom = bravyi_kitaev(
+                                get_interaction_operator(ham))
+
+                            assert custom == opf_ham
+
+    def test_double_excitation_op_success(self):
+        # Case D: Double-excitation operator
+        for i in range(self.test_range):
+            for j in range(self.test_range):
+                for k in range(self.test_range):
+                    for l in range(self.test_range):
+                        if len({i, j, k, l}) == 4:
+                            print(i, j, k, l)
+                            ham = self.four_op(i, j, k, l) + self.four_op(
+                                k, l, i, j)
+                            n_qubits = count_qubits(ham)
+
+                            opf_ham = bravyi_kitaev(ham, n_qubits)
+                            custom = bravyi_kitaev(
+                                get_interaction_operator(ham))
+
+                            assert custom == opf_ham
+
+    def test_consistency_for_complex_numbers(self):
+        """Test consistency with JW for FermionOperators."""
+        # Random interaction operator
+        n_qubits = 8
+        iop = random_interaction_operator(n_qubits, real=False)
+        op1 = bravyi_kitaev(iop)
+        op2 = bravyi_kitaev(get_fermion_operator(iop))
+        self.assertEqual(op1, op2)

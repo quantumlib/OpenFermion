@@ -61,9 +61,7 @@ class FermiHubbardModel:
     itself and its neighbors, the Hamiltonian for the spinful model has the
     form
 
-    .. math::
-
-        \begin{align}
+    $$
         H = &- \sum_{a < b} t_{a, b}^{(\mathrm{onsite})}
                \sum_{i} \sum_{\sigma}
                      (a^\dagger_{i, a, \sigma} a_{i, b, \sigma} +
@@ -105,33 +103,32 @@ class FermiHubbardModel:
             \\
             &- h \sum_{i} \sum_{a}
                 \left(n_{i, a, \uparrow} - n_{i, a, \downarrow}\right)
-        \end{align}
+    $$
 
     where
 
-        - The indices :math:`(i, j)` and :math:`\{i, j\}` run over ordered and
-          unordered pairs, respectively of sites :math:`i` and :math:`j` of
+        - The indices $(i, j)$ and $\{i, j\}$ run over ordered and
+          unordered pairs, respectively of sites $i$ and $j$ of
           neighboring sites in the lattice,
-        - :math:`a` and :math:`b` index degrees of freedom on each site,
-        - :math:`\sigma \in \{\uparrow, \downarrow\}` is the spin,
-        - :math:`t_{a, b}^{(\mathrm{onsite})}` is the tunneling amplitude
+        - $a$ and $b$ index degrees of freedom on each site,
+        - $\sigma \in \{\uparrow, \downarrow\}$ is the spin,
+        - $t_{a, b}^{(\mathrm{onsite})}$ is the tunneling amplitude
           between spin orbitals on the same site,
-        - :math:`t_{a, b}^{(\mathrm{nghbr})}` is the tunneling amplitude
+        - $t_{a, b}^{(\mathrm{nghbr})}$ is the tunneling amplitude
           between spin orbitals on neighboring sites,
-        - :math:`U_{a, b}^{(\mathrm{onsite, \pm})}` is the Coulomb potential
+        - $U_{a, b}^{(\mathrm{onsite, \pm})}$ is the Coulomb potential
           between spin orbitals on the same site with the same (+) or different
           (-) spins,
-        - :math:`U_{a, b}^{(\mathrm{nghbr, \pm})}` is the Coulomb potential
-          betwen spin orbitals on neighborings sites with the same (+) or
+        - $U_{a, b}^{(\mathrm{nghbr, \pm})}$ is the Coulomb potential
+          between spin orbitals on neighboring sites with the same (+) or
           different (-) spins,
-        - :math:`\mu_{a}` is the chemical potential, and
-        - :math:`h` is the magnetic field.
+        - $\mu_{a}$ is the chemical potential, and
+        - $h$ is the magnetic field.
 
     One can also construct the Hamiltonian for the spinless model, which
     has the form
 
-    .. math::
-
+    $$
         \begin{align}
         H = &- \sum_{a < b} t_{a, b}^{(\mathrm{onsite})}
                \sum_{i}
@@ -181,8 +178,8 @@ class FermiHubbardModel:
             potential_parameters (Iterable[Tuple[int, float]], optional): The
                 potential parameters.
             magnetic_field (float, optional): The magnetic field. Default is 0.
-            particle_hole_symmetry: If true, each number operator :math:`n` is
-                replaced with :math:`n - 1/2`.
+            particle_hole_symmetry: If true, each number operator $n$ is
+                replaced with $n - 1/2$.
 
         Each group of parameters is specified as an iterable of tuples.
 
@@ -190,29 +187,29 @@ class FermiHubbardModel:
 
         In the spinful, model, the tunneling parameter corresponds to the terms
 
-        .. math::
-
+        $$
             t \sum_{(i, j) \in E^{(\mathrm{edge type})}}
             \sum_{\sigma}
             \left(a_{i, a, \sigma}^{\dagger} a_{j, b, \sigma}
             + a_{j, b, \sigma}^{\dagger} a_{i, a, \sigma}\right)
+        $$
 
         and in the spinless model to
 
-        .. math::
-
+        $$
             -t \sum_{(i, j) \in E^{(\mathrm{edge type})}}
             \left(a_{i, a}^{\dagger} a_{j, b}
             + a_{j, b}^{\dagger} a_{i, a}\right),
+        $$
 
         where
 
-            - :math:`(a, b)` is the pair of degrees
+            - $(a, b)$ is the pair of degrees
             of freedom given by ``dofs``;
-            - :math:`E^{(\mathrm{edge type})}` is the set of ordered pairs of
+            - $E^{(\mathrm{edge type})}$ is the set of ordered pairs of
               site indices returned by ``lattice.site_pairs_iter(edge_type, a !=
               b)``; and
-            - :math:`t` is the ``coefficient``.
+            - $t$ is the ``coefficient``.
 
         Each interaction parameter is a tuple ``(edge_type, dofs,
         coefficient, spin_pairs)``. The final ``spin_pairs`` element is
@@ -223,36 +220,38 @@ class FermiHubbardModel:
         indicates distinct degrees of freedom then the
         parameter corresponds to the terms
 
-        .. math::
+        $$
         U \sum_{(i, j) \in E^{(\mathrm{edge type})}} \sum_{(\sigma, \sigma')}
         n_{i, a, \sigma} n_{j, b, \sigma'}
+        $$
 
         where
 
-            - :math:`(a, b)` is the pair of degrees of
+            - $(a, b)$ is the pair of degrees of
             freedom given by ``dofs``;
-            - :math:`E^{(\mathrm{edge type})}` is the set of ordered pairs of
+            - $E^{(\mathrm{edge type})}$ is the set of ordered pairs of
               site indices returned by ``lattice.site_pairs_iter(edge_type)``;
-            - :math:`U` is the ``coefficient``; and
-            - :math:`(\sigma, \sigma')` runs over
+            - $U$ is the ``coefficient``; and
+            - $(\sigma, \sigma')$ runs over
                 - all four possible pairs of spins
                 if `spin_pairs == SpinPairs.ALL`,
-                - :math:`\{(\uparrow, \downarrow), (\downarrow, \uparrow)\}`
+                - $\{(\uparrow, \downarrow), (\downarrow, \uparrow)\}$
                 if `spin_pairs == SpinPairs.DIFF`, and
-                - :math:`\{(\uparrow, \uparrow), (\downarrow, \downarrow)\}'
+                - $\{(\uparrow, \uparrow), (\downarrow, \downarrow)\}$
                 if 'spin_pairs == SpinPairs.SAME`.
 
         Each potential parameter is a tuple ``(dof, coefficient)``.
         For example, in the spinful model, it corresponds to the terms
 
-        .. math::
+        $$
             -\mu \sum_{i} \sum_{\sigma} n_{i, a, \sigma},
+        $$
 
         where
 
-            - :math:`i` runs over the sites of the lattice;
-            - :math:`a` is the degree of freedom ``dof``; and
-            - :math:`\mu` is the ``coefficient``.
+            - $i$ runs over the sites of the lattice;
+            - $a$ is the degree of freedom ``dof``; and
+            - $\mu$ is the ``coefficient``.
 
         In the spinless model, the magnetic field is ignored.
         """

@@ -1,4 +1,5 @@
-cirq==0.10.0
+cirq-core~=0.12.0
+cirq-google~=0.12.0
 deprecation
 h5py>=2.8
 networkx

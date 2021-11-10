@@ -53,10 +53,10 @@ def _fourier_transform_helper(hamiltonian, grid, spinless, phase_factor,
 def fourier_transform(hamiltonian, grid, spinless):
     r"""Apply Fourier transform to change hamiltonian in plane wave basis.
 
-    .. math::
-
+    $$
         c^\dagger_v = \sqrt{1/N} \sum_m {a^\dagger_m \exp(-i k_v r_m)}
         c_v = \sqrt{1/N} \sum_m {a_m \exp(i k_v r_m)}
+    $$
 
     Args:
         hamiltonian (FermionOperator): The hamiltonian in plane wave basis.
@@ -78,10 +78,10 @@ def inverse_fourier_transform(hamiltonian, grid, spinless):
     r"""Apply inverse Fourier transform to change hamiltonian in
     plane wave dual basis.
 
-    .. math::
-
+    $$
         a^\dagger_v = \sqrt{1/N} \sum_m {c^\dagger_m \exp(i k_v r_m)}
         a_v = \sqrt{1/N} \sum_m {c_m \exp(-i k_v r_m)}
+    $$
 
     Args:
         hamiltonian (FermionOperator):

@@ -28,41 +28,41 @@ def bogoliubov_transform(
     r"""Perform a Bogoliubov transformation.
 
     This circuit performs the transformation to a basis determined by a new set
-    of fermionic ladder operators. It performs the unitary :math:`U` such that
+    of fermionic ladder operators. It performs the unitary $U$ such that
 
-    .. math::
-
+    $$
         U a^\dagger_p U^{-1} = b^\dagger_p
+    $$
 
-    where the :math:`a^\dagger_p` are the original creation operators and the
-    :math:`b^\dagger_p` are the new creation operators. The new creation
+    where the $a^\dagger_p$ are the original creation operators and the
+    $b^\dagger_p$ are the new creation operators. The new creation
     operators are linear combinations of the original ladder operators with
     coefficients given by the matrix `transformation_matrix`, which will be
-    referred to as :math:`W` in the following.
+    referred to as $W$ in the following.
 
-    If :math:`W` is an `N \times N` matrix, then the :math:`b^\dagger_p` are
+    If $W$ is an $N \times N$ matrix, then the $b^\dagger_p$ are
     given by
 
-    .. math::
-
+    $$
         b^\dagger_p = \sum_{q=1}^N W_{pq} a^\dagger_q.
+    $$
 
-    If :math:`W` is an `N \times 2N` matrix, then the :math:`b^\dagger_p` are
+    If $W$ is an $N \times 2N$ matrix, then the $b^\dagger_p$ are
     given by
 
-    .. math::
-
+    $$
         b^\dagger_p = \sum_{q=1}^N W_{pq} a^\dagger_q
                       + \sum_{q=N+1}^{2N} W_{pq} a_q.
+    $$
 
     This algorithm assumes the Jordan-Wigner Transform.
 
     Args:
         qubits: The qubits to which to apply the circuit.
-        transformation_matrix: The matrix :math:`W` holding the coefficients
+        transformation_matrix: The matrix $W$ holding the coefficients
             that describe the new creation operators in terms of the original
-            ladder operators. Its shape should be either :math:`NxN` or
-            :math:`Nx(2N)`, where :math:`N` is the number of qubits.
+            ladder operators. Its shape should be either $NxN$ or
+            $Nx(2N)$, where $N$ is the number of qubits.
         initial_state: Optionally specifies a computational basis state
             to assume that the qubits start in. This assumption enables
             optimizations that result in a circuit with fewer gates.
