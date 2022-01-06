@@ -43,37 +43,32 @@ jobs:
       - name: Lint
         run: check/pylint
   pytest:
-    name: Pytest Ubuntu
-    runs-on: ubuntu-18.04
+    name: Pytest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # On each operating system, check latest version of python and cirq
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ '3.9' ]
+        cirq-version: [ '~=0.13.0' ]
+        # Also check least-supported versions (linux only)
+        include:
+          - os: ubuntu-latest
+            python-version: 3.8
+            cirq-version: '~=0.12.0'
+      fail-fast: false
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
         with:
-          python-version: '3.6'
-          architecture: 'x64'
+          python-version: ${{ matrix.python-version }}
       - name: Install requirements
         run: |
-          pip install -r requirements.txt
           pip install -r dev_tools/conf/pip-list-dev-tools.txt
-          git config --global user.name ${GITHUB_ACTOR}
+          pip install cirq-core${{matrix.cirq-version}} cirq-google${{matrix.cirq-version}} -r requirements.txt
       - name: Pytest check
-        run: check/pytest --actually-quiet
-  pytest37:
-    name: Pytest Ubuntu
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.7'
-          architecture: 'x64'
-      - name: Install requirements
-        run: |
-          pip install -r requirements.txt
-          pip install -r dev_tools/conf/pip-list-dev-tools.txt
-          git config --global user.name ${GITHUB_ACTOR}
-      - name: Pytest check
-        run: check/pytest --actually-quiet
+        run: check/pytest
+        shell: bash
   coverage:
     name: Coverage check
     runs-on: ubuntu-18.04
@@ -90,35 +85,3 @@ jobs:
           git config --global user.name ${GITHUB_ACTOR}
       - name: Coverage check
         run: check/pytest-and-incremental-coverage --actually-quiet
-  windows:
-    name: Pytest Windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.6'
-          architecture: 'x64'
-      - name: Install requirements
-        run: |
-          pip install -r requirements.txt
-          pip install -r dev_tools/conf/pip-list-dev-tools.txt
-      - name: Pytest Windows
-        run: check/pytest
-        shell: bash
-  macos:
-    name: Pytest MacOS
-    runs-on: macos-10.15
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.6'
-          architecture: 'x64'
-      - name: Install requirements
-        run: |
-          pip install -r requirements.txt
-          pip install -r dev_tools/conf/pip-list-dev-tools.txt
-          git config --global user.name ${GITHUB_ACTOR}
-      - name: Pytest check
-        run: check/pytest
