@@ -419,7 +419,6 @@ def qubit_vs_toffoli(lam,
         qu26 = perm + costref
         tof26 = costref
 
-    # FIXME: are qu27 and tof27 present in the improved algorithm?
     qu27 = perm  # Iterate the control register.
     tof27 = 1
 

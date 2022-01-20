@@ -227,7 +227,6 @@ def cas_to_pyscf(h1, eri, ecore, num_alpha, num_beta):
     pyscf_mf.init_guess = '1e'
     pyscf_mf.mo_coeff = np.eye(n_orb)
     pyscf_mf.mo_occ = np.array(alpha_diag) + np.array(beta_diag)
-    #FIXME: Should we overwrite mo_coeff as well after diagonalizing fock?
     pyscf_mf.mo_energy, _ = np.linalg.eigh(pyscf_mf.get_fock())
 
     return pyscf_mol, pyscf_mf
