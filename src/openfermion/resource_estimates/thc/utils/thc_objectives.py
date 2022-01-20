@@ -71,12 +71,11 @@ def thc_objective_grad_jax(xcur, norb, nthc, eri):
                          CprP,
                          optimize=[(0, 1), (0, 1)])
     deri = eri - Iapprox
-    # res is not used?
-    #res = 0.5 * jnp.sum((deri)**2)
 
     # O(norb^5)
     dL_dZab = -jnp.einsum(
         'pqrs,pqA,rsB->AB', deri, CprP, CprP, optimize=[(0, 1), (0, 1)])
+
     # O(norb^5)
     dL_dX_GT = -2 * jnp.einsum('Tqrs,Gq,Gv,rsv->GT',
                                deri,
@@ -84,16 +83,14 @@ def thc_objective_grad_jax(xcur, norb, nthc, eri):
                                MPQ,
                                CprP,
                                optimize=[(0, 3), (1, 2), (0, 1)])
-    # dL_dX_GT -= jnp.einsum('pTrs,Gp,Gv,rsv->GT', deri, etaPp, MPQ, CprP,
-    #                          optimize=[(0, 3), (1, 2), (0, 1)])
+
     dL_dX_GT -= 2 * jnp.einsum('pqTs,pqu,uG,Gs->GT',
                                deri,
                                CprP,
                                MPQ,
                                etaPp,
                                optimize=[(0, 1), (0, 2), (0, 1)])
-    # dL_dX_GT -= jnp.einsum('pqrT,pqu,uG,Gr->GT', deri, CprP, MPQ, etaPp,
-    #                          optimize=[(0, 1), (0, 2), (0, 1)])
+
     return jnp.hstack((dL_dX_GT.ravel(), dL_dZab.ravel()))
 
 
@@ -165,7 +162,6 @@ def thc_objective_regularized(xcur,
                          CprP,
                          optimize=[(0, 1), (0, 1)])
     deri = eri - Iapprox
-    # res = 0.5 * numpy.sum((deri)**2)
 
     SPQ = etaPp.dot(
         etaPp.T)  # (nthc x norb)  x (norb x nthc) -> (nthc  x nthc) metric
@@ -176,7 +172,6 @@ def thc_objective_regularized(xcur,
     MPQ_normalized = cP.dot(MPQ).dot(cP)  # get normalized zeta in Eq. 11 & 12
 
     lambda_z = jnp.sum(jnp.abs(MPQ_normalized)) * 0.5
-    # lambda_z = jnp.sum(MPQ_normalized**2) * 0.5
 
     res = 0.5 * jnp.sum((deri)**2) + penalty_param * (lambda_z**2)
 
@@ -230,8 +225,7 @@ def thc_objective_grad(xcur, norb, nthc, eri, verbose=False):
         MPQ,
         CprP,
         optimize=['einsum_path', (0, 3), (1, 2), (0, 1)])
-    # dL_dX_GT -= numpy.einsum('pTrs,Gp,Gv,rsv->GT', deri, etaPp, MPQ, CprP, \
-    #             optimize=['einsum_path',(0, 3), (1, 2), (0, 1)])
+
     dL_dX_GT -= 2 * numpy.einsum(
         'pqTs,pqu,uG,Gs->GT',
         deri,
@@ -239,8 +233,7 @@ def thc_objective_grad(xcur, norb, nthc, eri, verbose=False):
         MPQ,
         etaPp,
         optimize=['einsum_path', (0, 1), (0, 2), (0, 1)])
-    # dL_dX_GT -= numpy.einsum('pqrT,pqu,uG,Gr->GT', deri, CprP, MPQ, etaPp, \
-    #             optimize=['einsum_path',(0, 1), (0, 2), (0, 1)])
+
     return numpy.hstack((dL_dX_GT.ravel(), dL_dZab.ravel()))
 
 
@@ -264,8 +257,7 @@ def thc_objective_and_grad(xcur, norb, nthc, eri, verbose=False):
         nthc, nthc)  # central tensor
     CprP = numpy.einsum("Pp,Pr->prP", etaPp,
                         etaPp)  # this is einsum('mp,mq->pqm', etaPp, etaPp)
-    # path = numpy.einsum_path('pqU,UV,rsV->pqrs', CprP, MPQ, CprP, \
-    #                           optimize='optimal')
+
     Iapprox = numpy.einsum('pqU,UV,rsV->pqrs',
                            CprP,
                            MPQ,
@@ -280,7 +272,6 @@ def thc_objective_and_grad(xcur, norb, nthc, eri, verbose=False):
                             CprP,
                             optimize=['einsum_path', (0, 1), (0, 1)])
     # O(norb^4 * nthc)
-    # leaving the commented out code for documentation purposes
     dL_dX_GT = -2 * numpy.einsum(
         'Tqrs,Gq,Gv,rsv->GT',
         deri,
@@ -288,8 +279,7 @@ def thc_objective_and_grad(xcur, norb, nthc, eri, verbose=False):
         MPQ,
         CprP,
         optimize=['einsum_path', (0, 3), (1, 2), (0, 1)])
-    # dL_dX_GT -= numpy.einsum('pTrs,Gp,Gv,rsv->GT', deri, etaPp, MPQ, CprP, \
-    #                           optimize=['einsum_path',(0, 3), (1, 2), (0, 1)])
+
     dL_dX_GT -= 2 * numpy.einsum(
         'pqTs,pqu,uG,Gs->GT',
         deri,
@@ -297,8 +287,6 @@ def thc_objective_and_grad(xcur, norb, nthc, eri, verbose=False):
         MPQ,
         etaPp,
         optimize=['einsum_path', (0, 1), (0, 2), (0, 1)])
-    # dL_dX_GT -= numpy.einsum('pqrT,pqu,uG,Gr->GT', deri, CprP, MPQ, etaPp, \
-    #                           optimize=['einsum_path',(0, 1), (0, 2), (0, 1)])
 
     return res, numpy.hstack((dL_dX_GT.ravel(), dL_dZab.ravel()))
 
