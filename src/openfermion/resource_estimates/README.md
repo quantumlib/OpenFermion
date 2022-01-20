@@ -11,6 +11,8 @@ jax
 jaxlib
 ```
 
+For THC factorization, it also requires [BTAS](https://github.com/ValeevGroup/BTAS) and the [PyBTAS](https://github.com/ncrubin/pybtas) wrapper, which require their own installation + depends.
+
 ### Overview
 
 Module `openfermion.resource_estimates` to facilitate fault-tolerant (FT) resource estimates for chemical Hamiltonians.
