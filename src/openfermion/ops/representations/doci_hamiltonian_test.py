@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for doci_hamiltonian.py."""
+import sys
 import os
 import unittest
 
@@ -23,15 +24,20 @@ from openfermion.linalg import get_sparse_operator
 from openfermion.ops.representations.doci_hamiltonian import (
     DOCIHamiltonian, get_tensors_from_doci, get_projected_integrals_from_doci,
     get_doci_from_integrals)
+from openfermion import (get_fermion_operator, InteractionOperator, \
+                         normal_ordered)
+
+numpy.set_printoptions(linewidth=2000, threshold=sys.maxsize)
 
 
 class IntegralTransformsTest(unittest.TestCase):
 
     def setUp(self):
-        self.geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
+        self.geometry = [('H', (0., 0., 0.)), ('Li', (0., 0., 1.45))]
         self.basis = 'sto-3g'
         self.multiplicity = 1
-        self.filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
+        self.filename = os.path.join(DATA_DIRECTORY,
+                                     'H1-Li1_sto-3g_singlet_1.45')
         self.molecule = MolecularData(self.geometry,
                                       self.basis,
                                       self.multiplicity,
@@ -41,24 +47,77 @@ class IntegralTransformsTest(unittest.TestCase):
     def test_integrals_self_inverse(self):
         hc, hr1, hr2 = get_doci_from_integrals(self.molecule.one_body_integrals,
                                                self.molecule.two_body_integrals)
-        proj_one_body, proj_two_body = get_projected_integrals_from_doci(
-            hc, hr1, hr2)
+        doci = DOCIHamiltonian(0, hc, hr1, hr2)
+        proj_one_body, proj_two_body = doci.get_projected_integrals()
         hc_test, hr1_test, hr2_test = get_doci_from_integrals(
             proj_one_body, proj_two_body)
         self.assertTrue(numpy.allclose(hc, hc_test))
         self.assertTrue(numpy.allclose(hr1, hr1_test))
-        print(hr2)
-        print(hr2_test)
         self.assertTrue(numpy.allclose(hr2, hr2_test))
+
+    def test_fermionic_hamiltonian_from_integrals(self):
+        constant = self.molecule.nuclear_repulsion
+        doci_constant = constant
+        hc, hr1, hr2 = get_doci_from_integrals(self.molecule.one_body_integrals,
+                                               self.molecule.two_body_integrals)
+
+        doci = DOCIHamiltonian(doci_constant, hc, hr1, hr2)
+
+        doci_qubit_op = doci.qubit_operator
+        doci_mat = get_sparse_operator(doci_qubit_op).toarray()
+        #doci_eigvals, doci_eigvecs = numpy.linalg.eigh(doci_mat)
+        doci_eigvals, _ = numpy.linalg.eigh(doci_mat)
+
+        tensors = doci.n_body_tensors
+        one_body_tensors, two_body_tensors = tensors[(1, 0)], tensors[(1, 1, 0,
+                                                                       0)]
+        fermion_op1 = get_fermion_operator(
+            InteractionOperator(constant, one_body_tensors,
+                                0. * two_body_tensors))
+
+        fermion_op2 = get_fermion_operator(
+            InteractionOperator(0, 0 * one_body_tensors,
+                                0.5 * two_body_tensors))
+
+        import openfermion as of
+        fermion_op1_jw = of.transforms.jordan_wigner(fermion_op1)
+        fermion_op2_jw = of.transforms.jordan_wigner(fermion_op2)
+
+        fermion_op_jw = fermion_op1_jw + fermion_op2_jw
+        #fermion_eigvals, fermion_eigvecs = numpy.linalg.eigh(
+        #    get_sparse_operator(fermion_op_jw).toarray())
+        fermion_eigvals, _ = numpy.linalg.eigh(
+            get_sparse_operator(fermion_op_jw).toarray())
+
+        for eigval in doci_eigvals:
+            assert any(abs(fermion_eigvals -
+                           eigval) < 1e-6), "The DOCI spectrum should \
+            have been contained in the spectrum of the fermionic operators"
+
+        fermion_diagonal = get_sparse_operator(
+            fermion_op_jw).toarray().diagonal()
+        qubit_diagonal = doci_mat.diagonal()
+        assert numpy.isclose(
+            fermion_diagonal[0], qubit_diagonal[0]
+        ) and numpy.isclose(
+            fermion_diagonal[-1], qubit_diagonal[-1]
+        ), "The first and last elements of hte qubit and fermionic diagonal of \
+        the Hamiltonian maxtrix should be the same as the vaccum should be \
+        mapped to the computational all zero state and the completely filled \
+        state should be mapped to the all one state"
+
+        print(fermion_diagonal)
+        print(qubit_diagonal)
 
     def test_integrals_to_doci(self):
         one_body_integrals = self.molecule.one_body_integrals
         two_body_integrals = self.molecule.two_body_integrals
         hc, hr1, hr2 = get_doci_from_integrals(one_body_integrals,
                                                two_body_integrals)
-        self.assertEqual(hc.shape[0], 2)
-        self.assertEqual(hr1.shape[0], 2)
-        self.assertEqual(hr2.shape[0], 2)
+        n_qubits = one_body_integrals.shape[0]
+        self.assertEqual(hc.shape, (n_qubits,))
+        self.assertEqual(hr1.shape, (n_qubits, n_qubits))
+        self.assertEqual(hr2.shape, (n_qubits, n_qubits))
 
         for p in range(2):
             self.assertEqual(
@@ -213,7 +272,7 @@ class DOCIHamiltonianTest(unittest.TestCase):
         assert numpy.allclose(doci_hamiltonian_matrix, sub_matrix), (
             "The coupling between the DOCI states in the DOCI Hamiltonian " +
             "should be identical to that between these states in the full " +
-            "Hamiltonian bur the DOCI hamiltonian matrix\n" +
+            "Hamiltonian but the DOCI hamiltonian matrix\n" +
             str(doci_hamiltonian_matrix) +
             "\ndoes not match the corresponding sub-matrix of the full " +
             "Hamiltonian\n" + str(sub_matrix))
