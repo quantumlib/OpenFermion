@@ -13,10 +13,10 @@
 """
 from itertools import chain, product
 import numpy
-from openfermion.ops import QubitOperator
 from openfermion.ops.representations import (PolynomialTensor,
                                              get_tensors_from_integrals)
 from openfermion.ops.representations import DOCIHamiltonian
+from openfermion.ops import QubitOperator
 
 
 class RichardsonGaudin(DOCIHamiltonian):
