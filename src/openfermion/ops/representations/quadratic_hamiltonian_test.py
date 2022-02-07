@@ -179,21 +179,12 @@ class QuadraticHamiltonianTest(unittest.TestCase):
     def test_diagonalizing_bogoliubov_transform(self):
         """Test diagonalizing Bogoliubov transform."""
         hermitian_part = numpy.array(
-            [[0.0, 1.0, 0.0],
-             [1.0, 0.0, 1.0],
-             [0.0, 1.0, 0.0]],
-            dtype=complex
-        )
+            [[0.0, 1.0, 0.0], [1.0, 0.0, 1.0], [0.0, 1.0, 0.0]], dtype=complex)
         antisymmetric_part = numpy.array(
-            [[0.0, 1.0j, 0.0],
-             [-1.0j, 0.0, 1.0j],
-             [0.0, -1.0j, 0.0]],
-            dtype=complex
-        )
-        quad_ham = QuadraticHamiltonian(hermitian_part,
-                                        antisymmetric_part)
-        block_matrix = numpy.zeros((6, 6),
-                                   dtype=complex)
+            [[0.0, 1.0j, 0.0], [-1.0j, 0.0, 1.0j], [0.0, -1.0j, 0.0]],
+            dtype=complex)
+        quad_ham = QuadraticHamiltonian(hermitian_part, antisymmetric_part)
+        block_matrix = numpy.zeros((6, 6), dtype=complex)
         block_matrix[:3, :3] = antisymmetric_part
         block_matrix[:3, 3:] = hermitian_part
         block_matrix[3:, :3] = -hermitian_part.conj()
@@ -203,14 +194,11 @@ class QuadraticHamiltonianTest(unittest.TestCase):
             quad_ham.diagonalizing_bogoliubov_transform())
         left_block = transformation_matrix[:, :3]
         right_block = transformation_matrix[:, 3:]
-        ferm_unitary = numpy.zeros((6, 6),
-                                   dtype=complex)
+        ferm_unitary = numpy.zeros((6, 6), dtype=complex)
         ferm_unitary[:3, :3] = left_block
         ferm_unitary[:3, 3:] = right_block
-        ferm_unitary[3:, :3] = numpy.conjugate(
-            right_block)
-        ferm_unitary[3:, 3:] = numpy.conjugate(
-            left_block)
+        ferm_unitary[3:, :3] = numpy.conjugate(right_block)
+        ferm_unitary[3:, 3:] = numpy.conjugate(left_block)
 
         # Check that the transformation is diagonalizing
         majorana_matrix, _ = quad_ham.majorana_form()
