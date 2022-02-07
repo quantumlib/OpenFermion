@@ -176,6 +176,50 @@ class QuadraticHamiltonianTest(unittest.TestCase):
             get_fermion_operator(self.quad_ham_npc))
         self.assertTrue(normal_ordered(majorana_op) == fermion_operator)
 
+    def test_diagonalizing_bogoliubov_transform(self):
+        """Test diagonalizing Bogoliubov transform."""
+        hermitian_part = numpy.array(
+            [[0.0, 1.0, 0.0],
+             [1.0, 0.0, 1.0],
+             [0.0, 1.0, 0.0]],
+            dtype=complex
+        )
+        antisymmetric_part = numpy.array(
+            [[0.0, 1.0j, 0.0],
+             [-1.0j, 0.0, 1.0j],
+             [0.0, -1.0j, 0.0]],
+            dtype=complex
+        )
+        quad_ham = QuadraticHamiltonian(hermitian_part,
+                                        antisymmetric_part)
+        block_matrix = numpy.zeros((6, 6),
+                                   dtype=complex)
+        block_matrix[:3, :3] = antisymmetric_part
+        block_matrix[:3, 3:] = hermitian_part
+        block_matrix[3:, :3] = -hermitian_part.conj()
+        block_matrix[3:, 3:] = -antisymmetric_part.conj()
+
+        _, transformation_matrix, _ = (
+            quad_ham.diagonalizing_bogoliubov_transform())
+        left_block = transformation_matrix[:, :3]
+        right_block = transformation_matrix[:, 3:]
+        ferm_unitary = numpy.zeros((6, 6),
+                                   dtype=complex)
+        ferm_unitary[:3, :3] = left_block
+        ferm_unitary[:3, 3:] = right_block
+        ferm_unitary[3:, :3] = numpy.conjugate(
+            right_block)
+        ferm_unitary[3:, 3:] = numpy.conjugate(
+            left_block)
+
+        # Check that the transformation is diagonalizing
+        majorana_matrix, _ = quad_ham.majorana_form()
+        canonical, _ = antisymmetric_canonical_form(majorana_matrix)
+        diagonalized = ferm_unitary.conj().dot(
+            block_matrix.dot(ferm_unitary.T.conj()))
+        for i in numpy.ndindex((6, 6)):
+            self.assertAlmostEqual(diagonalized[i], canonical[i])
+
     def test_diagonalizing_bogoliubov_transform_non_particle_conserving(self):
         """Test non-particle-conserving diagonalizing Bogoliubov transform."""
         hermitian_part = self.quad_ham_npc.combined_hermitian_part
