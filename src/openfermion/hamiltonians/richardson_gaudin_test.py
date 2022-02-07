@@ -22,6 +22,7 @@ from openfermion.linalg import get_sparse_operator
 from openfermion import(get_fermion_operator, InteractionOperator, \
                          normal_ordered)
 
+
 @pytest.mark.parametrize('g, n_qubits, expected', [
     (0.3, 2,
      QubitOperator('3.0 [] + 0.15 [X0 X1] + \
