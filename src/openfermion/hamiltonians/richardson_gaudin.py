@@ -40,7 +40,7 @@ class RichardsonGaudin(DOCIHamiltonian):
 
         \begin{align}
         N_p &= (1 - \sigma^Z_p)/2, \\
-        P_p &= a_{p,\beta} a_{p,\alpha} = S^{-} = \sigma^X - i \sigma^Y, \\
+        P_p &= a_{p,\beta} a_{p,\alpha} = S^{-} = \sigma^X + i \sigma^Y, \\
         g &= constant coupling term
         \end{align}
 
