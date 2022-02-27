@@ -494,6 +494,15 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     # The returned form is block diagonal; we need to permute rows and columns
     # to put it into the form we want
     n = p // 2
+
+    # Permute 2x2 blocks so they lie on even indices
+    for i in range(1, p - 1, 2):
+        if not numpy.isclose(canonical[i + 1, i], 0.0):
+            swap_rows(canonical, i - 1, i + 1)
+            swap_columns(canonical, i - 1, i + 1)
+            swap_columns(orthogonal, i - 1, i + 1)
+
+    # Permute so non-zero values are in upper right and lower left blocks
     for i in range(1, n, 2):
         swap_rows(canonical, i, n + i - 1)
         swap_columns(canonical, i, n + i - 1)
