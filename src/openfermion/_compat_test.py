@@ -16,11 +16,11 @@ import warnings
 import pytest
 import deprecation
 
-import openfermion
-from openfermion._compat import wrap_module
-
 from cirq._compat import deprecated
 from cirq.testing import assert_deprecated
+
+import openfermion
+from openfermion._compat import wrap_module
 
 
 def deprecated_test(test: Callable) -> Callable:

@@ -51,6 +51,8 @@ from .jellium_hf_state import (
 
 from .mean_field_dwave import mean_field_dwave
 
+from .richardson_gaudin import RichardsonGaudin
+
 from .plane_wave_hamiltonian import (
     dual_basis_external_potential,
     plane_wave_external_potential,

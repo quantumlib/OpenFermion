@@ -121,7 +121,9 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
     def __init__(self, term=None, coefficient=1.):
         if not isinstance(coefficient, COEFFICIENT_TYPES):
-            raise ValueError('Coefficient must be a numeric type.')
+            raise ValueError(
+                'Coefficient must be a numeric type. Got {}'.format(
+                    type(coefficient)))
 
         # Initialize the terms dictionary
         self.terms = {}

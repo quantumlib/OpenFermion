@@ -125,7 +125,7 @@ class DOCIHamiltonian(PolynomialTensor):
             [QubitOperator] -- Z term on the chosen qubit.
         """
         return QubitOperator("Z" + str(p),
-                             self.hc[p] / 2 + sum(self.hr2[:, p]) / 2)
+                             -self.hc[p] / 2 - sum(self.hr2[:, p]) / 2)
 
     def zz_term(self, p, q):
         """Returns the ZZ term on a single pair of qubits as a QubitOperator
@@ -357,9 +357,53 @@ class DOCIHamiltonian(PolynomialTensor):
                    numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
                    numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128))
 
+    def get_projected_integrals(self):
+        ''' Creates the one and two body integrals that would correspond to a
+        hypothetic electronic structure Hamiltonian, which would satisfy the
+        given set of hc, hr1 and hr2.
+
+        This is technically not well-defined, as hr2 is
+        not generated in a one-to-one fashion. This implies that calling
+
+        get_doci_from_integrals(
+            *get_projected_integrals_from_doci(
+               hc, hr1, hr2
+            )
+        )
+
+        should return the same hc, hr1, and hr2, but there is no such guarantee
+        for
+
+        get_projected_integrals_from_doci(
+           *get_doci_from_integrals(
+              one_body_integrals, two_body_integrals
+           )
+        )
+
+        but this method attemps to create integrals that conform to the
+        same symmetries as a physical electronic structure Hamiltonian would,
+        with inevitable loss of information due to the ambiguity above.
+
+        Args:
+           hc [numpy array]: The single-particle DOCI terms in matrix form
+           hr1 [numpy array]: The off-diagonal DOCI Hamiltonian terms in matrix
+               form
+           hr2 [numpy array]: The diagonal DOCI Hamiltonian terms in matrix form
+
+        Returns:
+           projected_onebody_integrals [numpy array]: The corresponding one-body
+               integrals for the electronic structure Hamiltonian
+           projected_twobody_integrals [numpy array]: The corresponding two body
+               integrals for the electronic structure Hamiltonian
+        '''
+        one_body_integrals, two_body_integrals = \
+            get_projected_integrals_from_doci(self.hc, self.hr1, self.hr2)
+        return one_body_integrals, two_body_integrals
+
 
 def get_tensors_from_doci(hc, hr1, hr2):
-    '''Makes the one and two-body tensors from the DOCI Hamiltonian matrices
+    '''Makes the one and two-body tensors of a fermionic "parent Hamoltonian" \
+    from the DOCI Hamiltonian matrices
 
     Args:
         hc [numpy array]: The single-particle DOCI terms in matrix form
@@ -377,6 +421,10 @@ def get_tensors_from_doci(hc, hr1, hr2):
         get_projected_integrals_from_doci(hc, hr1, hr2)
     one_body_coefficients, two_body_coefficients = get_tensors_from_integrals(
         one_body_integrals, two_body_integrals)
+
+    two_body_coefficients = two_body_coefficients - numpy.einsum(
+        'ijlk', two_body_coefficients)
+
     return one_body_coefficients, two_body_coefficients
 
 
@@ -410,17 +458,26 @@ def get_projected_integrals_from_doci(hc, hr1, hr2):
             integrals for the electronic structure Hamiltonian
     '''
     n_qubits = hr1.shape[0]
-    projected_onebody_integrals = numpy.zeros((n_qubits, n_qubits))
+    projected_onebody_integrals = numpy.zeros((n_qubits, n_qubits),
+                                              dtype=hc.dtype)
     projected_twobody_integrals = numpy.zeros(
-        (n_qubits, n_qubits, n_qubits, n_qubits))
+        (n_qubits, n_qubits, n_qubits, n_qubits), dtype=hc.dtype)
     for p in range(n_qubits):
         projected_onebody_integrals[p, p] = hc[p] / 2
         projected_twobody_integrals[p, p, p, p] = hr2[p, p]
         for q in range(n_qubits):
-            if p == q:
+            if p <= q:
                 continue
-            projected_twobody_integrals[p, q, q, p] = hr2[p, q] / 2
-            projected_twobody_integrals[p, p, q, q] = hr1[p, q]
+
+            projected_twobody_integrals[p, q, q,
+                                        p] = hr2[p, q] / 2 + hr1[p, q] / 2
+            projected_twobody_integrals[q, p, p,
+                                        q] = hr2[q, p] / 2 + hr1[p, q] / 2
+
+            projected_twobody_integrals[p, p, q, q] += hr1[p, q]
+            projected_twobody_integrals[p, q, p, q] += hr1[p, q]
+            projected_twobody_integrals[q, q, p, p] += hr1[p, q]
+            projected_twobody_integrals[q, p, q, p] += hr1[p, q]
 
     return projected_onebody_integrals, projected_twobody_integrals
 
