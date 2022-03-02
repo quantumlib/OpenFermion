@@ -57,22 +57,27 @@ def jordan_wigner(operator):
 
 def _jordan_wigner_fermion_operator(operator):
     transformed_operator = QubitOperator()
+    # Purpose is storing ladder terms already transformed.
+    lookup_ladder_terms = dict()
     for term in operator.terms:
         # Initialize identity matrix.
         transformed_term = QubitOperator((), operator.terms[term])
         # Loop through operators, transform and multiply.
         for ladder_operator in term:
-            z_factors = tuple(
-                (index, 'Z') for index in range(ladder_operator[0]))
-            pauli_x_component = QubitOperator(
-                z_factors + ((ladder_operator[0], 'X'),), 0.5)
-            if ladder_operator[1]:
-                pauli_y_component = QubitOperator(
-                    z_factors + ((ladder_operator[0], 'Y'),), -0.5j)
-            else:
-                pauli_y_component = QubitOperator(
-                    z_factors + ((ladder_operator[0], 'Y'),), 0.5j)
-            transformed_term *= pauli_x_component + pauli_y_component
+            if ladder_operator not in lookup_ladder_terms:
+                z_factors = tuple(
+                    (index, 'Z') for index in range(ladder_operator[0]))
+                pauli_x_component = QubitOperator(
+                    z_factors + ((ladder_operator[0], 'X'),), 0.5)
+                if ladder_operator[1]:
+                    pauli_y_component = QubitOperator(
+                        z_factors + ((ladder_operator[0], 'Y'),), -0.5j)
+                else:
+                    pauli_y_component = QubitOperator(
+                        z_factors + ((ladder_operator[0], 'Y'),), 0.5j)
+                lookup_ladder_terms[ladder_operator] = (pauli_x_component +
+                                                        pauli_y_component)
+            transformed_term *= lookup_ladder_terms[ladder_operator]
         transformed_operator += transformed_term
     return transformed_operator
 
