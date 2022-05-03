@@ -67,4 +67,3 @@ def assert_implements_consistent_protocols(
             setup_code=setup_code,
             global_vals=global_vals,
             local_vals=local_vals)
-
