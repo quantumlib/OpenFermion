@@ -52,6 +52,7 @@ def assert_implements_consistent_protocols(
         exponents=exponents,
         qubit_count=qubit_count,
         ignoring_global_phase=ignoring_global_phase,
+        ignore_decompose_to_default_gateset=True,
         setup_code=setup_code,
         global_vals=global_vals,
         local_vals=local_vals)
