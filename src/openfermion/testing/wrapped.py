@@ -59,7 +59,7 @@ def assert_implements_consistent_protocols(
             local_vals=local_vals)
     except TypeError:
         # Cirq 0.12
-        cirq.testing.assert_implements_consistent_protocols( # coverage: ignore
+        cirq.testing.assert_implements_consistent_protocols(  # coverage: ignore
             val,
             exponents=exponents,
             qubit_count=qubit_count,
