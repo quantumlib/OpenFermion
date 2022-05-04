@@ -67,5 +67,5 @@ def assert_implements_consistent_protocols(
             ignoring_global_phase=ignoring_global_phase,  # coverage: ignore
             setup_code=setup_code,  # coverage: ignore
             global_vals=global_vals,  # coverage: ignore
-            local_vals=local_vals, # coverage: ignore
+            local_vals=local_vals,  # coverage: ignore
         )  # coverage: ignore
