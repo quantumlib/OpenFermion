@@ -22,8 +22,7 @@ _setup_code = ("import cirq\n"
                "import openfermion\n")
 
 
-def assert_equivalent_repr(value: Any,
-                           *,
+def assert_equivalent_repr(value: Any, *,
                            setup_code: str = _setup_code) -> None:
     """Checks that eval(repr(v)) == v.
 
