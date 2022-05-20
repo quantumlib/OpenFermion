@@ -32,6 +32,8 @@ upper_tabs:
         path: /openfermion/tutorials/circuits_2_diagonal_coulomb_trotter
       - title: "Constructing Trotter Steps With Low-Rank Decomposition"
         path: /openfermion/tutorials/circuits_3_arbitrary_basis_trotter
+      - title: "Intro Workshop with Exercises"
+        path: /openfermion/tutorials/intro_workshop_exercises
 
       - heading: "OpenFermion-FQE Guide & Tutorials"
       - title: "Overview"
