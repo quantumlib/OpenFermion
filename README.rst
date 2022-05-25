@@ -105,6 +105,8 @@ Electronic structure package plugins
 
 * `OpenFermion-Dirac <https://github.com/bsenjean/Openfermion-Dirac>`__ to support integration with `DIRAC <http://diracprogram.org/doku.php>`__.
 
+* `OpenFermion-QChem <https://github.com/qchemsoftware/OpenFermion-QChem>`__ to support integration with `Q-Chem <https://www.q-chem.com>`__.
+
 How to contribute
 =================
 
