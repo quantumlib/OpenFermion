@@ -87,9 +87,9 @@ Follow the links below to learn more!
 High performance simulators
 ------------------------------------------
 * `OpenFermion-FQE <https://github.com/quantumlib/OpenFermion-FQE>`__ is
-  a high performance emulator of fermionic quantum evolutions specified 
-  by a sequence of fermion operators, which can exploit fermionic 
-  symmetries such as spin and particle number. 
+  a high performance emulator of fermionic quantum evolutions specified
+  by a sequence of fermion operators, which can exploit fermionic
+  symmetries such as spin and particle number.
 
 Circuit compilation plugins
 ------------------------------------------
@@ -104,6 +104,8 @@ Electronic structure package plugins
 * `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__ to support integration with `PySCF <https://github.com/sunqm/pyscf>`__.
 
 * `OpenFermion-Dirac <https://github.com/bsenjean/Openfermion-Dirac>`__ to support integration with `DIRAC <http://diracprogram.org/doku.php>`__.
+
+* `OpenFermion-QChem <https://github.com/qchemsoftware/OpenFermion-QChem>`__ to support integration with `Q-Chem <https://www.q-chem.com>`__.
 
 How to contribute
 =================
