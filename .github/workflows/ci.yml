@@ -50,12 +50,12 @@ jobs:
         # On each operating system, check latest version of python and cirq
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         python-version: [ '3.9' ]
-        cirq-version: [ '~=0.13.0' ]
+        cirq-version: [ '~=0.15.0' ]
         # Also check least-supported versions (linux only)
         include:
           - os: ubuntu-latest
             python-version: 3.8
-            cirq-version: '~=0.12.0'
+            cirq-version: '~=1.0.0'
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
