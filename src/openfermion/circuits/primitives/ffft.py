@@ -83,6 +83,7 @@ class _F0Gate(cirq.MatrixGate):
         return cirq.CircuitDiagramInfo(wire_symbols=symbols)
 
 
+
 class _TwiddleGate(cirq.Gate):
     r"""Gate that introduces arbitrary FFT twiddle factors.
 
@@ -99,6 +100,7 @@ class _TwiddleGate(cirq.Gate):
     """
 
     def __init__(self, k, n):
+
         """Initializes Twiddle gate.
 
         Args:
