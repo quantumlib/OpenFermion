@@ -145,12 +145,14 @@ def _multi_fermionic_mode_base_state(n: int, amplitude: complex,
                          [[1, 0], [1j, 0], [0, 1], [0, -1j], [1, 1]])
 def test_F0Gate_transform(amplitudes):
     qubits = LineQubit.range(2)
+    sim = cirq.Simulator(dtype=np.complex128)
     initial_state = _single_fermionic_modes_state(amplitudes)
     expected_state = _single_fermionic_modes_state(
         _fourier_transform_single_fermionic_modes(amplitudes))
 
     circuit = cirq.Circuit(_F0Gate().on(*qubits))
-    state = circuit.final_state_vector(initial_state=initial_state)
+    state = sim.simulate(circuit,
+                         initial_state=initial_state).final_state_vector
 
     assert np.allclose(state, expected_state, rtol=0.0)
 
@@ -185,12 +187,14 @@ def test_F0Gate_text_diagram():
 ])
 def test_TwiddleGate_transform(k, n, qubit, initial, expected):
     qubits = LineQubit.range(2)
+    sim = cirq.Simulator(dtype=np.complex128)
     initial_state = _single_fermionic_modes_state(initial)
     expected_state = _single_fermionic_modes_state(expected)
 
     circuit = cirq.Circuit(_TwiddleGate(k, n).on(qubits[qubit]))
-    state = circuit.final_state_vector(initial_state=initial_state,
-                                       qubits_that_should_be_present=qubits)
+    state = sim.simulate(circuit,
+                         initial_state=initial_state,
+                         qubit_order=qubits).final_state_vector
 
     assert np.allclose(state, expected_state, rtol=0.0)
 
@@ -222,14 +226,16 @@ def test_TwiddleGate_text_diagram():
                           [0, 0, 0, 0, 0, 0, 0, 1],
                           [0, 0, -1j / np.sqrt(2), 0, 0, 1 / np.sqrt(2), 0, 0]])
 def test_ffft_single_fermionic_modes(amplitudes):
+    sim = cirq.Simulator(dtype=np.complex128)
     initial_state = _single_fermionic_modes_state(amplitudes)
     expected_state = _single_fermionic_modes_state(
         _fourier_transform_single_fermionic_modes(amplitudes))
     qubits = LineQubit.range(len(amplitudes))
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
-    state = circuit.final_state_vector(initial_state=initial_state,
-                                       qubits_that_should_be_present=qubits)
+    state = sim.simulate(circuit,
+                         initial_state=initial_state,
+                         qubit_order=qubits).final_state_vector
 
     assert np.allclose(state, expected_state, rtol=0.0)
 
@@ -250,14 +256,16 @@ def test_ffft_single_fermionic_modes(amplitudes):
     [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
 ])
 def test_ffft_single_fermionic_modes_non_power_of_2(amplitudes):
+    sim = cirq.Simulator(dtype=np.complex128)
     initial_state = _single_fermionic_modes_state(amplitudes)
     expected_state = _single_fermionic_modes_state(
         _fourier_transform_single_fermionic_modes(amplitudes))
     qubits = LineQubit.range(len(amplitudes))
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
-    state = circuit.final_state_vector(initial_state=initial_state,
-                                       qubits_that_should_be_present=qubits)
+    state = sim.simulate(circuit,
+                         initial_state=initial_state,
+                         qubit_order=qubits).final_state_vector
 
     cirq.testing.assert_allclose_up_to_global_phase(state,
                                                     expected_state,
@@ -281,13 +289,15 @@ def test_ffft_single_fermionic_modes_non_power_of_2(amplitudes):
     (8, (1, [0, 1, 2, 3, 4, 5, 6, 7])),
 ])
 def test_ffft_multi_fermionic_mode(n, initial):
+    sim = cirq.Simulator(dtype=np.complex128)
     initial_state = _multi_fermionic_mode_base_state(n, *initial)
     expected_state = _fourier_transform_multi_fermionic_mode(n, *initial)
     qubits = LineQubit.range(n)
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
-    state = circuit.final_state_vector(initial_state=initial_state,
-                                       qubits_that_should_be_present=qubits)
+    state = sim.simulate(circuit,
+                         initial_state=initial_state,
+                         qubit_order=qubits).final_state_vector
 
     assert np.allclose(state, expected_state, rtol=0.0)
 
@@ -304,10 +314,12 @@ def test_ffft_multi_fermionic_mode_non_power_of_2(n, initial):
     initial_state = _multi_fermionic_mode_base_state(n, *initial)
     expected_state = _fourier_transform_multi_fermionic_mode(n, *initial)
     qubits = LineQubit.range(n)
+    sim = cirq.Simulator(dtype=np.complex128)
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
-    state = circuit.final_state_vector(initial_state=initial_state,
-                                       qubits_that_should_be_present=qubits)
+    state = sim.simulate(circuit,
+                         initial_state=initial_state,
+                         qubit_order=qubits).final_state_vector
 
     cirq.testing.assert_allclose_up_to_global_phase(state,
                                                     expected_state,

@@ -47,6 +47,7 @@ def test_bogoliubov_transform_fourier_transform(transformation_matrix,
                                                 correct_state,
                                                 atol=5e-6):
     n_qubits = transformation_matrix.shape[0]
+    sim = cirq.Simulator(dtype=numpy.complex128)
     qubits = LineQubit.range(n_qubits)
     if isinstance(initial_state, Container):
         initial_state = sum(1 << (n_qubits - 1 - i) for i in initial_state)
@@ -55,7 +56,8 @@ def test_bogoliubov_transform_fourier_transform(transformation_matrix,
         bogoliubov_transform(qubits,
                              transformation_matrix,
                              initial_state=initial_state))
-    state = circuit.final_state_vector(initial_state=initial_state)
+    state = sim.simulate(circuit,
+                         initial_state=initial_state).final_state_vector
     cirq.testing.assert_allclose_up_to_global_phase(state,
                                                     correct_state,
                                                     atol=atol)
@@ -68,6 +70,7 @@ def test_spin_symmetric_bogoliubov_transform(n_spatial_orbitals,
                                              atol=5e-5):
     n_qubits = 2 * n_spatial_orbitals
     qubits = LineQubit.range(n_qubits)
+    sim = cirq.Simulator(dtype=numpy.complex128)
 
     # Initialize a random quadratic Hamiltonian
     quad_ham = random_quadratic_hamiltonian(n_spatial_orbitals,
@@ -105,7 +108,8 @@ def test_spin_symmetric_bogoliubov_transform(n_spatial_orbitals,
         bogoliubov_transform(qubits,
                              transformation_matrix,
                              initial_state=initial_state))
-    state = circuit.final_state_vector(initial_state=initial_state)
+    state = sim.simulate(circuit,
+                         initial_state=initial_state).final_state_vector
 
     # Check that the result is an eigenstate with the correct eigenvalue
     numpy.testing.assert_allclose(quad_ham_sparse.dot(state),
@@ -121,6 +125,7 @@ def test_bogoliubov_transform_quadratic_hamiltonian(n_qubits,
                                                     conserves_particle_number,
                                                     atol=5e-5):
     qubits = LineQubit.range(n_qubits)
+    sim = cirq.Simulator(dtype=numpy.complex128)
 
     # Initialize a random quadratic Hamiltonian
     quad_ham = random_quadratic_hamiltonian(n_qubits,
@@ -154,15 +159,17 @@ def test_bogoliubov_transform_quadratic_hamiltonian(n_qubits,
             2**(n_qubits - 1 - int(i)) for i in occupied_orbitals)
 
         # Get the state using a circuit simulation
-        state1 = circuit.final_state_vector(initial_state=initial_state)
+        state1 = sim.simulate(circuit,
+                              initial_state=initial_state).final_state_vector
 
         # Also test the option to start with a computational basis state
         special_circuit = cirq.Circuit(
             bogoliubov_transform(qubits,
                                  transformation_matrix,
                                  initial_state=initial_state))
-        state2 = special_circuit.final_state_vector(
-            initial_state, qubits_that_should_be_present=qubits)
+        state2 = sim.simulate(special_circuit,
+                              initial_state=initial_state,
+                              qubit_order=qubits).final_state_vector
 
         # Check that the result is an eigenstate with the correct eigenvalue
         numpy.testing.assert_allclose(quad_ham_sparse.dot(state1),
