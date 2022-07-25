@@ -83,7 +83,7 @@ class _F0Gate(cirq.MatrixGate):
         return cirq.CircuitDiagramInfo(wire_symbols=symbols)
 
 
-class _TwiddleGate(cirq.SingleQubitGate):
+class _TwiddleGate(cirq.ZPowGate):
     r"""Gate that introduces arbitrary FFT twiddle factors.
 
     Realizes unitary gate $\omega^{k\dagger}_n$ that phases creation
@@ -99,6 +99,7 @@ class _TwiddleGate(cirq.SingleQubitGate):
     """
 
     def __init__(self, k, n):
+
         """Initializes Twiddle gate.
 
         Args:
@@ -107,6 +108,8 @@ class _TwiddleGate(cirq.SingleQubitGate):
         """
         self.k = k
         self.n = n
+        exponent = -2 * self.k / self.n
+        super().__init__(exponent=exponent, global_shift=0)
 
     def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs
                               ) -> cirq.CircuitDiagramInfo:
