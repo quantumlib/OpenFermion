@@ -14,7 +14,7 @@
 from typing import List
 
 import numpy
-from scipy import linalg
+import scipy
 import cirq
 import openfermion
 from openfermion.config import EQ_TOLERANCE
@@ -46,10 +46,10 @@ def validate_trotterized_evolution(circuit: cirq.Circuit,
     hs_dim = 2**n_qubits
     qubit_op = ops[0]
     op_matrix = openfermion.get_sparse_operator(qubit_op, n_qubits=n_qubits)
-    target_unitary = linalg.expm(1j * op_matrix)
+    target_unitary = scipy.sparse.linalg.expm(1j * op_matrix)
     for qubit_op in ops[1:]:
         op_matrix = openfermion.get_sparse_operator(qubit_op, n_qubits=n_qubits)
-        op_unitary = linalg.expm(1j * op_matrix)
+        op_unitary = scipy.sparse.linalg.expm(1j * op_matrix)
         target_unitary = op_unitary.dot(target_unitary)
 
     actual_unitary = circuit.unitary(qubit_order=qubits)
