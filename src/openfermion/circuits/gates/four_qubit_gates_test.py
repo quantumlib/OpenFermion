@@ -263,7 +263,8 @@ def test_double_excitation_matches_fermionic_evolution(exponent):
     op += openfermion.hermitian_conjugated(op)
     matrix_op = openfermion.get_sparse_operator(op)
 
-    time_evol_op = scipy.linalg.expm(-1j * matrix_op * exponent * numpy.pi)
+    time_evol_op = scipy.sparse.linalg.expm(-1j * matrix_op * exponent *
+                                            numpy.pi)
     time_evol_op = time_evol_op.todense()
 
     cirq.testing.assert_allclose_up_to_global_phase(cirq.unitary(gate),
