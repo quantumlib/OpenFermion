@@ -80,9 +80,9 @@ def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
             for op in term:
                 if op[0] > index:
                     new_operator.terms[term] *= -1
-
-    # Renumber indices to remove frozen orbitals
-    new_operator = prune_unused_indices(new_operator)
+    if prune:
+        # Renumber indices to remove frozen orbitals
+        new_operator = prune_unused_indices(new_operator)
 
     return new_operator
 
