@@ -21,9 +21,9 @@ from openfermion.ops.operators import (BosonOperator, FermionOperator,
 def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
     """Fix some orbitals to be occupied and others unoccupied.
 
-    Removes all operators acting on the specified orbitals, and optionally 
-    renumbers the remaining orbitals to eliminate unused indices. The sign of 
-    each term is modified according to the ladder operator anti-commutation 
+    Removes all operators acting on the specified orbitals, and optionally
+    renumbers the remaining orbitals to eliminate unused indices. The sign of
+    each term is modified according to the ladder operator anti-commutation
     relations in order to preserve the expectation value of the operator.
 
     Args:
@@ -31,8 +31,8 @@ def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
             assumed to be occupied.
         unoccupied: A list containing the indices of the orbitals that are to
             be assumed to be unoccupied.
-        prune: A flag that determines whether the orbitals will be renumbered to 
-          eliminate unused indices.
+        prune: A flag that determines whether the orbitals will be renumbered to
+            eliminate unused indices.
     """
     new_operator = fermion_operator
     frozen = [(index, 1) for index in occupied]
@@ -82,7 +82,7 @@ def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
             for op in term:
                 if op[0] > index:
                     new_operator.terms[term] *= -1
-                    
+
     if prune:
         # Renumber indices to remove frozen orbitals
         new_operator = prune_unused_indices(new_operator)
