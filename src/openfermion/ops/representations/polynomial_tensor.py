@@ -31,8 +31,7 @@ def general_basis_change(general_tensor, rotation_matrix, key):
     r"""Change the basis of an general interaction tensor.
 
     M'^{p_1p_2...p_n} = R^{p_1}_{a_1} R^{p_2}_{a_2} ...
-                        R^{p_n}_{a_n} M^{a_1a_2...a_n} R^{p_n}_{a_n}^T ...
-                        R^{p_2}_{a_2}^T R_{p_1}_{a_1}^T
+                        R^{p_n}_{a_n} M^{a_1a_2...a_n}
 
     where R is the rotation matrix, M is the general tensor, M' is the
     transformed general tensor, and a_k and p_k are indices. The formula uses
@@ -67,7 +66,7 @@ def general_basis_change(general_tensor, rotation_matrix, key):
 
     # Do the basis change through a single call of numpy.einsum. For example,
     # for the (1, 1, 0, 0) tensor, the call is:
-    #     numpy.einsum('abcd,aA,bB,cC,dD',
+    #     numpy.einsum('abcd,Aa,Bb,Cc,Dd',
     #                  general_tensor,
     #                  rotation_matrix.conj(),
     #                  rotation_matrix.conj(),
@@ -79,7 +78,7 @@ def general_basis_change(general_tensor, rotation_matrix, key):
 
     # The 'Aa,Bb,Cc,Dd' part of the subscripts
     subscripts_rest = ','.join(
-        chr(ord('a') + i) + chr(ord('A') + i) for i in range(order))
+        chr(ord('A') + i) + chr(ord('a') + i) for i in range(order))
 
     subscripts = subscripts_first + ',' + subscripts_rest
 
