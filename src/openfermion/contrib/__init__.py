@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from openfermion.third_party.representability._higham import (
+from openfermion.contrib.representability._higham import (
     fixed_trace_positive_projection,
     map_to_tensor,
     map_to_matrix,

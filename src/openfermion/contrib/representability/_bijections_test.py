@@ -1,5 +1,5 @@
 from itertools import product
-from openfermion.third_party.representability._bijections import Bijection, \
+from openfermion.contrib.representability._bijections import Bijection, \
     index_index_basis, index_tuple_basis
 
 

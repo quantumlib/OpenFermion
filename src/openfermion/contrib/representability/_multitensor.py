@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.sparse import csr_matrix
-from openfermion.third_party.representability._dualbasis import \
+from openfermion.contrib.representability._dualbasis import \
     DualBasisElement, DualBasis
 
 
