@@ -38,9 +38,7 @@ class AlgorithmParameters:
 
     @property
     def logical_storage(self) -> int:
-        return math.ceil(
-            self.max_allocated_logical_qubits * (1 + self.routing_overhead_proportion)
-        )
+        return math.ceil(self.max_allocated_logical_qubits * (1 + self.routing_overhead_proportion))
 
     @property
     def n_rounds(self) -> int:
@@ -51,9 +49,7 @@ class AlgorithmParameters:
               as the factories run.
             - The bottleneck time cost is waiting for magic states.
         """
-        return int(
-            self.toffoli_count / self.factory_count * self.magic_state_factory.rounds
-        )
+        return int(self.toffoli_count / self.factory_count * self.magic_state_factory.rounds)
 
     @property
     def physical_qubits_per_logical_qubit(self) -> int:
@@ -73,18 +69,13 @@ class AlgorithmParameters:
 
     @property
     def topological_error_per_unit_cell(self) -> float:
-        return _topological_error_per_unit_cell(
-            self.logical_data_qubit_distance, gate_err=self.physical_error_rate
-        )
+        return _topological_error_per_unit_cell(self.logical_data_qubit_distance,
+                                                gate_err=self.physical_error_rate)
 
     @property
     def data_failures(self):
-        return (
-                self.proportion_of_bounding_box
-                * self.topological_error_per_unit_cell
-                * self.logical_storage
-                * self.n_rounds
-        )
+        return (self.proportion_of_bounding_box * self.topological_error_per_unit_cell *
+                self.logical_storage * self.n_rounds)
 
     @property
     def physical_qubit_count(self) -> int:
@@ -133,8 +124,7 @@ def _two_level_t_state_factory_1p1000(physical_error_rate: float) -> MagicStateF
     return MagicStateFactory(
         details="https://arxiv.org/abs/1808.06709",
         failure_rate=4 * 9 * 10**-17,
-        physical_qubit_footprint=(12 * 8) * (4) *
-                                 _physical_qubits_per_logical_qubit(31),
+        physical_qubit_footprint=(12 * 8) * (4) * _physical_qubits_per_logical_qubit(31),
         rounds=6 * 31,
     )
 
@@ -216,14 +206,14 @@ def _physical_qubits_per_logical_qubit(code_distance: int) -> int:
 
 
 def cost_estimator(
-        num_logical_qubits: int,
-        num_toffoli: int,
-        *,
-        physical_error_rate: float = 1.0e-3,
-        portion_of_bounding_box: float = 1.0,
-        failure_probability_threshold: float = 0.1,
-        factory_count=4,
-        routing_overhead_proportion=0.5,
+    num_logical_qubits: int,
+    num_toffoli: int,
+    *,
+    physical_error_rate: float = 1.0e-3,
+    portion_of_bounding_box: float = 1.0,
+    failure_probability_threshold: float = 0.1,
+    factory_count=4,
+    routing_overhead_proportion=0.5,
 ) -> Tuple[CostEstimate, AlgorithmParameters]:
     """Try different factories and code distances to find the optimal cost.
 

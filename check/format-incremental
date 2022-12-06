@@ -85,13 +85,13 @@ for changed_file in ${changed_files}; do
 
     if [[ "${changed_line_ranges}" != "--lines=0-0 " ]]; then
         # Do the formatting.
-        results=$(yapf --style=google --diff "${changed_file}" ${changed_line_ranges})
+        results=$(yapf --style='{based_on_style: google, column_limit=100}' --diff "${changed_file}" ${changed_line_ranges})
 
         # Print colorized error messages.
         if [ ! -z "${results}" ]; then
             needed_changes=1
             if (( only_print == 0 )); then
-                $(yapf --style=google --in-place "${changed_file}" ${changed_line_ranges})
+                $(yapf --style='{based_on_style: google, column_limit=100}' --in-place "${changed_file}" ${changed_line_ranges})
             else
                 echo -e "\n\033[31mChanges in ${changed_file} require formatting:\033[0m\n${results}" \
                     | sed "s/^\(+ .*\)$/${esc}[32m\\1${esc}[0m/" \
