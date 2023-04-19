@@ -1,6 +1,4 @@
-#coverage:ignore
-#   Copyright 2020 Google LLC
-
+# coverage: ignore
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -12,20 +10,3 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from ast import Import
-import pytest
-import warnings
-
-try:
-    import jax
-    from .spacetime import qubit_vs_toffoli
-    from .compute_lambda_thc import compute_lambda
-    from .compute_cost_thc import compute_cost
-    from .generate_costing_table_thc import generate_costing_table
-except ImportError:
-    pytest.skip('Need jax and pybtas for THC', allow_module_level=True)
-
-try:
-    from .factorize_thc import thc_via_cp3 as factorize
-except ImportError:
-    warnings.warn("Need pybtas for THC factorization")
