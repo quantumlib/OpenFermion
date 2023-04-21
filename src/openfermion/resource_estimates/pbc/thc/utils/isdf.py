@@ -111,8 +111,8 @@ def solve_isdf(orbitals: npt.NDArray,
     # -> ZC_dag^T = CC_dag^T Theta^T
     # rcond = None uses MACH_EPS * max(M,N) for least squares convergence.
     Theta_dag, _, _, _ = np.linalg.lstsq(CC_dag.conj().T,
-                                              ZC_dag.conj().T,
-                                              rcond=None)
+                                         ZC_dag.conj().T,
+                                         rcond=None)
     return Theta_dag.conj().T, interp_orbitals
 
 

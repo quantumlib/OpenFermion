@@ -21,9 +21,9 @@ def test_generate_costing_table_sparse():
     mf = make_diamond_113_szv()
     thresh = np.array([1e-1, 1e-2, 1e-12])
     table = sparse.generate_costing_table(mf,
-                                   thresholds=thresh,
-                                   chi=17,
-                                   dE_for_qpe=1e-3)
+                                          thresholds=thresh,
+                                          chi=17,
+                                          dE_for_qpe=1e-3)
     assert np.allclose(table.dE, 1e-3)
     assert np.allclose(table.chi, 17)
     assert np.allclose(table.cutoff, thresh)

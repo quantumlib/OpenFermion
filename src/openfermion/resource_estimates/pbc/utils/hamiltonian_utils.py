@@ -109,10 +109,8 @@ def cholesky_from_df_ints(mp2_inst, pad_mos_with_zeros=True) -> npt.NDArray:
         nmo = nao
         num_mo_per_kpt = np.array([C.shape[-1] for C in mo_coeff])
         if not (num_mo_per_kpt == nmo).all():
-            log.info(
-                "Number of MOs differs at each k-point or is not the same as" 
-                " the number of AOs."
-            )
+            log.info("Number of MOs differs at each k-point or is not the same "
+                     "as the number of AOs.")
     nkpts = len(kpts)
     if gamma_point(kpts):
         dtype = np.double

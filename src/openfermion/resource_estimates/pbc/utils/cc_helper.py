@@ -59,16 +59,12 @@ def build_approximate_eris(krcc_inst, eri_helper, eris=None):
     nkpts = krcc_inst.nkpts
     dtype = krcc_inst.mo_coeff[0].dtype
     if eris is not None:
-        log.info(
-            "Modifying coupled cluster _ERIS object inplace using "
-            f"{eri_helper.__class__}."
-        )
+        log.info("Modifying coupled cluster _ERIS object inplace using "
+                 f"{eri_helper.__class__}.")
         out_eris = eris
     else:
-        log.info(
-            f"Rebuilding coupled cluster _ERIS object using "
-            " {eri_helper.__class__}."
-        )
+        log.info(f"Rebuilding coupled cluster _ERIS object using "
+                 " {eri_helper.__class__}.")
         out_eris = _ERIS(krcc_inst)
     for ikp, ikq, ikr in khelper.symm_map.keys():
         iks = kconserv[ikp, ikq, ikr]
@@ -112,16 +108,12 @@ def build_approximate_eris_rohf(kucc_inst, eri_helper, eris=None):
     nocca, noccb = kucc_inst.nocc
     nkpts = kucc_inst.nkpts
     if eris is not None:
-        log.info(
-            "Modifying coupled cluster _ERIS object inplace using "
-            f"{eri_helper.__class__}."
-        )
+        log.info("Modifying coupled cluster _ERIS object inplace using "
+                 f"{eri_helper.__class__}.")
         out_eris = eris
     else:
-        log.info(
-            "Rebuilding coupled cluster _ERIS object using "
-            f"{eri_helper.__class__}."
-        )
+        log.info("Rebuilding coupled cluster _ERIS object using "
+                 f"{eri_helper.__class__}.")
         out_eris = _make_eris_incore(kucc_inst)
     for kp, kq, kr in loop_kkk(nkpts):
         ks = kconserv[kp, kq, kr]

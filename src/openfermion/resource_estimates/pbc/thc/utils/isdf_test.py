@@ -10,14 +10,13 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import numpy as np
 from ase.build import bulk
+import numpy as np
 
 from pyscf.pbc import gto, scf
 from pyscf.pbc.dft import numint
 from pyscf.pbc.tools import pyscf_ase
 from pyscf.pbc.lib.kpts_helper import unique, get_kconserv, member
-import pytest
 
 from openfermion.resource_estimates.pbc.thc.utils.kmeans import KMeansCVT
 from openfermion.resource_estimates.pbc.thc.utils.isdf import (
@@ -66,7 +65,6 @@ def test_supercell_isdf_gamma():
     orbitals = numint.eval_ao(cell, grid_points)
     orbitals_mo = np.einsum("Rp,pi->Ri", orbitals, mf.mo_coeff, optimize=True)
     num_mo = mf.mo_coeff.shape[1]
-    nocc = cell.nelec[0]
     num_interp_points = np.prod(cell.mesh)
     interp_indx = np.arange(np.prod(cell.mesh))
 
@@ -331,7 +329,6 @@ def test_kpoint_isdf_double_translation():
     for iq in range(1, num_kpts):
         for ikp in range(num_kpts):
             ikq = momentum_map[iq, ikp]
-            Gpq = kpt_thc.G_mapping[iq, ikp]
             for iks in range(num_kpts):
                 ikr = momentum_map[iq, iks]
                 _ = kpt_thc.G_mapping[iq, iks]
@@ -390,7 +387,7 @@ def test_kpoint_isdf_single_translation():
                         for ikp, kp in enumerate(kpts)
                         for ikq in range(num_kpts)])
     transfers = kpts_pq[:, 0] - kpts_pq[:, 1]
-    _ , unique_indx, _ = unique(transfers)
+    _, unique_indx, _ = unique(transfers)
     kconserv = get_kconserv(cell, kpts)
     num_mo = mf.mo_coeff[0].shape[-1]
     for ikp in range(num_kpts):
@@ -457,18 +454,16 @@ def test_kpoint_isdf_symmetries():
     )
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
     (
-        G_vecs,
-        G_map,
+        _,
+        _,
         G_unique,
         delta_Gs,
     ) = build_G_vector_mappings_double_translation(cell, kpts, momentum_map)
-    _, minus_Q_G_map_unique = build_minus_Q_G_mapping(
-        cell, kpts, momentum_map)
+    _, minus_Q_G_map_unique = build_minus_Q_G_mapping(cell, kpts, momentum_map)
     num_kpts = len(kpts)
     # Test symmetries from Appendix D of https://arxiv.org/pdf/2302.05531.pdf
     # Test LHS for sanity too (need to uncomment)
     grid_points = cell.gen_uniform_grids(mf.with_df.mesh)
-    lattice_vectors = cell.lattice_vectors()
     from pyscf.pbc.lib.kpts_helper import conj_mapping
 
     minus_k_map = conj_mapping(cell, kpts)
@@ -499,15 +494,13 @@ def test_kpoint_isdf_symmetries():
                 # Sanity check relationship
                 # assert np.allclose(eri_pqrs, eri_qpsr.conj())
                 # Now check how to index into correct G when Q is conjugated
-                # Get actual G vector.
-                G_pq = G_vecs[G_map[iq, ik]]
-                # ditto for sr pair
-                G_sr = G_vecs[G_map[iq, ik_prime]]
-                # We want to find (-Q) + G_pq_comp + (Q + Gpq) = 0, Q + Gpq = kp - kq = q
+                # We want to find (-Q) + G_pq_comp + (Q + Gpq) = 0,
+                # Q + Gpq = kp - kq = q
                 # so G_pq_comp = -((-Q) + (Q+Gpq))
                 iGpq_comp = minus_Q_G_map_unique[minus_iq, ik]
                 iGsr_comp = minus_Q_G_map_unique[minus_iq, ik_prime]
-                # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] = zeta[-Q,G1_comp,G2_comp,m, n].conj()
+                # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] =
+                # zeta[-Q,G1_comp,G2_comp,m, n].conj()
                 # Build refernce point zeta[Q,G1,G2,m,n]
                 zeta_ref = kpt_thc.zeta[iq][iGpq, iGsr]
                 zeta_test = kpt_thc.zeta[minus_iq][iGpq_comp, iGsr_comp]
@@ -529,7 +522,8 @@ def test_kpoint_isdf_symmetries():
                 # kpt_pqrs = [ik_prime_minus_q, ik_prime, ik, ik_minus_q]
                 # eri_rspq = build_eri(mf, kpt_pqrs).transpose((2, 3, 0, 1))
                 # assert np.allclose(eri_pqrs, eri_rspq)
-                # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] = # zeta[-Q,G2_comp,G1_comp,m, n]
+                # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] =
+                # zeta[-Q,G2_comp,G1_comp,m, n]
                 zeta_test = kpt_thc.zeta[minus_iq][iGsr_comp, iGpq_comp]
                 assert np.allclose(zeta_ref, zeta_test.T)
                 # (pk qk-Q | rk'-Q sk') = (sk' r k'-Q| qk-Q pk)
@@ -537,7 +531,8 @@ def test_kpoint_isdf_symmetries():
                 # kpt_pqrs = [ik_prime, ik_prime_minus_q, ik_minus_q, ik]
                 # eri_srqp = build_eri(mf, kpt_pqrs).transpose((3, 2, 1, 0))
                 # assert np.allclose(eri_pqrs, eri_srqp.conj())
-                # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] = zeta[Q,G2,G1,n, m].conj()
+                # Check zeta symmetry: expect zeta[Q,G1,G2,m,n]
+                # = zeta[Q,G2,G1,n, m].conj()
                 zeta_test = kpt_thc.zeta[iq][iGsr, iGpq]
                 assert np.allclose(zeta_ref, zeta_test.conj().T)
 
@@ -577,10 +572,8 @@ def test_symmetry_of_G_maps():
     for iq in range(1, num_kpts):
         minus_iq = minus_k_map[iq]
         for ik in range(num_kpts):
-            ik_minus_q = momentum_map[iq, ik]
             Gpq = G_vecs[G_map[iq, ik]]
             Gpq_comp = -(kpts[minus_iq] + kpts[iq] + Gpq)
-            miller_Gpq = get_miller(lattice_vectors, Gpq)
             iGpq_comp = G_dict[tuple(get_miller(lattice_vectors, Gpq_comp))]
             G_indx_unique = [
                 G_dict[tuple(get_miller(lattice_vectors, G))]
@@ -589,7 +582,7 @@ def test_symmetry_of_G_maps():
             if iq == 1:
                 pass
             assert iGpq_comp in G_indx_unique
-            for ik_prime in range(num_kpts):
+            for _ in range(num_kpts):
                 # Check complement(miller_Gpq) = miller_Gpq_comp
                 # Get indx of "complement" G in original set of 27
                 iGsr_comp = G_dict[tuple(get_miller(lattice_vectors, Gpq_comp))]

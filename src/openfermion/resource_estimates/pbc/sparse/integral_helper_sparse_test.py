@@ -27,7 +27,6 @@ from openfermion.resource_estimates.pbc.sparse.integral_helper_sparse import (
 )
 
 
-
 def test_sparse_int_obj():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
@@ -49,7 +48,6 @@ def test_sparse_int_obj():
                     abs_sum_coeffs += np.sum(np.abs(
                         test_eri_block.real)) + np.sum(
                             np.abs(test_eri_block.imag))
-        print(thresh, abs_sum_coeffs)  # this should always be increasing
 
 
 def test_get_num_unique():
@@ -133,7 +131,7 @@ def test_get_num_unique():
 
                 # we only need to count the single eri block because
                 # (kp, kq kr ks) -> (kr, ks, kp kq) 1:1
-                # but for (p q | r s) -> (qp|sr) so we are overcounting 
+                # but for (p q | r s) -> (qp|sr) so we are overcounting
                 # by a little (q p | s r)
                 # since we have a complex conjugation symmetry in both we really
                 # have (npair, npair) here. we can use pyscf.ao2mo to do this.

@@ -24,8 +24,7 @@ be used as
 >>> thc_factors = kpoint_thc_via_isdf(krhf_inst, Lchol, nthc)
 """
 
-
-# pylint disable=wrong-import-position
+# pylint: disable=wrong-import-position
 import math
 import time
 from typing import Tuple, Union
@@ -43,7 +42,6 @@ import jax
 import jax.numpy as jnp
 import jax.typing as jnpt
 
-
 from openfermion.resource_estimates.thc.utils import adagrad
 from openfermion.resource_estimates.pbc.thc.utils.isdf import (
     KPointTHC,
@@ -51,8 +49,6 @@ from openfermion.resource_estimates.pbc.thc.utils.isdf import (
 )
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
     build_momentum_transfer_mapping,)
-# pylint enable=wrong-import-position
-
 
 
 def load_thc_factors(chkfile_name: str) -> KPointTHC:
@@ -652,9 +648,7 @@ def lbfgsb_opt_kpthc_l2reg_batched(
         batch_size,
         penalty_param=1.0,
     )
-    print(
-        "Time to evaluate loss function : {:.4f}".format(time.time() - start)
-        )
+    print("Time to evaluate loss function : {:.4f}".format(time.time() - start))
     print("loss {}".format(loss))
     # set penalty
     lambda_z = (reg_loss - loss)**0.5

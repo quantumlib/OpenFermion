@@ -90,7 +90,6 @@ def test_transfer_map():
     kmesh = [3, 2, 1]
     nkpts = np.prod(kmesh)
     scaled_kpts = get_miller_indices(kmesh)
-    delta_k1_k2_Q_int = get_delta_kp_kq_Q(scaled_kpts)
     transfer_map = build_transfer_map(kmesh, scaled_kpts=scaled_kpts)
     for kpidx, kqidx in itertools.product(range(nkpts), repeat=2):
         q_scaled_kpt = scaled_kpts[kpidx] - scaled_kpts[kqidx]
@@ -131,7 +130,6 @@ def test_gpq_mapping():
     scaled_kpts = get_miller_indices(kmesh)
     transfer_map = build_transfer_map(kmesh, scaled_kpts=scaled_kpts)
     gpq_map = build_gpq_mapping(kmesh, scaled_kpts)
-    g_dict = build_G_vectors(kmesh)
     for iq in range(nkpts):
         for ikp in range(nkpts):
             ikq = transfer_map[iq, ikp]
