@@ -110,7 +110,7 @@ class SparseFactorizationHelper:
         Args:
             cholesky_factor: Cholesky factor tensor that is
                 [nkpts, nkpts, naux, nao, nao].
-                To see how to generate this see pyscf_chol_from_df 
+                To see how to generate this see pyscf_chol_from_df
             kmf: pyscf k-object.  Currently only used to obtain the number of
                 k-points.  Must have an attribute kpts which len(self.kmf.kpts)
                 returns number of kpts.
@@ -270,7 +270,7 @@ class SparseFactorizationHelper:
         return eri
 
     def get_eri_exact(self, kpts) -> npt.NDArray:
-        """Construct (pkp qkq| rkr sks) exactly from mean-field object. 
+        """Construct (pkp qkq| rkr sks) exactly from mean-field object.
 
         This is for constructing the J and K like terms needed for the
         one-body component lambda.

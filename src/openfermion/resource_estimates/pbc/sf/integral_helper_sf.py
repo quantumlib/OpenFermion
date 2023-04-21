@@ -33,7 +33,7 @@ class SingleFactorizationHelper:
         Args:
             cholesky_factor: Cholesky factor tensor that is
                 [nkpts, nkpts, naux, nao, nao].
-                To see how to generate this see cholesky_from_df_ints 
+                To see how to generate this see cholesky_from_df_ints
             kmf: pyscf k-object.  Currently only used to obtain the number of
                 k-points.  Must have an attribute kpts which len(self.kmf.kpts)
                 returns number of kpts.
@@ -86,7 +86,7 @@ class SingleFactorizationHelper:
         return A, B
 
     def get_eri(self, ikpts: list, check_eq=False):
-        r"""Construct (pkp qkq| rkr sks) via cholesky factors. 
+        r"""Construct (pkp qkq| rkr sks) via cholesky factors.
 
         Note: 3-tensor L_{sks, rkr} = L_{rkr, sks}^{*}
 

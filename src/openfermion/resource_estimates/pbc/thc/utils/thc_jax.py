@@ -17,10 +17,10 @@ https://arxiv.org/abs/2302.05531
 The entrypoint for a user should be the function kpoint_thc_via_isdf which can
 be used as
 
->>> krhf_inst = scf.KRHF(cell, kpts) 
->>> krmp_inst = scf.KMP2(krhf_inst) 
+>>> krhf_inst = scf.KRHF(cell, kpts)
+>>> krmp_inst = scf.KMP2(krhf_inst)
 >>> Lchol = pyscf_chol_from_df(krmp_inst)
->>> nthc = cthc * nmo 
+>>> nthc = cthc * nmo
 >>> thc_factors = kpoint_thc_via_isdf(krhf_inst, Lchol, nthc)
 """
 

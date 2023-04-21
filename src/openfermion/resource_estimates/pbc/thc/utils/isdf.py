@@ -10,7 +10,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Module for performing ISDF THC factorization of k-point dependent integrals. 
+"""Module for performing ISDF THC factorization of k-point dependent integrals.
 
 The ISDF implementation currently provides a THC-like factorization of the two
 electron integrals which should converge to the FFTDF representation of the ERIs

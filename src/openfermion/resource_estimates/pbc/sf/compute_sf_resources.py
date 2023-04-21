@@ -11,7 +11,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """
-Estimate the physical, logical, and Toffoli gate requirements for 
+Estimate the physical, logical, and Toffoli gate requirements for
 single-factorization qubitization.  Single-Factorization uses
 an LCU formed from a symmeterized Cholesky decomposition of the integrals
 """
