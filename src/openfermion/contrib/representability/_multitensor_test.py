@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 import scipy as sp
-from openfermion.third_party.representability._namedtensor import Tensor
-from openfermion.third_party.representability._multitensor import MultiTensor, \
+from openfermion.contrib.representability._namedtensor import Tensor
+from openfermion.contrib.representability._multitensor import MultiTensor, \
     TMap
-from openfermion.third_party.representability._dualbasis import DualBasis, \
+from openfermion.contrib.representability._dualbasis import DualBasis, \
     DualBasisElement
 
 

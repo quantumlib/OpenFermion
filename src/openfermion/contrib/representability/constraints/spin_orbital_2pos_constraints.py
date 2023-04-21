@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 from itertools import product
-from openfermion.third_party.representability._dualbasis import \
+from openfermion.contrib.representability._dualbasis import \
     DualBasisElement, DualBasis
 from openfermion.utils.rdm_mapping_functions import kronecker_delta
 

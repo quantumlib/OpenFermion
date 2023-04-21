@@ -1,15 +1,15 @@
 from itertools import product
 import os
 import numpy as np
-from openfermion.third_party.representability.constraints.spin_orbital_2pos_constraints import (  # pylint: disable=line-too-long
+from openfermion.contrib.representability.constraints.spin_orbital_2pos_constraints import (  # pylint: disable=line-too-long
     tpdm_antisymmetry_constraint, tpdm_trace_constraint, _coord_generator,
     tpdm_to_opdm_mapping, opdm_to_ohdm_mapping, sz_constraint, na_constraint,
     nb_constraint, tpdm_to_thdm_mapping, tpdm_to_phdm_mapping,
     spin_orbital_linear_constraints)
-from openfermion.third_party.representability._dualbasis import \
+from openfermion.contrib.representability._dualbasis import \
     DualBasisElement, DualBasis
-from openfermion.third_party.representability._namedtensor import Tensor
-from openfermion.third_party.representability._multitensor import MultiTensor
+from openfermion.contrib.representability._namedtensor import Tensor
+from openfermion.contrib.representability._multitensor import MultiTensor
 from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.utils import map_two_pdm_to_two_hole_dm, \
