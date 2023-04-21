@@ -10,18 +10,22 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from functools import reduce
 import numpy as np
-from pyscf.pbc import gto, scf, mp
-import pytest
+from pyscf.pbc import mp
 
 from openfermion.resource_estimates.pbc.sparse.integral_helper_sparse import (
-    SparseFactorizationHelper,
-)
+    SparseFactorizationHelper,)
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    cholesky_from_df_ints,
+    cholesky_from_df_ints,)
+from openfermion.resource_estimates.pbc.utils.test_utils import (
+    make_diamond_113_szv,)
+from openfermion.resource_estimates.pbc.sparse.integral_helper_sparse import (
+    unique_iter,
+    unique_iter_pr_qs,
+    unique_iter_ps_qr,
+    unique_iter_pq_rs,
 )
-from openfermion.resource_estimates.pbc.utils.test_utils import make_diamond_113_szv
+
 
 
 def test_sparse_int_obj():
@@ -30,9 +34,9 @@ def test_sparse_int_obj():
     Luv = cholesky_from_df_ints(mymp)
     for thresh in [1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6]:
         abs_sum_coeffs = 0
-        helper = SparseFactorizationHelper(
-            cholesky_factor=Luv, kmf=mf, threshold=thresh
-        )
+        helper = SparseFactorizationHelper(cholesky_factor=Luv,
+                                           kmf=mf,
+                                           threshold=thresh)
         nkpts = len(mf.kpts)
         # recall (k, k-q|k'-q, k')
         for kidx in range(nkpts):
@@ -40,10 +44,11 @@ def test_sparse_int_obj():
                 for qidx in range(nkpts):
                     kmq_idx = helper.k_transfer_map[qidx, kidx]
                     kpmq_idx = helper.k_transfer_map[qidx, kpidx]
-                    test_eri_block = helper.get_eri([kidx, kmq_idx, kpmq_idx, kpidx])
-                    abs_sum_coeffs += np.sum(np.abs(test_eri_block.real)) + np.sum(
-                        np.abs(test_eri_block.imag)
-                    )
+                    test_eri_block = helper.get_eri(
+                        [kidx, kmq_idx, kpmq_idx, kpidx])
+                    abs_sum_coeffs += np.sum(np.abs(
+                        test_eri_block.real)) + np.sum(
+                            np.abs(test_eri_block.imag))
         print(thresh, abs_sum_coeffs)  # this should always be increasing
 
 
@@ -57,13 +62,6 @@ def test_get_num_unique():
     from pyscf.pbc.lib.kpts_helper import KptsHelper, loop_kkk
 
     # import the iteration routines
-    from openfermion.resource_estimates.pbc.sparse.integral_helper_sparse import (
-        unique_iter,
-        unique_iter_pr_qs,
-        unique_iter_ps_qr,
-        unique_iter_pq_rs,
-    )
-
     nmo = mf.mo_coeff[0].shape[-1]
     tally4 = np.zeros((nmo, nmo, nmo, nmo), dtype=int)
     for ft in unique_iter(nmo):
@@ -102,8 +100,9 @@ def test_get_num_unique():
                 completed[kp, kq, kr] = True
                 tally[kp, kq, kr] += 1
                 for ftuple in unique_iter(
-                    nmo
-                ):  # iterate over unique whenever all momentum indices are the same
+                        nmo
+                ):  # iterate over unique whenever all momentum indices are the
+                    # same
                     p, q, r, s = ftuple
                     if p == q == r == s:
                         fulltally[kp, kq, kr, p, q, r, s] += 1
@@ -132,11 +131,12 @@ def test_get_num_unique():
                 # fulltally[kp, kq, kr] += 1
                 # fulltally[kr, ks, kp] += 1
 
-                # we only need to count the single eri block because (kp, kq kr ks) -> (kr, ks, kp kq) 1:1.
-                # but for (p q | r s) -> (qp|sr) so we are overcounting. by a little.
-                # (q p | s r)
-                # since we have a complex conjugation symmetry in both we really have (npair, npair) here.
-                # we can use pyscf.ao2mo to do this.
+                # we only need to count the single eri block because
+                # (kp, kq kr ks) -> (kr, ks, kp kq) 1:1
+                # but for (p q | r s) -> (qp|sr) so we are overcounting 
+                # by a little (q p | s r)
+                # since we have a complex conjugation symmetry in both we really
+                # have (npair, npair) here. we can use pyscf.ao2mo to do this.
 
                 test_block = np.zeros_like(eri_block, dtype=int)
                 num_terms_in_block = 0
@@ -152,7 +152,8 @@ def test_get_num_unique():
                         fulltally[kp, kq, kr, q, p, s, r] += 1
                         fulltally[kr, ks, kp, s, r, q, p] += 1
 
-                for p, q, r, s in itertools.product(range(helper.nao), repeat=4):
+                for p, q, r, s in itertools.product(range(helper.nao),
+                                                    repeat=4):
                     if not np.isclose(test_block[p, q, r, s], 1):
                         print(p, q, r, s, test_block[p, q, r, s])
                 assert np.allclose(test_block, 1)
@@ -182,7 +183,8 @@ def test_get_num_unique():
                         fulltally[kp, kq, kr, s, r, q, p] += 1
                         fulltally[kr, ks, kp, q, p, s, r] += 1
 
-                for p, q, r, s in itertools.product(range(helper.nao), repeat=4):
+                for p, q, r, s in itertools.product(range(helper.nao),
+                                                    repeat=4):
                     if not np.isclose(test_block[p, q, r, s], 1):
                         print(p, q, r, s, test_block[p, q, r, s])
                 assert np.allclose(test_block, 1)
@@ -194,9 +196,8 @@ def test_get_num_unique():
                 completed[kq, kp, ks] = True
                 tally[kp, kq, kr] += 1
                 tally[kq, kp, ks] += 1
-                # symmetry takes account of [kq, kp, ks] only need to do one of the blocks
-                # fulltally[kp, kq, kr] += 1
-                # fulltally[kq, kp, ks] += 1
+                # symmetry takes account of [kq, kp, ks] only need to do one of
+                # the blocks
 
                 test_block = np.zeros_like(eri_block, dtype=int)
                 num_terms_in_block = 0
@@ -212,7 +213,8 @@ def test_get_num_unique():
                         fulltally[kp, kq, kr, r, s, p, q] += 1
                         fulltally[kq, kp, ks, s, r, q, p] += 1
 
-                for p, q, r, s in itertools.product(range(helper.nao), repeat=4):
+                for p, q, r, s in itertools.product(range(helper.nao),
+                                                    repeat=4):
                     if not np.isclose(test_block[p, q, r, s], 1):
                         print(p, q, r, s, test_block[p, q, r, s])
                 assert np.allclose(test_block, 1)
@@ -230,9 +232,9 @@ def test_get_num_unique():
                 tally[kq, kp, ks] += 1
                 tally[ks, kr, kq] += 1
 
-                # just assign entire 4-tensor +1 value because each pqrs is unique because
-                # kp, kq, kr, ks is unique for this case we would only need to grab one of
-                # these blocks of 4.
+                # just assign entire 4-tensor +1 value because each pqrs is
+                # unique because kp, kq, kr, ks is unique for this case we
+                # would only need to grab one of these blocks of 4.
                 fulltally[kp, kq, kr] += 1
                 fulltally[kq, kp, ks] += 1
                 fulltally[ks, kr, kq] += 1

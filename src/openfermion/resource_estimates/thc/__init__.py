@@ -13,8 +13,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 from ast import Import
-import pytest
 import warnings
+import pytest
 
 try:
     import jax

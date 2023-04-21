@@ -19,15 +19,16 @@ from ase.build import bulk
 from pyscf.pbc import gto, scf, mp
 from pyscf.pbc.tools import pyscf_ase
 
-from openfermion.resource_estimates.pbc.sf.compute_lambda_sf import compute_lambda
+from openfermion.resource_estimates.pbc.sf.compute_lambda_sf import (
+    compute_lambda,)
 from openfermion.resource_estimates.pbc.sf.integral_helper_sf import (
-    SingleFactorizationHelper,
-)
+    SingleFactorizationHelper,)
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
     build_hamiltonian,
     cholesky_from_df_ints,
 )
-from openfermion.resource_estimates.pbc.utils.test_utils import make_diamond_113_szv
+from openfermion.resource_estimates.pbc.utils.test_utils import (
+    make_diamond_113_szv,)
 
 
 def test_lambda_calc():
@@ -64,34 +65,29 @@ def test_padding():
     assert mf.mo_coeff[0].shape[-1] != mo_coeff_padded[0].shape[-1]
 
     hcore_ao = mf.get_hcore()
-    hcore_no_padding = np.asarray(
-        [
-            reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
-            for k, mo in enumerate(mf.mo_coeff)
-        ]
-    )
-    hcore_padded = np.asarray(
-        [
-            reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
-            for k, mo in enumerate(mo_coeff_padded)
-        ]
-    )
+    hcore_no_padding = np.asarray([
+        reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
+        for k, mo in enumerate(mf.mo_coeff)
+    ])
+    hcore_padded = np.asarray([
+        reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
+        for k, mo in enumerate(mo_coeff_padded)
+    ])
     assert hcore_no_padding[0].shape != hcore_padded[0].shape
     assert np.isclose(np.sum(hcore_no_padding), np.sum(hcore_padded))
     Luv_no_padding = cholesky_from_df_ints(mymp, pad_mos_with_zeros=False)
     for k1 in range(nkpts):
         for k2 in range(nkpts):
-            assert np.isclose(
-                np.sum(Luv_padded[k1, k2]), np.sum(Luv_no_padding[k1, k2])
-            )
+            assert np.isclose(np.sum(Luv_padded[k1, k2]),
+                              np.sum(Luv_no_padding[k1, k2]))
 
     helper_no_padding = SingleFactorizationHelper(
-        cholesky_factor=Luv_no_padding, kmf=mf
-    )
+        cholesky_factor=Luv_no_padding, kmf=mf)
     lambda_data_pad = compute_lambda(hcore_no_padding, helper_no_padding)
     helper = SingleFactorizationHelper(cholesky_factor=Luv_padded, kmf=mf)
     lambda_data_no_pad = compute_lambda(hcore_padded, helper)
-    assert np.isclose(lambda_data_pad.lambda_total, lambda_data_no_pad.lambda_total)
+    assert np.isclose(lambda_data_pad.lambda_total,
+                      lambda_data_no_pad.lambda_total)
 
 
 if __name__ == "__main__":

@@ -20,15 +20,13 @@ from pyscf.pbc import gto, mp, scf
 from pyscf.pbc.lib.kpts_helper import get_kconserv, loop_kkk
 
 from openfermion.resource_estimates.pbc.sparse.compute_lambda_sparse import (
-    compute_lambda,
-)
+    compute_lambda,)
 from openfermion.resource_estimates.pbc.sparse.integral_helper_sparse import (
-    SparseFactorizationHelper,
-)
+    SparseFactorizationHelper,)
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    cholesky_from_df_ints,
-)
-from openfermion.resource_estimates.pbc.utils.test_utils import make_diamond_113_szv
+    cholesky_from_df_ints,)
+from openfermion.resource_estimates.pbc.utils.test_utils import (
+    make_diamond_113_szv,)
 
 
 def test_lambda_sparse():
@@ -38,12 +36,10 @@ def test_lambda_sparse():
     helper = SparseFactorizationHelper(cholesky_factor=Luv, kmf=mf)
 
     hcore_ao = mf.get_hcore()
-    hcore_mo = np.asarray(
-        [
-            reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
-            for k, mo in enumerate(mf.mo_coeff)
-        ]
-    )
+    hcore_mo = np.asarray([
+        reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
+        for k, mo in enumerate(mf.mo_coeff)
+    ])
     compute_lambda(hcore_mo, helper)
 
 

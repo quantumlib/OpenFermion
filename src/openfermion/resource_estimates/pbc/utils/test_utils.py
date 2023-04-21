@@ -17,7 +17,9 @@ from pyscf.lib import chkfile
 
 
 def make_diamond_113_szv() -> scf.KRHF:
-    """Build diamond in gth-szv basis with 113 k-point mesh from checkpoint file"""
+    """Build diamond in gth-szv basis with 113 k-point mesh from checkpoint
+    file.
+    """
     TEST_CHK = os.path.join(os.path.dirname(__file__), "../test_data/scf.chk")
     cell = gto.Cell()
     cell.atom = """

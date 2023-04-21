@@ -15,13 +15,13 @@ import numpy as np
 import pandas as pd
 
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    HamiltonianProperties,
-)
+    HamiltonianProperties,)
 
 
 @dataclass(frozen=True)
 class ResourceEstimates:
-    """Lighweight descriptive data class to hold return values from compute_cost functions.
+    """Lighweight descriptive data class to hold return values from compute_cost
+    functions.
 
     Attributes:
         toffolis_per_step: Toffolis per step
@@ -78,11 +78,11 @@ class PBCResources:
         return df
 
     def add_resources(
-        self,
-        ham_properties: HamiltonianProperties,
-        resource_estimates: ResourceEstimates,
-        cutoff: float,
-        approx_energy: float,
+            self,
+            ham_properties: HamiltonianProperties,
+            resource_estimates: ResourceEstimates,
+            cutoff: float,
+            approx_energy: float,
     ) -> None:
         """Add resource estimates to container for given cutoff value.
 
@@ -99,7 +99,8 @@ class PBCResources:
 
 
 def compute_beta_for_resources(num_spin_orbs, num_kpts, dE_for_qpe):
-    """Compute beta (number of bits for rotations) using expression from https://arxiv.org/pdf/2007.14460.pdf.
+    """Compute beta (number of bits for rotations) using expression from
+    https://arxiv.org/pdf/2007.14460.pdf.
 
     Args:
         num_spin_orbs: Number of spin orbitals
@@ -111,7 +112,8 @@ def compute_beta_for_resources(num_spin_orbs, num_kpts, dE_for_qpe):
 
 def QR3(L, M1):
     r"""
-    QR[Ll_, m_] := Ceiling[MinValue[{Ll/2^k + m*(2^k - 1), k >= 0}, k \[Element] Integers]];
+    QR[Ll_, m_] := Ceiling[MinValue[{Ll/2^k + m*(2^k - 1), k >= 0}, k
+    \[Element] Integers]];
     """
     k = 0.5 * np.log2(L / M1)
     value = lambda k: L / np.power(2, k) + M1 * (np.power(2, k) - 1)
@@ -138,9 +140,10 @@ def QR2(L1, L2, M):
     min_val = np.inf
     for k1 in range(1, 11):
         for k2 in range(1, 11):
-            test_val = np.ceil(L1 / (2**k1)) * np.ceil(L2 / (2**k2)) + M * (
-                2 ** (k1 + k2) - 1
-            )
+            test_val = np.ceil(L1 /
+                               (2**k1)) * np.ceil(L2 /
+                                                  (2**k2)) + M * (2**
+                                                                  (k1 + k2) - 1)
             if test_val < min_val:
                 min_val = test_val
     return int(min_val)
@@ -156,9 +159,8 @@ def QI2(L1, Lv2):
     min_val = np.inf
     for k1 in range(1, 11):
         for k2 in range(1, 11):
-            test_val = np.ceil(L1 / (2**k1)) * np.ceil(Lv2 / (2**k2)) + 2 ** (
-                k1 + k2
-            )
+            test_val = np.ceil(L1 / (2**k1)) * np.ceil(Lv2 /
+                                                       (2**k2)) + 2**(k1 + k2)
             if test_val < min_val:
                 min_val = test_val
     return int(min_val)

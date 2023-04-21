@@ -15,20 +15,24 @@ import numpy as np
 from pyscf.pbc import gto, scf
 
 from openfermion.resource_estimates.pbc.df.generate_costing_table_df import (
-    generate_costing_table,
-)
-from openfermion.resource_estimates.pbc.utils.test_utils import make_diamond_113_szv
+    generate_costing_table,)
+from openfermion.resource_estimates.pbc.utils.test_utils import (
+    make_diamond_113_szv,)
 
 
 def test_generate_costing_table_df():
     mf = make_diamond_113_szv()
-    thresh = np.array(
-        [0.1, 1e-2, 1e-14]
-    )  # Eigenvalue threshold for second factorization.
-    table = generate_costing_table(mf, cutoffs=thresh, chi=10, beta=22, dE_for_qpe=1e-3)
+    thresh = np.array([0.1, 1e-2,
+                       1e-14])  # Eigenvalue threshold for second factorization.
+    table = generate_costing_table(mf,
+                                   cutoffs=thresh,
+                                   chi=10,
+                                   beta=22,
+                                   dE_for_qpe=1e-3)
     assert np.allclose(table.dE, 1e-3)
     assert np.allclose(table.chi, 10)
     assert np.allclose(table.beta, 22)
     assert np.allclose(table.cutoff, thresh)
     assert np.allclose(table.num_aux, [648] * 3)
-    assert np.isclose(table.approx_energy.values[2], table.exact_energy.values[0])
+    assert np.isclose(table.approx_energy.values[2],
+                      table.exact_energy.values[0])

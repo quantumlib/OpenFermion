@@ -20,20 +20,21 @@ from pyscf.pbc import scf
 from pyscf.pbc.tools.k2gamma import kpts_to_kmesh
 
 from openfermion.resource_estimates.pbc.utils.resource_utils import PBCResources
-from openfermion.resource_estimates.pbc.df.integral_helper_df import DFABKpointIntegrals
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import build_hamiltonian
+from openfermion.resource_estimates.pbc.df.integral_helper_df import (
+    DFABKpointIntegrals,)
+from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+    build_hamiltonian,)
 from openfermion.resource_estimates.pbc.utils.cc_helper import (
     build_approximate_eris,
     build_cc_inst,
     build_approximate_eris_rohf,
 )
-from openfermion.resource_estimates.pbc.df.compute_lambda_df import compute_lambda
+from openfermion.resource_estimates.pbc.df.compute_lambda_df import (
+    compute_lambda,)
 from openfermion.resource_estimates.pbc.df.compute_df_resources import (
-    compute_cost,
-)
+    compute_cost,)
 from openfermion.resource_estimates.pbc.utils.resource_utils import (
-    compute_beta_for_resources,
-)
+    compute_beta_for_resources,)
 
 
 @dataclass
@@ -43,13 +44,13 @@ class DFResources(PBCResources):
 
 
 def generate_costing_table(
-    pyscf_mf: scf.HF,
-    cutoffs: np.ndarray,
-    name: str = "pbc",
-    chi: int = 10,
-    beta: int = 20,
-    dE_for_qpe: float = 0.0016,
-    energy_method: str = "MP2",
+        pyscf_mf: scf.HF,
+        cutoffs: np.ndarray,
+        name: str = "pbc",
+        chi: int = 10,
+        beta: int = 20,
+        dE_for_qpe: float = 0.0016,
+        energy_method: str = "MP2",
 ) -> pd.DataFrame:
     """Generate resource estimate costing table given a set of cutoffs for
         double-factorized Hamiltonian.
@@ -112,11 +113,13 @@ def generate_costing_table(
         df_helper.double_factorize(thresh=cutoff)
         df_lambda = compute_lambda(hcore, df_helper)
         if pyscf_mf.cell.spin == 0:
-            approx_eris = build_approximate_eris(cc_inst, df_helper, eris=approx_eris)
+            approx_eris = build_approximate_eris(cc_inst,
+                                                 df_helper,
+                                                 eris=approx_eris)
         else:
-            approx_eris = build_approximate_eris_rohf(
-                cc_inst, df_helper, eris=approx_eris
-            )
+            approx_eris = build_approximate_eris_rohf(cc_inst,
+                                                      df_helper,
+                                                      eris=approx_eris)
         approx_energy, _, _ = energy_function(approx_eris)
         df_res_cost = compute_cost(
             num_spin_orbs,

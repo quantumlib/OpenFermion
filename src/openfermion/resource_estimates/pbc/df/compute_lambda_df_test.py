@@ -15,12 +15,14 @@ import numpy as np
 
 from pyscf.pbc import mp
 
-from openfermion.resource_estimates.pbc.df.compute_lambda_df import compute_lambda
-from openfermion.resource_estimates.pbc.df.integral_helper_df import DFABKpointIntegrals
+from openfermion.resource_estimates.pbc.df.compute_lambda_df import (
+    compute_lambda,)
+from openfermion.resource_estimates.pbc.df.integral_helper_df import (
+    DFABKpointIntegrals,)
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    cholesky_from_df_ints,
-)
-from openfermion.resource_estimates.pbc.utils.test_utils import make_diamond_113_szv
+    cholesky_from_df_ints,)
+from openfermion.resource_estimates.pbc.utils.test_utils import (
+    make_diamond_113_szv,)
 
 
 def test_lambda_calc():
@@ -31,12 +33,10 @@ def test_lambda_calc():
     helper.double_factorize(thresh=1.0e-13)
 
     hcore_ao = mf.get_hcore()
-    hcore_mo = np.asarray(
-        [
-            reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
-            for k, mo in enumerate(mf.mo_coeff)
-        ]
-    )
+    hcore_mo = np.asarray([
+        reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
+        for k, mo in enumerate(mf.mo_coeff)
+    ])
 
     lambda_data = compute_lambda(hcore_mo, helper)
     assert np.isclose(lambda_data.lambda_total, 179.62240330857406)
@@ -57,14 +57,15 @@ def test_lambda_calc():
             Bmats /= np.sqrt(nkpts)
             wa, _ = np.linalg.eigh(Amats)
             wb, _ = np.linalg.eigh(Bmats)
-            aval_to_square += np.einsum("npq->n", np.abs(Amats) ** 2)
-            bval_to_square += np.einsum("npq->n", np.abs(Bmats) ** 2)
+            aval_to_square += np.einsum("npq->n", np.abs(Amats)**2)
+            bval_to_square += np.einsum("npq->n", np.abs(Bmats)**2)
 
-            aval_to_square_v2 += np.sum(np.abs(wa) ** 2, axis=-1)
-            bval_to_square_v2 += np.sum(np.abs(wb) ** 2, axis=-1)
+            aval_to_square_v2 += np.sum(np.abs(wa)**2, axis=-1)
+            bval_to_square_v2 += np.sum(np.abs(wb)**2, axis=-1)
             assert np.allclose(
-                np.sum(np.abs(wa) ** 2, axis=-1),
-                np.einsum("npq->n", np.abs(Amats) ** 2),
+                np.sum(np.abs(wa)**2, axis=-1),
+                np.einsum("npq->n",
+                          np.abs(Amats)**2),
             )
 
         lambda_two_body += np.sum(aval_to_square)

@@ -15,10 +15,10 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-from openfermion.resource_estimates.pbc.df.integral_helper_df import DFABKpointIntegrals
+from openfermion.resource_estimates.pbc.df.integral_helper_df import (
+    DFABKpointIntegrals,)
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    HamiltonianProperties,
-)
+    HamiltonianProperties,)
 
 
 @dataclass
@@ -28,16 +28,15 @@ class DFHamiltonianProperties(HamiltonianProperties):
     num_eig: int
 
 
-def compute_lambda(
-    hcore: npt.NDArray, df_obj: DFABKpointIntegrals
-) -> DFHamiltonianProperties:
+def compute_lambda(hcore: npt.NDArray,
+                   df_obj: DFABKpointIntegrals) -> DFHamiltonianProperties:
     """Compute one-body and two-body lambda for qubitization of
     single-factorized Hamiltonian.
 
     one-body term h_pq(k) = hcore_{pq}(k)
                             - 0.5 * sum_{Q}sum_{r}(pkrQ|rQqk)
                             + 0.5 sum_{Q}sum_{r}(pkqk|rQrQ)
-    The first term is the kinetic energy + pseudopotential (or electron-nuclear),
+    The first term is the kinetic energy + pseudopotential (or electron-nuclear)
     second term is from rearranging two-body operator into chemist charge-charge
     type notation, and the third is from the one body term obtained when
     squaring the two-body A and B operators.
@@ -63,7 +62,8 @@ def compute_lambda(
         for qidx in range(len(kpts)):
             # - 0.5 * sum_{Q}sum_{r}(pkrQ|rQqk)
             eri_kqqk_pqrs = df_obj.get_eri_exact([kidx, qidx, qidx, kidx])
-            h1_neg -= np.einsum("prrq->pq", eri_kqqk_pqrs, optimize=True) / nkpts
+            h1_neg -= (np.einsum("prrq->pq", eri_kqqk_pqrs, optimize=True) /
+                       nkpts)
             # + 0.5 sum_{Q}sum_{r}(pkqk|rQrQ)
             eri_kkqq_pqrs = df_obj.get_eri_exact([kidx, kidx, qidx, qidx])
             h1_pos += np.einsum("pqrr->pq", eri_kkqq_pqrs) / nkpts
@@ -83,12 +83,10 @@ def compute_lambda(
                 # A and B are W
                 if df_obj.amat_lambda_vecs[kidx, qidx, nn] is None:
                     continue
-                eigs_a_fixed_n_q = df_obj.amat_lambda_vecs[kidx, qidx, nn] / np.sqrt(
-                    nkpts
-                )
-                eigs_b_fixed_n_q = df_obj.bmat_lambda_vecs[kidx, qidx, nn] / np.sqrt(
-                    nkpts
-                )
+                eigs_a_fixed_n_q = df_obj.amat_lambda_vecs[kidx, qidx,
+                                                           nn] / np.sqrt(nkpts)
+                eigs_b_fixed_n_q = df_obj.bmat_lambda_vecs[kidx, qidx,
+                                                           nn] / np.sqrt(nkpts)
                 first_number_to_square += np.sum(np.abs(eigs_a_fixed_n_q))
                 num_eigs += len(eigs_a_fixed_n_q)
                 if eigs_b_fixed_n_q is not None:

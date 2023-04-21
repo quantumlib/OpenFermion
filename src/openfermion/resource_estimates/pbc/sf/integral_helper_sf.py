@@ -17,22 +17,26 @@ import numpy.typing as npt
 from pyscf.pbc import scf
 
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    build_momentum_transfer_mapping,
-)
+    build_momentum_transfer_mapping,)
 
 
 # Single-Factorization
 class SingleFactorizationHelper:
-    def __init__(self, cholesky_factor: npt.NDArray, kmf: scf.HF, naux: int = None):
+
+    def __init__(self,
+                 cholesky_factor: npt.NDArray,
+                 kmf: scf.HF,
+                 naux: int = None):
         """Initialize a ERI object for CCSD from Cholesky factors and a
             pyscf mean-field object
 
         Args:
-            cholesky_factor: Cholesky factor tensor that is [nkpts, nkpts, naux, nao, nao].
-                To see how to generate this go to openfermion.resource_estimates.pbc.pbc.factorizations.pyscf_chol_form_df.py
-            kmf: pyscf k-object.  Currently only used to obtain the number of k-points.
-                must have an attribute kpts which len(self.kmf.kpts) returns number of
-                kpts.
+            cholesky_factor: Cholesky factor tensor that is
+                [nkpts, nkpts, naux, nao, nao].
+                To see how to generate this see cholesky_from_df_ints 
+            kmf: pyscf k-object.  Currently only used to obtain the number of
+                k-points.  Must have an attribute kpts which len(self.kmf.kpts)
+                returns number of kpts.
         """
         self.chol = cholesky_factor
         self.kmf = kmf
@@ -41,7 +45,8 @@ class SingleFactorizationHelper:
             naux = cholesky_factor[0, 0].shape[0]
         self.naux = naux
         self.nao = cholesky_factor[0, 0].shape[-1]
-        k_transfer_map = build_momentum_transfer_mapping(self.kmf.cell, self.kmf.kpts)
+        k_transfer_map = build_momentum_transfer_mapping(
+            self.kmf.cell, self.kmf.kpts)
         self.k_transfer_map = k_transfer_map
 
     def build_AB_from_chol(self, qidx: int):
@@ -60,18 +65,19 @@ class SingleFactorizationHelper:
         naux = self.naux
 
         # now form A and B
-        # First set up matrices to store. We will loop over Q index and construct
-        # entire set of matrices index by n-aux.
-        rho = np.zeros((naux, nmo * self.nk, nmo * self.nk), dtype=np.complex128)
+        # First set up matrices to store. We will loop over Q index and
+        # construct entire set of matrices index by n-aux.
+        rho = np.zeros((naux, nmo * self.nk, nmo * self.nk),
+                       dtype=np.complex128)
 
         for kidx in range(self.nk):
             k_minus_q_idx = self.k_transfer_map[qidx, kidx]
             for p, q in itertools.product(range(nmo), repeat=2):
                 P = int(kidx * nmo + p)  # a^_{pK}
                 Q = int(k_minus_q_idx * nmo + q)  # a_{q(K-Q)}
-                rho[:, P, Q] += self.chol[kidx, k_minus_q_idx][
-                    :naux, p, q
-                ]  # L_{pK, q(K-Q)}a^_{pK}a_{q(K-Q)}
+                rho[:, P, Q] += self.chol[
+                    kidx, k_minus_q_idx][:naux, p,
+                                         q]  # L_{pK, q(K-Q)}a^_{pK}a_{q(K-Q)}
 
         A = 0.5 * (rho + rho.transpose((0, 2, 1)).conj())
         B = 0.5j * (rho - rho.transpose((0, 2, 1)).conj())
@@ -80,13 +86,15 @@ class SingleFactorizationHelper:
         return A, B
 
     def get_eri(self, ikpts: list, check_eq=False):
-        """Construct (pkp qkq| rkr sks) via \\sum_{n}L_{pkp,qkq,n}L_{sks, rkr, n}^{*}
+        r"""Construct (pkp qkq| rkr sks) via cholesky factors. 
 
         Note: 3-tensor L_{sks, rkr} = L_{rkr, sks}^{*}
 
         Args:
-          ikpts: list of four integers representing the index of the kpoint in self.kmf.kpts
-            check_eq: optional value to confirm a symmetry in the Cholesky vectors. (Default value = False)
+          ikpts: list of four integers representing the index of the kpoint
+            in self.kmf.kpts
+          check_eq: optional value to confirm a symmetry in the Cholesky vectors
+          (Default value = False)
 
         Returns:
             eri: ([pkp][qkq]|[rkr][sks])

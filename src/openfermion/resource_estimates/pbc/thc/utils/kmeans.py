@@ -15,8 +15,12 @@ import numpy.typing as npt
 
 
 class KMeansCVT(object):
+
     def __init__(
-        self, grid: npt.NDArray, max_iteration: int = 100, threshold: float = 1e-6
+            self,
+            grid: npt.NDArray,
+            max_iteration: int = 100,
+            threshold: float = 1e-6,
     ):
         """Initialize k-means solver to find interpolating points for ISDF.
 
@@ -35,9 +39,8 @@ class KMeansCVT(object):
         self.threshold = threshold
 
     @staticmethod
-    def classify_grid_points(
-        grid_points: npt.NDArray, centroids: npt.NDArray
-    ) -> npt.NDArray:
+    def classify_grid_points(grid_points: npt.NDArray,
+                             centroids: npt.NDArray) -> npt.NDArray:
         r"""Assign grid points to centroids.
 
         Find centroid closest to each given grid point.
@@ -64,9 +67,8 @@ class KMeansCVT(object):
         classification = np.argmin(distances, axis=1)
         return classification
 
-    def compute_new_centroids(
-        self, weighting, grid_mapping, current_centroids
-    ) -> npt.NDArray:
+    def compute_new_centroids(self, weighting, grid_mapping,
+                              current_centroids) -> npt.NDArray:
         r"""
         Centroids are defined via:
 
@@ -105,20 +107,21 @@ class KMeansCVT(object):
         return grid_mapping
 
     def find_interpolating_points(
-        self,
-        num_interp_points: int,
-        weighting_factor: npt.NDArray,
-        centroids=None,
-        verbose=True,
+            self,
+            num_interp_points: int,
+            weighting_factor: npt.NDArray,
+            centroids=None,
+            verbose=True,
     ) -> npt.NDArray:
         """Find interpolating points using KMeans-CVT algorithm.
 
         Args:
             num_interp_points: number of points to select.
             weighting_factor: weighting function for K-Means procedure.
-            centroids: initial guess at centroids, if None centroids are selected
-                randomly from the grid points.
-            verbose: Controls if information is printed about convergence. Default value = True.
+            centroids: initial guess at centroids, if None centroids are
+                selected randomly from the grid points.
+            verbose: Controls if information is printed about convergence.
+                Default value = True.
 
         Returns:
             interp_pts: index associated with interpolating points.
@@ -126,9 +129,9 @@ class KMeansCVT(object):
         num_grid_points = self.grid.shape[0]
         if centroids is None:
             # Randomly select grid points as centroids.
-            centroids_indx = np.random.choice(
-                num_grid_points, num_interp_points, replace=False
-            )
+            centroids_indx = np.random.choice(num_grid_points,
+                                              num_interp_points,
+                                              replace=False)
             centroids = self.grid[centroids_indx].copy()
         else:
             assert len(centroids) == num_interp_points
@@ -141,8 +144,7 @@ class KMeansCVT(object):
             grid_mapping = self.classify_grid_points(self.grid, centroids)
             # Global reduce
             new_centroids[:] = self.compute_new_centroids(
-                weighting_factor, grid_mapping, centroids
-            )
+                weighting_factor, grid_mapping, centroids)
             delta_grid = np.linalg.norm(new_centroids - centroids)
             if verbose and iteration % 10 == 0:
                 print(f"{iteration:<9d}  {delta_grid:13.8e}")

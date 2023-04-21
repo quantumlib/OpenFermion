@@ -10,18 +10,18 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from functools import reduce
 import itertools
 
 import numpy as np
-from openfermion.resource_estimates.pbc.utils.test_utils import make_diamond_113_szv
 
-from pyscf.pbc import gto, scf, mp
+from pyscf.pbc import mp
 
-from openfermion.resource_estimates.pbc.df.integral_helper_df import DFABKpointIntegrals
+from openfermion.resource_estimates.pbc.utils.test_utils import (
+    make_diamond_113_szv,)
+from openfermion.resource_estimates.pbc.df.integral_helper_df import (
+    DFABKpointIntegrals,)
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    cholesky_from_df_ints,
-)
+    cholesky_from_df_ints,)
 
 
 def test_df_amat_bmat():
@@ -78,7 +78,7 @@ def test_df_amat_bmat():
                 kmq_idx = dfk_inst.k_transfer_map[qidx, kidx]
                 kpmq_idx = dfk_inst.k_transfer_map[qidx, kpidx]
                 exact_eri_block = dfk_inst.get_eri_exact(
-                    [kidx, kmq_idx, kpmq_idx, kpidx]
-                )
-                test_eri_block = dfk_inst.get_eri([kidx, kmq_idx, kpmq_idx, kpidx])
+                    [kidx, kmq_idx, kpmq_idx, kpidx])
+                test_eri_block = dfk_inst.get_eri(
+                    [kidx, kmq_idx, kpmq_idx, kpidx])
                 assert np.allclose(exact_eri_block, test_eri_block)

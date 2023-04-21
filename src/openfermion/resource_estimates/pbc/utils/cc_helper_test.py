@@ -19,15 +19,13 @@ import pytest
 import numpy as np
 
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    cholesky_from_df_ints,
-)
+    cholesky_from_df_ints,)
 from openfermion.resource_estimates.pbc.utils.cc_helper import (
     build_approximate_eris_rohf,
     build_approximate_eris,
 )
 from openfermion.resource_estimates.pbc.sf.integral_helper_sf import (
-    SingleFactorizationHelper,
-)
+    SingleFactorizationHelper,)
 
 _TEST_CHK = os.path.join(os.path.dirname(__file__), "../test_data/scf.chk")
 
@@ -90,7 +88,8 @@ def test_cc_helper_rohf():
         "VOvv",
     ]
     for block in eri_blocks:
-        assert np.allclose(test_eris.__dict__[block][:], ref_eris.__dict__[block][:])
+        assert np.allclose(test_eris.__dict__[block][:],
+                           ref_eris.__dict__[block][:])
     # Test MP2 energy is the correct
     emp2_approx, _, _ = cc_inst.init_amps(test_eris)
     assert abs(emp2_approx - emp2_ref) < 1e-12
@@ -99,9 +98,8 @@ def test_cc_helper_rohf():
     helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris_approx = build_approximate_eris_rohf(cc_inst, helper)
     for block in eri_blocks:
-        assert not np.allclose(
-            test_eris_approx.__dict__[block][:], ref_eris.__dict__[block][:]
-        )
+        assert not np.allclose(test_eris_approx.__dict__[block][:],
+                               ref_eris.__dict__[block][:])
     emp2_approx, _, _ = cc_inst.init_amps(test_eris_approx)
     # MP2 energy should be pretty bad
     assert abs(emp2_approx - emp2_ref) > 1e-12
@@ -119,10 +117,10 @@ def test_cc_helper_rohf():
     helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris = build_approximate_eris_rohf(cc_approx, helper)
     for block in eri_blocks:
-        assert not np.allclose(
-            test_eris.__dict__[block][:], ref_eris.__dict__[block][:]
-        )
-    # Want to avoid ccsd helper using density-fitted integrals which will be "exact"
+        assert not np.allclose(test_eris.__dict__[block][:],
+                               ref_eris.__dict__[block][:])
+    # Want to avoid ccsd helper using density-fitted integrals which will be
+    # "exact"
     assert test_eris.Lpv is None
     assert test_eris.LPV is None
     cc_approx = KUCCSD(u_from_ro)
@@ -179,7 +177,8 @@ def test_cc_helper_rhf():
         "vovv",
     ]
     for block in eri_blocks:
-        assert np.allclose(test_eris.__dict__[block][:], ref_eris.__dict__[block][:])
+        assert np.allclose(test_eris.__dict__[block][:],
+                           ref_eris.__dict__[block][:])
     # Test MP2 energy is the correct
     emp2_approx, _, _ = cc_inst.init_amps(test_eris)
     assert abs(emp2_approx - emp2_ref) < 1e-12
@@ -188,9 +187,8 @@ def test_cc_helper_rhf():
     helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris_approx = build_approximate_eris(cc_inst, helper)
     for block in eri_blocks:
-        assert not np.allclose(
-            test_eris_approx.__dict__[block][:], ref_eris.__dict__[block][:]
-        )
+        assert not np.allclose(test_eris_approx.__dict__[block][:],
+                               ref_eris.__dict__[block][:])
     emp2_approx, _, _ = cc_inst.init_amps(test_eris_approx)
     # MP2 energy should be pretty bad
     assert abs(emp2_approx - emp2_ref) > 1e-12
@@ -208,10 +206,10 @@ def test_cc_helper_rhf():
     helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris = build_approximate_eris(cc_approx, helper)
     for block in eri_blocks:
-        assert not np.allclose(
-            test_eris.__dict__[block][:], ref_eris.__dict__[block][:]
-        )
-    # Want to avoid ccsd helper using density-fitted integrals which will be "exact"
+        assert not np.allclose(test_eris.__dict__[block][:],
+                               ref_eris.__dict__[block][:])
+    # Want to avoid ccsd helper using density-fitted integrals which will be
+    # "exact"
     cc_approx = KRCCSD(mf)
     # overwrite ao2mo object required as function does not check if eris exists.
     cc_approx.ao2mo = lambda mo_coeff=None: test_eris

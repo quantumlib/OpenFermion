@@ -57,9 +57,6 @@ def test_compute_cost():
 
 
 def test_compute_cost_helper():
-    nRe = 108
-    lam_re = 2135.3
-    dRe = 705831
     dE = 0.001
     chi = 10
 

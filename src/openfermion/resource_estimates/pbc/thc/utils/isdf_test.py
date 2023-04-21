@@ -35,8 +35,7 @@ from openfermion.resource_estimates.pbc.thc.utils.isdf import (
     supercell_isdf,
 )
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    build_momentum_transfer_mapping,
-)
+    build_momentum_transfer_mapping,)
 
 
 def test_supercell_isdf_gamma():
@@ -68,28 +67,30 @@ def test_supercell_isdf_gamma():
     orbitals_mo = np.einsum("Rp,pi->Ri", orbitals, mf.mo_coeff, optimize=True)
     num_mo = mf.mo_coeff.shape[1]
     nocc = cell.nelec[0]
-    density = np.einsum(
-        "Ri,Ri->R", orbitals_mo[:, :nocc], orbitals_mo[:, :nocc].conj(), optimize=True
-    )
-    kmeans = KMeansCVT(grid_points, max_iteration=500)
     num_interp_points = np.prod(cell.mesh)
-    # interp_indx = kmeans.find_interpolating_points(num_interp_points, density, verbose=False)
     interp_indx = np.arange(np.prod(cell.mesh))
 
-    chi, zeta, Theta = supercell_isdf(
-        mf.with_df, interp_indx, orbitals=orbitals_mo, grid_points=grid_points
-    )
+    chi, zeta, Theta = supercell_isdf(mf.with_df,
+                                      interp_indx,
+                                      orbitals=orbitals_mo,
+                                      grid_points=grid_points)
     assert Theta.shape == (len(grid_points), num_interp_points)
     # Check overlap
     # Evaluate overlap from orbitals. Do it integral way to ensure
     # discretization error is the same from using coarse FFT grid for testing
     # speed
     ovlp_ao = np.einsum(
-        "mp,mq,m->pq", orbitals.conj(), orbitals, grid_inst.weights, optimize=True
+        "mp,mq,m->pq",
+        orbitals.conj(),
+        orbitals,
+        grid_inst.weights,
+        optimize=True,
     )
-    ovlp_mo = np.einsum(
-        "pi,pq,qj->ij", mf.mo_coeff.conj(), ovlp_ao, mf.mo_coeff, optimize=True
-    )
+    ovlp_mo = np.einsum("pi,pq,qj->ij",
+                        mf.mo_coeff.conj(),
+                        ovlp_ao,
+                        mf.mo_coeff,
+                        optimize=True)
     ovlp_mu = np.einsum("Rm,R->m", Theta, grid_inst.weights, optimize=True)
     orbitals_mo_interp = orbitals_mo[interp_indx]
     ovlp_isdf = np.einsum(
@@ -143,7 +144,10 @@ def test_supercell_isdf_complex():
     num_interp_points = 10 * num_mo
     nocc = cell.nelec[0]
     density = np.einsum(
-        "Ri,Ri->R", orbitals_mo[:, :nocc].conj(), orbitals_mo[:, :nocc], optimize=True
+        "Ri,Ri->R",
+        orbitals_mo[:, :nocc].conj(),
+        orbitals_mo[:, :nocc],
+        optimize=True,
     )
     kmeans = KMeansCVT(grid_points, max_iteration=500)
     interp_indx = kmeans.find_interpolating_points(
@@ -152,20 +156,27 @@ def test_supercell_isdf_complex():
         verbose=False,
     )
 
-    chi, zeta, Theta = supercell_isdf(
-        mf.with_df, interp_indx, orbitals=orbitals_mo, grid_points=grid_points
-    )
+    chi, zeta, Theta = supercell_isdf(mf.with_df,
+                                      interp_indx,
+                                      orbitals=orbitals_mo,
+                                      grid_points=grid_points)
     assert Theta.shape == (len(grid_points), num_interp_points)
     # Check overlap
     # Evaluate overlap from orbitals. Do it integral way to ensure
     # discretization error is the same from using coarse FFT grid for testing
     # speed
     ovlp_ao = np.einsum(
-        "mp,mq,m->pq", orbitals.conj(), orbitals, grid_inst.weights, optimize=True
+        "mp,mq,m->pq",
+        orbitals.conj(),
+        orbitals,
+        grid_inst.weights,
+        optimize=True,
     )
-    ovlp_mo = np.einsum(
-        "pi,pq,qj->ij", mf.mo_coeff.conj(), ovlp_ao, mf.mo_coeff, optimize=True
-    )
+    ovlp_mo = np.einsum("pi,pq,qj->ij",
+                        mf.mo_coeff.conj(),
+                        ovlp_ao,
+                        mf.mo_coeff,
+                        optimize=True)
     ovlp_mu = np.einsum("Rm,R->m", Theta, grid_inst.weights, optimize=True)
     orbitals_mo_interp = orbitals_mo[interp_indx]
     ovlp_isdf = np.einsum(
@@ -204,9 +215,12 @@ def test_G_vector_mapping_double_translation():
     kpts = cell.make_kpts(kmesh)
 
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
-    G_vecs, G_map, G_unique, delta_Gs = build_G_vector_mappings_double_translation(
-        cell, kpts, momentum_map
-    )
+    (
+        G_vecs,
+        G_map,
+        G_unique,
+        _,
+    ) = build_G_vector_mappings_double_translation(cell, kpts, momentum_map)
     num_kpts = len(kpts)
     for iq in range(num_kpts):
         for ikp in range(num_kpts):
@@ -247,21 +261,23 @@ def test_G_vector_mapping_single_translation():
     kpts = cell.make_kpts(kmesh)
     num_kpts = len(kpts)
 
-    momentum_map = build_momentum_transfer_mapping(cell, kpts)
+    kpts_pq = np.array([(kp, kpts[ikq])
+                        for ikp, kp in enumerate(kpts)
+                        for ikq in range(num_kpts)])
 
-    kpts_pq = np.array(
-        [(kp, kpts[ikq]) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)]
-    )
-
-    kpts_pq_indx = np.array(
-        [(ikp, ikq) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)]
-    )
+    kpts_pq_indx = np.array([
+        (ikp, ikq) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)
+    ])
     transfers = kpts_pq[:, 0] - kpts_pq[:, 1]
-    assert len(transfers) == (nk**3) ** 2
-    unique_q, unique_indx, unique_inverse = unique(transfers)
-    G_vecs, G_map, G_unique, delta_Gs = build_G_vector_mappings_single_translation(
-        cell, kpts, kpts_pq_indx[unique_indx]
-    )
+    assert len(transfers) == (nk**3)**2
+    _, unique_indx, _ = unique(transfers)
+    (
+        _,
+        _,
+        G_unique,
+        delta_Gs,
+    ) = build_G_vector_mappings_single_translation(cell, kpts,
+                                                   kpts_pq_indx[unique_indx])
     kconserv = get_kconserv(cell, kpts)
     for ikp in range(num_kpts):
         for ikq in range(num_kpts):
@@ -305,7 +321,11 @@ def test_kpoint_isdf_double_translation():
     num_mo = mf.mo_coeff[0].shape[-1]
     num_thc = np.prod(cell.mesh)
     kpt_thc = solve_kmeans_kpisdf(
-        mf, num_thc, use_density_guess=True, verbose=False, single_translation=False
+        mf,
+        num_thc,
+        use_density_guess=True,
+        verbose=False,
+        single_translation=False,
     )
     num_kpts = len(momentum_map)
     for iq in range(1, num_kpts):
@@ -314,7 +334,7 @@ def test_kpoint_isdf_double_translation():
             Gpq = kpt_thc.G_mapping[iq, ikp]
             for iks in range(num_kpts):
                 ikr = momentum_map[iq, iks]
-                Gsr = kpt_thc.G_mapping[iq, iks]
+                _ = kpt_thc.G_mapping[iq, iks]
                 kpt_pqrs = [kpts[ikp], kpts[ikq], kpts[ikr], kpts[iks]]
                 mos_pqrs = [
                     mf.mo_coeff[ikp],
@@ -322,9 +342,9 @@ def test_kpoint_isdf_double_translation():
                     mf.mo_coeff[ikr],
                     mf.mo_coeff[iks],
                 ]
-                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs, compact=False).reshape(
-                    (num_mo,) * 4
-                )
+                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs,
+                                            compact=False).reshape(
+                                                (num_mo,) * 4)
                 eri_pqrs_isdf = build_eri_isdf_double_translation(
                     kpt_thc.chi,
                     kpt_thc.zeta,
@@ -360,13 +380,17 @@ def test_kpoint_isdf_single_translation():
     num_thc = np.prod(cell.mesh)
     num_kpts = len(kpts)
     kpt_thc = solve_kmeans_kpisdf(
-        mf, num_thc, use_density_guess=True, verbose=False, single_translation=True
+        mf,
+        num_thc,
+        use_density_guess=True,
+        verbose=False,
+        single_translation=True,
     )
-    kpts_pq = np.array(
-        [(kp, kpts[ikq]) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)]
-    )
+    kpts_pq = np.array([(kp, kpts[ikq])
+                        for ikp, kp in enumerate(kpts)
+                        for ikq in range(num_kpts)])
     transfers = kpts_pq[:, 0] - kpts_pq[:, 1]
-    unique_q, unique_indx, unique_inverse = unique(transfers)
+    _ , unique_indx, _ = unique(transfers)
     kconserv = get_kconserv(cell, kpts)
     num_mo = mf.mo_coeff[0].shape[-1]
     for ikp in range(num_kpts):
@@ -380,9 +404,9 @@ def test_kpoint_isdf_single_translation():
                     mf.mo_coeff[ikr],
                     mf.mo_coeff[iks],
                 ]
-                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs, compact=False).reshape(
-                    (num_mo,) * 4
-                )
+                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs,
+                                            compact=False).reshape(
+                                                (num_mo,) * 4)
                 q = kpts[ikp] - kpts[ikq]
                 qindx = member(q, transfers[unique_indx])[0]
                 eri_pqrs_isdf = build_eri_isdf_single_translation(
@@ -423,18 +447,23 @@ def test_kpoint_isdf_symmetries():
     mf = scf.KRHF(cell, kpts)
     mf.kernel()
     num_thc = np.prod(
-        cell.mesh
-    )  # should be no THC error when selecting all the grid points.
+        cell.mesh)  # should be no THC error when selecting all the grid points.
     kpt_thc = solve_kmeans_kpisdf(
-        mf, num_thc, use_density_guess=True, verbose=False, single_translation=False
+        mf,
+        num_thc,
+        use_density_guess=True,
+        verbose=False,
+        single_translation=False,
     )
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
-    G_vecs, G_map, G_unique, delta_Gs = build_G_vector_mappings_double_translation(
-        cell, kpts, momentum_map
-    )
-    minus_Q_G_map, minus_Q_G_map_unique = build_minus_Q_G_mapping(
-        cell, kpts, momentum_map
-    )
+    (
+        G_vecs,
+        G_map,
+        G_unique,
+        delta_Gs,
+    ) = build_G_vector_mappings_double_translation(cell, kpts, momentum_map)
+    _, minus_Q_G_map_unique = build_minus_Q_G_mapping(
+        cell, kpts, momentum_map)
     num_kpts = len(kpts)
     # Test symmetries from Appendix D of https://arxiv.org/pdf/2302.05531.pdf
     # Test LHS for sanity too (need to uncomment)
@@ -453,9 +482,8 @@ def test_kpoint_isdf_symmetries():
                 iGsr = G_unique[iq, ik_prime]
                 ik_prime_minus_q = momentum_map[iq, ik_prime]
                 # Sanity check G mappings
-                assert np.allclose(
-                    kpts[ik] - kpts[ik_minus_q] - kpts[iq], delta_Gs[iq][iGpq]
-                )
+                assert np.allclose(kpts[ik] - kpts[ik_minus_q] - kpts[iq],
+                                   delta_Gs[iq][iGpq])
                 assert np.allclose(
                     kpts[ik_prime] - kpts[ik_prime_minus_q] - kpts[iq],
                     delta_Gs[iq][iGsr],
@@ -473,11 +501,8 @@ def test_kpoint_isdf_symmetries():
                 # Now check how to index into correct G when Q is conjugated
                 # Get actual G vector.
                 G_pq = G_vecs[G_map[iq, ik]]
-                # Convert to miller indx
-                miller_Gpq = get_miller(lattice_vectors, G_pq)
                 # ditto for sr pair
                 G_sr = G_vecs[G_map[iq, ik_prime]]
-                miller_Gsr = get_miller(lattice_vectors, G_sr)
                 # We want to find (-Q) + G_pq_comp + (Q + Gpq) = 0, Q + Gpq = kp - kq = q
                 # so G_pq_comp = -((-Q) + (Q+Gpq))
                 iGpq_comp = minus_Q_G_map_unique[minus_iq, ik]
@@ -536,9 +561,12 @@ def test_symmetry_of_G_maps():
     kmesh = [3, 3, 3]
     kpts = cell.make_kpts(kmesh)
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
-    G_vecs, G_map, G_unique, delta_Gs = build_G_vector_mappings_double_translation(
-        cell, kpts, momentum_map
-    )
+    (
+        G_vecs,
+        G_map,
+        _,
+        delta_Gs,
+    ) = build_G_vector_mappings_double_translation(cell, kpts, momentum_map)
     G_dict, _ = build_G_vectors(cell)
     num_kpts = len(kpts)
     lattice_vectors = cell.lattice_vectors()
@@ -552,7 +580,6 @@ def test_symmetry_of_G_maps():
             ik_minus_q = momentum_map[iq, ik]
             Gpq = G_vecs[G_map[iq, ik]]
             Gpq_comp = -(kpts[minus_iq] + kpts[iq] + Gpq)
-            miller_Gpq_comp = get_miller(lattice_vectors, Gpq_comp)
             miller_Gpq = get_miller(lattice_vectors, Gpq)
             iGpq_comp = G_dict[tuple(get_miller(lattice_vectors, Gpq_comp))]
             G_indx_unique = [
@@ -562,14 +589,7 @@ def test_symmetry_of_G_maps():
             if iq == 1:
                 pass
             assert iGpq_comp in G_indx_unique
-            if iq == 1:
-                indx = np.where(iGpq_comp == np.array(G_indx_unique))[0]
             for ik_prime in range(num_kpts):
-                Gsr = G_vecs[G_map[iq, ik_prime]]
-                Gsr_comp = -(kpts[minus_iq] + kpts[iq] + Gsr)
-                comp_miller_Gpq = get_complement(miller_Gpq, kmesh)
-                # if np.linalg.norm(miller_Gpq_comp-comp_miller_Gpq) > 1e-12:
-                # print(iq, miller_Gpq, comp_miller_Gpq, miller_Gpq_comp)
                 # Check complement(miller_Gpq) = miller_Gpq_comp
                 # Get indx of "complement" G in original set of 27
                 iGsr_comp = G_dict[tuple(get_miller(lattice_vectors, Gpq_comp))]
@@ -579,14 +599,12 @@ def test_symmetry_of_G_maps():
 
     # Check minus Q mapping
     minus_Q_G_map, minus_Q_G_map_unique = build_minus_Q_G_mapping(
-        cell, kpts, momentum_map
-    )
+        cell, kpts, momentum_map)
     for iq in range(1, num_kpts):
         minus_iq = minus_k_map[iq]
         for ik in range(num_kpts):
             Gpq = G_vecs[G_map[iq, ik]]
             Gpq_comp = -(kpts[minus_iq] + kpts[iq] + Gpq)
-            miller_Gpq_comp = get_miller(lattice_vectors, Gpq_comp)
             iGpq_comp = G_dict[tuple(get_miller(lattice_vectors, Gpq_comp))]
             assert iGpq_comp == minus_Q_G_map[minus_iq, ik]
             indx_in_unique_set = minus_Q_G_map_unique[minus_iq, ik]
@@ -624,10 +642,8 @@ def test_isdf_qrcp():
     for iq in range(1, num_kpts):
         for ikp in range(num_kpts):
             ikq = momentum_map[iq, ikp]
-            Gpq = kpt_thc.G_mapping[iq, ikp]
             for iks in range(num_kpts):
                 ikr = momentum_map[iq, iks]
-                Gsr = kpt_thc.G_mapping[iq, iks]
                 kpt_pqrs = [kpts[ikp], kpts[ikq], kpts[ikr], kpts[iks]]
                 mos_pqrs = [
                     mf.mo_coeff[ikp],
@@ -635,9 +651,9 @@ def test_isdf_qrcp():
                     mf.mo_coeff[ikr],
                     mf.mo_coeff[iks],
                 ]
-                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs, compact=False).reshape(
-                    (num_mo,) * 4
-                )
+                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs,
+                                            compact=False).reshape(
+                                                (num_mo,) * 4)
                 eri_pqrs_isdf = build_eri_isdf_double_translation(
                     kpt_thc.chi,
                     kpt_thc.zeta,

@@ -28,13 +28,18 @@ def test_pbc_resources():
     nmo = 10
     np.random.seed(7)
     pbc_resources = PBCResources(
-        "pbc", num_spin_orbitals=nmo, num_kpts=12, dE=1e-7, chi=13, exact_energy=-13.3
+        "pbc",
+        num_spin_orbitals=nmo,
+        num_kpts=12,
+        dE=1e-7,
+        chi=13,
+        exact_energy=-13.3,
     )
     for cutoff in np.logspace(-1, -3, 5):
         lv = np.random.random(3)
-        lambdas = HamiltonianProperties(
-            lambda_total=lv[0], lambda_one_body=lv[1], lambda_two_body=lv[2]
-        )
+        lambdas = HamiltonianProperties(lambda_total=lv[0],
+                                        lambda_one_body=lv[1],
+                                        lambda_two_body=lv[2])
         resource = ResourceEstimates(
             toffolis_per_step=np.random.randint(0, 1000),
             total_toffolis=np.random.randint(0, 1000),
@@ -78,7 +83,8 @@ def test_momentum_transfer_map():
         for j, k1 in enumerate(kpts):
             k2 = kpts[mom_map[i, j]]
             test = Q - k1 + k2
-            assert np.amin(np.abs(test[None, :] - cell.Gv - kpts[0][None, :])) < 1e-15
+            assert (np.amin(np.abs(test[None, :] - cell.Gv - kpts[0][None, :]))
+                    < 1e-15)
 
 
 def test_qr2():

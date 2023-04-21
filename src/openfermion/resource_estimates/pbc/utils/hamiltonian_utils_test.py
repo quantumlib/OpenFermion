@@ -21,7 +21,8 @@ from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
     build_hamiltonian,
     cholesky_from_df_ints,
 )
-from openfermion.resource_estimates.pbc.utils.test_utils import make_diamond_113_szv
+from openfermion.resource_estimates.pbc.utils.test_utils import (
+    make_diamond_113_szv,)
 
 
 def test_build_hamiltonian():
@@ -64,10 +65,13 @@ def test_pyscf_chol_from_df():
 
     Ltest = _init_mp_df_eris(mymp)
     for ik, jk in itertools.product(range(nkpts), repeat=2):
-        assert np.allclose(Luv[ik, jk][:, :nocc, nocc:], Ltest[ik, jk], atol=1e-12)
+        assert np.allclose(Luv[ik, jk][:, :nocc, nocc:],
+                           Ltest[ik, jk],
+                           atol=1e-12)
 
     # 3. Test that the DF integrals have correct vvvv block (vv)
-    Ivvvv = np.zeros((nkpts, nkpts, nkpts, nvir, nvir, nvir, nvir), dtype=np.complex128)
+    Ivvvv = np.zeros((nkpts, nkpts, nkpts, nvir, nvir, nvir, nvir),
+                     dtype=np.complex128)
     for ik, jk, kk in itertools.product(range(nkpts), repeat=3):
         lk = mymp.khelper.kconserv[ik, jk, kk]
         Lij = Luv[ik, jk][:, nocc:, nocc:]
@@ -77,4 +81,6 @@ def test_pyscf_chol_from_df():
 
     mycc = cc.KRCCSD(mf)
     eris = mycc.ao2mo()
-    assert np.allclose(eris.vvvv, Ivvvv.transpose(0, 2, 1, 3, 5, 4, 6), atol=1e-12)
+    assert np.allclose(eris.vvvv,
+                       Ivvvv.transpose(0, 2, 1, 3, 5, 4, 6),
+                       atol=1e-12)

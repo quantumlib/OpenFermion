@@ -15,7 +15,8 @@ import pytest
 
 from pyscf.pbc import gto, scf, cc
 
-from openfermion.resource_estimates.pbc.thc.utils.isdf import solve_kmeans_kpisdf
+from openfermion.resource_estimates.pbc.thc.utils.isdf import (
+    solve_kmeans_kpisdf,)
 from openfermion.resource_estimates.pbc.thc.integral_helper_thc import (
     KPTHCHelperDoubleTranslation,
     KPTHCHelperSingleTranslation,
@@ -50,7 +51,6 @@ def test_thc_helper():
 
     approx_cc = cc.KRCCSD(mf)
     approx_cc.verbose = 0
-    nmo_k = mf.mo_coeff[0].shape[-1]
     kpt_thc = solve_kmeans_kpisdf(
         mf,
         np.prod(cell.mesh),  # Use the whole grid to avoid any precision issues
@@ -60,8 +60,7 @@ def test_thc_helper():
 
     helper = KPTHCHelperDoubleTranslation(kpt_thc.chi, kpt_thc.zeta, mf)
     from openfermion.resource_estimates.pbc.utils.cc_helper import (
-        build_approximate_eris,
-    )
+        build_approximate_eris,)
 
     num_kpts = len(mf.kpts)
     for iq in range(num_kpts):
@@ -69,30 +68,31 @@ def test_thc_helper():
             ik_minus_q = helper.k_transfer_map[iq, ik]
             for ik_prime in range(num_kpts):
                 ik_prime_minus_q = helper.k_transfer_map[iq, ik_prime]
-                eri_thc = helper.get_eri([ik, ik_minus_q, ik_prime_minus_q, ik_prime])
+                eri_thc = helper.get_eri(
+                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime])
                 eri_exact = helper.get_eri_exact(
-                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime]
-                )
+                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime])
                 assert np.allclose(eri_thc, eri_exact)
 
     eris_approx = build_approximate_eris(approx_cc, helper)
     emp2, _, _ = approx_cc.init_amps(eris_approx)
     assert np.isclose(emp2, exact_emp2)
-    kpt_thc = solve_kmeans_kpisdf(mf, np.prod(cell.mesh), single_translation=True)
+    kpt_thc = solve_kmeans_kpisdf(mf,
+                                  np.prod(cell.mesh),
+                                  single_translation=True)
     helper = KPTHCHelperSingleTranslation(kpt_thc.chi, kpt_thc.zeta, mf)
     from openfermion.resource_estimates.pbc.utils.cc_helper import (
-        build_approximate_eris,
-    )
+        build_approximate_eris,)
 
     for iq in range(num_kpts):
         for ik in range(num_kpts):
             ik_minus_q = helper.k_transfer_map[iq, ik]
             for ik_prime in range(num_kpts):
                 ik_prime_minus_q = helper.k_transfer_map[iq, ik_prime]
-                eri_thc = helper.get_eri([ik, ik_minus_q, ik_prime_minus_q, ik_prime])
+                eri_thc = helper.get_eri(
+                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime])
                 eri_exact = helper.get_eri_exact(
-                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime]
-                )
+                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime])
                 assert np.allclose(eri_thc, eri_exact)
 
     eris_approx = build_approximate_eris(approx_cc, helper)

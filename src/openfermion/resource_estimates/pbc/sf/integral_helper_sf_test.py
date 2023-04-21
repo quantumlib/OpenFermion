@@ -13,15 +13,15 @@
 import numpy as np
 from pyscf.pbc import mp, cc
 import pytest
-from openfermion.resource_estimates.pbc.utils.cc_helper import build_approximate_eris
+from openfermion.resource_estimates.pbc.utils.cc_helper import (
+    build_approximate_eris,)
 
 from openfermion.resource_estimates.pbc.sf.integral_helper_sf import (
-    SingleFactorizationHelper,
-)
+    SingleFactorizationHelper,)
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    cholesky_from_df_ints,
-)
-from openfermion.resource_estimates.pbc.utils.test_utils import make_diamond_113_szv
+    cholesky_from_df_ints,)
+from openfermion.resource_estimates.pbc.utils.test_utils import (
+    make_diamond_113_szv,)
 
 
 def test_sf_helper_trunc():
