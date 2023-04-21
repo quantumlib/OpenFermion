@@ -284,7 +284,7 @@ from openfermion.testing import (
     assert_implements_consistent_protocols,
 )
 
-from openfermion.third_party import (
+from openfermion.contrib import (
     fixed_trace_positive_projection,
     map_to_tensor,
     map_to_matrix,

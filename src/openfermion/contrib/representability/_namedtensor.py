@@ -1,7 +1,7 @@
 from typing import Iterable, Generator, Optional, Union
 from itertools import zip_longest
 import numpy as np
-from openfermion.third_party.representability._bijections import Bijection, \
+from openfermion.contrib.representability._bijections import Bijection, \
     index_index_basis
 
 

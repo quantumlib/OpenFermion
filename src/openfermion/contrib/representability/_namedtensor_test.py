@@ -1,9 +1,9 @@
 from itertools import product
 import numpy as np
 import pytest
-from openfermion.third_party.representability._bijections import Bijection, \
+from openfermion.contrib.representability._bijections import Bijection, \
     index_index_basis, index_tuple_basis
-from openfermion.third_party.representability._namedtensor import Tensor
+from openfermion.contrib.representability._namedtensor import Tensor
 
 
 def test_namedtensor_initialization():
