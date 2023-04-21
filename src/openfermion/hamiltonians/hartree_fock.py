@@ -8,7 +8,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 from itertools import product
 import numpy as np
 import scipy as sp
-from scipy.optimize.optimize import OptimizeResult
+from scipy.optimize import OptimizeResult
 from openfermion.ops.representations import (InteractionOperator,
                                              InteractionRDM,
                                              general_basis_change)
