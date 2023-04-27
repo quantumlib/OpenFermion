@@ -59,7 +59,7 @@ class Tensor(object):
 
     def __call__(self, *indices):
         """
-        Index into the the data by passing through the basis first
+        Index into the data by passing through the basis first
 
         :param indices: indices for the rev_bas
         :return: element of the data

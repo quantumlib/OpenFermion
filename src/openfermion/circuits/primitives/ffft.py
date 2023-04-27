@@ -187,7 +187,7 @@ def ffft(qubits: Sequence[cirq.Qid]) -> cirq.OP_TREE:
         qubits: Sequence of qubits that the FFFT circuit will be generated for.
             This sequence represents a sequence of consecutive creation
             operators under big-endian encoded JWT representation. The indices
-            assignment is significant since it it used to define the FFFT
+            assignment is significant since it used to define the FFFT
             operation itself. The input sequence is assumed to have nearest
             neighbourhood connectivity.
 
