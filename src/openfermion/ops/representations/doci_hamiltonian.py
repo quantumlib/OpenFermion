@@ -380,7 +380,7 @@ class DOCIHamiltonian(PolynomialTensor):
            )
         )
 
-        but this method attemps to create integrals that conform to the
+        but this method attempts to create integrals that conform to the
         same symmetries as a physical electronic structure Hamiltonian would,
         with inevitable loss of information due to the ambiguity above.
 

@@ -31,7 +31,7 @@ def chemist_ordered(fermion_operator):
     TODO: This routine can be made more efficient.
 
     Args:
-        fermion_operator (FermionOperator): a fermion operator guarenteed to
+        fermion_operator (FermionOperator): a fermion operator guaranteed to
             have number conserving one- and two-body fermion terms only.
     Returns:
         chemist_ordered_operator (FermionOperator): the input operator
