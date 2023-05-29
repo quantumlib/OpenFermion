@@ -1,0 +1,7 @@
+pip-tools
+
+-r mypy.txt
+-r pytest.txt
+-r format.txt
+-r pylint.txt
+-r packaging.txt
