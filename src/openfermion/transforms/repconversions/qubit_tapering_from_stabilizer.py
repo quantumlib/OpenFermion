@@ -38,7 +38,7 @@ def check_commuting_stabilizers(stabilizer_list, msg, thres=EQ_TOLERANCE):
     If two stabilizers anti-commute their product
     will have an imaginary coefficient.
     This function checks the list of stabilizers (QubitOperator)
-    and raises and error if a complex number is found in
+    and raises an error if a complex number is found in
     any of the coefficients.
 
     Args:

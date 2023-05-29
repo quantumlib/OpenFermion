@@ -192,7 +192,7 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
 
 
 def apply_operator(args):
-    """Helper funtion to apply opeartor to a vector."""
+    """Helper function to apply operator to a vector."""
     operator, vec = args
     return operator * vec
 

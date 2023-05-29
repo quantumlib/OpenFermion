@@ -37,9 +37,9 @@ class DiagonalCoulombHamiltonian:
     """
 
     def __init__(self, one_body, two_body, constant=0.):
-        if two_body.dtype != numpy.float:
+        if two_body.dtype != numpy.float64:
             raise ValueError('Two-body tensor has invalid dtype. Expected {} '
-                             'but was {}'.format(numpy.float, two_body.dtype))
+                             'but was {}'.format(numpy.float64, two_body.dtype))
         if not numpy.allclose(two_body, two_body.T):
             raise ValueError('Two-body tensor must be symmetric.')
         if not numpy.allclose(one_body, one_body.T.conj()):

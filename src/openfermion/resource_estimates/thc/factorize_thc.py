@@ -21,7 +21,7 @@ def thc_via_cp3(eri_full,
     """
     THC-CP3 performs an SVD decomposition of the eri matrix followed by a CP
     decomposition via pybtas. The CP decomposition is assumes the tensor is
-    symmetric in in the first two indices corresponding to a reshaped
+    symmetric in the first two indices corresponding to a reshaped
     (and rescaled by the singular value) singular vector.
 
     Args:

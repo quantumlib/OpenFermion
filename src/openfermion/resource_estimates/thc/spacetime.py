@@ -199,7 +199,7 @@ def qubit_vs_toffoli(lam,
     # This is increasing the running number of permanent ancillas by 2 for the
     #  ν=M+1 flag qubit and the success flag qubit.
     perm = perm + 2
-    # The number of temporary qubits used in this computation is the the same
+    # The number of temporary qubits used in this computation is the same
     # as the number of Toffolis plus one.
     qu2 = perm + nM**2 + nM
     # The Toffoli cost of computing the contiguous register.

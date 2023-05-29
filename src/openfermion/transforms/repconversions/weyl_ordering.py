@@ -130,7 +130,7 @@ def symmetric_ordering(operator, ignore_coeff=True, ignore_identity=True):
             the returned operator is always Hermitian.
             If set to False, then instead the coefficients are taken into
             account; S(q^m p^n) = a S(q^m p^n). In this case, if
-            a is a complex coefficient, it is not guaranteed that the
+            a is a complex coefficient, it is not guaranteed that
             the returned operator will be Hermitian.
         ignore_identity (bool): By default, identity terms are ignore;
             S(I) = 0. If set to False, then instead S(I) = I.

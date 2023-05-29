@@ -48,7 +48,7 @@ docker run -it openfermion_docker
 
 With this command the terminal enters a new environment which emulates Ubuntu with
 OpenFermion and accessories installed. To transfer files from somewhere on the disk to the Docker
-container, first run `docker ps` in a seperate terminal from the one running
+container, first run `docker ps` in a separate terminal from the one running
 Docker. This returns a list of running containers, e.g.:
 
 ```
