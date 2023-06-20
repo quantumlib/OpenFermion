@@ -15,6 +15,5 @@ import pytest
 try:
     import pyscf
 except (ImportError, ModuleNotFoundError) as err:
-    pytest.skip(
-        f"Need pyscf for PBC resource estimates {err}", allow_module_level=True
-    )
+    pytest.skip(f"Need pyscf for PBC resource estimates {err}",
+                allow_module_level=True)
