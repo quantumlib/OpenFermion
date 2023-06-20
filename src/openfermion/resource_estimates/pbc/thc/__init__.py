@@ -17,3 +17,13 @@ try:
 except (ImportError, ModuleNotFoundError) as err:
     pytest.skip(f"Need pyscf for PBC resource estimates {err}",
                 allow_module_level=True)
+
+from .compute_lambda_thc import compute_lambda
+from .compute_thc_resources import compute_cost
+from .integral_helper_thc import (
+    KPTHCHelperDoubleTranslation,
+    KPTHCHelperSingleTranslation,
+)
+from .generate_costing_table_thc import generate_costing_table
+from .utils.isdf import solve_kmeans_kpisdf
+from .utils.thc_jax import kpoint_thc_via_isdf

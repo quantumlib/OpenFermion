@@ -17,3 +17,8 @@ try:
 except (ImportError, ModuleNotFoundError) as err:
     pytest.skip(f"Need pyscf for PBC resource estimates {err}",
                 allow_module_level=True)
+
+from .compute_lambda_sf import compute_lambda
+from .compute_sf_resources import compute_cost
+from .integral_helper_sf import SingleFactorizationHelper
+from .generate_costing_table_sf import generate_costing_table
