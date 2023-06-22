@@ -28,8 +28,9 @@ stream.readline()
 long_description += stream.read()
 
 # Read in package requirements.txt
-requirements = open('requirements.txt').readlines()
+requirements = open('dev_tools/requirements/deps/runtime.txt').readlines()
 requirements = [r.strip() for r in requirements]
+requirements = [r for r in requirements if not r.startswith('#')]
 
 docs_files_gen = os.walk('docs')
 docs_data_files_tuples = []

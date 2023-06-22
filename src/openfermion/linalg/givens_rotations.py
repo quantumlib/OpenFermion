@@ -112,7 +112,7 @@ def givens_rotate(operator, givens_rotation, i, j, which='row'):
 def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
     """Apply a double Givens rotation.
 
-    Applies a Givens rotation to coordinates i and j and the the conjugate
+    Applies a Givens rotation to coordinates i and j and the conjugate
     Givens rotation to coordinates n + i and n + j, where
     n = dim(operator) / 2. dim(operator) must be even.
     """
