@@ -15,12 +15,15 @@ import pytest
 
 from pyscf.pbc import gto, scf, cc
 
-from openfermion.resource_estimates.pbc.thc.utils.isdf import (
+from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     solve_kmeans_kpisdf,)
-from openfermion.resource_estimates.pbc.thc.integral_helper_thc import (
-    KPTHCHelperDoubleTranslation,
-    KPTHCHelperSingleTranslation,
+from openfermion.resource_estimates.pbc.thc.thc_integrals import (
+    KPTHCDoubleTranslation,
+    KPTHCSingleTranslation,
 )
+from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
+    build_approximate_eris,)
+
 
 
 def test_thc_helper():
@@ -58,9 +61,7 @@ def test_thc_helper():
         use_density_guess=True,
     )
 
-    helper = KPTHCHelperDoubleTranslation(kpt_thc.chi, kpt_thc.zeta, mf)
-    from openfermion.resource_estimates.pbc.utils.cc_helper import (
-        build_approximate_eris,)
+    helper = KPTHCDoubleTranslation(kpt_thc.chi, kpt_thc.zeta, mf)
 
     num_kpts = len(mf.kpts)
     for iq in range(num_kpts):
@@ -80,10 +81,7 @@ def test_thc_helper():
     kpt_thc = solve_kmeans_kpisdf(mf,
                                   np.prod(cell.mesh),
                                   single_translation=True)
-    helper = KPTHCHelperSingleTranslation(kpt_thc.chi, kpt_thc.zeta, mf)
-    from openfermion.resource_estimates.pbc.utils.cc_helper import (
-        build_approximate_eris,)
-
+    helper = KPTHCSingleTranslation(kpt_thc.chi, kpt_thc.zeta, mf)
     for iq in range(num_kpts):
         for ik in range(num_kpts):
             ik_minus_q = helper.k_transfer_map[iq, ik]

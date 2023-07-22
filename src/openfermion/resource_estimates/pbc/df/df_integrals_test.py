@@ -16,11 +16,11 @@ import numpy as np
 
 from pyscf.pbc import mp
 
-from openfermion.resource_estimates.pbc.utils.test_utils import (
+from openfermion.resource_estimates.pbc.testing import (
     make_diamond_113_szv,)
-from openfermion.resource_estimates.pbc.df.integral_helper_df import (
+from openfermion.resource_estimates.pbc.df.df_integrals import (
     DFABKpointIntegrals,)
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     cholesky_from_df_ints,)
 
 

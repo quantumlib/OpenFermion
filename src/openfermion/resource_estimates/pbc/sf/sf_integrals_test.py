@@ -13,14 +13,14 @@
 import numpy as np
 from pyscf.pbc import mp, cc
 import pytest
-from openfermion.resource_estimates.pbc.utils.cc_helper import (
+from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
     build_approximate_eris,)
 
-from openfermion.resource_estimates.pbc.sf.integral_helper_sf import (
-    SingleFactorizationHelper,)
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.sf.sf_integrals import (
+    SingleFactorization,)
+from openfermion.resource_estimates.pbc.hamiltonian import (
     cholesky_from_df_ints,)
-from openfermion.resource_estimates.pbc.utils.test_utils import (
+from openfermion.resource_estimates.pbc.testing import (
     make_diamond_113_szv,)
 
 
@@ -38,7 +38,7 @@ def test_sf_helper_trunc():
     print(" naux  error (Eh)")
     approx_cc = cc.KRCCSD(mf)
     approx_cc.verbose = 4
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=10)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
 
     eris = build_approximate_eris(approx_cc, helper)
     emp2, _, _ = approx_cc.init_amps(eris)
@@ -48,7 +48,7 @@ def test_sf_helper_trunc():
     emp2_2, _, _ = approx_cc.init_amps(out_eris)
     assert not np.isclose(emp2, exact_emp2)
     assert np.isclose(emp2, emp2_2)
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=5)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=5)
     out_eris = build_approximate_eris(approx_cc, helper)
     emp2_2, _, _ = approx_cc.init_amps(out_eris)
     assert not np.isclose(emp2, exact_emp2)
@@ -58,7 +58,7 @@ def test_sf_helper_trunc():
     assert not np.isclose(emp2, exact_emp2)
     assert np.isclose(emp2_2, emp2_3)
 
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=naux)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=naux)
     out_eris = build_approximate_eris(approx_cc, helper)
     emp2, _, _ = approx_cc.init_amps(out_eris)
     assert np.isclose(emp2, exact_emp2)

@@ -16,19 +16,18 @@ import numpy.typing as npt
 
 from pyscf.pbc import scf
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_momentum_transfer_mapping,)
 
 
 # Single-Factorization
-class SingleFactorizationHelper:
+class SingleFactorization:
 
     def __init__(self,
                  cholesky_factor: npt.NDArray,
                  kmf: scf.HF,
                  naux: int = None):
-        """Initialize a ERI object for CCSD from Cholesky factors and a
-            pyscf mean-field object
+        """Class defining single-factorized ERIs.
 
         Args:
             cholesky_factor: Cholesky factor tensor that is
@@ -50,12 +49,12 @@ class SingleFactorizationHelper:
         self.k_transfer_map = k_transfer_map
 
     def build_AB_from_chol(self, qidx: int):
-        """Construct A and B matrices given Q-kpt idx.  This constructs
-        all matrices association with n-chol
+        """Construct A and B matrices given Q-kpt idx.
+        
+        This constructs all matrices association with n-chol
 
         Args:
-          qidx: index for momentum mode Q.
-          qidx: int:
+            qidx: index for momentum mode Q.
 
         Returns:
             A:  A matrix of size [naux, nmo * kpts, nmk * kpts]
@@ -82,7 +81,6 @@ class SingleFactorizationHelper:
         A = 0.5 * (rho + rho.transpose((0, 2, 1)).conj())
         B = 0.5j * (rho - rho.transpose((0, 2, 1)).conj())
 
-        # assert np.allclose(rho, A + -1j * B)  # This can be removed later
         return A, B
 
     def get_eri(self, ikpts: list, check_eq=False):
@@ -91,10 +89,10 @@ class SingleFactorizationHelper:
         Note: 3-tensor L_{sks, rkr} = L_{rkr, sks}^{*}
 
         Args:
-          ikpts: list of four integers representing the index of the kpoint
-            in self.kmf.kpts
-          check_eq: optional value to confirm a symmetry in the Cholesky vectors
-          (Default value = False)
+            ikpts: list of four integers representing the index of the kpoint
+                in self.kmf.kpts
+            check_eq: optional value to confirm a symmetry in the Cholesky vectors
+                (Default value = False)
 
         Returns:
             eri: ([pkp][qkq]|[rkr][sks])

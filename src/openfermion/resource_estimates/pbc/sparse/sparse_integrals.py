@@ -18,7 +18,7 @@ import numpy.typing as npt
 from pyscf.pbc import scf
 from pyscf.pbc.lib.kpts_helper import KptsHelper, loop_kkk
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_momentum_transfer_mapping,)
 
 
@@ -45,6 +45,7 @@ def unique_iter(nmo):
 
 def _pq_rs_two_body_terms(quad):
     """kp = kq and kr = ks
+
     thus a subset of the four-fold symmetry can be applied
     (pkp, qkp|rkr, skr) = (qkp,pkp|skr,rkr) by complex conjucation
     """
@@ -63,6 +64,7 @@ def unique_iter_pq_rs(nmo):
 
 def _ps_qr_two_body_terms(quad):
     """kp = ks and kq = kr
+
     Thus a subset of the four-fold symmetry can be applied
     (pkp,qkq|rkq,skp) -> (skp,rkq|qkq,pkp) by complex conj and dummy index
     exchange
@@ -82,6 +84,7 @@ def unique_iter_ps_qr(nmo):
 
 def _pr_qs_two_body_terms(quad):
     """kp = kr and kq = ks
+
     Thus a subset of the four-fold symmetry can be applied
     (pkp,qkq|rkp,skq) -> (rkp,skq|pkp,rkq) by dummy index exchange
     """
@@ -98,14 +101,13 @@ def unique_iter_pr_qs(nmo):
             yield tuple(quad)
 
 
-class SparseFactorizationHelper:
+class SparseFactorization:
 
     def __init__(self,
                  cholesky_factor: np.ndarray,
                  kmf: scf.HF,
                  threshold=1.0e-14):
-        """Initialize a ERI object for CCSD from Cholesky factors and a
-            pyscf mean-field object
+        """Initialize a ERI object for CCSD from sparse integrals. 
 
         Args:
             cholesky_factor: Cholesky factor tensor that is
@@ -128,8 +130,9 @@ class SparseFactorizationHelper:
 
     def get_total_unique_terms_above_thresh(self, return_nk_counter=False
                                            ) -> Union[int, Tuple[int, int]]:
-        """Determine all unique (pkp, qkq|rkr, sks) given momentum conservation
-        and four fold symmetry
+        """Determine all unique (pkp, qkq|rkr, sks).
+        
+        Accounts for momentum conservation and four fold symmetry.
 
         Args:
             return_nk_counter: Return number of visited k-points.
@@ -235,10 +238,10 @@ class SparseFactorizationHelper:
         Note: 3-tensor L_{sks, rkr} = L_{rkr, sks}^{*}
 
         Arguments:
-          ikpts: list of four integers representing the index of the kpoint in
-            self.kmf.kpts
-          check_eq: optional value to confirm a symmetry in the Cholesky
-            vectors. (Default value = False)
+            ikpts: list of four integers representing the index of the kpoint in
+                self.kmf.kpts
+            check_eq: optional value to confirm a symmetry in the Cholesky
+                vectors. (Default value = False)
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])
@@ -276,8 +279,8 @@ class SparseFactorizationHelper:
         one-body component lambda.
 
         Args:
-          kpts: list of four integers representing the index of the kpoint
-            in self.kmf.kpts
+            kpts: list of four integers representing the index of the kpoint
+                in self.kmf.kpts
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])

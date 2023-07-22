@@ -17,18 +17,18 @@ import numpy.typing as npt
 from pyscf.pbc import scf
 from pyscf.pbc.lib.kpts_helper import unique, member
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_momentum_transfer_mapping,)
 
-from openfermion.resource_estimates.pbc.thc.utils.isdf import (
-    build_G_vector_mappings_double_translation,
-    build_G_vector_mappings_single_translation,
+from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
+    build_g_vector_mappings_double_translation,
+    build_g_vector_mappings_single_translation,
     build_eri_isdf_double_translation,
     build_eri_isdf_single_translation,
 )
 
 
-class KPTHCHelperDoubleTranslation:
+class KPTHCDoubleTranslation:
 
     def __init__(
             self,
@@ -65,9 +65,9 @@ class KPTHCHelperDoubleTranslation:
                 kmq_idx = self.k_transfer_map[qidx, kidx]
                 self.reverse_k_transfer_map[kidx, kmq_idx] = qidx
         # Two-translation ISDF zeta[iq, dG, dG']
-        _, _, G_map_unique, _ = build_G_vector_mappings_double_translation(
+        _, _, g_map_unique, _ = build_g_vector_mappings_double_translation(
             self.kmf.cell, self.kmf.kpts, self.k_transfer_map)
-        self.G_mapping = G_map_unique
+        self.g_mapping = g_map_unique
         self.chol = chol
 
     def get_eri(self, ikpts: list) -> npt.NDArray:
@@ -85,7 +85,7 @@ class KPTHCHelperDoubleTranslation:
         ikp, ikq, _, _ = ikpts
         q_indx = self.reverse_k_transfer_map[ikp, ikq]
         return build_eri_isdf_double_translation(self.chi, self.zeta, q_indx,
-                                                 ikpts, self.G_mapping)
+                                                 ikpts, self.g_mapping)
 
     def get_eri_exact(self, kpts: list) -> npt.NDArray:
         """Construct (pkp qkq| rkr sks) exactly from cholesky factors.
@@ -118,7 +118,7 @@ class KPTHCHelperDoubleTranslation:
         return eri_kpt
 
 
-class KPTHCHelperSingleTranslation(KPTHCHelperDoubleTranslation):
+class KPTHCSingleTranslation(KPTHCDoubleTranslation):
 
     def __init__(
             self,
@@ -126,9 +126,9 @@ class KPTHCHelperSingleTranslation(KPTHCHelperDoubleTranslation):
             zeta: npt.NDArray,
             kmf: scf.HF,
     ):
-        """
-        Initialize a ERI object for CCSD from KP-THC factors and a
-        pyscf mean-field object
+        """Class defining THC integrals.
+
+        Assumes one delta G (i.e. a single translation vector.)
 
         Arguments:
             chi: array of interpolating orbitals of shape
@@ -155,20 +155,26 @@ class KPTHCHelperSingleTranslation(KPTHCHelperDoubleTranslation):
         (
             _,
             _,
-            G_map_unique,
+            g_map_unique,
             _,
-        ) = build_G_vector_mappings_single_translation(
+        ) = build_g_vector_mappings_single_translation(
             kmf.cell, kpts, kpts_pq_indx[unique_indx])
-        self.G_mapping = G_map_unique
+        self.g_mapping = g_map_unique
         self.momentum_transfers = transfers[unique_indx]
 
     def get_eri(self, ikpts):
-        """Construct (pkp qkq| rkr sks) via \\sum_{mu nu} zeta[iq, dG, mu, nu]
-            chi[kp,p,mu]* chi[kq,q,mu] chi[kp,p,nu]* chi[ks,s,nu]
+        """Construct (pkp qkq| rkr sks)
+        
+        Evaluated via
+
+        .. math::
+
+            \\sum_{mu nu} zeta[iq, dG, mu, nu]
+                chi[kp,p,mu]* chi[kq,q,mu] chi[kp,p,nu]* chi[ks,s,nu]
 
         Arguments:
-          kpts: list of four integers representing the index of the kpoint in
-            self.kmf.kpts
+            kpts: list of four integers representing the index of the kpoint in
+                self.kmf.kpts
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])
@@ -177,14 +183,14 @@ class KPTHCHelperSingleTranslation(KPTHCHelperDoubleTranslation):
         mom_transfer = self.kpts[ikp] - self.kpts[ikq]
         q_indx = member(mom_transfer, self.momentum_transfers)[0]
         return build_eri_isdf_single_translation(self.chi, self.zeta, q_indx,
-                                                 ikpts, self.G_mapping)
+                                                 ikpts, self.g_mapping)
 
     def get_eri_exact(self, kpts):
         """Construct (pkp qkq| rkr sks) exactly from cholesky factors.
 
         Arguments:
-          kpts: list of four integers representing the index of the kpoint in
-            self.kmf.kpts
+            kpts: list of four integers representing the index of the kpoint in
+                self.kmf.kpts
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])

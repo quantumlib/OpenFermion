@@ -17,7 +17,7 @@ import numpy.typing as npt
 
 from pyscf.pbc import scf
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_momentum_transfer_mapping,)
 
 
@@ -55,8 +55,7 @@ def get_df_factor(mat: npt.NDArray, thresh: float, verify_adjoint: bool = False
 class DFABKpointIntegrals:
 
     def __init__(self, cholesky_factor: npt.NDArray, kmf: scf.HF):
-        """Initialize a ERI object for CCSD from Cholesky factors and a
-        pyscf mean-field object
+        """Class defining double factorized ERIs.
 
         We need to form the A and B objects which are indexed by Cholesky index
         n and momentum mode Q. This is accomplished by constructing rho[Q, n,
@@ -94,7 +93,7 @@ class DFABKpointIntegrals:
         self.b_mats = None
 
     def build_A_B_n_q_k_from_chol(self, qidx, kidx):
-        """Builds matrices that are block in two momentum indices
+        """Builds matrices that are blocks in two momentum indices
 
               k  | k-Q |
             ------------
@@ -104,11 +103,11 @@ class DFABKpointIntegrals:
         ----------------
 
         where the off diagonal blocks are the ones that are populated.  All
-        matrices for every Cholesky vector is constructed.
+        matrices for every Cholesky vector are constructed.
 
         Args:
-          qidx: index for momentum mode Q.
-          kidx: index for momentum mode K.
+            qidx: index for momentum mode Q.
+            kidx: index for momentum mode K.
 
         Returns:
             Amat: A matrix
@@ -145,18 +144,17 @@ class DFABKpointIntegrals:
             Amats: npt.NDArray,
             Bmats: npt.NDArray,
     ) -> npt.NDArray:
-        """Construct rho_{n, k, Q} which is equal to the cholesky factor by
-        summing together via the following relationships
+        r"""Construct rho_{n, k, Q}.
 
         Args:
-          kidx: k-momentum index
-          qidx: Q-momentum index
-          Amats: naux, 2 * nmo, 2 * nmo]
-          Bmats: naux, 2 * nmo, 2 * nmo]
+            kidx: k-momentum index
+            qidx: Q-momentum index
+            Amats: naux, 2 * nmo, 2 * nmo]
+            Bmats: naux, 2 * nmo, 2 * nmo]
 
         Returns:
-          cholesky factors 3-tensors (k, k-Q)[naux, nao, nao],
-            (kp, kp-Q)[naux, nao, nao]
+            cholesky factors: 3-tensors (k, k-Q)[naux, nao, nao],
+                (kp, kp-Q)[naux, nao, nao]
 
         """
         k_minus_q_idx = self.k_transfer_map[qidx, kidx]
@@ -167,14 +165,14 @@ class DFABKpointIntegrals:
             return Amats[:, :nmo, nmo:] + -1j * Bmats[:, :nmo, nmo:]
 
     def double_factorize(self, thresh=None) -> None:
-        """construct a double factorization of the Hamiltonian.
+        """Construct a double factorization of the Hamiltonian.
 
         Iterate through qidx, kidx and get factorized Amat and Bmat for each
         Cholesky rank
 
         Args:
-          thresh: Double factorization eigenvalue threshold
-            (Default value = None)
+            thresh: Double factorization eigenvalue threshold
+                (Default value = None)
         """
         if thresh is None:
             thresh = 1.0e-13
@@ -205,15 +203,12 @@ class DFABKpointIntegrals:
                     bmat_n_eigv @ np.diag(bmat_n_eigs) @ bmat_n_eigv.conj().T)
                 self.bmat_lambda_vecs[kidx, qidx, nc] = bmat_n_eigs
 
-        return
-
     def get_eri(self, ikpts: list) -> npt.NDArray:
-        """Construct (pkp qkq| rkr sks) via A and B tensors that have already
-        been constructed
+        """Construct (pkp qkq| rkr sks) via A and B tensors.
 
         Args:
-          ikpts: list of four integers representing the index of the kpoint in
-            self.kmf.kpts
+            ikpts: list of four integers representing the index of the kpoint in
+                self.kmf.kpts
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])
@@ -237,13 +232,14 @@ class DFABKpointIntegrals:
         )
 
     def get_eri_exact(self, ikpts: list) -> npt.NDArray:
-        """Construct (pkp qkq| rkr sks) exactly from Cholesky vector.  This is
-        for constructing the J and K like terms needed for the one-body
+        """Construct (pkp qkq| rkr sks) exactly from Cholesky vector.
+        
+        This is for constructing the J and K like terms needed for the one-body
         component lambda
 
         Args:
-          ikpts: list of four integers representing the index of the kpoint in
-          self.kmf.kpts
+            ikpts: list of four integers representing the index of the kpoint in
+                self.kmf.kpts
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])

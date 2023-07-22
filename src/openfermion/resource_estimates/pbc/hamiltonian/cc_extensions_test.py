@@ -18,19 +18,19 @@ from pyscf.lib import chkfile
 import pytest
 import numpy as np
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     cholesky_from_df_ints,)
-from openfermion.resource_estimates.pbc.utils.cc_helper import (
+from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
     build_approximate_eris_rohf,
     build_approximate_eris,
 )
-from openfermion.resource_estimates.pbc.sf.integral_helper_sf import (
-    SingleFactorizationHelper,)
+from openfermion.resource_estimates.pbc.sf.sf_integrals import (
+    SingleFactorization,)
 
 _TEST_CHK = os.path.join(os.path.dirname(__file__), "../test_data/scf.chk")
 
 
-def test_cc_helper_rohf():
+def test_cc_extension_rohf():
     cell = gto.Cell()
     cell.atom = """
     C 0.000000000000   0.000000000000   0.000000000000
@@ -66,7 +66,7 @@ def test_cc_helper_rohf():
     emp2_ref, _, _ = cc_inst.init_amps(eris)
     ref_eris = _make_df_eris(cc_inst)
 
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf)
     test_eris = build_approximate_eris_rohf(cc_inst, helper)
     eri_blocks = [
         "OOOO",
@@ -95,7 +95,7 @@ def test_cc_helper_rohf():
     assert abs(emp2_approx - emp2_ref) < 1e-12
 
     # Test MP2 energy is the different when truncated
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=10)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris_approx = build_approximate_eris_rohf(cc_inst, helper)
     for block in eri_blocks:
         assert not np.allclose(test_eris_approx.__dict__[block][:],
@@ -107,14 +107,14 @@ def test_cc_helper_rohf():
     cc_exact = KUCCSD(u_from_ro)
     ecc_exact, _, _ = cc_exact.kernel()
     cc_approx = KUCCSD(u_from_ro)
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf)
     test_eris = build_approximate_eris_rohf(cc_approx, helper)
     cc_approx.ao2mo = lambda mo_coeff=None: test_eris
     emp2_approx, _, _ = cc_approx.init_amps(test_eris)
     ecc_approx, _, _ = cc_approx.kernel()
     assert abs(ecc_exact - ecc_approx) < 1e-12
     # Should be different
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=10)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris = build_approximate_eris_rohf(cc_approx, helper)
     for block in eri_blocks:
         assert not np.allclose(test_eris.__dict__[block][:],
@@ -166,7 +166,7 @@ def test_cc_helper_rhf():
     ref_eris = cc_inst.ao2mo()
     emp2_ref, _, _ = cc_inst.init_amps(ref_eris)
 
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf)
     test_eris = build_approximate_eris(cc_inst, helper)
     eri_blocks = [
         "oooo",
@@ -184,7 +184,7 @@ def test_cc_helper_rhf():
     assert abs(emp2_approx - emp2_ref) < 1e-12
 
     # Test MP2 energy is the different when truncated
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=10)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris_approx = build_approximate_eris(cc_inst, helper)
     for block in eri_blocks:
         assert not np.allclose(test_eris_approx.__dict__[block][:],
@@ -196,14 +196,14 @@ def test_cc_helper_rhf():
     cc_exact = KRCCSD(mf)
     ecc_exact, _, _ = cc_exact.kernel()
     cc_approx = KRCCSD(mf)
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf)
     test_eris = build_approximate_eris(cc_approx, helper)
     cc_approx.ao2mo = lambda mo_coeff=None: test_eris
     emp2_approx, _, _ = cc_approx.init_amps(test_eris)
     ecc_approx, _, _ = cc_approx.kernel()
     assert abs(ecc_exact - ecc_approx) < 1e-12
     # Should be different
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf, naux=10)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris = build_approximate_eris(cc_approx, helper)
     for block in eri_blocks:
         assert not np.allclose(test_eris.__dict__[block][:],

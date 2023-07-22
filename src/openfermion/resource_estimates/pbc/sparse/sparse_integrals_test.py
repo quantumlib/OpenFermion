@@ -13,17 +13,16 @@
 import numpy as np
 from pyscf.pbc import mp
 
-from openfermion.resource_estimates.pbc.sparse.integral_helper_sparse import (
-    SparseFactorizationHelper,)
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     cholesky_from_df_ints,)
-from openfermion.resource_estimates.pbc.utils.test_utils import (
+from openfermion.resource_estimates.pbc.testing.test_systems import (
     make_diamond_113_szv,)
-from openfermion.resource_estimates.pbc.sparse.integral_helper_sparse import (
+from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
     unique_iter,
     unique_iter_pr_qs,
     unique_iter_ps_qr,
     unique_iter_pq_rs,
+    SparseFactorization
 )
 
 
@@ -33,7 +32,7 @@ def test_sparse_int_obj():
     Luv = cholesky_from_df_ints(mymp)
     for thresh in [1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6]:
         abs_sum_coeffs = 0
-        helper = SparseFactorizationHelper(cholesky_factor=Luv,
+        helper = SparseFactorization(cholesky_factor=Luv,
                                            kmf=mf,
                                            threshold=thresh)
         nkpts = len(mf.kpts)
@@ -54,7 +53,7 @@ def test_get_num_unique():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
     Luv = cholesky_from_df_ints(mymp)
-    helper = SparseFactorizationHelper(cholesky_factor=Luv, kmf=mf)
+    helper = SparseFactorization(cholesky_factor=Luv, kmf=mf)
 
     import itertools
     from pyscf.pbc.lib.kpts_helper import KptsHelper, loop_kkk
