@@ -96,7 +96,7 @@ def build_transfer_map(kmesh, scaled_kpts):
         transfer map satisfying k1 - k2 + G = Q in matrix form map[Q, k1] = k2
     """
     nkpts = len(scaled_kpts)
-    delta_k1_k2_q_int = get_delta_kp_kq_Q(scaled_kpts)
+    delta_k1_k2_q_int = get_delta_kp_kq_q(scaled_kpts)
     transfer_map = np.zeros((nkpts, nkpts), dtype=np.int32)
     for kpidx, kqidx, qidx in itertools.product(range(nkpts), repeat=3):
         # explicitly build my transfer matrix

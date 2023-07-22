@@ -14,7 +14,7 @@ import itertools
 import numpy as np
 from openfermion.resource_estimates.pbc.thc.utils.gvec_logic import (
     get_miller_indices,
-    get_delta_kp_kq_Q,
+    get_delta_kp_kq_q,
     build_transfer_map,
     build_G_vectors,
     build_gpq_mapping,
@@ -39,7 +39,7 @@ def test_get_delta_k1_k2_Q():
     kmesh = [3, 2, 1]
     nkpts = np.prod(kmesh)
     scaled_kpts = get_miller_indices(kmesh)
-    delta_k1_k2_Q_int = get_delta_kp_kq_Q(scaled_kpts)
+    delta_k1_k2_Q_int = get_delta_kp_kq_q(scaled_kpts)
     assert delta_k1_k2_Q_int.shape == (nkpts, nkpts, nkpts, 3)
     for kpidx, kqidx, qidx in itertools.product(range(nkpts), repeat=3):
         assert np.allclose(

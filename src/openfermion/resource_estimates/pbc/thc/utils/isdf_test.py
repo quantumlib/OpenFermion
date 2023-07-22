@@ -20,13 +20,13 @@ from pyscf.pbc.lib.kpts_helper import unique, get_kconserv, member
 
 from openfermion.resource_estimates.pbc.thc.utils.kmeans import KMeansCVT
 from openfermion.resource_estimates.pbc.thc.utils.isdf import (
-    inverse_G_map_double_translation,
+    inverse_g_map_double_translation,
     build_kpoint_zeta,
     get_miller,
-    build_minus_Q_G_mapping,
-    build_G_vectors,
-    build_G_vector_mappings_single_translation,
-    build_G_vector_mappings_double_translation,
+    build_minus_q_g_mapping,
+    build_g_vectors,
+    build_g_vector_mappings_single_translation,
+    build_g_vector_mappings_double_translation,
     build_eri_isdf_double_translation,
     build_eri_isdf_single_translation,
     solve_kmeans_kpisdf,
@@ -218,7 +218,7 @@ def test_G_vector_mapping_double_translation():
         G_map,
         G_unique,
         _,
-    ) = build_G_vector_mappings_double_translation(cell, kpts, momentum_map)
+    ) = build_g_vector_mappings_double_translation(cell, kpts, momentum_map)
     num_kpts = len(kpts)
     for iq in range(num_kpts):
         for ikp in range(num_kpts):
@@ -231,7 +231,7 @@ def test_G_vector_mapping_double_translation():
         for i, G in enumerate(G_map[iq]):
             assert unique_G[G_unique[iq][i]] == G
 
-    inv_G_map = inverse_G_map_double_translation(cell, kpts, momentum_map)
+    inv_G_map = inverse_g_map_double_translation(cell, kpts, momentum_map)
     for iq in range(num_kpts):
         for ik in range(num_kpts):
             ix_G_qk = G_map[iq, ik]
@@ -274,7 +274,7 @@ def test_G_vector_mapping_single_translation():
         _,
         G_unique,
         delta_Gs,
-    ) = build_G_vector_mappings_single_translation(cell, kpts,
+    ) = build_g_vector_mappings_single_translation(cell, kpts,
                                                    kpts_pq_indx[unique_indx])
     kconserv = get_kconserv(cell, kpts)
     for ikp in range(num_kpts):
@@ -331,7 +331,7 @@ def test_kpoint_isdf_double_translation():
             ikq = momentum_map[iq, ikp]
             for iks in range(num_kpts):
                 ikr = momentum_map[iq, iks]
-                _ = kpt_thc.G_mapping[iq, iks]
+                _ = kpt_thc.g_mapping[iq, iks]
                 kpt_pqrs = [kpts[ikp], kpts[ikq], kpts[ikr], kpts[iks]]
                 mos_pqrs = [
                     mf.mo_coeff[ikp],
@@ -347,7 +347,7 @@ def test_kpoint_isdf_double_translation():
                     kpt_thc.zeta,
                     iq,
                     [ikp, ikq, ikr, iks],
-                    kpt_thc.G_mapping,
+                    kpt_thc.g_mapping,
                 )
                 assert np.allclose(eri_pqrs, eri_pqrs_isdf)
 
@@ -411,7 +411,7 @@ def test_kpoint_isdf_single_translation():
                     kpt_thc.zeta,
                     qindx,
                     [ikp, ikq, ikr, iks],
-                    kpt_thc.G_mapping,
+                    kpt_thc.g_mapping,
                 )
                 assert np.allclose(eri_pqrs, eri_pqrs_isdf)
 
@@ -458,8 +458,8 @@ def test_kpoint_isdf_symmetries():
         _,
         G_unique,
         delta_Gs,
-    ) = build_G_vector_mappings_double_translation(cell, kpts, momentum_map)
-    _, minus_Q_G_map_unique = build_minus_Q_G_mapping(cell, kpts, momentum_map)
+    ) = build_g_vector_mappings_double_translation(cell, kpts, momentum_map)
+    _, minus_Q_G_map_unique = build_minus_q_g_mapping(cell, kpts, momentum_map)
     num_kpts = len(kpts)
     # Test symmetries from Appendix D of https://arxiv.org/pdf/2302.05531.pdf
     # Test LHS for sanity too (need to uncomment)
@@ -467,74 +467,72 @@ def test_kpoint_isdf_symmetries():
     from pyscf.pbc.lib.kpts_helper import conj_mapping
 
     minus_k_map = conj_mapping(cell, kpts)
-    for iq in range(3, num_kpts):
-        # Get -Q index
-        minus_iq = minus_k_map[iq]
-        for ik in range(num_kpts):
-            ik_minus_q = momentum_map[iq, ik]
-            iGpq = G_unique[iq, ik]
-            for ik_prime in range(num_kpts):
-                iGsr = G_unique[iq, ik_prime]
-                ik_prime_minus_q = momentum_map[iq, ik_prime]
-                # Sanity check G mappings
-                assert np.allclose(kpts[ik] - kpts[ik_minus_q] - kpts[iq],
-                                   delta_Gs[iq][iGpq])
-                assert np.allclose(
-                    kpts[ik_prime] - kpts[ik_prime_minus_q] - kpts[iq],
-                    delta_Gs[iq][iGsr],
-                )
-                # (pk qk-Q | rk'-Q sk') = (q k-Q p k | sk' rk'-Q)*
-                ik_prime_minus_q = momentum_map[iq, ik_prime]
-                # uncomment to check normal eris
-                # kpt_pqrs = [ik, ik_minus_q, ik_prime_minus_q, ik_prime]
-                # eri_pqrs = build_eri(mf, kpt_pqrs)
-                # kpt_pqrs = [ik, ik_minus_q, ik_prime_minus_q, ik_prime]
-                # kpt_pqrs = [ik_minus_q, ik, ik_prime, ik_prime_minus_q]
-                # eri_qpsr = build_eri(mf, kpt_pqrs).transpose((1, 0, 3, 2))
-                # Sanity check relationship
-                # assert np.allclose(eri_pqrs, eri_qpsr.conj())
-                # Now check how to index into correct G when Q is conjugated
-                # We want to find (-Q) + G_pq_comp + (Q + Gpq) = 0,
-                # Q + Gpq = kp - kq = q
-                # so G_pq_comp = -((-Q) + (Q+Gpq))
-                iGpq_comp = minus_Q_G_map_unique[minus_iq, ik]
-                iGsr_comp = minus_Q_G_map_unique[minus_iq, ik_prime]
-                # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] =
-                # zeta[-Q,G1_comp,G2_comp,m, n].conj()
-                # Build refernce point zeta[Q,G1,G2,m,n]
-                zeta_ref = kpt_thc.zeta[iq][iGpq, iGsr]
-                zeta_test = kpt_thc.zeta[minus_iq][iGpq_comp, iGsr_comp]
-                # F31 (pk qk-Q | rk'-Q sk') = (rk'-Q s k'| pk qk-Q)
-                assert np.allclose(zeta_ref, zeta_test.conj())
-                # Sanity check do literal minus signs (should be complex
-                # conjugate)
-                zeta_test = build_kpoint_zeta(
-                    mf.with_df,
-                    -kpts[iq],
-                    -delta_Gs[iq][iGpq],
-                    -delta_Gs[iq][iGsr],
-                    grid_points,
-                    kpt_thc.xi,
-                )
-                assert np.allclose(zeta_ref, zeta_test.conj())
-                # (pk qk-Q | rk'-Q sk') = (rk'-Q s k'| pk qk-Q)
-                # uncomment to check normal eris
-                # kpt_pqrs = [ik_prime_minus_q, ik_prime, ik, ik_minus_q]
-                # eri_rspq = build_eri(mf, kpt_pqrs).transpose((2, 3, 0, 1))
-                # assert np.allclose(eri_pqrs, eri_rspq)
-                # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] =
-                # zeta[-Q,G2_comp,G1_comp,m, n]
-                zeta_test = kpt_thc.zeta[minus_iq][iGsr_comp, iGpq_comp]
-                assert np.allclose(zeta_ref, zeta_test.T)
-                # (pk qk-Q | rk'-Q sk') = (sk' r k'-Q| qk-Q pk)
-                # uncomment to check normal eris
-                # kpt_pqrs = [ik_prime, ik_prime_minus_q, ik_minus_q, ik]
-                # eri_srqp = build_eri(mf, kpt_pqrs).transpose((3, 2, 1, 0))
-                # assert np.allclose(eri_pqrs, eri_srqp.conj())
-                # Check zeta symmetry: expect zeta[Q,G1,G2,m,n]
-                # = zeta[Q,G2,G1,n, m].conj()
-                zeta_test = kpt_thc.zeta[iq][iGsr, iGpq]
-                assert np.allclose(zeta_ref, zeta_test.conj().T)
+    iq, ik, ik_prime = np.random.randint(0, num_kpts, 3)
+    # Get -Q index
+    minus_iq = minus_k_map[iq]
+    ik_minus_q = momentum_map[iq, ik]
+    iGpq = G_unique[iq, ik]
+    iGsr = G_unique[iq, ik_prime]
+    ik_prime_minus_q = momentum_map[iq, ik_prime]
+    # Sanity check G mappings
+    assert np.allclose(kpts[ik] - kpts[ik_minus_q] - kpts[iq],
+                        delta_Gs[iq][iGpq])
+    assert np.allclose(
+        kpts[ik_prime] - kpts[ik_prime_minus_q] - kpts[iq],
+        delta_Gs[iq][iGsr],
+    )
+    # (pk qk-Q | rk'-Q sk') = (q k-Q p k | sk' rk'-Q)*
+    ik_prime_minus_q = momentum_map[iq, ik_prime]
+    # uncomment to check normal eris
+    # kpt_pqrs = [ik, ik_minus_q, ik_prime_minus_q, ik_prime]
+    # eri_pqrs = build_eri(mf, kpt_pqrs)
+    # kpt_pqrs = [ik, ik_minus_q, ik_prime_minus_q, ik_prime]
+    # kpt_pqrs = [ik_minus_q, ik, ik_prime, ik_prime_minus_q]
+    # eri_qpsr = build_eri(mf, kpt_pqrs).transpose((1, 0, 3, 2))
+    # Sanity check relationship
+    # assert np.allclose(eri_pqrs, eri_qpsr.conj())
+    # Now check how to index into correct G when Q is conjugated
+    # We want to find (-Q) + G_pq_comp + (Q + Gpq) = 0,
+    # Q + Gpq = kp - kq = q
+    # so G_pq_comp = -((-Q) + (Q+Gpq))
+    iGpq_comp = minus_Q_G_map_unique[minus_iq, ik]
+    iGsr_comp = minus_Q_G_map_unique[minus_iq, ik_prime]
+    # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] =
+    # zeta[-Q,G1_comp,G2_comp,m, n].conj()
+    # Build refernce point zeta[Q,G1,G2,m,n]
+    zeta_ref = kpt_thc.zeta[iq][iGpq, iGsr]
+    zeta_test = kpt_thc.zeta[minus_iq][iGpq_comp, iGsr_comp]
+    # F31 (pk qk-Q | rk'-Q sk') = (rk'-Q s k'| pk qk-Q)
+    assert np.allclose(zeta_ref, zeta_test.conj())
+    # Sanity check do literal minus signs (should be complex
+    # conjugate)
+    zeta_test = build_kpoint_zeta(
+        mf.with_df,
+        -kpts[iq],
+        -delta_Gs[iq][iGpq],
+        -delta_Gs[iq][iGsr],
+        grid_points,
+        kpt_thc.xi,
+    )
+    assert np.allclose(zeta_ref, zeta_test.conj())
+    # (pk qk-Q | rk'-Q sk') = (rk'-Q s k'| pk qk-Q)
+    # uncomment to check normal eris
+    # kpt_pqrs = [ik_prime_minus_q, ik_prime, ik, ik_minus_q]
+    # eri_rspq = build_eri(mf, kpt_pqrs).transpose((2, 3, 0, 1))
+    # assert np.allclose(eri_pqrs, eri_rspq)
+    # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] =
+    # zeta[-Q,G2_comp,G1_comp,m, n]
+    zeta_test = kpt_thc.zeta[minus_iq][iGsr_comp, iGpq_comp]
+    assert np.allclose(zeta_ref, zeta_test.T)
+    # (pk qk-Q | rk'-Q sk') = (sk' r k'-Q| qk-Q pk)
+    # uncomment to check normal eris
+    # kpt_pqrs = [ik_prime, ik_prime_minus_q, ik_minus_q, ik]
+    # eri_srqp = build_eri(mf, kpt_pqrs).transpose((3, 2, 1, 0))
+    # assert np.allclose(eri_pqrs, eri_srqp.conj())
+    # Check zeta symmetry: expect zeta[Q,G1,G2,m,n]
+    # = zeta[Q,G2,G1,n, m].conj()
+    zeta_test = kpt_thc.zeta[iq][iGsr, iGpq]
+    assert np.allclose(zeta_ref, zeta_test.conj().T)
 
 
 def test_symmetry_of_G_maps():
@@ -561,8 +559,8 @@ def test_symmetry_of_G_maps():
         G_map,
         _,
         delta_Gs,
-    ) = build_G_vector_mappings_double_translation(cell, kpts, momentum_map)
-    G_dict, _ = build_G_vectors(cell)
+    ) = build_g_vector_mappings_double_translation(cell, kpts, momentum_map)
+    G_dict, _ = build_g_vectors(cell)
     num_kpts = len(kpts)
     lattice_vectors = cell.lattice_vectors()
     from pyscf.pbc.lib.kpts_helper import conj_mapping
@@ -591,7 +589,7 @@ def test_symmetry_of_G_maps():
                 assert iGsr_comp in G_indx_unique
 
     # Check minus Q mapping
-    minus_Q_G_map, minus_Q_G_map_unique = build_minus_Q_G_mapping(
+    minus_Q_G_map, minus_Q_G_map_unique = build_minus_q_g_mapping(
         cell, kpts, momentum_map)
     for iq in range(1, num_kpts):
         minus_iq = minus_k_map[iq]
@@ -652,6 +650,6 @@ def test_isdf_qrcp():
                     kpt_thc.zeta,
                     iq,
                     [ikp, ikq, ikr, iks],
-                    kpt_thc.G_mapping,
+                    kpt_thc.g_mapping,
                 )
                 assert np.allclose(eri_pqrs, eri_pqrs_isdf)

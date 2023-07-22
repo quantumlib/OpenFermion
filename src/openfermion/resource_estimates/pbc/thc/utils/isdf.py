@@ -12,14 +12,16 @@
 #   limitations under the License.
 """Module for performing ISDF THC factorization of k-point dependent integrals.
 
-The ISDF implementation currently provides a THC-like factorization of the two
-electron integrals which should converge to the FFTDF representation of the ERIs
-in the limit of large THC rank. This differs from the assumption of using RSGDF
-throughout the rest of the resource estimation scripts. However, we typically
-are only interested in ISDF as an initial guess for the THC factors which are
-then subsequently reoptimized to regularize lambda. The assumption here is
-that FFTDF / ISDF is a good enough approximation to the RSGDF ERIs and thus
-serves as a good initial guess.
+The ISDF (interpolative separable density fitting) implementation currently
+provides a tensor hypercontraction (THC)-like factorization of the two electron
+integrals which should converge to the exact representation (fast fourier
+transform density fitting (FFTDF)) of the ERIs in the limit of large THC rank.
+This differs from the assumption of using range-separated gaussian density
+fitting (RSGDF) throughout the rest of the resource estimation scripts. However,
+we typically are only interested in ISDF as an initial guess for the THC factors
+which are then subsequently reoptimized to regularize lambda. The assumption
+here is that FFTDF / ISDF is a good enough approximation to the RSGDF ERIs and
+thus serves as a good initial guess.
 """
 
 import itertools
@@ -50,15 +52,15 @@ def check_isdf_solution(
     Very costly and should only be used for testing purposes.
 
     Args:
-      orbitals: Orbitals on full real space grid. [num_grd, num_orb]
-      interp_orbitals: interpolating orbitals (those orbitals evaluated on
-        interpolating points.) [num_interp, num_orb]
-      xi: interpolating vectors. [num_grid, num_interp]
-    Returns
-      error: |phi_{ij}(r) - \sum_m xi_m(r) phi_{ij}(r_m)
-      orbitals: npt.NDArray:
-      interp_orbitals: npt.NDArray:
-      xi: npt.NDArray:
+        orbitals: Orbitals on full real space grid. [num_grd, num_orb]
+        interp_orbitals: interpolating orbitals (those orbitals evaluated on
+            interpolating points.) [num_interp, num_orb]
+        xi: interpolating vectors. [num_grid, num_interp]
+    Returns:
+        error: |phi_{ij}(r) - \sum_m xi_m(r) phi_{ij}(r_m)
+        orbitals: npt.NDArray:
+        interp_orbitals: npt.NDArray:
+        xi: npt.NDArray:
     """
 
     lhs = np.einsum("Ri,Rj->Rij", orbitals.conj(), orbitals, optimize=True)
@@ -74,21 +76,20 @@ def solve_isdf(orbitals: npt.NDArray,
                interp_indx: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
     """Solve for interpolating vectors given interpolating points and orbitals.
 
-    Used for supercell and k-point so factor out as function.
+    Used for both supercell and k-point ISDF factorizations.
 
     Args:
-      orbitals: orbitals on a grid of shape [num_grid_points, num_orbitals]
-      interp_indx: array indexing interpolating points (subset of grid
-        points to use selected by K-Means algorithm. shape is
-        [num_interp_points].
-      orbitals: npt.NDArray:
-      interp_indx: npt.NDArray:
+        orbitals: orbitals on a grid of shape [num_grid_points, num_orbitals]
+        interp_indx: array indexing interpolating points (subset of grid
+            points to use selected by K-Means algorithm. shape is
+            [num_interp_points].
+        orbitals: npt.NDArray:
+        interp_indx: npt.NDArray:
 
     Returns:
-      tuple: (Interpolang vectors, interpolating orbitals) (xi_mu(r),
-      phi_i(r_mu)). Note xi_mu(r) is called Theta[R, mu] in keeping with
-      original ISDF notation.
-
+        tuple: (Interpolang vectors, interpolating orbitals) (xi_mu(r),
+            phi_i(r_mu)). Note xi_mu(r) is called theta[R, mu] in keeping with
+            original ISDF notation.
     """
     interp_orbitals = orbitals[interp_indx]
     # Form pseudo-densities
@@ -99,21 +100,21 @@ def solve_isdf(orbitals: npt.NDArray,
                                optimize=True)
     # [Z C^]_{J, mu} = (sum_i phi_{i, J}^* phi_{i, mu}) (sum_j phi_{j, J}
     # phi_{i, mu})
-    ZC_dag = np.einsum("Rm,Rm->Rm",
+    zc_dag = np.einsum("Rm,Rm->Rm",
                        pseudo_density,
                        pseudo_density.conj(),
                        optimize=True)
     # Just down sample from ZC_dag
-    CC_dag = ZC_dag[interp_indx].copy()
+    cc_dag = zc_dag[interp_indx].copy()
     # Solve ZC_dag = Theta CC_dag
     # Theta = ZC_dag @ CC_dag_inv
     # Solve ZC_dag = Theta CC_dag
     # -> ZC_dag^T = CC_dag^T Theta^T
     # rcond = None uses MACH_EPS * max(M,N) for least squares convergence.
-    Theta_dag, _, _, _ = np.linalg.lstsq(CC_dag.conj().T,
-                                         ZC_dag.conj().T,
+    theta_dag, _, _, _ = np.linalg.lstsq(cc_dag.conj().T,
+                                         zc_dag.conj().T,
                                          rcond=None)
-    return Theta_dag.conj().T, interp_orbitals
+    return theta_dag.conj().T, interp_orbitals
 
 
 def supercell_isdf(
@@ -132,62 +133,62 @@ def supercell_isdf(
     called xi).
 
     Args:
-      mydf: instance of pyscf.pbc.df.FFTDF object.
-      interp_indx: array indexing interpolating points determined through
-        K-Means CVT procedure. Dimension [num_interp_points]
-      orbitals: orbitals on a grid of shape [num_grid_points, num_orbitals]
-      grid_points: Real space grid. Dimension [num_grid_points, num_dim],
-        num_dim is 1, 2 or 3 for 1D, 2D, 3D.
+        mydf: instance of pyscf.pbc.df.FFTDF object.
+        interp_indx: array indexing interpolating points determined through
+            K-Means CVT procedure. Dimension [num_interp_points]
+        orbitals: orbitals on a grid of shape [num_grid_points, num_orbitals]
+        grid_points: Real space grid. Dimension [num_grid_points, num_dim],
+            num_dim is 1, 2 or 3 for 1D, 2D, 3D.
 
     Returns:
-      tuple: (chi, zeta, Theta): orbitals on interpolating
-      points, zeta (central tensor), and matrix of interpolating vectors Theta
-      of dimension [num_grid_points, num_interp_points] (also called
-      xi_mu(r)), where num_grid_points is the number of real space grid points
-      and num_interp_points is the number of interpolating points.
-
+        tuple: (chi, zeta, Theta): orbitals on interpolating
+            points, zeta (central tensor), and matrix of interpolating vectors Theta
+            of dimension [num_grid_points, num_interp_points] (also called
+            xi_mu(r)), where num_grid_points is the number of real space grid points
+            and num_interp_points is the number of interpolating points.
     """
 
     cell = mydf.cell
     num_grid_points = len(grid_points)
 
-    Theta, chi = solve_isdf(orbitals, interp_indx)
+    theta, chi = solve_isdf(orbitals, interp_indx)
 
     # FFT Theta[R, mu] -> Theta[mu, G]
     # Transpose as fft expects contiguous.
-    Theta_G = tools.fft(Theta.T, mydf.mesh)
-    coulG = tools.get_coulG(cell, k=kpoint, mesh=mydf.mesh)
-    weighted_coulG = coulG * cell.vol / num_grid_points**2.0
+    theta_g = tools.fft(theta.T, mydf.mesh)
+    coulg = tools.get_coulG(cell, k=kpoint, mesh=mydf.mesh)
+    weighted_coulg = coulg * cell.vol / num_grid_points**2.0
 
     # zeta_{mu,nu} = \sum_G 4pi/(omega * G^2) zeta_{mu,G} * (zeta_G*){nu, G}
-    Theta_G_tilde = np.einsum("iG,G->iG", Theta_G, weighted_coulG)
-    zeta = (Theta_G_tilde) @ Theta_G.conj().T
-    return chi, zeta, Theta
+    theta_g_tilde = np.einsum("iG,G->iG", theta_g, weighted_coulg)
+    zeta = (theta_g_tilde) @ theta_g.conj().T
+    return chi, zeta, theta
 
 
 def build_kpoint_zeta(
         df_inst: df.FFTDF,
-        Q: int,
-        delta_G: npt.NDArray,
-        delta_G_prime: npt.NDArray,
+        q: int,
+        delta_g: npt.NDArray,
+        delta_g_prime: npt.NDArray,
         grid_points: npt.NDArray,
         xi_mu: npt.NDArray,
 ) -> npt.NDArray:
-    """Build k-point THC zeta (central tensor) for given Q, delta_G,
-    delta_G_prime.
+    """Build k-point THC zeta (central tensor).
+    
+    Built for for given q, delta_g, delta_g_prime.
 
     Args:
-      mydf: instance of pyscf.pbc.df.FFTDF object.
-      Q: Momentum transfer (in 1BZ).
-      delta_G: Reciprocal lattice vector satisfying Q - (Q-k) = delta_G
-      delta_G_prime: Reciprocal lattice vector satisfying Q - (Q-k') = delta_G
-      grid_points: Real space grid. Dimension [num_grid_points, num_dim],
-        num_dim is 1, 2 or 3 for 1D, 2D, 3D.
-      xi_mu: array containing interpolating vectors determined during ISDF
-        procedure
+        mydf: instance of pyscf.pbc.df.FFTDF object.
+        q: Momentum transfer (in 1BZ).
+        delta_g: Reciprocal lattice vector satisfying Q - (Q-k) = delta_G
+        delta_g_prime: Reciprocal lattice vector satisfying Q - (Q-k') = delta_G
+        grid_points: Real space grid. Dimension [num_grid_points, num_dim],
+            num_dim is 1, 2 or 3 for 1D, 2D, 3D.
+        xi_mu: array containing interpolating vectors determined during ISDF
+            procedure
 
     Returns:
-      zeta: central tensor of dimension [num_interp_points, num_interp_points]
+        zeta: central tensor of dimension [num_interp_points, num_interp_points]
 
     """
     cell = df_inst.cell
@@ -195,27 +196,29 @@ def build_kpoint_zeta(
     # delta_G - delta_G_prime because we have Gpq and Gsr and Gsr = -Grs, phase
     # = Delta G = Gpq + Grs
     phase_factor = np.exp(-1j * (np.einsum(
-        "x,Rx->R", delta_G - delta_G_prime, grid_points, optimize=True)))
+        "x,Rx->R", delta_g - delta_g_prime, grid_points, optimize=True)))
     # Minus sign again due to we use Q = kp - kq, but we should have
     # V(G + k_q - k_p)
-    coulG = tools.get_coulG(cell, k=-(Q + delta_G), mesh=df_inst.mesh)
-    weighted_coulG = coulG * cell.vol / num_grid_points
-    xi_muG = tools.fft(xi_mu.T, df_inst.mesh)
-    xi_muG *= weighted_coulG
-    vR = tools.ifft(xi_muG, df_inst.mesh)
-    zeta = np.einsum("R,Rn,mR->mn", phase_factor, xi_mu, vR, optimize=True)
+    coulg = tools.get_coulG(cell, k=-(q + delta_g), mesh=df_inst.mesh)
+    weighted_coulg = coulg * cell.vol / num_grid_points
+    xi_mug = tools.fft(xi_mu.T, df_inst.mesh)
+    xi_mug *= weighted_coulg
+    vr = tools.ifft(xi_mug, df_inst.mesh)
+    zeta = np.einsum("R,Rn,mR->mn", phase_factor, xi_mu, vr, optimize=True)
     return zeta
 
 
 def build_kpoint_zeta_single_tranlsation(
         df_inst: df.FFTDF,
         q: int,
-        delta_G: npt.NDArray,
+        delta_g: npt.NDArray,
         grid_points: npt.NDArray,
         xi_mu: npt.NDArray,
 ) -> npt.NDArray:
-    """Build k-point THC zeta (central tensor) for given Q, delta_G,
-    delta_G_prime.
+    """Build k-point THC zeta (central tensor)
+
+    Built for for given q, delta_g. Note single delta_g (single translation
+    vector) in controast to the _double_translation variant above.
 
     Args:
       mydf: instance of pyscf.pbc.df.FFTDF object.
@@ -235,188 +238,188 @@ def build_kpoint_zeta_single_tranlsation(
     # delta_G - delta_G_prime because we have Gpq and Gsr and Gsr = -Grs, phase
     # = Delta G = Gpq + Grs
     phase_factor = np.exp(
-        -1j * (np.einsum("x,Rx->R", delta_G, grid_points, optimize=True)))
+        -1j * (np.einsum("x,Rx->R", delta_g, grid_points, optimize=True)))
     # Minus sign again due to we use Q = kp - kq, but we should have
     # V(G + k_q - k_p)
-    coulG = tools.get_coulG(cell, k=-q, mesh=df_inst.mesh)
-    weighted_coulG = coulG * cell.vol / num_grid_points
-    xi_muG = tools.fft(xi_mu.T, df_inst.mesh)
-    xi_muG *= weighted_coulG
-    vR = tools.ifft(xi_muG, df_inst.mesh)
-    zeta = np.einsum("R,Rn,mR->mn", phase_factor, xi_mu, vR, optimize=True)
+    coulg = tools.get_coulG(cell, k=-q, mesh=df_inst.mesh)
+    weighted_coulg = coulg * cell.vol / num_grid_points
+    xi_mug = tools.fft(xi_mu.T, df_inst.mesh)
+    xi_mug *= weighted_coulg
+    vr = tools.ifft(xi_mug, df_inst.mesh)
+    zeta = np.einsum("R,Rn,mR->mn", phase_factor, xi_mu, vr, optimize=True)
     return zeta
 
 
-def build_G_vectors(cell: gto.Cell) -> npt.NDArray:
+def build_g_vectors(cell: gto.Cell) -> npt.NDArray:
     """Build all 27 Gvectors
 
     Args:
-      cell: pyscf.pbc.gto.Cell object.
-      cell: gto.Cell:
+        cell: pyscf.pbc.gto.Cell object.
+        cell: gto.Cell:
 
     Returns:
-      tuple: G_dict a dictionary mapping miller index to appropriate
-      G_vector index and G_vectors array of 27 G_vectors shape [27, 3].
+        tuple: g_dict a dictionary mapping miller index to appropriate
+            g_vector index and g_vectors array of 27 g_vectors shape [27, 3].
 
     """
-    G_dict = {}
-    G_vectors = np.zeros((27, 3), dtype=np.float64)
+    g_dict = {}
+    g_vectors = np.zeros((27, 3), dtype=np.float64)
     lattice_vectors = cell.lattice_vectors()
     indx = 0
     for n1, n2, n3 in itertools.product(range(-1, 2), repeat=3):
-        G_dict[(n1, n2, n3)] = indx
-        G_vectors[indx] = np.einsum("n,ng->g", (n1, n2, n3),
+        g_dict[(n1, n2, n3)] = indx
+        g_vectors[indx] = np.einsum("n,ng->g", (n1, n2, n3),
                                     cell.reciprocal_vectors())
         miller_indx = np.rint(
-            np.einsum("nx,x->n", lattice_vectors, G_vectors[indx]) /
+            np.einsum("nx,x->n", lattice_vectors, g_vectors[indx]) /
             (2 * np.pi))
         assert (miller_indx == (n1, n2, n3)).all()
         indx += 1
-    return G_dict, G_vectors
+    return g_dict, g_vectors
 
 
-def find_unique_G_vectors(G_vectors: npt.NDArray, G_mapping: npt.NDArray
+def find_unique_g_vectors(g_vectors: npt.NDArray, g_mapping: npt.NDArray
                          ) -> Tuple[npt.NDArray, npt.NDArray]:
     """Find all unique G-vectors and build mapping to original set.
 
     Args:
-      G_vectors: array of 27 G-vectors.
-      G_mapping: array of 27 G-vectors.
+        g_vectors: array of 27 g-vectors.
+        g_mapping: array of 27 g-vectors.
 
     Returns:
-      unique_G_index in range [0,...,num_unique_Gs[iq]], and delta_Gs are the
-      unique G-vectors of size [num_qpoints, num_unique_Gs[iq]].
+      unique_g_index in range [0,...,num_unique_gs[iq]], and delta_gs are the
+        unique g-vectors of size [num_qpoints, num_unique_gs[iq]].
 
     """
-    unique_mapping = np.zeros_like(G_mapping)
-    num_qpoints = G_mapping.shape[0]
-    delta_Gs = np.zeros((num_qpoints,), dtype=object)
+    unique_mapping = np.zeros_like(g_mapping)
+    num_qpoints = g_mapping.shape[0]
+    delta_gs = np.zeros((num_qpoints,), dtype=object)
     for iq in range(num_qpoints):
-        unique_G = np.unique(G_mapping[iq])
-        delta_Gs[iq] = G_vectors[unique_G]
-        # Build map to unique index
+        unique_g = np.unique(g_mapping[iq])
+        delta_gs[iq] = g_vectors[unique_g]
+        # build map to unique index
         unique_mapping[iq] = [
-            ix for el in G_mapping[iq] for ix in np.where(unique_G == el)[0]
+            ix for el in g_mapping[iq] for ix in np.where(unique_g == el)[0]
         ]
 
-    return unique_mapping, delta_Gs
+    return unique_mapping, delta_gs
 
 
-def build_G_vector_mappings_double_translation(
+def build_g_vector_mappings_double_translation(
         cell: gto.Cell,
         kpts: npt.NDArray,
         momentum_map: npt.NDArray,
 ) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
-    """Build G-vector mappings that map k-point differences to 1BZ.
+    """build g-vector mappings that map k-point differences to 1bz.
 
-    Args:
-      cell: pyscf.pbc.gto.Cell object.
+    args:
+      cell: pyscf.pbc.gto.cell object.
       kpts: array of kpoints.
-      momentum_map: momentum mapping to satisfy Q = (k_p - k_q) mod G.
+      momentum_map: momentum mapping to satisfy q = (k_p - k_q) mod g.
         momentum_map[iq, ikp] = ikq.
 
-    Returns:
-      tuple: (G_vectors, Gpq_mapping, Gpq_mapping_unique, delta_Gs), G_vectors
+    returns:
+      tuple: (g_vectors, gpq_mapping, gpq_mapping_unique, delta_gs), g_vectors
         is a list of all 27
-      G-vectors and Gpq_mapping[iq, kp] = indx_Gpq, where Gpq = kpts[ikp] -
-      kpts[ikq] - kpts[iq], i.e. returns index to G-vector (consistent with
-      G_vectors) satisfying this condition. Gpq_mapping_unique provides
-      mapping to unique G_vector index. Delta_gs provides compressed lists of
-      unique G vectors.
+      g-vectors and gpq_mapping[iq, kp] = indx_gpq, where gpq = kpts[ikp] -
+      kpts[ikq] - kpts[iq], i.e. returns index to g-vector (consistent with
+      g_vectors) satisfying this condition. gpq_mapping_unique provides
+      mapping to unique g_vector index. delta_gs provides compressed lists of
+      unique g vectors.
 
     """
-    G_dict, G_vectors = build_G_vectors(cell)
+    g_dict, g_vectors = build_g_vectors(cell)
     lattice_vectors = cell.lattice_vectors()
     num_kpts = len(kpts)
-    Gpq_mapping = np.zeros((num_kpts, num_kpts), dtype=np.int32)
+    gpq_mapping = np.zeros((num_kpts, num_kpts), dtype=np.int32)
     num_kpts = len(kpts)
     for iq in range(num_kpts):
         for ikp in range(num_kpts):
             ikq = momentum_map[iq, ikp]
-            delta_Gpq = (kpts[ikp] - kpts[ikq]) - kpts[iq]
+            delta_gpq = (kpts[ikp] - kpts[ikq]) - kpts[iq]
             miller_indx = np.rint(
-                np.einsum("wx,x->w", lattice_vectors, delta_Gpq) / (2 * np.pi))
-            Gpq_mapping[iq, ikp] = G_dict[tuple(miller_indx)]
-    Gpq_mapping_unique, delta_Gs = find_unique_G_vectors(G_vectors, Gpq_mapping)
-    return G_vectors, Gpq_mapping, Gpq_mapping_unique, delta_Gs
+                np.einsum("wx,x->w", lattice_vectors, delta_gpq) / (2 * np.pi))
+            gpq_mapping[iq, ikp] = g_dict[tuple(miller_indx)]
+    gpq_mapping_unique, delta_gs = find_unique_g_vectors(g_vectors, gpq_mapping)
+    return g_vectors, gpq_mapping, gpq_mapping_unique, delta_gs
 
 
-def get_miller(lattice_vectors: npt.NDArray, G: npt.NDArray) -> npt.NDArray:
-    """Convert G to miller indx.
+def get_miller(lattice_vectors: npt.NDArray, g: npt.NDArray) -> npt.NDArray:
+    """convert g to miller indx.
 
-    Args:
-      lattice_vectors: Array of lattice vectors.
-      G: Reciprocal lattice vector.
+    args:
+      lattice_vectors: array of lattice vectors.
+      g: reciprocal lattice vector.
 
-    Returns:
-      miller_index: 3D array of miller indices.
+    returns:
+      miller_index: 3d array of miller indices.
 
     """
     miller_indx = np.rint(
-        np.einsum("wx,x->w", lattice_vectors, G) / (2 * np.pi)).astype(np.int32)
+        np.einsum("wx,x->w", lattice_vectors, g) / (2 * np.pi)).astype(np.int32)
     return miller_indx
 
 
-def build_minus_Q_G_mapping(cell: gto.Cell, kpts: npt.NDArray,
+def build_minus_q_g_mapping(cell: gto.Cell, kpts: npt.NDArray,
                             momentum_map: npt.NDArray) -> npt.NDArray:
-    """Build mapping for G that satisfied (-Q) + G + (Q + Gpq) = 0 (*)
-    and kp - kq = Q + Gpq.
+    """Build conjugat g map 
+    
+    Mapping satisfies (-Q) + G + (Q + Gpq) = 0 (*)
 
     Args:
-      cell: pyscf.pbc.gto.Cell object.
-      kpts: array of kpoints.
-      momentum_map: momentum mapping to satisfy Q = (k_p - k_q) mod G.
-        momentum_map[iq, ikp] = ikq.
+        cell: pyscf.pbc.gto.Cell object.
+        kpts: array of kpoints.
+        momentum_map: momentum mapping to satisfy q = (k_p - k_q) mod g.
+            momentum_map[iq, ikp] = ikq.
 
     Returns:
-      tuple: (minus_Q_mapping, minus_Q_mapping_unique),
-      minus_Q_mapping[indx_minus_Q, k] yields index for G satisfying (*)
-      above, where indx_minus_Q is given by indx_minus_Q = minus_k[Q], and
-      minus_k = conj_mapping(cell, kpts). minus_Q_mapping_unique indexes the
-      appropriate G vector given by delta_Gs[indx_minus_Q][indx] = G, where
-      indx = minus_Q_mapping_unique[indx_minus_Q, k], and deltaGs is built by
-      build_G_vector_mappings_double_translation.
-
+        minus_q_mapping: [indx_minus_q, k]-th element yields index for g satisfying (*)
+            above, where indx_minus_q is given by indx_minus_q = minus_k[q], and
+            minus_k = conj_mapping(cell, kpts).
+        minus_q_mapping_unique: indexes the appropriate g vector given by
+            delta_gs[indx_minus_q][indx] = g, where indx =
+            minus_q_mapping_unique[indx_minus_q, k], and deltags is built by
+            build_g_vector_mappings_double_translation.
     """
     (
-        G_vecs,
-        G_map,
+        g_vecs,
+        g_map,
         _,
-        delta_Gs,
-    ) = build_G_vector_mappings_double_translation(cell, kpts, momentum_map)
-    G_dict, _ = build_G_vectors(cell)
+        delta_gs,
+    ) = build_g_vector_mappings_double_translation(cell, kpts, momentum_map)
+    g_dict, _ = build_g_vectors(cell)
     num_kpts = len(kpts)
     lattice_vectors = cell.lattice_vectors()
     minus_k_map = conj_mapping(cell, kpts)
-    minus_Q_mapping = np.zeros((num_kpts, num_kpts), dtype=np.int32)
-    minus_Q_mapping_unique = np.zeros((num_kpts, num_kpts), dtype=np.int32)
+    minus_q_mapping = np.zeros((num_kpts, num_kpts), dtype=np.int32)
+    minus_q_mapping_unique = np.zeros((num_kpts, num_kpts), dtype=np.int32)
     for iq in range(num_kpts):
         minus_iq = minus_k_map[iq]
         for ik in range(num_kpts):
-            Gpq = G_vecs[G_map[iq, ik]]
-            # Complementary Gpq (G in (*) in docstring)
-            Gpq_comp = -(kpts[minus_iq] + kpts[iq] + Gpq)
+            gpq = g_vecs[g_map[iq, ik]]
+            # complementary gpq (g in (*) in docstring)
+            gpq_comp = -(kpts[minus_iq] + kpts[iq] + gpq)
             # find index in original set of 27
-            iGpq_comp = G_dict[tuple(get_miller(lattice_vectors, Gpq_comp))]
-            minus_Q_mapping[minus_iq, ik] = iGpq_comp
-        indx_delta_Gs = np.array([
-            G_dict[tuple(get_miller(lattice_vectors, G))]
-            for G in delta_Gs[minus_iq]
+            igpq_comp = g_dict[tuple(get_miller(lattice_vectors, gpq_comp))]
+            minus_q_mapping[minus_iq, ik] = igpq_comp
+        indx_delta_gs = np.array([
+            g_dict[tuple(get_miller(lattice_vectors, g))]
+            for g in delta_gs[minus_iq]
         ])
-        minus_Q_mapping_unique[minus_iq] = [
-            ix for el in minus_Q_mapping[minus_iq]
-            for ix in np.where(el == indx_delta_Gs)[0]
+        minus_q_mapping_unique[minus_iq] = [
+            ix for el in minus_q_mapping[minus_iq]
+            for ix in np.where(el == indx_delta_gs)[0]
         ]
 
-    return minus_Q_mapping, minus_Q_mapping_unique
+    return minus_q_mapping, minus_q_mapping_unique
 
 
-def build_G_vector_mappings_single_translation(
+def build_g_vector_mappings_single_translation(
         cell: gto.Cell,
         kpts: npt.NDArray,
         kpts_pq: npt.NDArray,
 ) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
-    """Build G-vector mappings that map k-point differences to 1BZ.
+    """Build g-vector mappings that map k-point differences to 1BZ.
 
     Args:
       cell: pyscf.pbc.gto.Cell object.
@@ -424,67 +427,63 @@ def build_G_vector_mappings_single_translation(
       kpts_pq: Unique list of kp - kq indices of shape [num_unique_pq, 2].
 
     Returns:
-      tuple: (G_vectors, Gpqr_mapping, Gpqr_mapping_unique, delta_Gs), G_vectors
-      is a list of all 27
-      G-vectors and Gpqr_mapping[iq, kr] = indx_Gpqr, where Gpqr = kpts[ikp] -
-      kpts[ikq] + kpts[ikr] - kpts[iks], i.e. returns index to G_vectors
-      (consistent with G_vectors) satisfying this condition.
-      Gpqr_mapping_unique provides
-      mapping to unique G_vector index. Delta_gs provides compressed lists of
-      unique G vectors.
+        G_vectors: list of all 27 G-vectors
+        Gpqr_mapping: [iq, kr]-th element yields indx_Gpqr, where Gpqr = kpts[ikp] -
+            kpts[ikq] + kpts[ikr] - kpts[iks], i.e. returns index to G_vectors
+            (consistent with G_vectors) satisfying this condition.
+        Gpqr_mapping_unique: provides mapping to unique G_vector index.
+        Delta_gs: provides compressed lists of unique G vectors.
 
     """
-    G_dict, G_vectors = build_G_vectors(cell)
+    g_dict, g_vectors = build_g_vectors(cell)
     lattice_vectors = cell.lattice_vectors()
     num_kpts = len(kpts)
-    Gpqr_mapping = np.zeros((len(kpts_pq), num_kpts), dtype=np.int32)
+    gpqr_mapping = np.zeros((len(kpts_pq), num_kpts), dtype=np.int32)
     kconserv = get_kconserv(cell, kpts)
     for iq, (ikp, ikq) in enumerate(kpts_pq):
         q = kpts[ikp] - kpts[ikq]
         for ikr in range(num_kpts):
             iks = kconserv[ikp, ikq, ikr]
-            delta_Gpqr = q + kpts[ikr] - kpts[iks]
-            # delta_Gpq += kpts[0]
+            delta_gpqr = q + kpts[ikr] - kpts[iks]
             miller_indx = np.rint(
-                np.einsum("wx,x->w", lattice_vectors, delta_Gpqr) / (2 * np.pi))
-            Gpqr_mapping[iq, ikr] = G_dict[tuple(miller_indx)]
+                np.einsum("wx,x->w", lattice_vectors, delta_gpqr) / (2 * np.pi))
+            gpqr_mapping[iq, ikr] = g_dict[tuple(miller_indx)]
 
-    Gpqr_mapping_unique, delta_Gs = find_unique_G_vectors(
-        G_vectors, Gpqr_mapping)
-    return G_vectors, Gpqr_mapping, Gpqr_mapping_unique, delta_Gs
+    gpqr_mapping_unique, delta_gs = find_unique_g_vectors(
+        g_vectors, gpqr_mapping)
+    return g_vectors, gpqr_mapping, gpqr_mapping_unique, delta_gs
 
 
-def inverse_G_map_double_translation(
+def inverse_g_map_double_translation(
         cell: gto.Cell,
         kpts: npt.NDArray,
         momentum_map: npt.NDArray,
 ) -> npt.NDArray:
-    """For given Q and G figure out all k which satisfy Q - k + G = 0
+    """for given q and g figure out all k which satisfy q - k + g = 0
 
     Args:
-      cell: pyscf.pbc.gto.Cell object.
-      kpts: array of kpoints.
-      momentum_map: momentum mapping to satisfy Q = (k_p - k_q) mod G.
-        momentum_map[iq, ikp] = ikq.
+        cell: pyscf.pbc.gto.Cell object.
+        kpts: array of kpoints.
+        momentum_map: momentum mapping to satisfy Q = (k_p - k_q) mod G.
+            momentum_map[iq, ikp] = ikq.
 
     Returns:
-      inverse_map: ragged numpy array. inverse_map[iq, iG] returns array
-      of size in range(0, num_kpts) and lists all k-point indices that
-      satisfy G_pq[iq, ik] = iG, i.e. an array of all ik.
-
+        inverse_map: ragged numpy array. inverse_map[iq, iG] returns array
+            of size in range(0, num_kpts) and lists all k-point indices that
+            satisfy G_pq[iq, ik] = iG, i.e. an array of all ik.
     """
-    G_dict, G_vectors = build_G_vectors(cell)
+    g_dict, g_vectors = build_g_vectors(cell)
     lattice_vectors = cell.lattice_vectors()
     num_kpts = len(kpts)
-    Gpq_mapping = np.zeros((num_kpts, num_kpts), dtype=np.int32)
+    gpq_mapping = np.zeros((num_kpts, num_kpts), dtype=np.int32)
     num_kpts = len(kpts)
     for iq in range(num_kpts):
         for ikp in range(num_kpts):
             ikq = momentum_map[iq, ikp]
-            delta_Gpq = (kpts[ikp] - kpts[ikq]) - kpts[iq]
+            delta_gpq = (kpts[ikp] - kpts[ikq]) - kpts[iq]
             miller_indx = np.rint(
-                np.einsum("wx,x->w", lattice_vectors, delta_Gpq) / (2 * np.pi))
-            Gpq_mapping[iq, ikp] = G_dict[tuple(miller_indx)]
+                np.einsum("wx,x->w", lattice_vectors, delta_gpq) / (2 * np.pi))
+            gpq_mapping[iq, ikp] = g_dict[tuple(miller_indx)]
 
     inverse_map = np.zeros(
         (
@@ -494,9 +493,9 @@ def inverse_G_map_double_translation(
         dtype=object,
     )
     for iq in range(num_kpts):
-        for iG in range(len(G_vectors)):
-            inverse_map[iq, iG] = np.array(
-                [ik for ik in range(num_kpts) if Gpq_mapping[iq, ik] == iG])
+        for ig in range(len(g_vectors)):
+            inverse_map[iq, ig] = np.array(
+                [ik for ik in range(num_kpts) if gpq_mapping[iq, ik] == ig])
 
     return inverse_map
 
@@ -506,31 +505,30 @@ def build_eri_isdf_double_translation(
         zeta: npt.NDArray,
         q_indx: int,
         kpts_indx: list,
-        G_mapping: npt.NDArray,
+        g_mapping: npt.NDArray,
 ) -> npt.NDArray:
     """Build (pkp qkq | rkr sks) from k-point ISDF factors.
 
     Args:
-      chi: array of interpolating orbitals of shape
-        [num_kpts, num_mo, num_interp_points]
-      zeta: central tensor of dimension
-        [num_kpts, num_G, num_G, num_interp_points, num_interp_points].
-      q_indx: Index of momentum transfer.
-      kpts_indx: List of kpt indices corresponding to [kp, kq, kr, ks]
-      G_mapping: array to map kpts to G vectors [q_indx, kp] = G_pq
+        chi: array of interpolating orbitals of shape
+            [num_kpts, num_mo, num_interp_points]
+        zeta: central tensor of dimension
+            [num_kpts, num_G, num_G, num_interp_points, num_interp_points].
+        q_indx: Index of momentum transfer.
+        kpts_indx: List of kpt indices corresponding to [kp, kq, kr, ks]
+        G_mapping: array to map kpts to G vectors [q_indx, kp] = G_pq
 
     Returns:
       eri:  (pkp qkq | rkr sks)
-
     """
     ikp, ikq, ikr, iks = kpts_indx
-    Gpq = G_mapping[q_indx, ikp]
-    Gsr = G_mapping[q_indx, iks]
+    gpq = g_mapping[q_indx, ikp]
+    gsr = g_mapping[q_indx, iks]
     eri = np.einsum(
         "pm,qm,mn,rn,sn->pqrs",
         chi[ikp].conj(),
         chi[ikq],
-        zeta[q_indx][Gpq, Gsr],
+        zeta[q_indx][gpq, gsr],
         chi[ikr].conj(),
         chi[iks],
         optimize=True,
@@ -543,30 +541,30 @@ def build_eri_isdf_single_translation(
         zeta: npt.NDArray,
         q_indx: int,
         kpts_indx: list,
-        G_mapping: npt.NDArray,
+        g_mapping: npt.NDArray,
 ) -> npt.NDArray:
     """Build (pkp qkq | rkr sks) from k-point ISDF factors.
 
     Args:
-      chi: array of interpolating orbitals of shape
-        [num_kpts, num_mo, num_interp_points]
-      zeta: central tensor of dimension
-        [num_kpts, num_G, num_G, num_interp_points, num_interp_points].
-      q_indx: Index of momentum transfer.
-      kpts_indx: List of kpt indices corresponding to [kp, kq, kr, ks]
-      G_mapping: array to map kpts to G vectors [q_indx, kp] = G_pq
+        chi: array of interpolating orbitals of shape
+            [num_kpts, num_mo, num_interp_points]
+        zeta: central tensor of dimension
+            [num_kpts, num_G, num_G, num_interp_points, num_interp_points].
+        q_indx: Index of momentum transfer.
+        kpts_indx: List of kpt indices corresponding to [kp, kq, kr, ks]
+        G_mapping: array to map kpts to G vectors [q_indx, kp] = G_pq
 
     Returns:
-      eri:  (pkp qkq | rkr sks)
+        eri:  (pkp qkq | rkr sks)
 
     """
     ikp, ikq, ikr, iks = kpts_indx
-    delta_G_indx = G_mapping[q_indx, ikr]
+    delta_g_indx = g_mapping[q_indx, ikr]
     eri = np.einsum(
         "pm,qm,mn,rn,sn->pqrs",
         chi[ikp].conj(),
         chi[ikq],
-        zeta[q_indx][delta_G_indx],
+        zeta[q_indx][delta_g_indx],
         chi[ikr].conj(),
         chi[iks],
         optimize=True,
@@ -580,10 +578,9 @@ def kpoint_isdf_double_translation(
         kpts: npt.NDArray,
         orbitals: npt.NDArray,
         grid_points: npt.NDArray,
-        only_unique_G: bool = True,
+        only_unique_g: bool = True,
 ) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
-    r"""
-    Build kpoint ISDF-THC tensors.
+    r"""Build kpoint ISDF-THC tensors.
 
     Given the orbitals evaluated on a (dense) real space grid, and a set of
     interpolating points (indexed  by interp_indx) determine the interpolating
@@ -595,31 +592,31 @@ def kpoint_isdf_double_translation(
     the unique G's which satisfiy this expression rather than all 27^2.
 
     Args:
-      df_inst: instance of pyscf.pbc.df.FFTDF object.
-      interp_indx: array indexing interpolating points determined through
-        K-Means CVT procedure. Dimension [num_interp_points]
-      kpts: Array of k-points.
-      orbitals: orbitals on a grid of shape [num_grid_points,
-        num_orbitals], note num_orbitals = N_k * m, where m is the number of
-        orbitals in the unit cell and N_k is the number of k-points.
-      grid_points: Real space grid. Dimension [num_grid_points, num_dim],
-        num_dim is 1, 2 or 3 for 1D, 2D, 3D.
-      only_unique_G: Only build central tensor for unique Gs which satisfy
-        momentum conservation condition.
+        df_inst: instance of pyscf.pbc.df.FFTDF object.
+        interp_indx: array indexing interpolating points determined through
+            K-Means CVT procedure. Dimension [num_interp_points]
+        kpts: Array of k-points.
+        orbitals: orbitals on a grid of shape [num_grid_points,
+            num_orbitals], note num_orbitals = N_k * m, where m is the number of
+            orbitals in the unit cell and N_k is the number of k-points.
+        grid_points: Real space grid. Dimension [num_grid_points, num_dim],
+            num_dim is 1, 2 or 3 for 1D, 2D, 3D.
+        only_unique_G: Only build central tensor for unique Gs which satisfy
+            momentum conservation condition.
 
     Returns:
-    chi: orbitals on interpolating points
-    zeta: THC central tensor. Dimension is
-        [num_kpts, 27, 27, num_interp_points, num_interp_points]
-        if only_unique_G is False otherwise it is of shape [num_kpts,
-        num_unique[Q], num_unique[Q], 27, num_interp_points, num_interp_points].
-    Theta: Matrix of interpolating vectors of dimension [num_grid_points,
-        num_interp_points] (also called xi_mu(r)), where num_grid_points is the
-        number of real space grid points and num_interp_points is the number of
-        interpolating points. Zeta (the
-    G_mapping: G_mapping maps k-points to the appropriate delta_G index, i.e.
-        G_mapping[iq, ik] = i_delta_G. the index will map to the appropriate
-        index in the reduced set of G vectors.
+        chi: orbitals on interpolating points
+        zeta: THC central tensor. Dimension is
+            [num_kpts, 27, 27, num_interp_points, num_interp_points]
+            if only_unique_G is False otherwise it is of shape [num_kpts,
+            num_unique[q], num_unique[q], 27, num_interp_points, num_interp_points].
+        theta: matrix of interpolating vectors of dimension [num_grid_points,
+            num_interp_points] (also called xi_mu(r)), where num_grid_points is the
+            number of real space grid points and num_interp_points is the number of
+            interpolating points. zeta (the
+        g_mapping: g_mapping maps k-points to the appropriate delta_g index, i.e.
+            g_mapping[iq, ik] = i_delta_g. the index will map to the appropriate
+            index in the reduced set of g vectors.
     """
     num_grid_points = len(grid_points)
     assert orbitals.shape[0] == num_grid_points
@@ -629,32 +626,32 @@ def kpoint_isdf_double_translation(
     num_interp_points = xi.shape[1]
     assert xi.shape == (num_grid_points, num_interp_points)
     (
-        G_vectors,
-        G_mapping,
-        G_mapping_unique,
-        delta_Gs_unique,
-    ) = build_G_vector_mappings_double_translation(df_inst.cell, kpts,
+        g_vectors,
+        g_mapping,
+        g_mapping_unique,
+        delta_gs_unique,
+    ) = build_g_vector_mappings_double_translation(df_inst.cell, kpts,
                                                    momentum_map)
-    if only_unique_G:
-        G_mapping = G_mapping_unique
-        delta_Gs = delta_Gs_unique
+    if only_unique_g:
+        g_mapping = g_mapping_unique
+        delta_gs = delta_gs_unique
     else:
-        delta_Gs = [G_vectors] * num_kpts
-        G_mapping = G_mapping
+        delta_gs = [g_vectors] * num_kpts
+        g_mapping = g_mapping
     zeta = np.zeros((num_kpts,), dtype=object)
     for iq in range(num_kpts):
-        num_G = len(delta_Gs[iq])
+        num_g = len(delta_gs[iq])
         out_array = np.zeros(
-            (num_G, num_G, num_interp_points, num_interp_points),
+            (num_g, num_g, num_interp_points, num_interp_points),
             dtype=np.complex128,
         )
-        for iG, delta_G in enumerate(delta_Gs[iq]):
-            for iG_prime, delta_G_prime in enumerate(delta_Gs[iq]):
-                zeta_indx = build_kpoint_zeta(df_inst, kpts[iq], delta_G,
-                                              delta_G_prime, grid_points, xi)
-                out_array[iG, iG_prime] = zeta_indx
+        for ig, delta_g in enumerate(delta_gs[iq]):
+            for ig_prime, delta_g_prime in enumerate(delta_gs[iq]):
+                zeta_indx = build_kpoint_zeta(df_inst, kpts[iq], delta_g,
+                                              delta_g_prime, grid_points, xi)
+                out_array[ig, ig_prime] = zeta_indx
         zeta[iq] = out_array
-    return chi, zeta, xi, G_mapping
+    return chi, zeta, xi, g_mapping
 
 
 def kpoint_isdf_single_translation(
@@ -664,8 +661,7 @@ def kpoint_isdf_single_translation(
         orbitals: npt.NDArray,
         grid_points: npt.NDArray,
 ) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
-    r"""
-    Build kpoint ISDF-THC tensors.
+    r"""Build kpoint ISDF-THC tensors.
 
     Given the orbitals evaluated on a (dense) real space grid, and a set of
     interpolating points (indexed  by interp_indx) determine the interpolating
@@ -677,29 +673,29 @@ def kpoint_isdf_single_translation(
     the unique G's which satisfiy this expression rather than all 27^2.
 
     Args:
-      df_inst: instance of pyscf.pbc.df.FFTDF object.
-      interp_indx: array indexing interpolating points determined through
-        K-Means CVT procedure. Dimension [num_interp_points]
-      kpts: Array of k-points.
-      orbitals: orbitals on a grid of shape [num_grid_points,
-        num_orbitals], note num_orbitals = N_k * m, where m is the number of
-        orbitals in the unit cell and N_k is the number of k-points.
-      grid_points: Real space grid. Dimension [num_grid_points, num_dim],
-        num_dim is 1, 2 or 3 for 1D, 2D, 3D.
+        df_inst: instance of pyscf.pbc.df.FFTDF object.
+        interp_indx: array indexing interpolating points determined through
+            K-Means CVT procedure. Dimension [num_interp_points]
+        kpts: Array of k-points.
+        orbitals: orbitals on a grid of shape [num_grid_points,
+            num_orbitals], note num_orbitals = N_k * m, where m is the number of
+            orbitals in the unit cell and N_k is the number of k-points.
+        grid_points: Real space grid. Dimension [num_grid_points, num_dim],
+            num_dim is 1, 2 or 3 for 1D, 2D, 3D.
 
     Returns:
-      chi: orbitals on interpolating points
-      zeta: THC central tensor. Dimension is
-        [num_kpts, 27, 27, num_interp_points, num_interp_points]
-        if only_unique_G is False otherwise it is of shape [num_kpts,
-        num_unique[Q], num_unique[Q], 27, num_interp_points, num_interp_points].
-      Theta: Matrix of interpolating vectors of dimension [num_grid_points,
-        num_interp_points] (also called xi_mu(r)), where num_grid_points is the
-        number of real space grid points and num_interp_points is the number of
-        interpolating points. Zeta (the
-      G_mapping: G_mapping maps k-points to the appropriate delta_G index, i.e.
-        G_mapping[iq, ik] = i_delta_G. the index will map to the appropriate
-        index in the reduced set of G vectors.
+        chi: orbitals on interpolating points
+        zeta: THC central tensor. Dimension is
+            [num_kpts, 27, 27, num_interp_points, num_interp_points]
+            if only_unique_G is False otherwise it is of shape [num_kpts,
+            num_unique[Q], num_unique[Q], 27, num_interp_points, num_interp_points].
+        Theta: Matrix of interpolating vectors of dimension [num_grid_points,
+            num_interp_points] (also called xi_mu(r)), where num_grid_points is the
+            number of real space grid points and num_interp_points is the number of
+            interpolating points. Zeta (the
+        G_mapping: G_mapping maps k-points to the appropriate delta_G index, i.e.
+            G_mapping[iq, ik] = i_delta_G. the index will map to the appropriate
+            index in the reduced set of G vectors.
     """
     num_grid_points = len(grid_points)
     assert orbitals.shape[0] == num_grid_points
@@ -715,32 +711,32 @@ def kpoint_isdf_single_translation(
     ])
     transfers = kpts_pq[:, 0] - kpts_pq[:, 1]
     unique_q, unique_indx, _ = unique(transfers)
-    _, _, G_map_unique, delta_Gs = build_G_vector_mappings_single_translation(
+    _, _, g_map_unique, delta_gs = build_g_vector_mappings_single_translation(
         df_inst.cell, kpts, kpts_pq_indx[unique_indx])
     num_q_vectors = len(unique_q)
     zeta = np.zeros((num_q_vectors,), dtype=object)
     for iq in range(len(unique_q)):
-        num_G = len(delta_Gs[iq])
-        out_array = np.zeros((num_G, num_interp_points, num_interp_points),
+        num_g = len(delta_gs[iq])
+        out_array = np.zeros((num_g, num_interp_points, num_interp_points),
                              dtype=np.complex128)
-        for iG, delta_G in enumerate(delta_Gs[iq]):
+        for ig, delta_g in enumerate(delta_gs[iq]):
             zeta_indx = build_kpoint_zeta_single_tranlsation(
-                df_inst, unique_q[iq], delta_G, grid_points, xi)
-            out_array[iG] = zeta_indx
+                df_inst, unique_q[iq], delta_g, grid_points, xi)
+            out_array[ig] = zeta_indx
         zeta[iq] = out_array
-    return chi, zeta, xi, G_map_unique
+    return chi, zeta, xi, g_map_unique
 
 
 def build_isdf_orbital_inputs(mf_inst: scf.RHF) -> npt.NDArray:
     """Build orbital product inputs from mean field object
 
     Args:
-      mf_inst: pyscf pbc mean-field object.
-      mf_inst: scf.RHF:
+        mf_inst: pyscf pbc mean-field object.
+        mf_inst: scf.RHF:
 
     Returns:
-      cell_periodic_mo: cell periodic part of Bloch orbital on real space grid.
-        shape: [num_grid_points, num_kpts*num_mo]
+        cell_periodic_mo: cell periodic part of Bloch orbital on real space grid.
+            shape: [num_grid_points, num_kpts*num_mo]
 
     """
     cell = mf_inst.cell
@@ -774,13 +770,13 @@ def density_guess(
     """Select initial centroids based on electronic density.
 
     Args:
-      density: Density on real space grid.
-      grid_inst: pyscf UniformGrids object.
-      grid_points: Real space grid points.
-      num_interp_points: Number of interpolating points.
+        density: Density on real space grid.
+        grid_inst: pyscf UniformGrids object.
+        grid_points: Real space grid points.
+        num_interp_points: Number of interpolating points.
 
     Returns:
-      grid_points: Grid points sampled using density as a weighting function.
+        grid_points: Grid points sampled using density as a weighting function.
 
     """
     norm_factor = np.einsum("R,R->", density, grid_inst.weights).real
@@ -804,16 +800,13 @@ def interp_indx_from_qrcp(Z: npt.NDArray,
     permuted Z^T.
 
     Args:
-      orbitals_on_grid: cell-periodic part of bloch orbitals on real space grid
-        of shape (num_grid_points, num_kpts*num_mo)
-      num_interp_pts: integer corresponding to number of interpolating points
-        to select from full real space grid.
-      Z: npt.NDArray:
-      return_diagonal: bool:  (Default value = False)
+        Z: Orbital pair product matrix. 
+        num_interp_pts: integer corresponding to number of interpolating points
+            to select from full real space grid.
+        return_diagonal: bool:  (Default value = False)
 
     Returns:
-      interp_indx: Index of interpolating points in full real space grid.
-
+        interp_indx: Index of interpolating points in full real space grid.
     """
 
     Q, R, P = scipy.linalg.qr(Z.T, pivoting=True)
@@ -834,16 +827,16 @@ def setup_isdf(mf_inst: scf.RHF, verbose: bool = False
     """Setup common data for ISDF solution.
 
     Args:
-      mf_inst: pyscf pbc mean-field object.
-      verbose: Whether to print some information.
-      mf_inst: scf.RHF:
-      verbose: bool:  (Default value = False)
+        mf_inst: pyscf pbc mean-field object.
+        verbose: Whether to print some information.
+        mf_inst: scf.RHF:
+        verbose: bool:  (Default value = False)
 
     Returns:
-      grid_points: Real space grid points.
-      cell_periodic_mo: Cell periodic part of MOs on a grid.
-        [num_grid, num_kpts * num_orb]
-      bloch_orbitals_mo: MOs on a grid. [num_grid, num_kpts, num_orb]
+        grid_points: Real space grid points.
+        cell_periodic_mo: Cell periodic part of MOs on a grid.
+            [num_grid, num_kpts * num_orb]
+        bloch_orbitals_mo: MOs on a grid. [num_grid, num_kpts, num_orb]
 
     """
     assert isinstance(mf_inst.with_df, df.FFTDF), "mf object must use FFTDF"
@@ -905,23 +898,22 @@ class KPointTHC:
             kthc.chi[iks],
             optimize=True,
         )
-
     """
 
     chi: npt.NDArray[np.complex128]
     zeta: npt.NDArray
-    G_mapping: npt.NDArray
+    g_mapping: npt.NDArray
     xi: Union[npt.NDArray[np.complex128], None]
 
     @property
     def num_interp_points(self) -> int:
         """Number of interpolating points (THC dimension)"""
-        return chi.shape[-1]
+        return self.chi.shape[-1]
 
     @property
     def num_thc_factors(self) -> int:
         """Number of interpolating points (THC dimension)"""
-        return chi.shape[-1]
+        return self.chi.shape[-1]
 
 
 def solve_kmeans_kpisdf(
@@ -936,19 +928,19 @@ def solve_kmeans_kpisdf(
     r"""Solve for k-point THC factors using k-means CVT ISDF procedure.
 
     Args:
-      mf_inst: pyscf pbc mean-field object.
-      num_interp_points: Number of interpolating points (THC rank M).
-      max_kmeans_iteration: Max iteration for k-means CVT algorithm.
-      single_translation: Build THC factors assuming single translation of kp
-        - kq. If true we build zeta[Q, G], else zeta[Q, G, G'].
-      use_density_guess: Select initial grid points according to electron
-        density? Default True.
-      kmeans_weighting_function: Weighting function to use in k-means CVT.
-        One of ["density", "orbital_density", "sum_squares"].
-      verbose: Whether to print some information.
+        mf_inst: pyscf pbc mean-field object.
+        num_interp_points: Number of interpolating points (THC rank M).
+        max_kmeans_iteration: Max iteration for k-means CVT algorithm.
+        single_translation: Build THC factors assuming single translation of kp
+            - kq. If true we build zeta[Q, G], else zeta[Q, G, G'].
+        use_density_guess: Select initial grid points according to electron
+            density? Default True.
+        kmeans_weighting_function: Weighting function to use in k-means CVT.
+            One of ["density", "orbital_density", "sum_squares"].
+        verbose: Whether to print some information.
 
     Returns:
-      solution: THC factors held in KPointTHC object.
+        solution: THC factors held in KPointTHC object.
     """
     if verbose:
         print(f" Number of interpolating points: {num_interp_points}")
@@ -1024,12 +1016,12 @@ def solve_qrcp_isdf(
     r"""Solve for k-point THC factors using QRCP ISDF procedure.
 
     Args:
-      mf_inst: pyscf pbc mean-field object.
-      num_interp_points: Number of interpolating points (THC rank M).
-      single_translation: Build THC factors assuming single translation of kp
-      single_translation: Build THC factors assuming single translation of kp
-        - kq. If true we build zeta[Q, G], else zeta[Q, G, G'].
-      verbose: Whether to print some information.
+        mf_inst: pyscf pbc mean-field object.
+        num_interp_points: Number of interpolating points (THC rank M).
+        single_translation: Build THC factors assuming single translation of kp
+        single_translation: Build THC factors assuming single translation of kp
+            - kq. If true we build zeta[Q, G], else zeta[Q, G, G'].
+        verbose: Whether to print some information.
 
     Returns:
       solution: THC factors held in KPointTHC object.
@@ -1040,11 +1032,11 @@ def solve_qrcp_isdf(
     # Z_{R, (ki)(k'j)} = u_{ki}(r)* u_{k'j}(r)
     num_grid_points = len(grid_points)
     num_orbs = cell_periodic_mo.shape[1]
-    Z = np.einsum("Ri,Rj->Rij",
+    pair_products = np.einsum("Ri,Rj->Rij",
                   cell_periodic_mo.conj(),
                   cell_periodic_mo,
                   optimize=True).reshape((num_grid_points, num_orbs**2))
-    interp_indx = interp_indx_from_qrcp(Z, num_interp_points)
+    interp_indx = interp_indx_from_qrcp(pair_products, num_interp_points)
     # Solve for THC factors.
     solution = solve_for_thc_factors(
         mf_inst,
@@ -1068,26 +1060,26 @@ def solve_for_thc_factors(
     r"""Solve for k-point THC factors using interpolating points as input.
 
     Args:
-      mf_inst: pyscf pbc mean-field object.
-      interp_points_index: Indices of interpolating points found from k-means
-        CVT or QRCP.
-      cell_periodic_mo: cell periodic part of Bloch orbital on real space grid.
-        shape: [num_grid_points, num_kpts*num_mo]
-      kmeans_weighting_function: Weighting function to use in k-means CVT.
-        One of ["density", "orbital_density", "sum_squares"].
-      grid_points: Real space grid. Dimension [num_grid_points, num_dim],
-            num_dim is 1, 2 or 3 for 1D, 2D, 3D.
-      single_translation: Build THC factors assuming single translation of kp
-        - kq. If true we build zeta[Q, G], else zeta[Q, G, G'].
-          (Default value = True)
-      verbose: Whether to print some information. (Default value = True)
+        mf_inst: pyscf pbc mean-field object.
+        interp_points_index: Indices of interpolating points found from k-means
+            CVT or QRCP.
+        cell_periodic_mo: cell periodic part of Bloch orbital on real space grid.
+            shape: [num_grid_points, num_kpts*num_mo]
+        kmeans_weighting_function: Weighting function to use in k-means CVT.
+            One of ["density", "orbital_density", "sum_squares"].
+        grid_points: Real space grid. Dimension [num_grid_points, num_dim],
+                num_dim is 1, 2 or 3 for 1D, 2D, 3D.
+        single_translation: Build THC factors assuming single translation of kp
+            - kq. If true we build zeta[Q, G], else zeta[Q, G, G'].
+            (Default value = True)
+        verbose: Whether to print some information. (Default value = True)
 
     Returns:
-      solution: THC factors held in KPointTHC object.
+        solution: THC factors held in KPointTHC object.
     """
     assert isinstance(mf_inst.with_df, df.FFTDF), "mf object must use FFTDF"
     if single_translation:
-        chi, zeta, xi, G_mapping = kpoint_isdf_single_translation(
+        chi, zeta, xi, g_mapping = kpoint_isdf_single_translation(
             mf_inst.with_df,
             interp_points_index,
             mf_inst.kpts,
@@ -1095,7 +1087,7 @@ def solve_for_thc_factors(
             grid_points,
         )
     else:
-        chi, zeta, xi, G_mapping = kpoint_isdf_double_translation(
+        chi, zeta, xi, g_mapping = kpoint_isdf_double_translation(
             mf_inst.with_df,
             interp_points_index,
             mf_inst.kpts,
@@ -1110,6 +1102,6 @@ def solve_for_thc_factors(
     chi = chi.reshape((num_interp_points, num_kpts, num_mo))
     chi = chi.transpose((1, 2, 0))
 
-    solution = KPointTHC(chi=chi, zeta=zeta, xi=xi, G_mapping=G_mapping)
+    solution = KPointTHC(chi=chi, zeta=zeta, xi=xi, g_mapping=g_mapping)
 
     return solution
