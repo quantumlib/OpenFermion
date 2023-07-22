@@ -17,3 +17,4 @@ try:
 except (ImportError, ModuleNotFoundError) as err:
     pytest.skip(f"Need pyscf for PBC resource estimates {err}",
                 allow_module_level=True)
+from .test_systems import make_diamond_113_szv

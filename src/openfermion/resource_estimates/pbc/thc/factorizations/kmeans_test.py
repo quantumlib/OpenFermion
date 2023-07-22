@@ -12,7 +12,7 @@
 #   limitations under the License.
 import numpy as np
 
-from openfermion.resource_estimates.pbc.thc.utils.kmeans import KMeansCVT
+from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import KMeansCVT
 
 
 def gaussian(dx, sigma):

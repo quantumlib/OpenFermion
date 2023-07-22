@@ -17,11 +17,11 @@ from pyscf.pbc import gto, scf, mp, cc
 from pyscf.lib import chkfile
 import pytest
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_hamiltonian,
     cholesky_from_df_ints,
 )
-from openfermion.resource_estimates.pbc.utils.test_utils import (
+from openfermion.resource_estimates.pbc.testing import (
     make_diamond_113_szv,)
 
 

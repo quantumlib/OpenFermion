@@ -23,8 +23,9 @@ from openfermion.resource_estimates.thc.utils.thc_factorization import (
 
 from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     solve_kmeans_kpisdf,)
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    cholesky_from_df_ints,)
+from openfermion.resource_estimates.pbc.hamiltonian import (
+    cholesky_from_df_ints,
+build_momentum_transfer_mapping)
 from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
     adagrad_opt_kpthc_batched,
     get_zeta_size,
@@ -38,8 +39,6 @@ from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
     thc_objective_regularized_batched,
     unpack_thc_factors,
 )
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
-    build_momentum_transfer_mapping,)
 
 
 def test_kpoint_thc_reg_gamma():

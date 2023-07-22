@@ -33,7 +33,7 @@ from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     solve_qrcp_isdf,
     supercell_isdf,
 )
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_momentum_transfer_mapping,)
 
 
