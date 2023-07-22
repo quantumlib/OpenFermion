@@ -37,7 +37,8 @@ from pyscf.pbc.dft import numint
 from pyscf.pbc.dft.gen_grid import UniformGrids
 from pyscf.pbc.lib.kpts_helper import conj_mapping, get_kconserv, unique
 
-from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import KMeansCVT
+from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import (
+    KMeansCVT)
 from openfermion.resource_estimates.pbc.hamiltonian import (
     build_momentum_transfer_mapping,)
 
@@ -142,10 +143,10 @@ def supercell_isdf(
 
     Returns:
         tuple: (chi, zeta, Theta): orbitals on interpolating
-            points, zeta (central tensor), and matrix of interpolating vectors Theta
-            of dimension [num_grid_points, num_interp_points] (also called
-            xi_mu(r)), where num_grid_points is the number of real space grid points
-            and num_interp_points is the number of interpolating points.
+            points, zeta (central tensor), and matrix of interpolating vectors
+            Theta of dimension [num_grid_points, num_interp_points] (also called
+            xi_mu(r)), where num_grid_points is the number of real space grid
+            points and num_interp_points is the number of interpolating points.
     """
 
     cell = mydf.cell
@@ -373,9 +374,9 @@ def build_minus_q_g_mapping(cell: gto.Cell, kpts: npt.NDArray,
             momentum_map[iq, ikp] = ikq.
 
     Returns:
-        minus_q_mapping: [indx_minus_q, k]-th element yields index for g satisfying (*)
-            above, where indx_minus_q is given by indx_minus_q = minus_k[q], and
-            minus_k = conj_mapping(cell, kpts).
+        minus_q_mapping: [indx_minus_q, k]-th element yields index for g
+            satisfying (*) above, where indx_minus_q is given by indx_minus_q =
+            minus_k[q], and minus_k = conj_mapping(cell, kpts).
         minus_q_mapping_unique: indexes the appropriate g vector given by
             delta_gs[indx_minus_q][indx] = g, where indx =
             minus_q_mapping_unique[indx_minus_q, k], and deltags is built by
@@ -428,9 +429,9 @@ def build_g_vector_mappings_single_translation(
 
     Returns:
         G_vectors: list of all 27 G-vectors
-        Gpqr_mapping: [iq, kr]-th element yields indx_Gpqr, where Gpqr = kpts[ikp] -
-            kpts[ikq] + kpts[ikr] - kpts[iks], i.e. returns index to G_vectors
-            (consistent with G_vectors) satisfying this condition.
+        Gpqr_mapping: [iq, kr]-th element yields indx_Gpqr, where Gpqr =
+            kpts[ikp] - kpts[ikq] + kpts[ikr] - kpts[iks], i.e. returns index to
+            G_vectors (consistent with G_vectors) satisfying this condition.
         Gpqr_mapping_unique: provides mapping to unique G_vector index.
         Delta_gs: provides compressed lists of unique G vectors.
 
@@ -609,12 +610,13 @@ def kpoint_isdf_double_translation(
         zeta: THC central tensor. Dimension is
             [num_kpts, 27, 27, num_interp_points, num_interp_points]
             if only_unique_G is False otherwise it is of shape [num_kpts,
-            num_unique[q], num_unique[q], 27, num_interp_points, num_interp_points].
+            num_unique[q], num_unique[q], 27, num_interp_points,
+            num_interp_points].
         theta: matrix of interpolating vectors of dimension [num_grid_points,
-            num_interp_points] (also called xi_mu(r)), where num_grid_points is the
-            number of real space grid points and num_interp_points is the number of
-            interpolating points. zeta (the
-        g_mapping: g_mapping maps k-points to the appropriate delta_g index, i.e.
+            num_interp_points] (also called xi_mu(r)), where num_grid_points is
+            the number of real space grid points and num_interp_points is the
+            number of interpolating points. zeta (the
+        g_mapping: g_mapping maps k-points to the appropriate delta_g index, i.e
             g_mapping[iq, ik] = i_delta_g. the index will map to the appropriate
             index in the reduced set of g vectors.
     """
@@ -688,12 +690,13 @@ def kpoint_isdf_single_translation(
         zeta: THC central tensor. Dimension is
             [num_kpts, 27, 27, num_interp_points, num_interp_points]
             if only_unique_G is False otherwise it is of shape [num_kpts,
-            num_unique[Q], num_unique[Q], 27, num_interp_points, num_interp_points].
+            num_unique[Q], num_unique[Q], 27, num_interp_points,
+            num_interp_points].
         Theta: Matrix of interpolating vectors of dimension [num_grid_points,
-            num_interp_points] (also called xi_mu(r)), where num_grid_points is the
-            number of real space grid points and num_interp_points is the number of
-            interpolating points. Zeta (the
-        G_mapping: G_mapping maps k-points to the appropriate delta_G index, i.e.
+            num_interp_points] (also called xi_mu(r)), where num_grid_points is
+            the number of real space grid points and num_interp_points is the
+            number of interpolating points. Zeta (the
+        G_mapping: G_mapping maps k-points to the appropriate delta_G index, i.e
             G_mapping[iq, ik] = i_delta_G. the index will map to the appropriate
             index in the reduced set of G vectors.
     """
@@ -735,8 +738,8 @@ def build_isdf_orbital_inputs(mf_inst: scf.RHF) -> npt.NDArray:
         mf_inst: scf.RHF:
 
     Returns:
-        cell_periodic_mo: cell periodic part of Bloch orbital on real space grid.
-            shape: [num_grid_points, num_kpts*num_mo]
+        cell_periodic_mo: cell periodic part of Bloch orbital on real space grid
+            of shape [num_grid_points, num_kpts*num_mo]
 
     """
     cell = mf_inst.cell
@@ -1033,9 +1036,10 @@ def solve_qrcp_isdf(
     num_grid_points = len(grid_points)
     num_orbs = cell_periodic_mo.shape[1]
     pair_products = np.einsum("Ri,Rj->Rij",
-                  cell_periodic_mo.conj(),
-                  cell_periodic_mo,
-                  optimize=True).reshape((num_grid_points, num_orbs**2))
+                              cell_periodic_mo.conj(),
+                              cell_periodic_mo,
+                              optimize=True).reshape(
+                                  (num_grid_points, num_orbs**2))
     interp_indx = interp_indx_from_qrcp(pair_products, num_interp_points)
     # Solve for THC factors.
     solution = solve_for_thc_factors(
@@ -1063,7 +1067,7 @@ def solve_for_thc_factors(
         mf_inst: pyscf pbc mean-field object.
         interp_points_index: Indices of interpolating points found from k-means
             CVT or QRCP.
-        cell_periodic_mo: cell periodic part of Bloch orbital on real space grid.
+        cell_periodic_mo: cell periodic part of Bloch orbital on real space grid
             shape: [num_grid_points, num_kpts*num_mo]
         kmeans_weighting_function: Weighting function to use in k-means CVT.
             One of ["density", "orbital_density", "sum_squares"].

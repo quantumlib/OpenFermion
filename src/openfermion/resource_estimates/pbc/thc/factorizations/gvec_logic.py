@@ -1,3 +1,4 @@
+# coverage: ignore
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -36,8 +37,8 @@ def get_miller_indices(kmesh):
     Assumes a non gamma centered non-1stBZ Monkorhst-Pack mesh
 
     Args:
-        kmesh: A length 3 1-D iteratble with the number of k-points in the x,y,z direction
-            [Nk_x, NK_y, NK_z] where NK_x/y/z are positive integers
+        kmesh: A length 3 1-D iteratble with the number of k-points in the x,y,z
+            direction [Nk_x, NK_y, NK_z] where NK_x/y/z are positive integers
 
     Returns:
         np.array 2D that is prod([Nk_x, NK_y, NK_z])

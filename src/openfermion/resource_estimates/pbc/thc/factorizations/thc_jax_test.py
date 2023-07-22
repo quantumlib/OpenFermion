@@ -24,8 +24,7 @@ from openfermion.resource_estimates.thc.utils.thc_factorization import (
 from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     solve_kmeans_kpisdf,)
 from openfermion.resource_estimates.pbc.hamiltonian import (
-    cholesky_from_df_ints,
-build_momentum_transfer_mapping)
+    cholesky_from_df_ints, build_momentum_transfer_mapping)
 from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
     adagrad_opt_kpthc_batched,
     get_zeta_size,

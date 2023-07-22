@@ -18,7 +18,8 @@ from pyscf.pbc.dft import numint
 from pyscf.pbc.tools import pyscf_ase
 from pyscf.pbc.lib.kpts_helper import unique, get_kconserv, member
 
-from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import KMeansCVT
+from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import (
+    KMeansCVT)
 from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     inverse_g_map_double_translation,
     build_kpoint_zeta,
@@ -476,7 +477,7 @@ def test_kpoint_isdf_symmetries():
     ik_prime_minus_q = momentum_map[iq, ik_prime]
     # Sanity check G mappings
     assert np.allclose(kpts[ik] - kpts[ik_minus_q] - kpts[iq],
-                        delta_Gs[iq][iGpq])
+                       delta_Gs[iq][iGpq])
     assert np.allclose(
         kpts[ik_prime] - kpts[ik_prime_minus_q] - kpts[iq],
         delta_Gs[iq][iGsr],
