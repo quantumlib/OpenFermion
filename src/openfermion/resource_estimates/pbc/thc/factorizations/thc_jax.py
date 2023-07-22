@@ -529,7 +529,6 @@ def lbfgsb_opt_kpthc_l2reg(
             jnp.array(chol),
             penalty_param,
         ))
-    # print()
     res = minimize(
         thc_objective_regularized,
         initial_guess,
@@ -550,7 +549,6 @@ def lbfgsb_opt_kpthc_l2reg(
         },
     )
 
-    # print(res)
     params = np.array(res.x)
     loss = thc_objective_regularized(
         jnp.array(res.x),

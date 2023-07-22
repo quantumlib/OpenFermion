@@ -12,6 +12,11 @@
 #   limitations under the License.
 import numpy as np
 import numpy.typing as npt
+"""Module for performing K-Means CVT algorithm to find interpolating points.
+
+Provides centroidal Veronoi tesselation of the grid of real space points
+weighted by the electron density using a K-Means classification.
+"""
 
 
 class KMeansCVT(object):
