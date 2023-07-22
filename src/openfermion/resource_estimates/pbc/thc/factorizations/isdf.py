@@ -175,7 +175,7 @@ def build_kpoint_zeta(
         xi_mu: npt.NDArray,
 ) -> npt.NDArray:
     """Build k-point THC zeta (central tensor).
-    
+
     Built for for given q, delta_g, delta_g_prime.
 
     Args:
@@ -363,8 +363,8 @@ def get_miller(lattice_vectors: npt.NDArray, g: npt.NDArray) -> npt.NDArray:
 
 def build_minus_q_g_mapping(cell: gto.Cell, kpts: npt.NDArray,
                             momentum_map: npt.NDArray) -> npt.NDArray:
-    """Build conjugat g map 
-    
+    """Build conjugat g map
+
     Mapping satisfies (-Q) + G + (Q + Gpq) = 0 (*)
 
     Args:
@@ -803,7 +803,7 @@ def interp_indx_from_qrcp(Z: npt.NDArray,
     permuted Z^T.
 
     Args:
-        Z: Orbital pair product matrix. 
+        Z: Orbital pair product matrix.
         num_interp_pts: integer corresponding to number of interpolating points
             to select from full real space grid.
         return_diagonal: bool:  (Default value = False)

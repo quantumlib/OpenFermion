@@ -24,7 +24,7 @@ representation of reciprocal lattice vectors (pqr) (G-vectors or gvecs) rather
 than vectors given by the literal sum in (*).
 
 This module tests out various mappings between k-points and reciprocal lattice
-vectors in terms of these integer values. 
+vectors in terms of these integer values.
 """
 import itertools
 import numpy as np
@@ -61,7 +61,7 @@ def get_miller_indices(kmesh):
 
 def get_delta_kp_kq_q(int_scaled_kpts):
     """Generate kp - kq - Q = S for kp, kq, and Q.
-    
+
     The difference of the three integers is stored as a four tensor D_{kp, kq,
     Q} = S. where the dimension of D is (nkpts, nkpts, nkpts, 3).  The last
     dimension stores the x,y,z components of S.
@@ -81,7 +81,7 @@ def get_delta_kp_kq_q(int_scaled_kpts):
 
 def build_transfer_map(kmesh, scaled_kpts):
     """Define mapping momentum_transfer_map[Q][k1] = k2.
-    
+
     Where k1 - k2 + G = Q.  Here k1, k2, Q are all tuples of integers [[0,
     Nkx-1], [0, Nky-1], [0, Nkz-1]] and G is [{0, Nkx}, {0, Nky}, {0, Nkz}].
 
@@ -162,7 +162,7 @@ def build_G_vectors(kmesh):
 
 def build_gpq_mapping(kmesh, int_scaled_kpts):
     """Build map for kp - kq = Q + G
-    
+
     Here G is [{0, -Nkx}, {0, -Nky}, {0, -Nkz}]. G will be 0 or Nkz because kp -
     kq takes on values between [-Nka + 1, Nka - 1] in each component.
 

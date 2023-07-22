@@ -12,7 +12,7 @@
 #   limitations under the License.
 import itertools
 import numpy as np
-from openfermion.resource_estimates.pbc.thc.factorizations.gvec_logic import (
+from openfermion.resource_estimates.pbc.thc.factorizations.gvec_map_logic import (
     get_miller_indices,
     get_delta_kp_kq_q,
     build_transfer_map,
