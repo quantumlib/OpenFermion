@@ -18,8 +18,8 @@ from pyscf.pbc.dft import numint
 from pyscf.pbc.tools import pyscf_ase
 from pyscf.pbc.lib.kpts_helper import unique, get_kconserv, member
 
-from openfermion.resource_estimates.pbc.thc.utils.kmeans import KMeansCVT
-from openfermion.resource_estimates.pbc.thc.utils.isdf import (
+from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import KMeansCVT
+from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     inverse_g_map_double_translation,
     build_kpoint_zeta,
     get_miller,

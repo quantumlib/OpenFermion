@@ -43,7 +43,7 @@ import jax.numpy as jnp
 import jax.typing as jnpt
 
 from openfermion.resource_estimates.thc.utils import adagrad
-from openfermion.resource_estimates.pbc.thc.utils.isdf import (
+from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     KPointTHC,
     solve_kmeans_kpisdf,
 )

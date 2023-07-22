@@ -37,7 +37,7 @@ from pyscf.pbc.dft import numint
 from pyscf.pbc.dft.gen_grid import UniformGrids
 from pyscf.pbc.lib.kpts_helper import conj_mapping, get_kconserv, unique
 
-from openfermion.resource_estimates.pbc.thc.utils.kmeans import KMeansCVT
+from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import KMeansCVT
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
     build_momentum_transfer_mapping,)
 

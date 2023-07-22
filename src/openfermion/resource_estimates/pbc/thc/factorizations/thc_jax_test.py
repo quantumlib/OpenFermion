@@ -21,11 +21,11 @@ from openfermion.resource_estimates.thc.utils.thc_factorization import (
 from openfermion.resource_estimates.thc.utils.thc_factorization import (
     thc_objective_regularized as thc_obj_mol,)
 
-from openfermion.resource_estimates.pbc.thc.utils.isdf import (
+from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     solve_kmeans_kpisdf,)
 from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
     cholesky_from_df_ints,)
-from openfermion.resource_estimates.pbc.thc.utils.thc_jax import (
+from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
     adagrad_opt_kpthc_batched,
     get_zeta_size,
     kpoint_thc_via_isdf,
