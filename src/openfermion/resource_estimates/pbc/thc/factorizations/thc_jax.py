@@ -309,7 +309,7 @@ def thc_objective_regularized_batched(
         penalty_param=0.0,
 ) -> float:
     """Compute THC objective function.
-    
+
     Here we batch over multiple k-point indices for improved GPU efficiency.
 
     Args:
@@ -456,7 +456,7 @@ def lbfgsb_opt_kpthc_l2reg(
         penalty_param: Union[float, None] = None,
 ) -> Tuple[npt.NDArray, float]:
     """Least-squares fit of two-electron integral tensors with  L-BFGS-B
-    
+
     Uses l2-regularization of lambda penalty function.
 
     Args:
@@ -582,7 +582,7 @@ def lbfgsb_opt_kpthc_l2reg_batched(
         batch_size: Union[int, None] = None,
 ) -> Tuple[npt.NDArray, float]:
     """Least-squares fit of two-electron integral tensors with  L-BFGS-B.
-    
+
     Uses l2-regularization of lambda. This version batches over multiple
     k-points which may be faster on GPUs.
 

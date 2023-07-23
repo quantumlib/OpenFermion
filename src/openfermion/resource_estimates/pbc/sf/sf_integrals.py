@@ -50,7 +50,7 @@ class SingleFactorization:
 
     def build_AB_from_chol(self, qidx: int):
         """Construct A and B matrices given Q-kpt idx.
-        
+
         This constructs all matrices association with n-chol
 
         Args:

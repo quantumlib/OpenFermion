@@ -107,7 +107,7 @@ class SparseFactorization:
                  cholesky_factor: np.ndarray,
                  kmf: scf.HF,
                  threshold=1.0e-14):
-        """Initialize a ERI object for CCSD from sparse integrals. 
+        """Initialize a ERI object for CCSD from sparse integrals.
 
         Args:
             cholesky_factor: Cholesky factor tensor that is
@@ -131,7 +131,7 @@ class SparseFactorization:
     def get_total_unique_terms_above_thresh(self, return_nk_counter=False
                                            ) -> Union[int, Tuple[int, int]]:
         """Determine all unique (pkp, qkq|rkr, sks).
-        
+
         Accounts for momentum conservation and four fold symmetry.
 
         Args:

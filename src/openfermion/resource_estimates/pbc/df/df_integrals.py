@@ -234,7 +234,7 @@ class DFABKpointIntegrals:
 
     def get_eri_exact(self, ikpts: list) -> npt.NDArray:
         """Construct (pkp qkq| rkr sks) exactly from Cholesky vector.
-        
+
         This is for constructing the J and K like terms needed for the one-body
         component lambda
 

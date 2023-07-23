@@ -18,10 +18,11 @@ from pyscf.pbc import gto, scf, cc
 from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     solve_kmeans_kpisdf,)
 from openfermion.resource_estimates.pbc.thc.thc_integrals import (
-    KPTHCDoubleTranslation, KPTHCSingleTranslation, )
+    KPTHCDoubleTranslation,
+    KPTHCSingleTranslation,
+)
 from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
     build_approximate_eris,)
-
 
 
 def test_thc_helper():

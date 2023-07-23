@@ -71,7 +71,7 @@ class KPTHCDoubleTranslation:
         self.chol = chol
 
     def get_eri(self, ikpts: list) -> npt.NDArray:
-        r"""Construct ERIs given kpt indices. 
+        r"""Construct ERIs given kpt indices.
 
         .. math::
 
@@ -166,8 +166,8 @@ class KPTHCSingleTranslation(KPTHCDoubleTranslation):
         self.momentum_transfers = transfers[unique_indx]
 
     def get_eri(self, ikpts):
-        """Construct ERIs from kpt indices 
-        
+        """Construct ERIs from kpt indices
+
         Evaluated via
 
         .. math::
