@@ -14,10 +14,10 @@ from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     HamiltonianProperties,)
-from openfermion.resource_estimates.pbc.sparse.integral_helper_sparse import (
-    SparseFactorizationHelper,)
+from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
+    SparseFactorization,)
 
 
 @dataclass
@@ -27,7 +27,7 @@ class SparseHamiltonianProperties(HamiltonianProperties):
     num_sym_unique: int
 
 
-def compute_lambda(hcore: npt.NDArray, sparse_int_obj: SparseFactorizationHelper
+def compute_lambda(hcore: npt.NDArray, sparse_int_obj: SparseFactorization
                   ) -> SparseHamiltonianProperties:
     """Compute lambda value for sparse method
 

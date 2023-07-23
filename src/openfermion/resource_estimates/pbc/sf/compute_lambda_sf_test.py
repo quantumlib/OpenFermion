@@ -21,20 +21,20 @@ from pyscf.pbc.tools import pyscf_ase
 
 from openfermion.resource_estimates.pbc.sf.compute_lambda_sf import (
     compute_lambda,)
-from openfermion.resource_estimates.pbc.sf.integral_helper_sf import (
-    SingleFactorizationHelper,)
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.sf.sf_integrals import (
+    SingleFactorization,)
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_hamiltonian,
     cholesky_from_df_ints,
 )
-from openfermion.resource_estimates.pbc.utils.test_utils import (
+from openfermion.resource_estimates.pbc.testing import (
     make_diamond_113_szv,)
 
 
 def test_lambda_calc():
     mf = make_diamond_113_szv()
     hcore, Luv = build_hamiltonian(mf)
-    helper = SingleFactorizationHelper(cholesky_factor=Luv, kmf=mf)
+    helper = SingleFactorization(cholesky_factor=Luv, kmf=mf)
     lambda_data = compute_lambda(hcore, helper)
     assert np.isclose(lambda_data.lambda_total, 2123.4342903006627)
 
@@ -61,7 +61,7 @@ def test_padding():
     mymp = mp.KMP2(mf)
     Luv_padded = cholesky_from_df_ints(mymp)
     mo_coeff_padded = _add_padding(mymp, mymp.mo_coeff, mymp.mo_energy)[0]
-    helper = SingleFactorizationHelper(cholesky_factor=Luv_padded, kmf=mf)
+    helper = SingleFactorization(cholesky_factor=Luv_padded, kmf=mf)
     assert mf.mo_coeff[0].shape[-1] != mo_coeff_padded[0].shape[-1]
 
     hcore_ao = mf.get_hcore()
@@ -81,10 +81,10 @@ def test_padding():
             assert np.isclose(np.sum(Luv_padded[k1, k2]),
                               np.sum(Luv_no_padding[k1, k2]))
 
-    helper_no_padding = SingleFactorizationHelper(
-        cholesky_factor=Luv_no_padding, kmf=mf)
+    helper_no_padding = SingleFactorization(cholesky_factor=Luv_no_padding,
+                                            kmf=mf)
     lambda_data_pad = compute_lambda(hcore_no_padding, helper_no_padding)
-    helper = SingleFactorizationHelper(cholesky_factor=Luv_padded, kmf=mf)
+    helper = SingleFactorization(cholesky_factor=Luv_padded, kmf=mf)
     lambda_data_no_pad = compute_lambda(hcore_padded, helper)
     assert np.isclose(lambda_data_pad.lambda_total,
                       lambda_data_no_pad.lambda_total)

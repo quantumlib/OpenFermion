@@ -16,14 +16,14 @@ import numpy as np
 import pytest
 from pyscf.pbc import gto, mp, scf
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     cholesky_from_df_ints,)
-from openfermion.resource_estimates.pbc.thc.utils.thc_jax import (
+from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
     kpoint_thc_via_isdf,)
 from openfermion.resource_estimates.pbc.thc.compute_lambda_thc import (
     compute_lambda,)
-from openfermion.resource_estimates.pbc.thc.integral_helper_thc import (
-    KPTHCHelperDoubleTranslation,)
+from openfermion.resource_estimates.pbc.thc.thc_integrals import (
+    KPTHCDoubleTranslation,)
 
 
 def test_kpoint_thc_lambda():
@@ -76,7 +76,7 @@ def test_kpoint_thc_lambda():
         reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
         for k, mo in enumerate(mf.mo_coeff)
     ])
-    helper = KPTHCHelperDoubleTranslation(kpt_thc.chi, kpt_thc.zeta, mf)
+    helper = KPTHCDoubleTranslation(kpt_thc.chi, kpt_thc.zeta, mf)
     lambda_data = compute_lambda(
         hcore_mo,
         helper,

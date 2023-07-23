@@ -13,11 +13,11 @@
 from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     HamiltonianProperties,)
 
-from openfermion.resource_estimates.pbc.sf.integral_helper_sf import (
-    SingleFactorizationHelper,)
+from openfermion.resource_estimates.pbc.sf.sf_integrals import (
+    SingleFactorization,)
 
 
 @dataclass
@@ -27,8 +27,8 @@ class SFHamiltonianProperties(HamiltonianProperties):
     num_aux: int
 
 
-def compute_lambda(hcore: npt.NDArray, sf_obj: SingleFactorizationHelper
-                  ) -> SFHamiltonianProperties:
+def compute_lambda(hcore: npt.NDArray,
+                   sf_obj: SingleFactorization) -> SFHamiltonianProperties:
     """Lambda for single-factorized Hamiltonian.
 
     Compute one-body and two-body lambda for qubitization of
@@ -48,10 +48,10 @@ def compute_lambda(hcore: npt.NDArray, sf_obj: SingleFactorizationHelper
     |Im[W_{pq}(Q)^{n}]|)^{2}
 
     Args:
-      hcore: List len(kpts) long of nmo x nmo complex hermitian arrays
-      sf_obj: SingleFactorization object.
-      hcore: np.ndarray:
-      sf_obj: SingleFactorizationHelper:
+        hcore: List len(kpts) long of nmo x nmo complex hermitian arrays
+        sf_obj: SingleFactorization object.
+        hcore: np.ndarray:
+        sf_obj: SingleFactorization:
 
     Returns:
         lambda_tot: Total lambda
@@ -110,8 +110,6 @@ def compute_lambda(hcore: npt.NDArray, sf_obj: SingleFactorizationHelper
                       np.abs(B.real) + np.abs(B.imag))**2)
         del A
         del B
-        # lambda_two_body += np.sum(np.einsum('npq->n', np.abs(A)**2))
-        # lambda_two_body += np.sum(np.einsum('npq->n', np.abs(B)**2))
 
     lambda_two_body *= 0.5
 

@@ -14,9 +14,9 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-from openfermion.resource_estimates.pbc.thc.integral_helper_thc import (
-    KPTHCHelperDoubleTranslation,)
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.thc.thc_integrals import (
+    KPTHCDoubleTranslation,)
+from openfermion.resource_estimates.pbc.hamiltonian import (
     HamiltonianProperties,)
 
 
@@ -26,11 +26,11 @@ def compute_lambda_real(
         MPQ: npt.NDArray,
         chol: npt.NDArray,
 ) -> Tuple[float, float, float]:
-    """Compute lambda assuming real THC factors (molecular way) but without
-    needing a molecular object as in openfermion. Just pared down function from
-    openfermion.
+    """Compute lambda assuming real THC factors (molecular way)
+    
+    Avoids the need of a molecular object as in the molecular code.
 
-    Arguments:
+    Args:
         h1: one-body hamiltonian
         etaPp: THC leaf tensor
         MPQ: THC central tensor.
@@ -64,21 +64,16 @@ def compute_lambda_real(
 
     lambda_tot = lambda_z + lambda_T  # Eq. 20
 
-    # return nthc, np.sqrt(res), res, lambda_T, lambda_z, lambda_tot
     return lambda_tot, lambda_T, lambda_z
 
 
-def compute_lambda(hcore: npt.NDArray, thc_obj: KPTHCHelperDoubleTranslation
-                  ) -> HamiltonianProperties:
-    """Compute one-body and two-body lambda for qubitization of
-    tensor hypercontraction LCU.
-
-    one-body term h_pq(k) = hcore_{pq}(k)
-                            - 0.5 * sum_{Q}sum_{r}(pkrQ|rQqk)
+def compute_lambda(hcore: npt.NDArray,
+                   thc_obj: KPTHCDoubleTranslation) -> HamiltonianProperties:
+    """Compute one-body and two-body lambda for qubitization the THC LCU. 
 
     Args:
-      hcore: List len(kpts) long of nmo x nmo complex hermitian arrays
-      thc_obj: Object of KPTHCHelperDoubleTranslation
+        hcore: List len(kpts) long of nmo x nmo complex hermitian arrays
+        thc_obj: Object of KPTHCDoubleTranslation
 
     Returns:
         lambda_tot: Total lambda
@@ -99,9 +94,6 @@ def compute_lambda(hcore: npt.NDArray, thc_obj: KPTHCHelperDoubleTranslation
             eri_kqqk_pqrs = thc_obj.get_eri_exact([kidx, qidx, qidx, kidx])
             h1_neg -= (np.einsum("prrq->pq", eri_kqqk_pqrs, optimize=True) /
                        nkpts)
-            # # + 0.5 sum_{Q}sum_{r}(pkqk|rQrQ)
-            # eri_kkqq_pqrs = thc_obj.get_eri_exact([kidx, kidx, qidx, qidx])
-            # h1_pos += np.einsum('pqrr->pq', eri_kkqq_pqrs) / nkpts
 
         one_body_mat[kidx] = hcore[kidx] + 0.5 * h1_neg  # + h1_pos
         one_eigs, _ = np.linalg.eigh(one_body_mat[kidx])
@@ -120,16 +112,16 @@ def compute_lambda(hcore: npt.NDArray, thc_obj: KPTHCHelperDoubleTranslation
         # xy einsum subscript indexes G index.
         for ik in range(nkpts):
             ik_minus_q = thc_obj.k_transfer_map[iq, ik]
-            Gpq = thc_obj.G_mapping[iq, ik]
+            gpq = thc_obj.g_mapping[iq, ik]
             for ik_prime in range(nkpts):
                 ik_prime_minus_q = thc_obj.k_transfer_map[iq, ik_prime]
-                Gsr = thc_obj.G_mapping[iq, ik_prime]
+                gsr = thc_obj.g_mapping[iq, ik_prime]
                 norm_left = norm_kP[ik] * norm_kP[ik_minus_q]
                 norm_right = norm_kP[ik_prime_minus_q] * norm_kP[ik_prime]
                 MPQ_normalized = (np.einsum(
                     "P,PQ,Q->PQ",
                     norm_left,
-                    zeta_Q[Gpq, Gsr],
+                    zeta_Q[gpq, gsr],
                     norm_right,
                     optimize=True,
                 ) / nkpts)

@@ -15,9 +15,9 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-from openfermion.resource_estimates.pbc.df.integral_helper_df import (
+from openfermion.resource_estimates.pbc.df.df_integrals import (
     DFABKpointIntegrals,)
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     HamiltonianProperties,)
 
 

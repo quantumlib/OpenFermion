@@ -19,4 +19,5 @@ except (ImportError, ModuleNotFoundError) as err:
                 allow_module_level=True)
 
 from .hamiltonian import (cholesky_from_df_ints, build_hamiltonian,
-                          build_momentum_transfer_mapping)
+                          build_momentum_transfer_mapping,
+                          HamiltonianProperties)
