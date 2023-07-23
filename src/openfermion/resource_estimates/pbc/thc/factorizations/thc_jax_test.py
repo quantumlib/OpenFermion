@@ -66,8 +66,9 @@ def test_kpoint_thc_reg_gamma():
     num_interp_points = 10 * mf.mo_coeff[0].shape[-1]
     kpt_thc = solve_kmeans_kpisdf(mf,
                                   num_interp_points,
-                                  single_translation=False)
-    chi, zeta, G_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.G_mapping
+                                  single_translation=False,
+                                  verbose=False)
+    chi, zeta, g_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.g_mapping
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
     buffer = np.zeros(2 * (chi.size + get_zeta_size(zeta)), dtype=np.float64)
     pack_thc_factors(chi, zeta, buffer)
@@ -108,7 +109,7 @@ def test_kpoint_thc_reg_gamma():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         maxiter=10,
         penalty_param=None,
@@ -127,7 +128,7 @@ def test_kpoint_thc_reg_gamma():
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         1e-3,
     )
@@ -162,7 +163,7 @@ def test_kpoint_thc_reg_batched():
                                   num_interp_points,
                                   single_translation=False,
                                   verbose=False)
-    chi, zeta, G_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.G_mapping
+    chi, zeta, g_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.g_mapping
     rsmf = scf.KRHF(mf.cell, mf.kpts).rs_density_fit()
     rsmf.mo_occ = mf.mo_occ
     rsmf.mo_coeff = mf.mo_coeff
@@ -190,19 +191,19 @@ def test_kpoint_thc_reg_batched():
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         penalty,
     )
     # # Test gradient is the same
-    indx_arrays = prepare_batched_data_indx_arrays(momentum_map, G_mapping)
+    indx_arrays = prepare_batched_data_indx_arrays(momentum_map, g_mapping)
     batch_size = num_kpts**2
     obj_batched = thc_objective_regularized_batched(
         buffer,
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         indx_arrays,
         batch_size,
@@ -215,7 +216,7 @@ def test_kpoint_thc_reg_batched():
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         penalty,
     )
@@ -226,7 +227,7 @@ def test_kpoint_thc_reg_batched():
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         indx_arrays,
         batch_size,
@@ -237,7 +238,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         maxiter=2,
         penalty_param=1e-3,
@@ -247,7 +248,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         maxiter=2,
         penalty_param=1e-3,
@@ -259,7 +260,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         batch_size=batch_size,
         maxiter=2,
@@ -271,7 +272,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         maxiter=2,
         batch_size=1,
@@ -282,7 +283,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         batch_size=batch_size,
         maxiter=2,

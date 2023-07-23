@@ -43,7 +43,7 @@ def test_cc_extension_rohf():
     3.370137329, 0.000000000, 3.370137329
     3.370137329, 3.370137329, 0.000000000"""
     cell.unit = "B"
-    cell.verbose = 4
+    cell.verbose = 0
     cell.build()
 
     kmesh = [1, 1, 3]
@@ -143,7 +143,7 @@ def test_cc_helper_rhf():
     3.370137329, 0.000000000, 3.370137329
     3.370137329, 3.370137329, 0.000000000"""
     cell.unit = "B"
-    cell.verbose = 4
+    cell.verbose = 0
     cell.build()
 
     kmesh = [1, 1, 3]

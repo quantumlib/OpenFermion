@@ -24,15 +24,16 @@ from openfermion.resource_estimates.pbc.hamiltonian import (
 def get_df_factor(mat: npt.NDArray, thresh: float, verify_adjoint: bool = False
                  ) -> Tuple[npt.NDArray, npt.NDArray]:
     """Represent a matrix via non-zero eigenvalue vector pairs.
-    anything above thresh is considered non-zero
+
+    Anything above thresh is considered non-zero
 
     Args:
-      mat: Matrix to double factorize.
-      thresh: Double factorization eigenvalue threshold
-      verify_adjoint: Verify input matrix is Hermitian (Default value = False)
+        mat: Matrix to double factorize.
+        thresh: Double factorization eigenvalue threshold
+        verify_adjoint: Verify input matrix is Hermitian (Default value = False)
 
     Returns:
-      Tuple eigen values and eigen vectors (lambda, V)
+        Tuple eigen values and eigen vectors (lambda, V)
 
     """
     if verify_adjoint:

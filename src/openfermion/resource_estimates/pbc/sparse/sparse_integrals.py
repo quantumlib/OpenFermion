@@ -237,7 +237,7 @@ class SparseFactorization:
 
         Note: 3-tensor L_{sks, rkr} = L_{rkr, sks}^{*}
 
-        Arguments:
+        Args:
             ikpts: list of four integers representing the index of the kpoint in
                 self.kmf.kpts
             check_eq: optional value to confirm a symmetry in the Cholesky

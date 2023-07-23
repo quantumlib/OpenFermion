@@ -18,12 +18,8 @@ from openfermion.resource_estimates.pbc.hamiltonian import (
 from openfermion.resource_estimates.pbc.testing.test_systems import (
     make_diamond_113_szv,)
 from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
-    unique_iter,
-    unique_iter_pr_qs,
-    unique_iter_ps_qr,
-    unique_iter_pq_rs,
-    SparseFactorization
-)
+    unique_iter, unique_iter_pr_qs, unique_iter_ps_qr, unique_iter_pq_rs,
+    SparseFactorization )
 
 
 def test_sparse_int_obj():
@@ -33,8 +29,8 @@ def test_sparse_int_obj():
     for thresh in [1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6]:
         abs_sum_coeffs = 0
         helper = SparseFactorization(cholesky_factor=Luv,
-                                           kmf=mf,
-                                           threshold=thresh)
+                                    kmf=mf,
+                                    threshold=thresh)
         nkpts = len(mf.kpts)
         # recall (k, k-q|k'-q, k')
         for kidx in range(nkpts):

@@ -39,8 +39,7 @@ def build_cc_inst(pyscf_mf):
 
 
 def build_approximate_eris(krcc_inst, eri_helper, eris=None):
-    """Update coupled cluster eris object with approximate integrals defined by
-    eri_helper.
+    """Update coupled cluster eris object with approximate integrals.
 
     Arguments:
         cc: pyscf PBC KRCCSD object.
@@ -87,8 +86,7 @@ def build_approximate_eris(krcc_inst, eri_helper, eris=None):
 
 
 def build_approximate_eris_rohf(kucc_inst, eri_helper, eris=None):
-    """Update unrestricted coupled cluster eris object with approximate
-    integrals defined by eri_helper.
+    """Update unrestricted coupled cluster eris object with approximate ERIs.
 
     KROCCSD is run through KUCCSD object, but we expect (and build) RO
     integrals only.

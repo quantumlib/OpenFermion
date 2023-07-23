@@ -37,9 +37,9 @@ class KPTHCDoubleTranslation:
             kmf: scf.HF,
             chol: Union[npt.NDArray, None] = None,
     ):
-        """
-        Initialize a ERI object for CCSD from KP-THC factors and a
-        pyscf mean-field object
+        """Class for constructing THC factorized ERIs.
+
+        Assumes 2 G vectors to index THC factors (i.e. `double translation.')
 
         Arguments:
             chi: array of interpolating orbitals of shape
@@ -71,13 +71,16 @@ class KPTHCDoubleTranslation:
         self.chol = chol
 
     def get_eri(self, ikpts: list) -> npt.NDArray:
-        r"""Construct (pkp qkq| rkr sks) via
-            \\sum_{mu nu} zeta[iq, dG, dG', mu, nu]
+        r"""Construct ERIs given kpt indices. 
+
+        .. math::
+
+            (pkp qkq| rkr sks) = \\sum_{mu nu} zeta[iq, dG, dG', mu, nu]
             chi[kp,p,mu]* chi[kq,q,mu] chi[kp,p,nu]* chi[ks,s,nu]
 
         Arguments:
-          ikpts: list of four integers representing the index of the kpoint in
-            self.kmf.kpts
+            ikpts: list of four integers representing the index of the kpoint in
+                self.kmf.kpts
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])
@@ -91,8 +94,8 @@ class KPTHCDoubleTranslation:
         """Construct (pkp qkq| rkr sks) exactly from cholesky factors.
 
         Arguments:
-          kpts: list of four integers representing the index of the kpoint in
-            self.kmf.kpts
+            kpts: list of four integers representing the index of the kpoint in
+                self.kmf.kpts
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])
@@ -126,7 +129,7 @@ class KPTHCSingleTranslation(KPTHCDoubleTranslation):
             zeta: npt.NDArray,
             kmf: scf.HF,
     ):
-        """Class defining THC integrals.
+        """Class for constructing THC factorized ERIs.
 
         Assumes one delta G (i.e. a single translation vector.)
 
@@ -163,13 +166,13 @@ class KPTHCSingleTranslation(KPTHCDoubleTranslation):
         self.momentum_transfers = transfers[unique_indx]
 
     def get_eri(self, ikpts):
-        """Construct (pkp qkq| rkr sks)
+        """Construct ERIs from kpt indices 
         
         Evaluated via
 
         .. math::
 
-            \\sum_{mu nu} zeta[iq, dG, mu, nu]
+            (pkp qkq| rkr sks) = \\sum_{mu nu} zeta[iq, dG, mu, nu]
                 chi[kp,p,mu]* chi[kq,q,mu] chi[kp,p,nu]* chi[ks,s,nu]
 
         Arguments:

@@ -37,7 +37,7 @@ def test_sf_helper_trunc():
 
     print(" naux  error (Eh)")
     approx_cc = cc.KRCCSD(mf)
-    approx_cc.verbose = 4
+    approx_cc.verbose = 0
     helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
 
     eris = build_approximate_eris(approx_cc, helper)

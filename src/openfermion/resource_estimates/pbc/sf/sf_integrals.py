@@ -91,8 +91,8 @@ class SingleFactorization:
         Args:
             ikpts: list of four integers representing the index of the kpoint
                 in self.kmf.kpts
-            check_eq: optional value to confirm a symmetry in the Cholesky vectors
-                (Default value = False)
+            check_eq: optional value to confirm a symmetry in the Cholesky
+                vectors (Default value = False)
 
         Returns:
             eri: ([pkp][qkq]|[rkr][sks])
