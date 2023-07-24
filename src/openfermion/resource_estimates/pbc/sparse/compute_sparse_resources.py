@@ -84,7 +84,7 @@ def _compute_cost(
         Nky: int,
         Nkz: int,
 ) -> Tuple[int, int, int]:
-    """Determine fault-tolerant costs using sparse representaion of Hamiltonian 
+    """Determine fault-tolerant costs using sparse representaion of Hamiltonian.
 
     Arguments:
         n: the number of spin-orbitals

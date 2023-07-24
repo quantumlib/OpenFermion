@@ -17,7 +17,7 @@ import numpy as np
 def compute_beta_for_resources(num_spin_orbs: int, num_kpts: int,
                                de_for_qpe: float):
     """Compute beta (number of bits for controlled rotations).
-    
+
     Uses expression from https://arxiv.org/pdf/2007.14460.pdf.
 
     Args:

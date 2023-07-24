@@ -103,7 +103,7 @@ def _compute_cost(
         stps: int,
         verbose: bool = False,
 ) -> Tuple[int, int, int]:
-    """Determine fault-tolerant costs using DF decomposition. 
+    """Determine fault-tolerant costs using DF decomposition.
 
     Arguments:
         n: the number of spin-orbitals.
