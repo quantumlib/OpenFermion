@@ -17,9 +17,9 @@ import pandas as pd
 from pyscf.pbc import scf
 from pyscf.pbc.tools.k2gamma import kpts_to_kmesh
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_hamiltonian,)
-from openfermion.resource_estimates.pbc.utils.cc_helper import (
+from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
     build_approximate_eris,
     build_cc_inst,
     build_approximate_eris_rohf,
@@ -28,9 +28,9 @@ from openfermion.resource_estimates.pbc.sf.compute_lambda_sf import (
     compute_lambda,)
 from openfermion.resource_estimates.pbc.sf.compute_sf_resources import (
     compute_cost,)
-from openfermion.resource_estimates.pbc.sf.integral_helper_sf import (
-    SingleFactorizationHelper,)
-from openfermion.resource_estimates.pbc.utils.resource_utils import PBCResources
+from openfermion.resource_estimates.pbc.sf.sf_integrals import (
+    SingleFactorization,)
+from openfermion.resource_estimates.pbc.resources import PBCResources
 
 
 def generate_costing_table(
@@ -81,7 +81,7 @@ def generate_costing_table(
     )
     approx_eris = exact_eris
     for cutoff in naux_cutoffs:
-        sf_helper = SingleFactorizationHelper(cholesky_factor=chol,
+        sf_helper = SingleFactorization(cholesky_factor=chol,
                                               kmf=pyscf_mf,
                                               naux=cutoff)
         if pyscf_mf.cell.spin == 0:

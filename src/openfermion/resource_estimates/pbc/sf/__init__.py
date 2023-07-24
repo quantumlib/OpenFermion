@@ -20,5 +20,5 @@ except (ImportError, ModuleNotFoundError) as err:
 
 from .compute_lambda_sf import compute_lambda
 from .compute_sf_resources import compute_cost
-from .integral_helper_sf import SingleFactorizationHelper
+from .sf_integrals import SingleFactorization
 from .generate_costing_table_sf import generate_costing_table

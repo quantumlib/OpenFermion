@@ -17,12 +17,12 @@ import numpy as np
 from pyscf.pbc import scf
 from pyscf.pbc.tools.k2gamma import kpts_to_kmesh
 
-from openfermion.resource_estimates.pbc.utils.resource_utils import PBCResources
-from openfermion.resource_estimates.pbc.sparse.integral_helper_sparse import (
-    SparseFactorizationHelper,)
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.resources import PBCResources
+from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
+    SparseFactorization,)
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_hamiltonian,)
-from openfermion.resource_estimates.pbc.utils.cc_helper import (
+from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
     build_approximate_eris,
     build_cc_inst,
     build_approximate_eris_rohf,
@@ -82,7 +82,7 @@ def generate_costing_table(
     )
     approx_eris = exact_eris
     for thresh in thresholds:
-        sparse_helper = SparseFactorizationHelper(cholesky_factor=chol,
+        sparse_helper = SparseFactorization(cholesky_factor=chol,
                                                   kmf=pyscf_mf,
                                                   threshold=thresh)
         if pyscf_mf.cell.spin == 0:

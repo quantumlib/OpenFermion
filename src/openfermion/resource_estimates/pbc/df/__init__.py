@@ -20,5 +20,5 @@ except (ImportError, ModuleNotFoundError) as err:
 
 from .compute_lambda_df import compute_lambda
 from .compute_df_resources import compute_cost
-from .integral_helper_df import DFABKpointIntegrals
+from .df_integrals import DFABKpointIntegrals
 from .generate_costing_table_df import generate_costing_table

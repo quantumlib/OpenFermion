@@ -20,5 +20,5 @@ except (ImportError, ModuleNotFoundError) as err:
 
 from .compute_lambda_sparse import compute_lambda
 from .compute_sparse_resources import compute_cost
-from .integral_helper_sparse import SparseFactorizationHelper
+from .sparse_integrals import SparseFactorization
 from .generate_costing_table_sparse import generate_costing_table

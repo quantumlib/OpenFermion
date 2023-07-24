@@ -13,7 +13,7 @@
 import numpy as np
 
 from openfermion.resource_estimates.pbc import sparse
-from openfermion.resource_estimates.pbc.utils.test_utils import (
+from openfermion.resource_estimates.pbc.testing import (
     make_diamond_113_szv,)
 
 

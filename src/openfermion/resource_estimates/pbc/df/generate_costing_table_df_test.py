@@ -16,7 +16,7 @@ from pyscf.pbc import gto, scf
 
 from openfermion.resource_estimates.pbc.df.generate_costing_table_df import (
     generate_costing_table,)
-from openfermion.resource_estimates.pbc.utils.test_utils import (
+from openfermion.resource_estimates.pbc.testing import (
     make_diamond_113_szv,)
 
 

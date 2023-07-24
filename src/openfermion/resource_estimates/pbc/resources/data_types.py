@@ -10,18 +10,18 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+"""Dataclasses for resource estimation."""
 from dataclasses import dataclass, asdict, field
 import numpy as np
 import pandas as pd
 
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     HamiltonianProperties,)
 
 
 @dataclass(frozen=True)
 class ResourceEstimates:
-    """Lighweight descriptive data class to hold return values from compute_cost
-    functions.
+    """Dataclass to hold return values from compute_cost functions.
 
     Attributes:
         toffolis_per_step: Toffolis per step
@@ -97,70 +97,3 @@ class PBCResources:
         self.cutoff.append(cutoff)
         self.approx_energy.append(approx_energy)
 
-
-def compute_beta_for_resources(num_spin_orbs, num_kpts, dE_for_qpe):
-    """Compute beta (number of bits for rotations) using expression from
-    https://arxiv.org/pdf/2007.14460.pdf.
-
-    Args:
-        num_spin_orbs: Number of spin orbitals
-        num_kpts: Number of k-points.
-        dE_for_qpe: epsilon for phase estimation.
-    """
-    return np.ceil(5.652 + np.log2(num_spin_orbs * num_kpts / dE_for_qpe))
-
-
-def QR3(L, M1):
-    r"""
-    QR[Ll_, m_] := Ceiling[MinValue[{Ll/2^k + m*(2^k - 1), k >= 0}, k
-    \[Element] Integers]];
-    """
-    k = 0.5 * np.log2(L / M1)
-    value = lambda k: L / np.power(2, k) + M1 * (np.power(2, k) - 1)
-    try:
-        assert k >= 0
-    except AssertionError:
-        k_opt = 0
-        val_opt = np.ceil(value(k_opt))
-        assert val_opt.is_integer()
-        return int(k_opt), int(val_opt)
-    k_int = [np.floor(k), np.ceil(k)]  # restrict optimal k to integers
-    k_opt = k_int[np.argmin(value(k_int))]  # obtain optimal k
-    val_opt = np.ceil(value(k_opt))  # obtain ceiling of optimal value given k
-    assert k_opt.is_integer()
-    assert val_opt.is_integer()
-    return int(k_opt), int(val_opt)
-
-
-def QR2(L1, L2, M):
-    """
-     Table[Ceiling[L1/2^k1]*Ceiling[L2/2^k2] + M*(2^(k1 + k2) - 1), {k1, 1,
-    10}, {k2, 1, 10}]
-    """
-    min_val = np.inf
-    for k1 in range(1, 11):
-        for k2 in range(1, 11):
-            test_val = np.ceil(L1 /
-                               (2**k1)) * np.ceil(L2 /
-                                                  (2**k2)) + M * (2**
-                                                                  (k1 + k2) - 1)
-            if test_val < min_val:
-                min_val = test_val
-    return int(min_val)
-
-
-def QI2(L1, Lv2):
-    """
-    QI2[L1_, L2_] :=
-    Min[Table[
-    Ceiling[L1/2^k1]*Ceiling[L2/2^k2] + 2^(k1 + k2), {k1, 1, 10}, {k2,
-      1, 10}]];
-    """
-    min_val = np.inf
-    for k1 in range(1, 11):
-        for k2 in range(1, 11):
-            test_val = np.ceil(L1 / (2**k1)) * np.ceil(Lv2 /
-                                                       (2**k2)) + 2**(k1 + k2)
-            if test_val < min_val:
-                min_val = test_val
-    return int(min_val)

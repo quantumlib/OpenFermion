@@ -23,10 +23,8 @@ from sympy import factorint
 
 from openfermion.resource_estimates.utils import QI
 from openfermion.resource_estimates.utils import QR2 as QR2_of
-from openfermion.resource_estimates.pbc.utils.resource_utils import (
-    ResourceEstimates,)
-
-from openfermion.resource_estimates.pbc.utils.resource_utils import (
+from openfermion.resource_estimates.pbc.resources import (
+    ResourceEstimates,
     QR3,
     QR2,
     QI2,
@@ -41,8 +39,7 @@ def compute_cost(
         dE_for_qpe: float = 0.0016,
         chi: int = 10,
 ) -> ResourceEstimates:
-    """Determine fault-tolerant costs using single factorization representaion
-        of symmetry adapted integrals.
+    """Determine fault-tolerant costs using single factorizated Hamiltonian.
 
     Light wrapper around _compute_cost to automate choice of stps paramter.
 

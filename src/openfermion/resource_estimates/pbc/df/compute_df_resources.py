@@ -10,10 +10,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-""" Determine costs for DF decomposition in QC
-
-From openfermion
-"""
+"""Determine costs for DF decomposition"""
 from typing import Tuple, Union
 import numpy as np
 from numpy.lib.scimath import arccos, arcsin
@@ -21,11 +18,11 @@ from sympy import factorint
 
 from openfermion.resource_estimates.utils import QI
 
-from openfermion.resource_estimates.pbc.utils.resource_utils import (
+from openfermion.resource_estimates.pbc.resources import (
     ResourceEstimates,
     compute_beta_for_resources,
+    QR3,
 )
-from openfermion.resource_estimates.pbc.utils.resource_utils import QR3
 
 
 def compute_cost(
@@ -38,8 +35,7 @@ def compute_cost(
         chi: int = 10,
         beta: Union[int, None] = None,
 ) -> ResourceEstimates:
-    """Determine fault-tolerant costs using single factorization representaion
-        of symmetry adapted integrals.
+    """Determine fault-tolerant costs using double factorized Hamiltonian.
 
     Light wrapper around _compute_cost to automate choice of stps paramter.
 
@@ -107,7 +103,7 @@ def _compute_cost(
         stps: int,
         verbose: bool = False,
 ) -> Tuple[int, int, int]:
-    """Determine fault-tolerant costs using DF decomposition in quantum chem
+    """Determine fault-tolerant costs using DF decomposition. 
 
     Arguments:
         n: the number of spin-orbitals.

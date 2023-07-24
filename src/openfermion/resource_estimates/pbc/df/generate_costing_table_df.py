@@ -19,12 +19,12 @@ import numpy as np
 from pyscf.pbc import scf
 from pyscf.pbc.tools.k2gamma import kpts_to_kmesh
 
-from openfermion.resource_estimates.pbc.utils.resource_utils import PBCResources
-from openfermion.resource_estimates.pbc.df.integral_helper_df import (
+from openfermion.resource_estimates.pbc.resources import PBCResources
+from openfermion.resource_estimates.pbc.df.df_integrals import (
     DFABKpointIntegrals,)
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_hamiltonian,)
-from openfermion.resource_estimates.pbc.utils.cc_helper import (
+from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
     build_approximate_eris,
     build_cc_inst,
     build_approximate_eris_rohf,
@@ -33,7 +33,7 @@ from openfermion.resource_estimates.pbc.df.compute_lambda_df import (
     compute_lambda,)
 from openfermion.resource_estimates.pbc.df.compute_df_resources import (
     compute_cost,)
-from openfermion.resource_estimates.pbc.utils.resource_utils import (
+from openfermion.resource_estimates.pbc.resources import (
     compute_beta_for_resources,)
 
 

@@ -20,6 +20,7 @@ import pytest
 from openfermion.resource_estimates.pbc.hamiltonian import (
     build_hamiltonian,
     cholesky_from_df_ints,
+    build_momentum_transfer_mapping,
 )
 from openfermion.resource_estimates.pbc.testing import (
     make_diamond_113_szv,)
@@ -84,3 +85,29 @@ def test_pyscf_chol_from_df():
     assert np.allclose(eris.vvvv,
                        Ivvvv.transpose(0, 2, 1, 3, 5, 4, 6),
                        atol=1e-12)
+
+
+def test_momentum_transfer_map():
+    cell = gto.Cell()
+    cell.atom = """
+    C 0.000000000000   0.000000000000   0.000000000000
+    C 1.685068664391   1.685068664391   1.685068664391
+    """
+    cell.basis = "gth-szv"
+    cell.pseudo = "gth-pade"
+    cell.a = """
+    0.000000000, 3.370137329, 3.370137329
+    3.370137329, 0.000000000, 3.370137329
+    3.370137329, 3.370137329, 0.000000000"""
+    cell.unit = "B"
+    cell.verbose = 0
+    cell.build(parse_arg=False)
+    kpts = cell.make_kpts([2, 2, 1], scaled_center=[0.1, 0.2, 0.3])
+    mom_map = build_momentum_transfer_mapping(cell, kpts)
+    for i, Q in enumerate(kpts):
+        for j, k1 in enumerate(kpts):
+            k2 = kpts[mom_map[i, j]]
+            test = Q - k1 + k2
+            assert (np.amin(np.abs(test[None, :] - cell.Gv - kpts[0][None, :]))
+                    < 1e-15)
+

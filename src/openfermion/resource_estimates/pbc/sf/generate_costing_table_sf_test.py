@@ -18,7 +18,7 @@ import pytest
 
 from openfermion.resource_estimates.pbc.sf.generate_costing_table_sf import (
     generate_costing_table,)
-from openfermion.resource_estimates.pbc.utils.test_utils import (
+from openfermion.resource_estimates.pbc.testing import (
     make_diamond_113_szv,)
 
 

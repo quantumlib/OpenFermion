@@ -10,20 +10,32 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import pytest
+import numpy as np
 
-try:
-    import pyscf
-except (ImportError, ModuleNotFoundError) as err:
-    pytest.skip(f"Need pyscf for PBC resource estimates {err}",
-                allow_module_level=True)
+from openfermion.resource_estimates.pbc.resources.qrom import (QR2, QI2)
 
-from .compute_lambda_thc import compute_lambda
-from .compute_thc_resources import compute_cost
-from .thc_integrals import (
-    KPTHCDoubleTranslation,
-    KPTHCSingleTranslation,
-)
-from .generate_costing_table_thc import generate_costing_table
-from .factorizations.isdf import solve_kmeans_kpisdf
-from .factorizations.thc_jax import kpoint_thc_via_isdf
+
+def test_qr2():
+    L = 728
+    npp = 182
+    bpp = 21
+    test_val = QR2(L + 1, npp, bpp)
+    assert np.isclose(test_val, 3416)
+
+    L = 56
+    npp = 28
+    bpp = 91
+    test_val = QR2(L + 1, npp, bpp)
+    assert np.isclose(test_val, 679)
+
+
+def test_qi2():
+    L1 = 728
+    npp = 182
+    test_val = QI2(L1 + 1, npp)
+    assert np.isclose(test_val, 785)
+
+    L1 = 56
+    npp = 28
+    test_val = QI2(L1 + 1, npp)
+    assert np.isclose(test_val, 88)

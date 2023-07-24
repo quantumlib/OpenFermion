@@ -20,17 +20,17 @@ import pandas as pd
 from pyscf.pbc import scf
 from pyscf.pbc.tools.k2gamma import kpts_to_kmesh
 
-from openfermion.resource_estimates.pbc.thc.utils.thc_jax import (
+from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
     kpoint_thc_via_isdf,)
-from openfermion.resource_estimates.pbc.utils.resource_utils import PBCResources
-from openfermion.resource_estimates.pbc.thc.integral_helper_thc import (
-    KPTHCHelperDoubleTranslation,)
-from openfermion.resource_estimates.pbc.utils.cc_helper import (
+from openfermion.resource_estimates.pbc.resources.data_types import PBCResources
+from openfermion.resource_estimates.pbc.thc.thc_integrals import (
+    KPTHCDoubleTranslation,)
+from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
     build_approximate_eris,
     build_cc_inst,
     build_approximate_eris_rohf,
 )
-from openfermion.resource_estimates.pbc.utils.hamiltonian_utils import (
+from openfermion.resource_estimates.pbc.hamiltonian import (
     build_hamiltonian,)
 from openfermion.resource_estimates.pbc.thc.compute_lambda_thc import (
     compute_lambda,)
@@ -56,8 +56,7 @@ def generate_costing_table(
         fft_df_mesh: Union[None, list] = None,
         energy_method: str = "MP2",
 ) -> pd.DataFrame:
-    """Generate resource estimate costing table given a set of cutoffs for
-        THC Hamiltonian.
+    """Generate resource estimate costing table for THC Hamiltonian.
 
     Arguments:
         pyscf_mf: k-point pyscf mean-field object
@@ -128,10 +127,10 @@ def generate_costing_table(
             bfgs_maxiter=bfgs_maxiter,
             adagrad_maxiter=adagrad_maxiter,
         )
-        thc_helper = KPTHCHelperDoubleTranslation(kpt_thc.chi,
-                                                  kpt_thc.zeta,
-                                                  pyscf_mf,
-                                                  chol=chol)
+        thc_helper = KPTHCDoubleTranslation(kpt_thc.chi,
+                                            kpt_thc.zeta,
+                                            pyscf_mf,
+                                            chol=chol)
         thc_lambda = compute_lambda(hcore, thc_helper)
         kmesh = kpts_to_kmesh(pyscf_mf.cell, pyscf_mf.kpts)
         if pyscf_mf.cell.spin == 0:

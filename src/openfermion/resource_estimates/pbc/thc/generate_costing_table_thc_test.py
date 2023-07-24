@@ -16,7 +16,7 @@ import pytest
 
 from openfermion.resource_estimates.pbc.thc.generate_costing_table_thc import (
     generate_costing_table,)
-from openfermion.resource_estimates.pbc.utils.test_utils import (
+from openfermion.resource_estimates.pbc.testing import (
     make_diamond_113_szv,)
 
 
