@@ -27,7 +27,7 @@ def compute_lambda_real(
         chol: npt.NDArray,
 ) -> Tuple[float, float, float]:
     """Compute lambda assuming real THC factors (molecular way)
-    
+
     Avoids the need of a molecular object as in the molecular code.
 
     Args:
@@ -69,7 +69,7 @@ def compute_lambda_real(
 
 def compute_lambda(hcore: npt.NDArray,
                    thc_obj: KPTHCDoubleTranslation) -> HamiltonianProperties:
-    """Compute one-body and two-body lambda for qubitization the THC LCU. 
+    """Compute one-body and two-body lambda for qubitization the THC LCU.
 
     Args:
         hcore: List len(kpts) long of nmo x nmo complex hermitian arrays
