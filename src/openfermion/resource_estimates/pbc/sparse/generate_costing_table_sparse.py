@@ -83,8 +83,8 @@ def generate_costing_table(
     approx_eris = exact_eris
     for thresh in thresholds:
         sparse_helper = SparseFactorization(cholesky_factor=chol,
-                                                  kmf=pyscf_mf,
-                                                  threshold=thresh)
+                                            kmf=pyscf_mf,
+                                            threshold=thresh)
         if pyscf_mf.cell.spin == 0:
             approx_eris = build_approximate_eris(cc_inst,
                                                  sparse_helper,

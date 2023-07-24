@@ -96,4 +96,3 @@ class PBCResources:
         self.resources.append(resource_estimates)
         self.cutoff.append(cutoff)
         self.approx_energy.append(approx_energy)
-

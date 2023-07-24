@@ -19,5 +19,5 @@ except (ImportError, ModuleNotFoundError) as err:
                 allow_module_level=True)
 
 from .data_types import PBCResources, ResourceEstimates
-from .qrom import QR2, QR3, QI2 
+from .qrom import QR2, QR3, QI2
 from .rotation_param import compute_beta_for_resources

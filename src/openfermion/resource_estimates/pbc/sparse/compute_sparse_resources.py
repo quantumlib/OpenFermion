@@ -19,8 +19,8 @@ from numpy.lib.scimath import arccos, arcsin  # has analytc continuation to cplx
 from sympy import factorint
 from openfermion.resource_estimates.utils import QI
 
-from openfermion.resource_estimates.pbc.resources import (
-    ResourceEstimates, QR3)
+from openfermion.resource_estimates.pbc.resources import (ResourceEstimates,
+                                                          QR3)
 
 
 def compute_cost(

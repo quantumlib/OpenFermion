@@ -13,8 +13,8 @@
 """Function defining beta parameter for controlled rotations in DF and THC"""
 import numpy as np
 
-def compute_beta_for_resources(num_spin_orbs: int, 
-                               num_kpts: int,
+
+def compute_beta_for_resources(num_spin_orbs: int, num_kpts: int,
                                de_for_qpe: float):
     """Compute beta (number of bits for controlled rotations).
     
@@ -26,4 +26,3 @@ def compute_beta_for_resources(num_spin_orbs: int,
         de_for_qpe: epsilon for phase estimation.
     """
     return np.ceil(5.652 + np.log2(num_spin_orbs * num_kpts / de_for_qpe))
-

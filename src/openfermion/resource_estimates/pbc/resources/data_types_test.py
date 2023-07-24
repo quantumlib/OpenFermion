@@ -56,29 +56,3 @@ def test_pbc_resources():
     )
     assert (df.toffolis_per_step.values == [919, 366, 895, 787, 949]).all()
     assert (df.total_toffolis.values == [615, 554, 391, 444, 112]).all()
-
-
-def test_qr2():
-    L = 728
-    npp = 182
-    bpp = 21
-    test_val = QR2(L + 1, npp, bpp)
-    assert np.isclose(test_val, 3416)
-
-    L = 56
-    npp = 28
-    bpp = 91
-    test_val = QR2(L + 1, npp, bpp)
-    assert np.isclose(test_val, 679)
-
-
-def test_qi2():
-    L1 = 728
-    npp = 182
-    test_val = QI2(L1 + 1, npp)
-    assert np.isclose(test_val, 785)
-
-    L1 = 56
-    npp = 28
-    test_val = QI2(L1 + 1, npp)
-    assert np.isclose(test_val, 88)

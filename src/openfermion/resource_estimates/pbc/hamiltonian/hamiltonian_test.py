@@ -110,4 +110,3 @@ def test_momentum_transfer_map():
             test = Q - k1 + k2
             assert (np.amin(np.abs(test[None, :] - cell.Gv - kpts[0][None, :]))
                     < 1e-15)
-

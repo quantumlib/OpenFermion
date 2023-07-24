@@ -82,8 +82,8 @@ def generate_costing_table(
     approx_eris = exact_eris
     for cutoff in naux_cutoffs:
         sf_helper = SingleFactorization(cholesky_factor=chol,
-                                              kmf=pyscf_mf,
-                                              naux=cutoff)
+                                        kmf=pyscf_mf,
+                                        naux=cutoff)
         if pyscf_mf.cell.spin == 0:
             approx_eris = build_approximate_eris(cc_inst,
                                                  sf_helper,

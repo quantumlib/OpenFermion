@@ -17,6 +17,7 @@ the docstrings.
 """
 import numpy as np
 
+
 def QR3(L, M1):
     r"""
     QR[Ll_, m_] := Ceiling[MinValue[{Ll/2^k + m*(2^k - 1), k >= 0}, k
