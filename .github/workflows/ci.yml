@@ -89,7 +89,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install requirements
         run: |
-          pip install -r dev_tools/requirements/resources_estimates.env.txt
+          pip install -r dev_tools/requirements/resource_estimates.env.txt
           pip install cirq-core${{matrix.cirq-version}}
       - name: Pytest check resources
         run: check/pytest --resource-estimates -m "not slow"
