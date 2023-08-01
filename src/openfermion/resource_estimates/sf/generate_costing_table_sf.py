@@ -13,7 +13,6 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
                                                          pyscf_to_cas)
 
 
-
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
                     reason='pyscf and/or jax not installed.')
 def generate_costing_table(pyscf_mf,

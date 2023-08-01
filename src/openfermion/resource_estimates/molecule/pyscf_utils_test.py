@@ -13,12 +13,9 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf import cc, gto, scf
 
     from openfermion.resource_estimates import df, sf
-    from openfermion.resource_estimates.molecule import (ccsd_t,
-                                                         factorized_ccsd_t,
-                                                         load_casfile_to_pyscf,
-                                                         open_shell_t1_d1,
-                                                         pyscf_to_cas,
-                                                         stability)
+    from openfermion.resource_estimates.molecule import (
+        ccsd_t, factorized_ccsd_t, load_casfile_to_pyscf, open_shell_t1_d1,
+        pyscf_to_cas, stability)
 
 
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,

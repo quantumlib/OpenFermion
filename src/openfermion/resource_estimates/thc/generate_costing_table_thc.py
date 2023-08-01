@@ -5,7 +5,7 @@ import numpy as np
 from openfermion.resource_estimates import (HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
                                             thc)
 
-if HAVE_DEPS_FOR_RESOURCE_ESTIMATES: 
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf import scf
 
     from openfermion.resource_estimates.molecule import (cas_to_pyscf,

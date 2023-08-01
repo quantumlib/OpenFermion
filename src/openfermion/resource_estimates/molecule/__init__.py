@@ -16,6 +16,5 @@ from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from .pyscf_utils import (avas_active_space, cas_to_pyscf, ccsd_t,
                               factorized_ccsd_t, get_num_active_alpha_beta,
-                              load_casfile_to_pyscf, localize,
-                              open_shell_t1_d1, pyscf_to_cas,
-                              save_pyscf_to_casfile, stability)
+                              load_casfile_to_pyscf, localize, open_shell_t1_d1,
+                              pyscf_to_cas, save_pyscf_to_casfile, stability)
