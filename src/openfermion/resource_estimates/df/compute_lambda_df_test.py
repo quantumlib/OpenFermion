@@ -2,11 +2,18 @@
 """Test cases for compute_lambda_df.py
 """
 from os import path
+
 import numpy as np
-from openfermion.resource_estimates import df
-from openfermion.resource_estimates.molecule import load_casfile_to_pyscf
+import pytest
+
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES, df
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.molecule import load_casfile_to_pyscf
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason="pyscf and/or jax not installed.")
 def test_reiher_df_lambda():
     """ Reproduce Reiher et al orbital DF lambda from paper """
 

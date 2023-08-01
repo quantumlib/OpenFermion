@@ -1,29 +1,28 @@
 #coverage:ignore
 """Test cases for pyscf_utils.py
 """
-from os import path
 import unittest
-import pytest
+from os import path
+
 import numpy as np
+import pytest
 
-try:
-    from pyscf import gto, scf, cc
-    HAS_PYSCF = True
-except ModuleNotFoundError:
-    # resource_estimates depend on pyscf, which may not be installed
-    HAS_PYSCF = False
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-if HAS_PYSCF:
-    from openfermion.resource_estimates import sf, df
-    from openfermion.resource_estimates.utils import QR, QI, QR2, QI2, power_two
-    from openfermion.resource_estimates.molecule import (load_casfile_to_pyscf,
-                                                         pyscf_to_cas, ccsd_t,
-                                                         stability,
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf import cc, gto, scf
+
+    from openfermion.resource_estimates import df, sf
+    from openfermion.resource_estimates.molecule import (ccsd_t,
                                                          factorized_ccsd_t,
-                                                         open_shell_t1_d1)
+                                                         load_casfile_to_pyscf,
+                                                         open_shell_t1_d1,
+                                                         pyscf_to_cas,
+                                                         stability)
 
 
-@pytest.mark.skipif(not HAS_PYSCF, reason='Not detecting `pyscf`.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 class OpenFermionPyscfUtilsTest(unittest.TestCase):
 
     def test_full_ccsd_t(self):
