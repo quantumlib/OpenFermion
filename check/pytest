@@ -19,15 +19,21 @@ cd "$(git rev-parse --show-toplevel)"
 
 PYTEST_ARGS=()
 ACTUALLY_QUIET=""
+RESOURCE_ESTIMATES=""
 for arg in $@; do
     if [[ "${arg}" == "--actually-quiet" ]]; then
         ACTUALLY_QUIET=1
+    elif [[ "${arg}" == "--resource-estimates" ]]; then
+        RESOURCE_ESTIMATES=1
     else
         PYTEST_ARGS+=("${arg}")
     fi
 done
 
-if [ -z "${ACTUALLY_QUIET}" ]; then
+
+if [ "${RESOURCE_ESTIMATES}" -eq 1 ]; then
+    pytest -c dev_tools/conf/pytest.ini -m "not slow" "${PYTEST_ARGS[@]}" src/openfermion/resource_estimates
+elif [ -z "${ACTUALLY_QUIET}" ]; then
     pytest "${PYTEST_ARGS[@]}"
 else
     # Filter out lines like "...F....x...      [ 42%]", with coloring.

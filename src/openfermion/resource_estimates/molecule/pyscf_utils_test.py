@@ -23,6 +23,7 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
 
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
                     reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 class OpenFermionPyscfUtilsTest(unittest.TestCase):
 
     def test_full_ccsd_t(self):

@@ -11,3 +11,4 @@ pip-compile $@ --output-file=pylint.env.txt --resolver=backtracking deps/pylint.
 pip-compile $@ --output-file=pytest.env.txt --resolver=backtracking deps/pytest.txt    runtime.env.txt
 pip-compile $@ --output-file=mypy.env.txt   --resolver=backtracking deps/mypy.txt      runtime.env.txt
 pip-compile $@ --output-file=dev.env.txt    --resolver=backtracking deps/dev-tools.txt runtime.env.txt
+pip-compile $@ --output-file=dev.env.txt    --resolver=backtracking deps/resource_estimates.txt pytest.env.txt

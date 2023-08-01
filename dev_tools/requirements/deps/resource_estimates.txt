@@ -1,0 +1,3 @@
+pyscf
+jax
+jaxlib

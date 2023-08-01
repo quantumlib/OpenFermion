@@ -71,6 +71,29 @@ jobs:
       - name: Pytest check
         run: check/pytest
         shell: bash
+  pytest_resource_estimates:
+    name: Pytest Resource Estimates
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # On each operating system, check latest version of python and cirq
+        os: [ubuntu-latest, macos-latest]
+        python-version: [ '3.10' ]
+        cirq-version: [ '~=1.0' ]
+        # Also check least-supported versions (linux only)
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install requirements
+        run: |
+          pip install -r dev_tools/requirements/resources_estimates.env.txt
+          pip install cirq-core${{matrix.cirq-version}}
+      - name: Pytest check resources
+        run: check/pytest --resource-estimates -m "not slow"
+        shell: bash
   coverage:
     name: Coverage check
     runs-on: ubuntu-latest
