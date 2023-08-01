@@ -92,7 +92,7 @@ jobs:
           pip install -r dev_tools/requirements/resource_estimates.env.txt
           pip install cirq-core${{matrix.cirq-version}}
       - name: Pytest check resources
-        run: check/pytest --resource-estimates -m "not slow"
+        run: check/pytest --resource-estimates
         shell: bash
   coverage:
     name: Coverage check
