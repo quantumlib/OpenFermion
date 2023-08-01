@@ -16,9 +16,3 @@ try:
     HAVE_DEPS_FOR_RESOURCE_ESTIMATES = True
 except ModuleNotFoundError:
     HAVE_DEPS_FOR_RESOURCE_ESTIMATES = False
-
-# try:
-#     import pybtas
-#     HAVE_PYBTAS_FOR_RESOURCE_ESTIMATES = True
-# except ModuleNotFoundError:
-#     HAVE_PYBTAS_FOR_RESOURCE_ESTIMATES = False
