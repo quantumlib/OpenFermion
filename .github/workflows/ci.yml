@@ -76,11 +76,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # On each operating system, check latest version of python and cirq
         os: [ubuntu-latest, macos-latest]
         python-version: [ '3.10' ]
         cirq-version: [ '~=1.0' ]
-        # Also check least-supported versions (linux only)
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
