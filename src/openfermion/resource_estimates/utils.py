@@ -111,9 +111,9 @@ def QI2(L1: int, L2: int) -> Tuple[int, int, int]:
     # Biggest concern is if k1 / k2 range is not large enough!
     for k1 in range(1, 17):
         for k2 in range(1, 17):
-            value = np.ceil(L1 / np.power(2, k1)) * np.ceil(L2 / \
-                np.power(2, k2)) +\
-                np.power(2, k1 + k2)
+            value = np.ceil(L1 / np.power(2.0, k1)) * np.ceil(L2 / \
+                np.power(2.0, k2)) +\
+                np.power(2.0, k1 + k2)
             if value < val_opt:
                 val_opt = value
                 k1_opt = k1
