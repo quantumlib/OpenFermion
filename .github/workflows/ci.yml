@@ -90,7 +90,7 @@ jobs:
           pip install -r dev_tools/requirements/resource_estimates.env.txt
           pip install cirq-core${{matrix.cirq-version}}
       - name: Pytest check resources
-        run: check/pytest --resource-estimates
+        run: check/pytest -m 'not slow' src/openfermion/resource_estimates
         shell: bash
   coverage:
     name: Coverage check
