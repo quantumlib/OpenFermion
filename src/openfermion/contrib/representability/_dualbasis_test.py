@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from openfermion.third_party.representability._dualbasis import \
+from openfermion.contrib.representability._dualbasis import \
     DualBasisElement, DualBasis
 
 

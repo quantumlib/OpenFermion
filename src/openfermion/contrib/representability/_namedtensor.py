@@ -1,7 +1,7 @@
 from typing import Iterable, Generator, Optional, Union
 from itertools import zip_longest
 import numpy as np
-from openfermion.third_party.representability._bijections import Bijection, \
+from openfermion.contrib.representability._bijections import Bijection, \
     index_index_basis
 
 
@@ -59,7 +59,7 @@ class Tensor(object):
 
     def __call__(self, *indices):
         """
-        Index into the the data by passing through the basis first
+        Index into the data by passing through the basis first
 
         :param indices: indices for the rev_bas
         :return: element of the data

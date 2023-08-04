@@ -1,12 +1,11 @@
 #coverage:ignore
 """ THC rank reduction of ERIs """
-import sys
 import time
-import uuid
-import numpy as np
+
 import h5py
-from openfermion.resource_estimates.thc.utils import (lbfgsb_opt_thc_l2reg,
-                                                      adagrad_opt_thc)
+import numpy as np
+
+from openfermion.resource_estimates.thc.utils import lbfgsb_opt_thc_l2reg
 
 
 def thc_via_cp3(eri_full,
@@ -21,7 +20,7 @@ def thc_via_cp3(eri_full,
     """
     THC-CP3 performs an SVD decomposition of the eri matrix followed by a CP
     decomposition via pybtas. The CP decomposition is assumes the tensor is
-    symmetric in in the first two indices corresponding to a reshaped
+    symmetric in the first two indices corresponding to a reshaped
     (and rescaled by the singular value) singular vector.
 
     Args:

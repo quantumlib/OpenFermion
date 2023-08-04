@@ -1,10 +1,16 @@
 #coverage:ignore
 """ Pretty-print a table comparing number of THC vectors vs accy and cost """
 import numpy as np
-from pyscf import scf
-from openfermion.resource_estimates import thc
-from openfermion.resource_estimates.molecule import (factorized_ccsd_t,
-                                                     cas_to_pyscf, pyscf_to_cas)
+
+from openfermion.resource_estimates import (HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                                            thc)
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf import scf
+
+    from openfermion.resource_estimates.molecule import (cas_to_pyscf,
+                                                         factorized_ccsd_t,
+                                                         pyscf_to_cas)
 
 
 def generate_costing_table(pyscf_mf,

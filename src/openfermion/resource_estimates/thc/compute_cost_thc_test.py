@@ -2,6 +2,7 @@
 """Test cases for costing_thc.py
 """
 import unittest
+
 import pytest
 
 from openfermion.resource_estimates import thc

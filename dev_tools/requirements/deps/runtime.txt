@@ -1,0 +1,12 @@
+cirq-core~=1.0
+deprecation
+h5py>=2.8
+networkx
+numpy>=1.11.0
+pubchempy
+requests>=2.18
+
+# https://github.com/scipy/scipy/issues/18250
+scipy>=1.1.0,<1.10.0
+
+sympy
