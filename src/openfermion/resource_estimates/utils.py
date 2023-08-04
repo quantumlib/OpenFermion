@@ -23,10 +23,9 @@ def QR(L: int, M1: int) -> Tuple[int, int]:
     try:
         assert k >= 0
     except AssertionError:
-        sys.exit("In function QR: \
-        \n  L is smaller than M: increase RANK or lower THRESH \
-        (or alternatively decrease CHI)")
-    value = lambda k: L / np.power(2, k) + M1 * (np.power(2, k) - 1)
+        sys.exit("In function QR: L is smaller than M: increase RANK or lower "
+                 "THRESH (or alternatively decrease CHI)")
+    value = lambda k: L / np.power(2.0, k) + M1 * (np.power(2.0, k) - 1)
     k_int = [np.floor(k), np.ceil(k)]  # restrict optimal k to integers
     k_opt = k_int[np.argmin(value(k_int))]  # obtain optimal k
     val_opt = np.ceil(value(k_opt))  # obtain ceiling of optimal value given k
@@ -56,9 +55,9 @@ def QR2(L1: int, L2: int, M1: int) -> Tuple[int, int, int]:
     # Biggest concern is if k1 / k2 range is not large enough!
     for k1 in range(1, 17):
         for k2 in range(1, 17):
-            value = np.ceil(L1 / np.power(2, k1)) * np.ceil(L2 / \
-                np.power(2, k2)) +\
-                M1 * (np.power(2, k1 + k2) - 1)
+            value = np.ceil(L1 / np.power(2.0, k1)) * np.ceil(L2 / \
+                np.power(2.0, k2)) +\
+                M1 * (np.power(2.0, k1 + k2) - 1)
             if value < val_opt:
                 val_opt = value
                 k1_opt = k1
@@ -80,7 +79,7 @@ def QI(L: int) -> Tuple[int, int]:
     """
     k = 0.5 * np.log2(L)
     assert k >= 0
-    value = lambda k: L / np.power(2, k) + np.power(2, k)
+    value = lambda k: L / np.power(2.0, k) + np.power(2.0, k)
     k_int = [np.floor(k), np.ceil(k)]  # restrict optimal k to integers
     k_opt = k_int[np.argmin(value(k_int))]  # obtain optimal k
     val_opt = np.ceil(value(k_opt))  # obtain ceiling of optimal value given k
@@ -111,9 +110,9 @@ def QI2(L1: int, L2: int) -> Tuple[int, int, int]:
     # Biggest concern is if k1 / k2 range is not large enough!
     for k1 in range(1, 17):
         for k2 in range(1, 17):
-            value = np.ceil(L1 / np.power(2, k1)) * np.ceil(L2 / \
-                np.power(2, k2)) +\
-                np.power(2, k1 + k2)
+            value = np.ceil(L1 / np.power(2.0, k1)) * np.ceil(L2 / \
+                np.power(2.0, k2)) +\
+                np.power(2.0, k1 + k2)
             if value < val_opt:
                 val_opt = value
                 k1_opt = k1
