@@ -11,16 +11,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from .pyscf_utils import (
-    stability,
-    localize,
-    avas_active_space,
-    cas_to_pyscf,
-    pyscf_to_cas,
-    get_num_active_alpha_beta,
-    load_casfile_to_pyscf,
-    save_pyscf_to_casfile,
-    factorized_ccsd_t,
-    ccsd_t,
-    open_shell_t1_d1,
-)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from .pyscf_utils import (avas_active_space, cas_to_pyscf, ccsd_t,
+                              factorized_ccsd_t, get_num_active_alpha_beta,
+                              load_casfile_to_pyscf, localize, open_shell_t1_d1,
+                              pyscf_to_cas, save_pyscf_to_casfile, stability)
