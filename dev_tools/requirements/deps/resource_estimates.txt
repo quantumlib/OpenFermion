@@ -1,3 +1,4 @@
 pyscf
 jax
 jaxlib
+ase
