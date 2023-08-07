@@ -14,11 +14,12 @@ import itertools
 
 import numpy as np
 import pytest
-from pyscf.pbc import cc, mp
 
 from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf.pbc import cc, mp
+
     from openfermion.resource_estimates.pbc.hamiltonian import (
         build_hamiltonian, cholesky_from_df_ints)
     from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
