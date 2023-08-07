@@ -11,20 +11,21 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import itertools
+
 import numpy as np
-
-from pyscf.pbc import gto, scf, mp, cc
-from pyscf.lib import chkfile
 import pytest
+from pyscf.pbc import cc, mp
 
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    build_hamiltonian,
-    cholesky_from_df_ints,
-)
-from openfermion.resource_estimates.pbc.testing import (
-    make_diamond_113_szv,)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        build_hamiltonian, cholesky_from_df_ints)
+    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_build_hamiltonian():
     mf = make_diamond_113_szv()
     nmo = mf.mo_coeff[0].shape[-1]
@@ -36,6 +37,8 @@ def test_build_hamiltonian():
     assert chol[0, 0].shape == (naux, nmo, nmo)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_pyscf_chol_from_df():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)

@@ -12,11 +12,5 @@
 #   limitations under the License.
 import pytest
 
-try:
-    import pyscf
-except (ImportError, ModuleNotFoundError) as err:
-    pytest.skip(f"Need pyscf for PBC resource estimates {err}",
-                allow_module_level=True)
-
 from .hamiltonian import (cholesky_from_df_ints, build_hamiltonian,
                           build_momentum_transfer_mapping)

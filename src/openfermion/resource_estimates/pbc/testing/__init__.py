@@ -10,11 +10,4 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import pytest
-
-try:
-    import pyscf
-except (ImportError, ModuleNotFoundError) as err:
-    pytest.skip(f"Need pyscf for PBC resource estimates {err}",
-                allow_module_level=True)
 from .test_systems import make_diamond_113_szv

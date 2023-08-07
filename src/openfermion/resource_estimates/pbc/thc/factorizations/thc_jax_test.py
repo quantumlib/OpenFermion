@@ -10,36 +10,37 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import jax
-import jax.numpy as jnp
 import numpy as np
 import pytest
-from pyscf.pbc import gto, mp, scf
 
-from openfermion.resource_estimates.thc.utils.thc_factorization import (
-    lbfgsb_opt_thc_l2reg,)
-from openfermion.resource_estimates.thc.utils.thc_factorization import (
-    thc_objective_regularized as thc_obj_mol,)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
-    solve_kmeans_kpisdf,)
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    cholesky_from_df_ints, build_momentum_transfer_mapping)
-from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
-    adagrad_opt_kpthc_batched,
-    get_zeta_size,
-    kpoint_thc_via_isdf,
-    lbfgsb_opt_kpthc_l2reg,
-    lbfgsb_opt_kpthc_l2reg_batched,
-    make_contiguous_cholesky,
-    pack_thc_factors,
-    prepare_batched_data_indx_arrays,
-    thc_objective_regularized,
-    thc_objective_regularized_batched,
-    unpack_thc_factors,
-)
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    import jax
+    import jax.numpy as jnp
+    from pyscf.pbc import gto, mp, scf
+
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        build_hamiltonian, build_momentum_transfer_mapping,
+        cholesky_from_df_ints)
+    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
+    from openfermion.resource_estimates.pbc.thc.factorizations.isdf import \
+        solve_kmeans_kpisdf
+    from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
+        adagrad_opt_kpthc_batched, get_zeta_size, kpoint_thc_via_isdf,
+        lbfgsb_opt_kpthc_l2reg, lbfgsb_opt_kpthc_l2reg_batched,
+        make_contiguous_cholesky, pack_thc_factors,
+        prepare_batched_data_indx_arrays, thc_objective_regularized,
+        thc_objective_regularized_batched, unpack_thc_factors)
+    from openfermion.resource_estimates.thc.utils.thc_factorization import \
+        lbfgsb_opt_thc_l2reg
+    from openfermion.resource_estimates.thc.utils.thc_factorization import \
+        thc_objective_regularized as thc_obj_mol
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_thc_reg_gamma():
     cell = gto.Cell()
     cell.atom = """
@@ -67,7 +68,7 @@ def test_kpoint_thc_reg_gamma():
     kpt_thc = solve_kmeans_kpisdf(mf,
                                   num_interp_points,
                                   single_translation=False)
-    chi, zeta, G_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.G_mapping
+    chi, zeta, g_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.g_mapping
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
     buffer = np.zeros(2 * (chi.size + get_zeta_size(zeta)), dtype=np.float64)
     pack_thc_factors(chi, zeta, buffer)
@@ -108,7 +109,7 @@ def test_kpoint_thc_reg_gamma():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         maxiter=10,
         penalty_param=None,
@@ -127,13 +128,16 @@ def test_kpoint_thc_reg_gamma():
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         1e-3,
     )
     assert mol_obj - gam_obj < 1e-12
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_thc_reg_batched():
     cell = gto.Cell()
     cell.atom = """
@@ -162,7 +166,7 @@ def test_kpoint_thc_reg_batched():
                                   num_interp_points,
                                   single_translation=False,
                                   verbose=False)
-    chi, zeta, G_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.G_mapping
+    chi, zeta, g_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.g_mapping
     rsmf = scf.KRHF(mf.cell, mf.kpts).rs_density_fit()
     rsmf.mo_occ = mf.mo_occ
     rsmf.mo_coeff = mf.mo_coeff
@@ -190,19 +194,19 @@ def test_kpoint_thc_reg_batched():
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         penalty,
     )
     # # Test gradient is the same
-    indx_arrays = prepare_batched_data_indx_arrays(momentum_map, G_mapping)
+    indx_arrays = prepare_batched_data_indx_arrays(momentum_map, g_mapping)
     batch_size = num_kpts**2
     obj_batched = thc_objective_regularized_batched(
         buffer,
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         indx_arrays,
         batch_size,
@@ -215,7 +219,7 @@ def test_kpoint_thc_reg_batched():
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         penalty,
     )
@@ -226,7 +230,7 @@ def test_kpoint_thc_reg_batched():
         num_mo,
         num_interp_points,
         momentum_map,
-        G_mapping,
+        g_mapping,
         Luv_cont,
         indx_arrays,
         batch_size,
@@ -237,7 +241,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         maxiter=2,
         penalty_param=1e-3,
@@ -247,7 +251,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         maxiter=2,
         penalty_param=1e-3,
@@ -259,7 +263,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         batch_size=batch_size,
         maxiter=2,
@@ -271,7 +275,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         maxiter=2,
         batch_size=1,
@@ -282,7 +286,7 @@ def test_kpoint_thc_reg_batched():
         chi,
         zeta,
         momentum_map,
-        G_mapping,
+        g_mapping,
         jnp.array(Luv_cont),
         batch_size=batch_size,
         maxiter=2,
@@ -290,6 +294,9 @@ def test_kpoint_thc_reg_batched():
     assert np.allclose(ada_param, ada_param_diff_batch)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_thc_helper():
     cell = gto.Cell()
     cell.atom = """
