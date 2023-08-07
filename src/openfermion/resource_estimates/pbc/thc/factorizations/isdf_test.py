@@ -426,7 +426,6 @@ def test_kpoint_isdf_single_translation():
                 assert np.allclose(eri_pqrs, eri_pqrs_isdf)
 
 
-
 def get_complement(miller_indx, kmesh):
     complement = ~miller_indx
     complement[np.where(np.array(kmesh) == 1)] = 0
