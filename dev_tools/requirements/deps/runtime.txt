@@ -7,6 +7,6 @@ pubchempy
 requests>=2.18
 
 # https://github.com/scipy/scipy/issues/18250
-scipy>=1.1.0,<1.10.0
+scipy>=1.1.0,<1.11.0
 
 sympy
