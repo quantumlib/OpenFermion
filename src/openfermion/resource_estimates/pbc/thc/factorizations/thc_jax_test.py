@@ -21,9 +21,7 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf.pbc import gto, mp, scf
 
     from openfermion.resource_estimates.pbc.hamiltonian import (
-        build_momentum_transfer_mapping,
-        cholesky_from_df_ints)
-    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
+        build_momentum_transfer_mapping, cholesky_from_df_ints)
     from openfermion.resource_estimates.pbc.thc.factorizations.isdf import \
         solve_kmeans_kpisdf
     from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
