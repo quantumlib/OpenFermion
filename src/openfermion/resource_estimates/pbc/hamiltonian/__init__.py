@@ -10,13 +10,10 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import pytest
 
-try:
-    import pyscf
-except (ImportError, ModuleNotFoundError) as err:
-    pytest.skip(f"Need pyscf for PBC resource estimates {err}",
-                allow_module_level=True)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-from .hamiltonian import (cholesky_from_df_ints, build_hamiltonian,
-                          build_momentum_transfer_mapping)
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from .hamiltonian import (build_hamiltonian,
+                              build_momentum_transfer_mapping,
+                              cholesky_from_df_ints)

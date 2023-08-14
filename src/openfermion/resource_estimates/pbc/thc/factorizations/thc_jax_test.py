@@ -10,36 +10,37 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import jax
-import jax.numpy as jnp
 import numpy as np
 import pytest
-from pyscf.pbc import gto, mp, scf
 
-from openfermion.resource_estimates.thc.utils.thc_factorization import (
-    lbfgsb_opt_thc_l2reg,)
-from openfermion.resource_estimates.thc.utils.thc_factorization import (
-    thc_objective_regularized as thc_obj_mol,)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
-    solve_kmeans_kpisdf,)
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    cholesky_from_df_ints, build_momentum_transfer_mapping)
-from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
-    adagrad_opt_kpthc_batched,
-    get_zeta_size,
-    kpoint_thc_via_isdf,
-    lbfgsb_opt_kpthc_l2reg,
-    lbfgsb_opt_kpthc_l2reg_batched,
-    make_contiguous_cholesky,
-    pack_thc_factors,
-    prepare_batched_data_indx_arrays,
-    thc_objective_regularized,
-    thc_objective_regularized_batched,
-    unpack_thc_factors,
-)
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    import jax
+    import jax.numpy as jnp
+    from pyscf.pbc import gto, mp, scf
+
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        build_hamiltonian, build_momentum_transfer_mapping,
+        cholesky_from_df_ints)
+    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
+    from openfermion.resource_estimates.pbc.thc.factorizations.isdf import \
+        solve_kmeans_kpisdf
+    from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
+        adagrad_opt_kpthc_batched, get_zeta_size, kpoint_thc_via_isdf,
+        lbfgsb_opt_kpthc_l2reg, lbfgsb_opt_kpthc_l2reg_batched,
+        make_contiguous_cholesky, pack_thc_factors,
+        prepare_batched_data_indx_arrays, thc_objective_regularized,
+        thc_objective_regularized_batched, unpack_thc_factors)
+    from openfermion.resource_estimates.thc.utils.thc_factorization import \
+        lbfgsb_opt_thc_l2reg
+    from openfermion.resource_estimates.thc.utils.thc_factorization import \
+        thc_objective_regularized as thc_obj_mol
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_thc_reg_gamma():
     cell = gto.Cell()
     cell.atom = """
@@ -135,6 +136,9 @@ def test_kpoint_thc_reg_gamma():
     assert mol_obj - gam_obj < 1e-12
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_thc_reg_batched():
     cell = gto.Cell()
     cell.atom = """
@@ -291,6 +295,9 @@ def test_kpoint_thc_reg_batched():
     assert np.allclose(ada_param, ada_param_diff_batch)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_thc_helper():
     cell = gto.Cell()
     cell.atom = """

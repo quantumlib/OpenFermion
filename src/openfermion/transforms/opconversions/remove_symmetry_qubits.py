@@ -61,12 +61,12 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
                with an arbitrary number of fermions.
     """
     # Catch errors if inputs are of wrong type.
-    if type(fermion_hamiltonian) is not FermionOperator:
+    if not isinstance(fermion_hamiltonian, FermionOperator):
         raise ValueError(
             "Supplied operator should be an instance of FermionOperator class")
-    if type(active_orbitals) is not int:
+    if not isinstance(active_orbitals, int):
         raise ValueError("Number of active orbitals should be an integer.")
-    if type(active_fermions) is not int:
+    if not isinstance(active_fermions, int):
         raise ValueError("Number of active fermions should be an integer.")
 
     # Arrange spins up then down, then BK map to qubit Hamiltonian.
