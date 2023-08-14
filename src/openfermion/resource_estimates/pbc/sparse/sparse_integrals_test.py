@@ -20,7 +20,7 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
 
     from openfermion.resource_estimates.pbc.hamiltonian import (
         cholesky_from_df_ints,)
-    from openfermion.resource_estimates.pbc.testing.test_systems import (
+    from openfermion.resource_estimates.pbc.testing.systems import (
         make_diamond_113_szv,)
     from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
         unique_iter, unique_iter_pr_qs, unique_iter_ps_qr, unique_iter_pq_rs,
