@@ -12,24 +12,30 @@
 #   limitations under the License.
 import os
 
-from pyscf.pbc import gto, scf, mp
-from pyscf.pbc.cc import KRCCSD
-from pyscf.lib import chkfile
 import pytest
 import numpy as np
 
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    cholesky_from_df_ints,)
-from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
-    build_approximate_eris_rohf,
-    build_approximate_eris,
-)
-from openfermion.resource_estimates.pbc.sf.sf_integrals import (
-    SingleFactorization,)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf.pbc import gto, scf, mp
+    from pyscf.pbc.cc import KRCCSD
+    from pyscf.lib import chkfile
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        cholesky_from_df_ints,)
+    from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
+        build_approximate_eris_rohf,
+        build_approximate_eris,
+    )
+    from openfermion.resource_estimates.pbc.sf.sf_integrals import (
+        SingleFactorization,)
 
 _TEST_CHK = os.path.join(os.path.dirname(__file__), "../test_data/scf.chk")
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_cc_extension_rohf():
     cell = gto.Cell()
     cell.atom = """
@@ -130,6 +136,9 @@ def test_cc_extension_rohf():
     assert abs(ecc_exact - ecc_approx) > 1e-12
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_cc_helper_rhf():
     cell = gto.Cell()
     cell.atom = """
