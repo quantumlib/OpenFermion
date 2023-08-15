@@ -21,9 +21,7 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf.pbc import gto, mp, scf
 
     from openfermion.resource_estimates.pbc.hamiltonian import (
-        build_hamiltonian, build_momentum_transfer_mapping,
-        cholesky_from_df_ints)
-    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
+        build_momentum_transfer_mapping, cholesky_from_df_ints)
     from openfermion.resource_estimates.pbc.thc.factorizations.isdf import \
         solve_kmeans_kpisdf
     from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
@@ -67,7 +65,8 @@ def test_kpoint_thc_reg_gamma():
     num_interp_points = 10 * mf.mo_coeff[0].shape[-1]
     kpt_thc = solve_kmeans_kpisdf(mf,
                                   num_interp_points,
-                                  single_translation=False)
+                                  single_translation=False,
+                                  verbose=False)
     chi, zeta, g_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.g_mapping
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
     buffer = np.zeros(2 * (chi.size + get_zeta_size(zeta)), dtype=np.float64)
