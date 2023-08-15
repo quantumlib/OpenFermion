@@ -41,8 +41,6 @@ def test_df_amat_bmat():
 
     dfk_inst.double_factorize()
 
-    import openfermion as of
-
     nkpts = len(mf.kpts)
     for qidx, kidx in itertools.product(range(nkpts), repeat=2):
         Amats, Bmats = dfk_inst.build_A_B_n_q_k_from_chol(qidx, kidx)

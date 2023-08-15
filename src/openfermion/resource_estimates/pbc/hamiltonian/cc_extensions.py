@@ -10,7 +10,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Utilities for overwriting CCSD pbc eris with integral factorizations."""
+"""Utilities for overwriting coupled cluster single and doubles CCSD pbc eris."""
 
 from pyscf.lib import logger
 from pyscf.pbc.lib.kpts_helper import loop_kkk
