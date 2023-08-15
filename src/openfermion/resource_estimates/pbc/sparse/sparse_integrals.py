@@ -22,8 +22,7 @@ from openfermion.resource_estimates.pbc.hamiltonian import (
     build_momentum_transfer_mapping,)
 
 
-def _symmetric_two_body_terms(quad: Tuple[int, ...],
-                              complex_valued: bool):
+def _symmetric_two_body_terms(quad: Tuple[int, ...], complex_valued: bool):
     p, q, r, s = quad
     yield p, q, r, s
     yield q, p, s, r
