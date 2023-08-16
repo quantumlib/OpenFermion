@@ -328,3 +328,11 @@ class LowRankTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             prepare_one_body_squared_evolution(one_body_matrix,
                                                spin_basis=False)
+            
+    def test_one_body_squared_truncated(self):
+        one_body_matrix = numpy.array([[2.0, 1.5, 0.2],[1.5, 3.0, 1.0],[0.2, 1.0, 4.0]])
+        truncation_reference = 1.0
+        with self.assertRaises(ValueError):
+            prepare_one_body_squared_evolution(one_body_matrix, 
+                                               spin_basis=False, 
+                                               truncation_ref=truncation_reference)
