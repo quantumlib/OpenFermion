@@ -16,5 +16,4 @@ from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from .hamiltonian import (build_hamiltonian,
                               build_momentum_transfer_mapping,
-                              cholesky_from_df_ints,
-                              HamiltonianProperties)
+                              cholesky_from_df_ints, HamiltonianProperties)
