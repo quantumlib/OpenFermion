@@ -12,20 +12,13 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from ast import Import
-import warnings
-import pytest
 
-try:
-    import jax
-    from .spacetime import qubit_vs_toffoli
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+from .compute_cost_thc import compute_cost
+from .spacetime import qubit_vs_toffoli
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from .compute_lambda_thc import compute_lambda
-    from .compute_cost_thc import compute_cost
-    from .generate_costing_table_thc import generate_costing_table
-except ImportError:
-    pytest.skip('Need jax and pybtas for THC', allow_module_level=True)
-
-try:
     from .factorize_thc import thc_via_cp3 as factorize
-except ImportError:
-    warnings.warn("Need pybtas for THC factorization")
+    from .generate_costing_table_thc import generate_costing_table

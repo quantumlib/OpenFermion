@@ -10,34 +10,33 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from ase.build import bulk
 import numpy as np
+import pytest
 
-from pyscf.pbc import gto, scf
-from pyscf.pbc.dft import numint
-from pyscf.pbc.tools import pyscf_ase
-from pyscf.pbc.lib.kpts_helper import unique, get_kconserv, member
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import (
-    KMeansCVT)
-from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
-    inverse_g_map_double_translation,
-    build_kpoint_zeta,
-    get_miller,
-    build_minus_q_g_mapping,
-    build_g_vectors,
-    build_g_vector_mappings_single_translation,
-    build_g_vector_mappings_double_translation,
-    build_eri_isdf_double_translation,
-    build_eri_isdf_single_translation,
-    solve_kmeans_kpisdf,
-    solve_qrcp_isdf,
-    supercell_isdf,
-)
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    build_momentum_transfer_mapping,)
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from ase.build import bulk
+    from pyscf.pbc import gto, scf
+    from pyscf.pbc.dft import numint
+    from pyscf.pbc.lib.kpts_helper import get_kconserv, member, unique
+    from pyscf.pbc.tools import pyscf_ase
+
+    from openfermion.resource_estimates.pbc.hamiltonian import \
+        build_momentum_transfer_mapping
+    from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
+        build_eri_isdf_double_translation, build_eri_isdf_single_translation,
+        build_g_vector_mappings_double_translation,
+        build_g_vector_mappings_single_translation, build_g_vectors,
+        build_kpoint_zeta, build_minus_q_g_mapping, get_miller,
+        inverse_g_map_double_translation, solve_kmeans_kpisdf, solve_qrcp_isdf,
+        supercell_isdf)
+    from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import \
+        KMeansCVT
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_supercell_isdf_gamma():
     cell = gto.Cell()
     cell.atom = """
@@ -111,6 +110,8 @@ def test_supercell_isdf_gamma():
     assert np.allclose(eri_thc, eri_ref)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_supercell_isdf_complex():
     cell = gto.Cell()
     cell.atom = """
@@ -198,6 +199,8 @@ def test_supercell_isdf_complex():
     assert np.allclose(eri_thc, eri_ref)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_G_vector_mapping_double_translation():
     ase_atom = bulk("AlN", "wurtzite", a=3.11, c=4.98)
     cell = gto.Cell()
@@ -239,6 +242,8 @@ def test_G_vector_mapping_double_translation():
             assert ik in inv_G_map[iq, ix_G_qk]
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_G_vector_mapping_single_translation():
     cell = gto.Cell()
     cell.atom = """
@@ -294,6 +299,8 @@ def test_G_vector_mapping_single_translation():
                 assert np.allclose(delta_G_expected, delta_G)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_kpoint_isdf_double_translation():
     cell = gto.Cell()
     cell.atom = """
@@ -353,6 +360,8 @@ def test_kpoint_isdf_double_translation():
                 assert np.allclose(eri_pqrs, eri_pqrs_isdf)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_kpoint_isdf_single_translation():
     cell = gto.Cell()
     cell.atom = """
@@ -423,6 +432,9 @@ def get_complement(miller_indx, kmesh):
     return complement
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_isdf_symmetries():
     cell = gto.Cell()
     cell.atom = """
@@ -536,6 +548,8 @@ def test_kpoint_isdf_symmetries():
     assert np.allclose(zeta_ref, zeta_test.conj().T)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_symmetry_of_G_maps():
     cell = gto.Cell()
     cell.atom = """
@@ -604,6 +618,8 @@ def test_symmetry_of_G_maps():
             assert np.allclose(Gpq_comp, Gpq_comp_from_map)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_isdf_qrcp():
     cell = gto.Cell()
     cell.atom = """

@@ -13,18 +13,24 @@
 import numpy as np
 import pytest
 
-from pyscf.pbc import gto, scf, cc
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
-    solve_kmeans_kpisdf,)
-from openfermion.resource_estimates.pbc.thc.thc_integrals import (
-    KPTHCDoubleTranslation,
-    KPTHCSingleTranslation,
-)
-from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
-    build_approximate_eris,)
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf.pbc import gto, scf, cc
+
+    from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
+        solve_kmeans_kpisdf,)
+    from openfermion.resource_estimates.pbc.thc.thc_integrals import (
+        KPTHCDoubleTranslation,
+        KPTHCSingleTranslation,
+    )
+    from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
+        build_approximate_eris,)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_thc_helper():
     cell = gto.Cell()
     cell.atom = """

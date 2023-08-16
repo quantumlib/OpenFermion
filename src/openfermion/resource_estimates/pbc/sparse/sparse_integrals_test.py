@@ -11,17 +11,24 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import numpy as np
-from pyscf.pbc import mp
+import pytest
 
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    cholesky_from_df_ints,)
-from openfermion.resource_estimates.pbc.testing.test_systems import (
-    make_diamond_113_szv,)
-from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
-    unique_iter, unique_iter_pr_qs, unique_iter_ps_qr, unique_iter_pq_rs,
-    SparseFactorization)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf.pbc import mp
+
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        cholesky_from_df_ints,)
+    from openfermion.resource_estimates.pbc.testing.systems import (
+        make_diamond_113_szv,)
+    from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
+        unique_iter, unique_iter_pr_qs, unique_iter_ps_qr, unique_iter_pq_rs,
+        SparseFactorization)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_sparse_int_obj():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
@@ -45,6 +52,8 @@ def test_sparse_int_obj():
                             np.abs(test_eri_block.imag))
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_get_num_unique():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)

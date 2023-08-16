@@ -11,18 +11,20 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import itertools
+
 import numpy as np
-from openfermion.resource_estimates.\
-    pbc.thc.factorizations.gvec_map_logic import (
-    get_miller_indices,
-    get_delta_kp_kq_q,
-    build_transfer_map,
-    build_G_vectors,
-    build_gpq_mapping,
-    build_conjugate_map,
-)
+import pytest
+
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.pbc.thc.factorizations.gvec_map_logic import (  # pylint: disable=line-too-long
+        build_conjugate_map, build_G_vectors, build_gpq_mapping,
+        build_transfer_map, get_delta_kp_kq_q, get_miller_indices)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_get_miller_indices():
     kmesh = [3, 1, 1]
     int_scaled_kpts = get_miller_indices(kmesh)
@@ -36,6 +38,8 @@ def test_get_miller_indices():
     assert np.allclose(int_scaled_kpts[:, 1], [0, 1, 0, 1, 0, 1])
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_get_delta_k1_k2_Q():
     kmesh = [3, 2, 1]
     nkpts = np.prod(kmesh)
@@ -49,6 +53,8 @@ def test_get_delta_k1_k2_Q():
         )
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_transfer_map():
     kmesh = [3, 1, 1]
     nkpts = np.prod(kmesh)
@@ -115,6 +121,8 @@ def test_transfer_map():
     assert np.allclose(transfer_map, true_transfer_map)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_build_Gvectors():
     kmesh = [3, 2, 1]
     g_dict = build_G_vectors(kmesh)
@@ -125,6 +133,8 @@ def test_build_Gvectors():
         indx += 1
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_gpq_mapping():
     kmesh = [3, 2, 1]
     nkpts = np.prod(kmesh)
@@ -145,6 +155,8 @@ def test_gpq_mapping():
             assert g_val[2] in [0, -kmesh[2]]
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_build_conjugate_map():
     kmesh = [4, 3, 3]
     nkpts = np.prod(kmesh)
@@ -159,6 +171,8 @@ def test_build_conjugate_map():
         assert gval[2] in [0, kmesh[2]]
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_compliment_g():
     # setup
     kmesh = [4, 1, 1]
