@@ -212,6 +212,12 @@ class SparseFactorization:
                         eri_block[p, q, p, q] = 0.0
                     counter += np.count_nonzero(Dp)
                     counter += np.count_nonzero(eri_block) // 2
+                else:
+                    counter += np.count_nonzero(eri_block)
+                    completed[kp, kq, kr] = True
+                    completed[kr, ks, kp] = True
+                    completed[kq, kp, ks] = True
+                    completed[ks, kr, kq] = True
         if return_nk_counter:
             return counter, nk_counter
         return counter
