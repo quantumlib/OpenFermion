@@ -76,9 +76,8 @@ def compute_lambda(hcore: npt.NDArray,
         thc_obj: Object of KPTHCDoubleTranslation
 
     Returns:
-        lambda_tot: Total lambda
-        lambda_one_body: One-body lambda
-        lambda_two_body: Two-body lambda
+        ham_props: A HamiltonianProperties instance containing Lambda values for
+            THC hamiltonian.
     """
     kpts = thc_obj.kmf.kpts
     nkpts = len(kpts)

@@ -39,10 +39,8 @@ def compute_lambda(hcore: npt.NDArray, sparse_int_obj: SparseFactorization
             terms.
 
     Returns:
-        lambda_tot: Total lambda
-        lambda_one_body: One-body lambda
-        lambda_two_body: Two-body lambda
-        num_sym_unique: Number of symmetry unique terms.
+        ham_props: A SparseHamiltonianProperties instance containing Lambda
+            values for the sparse hamiltonian.
     """
     kpts = sparse_int_obj.kmf.kpts
     nkpts = len(kpts)
@@ -72,7 +70,7 @@ def compute_lambda(hcore: npt.NDArray, sparse_int_obj: SparseFactorization
         lambda_one_body += np.sum(np.abs(one_body_mat[kidx].real)) + np.sum(
             np.abs(one_body_mat[kidx].imag))
 
-    lambda_two_body = 0
+    lambda_two_body = 0.0
     nkpts = len(kpts)
     # recall (k, k-q|k'-q, k')
     for kidx in range(nkpts):
