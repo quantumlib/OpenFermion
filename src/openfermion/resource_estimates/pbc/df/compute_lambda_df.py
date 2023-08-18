@@ -22,7 +22,11 @@ from openfermion.resource_estimates.pbc.hamiltonian import (
 
 @dataclass
 class DFHamiltonianProperties(HamiltonianProperties):
-    """Light container to store return values of compute_lambda function"""
+    """Store for return values of compute_lambda function
+
+    Extension of HamiltonianProperties dataclass to also hold the number of
+    retained eigenvalues (num_eig).
+    """
 
     num_eig: int
 

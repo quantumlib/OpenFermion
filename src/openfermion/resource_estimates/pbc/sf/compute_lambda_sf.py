@@ -22,7 +22,11 @@ from openfermion.resource_estimates.pbc.sf.sf_integrals import (
 
 @dataclass
 class SFHamiltonianProperties(HamiltonianProperties):
-    """Light container to store return values of compute_lambda function"""
+    """Store for return values of compute_lambda function
+
+    Extension of HamiltonianProperties dataclass to also hold the number of
+    retained cholesky vectors (num_aux).
+    """
 
     num_aux: int
 
@@ -105,8 +109,6 @@ def compute_lambda(hcore: npt.NDArray,
         lambda_two_body += np.sum(
             np.einsum("npq->n",
                       np.abs(B.real) + np.abs(B.imag))**2)
-        del A
-        del B
 
     lambda_two_body *= 0.5
 

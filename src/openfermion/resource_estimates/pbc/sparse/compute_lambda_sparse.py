@@ -22,7 +22,11 @@ from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
 
 @dataclass
 class SparseHamiltonianProperties(HamiltonianProperties):
-    """Light container to store return values of compute_lambda function"""
+    """Store for return values of compute_lambda function
+
+    Extension of HamiltonianProperties dataclass to also hold the number of
+    retained matrix elements (num_sym_unique).
+    """
 
     num_sym_unique: int
 
