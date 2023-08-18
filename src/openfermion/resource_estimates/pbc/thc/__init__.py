@@ -1,4 +1,3 @@
-# coverage: ignore
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -10,20 +9,3 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import pytest
-
-try:
-    import pyscf
-except (ImportError, ModuleNotFoundError) as err:
-    pytest.skip(f"Need pyscf for PBC resource estimates {err}",
-                allow_module_level=True)
-
-from .compute_lambda_thc import compute_lambda
-from .compute_thc_resources import compute_cost
-from .thc_integrals import (
-    KPTHCDoubleTranslation,
-    KPTHCSingleTranslation,
-)
-from .generate_costing_table_thc import generate_costing_table
-from .factorizations.isdf import solve_kmeans_kpisdf
-from .factorizations.thc_jax import kpoint_thc_via_isdf

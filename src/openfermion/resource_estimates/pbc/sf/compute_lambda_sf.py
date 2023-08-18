@@ -22,7 +22,11 @@ from openfermion.resource_estimates.pbc.sf.sf_integrals import (
 
 @dataclass
 class SFHamiltonianProperties(HamiltonianProperties):
-    """Light container to store return values of compute_lambda function"""
+    """Store for return values of compute_lambda function
+
+    Extension of HamiltonianProperties dataclass to also hold the number of
+    retained cholesky vectors (num_aux).
+    """
 
     num_aux: int
 
@@ -49,14 +53,11 @@ def compute_lambda(hcore: npt.NDArray,
 
     Args:
         hcore: List len(kpts) long of nmo x nmo complex hermitian arrays
-        sf_obj: SingleFactorization object.
-        hcore: np.ndarray:
-        sf_obj: SingleFactorization:
+        sf_obj: SingleFactorization integral helper object.
 
     Returns:
-        lambda_tot: Total lambda
-        lambda_one_body: One-body lambda
-        lambda_two_body: Two-body lambda
+        ham_props: A HamiltonianProperties instance containing Lambda values for
+            SF hamiltonian.
     """
     kpts = sf_obj.kmf.kpts
     nkpts = len(kpts)
@@ -95,7 +96,7 @@ def compute_lambda(hcore: npt.NDArray,
     ############################################################################
     sf_obj.naux = old_naux  # reset naux to original value
     # this part needs to change
-    lambda_two_body = 0
+    lambda_two_body = 0.0
     for qidx in range(len(kpts)):
         # A and B are W
         A, B = sf_obj.build_AB_from_chol(qidx)  # [naux, nao * nk, nao * nk]
@@ -108,8 +109,6 @@ def compute_lambda(hcore: npt.NDArray,
         lambda_two_body += np.sum(
             np.einsum("npq->n",
                       np.abs(B.real) + np.abs(B.imag))**2)
-        del A
-        del B
 
     lambda_two_body *= 0.5
 

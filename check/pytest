@@ -17,9 +17,11 @@
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$(git rev-parse --show-toplevel)"
 
+rootdir=$(pwd)
+
 PYTEST_ARGS=()
 ACTUALLY_QUIET=""
-for arg in $@; do
+for arg in "$@"; do
     if [[ "${arg}" == "--actually-quiet" ]]; then
         ACTUALLY_QUIET=1
     else
@@ -28,10 +30,10 @@ for arg in $@; do
 done
 
 if [ -z "${ACTUALLY_QUIET}" ]; then
-    pytest "${PYTEST_ARGS[@]}"
+    pytest -c dev_tools/conf/pytest.ini --rootdir=$rootdir "${PYTEST_ARGS[@]}"
 else
     # Filter out lines like "...F....x...      [ 42%]", with coloring.
-    pytest -q --color=yes "${PYTEST_ARGS[@]}" |
+    pytest -c dev_tools/conf/pytest.ini --rootdir=$rootdir -q --color=yes "${PYTEST_ARGS[@]}" |
         grep -Pv '^(.\[0m)?[\.FEsx]+(.\[36m)?\s+\[\s*\d+%\](.\[0m)?$'
     exit "${PIPESTATUS[0]}"
 fi

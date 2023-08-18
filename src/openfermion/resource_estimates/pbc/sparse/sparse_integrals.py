@@ -22,7 +22,7 @@ from openfermion.resource_estimates.pbc.hamiltonian import (
     build_momentum_transfer_mapping,)
 
 
-def _symmetric_two_body_terms(quad, complex_valued):
+def _symmetric_two_body_terms(quad: Tuple[int, ...], complex_valued: bool):
     p, q, r, s = quad
     yield p, q, r, s
     yield q, p, s, r
@@ -35,7 +35,8 @@ def _symmetric_two_body_terms(quad, complex_valued):
         yield r, q, p, s
 
 
-def unique_iter(nmo):
+def unique_iter(nmo: int):
+    """Iterate over unique pqrs indices"""
     seen = set()
     for quad in itertools.product(range(nmo), repeat=4):
         if quad not in seen:
@@ -44,9 +45,9 @@ def unique_iter(nmo):
 
 
 def _pq_rs_two_body_terms(quad):
-    """kp = kq and kr = ks
+    """Symmetry inequivalent indices when kp = kq and kr = ks.
 
-    thus a subset of the four-fold symmetry can be applied
+    A subset of the four-fold symmetry can be applied
     (pkp, qkp|rkr, skr) = (qkp,pkp|skr,rkr) by complex conjucation
     """
     p, q, r, s = quad
@@ -54,7 +55,8 @@ def _pq_rs_two_body_terms(quad):
     yield q, p, s, r
 
 
-def unique_iter_pq_rs(nmo):
+def unique_iter_pq_rs(nmo: int):
+    """Iterate over unique symmetry pqrs indices"""
     seen = set()
     for quad in itertools.product(range(nmo), repeat=4):
         if quad not in seen:
@@ -63,11 +65,10 @@ def unique_iter_pq_rs(nmo):
 
 
 def _ps_qr_two_body_terms(quad):
-    """kp = ks and kq = kr
+    """Symmetry inequivalent indices when kp = ks and kq = kr.
 
-    Thus a subset of the four-fold symmetry can be applied
-    (pkp,qkq|rkq,skp) -> (skp,rkq|qkq,pkp) by complex conj and dummy index
-    exchange
+    A subset of the four-fold symmetry can be applied (pkp,qkq|rkq,skp) ->
+    (skp,rkq|qkq,pkp) by complex conj and dummy index exchange
     """
     p, q, r, s = quad
     yield p, q, r, s
@@ -75,6 +76,7 @@ def _ps_qr_two_body_terms(quad):
 
 
 def unique_iter_ps_qr(nmo):
+    """Iterate over unique ps qr indices"""
     seen = set()
     for quad in itertools.product(range(nmo), repeat=4):
         if quad not in seen:
@@ -83,10 +85,10 @@ def unique_iter_ps_qr(nmo):
 
 
 def _pr_qs_two_body_terms(quad):
-    """kp = kr and kq = ks
+    """Symmetry inequivalent indices when kp = kr and kq = ks.
 
-    Thus a subset of the four-fold symmetry can be applied
-    (pkp,qkq|rkp,skq) -> (rkp,skq|pkp,rkq) by dummy index exchange
+    A subset of the four-fold symmetry can be applied (pkp,qkq|rkp,skq) ->
+    (rkp,skq|pkp,rkq) by dummy index exchange
     """
     p, q, r, s = quad
     yield p, q, r, s
@@ -94,6 +96,7 @@ def _pr_qs_two_body_terms(quad):
 
 
 def unique_iter_pr_qs(nmo):
+    """Iterate over unique pr qs indices"""
     seen = set()
     for quad in itertools.product(range(nmo), repeat=4):
         if quad not in seen:
@@ -176,9 +179,6 @@ class SparseFactorization:
                     counter += np.count_nonzero(Dc) // 2
                     counter += np.count_nonzero(Dpc) // 2
                     counter += np.count_nonzero(eri_block) // 4
-                    # for ftuple in unique_iter(self.nao):
-                    #    p, q, r, s = ftuple
-                    #    counter += np.count_nonzero(eri_block[p, q, r, s])
                 elif kp == kq and kr == ks:
                     completed[kp, kq, kr] = True
                     completed[kr, ks, kp] = True
@@ -190,10 +190,6 @@ class SparseFactorization:
                         eri_block[p, p, r, r] = 0.0
                     counter += np.count_nonzero(Dc)
                     counter += np.count_nonzero(eri_block) // 2
-                    # for ftuple in unique_iter_ps_qr(self.nao):
-                    # for ftuple in unique_iter_pq_rs(self.nao):
-                    #    p, q, r, s = ftuple
-                    #    counter += np.count_nonzero(eri_block[p, q, r, s])
                 elif kp == ks and kq == kr:
                     completed[kp, kq, kr] = True
                     completed[kr, ks, kp] = True
@@ -205,9 +201,6 @@ class SparseFactorization:
                         eri_block[p, q, q, p] = 0.0
                     counter += np.count_nonzero(Dpc)
                     counter += np.count_nonzero(eri_block) // 2
-                    # for ftuple in unique_iter_ps_qr(self.nao):
-                    #    p, q, r, s = ftuple
-                    #    counter += np.count_nonzero(eri_block[p, q, r, s])
                 elif kp == kr and kq == ks:
                     completed[kp, kq, kr] = True
                     completed[kq, kp, ks] = True
@@ -219,9 +212,6 @@ class SparseFactorization:
                         eri_block[p, q, p, q] = 0.0
                     counter += np.count_nonzero(Dp)
                     counter += np.count_nonzero(eri_block) // 2
-                    # for ftuple in unique_iter_pr_qs(self.nao):
-                    #    p, q, r, s = ftuple
-                    #    counter += np.count_nonzero(eri_block[p, q, r, s])
                 else:
                     counter += np.count_nonzero(eri_block)
                     completed[kp, kq, kr] = True

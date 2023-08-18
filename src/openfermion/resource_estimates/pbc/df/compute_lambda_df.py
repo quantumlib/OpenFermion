@@ -11,7 +11,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 from dataclasses import dataclass
-from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
@@ -23,15 +22,18 @@ from openfermion.resource_estimates.pbc.hamiltonian import (
 
 @dataclass
 class DFHamiltonianProperties(HamiltonianProperties):
-    """Light container to store return values of compute_lambda function"""
+    """Store for return values of compute_lambda function
+
+    Extension of HamiltonianProperties dataclass to also hold the number of
+    retained eigenvalues (num_eig).
+    """
 
     num_eig: int
 
 
 def compute_lambda(hcore: npt.NDArray,
                    df_obj: DFABKpointIntegrals) -> DFHamiltonianProperties:
-    """Compute one-body and two-body lambda for qubitization of
-    single-factorized Hamiltonian.
+    """Compute lambda for double-factorized Hamiltonian.
 
     one-body term h_pq(k) = hcore_{pq}(k)
                             - 0.5 * sum_{Q}sum_{r}(pkrQ|rQqk)
@@ -46,8 +48,8 @@ def compute_lambda(hcore: npt.NDArray,
         df_obj: DFABKpointIntegrals integral helper.
 
     Returns:
-        lambda: Lambda values for DF hamiltonian.
-
+        ham_props: A HamiltonianProperties instance containing Lambda values for
+            DF hamiltonian.
     """
     kpts = df_obj.kmf.kpts
     nkpts = len(kpts)
@@ -72,7 +74,7 @@ def compute_lambda(hcore: npt.NDArray,
         one_eigs, _ = np.linalg.eigh(one_body_mat[kidx])
         lambda_one_body += np.sum(np.abs(one_eigs))
 
-    lambda_two_body = 0
+    lambda_two_body = 0.0
     num_eigs = 0
     for qidx in range(len(kpts)):
         for nn in range(df_obj.naux):

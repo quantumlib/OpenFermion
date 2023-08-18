@@ -1,12 +1,20 @@
 #coverage:ignore
 import os
+
 import h5py
 import numpy as np
+import pytest
+
 import openfermion.resource_estimates.integrals as int_folder
-from openfermion.resource_estimates import thc
-from openfermion.resource_estimates.molecule import load_casfile_to_pyscf
+from openfermion.resource_estimates import (HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                                            thc)
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.molecule import load_casfile_to_pyscf
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_lambda():
     integral_path = int_folder.__file__.replace('__init__.py', '')
     thc_factor_file = os.path.join(integral_path, 'M_250_beta_16_eta_10.h5')

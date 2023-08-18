@@ -10,25 +10,27 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import os
 from functools import reduce
 
 import numpy as np
 import pytest
-from pyscf.pbc.tools.k2gamma import k2gamma, get_phase, kpts_to_kmesh
-from pyscf.pbc import gto, mp, scf
-from pyscf.pbc.lib.kpts_helper import get_kconserv, loop_kkk
 
-from openfermion.resource_estimates.pbc.sparse.compute_lambda_sparse import (
-    compute_lambda,)
-from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
-    SparseFactorization,)
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    cholesky_from_df_ints,)
-from openfermion.resource_estimates.pbc.testing import (
-    make_diamond_113_szv,)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf.pbc import mp
+    from openfermion.resource_estimates.pbc.sparse.\
+        compute_lambda_sparse import compute_lambda
+    from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
+        SparseFactorization,)
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        cholesky_from_df_ints,)
+    from openfermion.resource_estimates.pbc.testing import (
+        make_diamond_113_szv,)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_lambda_sparse():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
@@ -41,7 +43,3 @@ def test_lambda_sparse():
         for k, mo in enumerate(mf.mo_coeff)
     ])
     compute_lambda(hcore_mo, helper)
-
-
-if __name__ == "__main__":
-    test_lambda_sparse()

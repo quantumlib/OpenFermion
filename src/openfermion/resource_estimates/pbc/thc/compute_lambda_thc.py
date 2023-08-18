@@ -10,6 +10,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from dataclasses import dataclass
 from typing import Tuple
 import numpy as np
 import numpy.typing as npt
@@ -18,6 +19,17 @@ from openfermion.resource_estimates.pbc.thc.thc_integrals import (
     KPTHCDoubleTranslation,)
 from openfermion.resource_estimates.pbc.hamiltonian import (
     HamiltonianProperties,)
+
+
+@dataclass
+class THCHamiltonianProperties(HamiltonianProperties):
+    """Store for return values of compute_lambda function
+
+    Extension of HamiltonianProperties dataclass to also hold the THC dimension
+    (num_sym_unique).
+    """
+
+    thc_dim: int
 
 
 def compute_lambda_real(
@@ -76,9 +88,8 @@ def compute_lambda(hcore: npt.NDArray,
         thc_obj: Object of KPTHCDoubleTranslation
 
     Returns:
-        lambda_tot: Total lambda
-        lambda_one_body: One-body lambda
-        lambda_two_body: Two-body lambda
+        ham_props: A HamiltonianProperties instance containing Lambda values for
+            THC hamiltonian.
     """
     kpts = thc_obj.kmf.kpts
     nkpts = len(kpts)
@@ -130,9 +141,10 @@ def compute_lambda(hcore: npt.NDArray,
     lambda_two_body *= 2
 
     lambda_tot = lambda_one_body + lambda_two_body
-    lambda_data = HamiltonianProperties(
+    lambda_data = THCHamiltonianProperties(
         lambda_total=lambda_tot,
         lambda_one_body=lambda_one_body,
         lambda_two_body=lambda_two_body,
+        thc_dim=thc_obj.chi.shape[-1],
     )
     return lambda_data

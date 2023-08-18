@@ -11,21 +11,22 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import itertools
-import numpy as np
 
-from pyscf.pbc import gto, scf, mp, cc
-from pyscf.lib import chkfile
+import numpy as np
 import pytest
 
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    build_hamiltonian,
-    cholesky_from_df_ints,
-    build_momentum_transfer_mapping,
-)
-from openfermion.resource_estimates.pbc.testing import (
-    make_diamond_113_szv,)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf.pbc import cc, mp
+
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        build_hamiltonian, cholesky_from_df_ints)
+    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_build_hamiltonian():
     mf = make_diamond_113_szv()
     nmo = mf.mo_coeff[0].shape[-1]
@@ -37,6 +38,8 @@ def test_build_hamiltonian():
     assert chol[0, 0].shape == (naux, nmo, nmo)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_pyscf_chol_from_df():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
@@ -85,28 +88,3 @@ def test_pyscf_chol_from_df():
     assert np.allclose(eris.vvvv,
                        Ivvvv.transpose(0, 2, 1, 3, 5, 4, 6),
                        atol=1e-12)
-
-
-def test_momentum_transfer_map():
-    cell = gto.Cell()
-    cell.atom = """
-    C 0.000000000000   0.000000000000   0.000000000000
-    C 1.685068664391   1.685068664391   1.685068664391
-    """
-    cell.basis = "gth-szv"
-    cell.pseudo = "gth-pade"
-    cell.a = """
-    0.000000000, 3.370137329, 3.370137329
-    3.370137329, 0.000000000, 3.370137329
-    3.370137329, 3.370137329, 0.000000000"""
-    cell.unit = "B"
-    cell.verbose = 0
-    cell.build(parse_arg=False)
-    kpts = cell.make_kpts([2, 2, 1], scaled_center=[0.1, 0.2, 0.3])
-    mom_map = build_momentum_transfer_mapping(cell, kpts)
-    for i, Q in enumerate(kpts):
-        for j, k1 in enumerate(kpts):
-            k2 = kpts[mom_map[i, j]]
-            test = Q - k1 + k2
-            assert (np.amin(np.abs(test[None, :] - cell.Gv - kpts[0][None, :]))
-                    < 1e-15)

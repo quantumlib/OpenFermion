@@ -93,7 +93,7 @@ class DFABKpointIntegrals:
         self.a_mats = None
         self.b_mats = None
 
-    def build_A_B_n_q_k_from_chol(self, qidx, kidx):
+    def build_A_B_n_q_k_from_chol(self, qidx: int, kidx: int):
         """Builds matrices that are blocks in two momentum indices
 
               k  | k-Q |
@@ -111,8 +111,8 @@ class DFABKpointIntegrals:
             kidx: index for momentum mode K.
 
         Returns:
-            Amat: A matrix
-            Bmat: A matrix
+            Amat: The `A` matrix in DF (~ L + L^)
+            Bmat: The `B` matrix in DF (~ i (L - L^)
         """
         k_minus_q_idx = self.k_transfer_map[qidx, kidx]
         naux = self.chol[kidx, k_minus_q_idx].shape[0]

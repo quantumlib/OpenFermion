@@ -12,19 +12,25 @@
 #   limitations under the License.
 from functools import reduce
 import numpy as np
+import pytest
 
-from pyscf.pbc import mp
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-from openfermion.resource_estimates.pbc.df.compute_lambda_df import (
-    compute_lambda,)
-from openfermion.resource_estimates.pbc.df.df_integrals import (
-    DFABKpointIntegrals,)
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    cholesky_from_df_ints,)
-from openfermion.resource_estimates.pbc.testing import (
-    make_diamond_113_szv,)
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf.pbc import mp
+
+    from openfermion.resource_estimates.pbc.df.compute_lambda_df import (
+        compute_lambda,)
+    from openfermion.resource_estimates.pbc.df.df_integrals import (
+        DFABKpointIntegrals,)
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        cholesky_from_df_ints,)
+    from openfermion.resource_estimates.pbc.testing import (
+        make_diamond_113_szv,)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_lambda_calc():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
@@ -75,7 +81,3 @@ def test_lambda_calc():
         lambda_two_body_v2 += np.sum(bval_to_square_v2)
 
     assert np.isclose(lambda_two_body, lambda_two_body_v2)
-
-
-if __name__ == "__main__":
-    test_lambda_calc()

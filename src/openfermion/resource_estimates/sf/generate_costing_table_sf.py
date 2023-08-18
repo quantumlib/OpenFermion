@@ -1,12 +1,20 @@
 #coverage:ignore
 """ Pretty-print a table comparing number of SF vectors versus acc and cost """
 import numpy as np
-from pyscf import scf
-from openfermion.resource_estimates import sf
-from openfermion.resource_estimates.molecule import (factorized_ccsd_t,
-                                                     cas_to_pyscf, pyscf_to_cas)
+import pytest
+
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES, sf
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from pyscf import scf
+
+    from openfermion.resource_estimates.molecule import (cas_to_pyscf,
+                                                         factorized_ccsd_t,
+                                                         pyscf_to_cas)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def generate_costing_table(pyscf_mf,
                            name='molecule',
                            rank_range=range(50, 401, 25),

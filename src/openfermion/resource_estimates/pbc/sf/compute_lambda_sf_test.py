@@ -14,23 +14,27 @@ from functools import reduce
 import numpy as np
 import pytest
 
-from ase.build import bulk
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from ase.build import bulk
 
-from pyscf.pbc import gto, scf, mp
-from pyscf.pbc.tools import pyscf_ase
+    from pyscf.pbc import gto, scf, mp
+    from pyscf.pbc.tools import pyscf_ase
 
-from openfermion.resource_estimates.pbc.sf.compute_lambda_sf import (
-    compute_lambda,)
-from openfermion.resource_estimates.pbc.sf.sf_integrals import (
-    SingleFactorization,)
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    build_hamiltonian,
-    cholesky_from_df_ints,
-)
-from openfermion.resource_estimates.pbc.testing import (
-    make_diamond_113_szv,)
+    from openfermion.resource_estimates.pbc.sf.compute_lambda_sf import (
+        compute_lambda,)
+    from openfermion.resource_estimates.pbc.sf.sf_integrals import (
+        SingleFactorization,)
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        build_hamiltonian,
+        cholesky_from_df_ints,
+    )
+    from openfermion.resource_estimates.pbc.testing import (
+        make_diamond_113_szv,)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_lambda_calc():
     mf = make_diamond_113_szv()
     hcore, Luv = build_hamiltonian(mf)
@@ -39,6 +43,8 @@ def test_lambda_calc():
     assert np.isclose(lambda_data.lambda_total, 2123.4342903006627)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_padding():
     ase_atom = bulk("H", "bcc", a=2.0, cubic=True)
     cell = gto.Cell()
@@ -88,8 +94,3 @@ def test_padding():
     lambda_data_no_pad = compute_lambda(hcore_padded, helper)
     assert np.isclose(lambda_data_pad.lambda_total,
                       lambda_data_no_pad.lambda_total)
-
-
-if __name__ == "__main__":
-    test_lambda_calc()
-    test_padding()
