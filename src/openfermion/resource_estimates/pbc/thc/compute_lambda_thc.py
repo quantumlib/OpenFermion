@@ -20,6 +20,7 @@ from openfermion.resource_estimates.pbc.thc.thc_integrals import (
 from openfermion.resource_estimates.pbc.hamiltonian import (
     HamiltonianProperties,)
 
+
 @dataclass
 class THCHamiltonianProperties(HamiltonianProperties):
     """Store for return values of compute_lambda function
