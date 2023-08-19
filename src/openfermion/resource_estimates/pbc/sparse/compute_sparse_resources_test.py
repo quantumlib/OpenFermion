@@ -10,12 +10,18 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from openfermion.resource_estimates.pbc.sparse.compute_sparse_resources import (
-    _compute_cost,
-    compute_cost,
-)
+
+import pytest
+
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.pbc.sparse.\
+        compute_sparse_resources import _compute_cost, compute_cost
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_compute_cost():
     nRe = 108
     lam_re = 2135.3
@@ -56,6 +62,8 @@ def test_compute_cost():
     assert res[2] == 9231
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_compute_cost_helper():
     dE = 0.001
     chi = 10

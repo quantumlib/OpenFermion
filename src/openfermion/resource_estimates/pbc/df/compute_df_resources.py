@@ -52,7 +52,7 @@ def compute_cost(
     """
     # run once to determine stps parameter
     if beta is None:
-        num_kpts = np.prod(kmesh)
+        num_kpts = int(np.prod(kmesh))
         beta = compute_beta_for_resources(num_spin_orbs, num_kpts, dE_for_qpe)
     init_cost = _compute_cost(
         n=num_spin_orbs,

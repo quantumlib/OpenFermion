@@ -12,12 +12,13 @@
 #   limitations under the License.
 import numpy as np
 
-from pyscf.pbc import gto, scf
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-from openfermion.resource_estimates.pbc.df.generate_costing_table_df import (
-    generate_costing_table,)
-from openfermion.resource_estimates.pbc.testing import (
-    make_diamond_113_szv,)
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.pbc.df.\
+        generate_costing_table_df import generate_costing_table
+    from openfermion.resource_estimates.pbc.testing import (
+        make_diamond_113_szv,)
 
 
 def test_generate_costing_table_df():

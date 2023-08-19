@@ -11,13 +11,19 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import numpy as np
+import pytest
 
-from openfermion.resource_estimates.pbc.df.compute_df_resources import (
-    _compute_cost,
-    compute_cost,
-)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.pbc.df.compute_df_resources import (
+        _compute_cost,
+        compute_cost,
+    )
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_costing():
     nRe = 108
     lamRe = 294.8
@@ -68,6 +74,8 @@ def test_costing():
     assert np.isclose(res[2], 14952)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_costing_helper():
     nRe = 108
     lamRe = 294.8

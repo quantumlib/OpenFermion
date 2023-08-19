@@ -11,17 +11,19 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import numpy as np
-import pandas as pd
 
-from pyscf.pbc import gto, scf
 import pytest
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-from openfermion.resource_estimates.pbc.sf.generate_costing_table_sf import (
-    generate_costing_table,)
-from openfermion.resource_estimates.pbc.testing import (
-    make_diamond_113_szv,)
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.pbc.sf.\
+        generate_costing_table_sf import generate_costing_table
+    from openfermion.resource_estimates.pbc.testing import (
+        make_diamond_113_szv,)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_generate_costing_table_sf():
     mf = make_diamond_113_szv()
     thresh = np.array([10, 54, 108])

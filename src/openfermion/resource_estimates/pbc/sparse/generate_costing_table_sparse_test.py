@@ -12,11 +12,18 @@
 #   limitations under the License.
 import numpy as np
 
-from openfermion.resource_estimates.pbc import sparse
-from openfermion.resource_estimates.pbc.testing import (
-    make_diamond_113_szv,)
+import pytest
+
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.pbc import sparse
+    from openfermion.resource_estimates.pbc.testing import (
+        make_diamond_113_szv,)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_generate_costing_table_sparse():
     mf = make_diamond_113_szv()
     thresh = np.array([1e-1, 1e-2, 1e-12])
