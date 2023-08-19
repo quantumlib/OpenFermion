@@ -24,6 +24,7 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
 
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
                     reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_generate_costing_table_thc():
     mf = make_diamond_113_szv()
     thc_rank_params = np.array([2, 4, 6])
