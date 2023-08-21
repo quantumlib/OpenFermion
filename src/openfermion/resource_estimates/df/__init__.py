@@ -13,7 +13,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from .compute_lambda_df import compute_lambda
-from .compute_cost_df import compute_cost
-from .factorize_df import factorize
-from .generate_costing_table_df import generate_costing_table
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from .compute_cost_df import compute_cost
+    from .compute_lambda_df import compute_lambda
+    from .factorize_df import factorize
+    from .generate_costing_table_df import generate_costing_table

@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pytest
 import scipy as sp
-from scipy.optimize.optimize import OptimizeResult
+from scipy.optimize import OptimizeResult
 from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.representations import (general_basis_change,

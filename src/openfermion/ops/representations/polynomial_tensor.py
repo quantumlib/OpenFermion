@@ -28,7 +28,7 @@ class PolynomialTensorError(Exception):
 
 
 def general_basis_change(general_tensor, rotation_matrix, key):
-    r"""Change the basis of an general interaction tensor.
+    r"""Change the basis of a general interaction tensor.
 
     M'^{p_1p_2...p_n} = R^{p_1}_{a_1} R^{p_2}_{a_2} ...
                         R^{p_n}_{a_n} M^{a_1a_2...a_n}
@@ -104,7 +104,7 @@ class PolynomialTensor(object):
     n_qubits x n_qubits matrix. Higher order terms would be described with
     tensors of higher dimension. Note that each tensor must have an even
     number of dimensions, since parity is conserved.
-    Much of the functionality of this class is redudant with FermionOperator
+    Much of the functionality of this class is redundant with FermionOperator
     but enables much more efficient numerical computations in many cases,
     such as basis rotations.
 

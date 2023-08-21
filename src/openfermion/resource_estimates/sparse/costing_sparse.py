@@ -1,4 +1,3 @@
-#coverage:ignore
 """ Determine costs for sparse decomposition in QC
     Note this is WIP
 """

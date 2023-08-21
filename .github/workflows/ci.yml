@@ -5,41 +5,43 @@ on: [pull_request]
 jobs:
   format:
     name: Format check
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: '3.10'
           architecture: 'x64'
       - name: Install yapf
-        run: cat dev_tools/conf/pip-list-dev-tools.txt | grep yapf | xargs pip install
+        run: pip install -r dev_tools/requirements/format.env.txt
       - name: Format
         run: check/format-incremental
   mypy:
     name: Type check
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: '3.10'
           architecture: 'x64'
       - name: Install mypy
-        run: cat dev_tools/conf/pip-list-dev-tools.txt | grep mypy | xargs pip install
+        run: pip install -r dev_tools/requirements/mypy.env.txt
       - name: Type check
         run: check/mypy
   lint:
     name: Lint check
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: '3.10'
           architecture: 'x64'
       - name: Install pylint
-        run: cat dev_tools/conf/pip-list-dev-tools.txt | grep "pylint\|astroid" | grep -v "#" | xargs pip install
+        run: pip install -r dev_tools/requirements/pylint.env.txt
       - name: Lint
         run: check/pylint
   pytest:
@@ -49,8 +51,8 @@ jobs:
       matrix:
         # On each operating system, check latest version of python and cirq
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        python-version: [ '3.9' ]
-        cirq-version: [ '~=1.0.0' ]
+        python-version: [ '3.10' ]
+        cirq-version: [ '~=1.0' ]
         # Also check least-supported versions (linux only)
         include:
           - os: ubuntu-latest
@@ -64,25 +66,44 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install requirements
         run: |
-          pip install -r dev_tools/conf/pip-list-dev-tools.txt
-          pip install cirq-core${{matrix.cirq-version}} cirq-google${{matrix.cirq-version}} -r requirements.txt
+          pip install -r dev_tools/requirements/pytest.env.txt
+          pip install cirq-core${{matrix.cirq-version}}
       - name: Pytest check
         run: check/pytest
         shell: bash
-  coverage:
-    name: Coverage check
-    runs-on: ubuntu-18.04
+  pytest_resource_estimates:
+    name: Pytest Resource Estimates
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: [ '3.10' ]
+        cirq-version: [ '~=1.0' ]
+      fail-fast: false
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
-          architecture: 'x64'
+          python-version: ${{ matrix.python-version }}
       - name: Install requirements
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r dev_tools/conf/pip-list-dev-tools.txt
-          git config --global user.name ${GITHUB_ACTOR}
+          pip install -r dev_tools/requirements/resource_estimates.env.txt
+          pip install cirq-core${{matrix.cirq-version}}
+      - name: Pytest check resources
+        run: check/pytest -m 'not slow' src/openfermion/resource_estimates
+        shell: bash
+  coverage:
+    name: Coverage check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.10'
+          architecture: 'x64'
+      - name: Install requirements
+        run: pip install -r dev_tools/requirements/pytest.env.txt
       - name: Coverage check
-        run: check/pytest-and-incremental-coverage --actually-quiet
+        run: check/pytest-and-incremental-coverage

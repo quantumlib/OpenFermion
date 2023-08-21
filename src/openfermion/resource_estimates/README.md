@@ -120,7 +120,7 @@ Which generate similar outputs, e.g. the above would generate tables in `double_
 More fine-grained control is given by subroutines that compute the factorization, the lambda values, and the cost estimates. For example, considering the double factorization, we could have
 
 ```python
-factorized_eris, df_factors, _, _ = df.factorize(mf._eri, cutoff_threshhold)
+factorized_eris, df_factors, _, _ = df.factorize(mf._eri, cutoff_threshold)
 df_lambda  = df.compute_lambda(mf, df_factors)
 _, number_toffolis, num_logical_qubits = df.compute_cost(num_spin_orbitals, df_lambda, *args)
 ```

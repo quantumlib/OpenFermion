@@ -1,9 +1,16 @@
 #coverage:ignore
 """Test cases for costing_df.py
 """
-from openfermion.resource_estimates import df
+import pytest
+
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates import df
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_reiher_df():
     """ Reproduce Reiher et al orbital DF FT costs from paper """
     DE = 0.001
@@ -25,6 +32,8 @@ def test_reiher_df():
     assert output == (21753, 10073183463, 3725)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_li_df():
     """ Reproduce Li et al orbital DF FT costs from paper """
     DE = 0.001
