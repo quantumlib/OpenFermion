@@ -21,6 +21,8 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
         make_diamond_113_szv,)
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_generate_costing_table_df():
     mf = make_diamond_113_szv()
     thresh = np.array([0.1, 1e-2,
