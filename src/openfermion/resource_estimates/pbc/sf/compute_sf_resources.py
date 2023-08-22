@@ -18,7 +18,7 @@ an LCU formed from a symmeterized Cholesky decomposition of the integrals
 from typing import Tuple
 
 import numpy as np
-from numpy.lib.scimath import arccos, arcsin  # has analytic continutn to cplx
+from numpy.lib.scimath import arccos, arcsin
 from sympy import factorint
 
 from openfermion.resource_estimates.utils import QI

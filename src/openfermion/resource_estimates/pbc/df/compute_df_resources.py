@@ -11,7 +11,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Determine costs for DF decomposition"""
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 import numpy as np
 from numpy.lib.scimath import arccos, arcsin
 from sympy import factorint
@@ -20,9 +20,22 @@ from openfermion.resource_estimates.utils import QI
 
 from openfermion.resource_estimates.pbc.resources import (
     ResourceEstimates,
-    compute_beta_for_resources,
     QR3,
 )
+
+
+def compute_beta_for_resources(num_spin_orbs: int, num_kpts: int,
+                               de_for_qpe: float):
+    """Compute beta (number of bits for controlled rotations).
+
+    Uses expression from https://arxiv.org/pdf/2007.14460.pdf.
+
+    Args:
+        num_spin_orbs: Number of spin orbitals (per k-point)
+        num_kpts: Number of k-points.
+        de_for_qpe: epsilon for phase estimation.
+    """
+    return np.ceil(5.652 + np.log2(num_spin_orbs * num_kpts / de_for_qpe))
 
 
 def compute_cost(
@@ -30,14 +43,14 @@ def compute_cost(
         lambda_tot: float,
         num_aux: int,
         num_eig: int,
-        kmesh: list[int],
+        kmesh: List[int],
         dE_for_qpe: float = 0.0016,
         chi: int = 10,
         beta: Union[int, None] = None,
 ) -> ResourceEstimates:
     """Determine fault-tolerant costs using double factorized Hamiltonian.
 
-    Light wrapper around _compute_cost to automate choice of stps paramter.
+    Light wrapper around _compute_cost to automate choice of steps parameter.
 
     Arguments:
         num_spin_orbs: the number of spin-orbitals
@@ -50,7 +63,7 @@ def compute_cost(
     Returns:
         resources: double factorized resource estimates
     """
-    # run once to determine stps parameter
+    # run once to determine steps parameter
     if beta is None:
         num_kpts = int(np.prod(kmesh))
         beta = compute_beta_for_resources(num_spin_orbs, num_kpts, dE_for_qpe)
@@ -65,7 +78,7 @@ def compute_cost(
         Nkx=kmesh[0],
         Nky=kmesh[1],
         Nkz=kmesh[2],
-        stps=20_000,
+        steps=20_000,
     )
     steps = init_cost[0]
     final_cost = _compute_cost(
@@ -79,7 +92,7 @@ def compute_cost(
         Nkx=kmesh[0],
         Nky=kmesh[1],
         Nkz=kmesh[2],
-        stps=steps,
+        steps=steps,
     )
     estimates = ResourceEstimates(
         toffolis_per_step=final_cost[0],
@@ -100,7 +113,7 @@ def _compute_cost(
         Nkx: int,
         Nky: int,
         Nkz: int,
-        stps: int,
+        steps: int,
         verbose: bool = False,
 ) -> Tuple[int, int, int]:
     """Determine fault-tolerant costs using DF decomposition.
@@ -116,8 +129,8 @@ def _compute_cost(
         Nkx: Number of k-points in x-direction
         Nky: Number of k-points in y-direction
         Nkz:  Number of k-points in z-direction
-        stps: an approximate number of steps to choose the precision of
-            single qubit rotations in preparation of the equal superpositn state
+        steps: an approximate number of steps to choose the precision of
+            single qubit rotations in preparation of the equal superposition state
         verbose: do additional printing of intermediates?
 
     Returns:
@@ -147,15 +160,13 @@ def _compute_cost(
 
     oh = [0] * 20
     for p in range(20):
-        # JJG note: arccos arg may be > 1
         v = np.round(
             np.power(2, p + 1) / (2 * np.pi) *
             arccos(np.power(2, nL) / np.sqrt((L + 1) / 2**eta) / 2))
-        oh[p] = np.real(stps * (1 / (np.sin(3 * arcsin(
+        oh[p] = np.real(steps * (1 / (np.sin(3 * arcsin(
             np.cos(v * 2 * np.pi / np.power(2, p + 1)) * np.sqrt(
                 (L + 1) / 2**eta) / np.power(2, nL)))**2) - 1) + 4 * (p + 1))
 
-    # print(oh)
     # Bits of precision for rotation
     br = int(np.argmin(oh) + 1)
 

@@ -14,7 +14,7 @@
 """ Determine costs for THC decomposition in QC """
 from typing import Tuple, Union
 import numpy as np
-from numpy.lib.scimath import arccos, arcsin  # has analytc continuatn to cplx
+from numpy.lib.scimath import arccos, arcsin
 from sympy import factorint
 from openfermion.resource_estimates.utils import QI
 
@@ -32,7 +32,7 @@ def compute_cost(
         chi: int = 10,
         beta: Union[int, None] = None,
 ) -> ResourceEstimates:
-    """Determine fault-tolerant costs using THC factorization representaion of
+    """Determine fault-tolerant costs using THC factorization representation of
         symmetry adapted integrals.
 
     Light wrapper around _compute_cost.
@@ -288,6 +288,7 @@ def _compute_cost(
     # The contiguous register.
     ac15 = np.ceil(np.log2(Nk * (M + n / 2)))
 
+    print(QR3(Nk*(M+n/2), n*beta))
     kr = np.power(2, QR3(Nk * (M + n / 2), n * beta)[0])
 
     #

@@ -12,7 +12,6 @@
 #   limitations under the License.
 """Dataclasses for resource estimation."""
 from dataclasses import dataclass, asdict, field
-import numpy as np
 import pandas as pd
 
 from openfermion.resource_estimates.pbc.hamiltonian import (
@@ -50,8 +49,8 @@ class PBCResources:
         exact_energy: Exact energy (no cutoff).
         energy_method: Which method to use to copute energy (MP2 or CCSD).
         cutoff: list of cuttofs.
-        ham_properties: list of lambda values for each cutoff.
-        resource_estimates: list of resource estimates for each cutoff.
+        ham_props: list of lambda values for each cutoff.
+        resources: list of resource estimates for each cutoff.
     """
 
     system_name: str

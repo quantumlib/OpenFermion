@@ -10,14 +10,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import pytest
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
-try:
-    import pyscf
-except (ImportError, ModuleNotFoundError) as err:
-    pytest.skip(f"Need pyscf for PBC resource estimates {err}",
-                allow_module_level=True)
-
-from .data_types import PBCResources, ResourceEstimates
-from .qrom import QR2, QR3, QI2
-from .rotation_param import compute_beta_for_resources
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from .data_types import PBCResources, ResourceEstimates
+    from .qrom import QR2, QR3, QI2

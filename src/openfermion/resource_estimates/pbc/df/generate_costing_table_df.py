@@ -32,13 +32,20 @@ from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
 from openfermion.resource_estimates.pbc.df.compute_lambda_df import (
     compute_lambda,)
 from openfermion.resource_estimates.pbc.df.compute_df_resources import (
-    compute_cost,)
-from openfermion.resource_estimates.pbc.resources import (
-    compute_beta_for_resources,)
+    compute_cost, compute_beta_for_resources)
 
 
 @dataclass
 class DFResources(PBCResources):
+    """Resource estimates for DF factorization.
+
+    Inherits from PBCReousrces data class and adds the additional attributes:
+
+    Attributes:
+        num_aux: number of auxiliary vectors for first factorization. By default
+            this is not truncated.
+        beta: The number of bits for the controlled rotations.
+    """
     num_aux: int = -1
     beta: int = 20
 

@@ -60,7 +60,7 @@ def generate_costing_table(
 
     Arguments:
         pyscf_mf: k-point pyscf mean-field object
-        cutoffs: Array of (integer) auxiliary index cutoff values
+        thc_rank_params: Array of (integer) auxiliary index cutoff values
         name: Optional descriptive name for simulation.
         chi: the number of bits for the representation of the coefficients
         beta: the number of bits for rotations.
@@ -70,6 +70,7 @@ def generate_costing_table(
         bfgs_maxiter: Max number of BFGS steps.
         adagrad_maxiter: Max number of AdaGrad steps.
         fft_df_mesh: FFTDF mesh for ISDF.
+        energy_method: Method to determine energy with (CCSD or MP2.)
     Returns
         resources: Table of resource estimates.
     """

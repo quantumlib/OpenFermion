@@ -159,7 +159,7 @@ def _compute_cost(
     ac1 = 2 * np.ceil(np.log2(iters)) - 1
 
     # System qubits
-    ac2 = n * Nk  # shoulding this be Nk * n
+    ac2 = n * Nk
 
     # The register used for the QROM
     ac3 = np.ceil(np.log2(d))

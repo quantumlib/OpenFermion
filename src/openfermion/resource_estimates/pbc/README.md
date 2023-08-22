@@ -35,11 +35,6 @@ kmesh = [1, 1, 3]
 kpts = cell.make_kpts(kmesh)
 nkpts = len(kpts)
 mf = scf.KRHF(cell, kpts).rs_density_fit()
-    scf_dict = chkfile.load(_TEST_CHK, "scf")
-    mf.__dict__.update(scf_dict)
-    mf.with_df._cderi = _TEST_CHK
-    dm0 = mf.make_rdm1()
-mf.with_df.mesh = mf.cell.mesh
 mf.kernel()
 ```
 
@@ -77,16 +72,15 @@ thc_table = thc.generate_costing_table(mf, name='carbon-diamond', thc_rank_param
 ```
 
 More fine-grained control is given by subroutines that compute the factorization, the lambda values, and the cost estimates.
-Further details are provided in a [tutorial](./notebooks/resource_estimates.ipynb). Note the THC factorization is more involved and we refer the reader to [thc-tutorial](./notebooks/isdf.ipynb) for further details.
+Further details are provided in a [tutorial](./notebooks/resource_estimates.ipynb). Note the THC factorization is more involved and we refer the reader to [thc-tutorial](../../notebooks/isdf.ipynb) for further details.
 
 Similar to the case of molecular resource estimation, we do not wish to burden all OpenFermion users with these dependencies, and testing with GitHub workflows is disabled. Currently we only check if pyscf is available. If it is then pytest will pick up the pbc module and run the tests. Note the tests can be quite slow due to the cost associated with building the integrals.
 
 ## Requirements
-
+Requirements can be found in [resource_estimates.txt](../../../../dev_tools/requirements/deps/resource_estimates.txt)
 ```
 pyscf
 jax
 jaxlib
 ase
-pandas
 ```
