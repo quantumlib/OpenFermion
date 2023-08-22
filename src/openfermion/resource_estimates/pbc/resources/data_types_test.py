@@ -11,6 +11,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import numpy as np
+import pytest
 
 from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
@@ -20,8 +21,7 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
         ResourceEstimates,
     )
     from openfermion.resource_estimates.pbc.hamiltonian import (
-        HamiltonianProperties,
-    )
+        HamiltonianProperties,)
 
 
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
