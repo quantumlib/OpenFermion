@@ -12,16 +12,20 @@
 #   limitations under the License.
 import numpy as np
 
-from openfermion.resource_estimates.pbc.resources.data_types import (
-    PBCResources,
-    ResourceEstimates,
-)
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    HamiltonianProperties,
-    build_momentum_transfer_mapping,
-)
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from openfermion.resource_estimates.pbc.resources.data_types import (
+        PBCResources,
+        ResourceEstimates,
+    )
+    from openfermion.resource_estimates.pbc.hamiltonian import (
+        HamiltonianProperties,
+    )
 
 
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
+                    reason='pyscf and/or jax not installed.')
 def test_pbc_resources():
     nmo = 10
     np.random.seed(7)

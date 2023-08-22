@@ -130,7 +130,8 @@ def _compute_cost(
         Nky: Number of k-points in y-direction
         Nkz:  Number of k-points in z-direction
         steps: an approximate number of steps to choose the precision of
-            single qubit rotations in preparation of the equal superposition state
+            single qubit rotations in preparation of the equal superposition
+            state.
         verbose: do additional printing of intermediates?
 
     Returns:
