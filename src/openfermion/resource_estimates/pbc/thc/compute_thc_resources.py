@@ -288,7 +288,6 @@ def _compute_cost(
     # The contiguous register.
     ac15 = np.ceil(np.log2(Nk * (M + n / 2)))
 
-    print(QR3(Nk*(M+n/2), n*beta))
     kr = np.power(2, QR3(Nk * (M + n / 2), n * beta)[0])
 
     #

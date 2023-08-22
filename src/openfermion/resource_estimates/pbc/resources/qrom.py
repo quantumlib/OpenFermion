@@ -49,9 +49,9 @@ def QR2(L1, L2, M):
     for k1 in range(1, 11):
         for k2 in range(1, 11):
             test_val = np.ceil(L1 /
-                            (2**k1)) * np.ceil(L2 /
-                            (2**k2)) + M * (2**
-                            (k1 + k2) - 1)
+                               (2**k1)) * np.ceil(L2 /
+                                                  (2**k2)) + M * (2**
+                                                                  (k1 + k2) - 1)
             if test_val < min_val:
                 min_val = test_val
     return int(min_val)
