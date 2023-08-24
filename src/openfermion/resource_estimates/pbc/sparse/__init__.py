@@ -9,3 +9,11 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
+from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
+if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
+    from .compute_lambda_sparse import compute_lambda
+    from .generate_costing_table_sparse import generate_costing_table
+    from .sparse_integrals import SparseFactorization
+    from .compute_sparse_resources import compute_cost

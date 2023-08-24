@@ -1,3 +1,4 @@
+# coverage: ignore
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -9,11 +10,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
-    from .compute_lambda_sf import compute_lambda
-    from .generate_costing_table_sf import generate_costing_table
-    from .sf_integrals import SingleFactorization
-    from .compute_sf_resources import compute_cost
+    from .data_types import PBCResources, ResourceEstimates
+    from .qrom import QR2, QR3, QI2
