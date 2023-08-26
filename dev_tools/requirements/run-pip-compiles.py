@@ -9,7 +9,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """This script will execute `pip-compile` to generate a variety of environment specifications.
 
 An environment specification is a requirements.txt file with fully pinned versions for all
@@ -61,23 +60,28 @@ class PlatformRecipe:
 
 
 PLATFORMS = {
-    "default": PlatformRecipe(
-        {
-            "format": EnvRecipe({"runtime", "format"}),
-            "pylint": EnvRecipe({"runtime", "pylint"}),
-            "pytest": EnvRecipe({"runtime", "pytest"}),
-            "pytest-extra": EnvRecipe(
-                {"runtime", "resource_estimates_runtime", "pytest"}
-            ),
-            "mypy": EnvRecipe({"runtime", "mypy"}),
-            "pip-tools": EnvRecipe({"pip-tools"}),
-        }
-    ),
+    "default":
+    PlatformRecipe({
+        "format":
+        EnvRecipe({"runtime", "format"}),
+        "pylint":
+        EnvRecipe({"runtime", "pylint"}),
+        "pytest":
+        EnvRecipe({"runtime", "pytest"}),
+        "pytest-extra":
+        EnvRecipe({"runtime", "resource_estimates_runtime", "pytest"}),
+        "mypy":
+        EnvRecipe({"runtime", "mypy"}),
+        "pip-tools":
+        EnvRecipe({"pip-tools"}),
+    }),
     # The following is intended to be run on an older verion of python and
     # includes the additional deps/oldest-versions.txt constraint file.
-    "max_compat": PlatformRecipe(
+    "max_compat":
+    PlatformRecipe(
         {
-            "pytest-max-compat": EnvRecipe({"runtime", "pytest"}, {"oldest-versions"}),
+            "pytest-max-compat":
+            EnvRecipe({"runtime", "pytest"}, {"oldest-versions"}),
         },
         env_out_dir="max_compat",
     ),
@@ -89,7 +93,10 @@ def run(*args):
     return subprocess.run(*args, check=True)
 
 
-def pip_compile(env_name: str, env_recipe: EnvRecipe, env_out_dir: str, constrain=True):
+def pip_compile(env_name: str,
+                env_recipe: EnvRecipe,
+                env_out_dir: str,
+                constrain=True):
     """Run `pip-compile` to create the named environment."""
     dep_args = [f"deps/{dep_name}.txt" for dep_name in env_recipe.deps]
     dep_args += [
@@ -99,14 +106,11 @@ def pip_compile(env_name: str, env_recipe: EnvRecipe, env_out_dir: str, constrai
     if constrain:
         dep_args.append(f"--constraint={env_out_dir}/dev.env.txt")
 
-    run(
-        [
-            "pip-compile",
-            f"--output-file={env_out_dir}/{env_name}.env.txt",
-            "--resolver=backtracking",
-        ]
-        + dep_args
-    )
+    run([
+        "pip-compile",
+        f"--output-file={env_out_dir}/{env_name}.env.txt",
+        "--resolver=backtracking",
+    ] + dep_args)
 
 
 def get_dev_env_recipe(pr: PlatformRecipe) -> EnvRecipe:
