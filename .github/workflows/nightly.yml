@@ -1,4 +1,4 @@
-name: Cirq Pre-release
+name: Nightly
 
 on:
   schedule:
