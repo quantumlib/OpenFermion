@@ -1,5 +1,4 @@
 name: Continuous Integration
-
 on: [pull_request]
 
 jobs:
@@ -31,7 +30,7 @@ jobs:
         run: pip install -r dev_tools/requirements/envs/mypy.env.txt
       - name: Type check
         run: check/mypy
-  lint:
+  pylint:
     name: Lint check
     runs-on: ubuntu-latest
     steps:
@@ -40,8 +39,8 @@ jobs:
         with:
           python-version: '3.10'
           architecture: 'x64'
-      - name: Install pylint
-        run: pip install -r dev_tools/requirements/pylint.env.txt
+      - name: Install requirements
+        run: pip install -r dev_tools/requirements/envs/pylint.env.txt
       - name: Lint
         run: check/pylint
   pytest-max-compat:
@@ -107,6 +106,6 @@ jobs:
         with:
           python-version: '3.10'
       - name: Install requirements
-        run: pip install -r dev_tools/requirements/pytest.env.txt
+        run: pip install -r dev_tools/requirements/envs/pytest.env.txt
       - name: Coverage check
         run: check/pytest-and-incremental-coverage
