@@ -1,1 +1,2 @@
-yapf~=0.27.0
+# Make sure this matches cirq/dev_tools/requirements/deps/format.txt
+black==23.3.0
