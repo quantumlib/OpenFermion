@@ -4,7 +4,7 @@ from openfermion.resource_estimates.sparse.costing_sparse import cost_sparse
 
 
 def test_reiher_sparse():
-    """ Reproduce Reiher et al orbital sparse FT costs from paper """
+    """Reproduce Reiher et al orbital sparse FT costs from paper"""
     DE = 0.001
     CHI = 10
 
@@ -23,7 +23,7 @@ def test_reiher_sparse():
 
 
 def test_li_sparse():
-    """ Reproduce Li et al orbital sparse FT costs from paper """
+    """Reproduce Li et al orbital sparse FT costs from paper"""
     DE = 0.001
     CHI = 10
 

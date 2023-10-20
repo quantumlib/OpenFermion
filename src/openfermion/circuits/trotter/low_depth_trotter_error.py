@@ -16,15 +16,15 @@ from openfermion.ops.operators import FermionOperator
 from openfermion.utils import count_qubits
 from openfermion.transforms.opconversions import normal_ordered
 from openfermion.utils.commutators import (
-    double_commutator, trivially_double_commutes_dual_basis,
-    trivially_double_commutes_dual_basis_using_term_info)
+    double_commutator,
+    trivially_double_commutes_dual_basis,
+    trivially_double_commutes_dual_basis_using_term_info,
+)
 
 
-def low_depth_second_order_trotter_error_operator(terms,
-                                                  indices=None,
-                                                  is_hopping_operator=None,
-                                                  jellium_only=False,
-                                                  verbose=False):
+def low_depth_second_order_trotter_error_operator(
+    terms, indices=None, is_hopping_operator=None, jellium_only=False, verbose=False
+):
     """Determine the difference between the exact generator of unitary
     evolution and the approximate generator given by the second-order
     Trotter-Suzuki expansion.
@@ -55,30 +55,40 @@ def low_depth_second_order_trotter_error_operator(terms,
 
     if verbose:
         import time
+
         start = time.time()
 
     error_operator = FermionOperator.zero()
     for beta in range(n_terms):
         if verbose and beta % (n_terms // 30) == 0:
-            print('%4.3f percent done in' % ((float(beta) / n_terms)**3 * 100),
-                  time.time() - start)
+            print(
+                '%4.3f percent done in' % ((float(beta) / n_terms) ** 3 * 100), time.time() - start
+            )
 
         for alpha in range(beta + 1):
             for alpha_prime in range(beta):
                 # If we have pre-computed info on indices, use it to determine
                 # trivial double commutation.
                 if more_info:
-                    if (not trivially_double_commutes_dual_basis_using_term_info(  # pylint: disable=C
-                            indices[alpha], indices[beta], indices[alpha_prime],
-                            is_hopping_operator[alpha],
-                            is_hopping_operator[beta],
-                            is_hopping_operator[alpha_prime], jellium_only)):
+                    if not trivially_double_commutes_dual_basis_using_term_info(  # pylint: disable=C
+                        indices[alpha],
+                        indices[beta],
+                        indices[alpha_prime],
+                        is_hopping_operator[alpha],
+                        is_hopping_operator[beta],
+                        is_hopping_operator[alpha_prime],
+                        jellium_only,
+                    ):
                         # Determine the result of the double commutator.
                         double_com = double_commutator(
-                            terms[alpha], terms[beta], terms[alpha_prime],
-                            indices[beta], indices[alpha_prime],
+                            terms[alpha],
+                            terms[beta],
+                            terms[alpha_prime],
+                            indices[beta],
+                            indices[alpha_prime],
                             is_hopping_operator[beta],
-                            is_hopping_operator[alpha_prime])
+                            is_hopping_operator[alpha_prime],
+                        )
                         if alpha == beta:
                             double_com /= 2.0
 
@@ -87,9 +97,9 @@ def low_depth_second_order_trotter_error_operator(terms,
                 # If we don't have more info, check for trivial double
                 # commutation using the terms directly.
                 elif not trivially_double_commutes_dual_basis(
-                        terms[alpha], terms[beta], terms[alpha_prime]):
-                    double_com = double_commutator(terms[alpha], terms[beta],
-                                                   terms[alpha_prime])
+                    terms[alpha], terms[beta], terms[alpha_prime]
+                ):
+                    double_com = double_commutator(terms[alpha], terms[beta], terms[alpha_prime])
 
                     if alpha == beta:
                         double_com /= 2.0
@@ -100,11 +110,9 @@ def low_depth_second_order_trotter_error_operator(terms,
     return error_operator
 
 
-def low_depth_second_order_trotter_error_bound(terms,
-                                               indices=None,
-                                               is_hopping_operator=None,
-                                               jellium_only=False,
-                                               verbose=False):
+def low_depth_second_order_trotter_error_bound(
+    terms, indices=None, is_hopping_operator=None, jellium_only=False, verbose=False
+):
     """Numerically upper bound the error in the ground state energy
     for the second-order Trotter-Suzuki expansion.
 
@@ -135,12 +143,16 @@ def low_depth_second_order_trotter_error_bound(terms,
         numpy.absolute(
             list(
                 low_depth_second_order_trotter_error_operator(
-                    terms, indices, is_hopping_operator, jellium_only,
-                    verbose).terms.values())))
+                    terms, indices, is_hopping_operator, jellium_only, verbose
+                ).terms.values()
+            )
+        )
+    )
 
 
 def simulation_ordered_grouped_low_depth_terms_with_info(
-        hamiltonian, input_ordering=None, external_potential_at_end=False):
+    hamiltonian, input_ordering=None, external_potential_at_end=False
+):
     """Give terms from the dual basis Hamiltonian in simulated order.
 
     Uses the simulation ordering, grouping terms into hopping
@@ -193,10 +205,8 @@ def simulation_ordered_grouped_low_depth_terms_with_info(
     # ordering has been reversed.
     parity = 0
     while input_ordering != final_ordering:
-        results = stagger_with_info(hamiltonian, input_ordering, parity,
-                                    external_potential_at_end)
-        terms_in_layer, indices_in_layer, is_hopping_operator_in_layer = (
-            results)
+        results = stagger_with_info(hamiltonian, input_ordering, parity, external_potential_at_end)
+        terms_in_layer, indices_in_layer, is_hopping_operator_in_layer = results
 
         ordered_terms.extend(terms_in_layer)
         ordered_indices.extend(indices_in_layer)
@@ -215,8 +225,7 @@ def simulation_ordered_grouped_low_depth_terms_with_info(
         for qubit in range(n_qubits):
             coeff = hamiltonian.terms.get(((qubit, 1), (qubit, 0)), 0.0)
             if coeff:
-                terms_in_final_layer.append(
-                    FermionOperator(((qubit, 1), (qubit, 0)), coeff))
+                terms_in_final_layer.append(FermionOperator(((qubit, 1), (qubit, 0)), coeff))
                 indices_in_final_layer.append(set((qubit,)))
                 is_hopping_operator_in_final_layer.append(False)
 
@@ -227,10 +236,7 @@ def simulation_ordered_grouped_low_depth_terms_with_info(
     return (ordered_terms, ordered_indices, ordered_is_hopping_operator)
 
 
-def stagger_with_info(hamiltonian,
-                      input_ordering,
-                      parity,
-                      external_potential_at_end=False):
+def stagger_with_info(hamiltonian, input_ordering, parity, external_potential_at_end=False):
     """Give terms simulated in a single stagger of a Trotter step.
 
     Groups terms into hopping (i^ j + j^ i) and number
@@ -275,34 +281,34 @@ def stagger_with_info(hamiltonian,
 
         # Calculate the hopping operators in the Hamiltonian.
         left_hopping_operator = FermionOperator(
-            ((left, 1), (right, 0)),
-            hamiltonian.terms.get(((left, 1), (right, 0)), 0.0))
+            ((left, 1), (right, 0)), hamiltonian.terms.get(((left, 1), (right, 0)), 0.0)
+        )
         right_hopping_operator = FermionOperator(
-            ((right, 1), (left, 0)),
-            hamiltonian.terms.get(((right, 1), (left, 0)), 0.0))
+            ((right, 1), (left, 0)), hamiltonian.terms.get(((right, 1), (left, 0)), 0.0)
+        )
 
         # Calculate the two-number operator l^ r^ l r in the Hamiltonian.
         two_number_operator = FermionOperator(
             ((left, 1), (right, 1), (left, 0), (right, 0)),
-            hamiltonian.terms.get(
-                ((left, 1), (right, 1), (left, 0), (right, 0)), 0.0))
+            hamiltonian.terms.get(((left, 1), (right, 1), (left, 0), (right, 0)), 0.0),
+        )
 
         if not external_potential_at_end:
             # Calculate the left number operator, left^ left.
             left_number_operator = FermionOperator(
-                ((left, 1), (left, 0)),
-                hamiltonian.terms.get(((left, 1), (left, 0)), 0.0))
+                ((left, 1), (left, 0)), hamiltonian.terms.get(((left, 1), (left, 0)), 0.0)
+            )
 
             # Calculate the right number operator, right^ right.
             right_number_operator = FermionOperator(
-                ((right, 1), (right, 0)),
-                hamiltonian.terms.get(((right, 1), (right, 0)), 0.0))
+                ((right, 1), (right, 0)), hamiltonian.terms.get(((right, 1), (right, 0)), 0.0)
+            )
 
             # Divide single-number terms by n_qubits-1 to avoid over-accounting
             # for the interspersed rotations. Each qubit is swapped n_qubits-1
             # times total.
-            left_number_operator /= (n_qubits - 1)
-            right_number_operator /= (n_qubits - 1)
+            left_number_operator /= n_qubits - 1
+            right_number_operator /= n_qubits - 1
 
         else:
             left_number_operator = FermionOperator.zero()
@@ -310,27 +316,27 @@ def stagger_with_info(hamiltonian,
 
         # If the overall hopping operator isn't close to zero, append it.
         # Include the indices it acts on and that it's a hopping operator.
-        if not (left_hopping_operator +
-                right_hopping_operator) == FermionOperator.zero():
-            terms_in_layer.append(left_hopping_operator +
-                                  right_hopping_operator)
+        if not (left_hopping_operator + right_hopping_operator) == FermionOperator.zero():
+            terms_in_layer.append(left_hopping_operator + right_hopping_operator)
             indices_in_layer.append(set((left, right)))
             is_hopping_operator_in_layer.append(True)
 
         # If the overall number operator isn't close to zero, append it.
         # Include the indices it acts on and that it's a number operator.
-        if not (two_number_operator + left_number_operator +
-                right_number_operator) == FermionOperator.zero():
-            terms_in_layer.append(two_number_operator + left_number_operator +
-                                  right_number_operator)
+        if (
+            not (two_number_operator + left_number_operator + right_number_operator)
+            == FermionOperator.zero()
+        ):
+            terms_in_layer.append(
+                two_number_operator + left_number_operator + right_number_operator
+            )
             terms_in_layer[-1].compress()
 
             indices_in_layer.append(set((left, right)))
             is_hopping_operator_in_layer.append(False)
 
         # Modify the current Jordan-Wigner canonical ordering in-place.
-        input_ordering[i], input_ordering[i + 1] = (input_ordering[i + 1],
-                                                    input_ordering[i])
+        input_ordering[i], input_ordering[i + 1] = (input_ordering[i + 1], input_ordering[i])
 
     return terms_in_layer, indices_in_layer, is_hopping_operator_in_layer
 

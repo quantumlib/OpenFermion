@@ -49,7 +49,6 @@ def f():
 
 
 def test_deprecated_test():
-
     @deprecated_test
     def test():
         f()
@@ -63,14 +62,12 @@ def test_deprecated_test():
 
 def test_wrap_module():
     openfermion.deprecated_attribute = None
-    wrapped_openfermion = wrap_module(openfermion,
-                                      {'deprecated_attribute': ('', '')})
+    wrapped_openfermion = wrap_module(openfermion, {'deprecated_attribute': ('', '')})
     with pytest.deprecated_call():
         _ = wrapped_openfermion.deprecated_attribute
 
 
 def test_cirq_deprecations():
-
     @deprecated(deadline="v0.12", fix="use new_func")
     def old_func():
         pass

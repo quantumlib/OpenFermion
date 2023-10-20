@@ -13,9 +13,13 @@
 
 import copy
 
-from openfermion.ops.operators import (BosonOperator, FermionOperator,
-                                       MajoranaOperator, QuadOperator,
-                                       QubitOperator)
+from openfermion.ops.operators import (
+    BosonOperator,
+    FermionOperator,
+    MajoranaOperator,
+    QuadOperator,
+    QubitOperator,
+)
 
 
 def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):

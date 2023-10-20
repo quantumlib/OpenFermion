@@ -18,11 +18,12 @@ import scipy
 import scipy.sparse
 
 from openfermion.ops.operators import BinaryPolynomial
+
 # import openfermion.ops.operators._binary_polynomial as bp
 
 
 def shift_decoder(decoder, shift_constant):
-    """ Shifts the indices of a decoder by a constant.
+    """Shifts the indices of a decoder by a constant.
 
     Args:
         decoder (iterable): list of BinaryPolynomial; the decoder
@@ -32,9 +33,10 @@ def shift_decoder(decoder, shift_constant):
     """
     decode_shifted = []
     if not isinstance(shift_constant, (numpy.int64, numpy.int32, int)):
-        raise TypeError('the shift to the decoder must be integer. got {}'
-                        'of type {}'.format(shift_constant,
-                                            type(shift_constant)))
+        raise TypeError(
+            'the shift to the decoder must be integer. got {}'
+            'of type {}'.format(shift_constant, type(shift_constant))
+        )
     for entry in decoder:
         tmp_entry = copy.deepcopy(entry)
         tmp_entry.shift(shift_constant)
@@ -43,7 +45,7 @@ def shift_decoder(decoder, shift_constant):
 
 
 def double_decoding(decoder_1, decoder_2):
-    """ Concatenates two decodings
+    """Concatenates two decodings
 
     Args:
         decoder_1 (iterable): list of BinaryPolynomial
@@ -127,7 +129,7 @@ class BinaryCode(object):
     """
 
     def __init__(self, encoding, decoding):
-        """ Initialization of a binary code.
+        """Initialization of a binary code.
 
         Args:
             encoding (np.ndarray or list): nested lists or binary 2D-array
@@ -150,35 +152,35 @@ class BinaryCode(object):
 
         if self.n_modes != len(decoding):
             raise BinaryCodeError(
-                'size mismatch, decoder and encoder should have the same'
-                ' first dimension')
+                'size mismatch, decoder and encoder should have the same' ' first dimension'
+            )
 
         decoder_qubits = set()
         self.decoder = []
 
         for symbolic_binary in decoding:
-            if isinstance(symbolic_binary,
-                          (tuple, list, str, int, numpy.int32, numpy.int64)):
+            if isinstance(symbolic_binary, (tuple, list, str, int, numpy.int32, numpy.int64)):
                 symbolic_binary = BinaryPolynomial(symbolic_binary)
             if isinstance(symbolic_binary, BinaryPolynomial):
                 self.decoder.append(symbolic_binary)
-                decoder_qubits = decoder_qubits | set(
-                    symbolic_binary.enumerate_qubits())
+                decoder_qubits = decoder_qubits | set(symbolic_binary.enumerate_qubits())
             else:
                 raise TypeError(
-                    'decoder component provided '
-                    'is not a suitable for BinaryPolynomial', symbolic_binary)
+                    'decoder component provided ' 'is not a suitable for BinaryPolynomial',
+                    symbolic_binary,
+                )
 
         if len(decoder_qubits) != self.n_qubits:
-            raise BinaryCodeError(
-                'decoder and encoder provided has different number of qubits')
+            raise BinaryCodeError('decoder and encoder provided has different number of qubits')
 
         if max(decoder_qubits) + 1 > self.n_qubits:
-            raise BinaryCodeError('decoder is not indexing some qubits. Qubits'
-                                  'indexed are: {}'.format(decoder_qubits))
+            raise BinaryCodeError(
+                'decoder is not indexing some qubits. Qubits'
+                'indexed are: {}'.format(decoder_qubits)
+            )
 
     def __iadd__(self, appendix):
-        """ In-place appending a binary code with +=.
+        """In-place appending a binary code with +=.
 
         Args:
             appendix (BinaryCode): The code to append to the present one.
@@ -193,10 +195,9 @@ class BinaryCode(object):
             raise TypeError('argument must be a BinaryCode.')
 
         self.decoder = numpy.append(
-            self.decoder, shift_decoder(appendix.decoder,
-                                        self.n_qubits)).tolist()
-        self.encoder = scipy.sparse.bmat([[self.encoder, None],
-                                          [None, appendix.encoder]])
+            self.decoder, shift_decoder(appendix.decoder, self.n_qubits)
+        ).tolist()
+        self.encoder = scipy.sparse.bmat([[self.encoder, None], [None, appendix.encoder]])
         self.n_qubits, self.n_modes = numpy.shape(self.encoder)
         return self
 
@@ -233,8 +234,7 @@ class BinaryCode(object):
 
         if isinstance(factor, BinaryCode):
             if self.n_qubits != factor.n_modes:
-                raise BinaryCodeError(
-                    'size mismatch between inner and outer code layer')
+                raise BinaryCodeError('size mismatch between inner and outer code layer')
 
             self.decoder = double_decoding(self.decoder, factor.decoder)
             self.encoder = factor.encoder.dot(self.encoder)
@@ -243,23 +243,22 @@ class BinaryCode(object):
 
         elif isinstance(factor, (numpy.int32, numpy.int64, int)):
             if factor < 1:
-                raise ValueError('integer factor has to be positive, '
-                                 'non-zero ')
+                raise ValueError('integer factor has to be positive, ' 'non-zero ')
 
             self.encoder = scipy.sparse.kron(
-                scipy.sparse.identity(factor, format='csc', dtype=int),
-                self.encoder, 'csc')
+                scipy.sparse.identity(factor, format='csc', dtype=int), self.encoder, 'csc'
+            )
             tmp_decoder = self.decoder
             for index in numpy.arange(1, factor):
                 self.decoder = numpy.append(
-                    self.decoder,
-                    shift_decoder(tmp_decoder, index * self.n_qubits))
+                    self.decoder, shift_decoder(tmp_decoder, index * self.n_qubits)
+                )
             self.n_qubits *= factor
             self.n_modes *= factor
             return self
 
     def __mul__(self, factor):
-        """ Concatenation of two codes or appendage the same code factor times
+        """Concatenation of two codes or appendage the same code factor times
         in case of integer factor.
 
         Args:
@@ -273,7 +272,7 @@ class BinaryCode(object):
         return twin
 
     def __rmul__(self, factor):
-        """ Appending the same code factor times.
+        """Appending the same code factor times.
 
         Args:
             factor (int): integer defining number of appendages.
@@ -286,12 +285,14 @@ class BinaryCode(object):
         if isinstance(factor, (numpy.int32, numpy.int64, int)):
             return self * factor
         else:
-            raise TypeError('the left multiplier must be an integer to a'
-                            'BinaryCode. Was given {} of '
-                            'type {}'.format(factor, type(factor)))
+            raise TypeError(
+                'the left multiplier must be an integer to a'
+                'BinaryCode. Was given {} of '
+                'type {}'.format(factor, type(factor))
+            )
 
     def __str__(self):
-        """ Return an easy-to-read string representation."""
+        """Return an easy-to-read string representation."""
         string_return = [list(map(list, self.encoder.toarray()))]
 
         dec_str = '['

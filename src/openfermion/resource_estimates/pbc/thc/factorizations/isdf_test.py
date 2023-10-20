@@ -22,21 +22,25 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf.pbc.lib.kpts_helper import get_kconserv, member, unique
     from pyscf.pbc.tools import pyscf_ase
 
-    from openfermion.resource_estimates.pbc.hamiltonian import \
-        build_momentum_transfer_mapping
+    from openfermion.resource_estimates.pbc.hamiltonian import build_momentum_transfer_mapping
     from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
-        build_eri_isdf_double_translation, build_eri_isdf_single_translation,
+        build_eri_isdf_double_translation,
+        build_eri_isdf_single_translation,
         build_g_vector_mappings_double_translation,
-        build_g_vector_mappings_single_translation, build_g_vectors,
-        build_kpoint_zeta, build_minus_q_g_mapping, get_miller,
-        inverse_g_map_double_translation, solve_kmeans_kpisdf, solve_qrcp_isdf,
-        supercell_isdf)
-    from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import \
-        KMeansCVT
+        build_g_vector_mappings_single_translation,
+        build_g_vectors,
+        build_kpoint_zeta,
+        build_minus_q_g_mapping,
+        get_miller,
+        inverse_g_map_double_translation,
+        solve_kmeans_kpisdf,
+        solve_qrcp_isdf,
+        supercell_isdf,
+    )
+    from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import KMeansCVT
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_supercell_isdf_gamma():
     cell = gto.Cell()
     cell.atom = """
@@ -68,35 +72,20 @@ def test_supercell_isdf_gamma():
     num_interp_points = np.prod(cell.mesh)
     interp_indx = np.arange(np.prod(cell.mesh))
 
-    chi, zeta, Theta = supercell_isdf(mf.with_df,
-                                      interp_indx,
-                                      orbitals=orbitals_mo,
-                                      grid_points=grid_points)
+    chi, zeta, Theta = supercell_isdf(
+        mf.with_df, interp_indx, orbitals=orbitals_mo, grid_points=grid_points
+    )
     assert Theta.shape == (len(grid_points), num_interp_points)
     # Check overlap
     # Evaluate overlap from orbitals. Do it integral way to ensure
     # discretization error is the same from using coarse FFT grid for testing
     # speed
-    ovlp_ao = np.einsum(
-        "mp,mq,m->pq",
-        orbitals.conj(),
-        orbitals,
-        grid_inst.weights,
-        optimize=True,
-    )
-    ovlp_mo = np.einsum("pi,pq,qj->ij",
-                        mf.mo_coeff.conj(),
-                        ovlp_ao,
-                        mf.mo_coeff,
-                        optimize=True)
+    ovlp_ao = np.einsum("mp,mq,m->pq", orbitals.conj(), orbitals, grid_inst.weights, optimize=True)
+    ovlp_mo = np.einsum("pi,pq,qj->ij", mf.mo_coeff.conj(), ovlp_ao, mf.mo_coeff, optimize=True)
     ovlp_mu = np.einsum("Rm,R->m", Theta, grid_inst.weights, optimize=True)
     orbitals_mo_interp = orbitals_mo[interp_indx]
     ovlp_isdf = np.einsum(
-        "mi,mj,m->ij",
-        orbitals_mo_interp.conj(),
-        orbitals_mo_interp,
-        ovlp_mu,
-        optimize=True,
+        "mi,mj,m->ij", orbitals_mo_interp.conj(), orbitals_mo_interp, ovlp_mu, optimize=True
     )
     assert np.allclose(ovlp_mo, ovlp_isdf)
     # Check ERIs.
@@ -110,8 +99,7 @@ def test_supercell_isdf_gamma():
     assert np.allclose(eri_thc, eri_ref)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_supercell_isdf_complex():
     cell = gto.Cell()
     cell.atom = """
@@ -144,47 +132,25 @@ def test_supercell_isdf_complex():
     num_interp_points = 10 * num_mo
     nocc = cell.nelec[0]
     density = np.einsum(
-        "Ri,Ri->R",
-        orbitals_mo[:, :nocc].conj(),
-        orbitals_mo[:, :nocc],
-        optimize=True,
+        "Ri,Ri->R", orbitals_mo[:, :nocc].conj(), orbitals_mo[:, :nocc], optimize=True
     )
     kmeans = KMeansCVT(grid_points, max_iteration=500)
-    interp_indx = kmeans.find_interpolating_points(
-        num_interp_points,
-        density.real,
-        verbose=False,
-    )
+    interp_indx = kmeans.find_interpolating_points(num_interp_points, density.real, verbose=False)
 
-    chi, zeta, Theta = supercell_isdf(mf.with_df,
-                                      interp_indx,
-                                      orbitals=orbitals_mo,
-                                      grid_points=grid_points)
+    chi, zeta, Theta = supercell_isdf(
+        mf.with_df, interp_indx, orbitals=orbitals_mo, grid_points=grid_points
+    )
     assert Theta.shape == (len(grid_points), num_interp_points)
     # Check overlap
     # Evaluate overlap from orbitals. Do it integral way to ensure
     # discretization error is the same from using coarse FFT grid for testing
     # speed
-    ovlp_ao = np.einsum(
-        "mp,mq,m->pq",
-        orbitals.conj(),
-        orbitals,
-        grid_inst.weights,
-        optimize=True,
-    )
-    ovlp_mo = np.einsum("pi,pq,qj->ij",
-                        mf.mo_coeff.conj(),
-                        ovlp_ao,
-                        mf.mo_coeff,
-                        optimize=True)
+    ovlp_ao = np.einsum("mp,mq,m->pq", orbitals.conj(), orbitals, grid_inst.weights, optimize=True)
+    ovlp_mo = np.einsum("pi,pq,qj->ij", mf.mo_coeff.conj(), ovlp_ao, mf.mo_coeff, optimize=True)
     ovlp_mu = np.einsum("Rm,R->m", Theta, grid_inst.weights, optimize=True)
     orbitals_mo_interp = orbitals_mo[interp_indx]
     ovlp_isdf = np.einsum(
-        "mi,mj,m->ij",
-        orbitals_mo_interp.conj(),
-        orbitals_mo_interp,
-        ovlp_mu,
-        optimize=True,
+        "mi,mj,m->ij", orbitals_mo_interp.conj(), orbitals_mo_interp, ovlp_mu, optimize=True
     )
     assert np.allclose(ovlp_mo, ovlp_isdf)
     # Check ERIs.
@@ -199,8 +165,7 @@ def test_supercell_isdf_complex():
     assert np.allclose(eri_thc, eri_ref)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_G_vector_mapping_double_translation():
     ase_atom = bulk("AlN", "wurtzite", a=3.11, c=4.98)
     cell = gto.Cell()
@@ -217,12 +182,9 @@ def test_G_vector_mapping_double_translation():
     kpts = cell.make_kpts(kmesh)
 
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
-    (
-        G_vecs,
-        G_map,
-        G_unique,
-        _,
-    ) = build_g_vector_mappings_double_translation(cell, kpts, momentum_map)
+    (G_vecs, G_map, G_unique, _) = build_g_vector_mappings_double_translation(
+        cell, kpts, momentum_map
+    )
     num_kpts = len(kpts)
     for iq in range(num_kpts):
         for ikp in range(num_kpts):
@@ -242,8 +204,7 @@ def test_G_vector_mapping_double_translation():
             assert ik in inv_G_map[iq, ix_G_qk]
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_G_vector_mapping_single_translation():
     cell = gto.Cell()
     cell.atom = """
@@ -265,23 +226,15 @@ def test_G_vector_mapping_single_translation():
     kpts = cell.make_kpts(kmesh)
     num_kpts = len(kpts)
 
-    kpts_pq = np.array([(kp, kpts[ikq])
-                        for ikp, kp in enumerate(kpts)
-                        for ikq in range(num_kpts)])
+    kpts_pq = np.array([(kp, kpts[ikq]) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)])
 
-    kpts_pq_indx = np.array([
-        (ikp, ikq) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)
-    ])
+    kpts_pq_indx = np.array([(ikp, ikq) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)])
     transfers = kpts_pq[:, 0] - kpts_pq[:, 1]
-    assert len(transfers) == (nk**3)**2
+    assert len(transfers) == (nk**3) ** 2
     _, unique_indx, _ = unique(transfers)
-    (
-        _,
-        _,
-        G_unique,
-        delta_Gs,
-    ) = build_g_vector_mappings_single_translation(cell, kpts,
-                                                   kpts_pq_indx[unique_indx])
+    (_, _, G_unique, delta_Gs) = build_g_vector_mappings_single_translation(
+        cell, kpts, kpts_pq_indx[unique_indx]
+    )
     kconserv = get_kconserv(cell, kpts)
     for ikp in range(num_kpts):
         for ikq in range(num_kpts):
@@ -299,8 +252,7 @@ def test_G_vector_mapping_single_translation():
                 assert np.allclose(delta_G_expected, delta_G)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_kpoint_isdf_double_translation():
     cell = gto.Cell()
     cell.atom = """
@@ -327,11 +279,7 @@ def test_kpoint_isdf_double_translation():
     num_mo = mf.mo_coeff[0].shape[-1]
     num_thc = np.prod(cell.mesh)
     kpt_thc = solve_kmeans_kpisdf(
-        mf,
-        num_thc,
-        use_density_guess=True,
-        verbose=False,
-        single_translation=False,
+        mf, num_thc, use_density_guess=True, verbose=False, single_translation=False
     )
     num_kpts = len(momentum_map)
     for iq in range(1, num_kpts):
@@ -341,27 +289,17 @@ def test_kpoint_isdf_double_translation():
                 ikr = momentum_map[iq, iks]
                 _ = kpt_thc.g_mapping[iq, iks]
                 kpt_pqrs = [kpts[ikp], kpts[ikq], kpts[ikr], kpts[iks]]
-                mos_pqrs = [
-                    mf.mo_coeff[ikp],
-                    mf.mo_coeff[ikq],
-                    mf.mo_coeff[ikr],
-                    mf.mo_coeff[iks],
-                ]
-                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs,
-                                            compact=False).reshape(
-                                                (num_mo,) * 4)
+                mos_pqrs = [mf.mo_coeff[ikp], mf.mo_coeff[ikq], mf.mo_coeff[ikr], mf.mo_coeff[iks]]
+                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs, compact=False).reshape(
+                    (num_mo,) * 4
+                )
                 eri_pqrs_isdf = build_eri_isdf_double_translation(
-                    kpt_thc.chi,
-                    kpt_thc.zeta,
-                    iq,
-                    [ikp, ikq, ikr, iks],
-                    kpt_thc.g_mapping,
+                    kpt_thc.chi, kpt_thc.zeta, iq, [ikp, ikq, ikr, iks], kpt_thc.g_mapping
                 )
                 assert np.allclose(eri_pqrs, eri_pqrs_isdf)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_kpoint_isdf_single_translation():
     cell = gto.Cell()
     cell.atom = """
@@ -387,15 +325,9 @@ def test_kpoint_isdf_single_translation():
     num_thc = np.prod(cell.mesh)
     num_kpts = len(kpts)
     kpt_thc = solve_kmeans_kpisdf(
-        mf,
-        num_thc,
-        use_density_guess=True,
-        verbose=False,
-        single_translation=True,
+        mf, num_thc, use_density_guess=True, verbose=False, single_translation=True
     )
-    kpts_pq = np.array([(kp, kpts[ikq])
-                        for ikp, kp in enumerate(kpts)
-                        for ikq in range(num_kpts)])
+    kpts_pq = np.array([(kp, kpts[ikq]) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)])
     transfers = kpts_pq[:, 0] - kpts_pq[:, 1]
     _, unique_indx, _ = unique(transfers)
     kconserv = get_kconserv(cell, kpts)
@@ -405,23 +337,14 @@ def test_kpoint_isdf_single_translation():
             for ikr in range(num_kpts):
                 iks = kconserv[ikp, ikq, ikr]
                 kpt_pqrs = [kpts[ikp], kpts[ikq], kpts[ikr], kpts[iks]]
-                mos_pqrs = [
-                    mf.mo_coeff[ikp],
-                    mf.mo_coeff[ikq],
-                    mf.mo_coeff[ikr],
-                    mf.mo_coeff[iks],
-                ]
-                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs,
-                                            compact=False).reshape(
-                                                (num_mo,) * 4)
+                mos_pqrs = [mf.mo_coeff[ikp], mf.mo_coeff[ikq], mf.mo_coeff[ikr], mf.mo_coeff[iks]]
+                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs, compact=False).reshape(
+                    (num_mo,) * 4
+                )
                 q = kpts[ikp] - kpts[ikq]
                 qindx = member(q, transfers[unique_indx])[0]
                 eri_pqrs_isdf = build_eri_isdf_single_translation(
-                    kpt_thc.chi,
-                    kpt_thc.zeta,
-                    qindx,
-                    [ikp, ikq, ikr, iks],
-                    kpt_thc.g_mapping,
+                    kpt_thc.chi, kpt_thc.zeta, qindx, [ikp, ikq, ikr, iks], kpt_thc.g_mapping
                 )
                 assert np.allclose(eri_pqrs, eri_pqrs_isdf)
 
@@ -432,8 +355,7 @@ def get_complement(miller_indx, kmesh):
     return complement
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 @pytest.mark.slow
 def test_kpoint_isdf_symmetries():
     cell = gto.Cell()
@@ -456,22 +378,14 @@ def test_kpoint_isdf_symmetries():
     kpts = cell.make_kpts(kmesh)
     mf = scf.KRHF(cell, kpts)
     mf.kernel()
-    num_thc = np.prod(
-        cell.mesh)  # should be no THC error when selecting all the grid points.
+    num_thc = np.prod(cell.mesh)  # should be no THC error when selecting all the grid points.
     kpt_thc = solve_kmeans_kpisdf(
-        mf,
-        num_thc,
-        use_density_guess=True,
-        verbose=False,
-        single_translation=False,
+        mf, num_thc, use_density_guess=True, verbose=False, single_translation=False
     )
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
-    (
-        _,
-        _,
-        G_unique,
-        delta_Gs,
-    ) = build_g_vector_mappings_double_translation(cell, kpts, momentum_map)
+    (_, _, G_unique, delta_Gs) = build_g_vector_mappings_double_translation(
+        cell, kpts, momentum_map
+    )
     _, minus_Q_G_map_unique = build_minus_q_g_mapping(cell, kpts, momentum_map)
     num_kpts = len(kpts)
     # Test symmetries from Appendix D of https://arxiv.org/pdf/2302.05531.pdf
@@ -488,12 +402,8 @@ def test_kpoint_isdf_symmetries():
     iGsr = G_unique[iq, ik_prime]
     ik_prime_minus_q = momentum_map[iq, ik_prime]
     # Sanity check G mappings
-    assert np.allclose(kpts[ik] - kpts[ik_minus_q] - kpts[iq],
-                       delta_Gs[iq][iGpq])
-    assert np.allclose(
-        kpts[ik_prime] - kpts[ik_prime_minus_q] - kpts[iq],
-        delta_Gs[iq][iGsr],
-    )
+    assert np.allclose(kpts[ik] - kpts[ik_minus_q] - kpts[iq], delta_Gs[iq][iGpq])
+    assert np.allclose(kpts[ik_prime] - kpts[ik_prime_minus_q] - kpts[iq], delta_Gs[iq][iGsr])
     # (pk qk-Q | rk'-Q sk') = (q k-Q p k | sk' rk'-Q)*
     ik_prime_minus_q = momentum_map[iq, ik_prime]
     # uncomment to check normal eris
@@ -520,12 +430,7 @@ def test_kpoint_isdf_symmetries():
     # Sanity check do literal minus signs (should be complex
     # conjugate)
     zeta_test = build_kpoint_zeta(
-        mf.with_df,
-        -kpts[iq],
-        -delta_Gs[iq][iGpq],
-        -delta_Gs[iq][iGsr],
-        grid_points,
-        kpt_thc.xi,
+        mf.with_df, -kpts[iq], -delta_Gs[iq][iGpq], -delta_Gs[iq][iGsr], grid_points, kpt_thc.xi
     )
     assert np.allclose(zeta_ref, zeta_test.conj())
     # (pk qk-Q | rk'-Q sk') = (rk'-Q s k'| pk qk-Q)
@@ -548,8 +453,7 @@ def test_kpoint_isdf_symmetries():
     assert np.allclose(zeta_ref, zeta_test.conj().T)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_symmetry_of_G_maps():
     cell = gto.Cell()
     cell.atom = """
@@ -569,12 +473,9 @@ def test_symmetry_of_G_maps():
     kmesh = [3, 3, 3]
     kpts = cell.make_kpts(kmesh)
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
-    (
-        G_vecs,
-        G_map,
-        _,
-        delta_Gs,
-    ) = build_g_vector_mappings_double_translation(cell, kpts, momentum_map)
+    (G_vecs, G_map, _, delta_Gs) = build_g_vector_mappings_double_translation(
+        cell, kpts, momentum_map
+    )
     G_dict, _ = build_g_vectors(cell)
     num_kpts = len(kpts)
     lattice_vectors = cell.lattice_vectors()
@@ -589,8 +490,7 @@ def test_symmetry_of_G_maps():
             Gpq_comp = -(kpts[minus_iq] + kpts[iq] + Gpq)
             iGpq_comp = G_dict[tuple(get_miller(lattice_vectors, Gpq_comp))]
             G_indx_unique = [
-                G_dict[tuple(get_miller(lattice_vectors, G))]
-                for G in delta_Gs[minus_iq]
+                G_dict[tuple(get_miller(lattice_vectors, G))] for G in delta_Gs[minus_iq]
             ]
             if iq == 1:
                 pass
@@ -604,8 +504,7 @@ def test_symmetry_of_G_maps():
                 assert iGsr_comp in G_indx_unique
 
     # Check minus Q mapping
-    minus_Q_G_map, minus_Q_G_map_unique = build_minus_q_g_mapping(
-        cell, kpts, momentum_map)
+    minus_Q_G_map, minus_Q_G_map_unique = build_minus_q_g_mapping(cell, kpts, momentum_map)
     for iq in range(1, num_kpts):
         minus_iq = minus_k_map[iq]
         for ik in range(num_kpts):
@@ -618,8 +517,7 @@ def test_symmetry_of_G_maps():
             assert np.allclose(Gpq_comp, Gpq_comp_from_map)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_isdf_qrcp():
     cell = gto.Cell()
     cell.atom = """
@@ -653,20 +551,11 @@ def test_isdf_qrcp():
             for iks in range(num_kpts):
                 ikr = momentum_map[iq, iks]
                 kpt_pqrs = [kpts[ikp], kpts[ikq], kpts[ikr], kpts[iks]]
-                mos_pqrs = [
-                    mf.mo_coeff[ikp],
-                    mf.mo_coeff[ikq],
-                    mf.mo_coeff[ikr],
-                    mf.mo_coeff[iks],
-                ]
-                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs,
-                                            compact=False).reshape(
-                                                (num_mo,) * 4)
+                mos_pqrs = [mf.mo_coeff[ikp], mf.mo_coeff[ikq], mf.mo_coeff[ikr], mf.mo_coeff[iks]]
+                eri_pqrs = mf.with_df.ao2mo(mos_pqrs, kpt_pqrs, compact=False).reshape(
+                    (num_mo,) * 4
+                )
                 eri_pqrs_isdf = build_eri_isdf_double_translation(
-                    kpt_thc.chi,
-                    kpt_thc.zeta,
-                    iq,
-                    [ikp, ikq, ikr, iks],
-                    kpt_thc.g_mapping,
+                    kpt_thc.chi, kpt_thc.zeta, iq, [ikp, ikq, ikr, iks], kpt_thc.g_mapping
                 )
                 assert np.allclose(eri_pqrs, eri_pqrs_isdf)

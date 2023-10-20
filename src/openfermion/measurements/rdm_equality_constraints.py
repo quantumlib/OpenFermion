@@ -64,11 +64,9 @@ def two_body_fermion_constraints(n_orbitals, n_fermions):
     constraint_operator = FermionOperator()
     for i in range(n_orbitals):
         for j in range(n_orbitals):
-            constraint_operator += FermionOperator(
-                ((i, 1), (j, 1), (j, 0), (i, 0)))
+            constraint_operator += FermionOperator(((i, 1), (j, 1), (j, 0), (i, 0)))
     if len(constraint_operator.terms):
-        constraint_operator -= FermionOperator((),
-                                               n_fermions * (n_fermions - 1))
+        constraint_operator -= FermionOperator((), n_fermions * (n_fermions - 1))
         yield constraint_operator
 
     # Two-body Hermiticity condition.
@@ -76,10 +74,8 @@ def two_body_fermion_constraints(n_orbitals, n_fermions):
         i, j = (ij // n_orbitals), (ij % n_orbitals)
         for kl in range(ij + 1, n_orbitals**2):
             k, l = (kl // n_orbitals), (kl % n_orbitals)
-            constraint_operator = FermionOperator(
-                ((i, 1), (j, 1), (l, 0), (k, 0)))
-            constraint_operator -= FermionOperator(
-                ((k, 1), (l, 1), (j, 0), (i, 0)))
+            constraint_operator = FermionOperator(((i, 1), (j, 1), (l, 0), (k, 0)))
+            constraint_operator -= FermionOperator(((k, 1), (l, 1), (j, 0), (i, 0)))
             if len(constraint_operator.terms):
                 yield constraint_operator
 
@@ -88,10 +84,8 @@ def two_body_fermion_constraints(n_orbitals, n_fermions):
         for j in range(n_orbitals):
             constraint_operator = FermionOperator()
             for p in range(n_orbitals):
-                constraint_operator += FermionOperator(
-                    ((i, 1), (p, 1), (p, 0), (j, 0)))
-            constraint_operator += FermionOperator(((i, 1), (j, 0)),
-                                                   -(n_fermions - 1))
+                constraint_operator += FermionOperator(((i, 1), (p, 1), (p, 0), (j, 0)))
+            constraint_operator += FermionOperator(((i, 1), (j, 0)), -(n_fermions - 1))
             if len(constraint_operator.terms):
                 yield constraint_operator
 
@@ -102,13 +96,9 @@ def two_body_fermion_constraints(n_orbitals, n_fermions):
             k, l = (kl // n_orbitals), (kl % n_orbitals)
 
             # G-matrix condition.
-            constraint_operator = FermionOperator(((i, 1), (k, 0)),
-                                                  1.0 * (j == l))
-            constraint_operator += FermionOperator(
-                ((i, 1), (l, 1), (k, 0), (j, 0)))
-            constraint_operator += FermionOperator(
-                ((i, 1), (l, 1), (j, 0), (k, 0)))
-            constraint_operator -= FermionOperator(((i, 1), (k, 0)),
-                                                   1.0 * (j == l))
+            constraint_operator = FermionOperator(((i, 1), (k, 0)), 1.0 * (j == l))
+            constraint_operator += FermionOperator(((i, 1), (l, 1), (k, 0), (j, 0)))
+            constraint_operator += FermionOperator(((i, 1), (l, 1), (j, 0), (k, 0)))
+            constraint_operator -= FermionOperator(((i, 1), (k, 0)), 1.0 * (j == l))
             if len(constraint_operator.terms):
                 yield constraint_operator

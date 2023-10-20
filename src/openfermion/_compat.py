@@ -14,8 +14,7 @@ from types import ModuleType
 import warnings
 
 
-def wrap_module(module: ModuleType,
-                deprecated_attributes: Dict[str, Tuple[str, str]]):
+def wrap_module(module: ModuleType, deprecated_attributes: Dict[str, Tuple[str, str]]):
     """Wrap a module with deprecated attributes.
 
     Args:
@@ -30,7 +29,6 @@ def wrap_module(module: ModuleType,
     """
 
     class Wrapped(ModuleType):
-
         __dict__ = module.__dict__
 
         def __getattr__(self, name):
@@ -42,7 +40,8 @@ def wrap_module(module: ModuleType,
                     f'openfermion {version}.\n'
                     f'{fix}\n',
                     DeprecationWarning,
-                    stacklevel=2)
+                    stacklevel=2,
+                )
             return getattr(module, name)
 
     return Wrapped(module.__name__, module.__doc__)

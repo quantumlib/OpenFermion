@@ -14,15 +14,13 @@ import itertools
 import numpy
 import sympy
 
-from openfermion.ops.operators import (QuadOperator, BosonOperator,
-                                       FermionOperator, MajoranaOperator)
-from openfermion.ops.representations import (PolynomialTensor,
-                                             DiagonalCoulombHamiltonian)
+from openfermion.ops.operators import QuadOperator, BosonOperator, FermionOperator, MajoranaOperator
+from openfermion.ops.representations import PolynomialTensor, DiagonalCoulombHamiltonian
 
 from openfermion.utils.operator_utils import count_qubits
 
 
-def get_quad_operator(operator, hbar=1.):
+def get_quad_operator(operator, hbar=1.0):
     """Convert to QuadOperator.
 
     Args:
@@ -40,14 +38,13 @@ def get_quad_operator(operator, hbar=1.):
         for term, coefficient in operator.terms.items():
             tmp = QuadOperator('', coefficient)
             for i, d in term:
-                tmp *= (1./numpy.sqrt(2.*hbar)) \
-                    * (QuadOperator(((i, 'q')))
-                        + QuadOperator(((i, 'p')), 1j*(-1)**d))
+                tmp *= (1.0 / numpy.sqrt(2.0 * hbar)) * (
+                    QuadOperator(((i, 'q'))) + QuadOperator(((i, 'p')), 1j * (-1) ** d)
+                )
             quad_operator += tmp
 
     else:
-        raise TypeError("Only BosonOperator is currently "
-                        "supported for get_quad_operator.")
+        raise TypeError("Only BosonOperator is currently " "supported for get_quad_operator.")
 
     return quad_operator
 
@@ -62,12 +59,14 @@ def check_no_sympy(operator):
     """
     for key in operator.terms:
         if isinstance(operator.terms[key], sympy.Expr):
-            raise TypeError('This conversion is currently not supported ' +
-                            'for operators with sympy expressions ' +
-                            'as coefficients')
+            raise TypeError(
+                'This conversion is currently not supported '
+                + 'for operators with sympy expressions '
+                + 'as coefficients'
+            )
 
 
-def get_boson_operator(operator, hbar=1.):
+def get_boson_operator(operator, hbar=1.0):
     """Convert to BosonOperator.
 
     Args:
@@ -92,13 +91,11 @@ def get_boson_operator(operator, hbar=1.):
                     coeff = -1j * numpy.sqrt(hbar / 2)
                     sign = -1
 
-                tmp *= coeff * (BosonOperator(((i, 0))) + BosonOperator(
-                    ((i, 1)), sign))
+                tmp *= coeff * (BosonOperator(((i, 0))) + BosonOperator(((i, 1)), sign))
             boson_operator += tmp
 
     else:
-        raise TypeError("Only QuadOperator is currently "
-                        "supported for get_boson_operator.")
+        raise TypeError("Only QuadOperator is currently " "supported for get_boson_operator.")
 
     return boson_operator
 
@@ -116,8 +113,7 @@ def get_fermion_operator(operator):
     elif isinstance(operator, MajoranaOperator):
         return _majorana_operator_to_fermion_operator(operator)
     else:
-        raise TypeError('{} cannot be converted to FermionOperator'.format(
-            type(operator)))
+        raise TypeError('{} cannot be converted to FermionOperator'.format(type(operator)))
 
 
 def _polynomial_tensor_to_fermion_operator(operator):
@@ -132,10 +128,10 @@ def _diagonal_coulomb_hamiltonian_to_fermion_operator(operator):
     n_qubits = count_qubits(operator)
     fermion_operator += FermionOperator((), operator.constant)
     for p, q in itertools.product(range(n_qubits), repeat=2):
-        fermion_operator += FermionOperator(((p, 1), (q, 0)),
-                                            operator.one_body[p, q])
-        fermion_operator += FermionOperator(((p, 1), (p, 0), (q, 1), (q, 0)),
-                                            operator.two_body[p, q])
+        fermion_operator += FermionOperator(((p, 1), (q, 0)), operator.one_body[p, q])
+        fermion_operator += FermionOperator(
+            ((p, 1), (p, 0), (q, 1), (q, 0)), operator.two_body[p, q]
+        )
     return fermion_operator
 
 
@@ -163,8 +159,8 @@ def _majorana_term_to_fermion_operator(term):
 
 
 def get_majorana_operator(
-        operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian,
-                        FermionOperator]) -> MajoranaOperator:
+    operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian, FermionOperator]
+) -> MajoranaOperator:
     """
     Convert to MajoranaOperator.
 
@@ -188,14 +184,11 @@ def get_majorana_operator(
     if isinstance(operator, FermionOperator):
         return _fermion_operator_to_majorana_operator(operator)
     elif isinstance(operator, (PolynomialTensor, DiagonalCoulombHamiltonian)):
-        return _fermion_operator_to_majorana_operator(
-            get_fermion_operator(operator))
-    raise TypeError('{} cannot be converted to MajoranaOperator'.format(
-        type(operator)))
+        return _fermion_operator_to_majorana_operator(get_fermion_operator(operator))
+    raise TypeError('{} cannot be converted to MajoranaOperator'.format(type(operator)))
 
 
-def _fermion_operator_to_majorana_operator(fermion_operator: FermionOperator
-                                          ) -> MajoranaOperator:
+def _fermion_operator_to_majorana_operator(fermion_operator: FermionOperator) -> MajoranaOperator:
     """
     Convert FermionOperator to MajoranaOperator.
 

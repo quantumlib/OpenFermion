@@ -41,17 +41,17 @@ def givens_matrix_elements(a, b, which='left'):
     """
     # Handle case that a is zero
     if abs(a) < EQ_TOLERANCE:
-        cosine = 1.
-        sine = 0.
-        phase = 1.
+        cosine = 1.0
+        sine = 0.0
+        phase = 1.0
     # Handle case that b is zero and a is nonzero
     elif abs(b) < EQ_TOLERANCE:
-        cosine = 0.
-        sine = 1.
-        phase = 1.
+        cosine = 0.0
+        sine = 1.0
+        phase = 1.0
     # Handle case that a and b are both nonzero
     else:
-        denominator = numpy.sqrt(abs(a)**2 + abs(b)**2)
+        denominator = numpy.sqrt(abs(a) ** 2 + abs(b) ** 2)
         cosine = abs(b) / denominator
         sine = abs(a) / denominator
         sign_b = b / abs(b)
@@ -64,24 +64,18 @@ def givens_matrix_elements(a, b, which='left'):
     # Construct matrix and return
     if which == 'left':
         # We want to zero out a
-        if (abs(numpy.imag(a)) < EQ_TOLERANCE and
-                abs(numpy.imag(b)) < EQ_TOLERANCE):
+        if abs(numpy.imag(a)) < EQ_TOLERANCE and abs(numpy.imag(b)) < EQ_TOLERANCE:
             # a and b are real, so return a standard rotation matrix
-            givens_rotation = numpy.array([[cosine, -phase * sine],
-                                           [phase * sine, cosine]])
+            givens_rotation = numpy.array([[cosine, -phase * sine], [phase * sine, cosine]])
         else:
-            givens_rotation = numpy.array([[cosine, -phase * sine],
-                                           [sine, phase * cosine]])
+            givens_rotation = numpy.array([[cosine, -phase * sine], [sine, phase * cosine]])
     elif which == 'right':
         # We want to zero out b
-        if (abs(numpy.imag(a)) < EQ_TOLERANCE and
-                abs(numpy.imag(b)) < EQ_TOLERANCE):
+        if abs(numpy.imag(a)) < EQ_TOLERANCE and abs(numpy.imag(b)) < EQ_TOLERANCE:
             # a and b are real, so return a standard rotation matrix
-            givens_rotation = numpy.array([[sine, phase * cosine],
-                                           [-phase * cosine, sine]])
+            givens_rotation = numpy.array([[sine, phase * cosine], [-phase * cosine, sine]])
         else:
-            givens_rotation = numpy.array([[sine, phase * cosine],
-                                           [cosine, -phase * sine]])
+            givens_rotation = numpy.array([[sine, phase * cosine], [cosine, -phase * sine]])
     else:
         raise ValueError('"which" must be equal to "left" or "right".')
     return givens_rotation
@@ -93,18 +87,14 @@ def givens_rotate(operator, givens_rotation, i, j, which='row'):
         # Rotate rows i and j
         row_i = operator[i].copy()
         row_j = operator[j].copy()
-        operator[i] = (givens_rotation[0, 0] * row_i +
-                       givens_rotation[0, 1] * row_j)
-        operator[j] = (givens_rotation[1, 0] * row_i +
-                       givens_rotation[1, 1] * row_j)
+        operator[i] = givens_rotation[0, 0] * row_i + givens_rotation[0, 1] * row_j
+        operator[j] = givens_rotation[1, 0] * row_i + givens_rotation[1, 1] * row_j
     elif which == 'col':
         # Rotate columns i and j
         col_i = operator[:, i].copy()
         col_j = operator[:, j].copy()
-        operator[:, i] = (givens_rotation[0, 0] * col_i +
-                          givens_rotation[0, 1].conj() * col_j)
-        operator[:, j] = (givens_rotation[1, 0] * col_i +
-                          givens_rotation[1, 1].conj() * col_j)
+        operator[:, i] = givens_rotation[0, 0] * col_i + givens_rotation[0, 1].conj() * col_j
+        operator[:, j] = givens_rotation[1, 0] * col_i + givens_rotation[1, 1].conj() * col_j
     else:
         raise ValueError('"which" must be equal to "row" or "col".')
 
@@ -120,8 +110,9 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
 
     if which == 'row':
         if m % 2 != 0:
-            raise ValueError('To apply a double Givens rotation on rows, '
-                             'the number of rows must be even.')
+            raise ValueError(
+                'To apply a double Givens rotation on rows, ' 'the number of rows must be even.'
+            )
         n = m // 2
         # Rotate rows i and j
         givens_rotate(operator[:n], givens_rotation, i, j, which='row')
@@ -129,17 +120,15 @@ def double_givens_rotate(operator, givens_rotation, i, j, which='row'):
         givens_rotate(operator[n:], givens_rotation.conj(), i, j, which='row')
     elif which == 'col':
         if p % 2 != 0:
-            raise ValueError('To apply a double Givens rotation on columns, '
-                             'the number of columns must be even.')
+            raise ValueError(
+                'To apply a double Givens rotation on columns, '
+                'the number of columns must be even.'
+            )
         n = p // 2
         # Rotate columns i and j
         givens_rotate(operator[:, :n], givens_rotation, i, j, which='col')
         # Rotate cols n + i and n + j
-        givens_rotate(operator[:, n:],
-                      givens_rotation.conj(),
-                      i,
-                      j,
-                      which='col')
+        givens_rotate(operator[:, n:], givens_rotation.conj(), i, j, which='col')
     else:
         raise ValueError('"which" must be equal to "row" or "col".')
 
@@ -219,9 +208,7 @@ def givens_decomposition_square(unitary_matrix, always_insert=False):
             if always_insert or abs(right_element) > EQ_TOLERANCE:
                 # We actually need to perform a Givens rotation
                 left_element = current_matrix[i, j - 1].conj()
-                givens_rotation = givens_matrix_elements(left_element,
-                                                         right_element,
-                                                         which='right')
+                givens_rotation = givens_matrix_elements(left_element, right_element, which='right')
 
                 # Add the parameters to the list
                 theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
@@ -229,11 +216,7 @@ def givens_decomposition_square(unitary_matrix, always_insert=False):
                 parallel_ops.append((j - 1, j, theta, phi))
 
                 # Update the matrix
-                givens_rotate(current_matrix,
-                              givens_rotation,
-                              j - 1,
-                              j,
-                              which='col')
+                givens_rotate(current_matrix, givens_rotation, j - 1, j, which='col')
 
         # If the current list of parallel operations is not empty,
         # append it to the list,
@@ -314,7 +297,8 @@ def givens_decomposition(unitary_rows, always_insert=False):
             # Zero out entry in row l if needed
             if abs(current_matrix[l, k]) > EQ_TOLERANCE:
                 givens_rotation = givens_matrix_elements(
-                    current_matrix[l, k], current_matrix[l + 1, k])
+                    current_matrix[l, k], current_matrix[l + 1, k]
+                )
                 # Apply Givens rotation
                 givens_rotate(current_matrix, givens_rotation, l, l + 1)
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
@@ -368,9 +352,9 @@ def givens_decomposition(unitary_rows, always_insert=False):
                 if always_insert or abs(right_element) > EQ_TOLERANCE:
                     # We actually need to perform a Givens rotation
                     left_element = current_matrix[i, j - 1].conj()
-                    givens_rotation = givens_matrix_elements(left_element,
-                                                             right_element,
-                                                             which='right')
+                    givens_rotation = givens_matrix_elements(
+                        left_element, right_element, which='right'
+                    )
 
                     # Add the parameters to the list
                     theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
@@ -378,11 +362,7 @@ def givens_decomposition(unitary_rows, always_insert=False):
                     parallel_rotations.append((j - 1, j, theta, phi))
 
                     # Update the matrix
-                    givens_rotate(current_matrix,
-                                  givens_rotation,
-                                  j - 1,
-                                  j,
-                                  which='col')
+                    givens_rotate(current_matrix, givens_rotation, j - 1, j, which='col')
 
             # If the current list of parallel operations is not empty,
             # append it to the list,
@@ -469,24 +449,23 @@ def fermionic_gaussian_decomposition(unitary_rows):
 
     # Check that p = 2 * n
     if p != 2 * n:
-        raise ValueError('The input matrix must have twice as many columns '
-                         'as rows.')
+        raise ValueError('The input matrix must have twice as many columns ' 'as rows.')
 
     # Check that left and right parts of unitary_rows satisfy the constraints
     # necessary for the transformed fermionic operators to satisfy
     # the fermionic anticommutation relations
     left_part = unitary_rows[:, :n]
     right_part = unitary_rows[:, n:]
-    constraint_matrix_1 = (left_part.dot(left_part.T.conj()) +
-                           right_part.dot(right_part.T.conj()))
-    constraint_matrix_2 = (left_part.dot(right_part.T) +
-                           right_part.dot(left_part.T))
+    constraint_matrix_1 = left_part.dot(left_part.T.conj()) + right_part.dot(right_part.T.conj())
+    constraint_matrix_2 = left_part.dot(right_part.T) + right_part.dot(left_part.T)
     discrepancy_1 = numpy.amax(abs(constraint_matrix_1 - numpy.eye(n)))
     discrepancy_2 = numpy.amax(abs(constraint_matrix_2))
     if discrepancy_1 > EQ_TOLERANCE or discrepancy_2 > EQ_TOLERANCE:
-        raise ValueError('The input matrix does not satisfy the constraints '
-                         'necessary for a proper transformation of the '
-                         'fermionic ladder operators.')
+        raise ValueError(
+            'The input matrix does not satisfy the constraints '
+            'necessary for a proper transformation of the '
+            'fermionic ladder operators.'
+        )
 
     # Compute left_unitary using Givens rotations
     left_unitary = numpy.eye(n, dtype=complex)
@@ -496,7 +475,8 @@ def fermionic_gaussian_decomposition(unitary_rows):
             # Zero out entry in row l if needed
             if abs(current_matrix[l, k]) > EQ_TOLERANCE:
                 givens_rotation = givens_matrix_elements(
-                    current_matrix[l, k], current_matrix[l + 1, k])
+                    current_matrix[l, k], current_matrix[l + 1, k]
+                )
                 # Apply Givens rotation
                 givens_rotate(current_matrix, givens_rotation, l, l + 1)
                 givens_rotate(left_unitary, givens_rotation, l, l + 1)
@@ -532,8 +512,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
             if abs(left_element) > EQ_TOLERANCE:
                 # We actually need to perform a Givens rotation
                 right_element = current_matrix[i, j + 1].conj()
-                givens_rotation = givens_matrix_elements(
-                    left_element, right_element)
+                givens_rotation = givens_matrix_elements(left_element, right_element)
 
                 # Add the parameters to the list
                 theta = numpy.arcsin(numpy.real(givens_rotation[1, 0]))
@@ -541,11 +520,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
                 parallel_ops.append((j, j + 1, theta, phi))
 
                 # Update the matrix
-                double_givens_rotate(current_matrix,
-                                     givens_rotation,
-                                     j,
-                                     j + 1,
-                                     which='col')
+                double_givens_rotate(current_matrix, givens_rotation, j, j + 1, which='col')
 
         # If the current list of parallel operations is not empty,
         # append it to the list,
@@ -560,8 +535,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
     for k in range(n):
         current_matrix[:, k] *= diagonal[k].conj()
 
-    left_decomposition, left_diagonal = givens_decomposition_square(
-        current_matrix)
+    left_decomposition, left_diagonal = givens_decomposition_square(current_matrix)
 
     return decomposition, left_decomposition, diagonal, left_diagonal
 

@@ -20,12 +20,14 @@ from openfermion.hamiltonians.special_operators import number_operator
 import openfermion.utils as op_utils
 
 
-def mean_field_dwave(x_dimension: int,
-                     y_dimension: int,
-                     tunneling: float,
-                     sc_gap: float,
-                     chemical_potential: Optional[float] = 0.,
-                     periodic: bool = True) -> FermionOperator:
+def mean_field_dwave(
+    x_dimension: int,
+    y_dimension: int,
+    tunneling: float,
+    sc_gap: float,
+    chemical_potential: Optional[float] = 0.0,
+    periodic: bool = True,
+) -> FermionOperator:
     r"""Return symbolic representation of a BCS mean-field d-wave Hamiltonian.
 
     The Hamiltonians of this model live on a grid of dimensions
@@ -85,12 +87,12 @@ def mean_field_dwave(x_dimension: int,
     # Loop through sites and add terms.
     for site in range(n_sites):
         # Add chemical potential
-        mean_field_dwave_model += number_operator(n_spin_orbitals,
-                                                  up_index(site),
-                                                  -chemical_potential)
-        mean_field_dwave_model += number_operator(n_spin_orbitals,
-                                                  down_index(site),
-                                                  -chemical_potential)
+        mean_field_dwave_model += number_operator(
+            n_spin_orbitals, up_index(site), -chemical_potential
+        )
+        mean_field_dwave_model += number_operator(
+            n_spin_orbitals, down_index(site), -chemical_potential
+        )
 
         # Index coupled orbitals.
         right_neighbor = site + 1
@@ -108,23 +110,20 @@ def mean_field_dwave(x_dimension: int,
             operators = ((up_index(site), 1), (up_index(right_neighbor), 0))
             hopping_term = FermionOperator(operators, -tunneling)
             mean_field_dwave_model += hopping_term
-            mean_field_dwave_model += op_utils.hermitian_conjugated(
-                hopping_term)
+            mean_field_dwave_model += op_utils.hermitian_conjugated(hopping_term)
             # Add spin-down hopping term
             operators = ((down_index(site), 1), (down_index(right_neighbor), 0))
             hopping_term = FermionOperator(operators, -tunneling)
             mean_field_dwave_model += hopping_term
-            mean_field_dwave_model += op_utils.hermitian_conjugated(
-                hopping_term)
+            mean_field_dwave_model += op_utils.hermitian_conjugated(hopping_term)
 
             # Add pairing term
             operators = ((up_index(site), 1), (down_index(right_neighbor), 1))
-            pairing_term = FermionOperator(operators, sc_gap / 2.)
+            pairing_term = FermionOperator(operators, sc_gap / 2.0)
             operators = ((down_index(site), 1), (up_index(right_neighbor), 1))
-            pairing_term += FermionOperator(operators, -sc_gap / 2.)
+            pairing_term += FermionOperator(operators, -sc_gap / 2.0)
             mean_field_dwave_model -= pairing_term
-            mean_field_dwave_model -= op_utils.hermitian_conjugated(
-                pairing_term)
+            mean_field_dwave_model -= op_utils.hermitian_conjugated(pairing_term)
 
         # Add transition to neighbor below.
         if site + x_dimension + 1 <= n_sites or (periodic and y_dimension > 2):
@@ -132,23 +131,19 @@ def mean_field_dwave(x_dimension: int,
             operators = ((up_index(site), 1), (up_index(bottom_neighbor), 0))
             hopping_term = FermionOperator(operators, -tunneling)
             mean_field_dwave_model += hopping_term
-            mean_field_dwave_model += op_utils.hermitian_conjugated(
-                hopping_term)
+            mean_field_dwave_model += op_utils.hermitian_conjugated(hopping_term)
             # Add spin-down hopping term
-            operators = ((down_index(site), 1), (down_index(bottom_neighbor),
-                                                 0))
+            operators = ((down_index(site), 1), (down_index(bottom_neighbor), 0))
             hopping_term = FermionOperator(operators, -tunneling)
             mean_field_dwave_model += hopping_term
-            mean_field_dwave_model += op_utils.hermitian_conjugated(
-                hopping_term)
+            mean_field_dwave_model += op_utils.hermitian_conjugated(hopping_term)
 
             # Add pairing term
             operators = ((up_index(site), 1), (down_index(bottom_neighbor), 1))
-            pairing_term = FermionOperator(operators, -sc_gap / 2.)
+            pairing_term = FermionOperator(operators, -sc_gap / 2.0)
             operators = ((down_index(site), 1), (up_index(bottom_neighbor), 1))
-            pairing_term += FermionOperator(operators, sc_gap / 2.)
+            pairing_term += FermionOperator(operators, sc_gap / 2.0)
             mean_field_dwave_model -= pairing_term
-            mean_field_dwave_model -= op_utils.hermitian_conjugated(
-                pairing_term)
+            mean_field_dwave_model -= op_utils.hermitian_conjugated(pairing_term)
     # Return.
     return mean_field_dwave_model

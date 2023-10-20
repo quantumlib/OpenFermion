@@ -93,8 +93,10 @@ class FermionOperator(SymbolicOperator):
                     left_operator = term[j - 1]
                     if right_operator[1] and not left_operator[1]:
                         return False
-                    elif (right_operator[1] == left_operator[1] and
-                          right_operator[0] >= left_operator[0]):
+                    elif (
+                        right_operator[1] == left_operator[1]
+                        and right_operator[0] >= left_operator[0]
+                    ):
                         return False
         return True
 
@@ -118,8 +120,8 @@ class FermionOperator(SymbolicOperator):
             spin = 0
             particles = 0
             for operator in term:
-                particles += (-1)**operator[1]  # add 1 if create, else -1
-                spin += (-1)**(operator[0] + operator[1])
+                particles += (-1) ** operator[1]  # add 1 if create, else -1
+                spin += (-1) ** (operator[0] + operator[1])
             if particles:
                 return False
             elif spin and check_spin_symmetry:

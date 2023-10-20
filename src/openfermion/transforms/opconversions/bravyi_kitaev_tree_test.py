@@ -15,15 +15,13 @@ import unittest
 
 import numpy
 
-from openfermion.ops.operators import (FermionOperator, QubitOperator)
-from openfermion.transforms.opconversions import bravyi_kitaev_tree, \
-    jordan_wigner
+from openfermion.ops.operators import FermionOperator, QubitOperator
+from openfermion.transforms.opconversions import bravyi_kitaev_tree, jordan_wigner
 from openfermion.linalg import eigenspectrum
 from openfermion.hamiltonians import number_operator
 
 
 class BravyiKitaevTransformTest(unittest.TestCase):
-
     def test_bravyi_kitaev_tree_transform(self):
         # Check that the QubitOperators are two-term.
         lowering = bravyi_kitaev_tree(FermionOperator(((3, 0),)))
@@ -36,8 +34,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         n_qubits = 16
         invariant = numpy.log2(n_qubits) + 1
         for index in range(n_qubits):
-            operator = bravyi_kitaev_tree(FermionOperator(((index, 0),)),
-                                          n_qubits)
+            operator = bravyi_kitaev_tree(FermionOperator(((index, 0),)), n_qubits)
             qubit_terms = operator.terms.items()  # Get the majorana terms.
 
             for item in qubit_terms:
@@ -52,8 +49,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         lowering = bravyi_kitaev_tree(FermionOperator(((9, 0),)), n_qubits)
         raising = bravyi_kitaev_tree(FermionOperator(((9, 1),)), n_qubits)
 
-        correct_operators_c = ((7, 'Z'), (8, 'Z'), (9, 'X'), (11, 'X'), (15,
-                                                                         'X'))
+        correct_operators_c = ((7, 'Z'), (8, 'Z'), (9, 'X'), (11, 'X'), (15, 'X'))
         correct_operators_d = ((7, 'Z'), (9, 'Y'), (11, 'X'), (15, 'X'))
 
         self.assertEqual(lowering.terms[correct_operators_c], 0.5)
@@ -62,8 +58,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         self.assertEqual(raising.terms[correct_operators_c], 0.5)
 
     def test_bk_identity(self):
-        self.assertTrue(
-            bravyi_kitaev_tree(FermionOperator(())) == QubitOperator(()))
+        self.assertTrue(bravyi_kitaev_tree(FermionOperator(())) == QubitOperator(()))
 
     def test_bk_n_qubits_too_small(self):
         with self.assertRaises(ValueError):
@@ -80,8 +75,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         jw_spectrum = eigenspectrum(jw_n)
         bk_spectrum = eigenspectrum(bk_n)
 
-        self.assertAlmostEqual(
-            0., numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
+        self.assertAlmostEqual(0.0, numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
 
     def test_bk_jw_number_operators(self):
         # Check if a number operator has the same spectrum in both
@@ -98,8 +92,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         jw_spectrum = eigenspectrum(jw_n)
         bk_spectrum = eigenspectrum(bk_n)
 
-        self.assertAlmostEqual(
-            0., numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
+        self.assertAlmostEqual(0.0, numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
 
     def test_bk_jw_number_operator_scaled(self):
         # Check if number operator has the same spectrum in both
@@ -113,13 +106,11 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         jw_spectrum = eigenspectrum(jw_n)
         bk_spectrum = eigenspectrum(bk_n)
 
-        self.assertAlmostEqual(
-            0., numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
+        self.assertAlmostEqual(0.0, numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
 
     def test_bk_jw_hopping_operator(self):
         # Check if the spectrum fits for a single hoppping operator
-        ho = FermionOperator(((1, 1), (4, 0))) + FermionOperator(
-            ((4, 1), (1, 0)))
+        ho = FermionOperator(((1, 1), (4, 0))) + FermionOperator(((4, 1), (1, 0)))
         jw_ho = jordan_wigner(ho)
         bk_ho = bravyi_kitaev_tree(ho)
 
@@ -127,8 +118,7 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         jw_spectrum = eigenspectrum(jw_ho)
         bk_spectrum = eigenspectrum(bk_ho)
 
-        self.assertAlmostEqual(
-            0., numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
+        self.assertAlmostEqual(0.0, numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
 
     def test_bk_jw_majoranas(self):
         # Check if the Majorana operators have the same spectrum
@@ -146,10 +136,8 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         c_spectrum = [eigenspectrum(c_spins[0]), eigenspectrum(c_spins[1])]
         d_spectrum = [eigenspectrum(d_spins[0]), eigenspectrum(d_spins[1])]
 
-        self.assertAlmostEqual(
-            0., numpy.amax(numpy.absolute(c_spectrum[0] - c_spectrum[1])))
-        self.assertAlmostEqual(
-            0., numpy.amax(numpy.absolute(d_spectrum[0] - d_spectrum[1])))
+        self.assertAlmostEqual(0.0, numpy.amax(numpy.absolute(c_spectrum[0] - c_spectrum[1])))
+        self.assertAlmostEqual(0.0, numpy.amax(numpy.absolute(d_spectrum[0] - d_spectrum[1])))
 
     def test_bk_jw_integration(self):
         # This is a legacy test, which was a minimal failing example when
@@ -164,14 +152,12 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         jw_spectrum = eigenspectrum(jw)
         bk_spectrum = eigenspectrum(bk)
 
-        self.assertAlmostEqual(
-            0., numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
+        self.assertAlmostEqual(0.0, numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)))
 
     def test_bk_jw_integration_original(self):
         # This is a legacy test, which was an example proposed by Ryan,
         # failing when optimization for hermitian operators was used.
-        fermion_operator = FermionOperator(((3, 1), (2, 1), (1, 0), (0, 0)),
-                                           -4.3)
+        fermion_operator = FermionOperator(((3, 1), (2, 1), (1, 0), (0, 0)), -4.3)
         fermion_operator += FermionOperator(((3, 1), (1, 0)), 8.17)
         fermion_operator += 3.2 * FermionOperator()
 
@@ -182,7 +168,4 @@ class BravyiKitaevTransformTest(unittest.TestCase):
         # Diagonalize and make sure the spectra are the same.
         jw_spectrum = eigenspectrum(jw_qubit_operator)
         bk_spectrum = eigenspectrum(bk_qubit_operator)
-        self.assertAlmostEqual(0.,
-                               numpy.amax(
-                                   numpy.absolute(jw_spectrum - bk_spectrum)),
-                               places=5)
+        self.assertAlmostEqual(0.0, numpy.amax(numpy.absolute(jw_spectrum - bk_spectrum)), places=5)

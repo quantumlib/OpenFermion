@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 """Test cases for compute_lambda_df.py
 """
 from os import path
@@ -12,10 +12,9 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from openfermion.resource_estimates.molecule import load_casfile_to_pyscf
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason="pyscf and/or jax not installed.")
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason="pyscf and/or jax not installed.")
 def test_reiher_df_lambda():
-    """ Reproduce Reiher et al orbital DF lambda from paper """
+    """Reproduce Reiher et al orbital DF lambda from paper"""
 
     THRESH = 0.00125
     NAME = path.join(path.dirname(__file__), '../integrals/eri_reiher.h5')

@@ -57,17 +57,17 @@ def project_onto_sector(operator, qubits, sectors):
 
     projected_operator = QubitOperator()
     for term, factor in operator.terms.items():
-
         # Any term containing X or Y on the removed
         # qubits has an expectation value of zero
         if [t for t in term if t[0] in qubits and t[1] in ['X', 'Y']]:
             continue
 
-        new_term = tuple((t[0] - len([q for q in qubits if q < t[0]]),
-                          t[1]) for t in term if t[0] not in qubits)
-        new_factor =\
-            factor * (-1)**(sum([sectors[qubits.index(t[0])]
-                                 for t in term if t[0] in qubits]))
+        new_term = tuple(
+            (t[0] - len([q for q in qubits if q < t[0]]), t[1]) for t in term if t[0] not in qubits
+        )
+        new_factor = factor * (-1) ** (
+            sum([sectors[qubits.index(t[0])] for t in term if t[0] in qubits])
+        )
         projected_operator += QubitOperator(new_term, new_factor)
 
     return projected_operator
@@ -108,11 +108,10 @@ def projection_error(operator, qubits, sectors):
 
     error = 0
     for term, factor in operator.terms.items():
-
         # Any term containing X or Y on the removed
         # qubits contributes to the error
         if [t for t in term if t[0] in qubits and t[1] in ['X', 'Y']]:
-            error += abs(factor)**2
+            error += abs(factor) ** 2
 
     return numpy.sqrt(error)
 
@@ -143,15 +142,17 @@ def rotate_qubit_by_pauli(qop, pauli, angle):
     if type(qop) is not QubitOperator:
         raise TypeError('This can only rotate QubitOperators')
 
-    if (type(pauli) is not QubitOperator or len(pauli.terms) != 1 or
-            pvals[0] != 1):
+    if type(pauli) is not QubitOperator or len(pauli.terms) != 1 or pvals[0] != 1:
         raise TypeError('This can only rotate by Pauli operators')
 
     pqp = pauli * qop * pauli
     even_terms = 0.5 * (qop + pqp)
     odd_terms = 0.5 * (qop - pqp)
 
-    rotated_op = even_terms + numpy.cos(2 * angle) * odd_terms + \
-        1j * numpy.sin(2 * angle) * odd_terms * pauli
+    rotated_op = (
+        even_terms
+        + numpy.cos(2 * angle) * odd_terms
+        + 1j * numpy.sin(2 * angle) * odd_terms * pauli
+    )
 
     return rotated_op

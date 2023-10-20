@@ -19,15 +19,21 @@ import sympy
 from scipy.sparse import spmatrix
 
 from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
-from openfermion.ops.operators import (BosonOperator, FermionOperator,
-                                       MajoranaOperator, QuadOperator,
-                                       QubitOperator, IsingOperator)
-from openfermion.ops.representations import (PolynomialTensor,
-                                             DiagonalCoulombHamiltonian,
-                                             InteractionOperator,
-                                             InteractionRDM)
-from openfermion.transforms.opconversions.term_reordering\
-    import normal_ordered
+from openfermion.ops.operators import (
+    BosonOperator,
+    FermionOperator,
+    MajoranaOperator,
+    QuadOperator,
+    QubitOperator,
+    IsingOperator,
+)
+from openfermion.ops.representations import (
+    PolynomialTensor,
+    DiagonalCoulombHamiltonian,
+    InteractionOperator,
+    InteractionRDM,
+)
+from openfermion.transforms.opconversions.term_reordering import normal_ordered
 
 
 class OperatorUtilsError(Exception):
@@ -44,21 +50,20 @@ def hermitian_conjugated(operator):
     if isinstance(operator, FermionOperator):
         conjugate_operator = FermionOperator()
         for term, coefficient in operator.terms.items():
-            conjugate_term = tuple([(tensor_factor, 1 - action)
-                                    for (tensor_factor,
-                                         action) in reversed(term)])
+            conjugate_term = tuple(
+                [(tensor_factor, 1 - action) for (tensor_factor, action) in reversed(term)]
+            )
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
     # Handle BosonOperator
     elif isinstance(operator, BosonOperator):
         conjugate_operator = BosonOperator()
         for term, coefficient in operator.terms.items():
-            conjugate_term = tuple([(tensor_factor, 1 - action)
-                                    for (tensor_factor,
-                                         action) in reversed(term)])
-            # take into account that different indices commute
             conjugate_term = tuple(
-                sorted(conjugate_term, key=lambda factor: factor[0]))
+                [(tensor_factor, 1 - action) for (tensor_factor, action) in reversed(term)]
+            )
+            # take into account that different indices commute
+            conjugate_term = tuple(sorted(conjugate_term, key=lambda factor: factor[0]))
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
     # Handle QubitOperator
@@ -73,20 +78,17 @@ def hermitian_conjugated(operator):
         for term, coefficient in operator.terms.items():
             conjugate_term = reversed(term)
             # take into account that different indices commute
-            conjugate_term = tuple(
-                sorted(conjugate_term, key=lambda factor: factor[0]))
+            conjugate_term = tuple(sorted(conjugate_term, key=lambda factor: factor[0]))
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
     # Handle InteractionOperator
     elif isinstance(operator, InteractionOperator):
         conjugate_constant = operator.constant.conjugate()
-        conjugate_one_body_tensor = hermitian_conjugated(
-            operator.one_body_tensor)
-        conjugate_two_body_tensor = hermitian_conjugated(
-            operator.two_body_tensor)
-        conjugate_operator = type(operator)(conjugate_constant,
-                                            conjugate_one_body_tensor,
-                                            conjugate_two_body_tensor)
+        conjugate_one_body_tensor = hermitian_conjugated(operator.one_body_tensor)
+        conjugate_two_body_tensor = hermitian_conjugated(operator.two_body_tensor)
+        conjugate_operator = type(operator)(
+            conjugate_constant, conjugate_one_body_tensor, conjugate_two_body_tensor
+        )
 
     # Handle sparse matrix
     elif isinstance(operator, spmatrix):
@@ -98,8 +100,10 @@ def hermitian_conjugated(operator):
 
     # Unsupported type
     else:
-        raise TypeError('Taking the hermitian conjugate of a {} is not '
-                        'supported.'.format(type(operator).__name__))
+        raise TypeError(
+            'Taking the hermitian conjugate of a {} is not '
+            'supported.'.format(type(operator).__name__)
+        )
 
     return conjugate_operator
 
@@ -107,10 +111,8 @@ def hermitian_conjugated(operator):
 def is_hermitian(operator):
     """Test if operator is Hermitian."""
     # Handle FermionOperator, BosonOperator, and InteractionOperator
-    if isinstance(operator,
-                  (FermionOperator, BosonOperator, InteractionOperator)):
-        return (normal_ordered(operator) == normal_ordered(
-            hermitian_conjugated(operator)))
+    if isinstance(operator, (FermionOperator, BosonOperator, InteractionOperator)):
+        return normal_ordered(operator) == normal_ordered(hermitian_conjugated(operator))
 
     # Handle QubitOperator and QuadOperator
     if isinstance(operator, (QubitOperator, QuadOperator)):
@@ -119,7 +121,7 @@ def is_hermitian(operator):
     # Handle sparse matrix
     elif isinstance(operator, spmatrix):
         difference = operator - hermitian_conjugated(operator)
-        discrepancy = 0.
+        discrepancy = 0.0
         if difference.nnz:
             discrepancy = max(abs(difference.data))
         return discrepancy < EQ_TOLERANCE
@@ -132,8 +134,10 @@ def is_hermitian(operator):
 
     # Unsupported type
     else:
-        raise TypeError('Checking whether a {} is hermitian is not '
-                        'supported.'.format(type(operator).__name__))
+        raise TypeError(
+            'Checking whether a {} is hermitian is not '
+            'supported.'.format(type(operator).__name__)
+        )
 
 
 def count_qubits(operator):
@@ -208,12 +212,9 @@ def is_identity(operator):
     Raises:
         TypeError: Operator of invalid type.
     """
-    if isinstance(
-            operator,
-        (QubitOperator, FermionOperator, BosonOperator, QuadOperator)):
+    if isinstance(operator, (QubitOperator, FermionOperator, BosonOperator, QuadOperator)):
         return list(operator.terms) == [()]
     raise TypeError('Operator of invalid type.')
-
 
 
 def get_file_path(file_name, data_directory):
@@ -305,11 +306,9 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
     return operator
 
 
-def save_operator(operator,
-                  file_name=None,
-                  data_directory=None,
-                  allow_overwrite=False,
-                  plain_text=False):
+def save_operator(
+    operator, file_name=None, data_directory=None, allow_overwrite=False, plain_text=False
+):
     """Save FermionOperator or QubitOperator to file.
 
     Args:
@@ -342,8 +341,9 @@ def save_operator(operator,
     elif isinstance(operator, QuadOperator):
         operator_type = "QuadOperator"
     elif isinstance(operator, (InteractionOperator, InteractionRDM)):
-        raise NotImplementedError('Not yet implemented for '
-                                  'InteractionOperator or InteractionRDM.')
+        raise NotImplementedError(
+            'Not yet implemented for ' 'InteractionOperator or InteractionRDM.'
+        )
     else:
         raise TypeError('Operator of invalid type.')
 
@@ -357,6 +357,4 @@ def save_operator(operator,
     else:
         tm = operator.terms
         with open(file_path, 'wb') as f:
-            marshal.dump(
-                (operator_type, dict(zip(tm.keys(), map(complex,
-                                                        tm.values())))), f)
+            marshal.dump((operator_type, dict(zip(tm.keys(), map(complex, tm.values())))), f)

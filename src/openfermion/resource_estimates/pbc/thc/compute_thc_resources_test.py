@@ -22,8 +22,7 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     )
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_thc_resources():
     lam = 307.68
     dE = 0.001
@@ -54,8 +53,7 @@ def test_thc_resources():
     assert np.isclose(res[2], 77517)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_thc_resources_helper():
     lam = 307.68
     dE = 0.001

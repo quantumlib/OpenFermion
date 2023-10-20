@@ -15,13 +15,14 @@ import unittest
 
 import numpy
 
-from openfermion.ops.operators.binary_polynomial import (BinaryPolynomial,
-                                                         BinaryPolynomialError,
-                                                         _SYMBOLIC_ONE)
+from openfermion.ops.operators.binary_polynomial import (
+    BinaryPolynomial,
+    BinaryPolynomialError,
+    _SYMBOLIC_ONE,
+)
 
 
 class BinaryPolynomialTest(unittest.TestCase):
-
     def test_init_long_string(self):
         operator1 = BinaryPolynomial('w1 w2 1 + 11')
         self.assertEqual(operator1.terms, [(1, 2), (_SYMBOLIC_ONE,)])
@@ -108,7 +109,7 @@ class BinaryPolynomialTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             _ = operator1**4.3
         with self.assertRaises(TypeError):
-            _ = operator1**(-1)
+            _ = operator1 ** (-1)
 
     def test_init_binary_rule(self):
         operator1 = BinaryPolynomial('1 + w2 w2 + w2')
@@ -182,9 +183,7 @@ class BinaryPolynomialTest(unittest.TestCase):
     def test_power_null(self):
         operator1 = BinaryPolynomial('w1 w1 + 1')
         is_one = operator1**0
-        self.assertEqual(is_one.terms, [
-            (_SYMBOLIC_ONE,),
-        ])
+        self.assertEqual(is_one.terms, [(_SYMBOLIC_ONE,)])
 
     def test_addition_evaluations(self):
         operator1 = BinaryPolynomial('w1 w1 + 1')

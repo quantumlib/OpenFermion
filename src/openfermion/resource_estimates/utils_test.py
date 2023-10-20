@@ -1,12 +1,12 @@
-#coverage:ignore
+# coverage:ignore
 """Test cases for util.py
 """
 from openfermion.resource_estimates.utils import QR, QI, QR2, QI2, power_two
 
 
 def test_QR():
-    """ Tests function QR which gives the minimum cost for a QROM over L values
-        of size M.
+    """Tests function QR which gives the minimum cost for a QROM over L values
+    of size M.
     """
     # Tests checked against Mathematica noteboook `costingTHC.nb`
     # Arguments are otherwise random
@@ -15,8 +15,8 @@ def test_QR():
 
 
 def test_QI():
-    """ Tests function QI which gives the minimum cost for inverse QROM over
-        L values.
+    """Tests function QI which gives the minimum cost for inverse QROM over
+    L values.
     """
     # Tests checked against Mathematica noteboook `costingTHC.nb`
     # Arguments are otherwise random
@@ -25,8 +25,8 @@ def test_QI():
 
 
 def test_QR2():
-    """ Tests function QR2 which gives the minimum cost for a QROM with two
-        registers.
+    """Tests function QR2 which gives the minimum cost for a QROM with two
+    registers.
     """
     # Tests checked against Mathematica noteboook `costingsf.nb`
     # Arguments are otherwise random
@@ -35,8 +35,8 @@ def test_QR2():
 
 
 def test_QI2():
-    """ Tests function QI which gives the minimum cost for inverse QROM with
-        two registers.
+    """Tests function QI which gives the minimum cost for inverse QROM with
+    two registers.
     """
     # Tests checked against Mathematica noteboook `costingsf.nb`
     # Arguments are otherwise random
@@ -45,7 +45,7 @@ def test_QI2():
 
 
 def test_power_two():
-    """ Test for power_two(m) which returns power of 2 that is a factor of m """
+    """Test for power_two(m) which returns power of 2 that is a factor of m"""
     try:
         power_two(-1234)
     except AssertionError:

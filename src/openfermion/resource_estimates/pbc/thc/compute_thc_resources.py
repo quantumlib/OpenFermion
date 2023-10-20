@@ -18,19 +18,18 @@ from numpy.lib.scimath import arccos, arcsin
 from sympy import factorint
 from openfermion.resource_estimates.utils import QI
 
-from openfermion.resource_estimates.pbc.resources.data_types import (
-    ResourceEstimates,)
+from openfermion.resource_estimates.pbc.resources.data_types import ResourceEstimates
 from openfermion.resource_estimates.pbc.resources.qrom import QR3
 
 
 def compute_cost(
-        num_spin_orbs: int,
-        lambda_tot: float,
-        thc_dim: int,
-        kmesh: list[int],
-        dE_for_qpe: float = 0.0016,
-        chi: int = 10,
-        beta: Union[int, None] = None,
+    num_spin_orbs: int,
+    lambda_tot: float,
+    thc_dim: int,
+    kmesh: list[int],
+    dE_for_qpe: float = 0.0016,
+    chi: int = 10,
+    beta: Union[int, None] = None,
 ) -> ResourceEstimates:
     """Determine fault-tolerant costs using THC factorization representation of
         symmetry adapted integrals.
@@ -62,25 +61,23 @@ def compute_cost(
         stps=20_000,  # not used
     )
     resources = ResourceEstimates(
-        toffolis_per_step=thc_costs[0],
-        total_toffolis=thc_costs[1],
-        logical_qubits=thc_costs[2],
+        toffolis_per_step=thc_costs[0], total_toffolis=thc_costs[1], logical_qubits=thc_costs[2]
     )
     return resources
 
 
 def _compute_cost(
-        n: int,
-        lam: float,
-        dE: float,
-        chi: int,
-        beta: int,
-        M: int,
-        Nkx: int,
-        Nky: int,
-        Nkz: int,
-        stps: int,
-        verbose: bool = False,
+    n: int,
+    lam: float,
+    dE: float,
+    chi: int,
+    beta: int,
+    M: int,
+    Nkx: int,
+    Nky: int,
+    Nkz: int,
+    stps: int,
+    verbose: bool = False,
 ) -> Tuple[int, int, int]:
     """Determine fault-tolerant costs using THC decomposition in quantum chem
 
@@ -107,8 +104,11 @@ def _compute_cost(
         total_cost: Total number of Toffolis
         ancilla_cost: Total ancilla cost
     """
-    nk = (max(np.ceil(np.log2(Nkx)), 1) + max(np.ceil(np.log2(Nky)), 1) +
-          max(np.ceil(np.log2(Nkz)), 1))
+    nk = (
+        max(np.ceil(np.log2(Nkx)), 1)
+        + max(np.ceil(np.log2(Nky)), 1)
+        + max(np.ceil(np.log2(Nkz)), 1)
+    )
     Nk = Nkx * Nky * Nkz
 
     # (*Temporarily set as number of even numbers.*)
@@ -133,12 +133,20 @@ def _compute_cost(
     oh = [0] * 20
     for p in range(20):
         # arccos arg may be > 1
-        v = np.round(
-            np.power(2, p + 1) / (2 * np.pi) *
-            arccos(np.power(2, nc) / np.sqrt(d) / 2))
-        oh[p] = stps * (1 / (np.sin(3 * arcsin(
-            np.cos(v * 2 * np.pi / np.power(2, p + 1)) * np.sqrt(d) /
-            np.power(2, nc)))**2) - 1) + 4 * (p + 1)
+        v = np.round(np.power(2, p + 1) / (2 * np.pi) * arccos(np.power(2, nc) / np.sqrt(d) / 2))
+        oh[p] = stps * (
+            1
+            / (
+                np.sin(
+                    3
+                    * arcsin(
+                        np.cos(v * 2 * np.pi / np.power(2, p + 1)) * np.sqrt(d) / np.power(2, nc)
+                    )
+                )
+                ** 2
+            )
+            - 1
+        ) + 4 * (p + 1)
 
     # Set it to be the number of bits that minimises the cost, usually 7.
     # Python is 0-index, so need to add the one back in vs mathematica nb
@@ -193,8 +201,7 @@ def _compute_cost(
     cs3 = 16 * n * (beta - 2)
 
     # Cost for constructing contiguous register for outputting rotations.
-    cs4 = (12 * Nk + 4 * np.ceil(np.log2(Nk * (M + n / 2))) +
-           4 * np.ceil(np.log2(Nk * M)))
+    cs4 = 12 * Nk + 4 * np.ceil(np.log2(Nk * (M + n / 2))) + 4 * np.ceil(np.log2(Nk * M))
 
     # The cost of the controlled selection of the X vs Y.
     cs5 = 2 + 4 * (Nk - 1)

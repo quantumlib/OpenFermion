@@ -14,8 +14,7 @@ import copy
 import numpy
 
 from openfermion.ops.operators import FermionOperator, QubitOperator
-from openfermion.ops.representations import (InteractionOperator,
-                                             PolynomialTensor)
+from openfermion.ops.representations import InteractionOperator, PolynomialTensor
 
 
 class InteractionRDMError(Exception):
@@ -39,10 +38,9 @@ class InteractionRDM(PolynomialTensor):
             two_body_tensor: Expectation values
                 <a^\dagger_p a^\dagger_q a_r a_s>.
         """
-        super(InteractionRDM, self).__init__({
-            (1, 0): one_body_tensor,
-            (1, 1, 0, 0): two_body_tensor
-        })
+        super(InteractionRDM, self).__init__(
+            {(1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor}
+        )
 
     @property
     def one_body_tensor(self):
@@ -80,14 +78,11 @@ class InteractionRDM(PolynomialTensor):
             expectation_op = self.get_qubit_expectations(operator)
             expectation = 0.0
             for qubit_term in operator.terms:
-                expectation += (operator.terms[qubit_term] *
-                                expectation_op.terms[qubit_term])
+                expectation += operator.terms[qubit_term] * expectation_op.terms[qubit_term]
         elif isinstance(operator, InteractionOperator):
             expectation = operator.constant
-            expectation += numpy.sum(self.one_body_tensor *
-                                     operator.one_body_tensor)
-            expectation += numpy.sum(self.two_body_tensor *
-                                     operator.two_body_tensor)
+            expectation += numpy.sum(self.one_body_tensor * operator.one_body_tensor)
+            expectation += numpy.sum(self.two_body_tensor * operator.two_body_tensor)
         else:
             raise InteractionRDMError('Invalid operator type provided.')
         return expectation
@@ -107,25 +102,22 @@ class InteractionRDM(PolynomialTensor):
             InteractionRDMError: Observable not contained in 1-RDM or 2-RDM.
         """
         # Importing here instead of head of file to prevent circulars
-        from openfermion.transforms.opconversions import (reverse_jordan_wigner,
-                                                          normal_ordered)
+        from openfermion.transforms.opconversions import reverse_jordan_wigner, normal_ordered
+
         qubit_operator_expectations = copy.deepcopy(qubit_operator)
         for qubit_term in qubit_operator_expectations.terms:
-            expectation = 0.
+            expectation = 0.0
 
             # Map qubits back to fermions.
-            reversed_fermion_operators = reverse_jordan_wigner(
-                QubitOperator(qubit_term))
-            reversed_fermion_operators = normal_ordered(
-                reversed_fermion_operators)
+            reversed_fermion_operators = reverse_jordan_wigner(QubitOperator(qubit_term))
+            reversed_fermion_operators = normal_ordered(reversed_fermion_operators)
 
             # Loop through fermion terms.
             for fermion_term in reversed_fermion_operators.terms:
                 coefficient = reversed_fermion_operators.terms[fermion_term]
 
                 # Handle molecular term.
-                if FermionOperator(
-                        fermion_term).is_two_body_number_conserving():
+                if FermionOperator(fermion_term).is_two_body_number_conserving():
                     if not fermion_term:
                         expectation += coefficient
                     else:
@@ -141,7 +133,6 @@ class InteractionRDM(PolynomialTensor):
 
                 # Handle non-molecular terms.
                 elif len(fermion_term) > 4:
-                    raise InteractionRDMError('Observable not contained '
-                                              'in 1-RDM or 2-RDM.')
+                    raise InteractionRDMError('Observable not contained ' 'in 1-RDM or 2-RDM.')
             qubit_operator_expectations.terms[qubit_term] = expectation
         return qubit_operator_expectations

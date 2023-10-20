@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 """Test cases for costing_sf.py
 """
 import pytest
@@ -9,10 +9,9 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from openfermion.resource_estimates import sf
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_reiher_sf():
-    """ Reproduce Reiher et al orbital SF FT costs from paper """
+    """Reproduce Reiher et al orbital SF FT costs from paper"""
     DE = 0.001
     CHI = 10
 
@@ -30,10 +29,9 @@ def test_reiher_sf():
     assert output == (14184, 94868988984, 3320)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_li_sf():
-    """ Reproduce Li et al orbital SF FT costs from paper """
+    """Reproduce Li et al orbital SF FT costs from paper"""
     DE = 0.001
     CHI = 10
 

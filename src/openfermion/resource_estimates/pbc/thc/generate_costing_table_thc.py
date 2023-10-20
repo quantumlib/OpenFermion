@@ -20,22 +20,17 @@ import pandas as pd
 from pyscf.pbc import scf
 from pyscf.pbc.tools.k2gamma import kpts_to_kmesh
 
-from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import (
-    kpoint_thc_via_isdf,)
+from openfermion.resource_estimates.pbc.thc.factorizations.thc_jax import kpoint_thc_via_isdf
 from openfermion.resource_estimates.pbc.resources.data_types import PBCResources
-from openfermion.resource_estimates.pbc.thc.thc_integrals import (
-    KPTHCDoubleTranslation,)
+from openfermion.resource_estimates.pbc.thc.thc_integrals import KPTHCDoubleTranslation
 from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
     build_approximate_eris,
     build_cc_inst,
     build_approximate_eris_rohf,
 )
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    build_hamiltonian,)
-from openfermion.resource_estimates.pbc.thc.compute_lambda_thc import (
-    compute_lambda,)
-from openfermion.resource_estimates.pbc.thc.compute_thc_resources import (
-    compute_cost,)
+from openfermion.resource_estimates.pbc.hamiltonian import build_hamiltonian
+from openfermion.resource_estimates.pbc.thc.compute_lambda_thc import compute_lambda
+from openfermion.resource_estimates.pbc.thc.compute_thc_resources import compute_cost
 
 
 @dataclass
@@ -44,17 +39,17 @@ class THCResources(PBCResources):
 
 
 def generate_costing_table(
-        pyscf_mf: scf.HF,
-        thc_rank_params: Union[list, npt.NDArray],
-        name="pbc",
-        chi: int = 10,
-        beta: int = 20,
-        dE_for_qpe: float = 0.0016,
-        reoptimize: bool = True,
-        bfgs_maxiter: int = 3000,
-        adagrad_maxiter: int = 3000,
-        fft_df_mesh: Union[None, list] = None,
-        energy_method: str = "MP2",
+    pyscf_mf: scf.HF,
+    thc_rank_params: Union[list, npt.NDArray],
+    name="pbc",
+    chi: int = 10,
+    beta: int = 20,
+    dE_for_qpe: float = 0.0016,
+    reoptimize: bool = True,
+    bfgs_maxiter: int = 3000,
+    adagrad_maxiter: int = 3000,
+    fft_df_mesh: Union[None, list] = None,
+    energy_method: str = "MP2",
 ) -> pd.DataFrame:
     """Generate resource estimate costing table for THC Hamiltonian.
 
@@ -128,20 +123,13 @@ def generate_costing_table(
             bfgs_maxiter=bfgs_maxiter,
             adagrad_maxiter=adagrad_maxiter,
         )
-        thc_helper = KPTHCDoubleTranslation(kpt_thc.chi,
-                                            kpt_thc.zeta,
-                                            pyscf_mf,
-                                            chol=chol)
+        thc_helper = KPTHCDoubleTranslation(kpt_thc.chi, kpt_thc.zeta, pyscf_mf, chol=chol)
         thc_lambda = compute_lambda(hcore, thc_helper)
         kmesh = kpts_to_kmesh(pyscf_mf.cell, pyscf_mf.kpts)
         if pyscf_mf.cell.spin == 0:
-            approx_eris = build_approximate_eris(cc_inst,
-                                                 thc_helper,
-                                                 eris=approx_eris)
+            approx_eris = build_approximate_eris(cc_inst, thc_helper, eris=approx_eris)
         else:
-            approx_eris = build_approximate_eris_rohf(cc_inst,
-                                                      thc_helper,
-                                                      eris=approx_eris)
+            approx_eris = build_approximate_eris_rohf(cc_inst, thc_helper, eris=approx_eris)
         approx_energy, _, _ = energy_function(approx_eris)
         thc_res_cost = compute_cost(
             num_spin_orbs,

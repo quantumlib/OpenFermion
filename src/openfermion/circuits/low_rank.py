@@ -49,8 +49,7 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
     """
     # Initialize.
     n_orbitals = two_body_coefficients.shape[0]
-    chemist_two_body_coefficients = numpy.transpose(two_body_coefficients,
-                                                    [0, 3, 1, 2])
+    chemist_two_body_coefficients = numpy.transpose(two_body_coefficients, [0, 3, 1, 2])
 
     # If the specification was in spin-orbitals, chop down to spatial orbitals
     # assuming a spin-symmetric interaction.
@@ -58,25 +57,26 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
         n_orbitals = n_orbitals // 2
         alpha_indices = list(range(0, n_orbitals * 2, 2))
         beta_indices = list(range(1, n_orbitals * 2, 2))
-        chemist_two_body_coefficients = chemist_two_body_coefficients[numpy.ix_(
-            alpha_indices, alpha_indices, beta_indices, beta_indices)]
+        chemist_two_body_coefficients = chemist_two_body_coefficients[
+            numpy.ix_(alpha_indices, alpha_indices, beta_indices, beta_indices)
+        ]
 
     # Determine a one body correction in the spin basis from spatial basis.
     one_body_correction = numpy.zeros((2 * n_orbitals, 2 * n_orbitals), complex)
     for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
         for sigma, tau in itertools.product(range(2), repeat=2):
             if (q == r) and (sigma == tau):
-                one_body_correction[2 * p + sigma, 2 * s + tau] -= (
-                    chemist_two_body_coefficients[p, q, r, s])
+                one_body_correction[2 * p + sigma, 2 * s + tau] -= chemist_two_body_coefficients[
+                    p, q, r, s
+                ]
 
     # Return.
     return one_body_correction, chemist_two_body_coefficients
 
 
-def low_rank_two_body_decomposition(two_body_coefficients,
-                                    truncation_threshold=1e-8,
-                                    final_rank=None,
-                                    spin_basis=True):
+def low_rank_two_body_decomposition(
+    two_body_coefficients, truncation_threshold=1e-8, final_rank=None, spin_basis=True
+):
     r"""Convert two-body operator into sum of squared one-body operators.
 
     As in arXiv:1808.02625, this function decomposes
@@ -109,16 +109,15 @@ def low_rank_two_body_decomposition(two_body_coefficients,
         TypeError: Invalid two-body coefficient tensor specification.
     """
     # Initialize N^2 by N^2 interaction array.
-    one_body_correction, chemist_two_body_coefficients = (
-        get_chemist_two_body_coefficients(two_body_coefficients, spin_basis))
+    one_body_correction, chemist_two_body_coefficients = get_chemist_two_body_coefficients(
+        two_body_coefficients, spin_basis
+    )
     n_orbitals = chemist_two_body_coefficients.shape[0]
     full_rank = n_orbitals**2
-    interaction_array = numpy.reshape(chemist_two_body_coefficients,
-                                      (full_rank, full_rank))
+    interaction_array = numpy.reshape(chemist_two_body_coefficients, (full_rank, full_rank))
 
     # Make sure interaction array is symmetric and real.
-    asymmetry = numpy.sum(
-        numpy.absolute(interaction_array - interaction_array.transpose()))
+    asymmetry = numpy.sum(numpy.absolute(interaction_array - interaction_array.transpose()))
     imaginary_norm = numpy.sum(numpy.absolute(interaction_array.imag))
     if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
         raise TypeError('Invalid two-body coefficient tensor specification.')
@@ -128,16 +127,14 @@ def low_rank_two_body_decomposition(two_body_coefficients,
 
     # Get one-body squares and compute weights.
     term_weights = numpy.zeros(full_rank)
-    one_body_squares = numpy.zeros((full_rank, 2 * n_orbitals, 2 * n_orbitals),
-                                   complex)
+    one_body_squares = numpy.zeros((full_rank, 2 * n_orbitals, 2 * n_orbitals), complex)
 
     # Reshape and add spin back in.
     for l in range(full_rank):
         one_body_squares[l] = numpy.kron(
-            numpy.reshape(eigenvectors[:, l], (n_orbitals, n_orbitals)),
-            numpy.eye(2))
-        term_weights[l] = abs(eigenvalues[l]) * numpy.sum(
-            numpy.absolute(one_body_squares[l]))**2
+            numpy.reshape(eigenvectors[:, l], (n_orbitals, n_orbitals)), numpy.eye(2)
+        )
+        term_weights[l] = abs(eigenvalues[l]) * numpy.sum(numpy.absolute(one_body_squares[l])) ** 2
 
     # Sort by weight.
     indices = numpy.argsort(term_weights)[::-1]
@@ -155,8 +152,12 @@ def low_rank_two_body_decomposition(two_body_coefficients,
     else:
         max_rank = final_rank
     truncation_value = truncation_errors[max_rank - 1]
-    return (eigenvalues[:max_rank], one_body_squares[:max_rank],
-            one_body_correction, truncation_value)
+    return (
+        eigenvalues[:max_rank],
+        one_body_squares[:max_rank],
+        one_body_correction,
+        truncation_value,
+    )
 
 
 def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
@@ -190,8 +191,7 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
     if spin_basis:
         n_modes = one_body_matrix.shape[0]
         alpha_indices = list(range(0, n_modes, 2))
-        one_body_matrix = one_body_matrix[numpy.ix_(alpha_indices,
-                                                    alpha_indices)]
+        one_body_matrix = one_body_matrix[numpy.ix_(alpha_indices, alpha_indices)]
 
     # Diagonalize the one-body matrix.
     if utils.is_hermitian(one_body_matrix):
@@ -202,8 +202,7 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
 
     # If the specification was in spin-orbitals, expand back
     if spin_basis:
-        basis_transformation_matrix = numpy.kron(basis_transformation_matrix,
-                                                 numpy.eye(2))
+        basis_transformation_matrix = numpy.kron(basis_transformation_matrix, numpy.eye(2))
         eigenvalues = numpy.kron(eigenvalues, numpy.ones(2))
 
     # Obtain the diagonal two-body matrix.

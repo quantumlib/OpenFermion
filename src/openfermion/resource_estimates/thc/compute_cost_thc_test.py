@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 """Test cases for costing_thc.py
 """
 import unittest
@@ -9,9 +9,8 @@ from openfermion.resource_estimates import thc
 
 
 class THCCostTest(unittest.TestCase):
-
     def test_reiher_thc(self):
-        """ Reproduce Reiher et al orbital THC FT costs from paper """
+        """Reproduce Reiher et al orbital THC FT costs from paper"""
         DE = 0.001
         CHI = 10
 
@@ -30,7 +29,7 @@ class THCCostTest(unittest.TestCase):
         assert output == (10912, 5250145120, 2142)
 
     def test_li_thc(self):
-        """ Reproduce Li et al orbital THC FT costs from paper """
+        """Reproduce Li et al orbital THC FT costs from paper"""
         DE = 0.001
         CHI = 10
 

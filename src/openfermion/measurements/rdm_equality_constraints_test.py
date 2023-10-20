@@ -16,23 +16,17 @@ import os
 from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.transforms.repconversions import get_interaction_operator
-from openfermion.measurements import (one_body_fermion_constraints,
-                                      two_body_fermion_constraints)
+from openfermion.measurements import one_body_fermion_constraints, two_body_fermion_constraints
 
 
 class FermionConstraintsTest(unittest.TestCase):
-
     def setUp(self):
-
         # Setup.
-        geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
+        geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
         basis = 'sto-3g'
         multiplicity = 1
         filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
-        molecule = MolecularData(geometry,
-                                 basis,
-                                 multiplicity,
-                                 filename=filename)
+        molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
         molecule.load()
         self.n_fermions = molecule.n_electrons
         self.n_orbitals = molecule.n_qubits
@@ -42,12 +36,10 @@ class FermionConstraintsTest(unittest.TestCase):
         self.fci_rdm = molecule.get_molecular_rdm(use_fci=1)
 
     def test_one_body_constraints(self):
-        for constraint in one_body_fermion_constraints(self.n_orbitals,
-                                                       self.n_fermions):
-            interaction_operator = get_interaction_operator(
-                constraint, self.n_orbitals)
+        for constraint in one_body_fermion_constraints(self.n_orbitals, self.n_fermions):
+            interaction_operator = get_interaction_operator(constraint, self.n_orbitals)
             constraint_value = self.fci_rdm.expectation(interaction_operator)
-            self.assertAlmostEqual(constraint_value, 0.)
+            self.assertAlmostEqual(constraint_value, 0.0)
             for term, _ in constraint.terms.items():
                 if len(term) == 2:
                     self.assertTrue(term[0][1])
@@ -56,12 +48,10 @@ class FermionConstraintsTest(unittest.TestCase):
                     self.assertEqual(term, ())
 
     def test_two_body_constraints(self):
-        for constraint in two_body_fermion_constraints(self.n_orbitals,
-                                                       self.n_fermions):
-            interaction_operator = get_interaction_operator(
-                constraint, self.n_orbitals)
+        for constraint in two_body_fermion_constraints(self.n_orbitals, self.n_fermions):
+            interaction_operator = get_interaction_operator(constraint, self.n_orbitals)
             constraint_value = self.fci_rdm.expectation(interaction_operator)
-            self.assertAlmostEqual(constraint_value, 0.)
+            self.assertAlmostEqual(constraint_value, 0.0)
             for term, _ in constraint.terms.items():
                 if len(term) == 2:
                     self.assertTrue(term[0][1])

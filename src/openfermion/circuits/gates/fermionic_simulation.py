@@ -12,7 +12,7 @@
 
 import abc
 import itertools
-from typing import (cast, Dict, Optional, Sequence, Tuple, TYPE_CHECKING, Union)
+from typing import cast, Dict, Optional, Sequence, Tuple, TYPE_CHECKING, Union
 
 import numpy as np
 import scipy.linalg as la
@@ -42,8 +42,10 @@ def _canonicalize_weight(w):
     if cirq.is_parameterized(w):
         return (cirq.PeriodicValue(abs(w), 2 * sympy.pi), sympy.arg(w))
     period = 2 * np.pi
-    return (np.round((w.real % period) if (w == np.real(w)) else
-                     (abs(w) % period) * w / abs(w), 8), 0)
+    return (
+        np.round((w.real % period) if (w == np.real(w)) else (abs(w) % period) * w / abs(w), 8),
+        0,
+    )
 
 
 def state_swap_eigen_component(x: str, y: str, sign: int = 1, angle: float = 0):
@@ -85,18 +87,19 @@ def state_swap_eigen_component(x: str, y: str, sign: int = 1, angle: float = 0):
     if sign not in (-1, 1):
         raise ValueError('sign not in (-1, 1)')
 
-    dim = 2**len(x)
+    dim = 2 ** len(x)
     i, j = int(x, 2), int(y, 2)
 
     component = np.zeros((dim, dim), dtype=np.complex128)
     component[i, i] = component[j, j] = 0.5
-    component[j, i] = sign * 0.5 * 1j**(angle * 2 / np.pi)
-    component[i, j] = sign * 0.5 * 1j**(-angle * 2 / np.pi)
+    component[j, i] = sign * 0.5 * 1j ** (angle * 2 / np.pi)
+    component[i, j] = sign * 0.5 * 1j ** (-angle * 2 / np.pi)
     return component
 
 
 def fermionic_simulation_gates_from_interaction_operator(
-        operator: 'openfermion.InteractionOperator'):
+    operator: 'openfermion.InteractionOperator',
+):
     r"""
     Given $H = \sum_{I \subset [n]} H_I$, returns gates
     $\left\{G_I\right\} = \left\{e^{i H_I\right\}$.
@@ -118,29 +121,32 @@ def fermionic_simulation_gates_from_interaction_operator(
     for p in range(n_qubits):
         coeff = operator.one_body_tensor[p, p]
         if coeff:
-            gates[(p,)] = cirq.Z**(coeff / np.pi)
+            gates[(p,)] = cirq.Z ** (coeff / np.pi)
     for modes in itertools.combinations(range(n_qubits), 2):
-        gate: Optional[InteractionOperatorFermionicGate] = (
-            QuadraticFermionicSimulationGate.from_interaction_operator(
-                operator=operator, modes=modes))
+        gate: Optional[
+            InteractionOperatorFermionicGate
+        ] = QuadraticFermionicSimulationGate.from_interaction_operator(
+            operator=operator, modes=modes
+        )
         if gate:
             gates[modes] = gate
     for modes in itertools.combinations(range(n_qubits), 3):
         gate = CubicFermionicSimulationGate.from_interaction_operator(
-            operator=operator, modes=modes)
+            operator=operator, modes=modes
+        )
         if gate:
             gates[modes] = gate
     for modes in itertools.combinations(range(n_qubits), 4):
         gate = QuarticFermionicSimulationGate.from_interaction_operator(
-            operator=operator, modes=modes)
+            operator=operator, modes=modes
+        )
         if gate:
             gates[modes] = gate
     return gates
 
 
 def sum_of_interaction_operator_gate_generators(
-        n_modes: int,
-        gates: Dict[Tuple[int, ...], Union[float, cirq.Gate]],
+    n_modes: int, gates: Dict[Tuple[int, ...], Union[float, cirq.Gate]]
 ) -> 'openfermion.InteractionOperator':
     """The interaction operator that is the sum of the generators of the
     specified fermionic simulation gates.
@@ -174,8 +180,7 @@ def sum_of_interaction_operator_gate_generators(
             operator.constant += gate._exponent * gate._global_shift * np.pi
             operator.one_body_tensor[indices * 2] += coeff
         elif isinstance(gate, InteractionOperatorFermionicGate):
-            gate.interaction_operator_generator(operator=operator,
-                                                modes=indices)
+            gate.interaction_operator_generator(operator=operator, modes=indices)
         else:
             raise TypeError(f'Gate type {gate} not supported.')
 
@@ -203,11 +208,11 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
     """
 
     def __init__(
-            self,
-            weights: Optional[Tuple[complex, ...]] = None,
-            absorb_exponent: bool = False,
-            exponent: cirq.TParamVal = 1.0,
-            global_shift: float = 0.0,
+        self,
+        weights: Optional[Tuple[complex, ...]] = None,
+        absorb_exponent: bool = False,
+        exponent: cirq.TParamVal = 1.0,
+        global_shift: float = 0.0,
     ) -> None:
         """A fermionic interaction.
 
@@ -218,7 +223,7 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
                 Defaults to `False`.
         """
         if weights is None:
-            weights = (1.,) * self.num_weights()
+            weights = (1.0,) * self.num_weights()
         self.weights = weights
 
         self._exponent = exponent
@@ -249,23 +254,21 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
     def qubit_generator_matrix(self) -> np.ndarray:
         """The matrix G such that the gate's unitary is exp(-i t G) with
         exponent t."""
-        return jordan_wigner_sparse(self.fermion_generator,
-                                    self.num_qubits()).toarray()
+        return jordan_wigner_sparse(self.fermion_generator, self.num_qubits()).toarray()
 
     @property
     def fermion_generator(self) -> 'openfermion.FermionOperator':
         """The FermionOperator G such that the gate's unitary is exp(-i t G)
         with exponent t using the Jordan-Wigner transformation."""
-        half_generator = sum((
-            w * G
-            for w, G in zip(self.weights, self.fermion_generator_components())),
-                             ops.FermionOperator())
+        half_generator = sum(
+            (w * G for w, G in zip(self.weights, self.fermion_generator_components())),
+            ops.FermionOperator(),
+        )
         return half_generator + hermitian_conjugated(half_generator)
 
-    def _diagram_exponent(self,
-                          args: cirq.CircuitDiagramInfoArgs,
-                          *,
-                          ignore_global_phase: bool = True):
+    def _diagram_exponent(
+        self, args: cirq.CircuitDiagramInfoArgs, *, ignore_global_phase: bool = True
+    ):
         if not isinstance(self._exponent, (int, float)):
             return self._exponent
         result = float(self._exponent)
@@ -279,29 +282,23 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
         return cls.__name__
 
     def _resolve_parameters_(self, resolver, recursive: bool = True):
-        resolved_weights = cirq.resolve_parameters(self.weights,
-                                                   resolver,
-                                                   recursive=recursive)
-        resolved_exponent = cirq.resolve_parameters(self._exponent,
-                                                    resolver,
-                                                    recursive=recursive)
-        resolved_global_shift = cirq.resolve_parameters(self._global_shift,
-                                                        resolver,
-                                                        recursive=recursive)
-        return type(self)(resolved_weights,
-                          exponent=resolved_exponent,
-                          global_shift=resolved_global_shift)
+        resolved_weights = cirq.resolve_parameters(self.weights, resolver, recursive=recursive)
+        resolved_exponent = cirq.resolve_parameters(self._exponent, resolver, recursive=recursive)
+        resolved_global_shift = cirq.resolve_parameters(
+            self._global_shift, resolver, recursive=recursive
+        )
+        return type(self)(
+            resolved_weights, exponent=resolved_exponent, global_shift=resolved_global_shift
+        )
 
     def _value_equality_values_(self):
         return tuple(
             _canonicalize_weight(w * self.exponent)
-            for w in list(self.weights) + [self._global_shift])
+            for w in list(self.weights) + [self._global_shift]
+        )
 
     def _is_parameterized_(self) -> bool:
-        return any(
-            cirq.is_parameterized(v)
-            for V in self._value_equality_values_()
-            for v in V)
+        return any(cirq.is_parameterized(v) for V in self._value_equality_values_() for v in V)
 
     def absorb_exponent_into_weights(self):
         period = (2 * sympy.pi) if self._is_parameterized_() else 2 * (np.pi)
@@ -324,10 +321,10 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
             raise ValueError(f'{init_pos} is not a permutation of {I}.')
         curr_pos = list(init_pos)
         for i in I:
-            for j in I[i % 2:-1:2]:
+            for j in I[i % 2 : -1 : 2]:
                 if curr_pos[j] > curr_pos[j + 1]:
                     self.fswap(j)
-                    curr_pos[j:j + 2] = reversed(curr_pos[j:j + 2])
+                    curr_pos[j : j + 2] = reversed(curr_pos[j : j + 2])
         assert curr_pos == list(I)
 
     def permuted(self, init_pos: Sequence[int]):
@@ -345,18 +342,13 @@ class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
         return gate
 
     def __copy__(self):
-        return type(self)(self.weights,
-                          exponent=self.exponent,
-                          global_shift=self._global_shift)
+        return type(self)(self.weights, exponent=self.exponent, global_shift=self._global_shift)
 
-    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs
-                              ) -> cirq.CircuitDiagramInfo:
-        wire_symbols = [self.wire_symbol(args.use_unicode_characters)
-                       ] * self.num_qubits()
+    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs) -> cirq.CircuitDiagramInfo:
+        wire_symbols = [self.wire_symbol(args.use_unicode_characters)] * self.num_qubits()
         wire_symbols[0] += f'{tuple(self.weights)}'
         exponent = self._diagram_exponent(args)
-        return cirq.CircuitDiagramInfo(wire_symbols=wire_symbols,
-                                       exponent=exponent)
+        return cirq.CircuitDiagramInfo(wire_symbols=wire_symbols, exponent=exponent)
 
 
 class InteractionOperatorFermionicGate(ParityPreservingFermionicGate):
@@ -370,19 +362,16 @@ class InteractionOperatorFermionicGate(ParityPreservingFermionicGate):
     @classmethod
     @abc.abstractmethod
     def from_interaction_operator(
-            cls,
-            *,
-            operator: 'openfermion.InteractionOperator',
-            modes: Optional[Sequence[int]] = None,
+        cls, *, operator: 'openfermion.InteractionOperator', modes: Optional[Sequence[int]] = None
     ) -> Optional['ParityPreservingFermionicGate']:
         """Constructs the gate corresponding to the specified term in the
         Hamiltonian."""
 
     def interaction_operator_generator(
-            self,
-            *,
-            operator: Optional['openfermion.InteractionOperator'] = None,
-            modes: Optional[Sequence[int]] = None
+        self,
+        *,
+        operator: Optional['openfermion.InteractionOperator'] = None,
+        modes: Optional[Sequence[int]] = None,
     ) -> 'openfermion.InteractionOperator':
         """Constructs the Hamiltonian corresponding to the gate's generator."""
         if modes is None:
@@ -396,9 +385,9 @@ class InteractionOperatorFermionicGate(ParityPreservingFermionicGate):
         return get_interaction_operator(fermion_operator, n_qubits=n_modes)
 
 
-class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
-                                       cirq.InterchangeableQubitsGate,
-                                       cirq.EigenGate):
+class QuadraticFermionicSimulationGate(
+    InteractionOperatorFermionicGate, cirq.InterchangeableQubitsGate, cirq.EigenGate
+):
     r"""``(w0 |10⟩⟨01| + h.c.) + w1 |11⟩⟨11|`` interaction.
 
     With weights $(w_0, w_1)$ and exponent $t$, this gate's matrix
@@ -441,30 +430,39 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
     def _decompose_(self, qubits):
         r = 2 * abs(self.weights[0]) / np.pi
         theta = _arg(self.weights[0]) / np.pi
-        yield cirq.Z(qubits[0])**-theta
+        yield cirq.Z(qubits[0]) ** -theta
         yield cirq.ISwapPowGate(exponent=-r * self.exponent)(*qubits)
-        yield cirq.Z(qubits[0])**theta
-        yield cirq.CZPowGate(exponent=-self.weights[1] * self.exponent /
-                             np.pi)(*qubits)
+        yield cirq.Z(qubits[0]) ** theta
+        yield cirq.CZPowGate(exponent=-self.weights[1] * self.exponent / np.pi)(*qubits)
 
     def _eigen_components(self):
-        components = [(0, np.diag([1, 0, 0, 0])),
-                      (-self.weights[1] / np.pi, np.diag([0, 0, 0, 1]))]
+        components = [(0, np.diag([1, 0, 0, 0])), (-self.weights[1] / np.pi, np.diag([0, 0, 0, 1]))]
         r = abs(self.weights[0]) / np.pi
         theta = 2 * _arg(self.weights[0]) / np.pi
         for s in (-1, 1):
             components.append(
-                (-s * r,
-                 np.array([[0, 0, 0, 0], [0, 1, s * 1j**(-theta), 0],
-                           [0, s * 1j**(theta), 1, 0], [0, 0, 0, 0]]) / 2))
+                (
+                    -s * r,
+                    np.array(
+                        [
+                            [0, 0, 0, 0],
+                            [0, 1, s * 1j ** (-theta), 0],
+                            [0, s * 1j ** (theta), 1, 0],
+                            [0, 0, 0, 0],
+                        ]
+                    )
+                    / 2,
+                )
+            )
         return components
 
     def __repr__(self):
-        exponent_str = ('' if self.exponent == 1 else ', exponent=' +
-                        cirq._compat.proper_repr(self.exponent))
-        return ('openfermion.QuadraticFermionicSimulationGate(({}){})'.format(
-            ', '.join(cirq._compat.proper_repr(v) for v in self.weights),
-            exponent_str))
+        exponent_str = (
+            '' if self.exponent == 1 else ', exponent=' + cirq._compat.proper_repr(self.exponent)
+        )
+        return 'openfermion.QuadraticFermionicSimulationGate(({}){})'.format(
+            ', '.join(cirq._compat.proper_repr(v) for v in self.weights), exponent_str
+        )
 
     @property
     def qubit_generator_matrix(self):
@@ -489,31 +487,29 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
 
     @classmethod
     def from_interaction_operator(
-            cls,
-            *,
-            operator: 'openfermion.InteractionOperator',
-            modes: Optional[Sequence[int]] = None,
+        cls, *, operator: 'openfermion.InteractionOperator', modes: Optional[Sequence[int]] = None
     ) -> Optional['QuadraticFermionicSimulationGate']:
         if modes is None:
             modes = (0, 1)
 
         p, q = modes
         tunneling_coeff = operator.one_body_tensor[p, q]
-        interaction_coeff = (-operator.two_body_tensor[p, q, p, q] +
-                             operator.two_body_tensor[q, p, p, q] +
-                             operator.two_body_tensor[p, q, q, p] -
-                             operator.two_body_tensor[q, p, q, p])
-        weights: Tuple[complex, complex] = (-tunneling_coeff,
-                                            -interaction_coeff)
+        interaction_coeff = (
+            -operator.two_body_tensor[p, q, p, q]
+            + operator.two_body_tensor[q, p, p, q]
+            + operator.two_body_tensor[p, q, q, p]
+            - operator.two_body_tensor[q, p, q, p]
+        )
+        weights: Tuple[complex, complex] = (-tunneling_coeff, -interaction_coeff)
         if any(weights):
             return cls(weights)
         return None
 
     def interaction_operator_generator(
-            self,
-            *,
-            operator: Optional['openfermion.InteractionOperator'] = None,
-            modes: Optional[Sequence[int]] = None
+        self,
+        *,
+        operator: Optional['openfermion.InteractionOperator'] = None,
+        modes: Optional[Sequence[int]] = None,
     ) -> 'openfermion.InteractionOperator':
         if modes is None:
             modes = (0, 1)
@@ -534,8 +530,7 @@ class QuadraticFermionicSimulationGate(InteractionOperatorFermionicGate,
         self.weights = (self.weights[0].conjugate(), self.weights[1])
 
 
-class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
-                                   cirq.EigenGate):
+class CubicFermionicSimulationGate(InteractionOperatorFermionicGate, cirq.EigenGate):
     r"""``w0|110⟩⟨101| + w1|110⟩⟨011| + w2|101⟩⟨011|`` + h.c. interaction.
 
     With weights $(w_0, w_1, w_2)$ and exponent $t$, this gate's
@@ -598,19 +593,28 @@ class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
             exp_factor = -eig_val / np.pi
             proj = np.zeros((8, 8), dtype=np.complex128)
             nontrivial_indices = np.array([3, 5, 6], dtype=np.intp)
-            proj[nontrivial_indices[:, np.newaxis], nontrivial_indices] = (
-                np.outer(eig_vec.conjugate(), eig_vec))
+            proj[nontrivial_indices[:, np.newaxis], nontrivial_indices] = np.outer(
+                eig_vec.conjugate(), eig_vec
+            )
             components.append((exp_factor, proj))
         return components
 
     def __repr__(self):
-        return ('openfermion.CubicFermionicSimulationGate(' + '({})'.format(
-            ' ,'.join(cirq._compat.proper_repr(w) for w in self.weights)) +
-                ('' if self.exponent == 1 else
-                 (', exponent=' + cirq._compat.proper_repr(self.exponent))) +
-                ('' if self._global_shift == 0 else
-                 (', global_shift=' +
-                  cirq._compat.proper_repr(self._global_shift))) + ')')
+        return (
+            'openfermion.CubicFermionicSimulationGate('
+            + '({})'.format(' ,'.join(cirq._compat.proper_repr(w) for w in self.weights))
+            + (
+                ''
+                if self.exponent == 1
+                else (', exponent=' + cirq._compat.proper_repr(self.exponent))
+            )
+            + (
+                ''
+                if self._global_shift == 0
+                else (', global_shift=' + cirq._compat.proper_repr(self._global_shift))
+            )
+            + ')'
+        )
 
     @property
     def qubit_generator_matrix(self):
@@ -636,30 +640,30 @@ class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
 
     @classmethod
     def from_interaction_operator(
-            cls,
-            *,
-            operator: 'openfermion.InteractionOperator',
-            modes: Optional[Sequence[int]] = None,
+        cls, *, operator: 'openfermion.InteractionOperator', modes: Optional[Sequence[int]] = None
     ) -> Optional['CubicFermionicSimulationGate']:
         if modes is None:
             modes = (0, 1, 2)
         i, j, k = modes
         weights = tuple(
-            sgn * (operator.two_body_tensor[p, q, p, r] -
-                   operator.two_body_tensor[p, q, r, p] -
-                   operator.two_body_tensor[q, p, p, r] +
-                   operator.two_body_tensor[q, p, r, p])
-            for sgn, (p, q,
-                      r) in zip([1, -1, 1], [(i, j, k), (j, i, k), (k, i, j)]))
+            sgn
+            * (
+                operator.two_body_tensor[p, q, p, r]
+                - operator.two_body_tensor[p, q, r, p]
+                - operator.two_body_tensor[q, p, p, r]
+                + operator.two_body_tensor[q, p, r, p]
+            )
+            for sgn, (p, q, r) in zip([1, -1, 1], [(i, j, k), (j, i, k), (k, i, j)])
+        )
         if any(weights):
             return cls(cast(Tuple[complex, complex, complex], weights))
         return None
 
     def interaction_operator_generator(
-            self,
-            *,
-            operator: Optional['openfermion.InteractionOperator'] = None,
-            modes: Optional[Sequence[int]] = None
+        self,
+        *,
+        operator: Optional['openfermion.InteractionOperator'] = None,
+        modes: Optional[Sequence[int]] = None,
     ) -> 'openfermion.InteractionOperator':
         if modes is None:
             modes = (0, 1, 2)
@@ -680,17 +684,14 @@ class CubicFermionicSimulationGate(InteractionOperatorFermionicGate,
 
     def fswap(self, i: int):
         if i == 0:
-            self.weights = (-self.weights[1], -self.weights[0],
-                            self.weights[2].conjugate())
+            self.weights = (-self.weights[1], -self.weights[0], self.weights[2].conjugate())
         elif i == 1:
-            self.weights = (self.weights[0].conjugate(), -self.weights[2],
-                            -self.weights[1])
+            self.weights = (self.weights[0].conjugate(), -self.weights[2], -self.weights[1])
         else:
             raise ValueError(f'{i} not in (0, 1)')
 
 
-class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
-                                     cirq.EigenGate):
+class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate, cirq.EigenGate):
     r"""Rotates Hamming-weight 2 states into their bitwise complements.
 
     With weights $(w_0, w_1, w_2)$ and exponent $t$, this gate's
@@ -741,22 +742,24 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
     def _eigen_components(self):
         # projector onto subspace spanned by basis states with
         # Hamming weight != 2
-        zero_component = np.diag(
-            [int(bin(i).count('1') != 2) for i in range(16)])
+        zero_component = np.diag([int(bin(i).count('1') != 2) for i in range(16)])
 
         state_pairs = (('0110', '1001'), ('0101', '1010'), ('0011', '1100'))
 
         plus_minus_components = tuple(
-            (-abs(weight) * sign / np.pi,
-             state_swap_eigen_component(state_pair[0], state_pair[1], sign,
-                                        np.angle(weight)))
+            (
+                -abs(weight) * sign / np.pi,
+                state_swap_eigen_component(state_pair[0], state_pair[1], sign, np.angle(weight)),
+            )
             for weight, state_pair in zip(self.weights, state_pairs)
-            for sign in (-1, 1))
+            for sign in (-1, 1)
+        )
 
         return ((0, zero_component),) + plus_minus_components
 
-    def _with_exponent(self, exponent: Union[sympy.Symbol, float]
-                      ) -> 'QuarticFermionicSimulationGate':
+    def _with_exponent(
+        self, exponent: Union[sympy.Symbol, float]
+    ) -> 'QuarticFermionicSimulationGate':
         gate = QuarticFermionicSimulationGate(self.weights)
         gate._exponent = exponent
         return gate
@@ -795,56 +798,65 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
             return NotImplemented
 
         individual_rotations = [
-            la.expm(0.5j * self.exponent *
-                    np.array([[np.real(w), 1j * s * np.imag(w)],
-                              [-1j * s * np.imag(w), -np.real(w)]]))
+            la.expm(
+                0.5j
+                * self.exponent
+                * np.array([[np.real(w), 1j * s * np.imag(w)], [-1j * s * np.imag(w), -np.real(w)]])
+            )
             for s, w in zip([1, -1, -1], self.weights)
         ]
 
         combined_rotations = {}
         combined_rotations[0] = la.sqrtm(
-            np.linalg.multi_dot([
-                la.inv(individual_rotations[1]), individual_rotations[0],
-                individual_rotations[2]
-            ]))
+            np.linalg.multi_dot(
+                [la.inv(individual_rotations[1]), individual_rotations[0], individual_rotations[2]]
+            )
+        )
         combined_rotations[1] = la.inv(combined_rotations[0])
-        combined_rotations[2] = np.linalg.multi_dot([
-            la.inv(individual_rotations[0]), individual_rotations[1],
-            combined_rotations[0]
-        ])
+        combined_rotations[2] = np.linalg.multi_dot(
+            [la.inv(individual_rotations[0]), individual_rotations[1], combined_rotations[0]]
+        )
         combined_rotations[3] = individual_rotations[0]
 
         controlled_rotations = {
-            i: cirq.ControlledGate(
-                cirq.MatrixGate(combined_rotations[i], qid_shape=(2,)))
+            i: cirq.ControlledGate(cirq.MatrixGate(combined_rotations[i], qid_shape=(2,)))
             for i in range(4)
         }
 
         a, b, c, d = qubits
 
         basis_change = list(
-            cirq.flatten_op_tree([
-                cirq.CNOT(b, a),
-                cirq.CNOT(c, b),
-                cirq.CNOT(d, c),
-                cirq.CNOT(c, b),
-                cirq.CNOT(b, a),
-                cirq.CNOT(a, b),
-                cirq.CNOT(b, c),
-                cirq.CNOT(a, b),
-                [cirq.X(c), cirq.X(d)],
-                [cirq.CNOT(c, d), cirq.CNOT(d, c)],
-                [cirq.X(c), cirq.X(d)],
-            ]))
+            cirq.flatten_op_tree(
+                [
+                    cirq.CNOT(b, a),
+                    cirq.CNOT(c, b),
+                    cirq.CNOT(d, c),
+                    cirq.CNOT(c, b),
+                    cirq.CNOT(b, a),
+                    cirq.CNOT(a, b),
+                    cirq.CNOT(b, c),
+                    cirq.CNOT(a, b),
+                    [cirq.X(c), cirq.X(d)],
+                    [cirq.CNOT(c, d), cirq.CNOT(d, c)],
+                    [cirq.X(c), cirq.X(d)],
+                ]
+            )
+        )
 
         controlled_rotations = list(
-            cirq.flatten_op_tree([
-                controlled_rotations[0](b, c),
-                cirq.CNOT(a, b), controlled_rotations[1](b, c),
-                cirq.CNOT(b, a),
-                cirq.CNOT(a, b), controlled_rotations[2](b, c),
-                cirq.CNOT(a, b), controlled_rotations[3](b, c)
-            ]))
+            cirq.flatten_op_tree(
+                [
+                    controlled_rotations[0](b, c),
+                    cirq.CNOT(a, b),
+                    controlled_rotations[1](b, c),
+                    cirq.CNOT(b, a),
+                    cirq.CNOT(a, b),
+                    controlled_rotations[2](b, c),
+                    cirq.CNOT(a, b),
+                    controlled_rotations[3](b, c),
+                ]
+            )
+        )
 
         controlled_swaps = [
             [cirq.CNOT(c, d), cirq.H(c)],
@@ -861,14 +873,14 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
     def wire_symbol(cls, use_unicode: bool):
         return '⇊⇈' if use_unicode else 'a*a*aa'
 
-    def _apply_unitary_(self,
-                        args: cirq.ApplyUnitaryArgs) -> Optional[np.ndarray]:
+    def _apply_unitary_(self, args: cirq.ApplyUnitaryArgs) -> Optional[np.ndarray]:
         if cirq.is_parameterized(self):
             return NotImplemented
 
-        am, bm, cm = (la.expm(-1j * self.exponent *
-                              np.array([[0, w], [w.conjugate(), 0]]))
-                      for w in self.weights)
+        am, bm, cm = (
+            la.expm(-1j * self.exponent * np.array([[0, w], [w.conjugate(), 0]]))
+            for w in self.weights
+        )
 
         a1 = args.subspace_index(0b1001)
         b1 = args.subspace_index(0b0101)
@@ -878,26 +890,25 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
         b2 = args.subspace_index(0b1010)
         c2 = args.subspace_index(0b1100)
 
-        cirq.apply_matrix_to_slices(args.target_tensor,
-                                    am,
-                                    slices=[a1, a2],
-                                    out=args.available_buffer)
-        cirq.apply_matrix_to_slices(args.available_buffer,
-                                    bm,
-                                    slices=[b1, b2],
-                                    out=args.target_tensor)
-        return cirq.apply_matrix_to_slices(args.target_tensor,
-                                           cm,
-                                           slices=[c1, c2],
-                                           out=args.available_buffer)
+        cirq.apply_matrix_to_slices(
+            args.target_tensor, am, slices=[a1, a2], out=args.available_buffer
+        )
+        cirq.apply_matrix_to_slices(
+            args.available_buffer, bm, slices=[b1, b2], out=args.target_tensor
+        )
+        return cirq.apply_matrix_to_slices(
+            args.target_tensor, cm, slices=[c1, c2], out=args.available_buffer
+        )
 
     def __repr__(self):
-        return ('openfermion.QuarticFermionicSimulationGate(({}), '
-                'absorb_exponent=False, '
-                'exponent={})'.format(
-                    ', '.join(
-                        cirq._compat.proper_repr(v) for v in self.weights),
-                    cirq._compat.proper_repr(self.exponent)))
+        return (
+            'openfermion.QuarticFermionicSimulationGate(({}), '
+            'absorb_exponent=False, '
+            'exponent={})'.format(
+                ', '.join(cirq._compat.proper_repr(v) for v in self.weights),
+                cirq._compat.proper_repr(self.exponent),
+            )
+        )
 
     @property
     def qubit_generator_matrix(self):
@@ -928,28 +939,28 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
 
     @classmethod
     def from_interaction_operator(
-            cls,
-            *,
-            operator: 'openfermion.InteractionOperator',
-            modes: Optional[Sequence[int]] = None,
+        cls, *, operator: 'openfermion.InteractionOperator', modes: Optional[Sequence[int]] = None
     ) -> Optional['QuarticFermionicSimulationGate']:
         if modes is None:
             modes = (0, 1, 2, 3)
         i, j, k, l = modes
         weights = tuple(
-            (operator.two_body_tensor[p, q, r, s] -
-             operator.two_body_tensor[p, q, s, r] -
-             operator.two_body_tensor[q, p, r, s] +
-             operator.two_body_tensor[q, p, s, r])
-            for p, q, r, s in [(i, l, j, k), (i, k, j, l), (i, j, k, l)])
+            (
+                operator.two_body_tensor[p, q, r, s]
+                - operator.two_body_tensor[p, q, s, r]
+                - operator.two_body_tensor[q, p, r, s]
+                + operator.two_body_tensor[q, p, s, r]
+            )
+            for p, q, r, s in [(i, l, j, k), (i, k, j, l), (i, j, k, l)]
+        )
         if any(weights):
             return cls(cast(Tuple[complex, complex, complex], weights))
         return None
 
     def interaction_operator_generator(
-            self,
-            operator: Optional['openfermion.InteractionOperator'] = None,
-            modes: Optional[Sequence[int]] = None
+        self,
+        operator: Optional['openfermion.InteractionOperator'] = None,
+        modes: Optional[Sequence[int]] = None,
     ) -> 'openfermion.InteractionOperator':
         if modes is None:
             modes = (0, 1, 2, 3)
@@ -970,8 +981,11 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate,
 
     def fswap(self, i: int):
         if i == 0:
-            self.weights = (self.weights[1].conjugate(),
-                            self.weights[0].conjugate(), -self.weights[2])
+            self.weights = (
+                self.weights[1].conjugate(),
+                self.weights[0].conjugate(),
+                -self.weights[2],
+            )
         elif i == 1:
             self.weights = (-self.weights[0], self.weights[2], self.weights[1])
         elif i == 2:

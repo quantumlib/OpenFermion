@@ -18,12 +18,14 @@ from openfermion.ops.operators import QubitOperator
 from openfermion.utils.operator_utils import count_qubits
 
 from openfermion.circuits.trotter_exp_to_qgates import (
-    trotter_operator_grouping, _third_order_trotter_helper,
-    trotterize_exp_qubop_to_qasm, pauli_exp_to_qasm)
+    trotter_operator_grouping,
+    _third_order_trotter_helper,
+    trotterize_exp_qubop_to_qasm,
+    pauli_exp_to_qasm,
+)
 
 
 class TrottQasmTest(unittest.TestCase):
-
     def setUp(self):
         # First qubit operator example
         self.opA = QubitOperator('X0 Z1 Y3', 0.5)
@@ -35,26 +37,16 @@ class TrottQasmTest(unittest.TestCase):
         # Test exceptions in trotter_operator_grouping()
 
         with self.assertRaises(TypeError):
-            _ = [
-                i for i in pauli_exp_to_qasm([QubitOperator()],
-                                             qubit_list='qubit')
-            ]
+            _ = [i for i in pauli_exp_to_qasm([QubitOperator()], qubit_list='qubit')]
 
         with self.assertRaises(TypeError):
-            _ = [
-                i for i in pauli_exp_to_qasm([QubitOperator('X1 Y2')],
-                                             qubit_list=['qubit'])
-            ]
+            _ = [i for i in pauli_exp_to_qasm([QubitOperator('X1 Y2')], qubit_list=['qubit'])]
 
         with self.assertRaises(ValueError):
-            _ = [
-                i for i in trotter_operator_grouping(self.qo1, trotter_order=0)
-            ]
+            _ = [i for i in trotter_operator_grouping(self.qo1, trotter_order=0)]
 
         with self.assertRaises(ValueError):
-            _ = [
-                i for i in trotter_operator_grouping(self.qo1, trotter_order=4)
-            ]
+            _ = [i for i in trotter_operator_grouping(self.qo1, trotter_order=4)]
 
         with self.assertRaises(TypeError):
             _ = [i for i in trotter_operator_grouping(42)]
@@ -65,22 +57,15 @@ class TrottQasmTest(unittest.TestCase):
 
         emptyTO = []
         with self.assertRaises(TypeError):
-            _ = [
-                i for i in trotter_operator_grouping(self.qo1,
-                                                     term_ordering=emptyTO)
-            ]
+            _ = [i for i in trotter_operator_grouping(self.qo1, term_ordering=emptyTO)]
 
         # Too few ops for 2nd-order
         with self.assertRaises(ValueError):
-            _ = [
-                i for i in trotter_operator_grouping(self.opA, trotter_order=2)
-            ]
+            _ = [i for i in trotter_operator_grouping(self.opA, trotter_order=2)]
 
         # Too few ops for 3rd-order
         with self.assertRaises(ValueError):
-            _ = [
-                i for i in trotter_operator_grouping(self.opA, trotter_order=3)
-            ]
+            _ = [i for i in trotter_operator_grouping(self.opA, trotter_order=3)]
 
     def compare_qubop_lists(self, gold, res):
         # Compare lists of operators. Used in most test functions.
@@ -97,12 +82,12 @@ class TrottQasmTest(unittest.TestCase):
         op_b = QubitOperator('Z2', 0.1)
 
         gold = []
-        gold.append(op_a * (7. / 24))
-        gold.append(op_b * (2. / 3))
-        gold.append(op_a * (3. / 4))
-        gold.append(op_b * (-2. / 3))
-        gold.append(op_a * (-1. / 24))
-        gold.append(op_b * (1.))
+        gold.append(op_a * (7.0 / 24))
+        gold.append(op_b * (2.0 / 3))
+        gold.append(op_a * (3.0 / 4))
+        gold.append(op_b * (-2.0 / 3))
+        gold.append(op_a * (-1.0 / 24))
+        gold.append(op_b * (1.0))
 
         # Second arg must be in list form
         res = _third_order_trotter_helper([op_a, op_b])
@@ -112,31 +97,31 @@ class TrottQasmTest(unittest.TestCase):
 
     def test_3rd_order_helper_3ops(self):
         # Test 3rd-order helper, H=A+B+C
-        op_a = QubitOperator('X0', 1.)
-        op_b = QubitOperator('Z2', 1.)
-        op_c = QubitOperator('Z3', 1.)
+        op_a = QubitOperator('X0', 1.0)
+        op_b = QubitOperator('Z2', 1.0)
+        op_c = QubitOperator('Z3', 1.0)
 
         gold = []
-        gold.append(op_a * 7. / 24)
-        gold.append(op_b * 7. / 36)
-        gold.append(op_c * 4. / 9)
-        gold.append(op_b * 1. / 2)
-        gold.append(op_c * -4. / 9)
-        gold.append(op_b * -1. / 36)
-        gold.append(op_c * 2. / 3)
-        gold.append(op_a * 3. / 4)
-        gold.append(op_b * -7. / 36)
-        gold.append(op_c * -4. / 9)
-        gold.append(op_b * -1. / 2)
-        gold.append(op_c * 4. / 9)
-        gold.append(op_b * 1. / 36)
-        gold.append(op_c * -2. / 3)
-        gold.append(op_a * -1. / 24)
-        gold.append(op_b * 7. / 24)
-        gold.append(op_c * 2. / 3)
-        gold.append(op_b * 3. / 4)
-        gold.append(op_c * -2. / 3)
-        gold.append(op_b * -1. / 24)
+        gold.append(op_a * 7.0 / 24)
+        gold.append(op_b * 7.0 / 36)
+        gold.append(op_c * 4.0 / 9)
+        gold.append(op_b * 1.0 / 2)
+        gold.append(op_c * -4.0 / 9)
+        gold.append(op_b * -1.0 / 36)
+        gold.append(op_c * 2.0 / 3)
+        gold.append(op_a * 3.0 / 4)
+        gold.append(op_b * -7.0 / 36)
+        gold.append(op_c * -4.0 / 9)
+        gold.append(op_b * -1.0 / 2)
+        gold.append(op_c * 4.0 / 9)
+        gold.append(op_b * 1.0 / 36)
+        gold.append(op_c * -2.0 / 3)
+        gold.append(op_a * -1.0 / 24)
+        gold.append(op_b * 7.0 / 24)
+        gold.append(op_c * 2.0 / 3)
+        gold.append(op_b * 3.0 / 4)
+        gold.append(op_c * -2.0 / 3)
+        gold.append(op_b * -1.0 / 24)
         gold.append(op_c * 1.0)
 
         # Second arg must be in list form
@@ -147,35 +132,35 @@ class TrottQasmTest(unittest.TestCase):
 
     def test_trott_ordering_3rd_ord(self):
         # Test 3rd-order Trotterization, H=A+B+C
-        op_a = QubitOperator('X0', 1.)
-        op_b = QubitOperator('Z2', 1.)
-        op_c = QubitOperator('Z3', 1.)
+        op_a = QubitOperator('X0', 1.0)
+        op_b = QubitOperator('Z2', 1.0)
+        op_c = QubitOperator('Z3', 1.0)
         ham = op_a + op_b + op_c
 
         # Result from code
         res = [op for op in trotter_operator_grouping(ham, trotter_order=3)]
 
         gold = []
-        gold.append(op_a * 7. / 24)
-        gold.append(op_b * 7. / 36)
-        gold.append(op_c * 4. / 9)
-        gold.append(op_b * 1. / 2)
-        gold.append(op_c * -4. / 9)
-        gold.append(op_b * -1. / 36)
-        gold.append(op_c * 2. / 3)
-        gold.append(op_a * 3. / 4)
-        gold.append(op_b * -7. / 36)
-        gold.append(op_c * -4. / 9)
-        gold.append(op_b * -1. / 2)
-        gold.append(op_c * 4. / 9)
-        gold.append(op_b * 1. / 36)
-        gold.append(op_c * -2. / 3)
-        gold.append(op_a * -1. / 24)
-        gold.append(op_b * 7. / 24)
-        gold.append(op_c * 2. / 3)
-        gold.append(op_b * 3. / 4)
-        gold.append(op_c * -2. / 3)
-        gold.append(op_b * -1. / 24)
+        gold.append(op_a * 7.0 / 24)
+        gold.append(op_b * 7.0 / 36)
+        gold.append(op_c * 4.0 / 9)
+        gold.append(op_b * 1.0 / 2)
+        gold.append(op_c * -4.0 / 9)
+        gold.append(op_b * -1.0 / 36)
+        gold.append(op_c * 2.0 / 3)
+        gold.append(op_a * 3.0 / 4)
+        gold.append(op_b * -7.0 / 36)
+        gold.append(op_c * -4.0 / 9)
+        gold.append(op_b * -1.0 / 2)
+        gold.append(op_c * 4.0 / 9)
+        gold.append(op_b * 1.0 / 36)
+        gold.append(op_c * -2.0 / 3)
+        gold.append(op_a * -1.0 / 24)
+        gold.append(op_b * 7.0 / 24)
+        gold.append(op_c * 2.0 / 3)
+        gold.append(op_b * 3.0 / 4)
+        gold.append(op_c * -2.0 / 3)
+        gold.append(op_b * -1.0 / 24)
         gold.append(op_c * 1.0)
 
         # Assert each term in list of QubitOperators is correct
@@ -183,9 +168,9 @@ class TrottQasmTest(unittest.TestCase):
 
     def test_trott_ordering_2nd_ord(self):
         # Test 2nd-order Trotter ordering
-        op_a = QubitOperator('X0', 1.)
-        op_b = QubitOperator('Z2', 1.)
-        op_c = QubitOperator('Z3', 1.)
+        op_a = QubitOperator('X0', 1.0)
+        op_b = QubitOperator('Z2', 1.0)
+        op_c = QubitOperator('Z3', 1.0)
         ham = op_a + op_b + op_c
         _ = [op for op in trotter_operator_grouping(ham, trotter_order=2)]
         gold = []
@@ -198,11 +183,10 @@ class TrottQasmTest(unittest.TestCase):
     def test_get_trott_qubops(self):
         # Testing with trotter number of 2 (first-order)
         res = [
-            op for op in trotter_operator_grouping(self.qo1,
-                                                   trotter_number=2,
-                                                   trotter_order=1,
-                                                   term_ordering=None,
-                                                   k_exp=1.0)
+            op
+            for op in trotter_operator_grouping(
+                self.qo1, trotter_number=2, trotter_order=1, term_ordering=None, k_exp=1.0
+            )
         ]
 
         gold = []
@@ -263,8 +247,7 @@ Rx -1.5707963267948966 3'''
         qasmstr = str(count_qubits(self.opA) + 1) + "\n"
 
         # Write each QASM operation
-        qasmstr += "\n".join(
-            trotterize_exp_qubop_to_qasm(self.opA, ancilla='ancilla'))
+        qasmstr += "\n".join(trotterize_exp_qubop_to_qasm(self.opA, ancilla='ancilla'))
 
         # Correct string
         strcorrect = '''5
@@ -292,9 +275,8 @@ Rx -1.5707963267948966 3'''
 
         # Write each QASM operation
         qasmstr += "\n".join(
-            trotterize_exp_qubop_to_qasm(self.opA,
-                                         ancilla='ancilla',
-                                         qubit_list=qubit_list))
+            trotterize_exp_qubop_to_qasm(self.opA, ancilla='ancilla', qubit_list=qubit_list)
+        )
 
         # Correct string
         strcorrect = '''5
@@ -315,8 +297,7 @@ Rx -1.5707963267948966 q3'''
         qasmstr = str(count_qubits(self.op_id) + 1) + "\n"
 
         # Write each QASM operation
-        qasmstr += "\n".join(
-            trotterize_exp_qubop_to_qasm(self.op_id, ancilla='ancilla'))
+        qasmstr += "\n".join(trotterize_exp_qubop_to_qasm(self.op_id, ancilla='ancilla'))
 
         strcorrect = '''1
 Rz 1.0 ancilla'''

@@ -33,9 +33,7 @@ class LinearQubitOperatorOptions(object):
             pool(multiprocessing.Pool): A pool of workers.
         """
         if processes <= 0:
-            raise ValueError(
-                'Invalid number of processors specified {} <= 0'.format(
-                    processes))
+            raise ValueError('Invalid number of processors specified {} <= 0'.format(processes))
 
         self.processes = min(processes, multiprocessing.cpu_count())
         self.pool = pool
@@ -90,12 +88,13 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         if n_qubits is None:
             n_qubits = calculated_n_qubits
         elif n_qubits < calculated_n_qubits:
-            raise ValueError('Invalid number of qubits specified '
-                             '{} < {}.'.format(n_qubits, calculated_n_qubits))
+            raise ValueError(
+                'Invalid number of qubits specified '
+                '{} < {}.'.format(n_qubits, calculated_n_qubits)
+            )
 
         n_hilbert = 2**n_qubits
-        super(LinearQubitOperator, self).__init__(shape=(n_hilbert, n_hilbert),
-                                                  dtype=complex)
+        super(LinearQubitOperator, self).__init__(shape=(n_hilbert, n_hilbert), dtype=complex)
         self.qubit_operator = qubit_operator
         self.n_qubits = n_qubits
 
@@ -119,8 +118,9 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
                 # Split vector by half and half for each bit.
                 if pauli_operator[0] > tensor_factor:
                     vecs = [
-                        v for iter_v in vecs for v in numpy.split(
-                            iter_v, 2**(pauli_operator[0] - tensor_factor))
+                        v
+                        for iter_v in vecs
+                        for v in numpy.split(iter_v, 2 ** (pauli_operator[0] - tensor_factor))
                     ]
 
                 # Note that this is to make sure that XYZ operations always work
@@ -133,9 +133,7 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
                     'Y': lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
                     'Z': lambda vps: [[vp[0], -vp[1]] for vp in vps],
                 }
-                vecs = [
-                    v for vp in xyz[pauli_operator[1]](vec_pairs) for v in vp
-                ]
+                vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs) for v in vp]
                 tensor_factor = pauli_operator[0] + 1
 
             # No need to check tensor_factor, i.e. to deal with bits left.
@@ -156,18 +154,19 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         """
         n_qubits = n_qubits or count_qubits(qubit_operator)
         n_hilbert = 2**n_qubits
-        super(ParallelLinearQubitOperator,
-              self).__init__(shape=(n_hilbert, n_hilbert), dtype=complex)
+        super(ParallelLinearQubitOperator, self).__init__(
+            shape=(n_hilbert, n_hilbert), dtype=complex
+        )
 
         self.qubit_operator = qubit_operator
         self.n_qubits = n_qubits
         self.options = options or LinearQubitOperatorOptions()
 
         self.qubit_operator_groups = list(
-            qubit_operator.get_operator_groups(self.options.processes))
+            qubit_operator.get_operator_groups(self.options.processes)
+        )
         self.linear_operators = [
-            LinearQubitOperator(operator, n_qubits)
-            for operator in self.qubit_operator_groups
+            LinearQubitOperator(operator, n_qubits) for operator in self.qubit_operator_groups
         ]
 
     def _matvec(self, x):
@@ -184,8 +183,8 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
 
         pool = self.options.get_pool(len(self.linear_operators))
         vecs = pool.imap_unordered(
-            apply_operator,
-            [(operator, x) for operator in self.linear_operators])
+            apply_operator, [(operator, x) for operator in self.linear_operators]
+        )
         pool.close()
         pool.join()
         return functools.reduce(numpy.add, vecs)
@@ -198,7 +197,7 @@ def apply_operator(args):
 
 
 def generate_linear_qubit_operator(qubit_operator, n_qubits=None, options=None):
-    """ Generates a LinearOperator from a QubitOperator.
+    """Generates a LinearOperator from a QubitOperator.
 
     Args:
         qubit_operator(QubitOperator): A qubit operator to be applied on
@@ -212,6 +211,5 @@ def generate_linear_qubit_operator(qubit_operator, n_qubits=None, options=None):
     if options is None:
         linear_operator = LinearQubitOperator(qubit_operator, n_qubits)
     else:
-        linear_operator = ParallelLinearQubitOperator(qubit_operator, n_qubits,
-                                                      options)
+        linear_operator = ParallelLinearQubitOperator(qubit_operator, n_qubits, options)
     return linear_operator

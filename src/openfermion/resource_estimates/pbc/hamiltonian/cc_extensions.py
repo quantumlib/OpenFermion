@@ -58,12 +58,10 @@ def build_approximate_eris(krcc_inst, eri_helper, eris=None):
     nkpts = krcc_inst.nkpts
     dtype = krcc_inst.mo_coeff[0].dtype
     if eris is not None:
-        log.info("Modifying coupled cluster _ERIS object inplace using "
-                 f"{eri_helper.__class__}.")
+        log.info("Modifying coupled cluster _ERIS object inplace using " f"{eri_helper.__class__}.")
         out_eris = eris
     else:
-        log.info(f"Rebuilding coupled cluster _ERIS object using "
-                 " {eri_helper.__class__}.")
+        log.info(f"Rebuilding coupled cluster _ERIS object using " " {eri_helper.__class__}.")
         out_eris = _ERIS(krcc_inst)
     for ikp, ikq, ikr in khelper.symm_map.keys():
         iks = kconserv[ikp, ikq, ikr]
@@ -73,8 +71,7 @@ def build_approximate_eris(krcc_inst, eri_helper, eris=None):
             eri_kpt = eri_kpt.real
         eri_kpt = eri_kpt
         for kp, kq, kr in khelper.symm_map[(ikp, ikq, ikr)]:
-            eri_kpt_symm = khelper.transform_symm(eri_kpt, kp, kq,
-                                                  kr).transpose(0, 2, 1, 3)
+            eri_kpt_symm = khelper.transform_symm(eri_kpt, kp, kq, kr).transpose(0, 2, 1, 3)
             out_eris.oooo[kp, kr, kq] = eri_kpt_symm[:nocc, :nocc, :nocc, :nocc]
             out_eris.ooov[kp, kr, kq] = eri_kpt_symm[:nocc, :nocc, :nocc, nocc:]
             out_eris.oovv[kp, kr, kq] = eri_kpt_symm[:nocc, :nocc, nocc:, nocc:]
@@ -106,12 +103,10 @@ def build_approximate_eris_rohf(kucc_inst, eri_helper, eris=None):
     nocca, noccb = kucc_inst.nocc
     nkpts = kucc_inst.nkpts
     if eris is not None:
-        log.info("Modifying coupled cluster _ERIS object inplace using "
-                 f"{eri_helper.__class__}.")
+        log.info("Modifying coupled cluster _ERIS object inplace using " f"{eri_helper.__class__}.")
         out_eris = eris
     else:
-        log.info("Rebuilding coupled cluster _ERIS object using "
-                 f"{eri_helper.__class__}.")
+        log.info("Rebuilding coupled cluster _ERIS object using " f"{eri_helper.__class__}.")
         out_eris = _make_eris_incore(kucc_inst)
     for kp, kq, kr in loop_kkk(nkpts):
         ks = kconserv[kp, kq, kr]
@@ -121,10 +116,8 @@ def build_approximate_eris_rohf(kucc_inst, eri_helper, eris=None):
         out_eris.ooov[kp, kq, kr] = tmp[:nocca, :nocca, :nocca, nocca:]
         out_eris.oovv[kp, kq, kr] = tmp[:nocca, :nocca, nocca:, nocca:]
         out_eris.ovov[kp, kq, kr] = tmp[:nocca, nocca:, :nocca, nocca:]
-        out_eris.voov[kq, kp, ks] = (
-            tmp[:nocca, nocca:, nocca:, :nocca].conj().transpose(1, 0, 3, 2))
-        out_eris.vovv[kq, kp, ks] = (
-            tmp[:nocca, nocca:, nocca:, nocca:].conj().transpose(1, 0, 3, 2))
+        out_eris.voov[kq, kp, ks] = tmp[:nocca, nocca:, nocca:, :nocca].conj().transpose(1, 0, 3, 2)
+        out_eris.vovv[kq, kp, ks] = tmp[:nocca, nocca:, nocca:, nocca:].conj().transpose(1, 0, 3, 2)
 
     for kp, kq, kr in loop_kkk(nkpts):
         ks = kconserv[kp, kq, kr]
@@ -134,10 +127,8 @@ def build_approximate_eris_rohf(kucc_inst, eri_helper, eris=None):
         out_eris.OOOV[kp, kq, kr] = tmp[:noccb, :noccb, :noccb, noccb:]
         out_eris.OOVV[kp, kq, kr] = tmp[:noccb, :noccb, noccb:, noccb:]
         out_eris.OVOV[kp, kq, kr] = tmp[:noccb, noccb:, :noccb, noccb:]
-        out_eris.VOOV[kq, kp, ks] = (
-            tmp[:noccb, noccb:, noccb:, :noccb].conj().transpose(1, 0, 3, 2))
-        out_eris.VOVV[kq, kp, ks] = (
-            tmp[:noccb, noccb:, noccb:, noccb:].conj().transpose(1, 0, 3, 2))
+        out_eris.VOOV[kq, kp, ks] = tmp[:noccb, noccb:, noccb:, :noccb].conj().transpose(1, 0, 3, 2)
+        out_eris.VOVV[kq, kp, ks] = tmp[:noccb, noccb:, noccb:, noccb:].conj().transpose(1, 0, 3, 2)
 
     for kp, kq, kr in loop_kkk(nkpts):
         ks = kconserv[kp, kq, kr]
@@ -147,10 +138,8 @@ def build_approximate_eris_rohf(kucc_inst, eri_helper, eris=None):
         out_eris.ooOV[kp, kq, kr] = tmp[:nocca, :nocca, :noccb, noccb:]
         out_eris.ooVV[kp, kq, kr] = tmp[:nocca, :nocca, noccb:, noccb:]
         out_eris.ovOV[kp, kq, kr] = tmp[:nocca, nocca:, :noccb, noccb:]
-        out_eris.voOV[kq, kp, ks] = (
-            tmp[:nocca, nocca:, noccb:, :noccb].conj().transpose(1, 0, 3, 2))
-        out_eris.voVV[kq, kp, ks] = (
-            tmp[:nocca, nocca:, noccb:, noccb:].conj().transpose(1, 0, 3, 2))
+        out_eris.voOV[kq, kp, ks] = tmp[:nocca, nocca:, noccb:, :noccb].conj().transpose(1, 0, 3, 2)
+        out_eris.voVV[kq, kp, ks] = tmp[:nocca, nocca:, noccb:, noccb:].conj().transpose(1, 0, 3, 2)
 
     for kp, kq, kr in loop_kkk(nkpts):
         ks = kconserv[kp, kq, kr]
@@ -160,10 +149,8 @@ def build_approximate_eris_rohf(kucc_inst, eri_helper, eris=None):
         out_eris.OOov[kp, kq, kr] = tmp[:noccb, :noccb, :nocca, nocca:]
         out_eris.OOvv[kp, kq, kr] = tmp[:noccb, :noccb, nocca:, nocca:]
         out_eris.OVov[kp, kq, kr] = tmp[:noccb, noccb:, :nocca, nocca:]
-        out_eris.VOov[kq, kp, ks] = (
-            tmp[:noccb, noccb:, nocca:, :nocca].conj().transpose(1, 0, 3, 2))
-        out_eris.VOvv[kq, kp, ks] = (
-            tmp[:noccb, noccb:, nocca:, nocca:].conj().transpose(1, 0, 3, 2))
+        out_eris.VOov[kq, kp, ks] = tmp[:noccb, noccb:, nocca:, :nocca].conj().transpose(1, 0, 3, 2)
+        out_eris.VOvv[kq, kp, ks] = tmp[:noccb, noccb:, nocca:, nocca:].conj().transpose(1, 0, 3, 2)
     # Force CCSD to use eri tensors.
     out_eris.Lpv = None
     out_eris.LPV = None

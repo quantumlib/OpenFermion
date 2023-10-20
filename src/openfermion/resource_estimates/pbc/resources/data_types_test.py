@@ -20,43 +20,32 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
         PBCResources,
         ResourceEstimates,
     )
-    from openfermion.resource_estimates.pbc.hamiltonian import (
-        HamiltonianProperties,)
+    from openfermion.resource_estimates.pbc.hamiltonian import HamiltonianProperties
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_pbc_resources():
     nmo = 10
     np.random.seed(7)
     pbc_resources = PBCResources(
-        "pbc",
-        num_spin_orbitals=nmo,
-        num_kpts=12,
-        dE=1e-7,
-        chi=13,
-        exact_energy=-13.3,
+        "pbc", num_spin_orbitals=nmo, num_kpts=12, dE=1e-7, chi=13, exact_energy=-13.3
     )
     for cutoff in np.logspace(-1, -3, 5):
         lv = np.random.random(3)
-        lambdas = HamiltonianProperties(lambda_total=lv[0],
-                                        lambda_one_body=lv[1],
-                                        lambda_two_body=lv[2])
+        lambdas = HamiltonianProperties(
+            lambda_total=lv[0], lambda_one_body=lv[1], lambda_two_body=lv[2]
+        )
         resource = ResourceEstimates(
             toffolis_per_step=np.random.randint(0, 1000),
             total_toffolis=np.random.randint(0, 1000),
             logical_qubits=13,
         )
         pbc_resources.add_resources(
-            ham_properties=lambdas,
-            resource_estimates=resource,
-            approx_energy=-12,
-            cutoff=cutoff,
+            ham_properties=lambdas, resource_estimates=resource, approx_energy=-12, cutoff=cutoff
         )
     df = pbc_resources.to_dataframe()
     assert np.allclose(
-        df.lambda_total.values,
-        [0.07630829, 0.97798951, 0.26843898, 0.38094113, 0.21338535],
+        df.lambda_total.values, [0.07630829, 0.97798951, 0.26843898, 0.38094113, 0.21338535]
     )
     assert (df.toffolis_per_step.values == [919, 366, 895, 787, 949]).all()
     assert (df.total_toffolis.values == [615, 554, 391, 444, 112]).all()

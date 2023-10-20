@@ -24,12 +24,13 @@ class DoubleExcitationGate(cirq.EigenGate):
     """Evolve under ``-|0011⟩⟨1100|`` + h.c. for some time."""
 
     def __init__(
-            self,
-            *,  # Forces keyword args.
-            exponent: Optional[Union[sympy.Symbol, float]] = None,
-            rads: Optional[float] = None,
-            degs: Optional[float] = None,
-            duration: Optional[float] = None) -> None:
+        self,
+        *,  # Forces keyword args.
+        exponent: Optional[Union[sympy.Symbol, float]] = None,
+        rads: Optional[float] = None,
+        degs: Optional[float] = None,
+        duration: Optional[float] = None,
+    ) -> None:
         """Initialize the gate.
 
         At most one of exponent, rads, degs, or duration may be specified.
@@ -44,17 +45,15 @@ class DoubleExcitationGate(cirq.EigenGate):
             duration: The exponent as a duration of time.
         """
 
-        if len([1 for e in [exponent, rads, degs, duration] if e is not None
-               ]) > 1:
-            raise ValueError('Redundant exponent specification. '
-                             'Use ONE of exponent, rads, degs, or duration.')
+        if len([1 for e in [exponent, rads, degs, duration] if e is not None]) > 1:
+            raise ValueError(
+                'Redundant exponent specification. ' 'Use ONE of exponent, rads, degs, or duration.'
+            )
 
         if duration is not None:
             exponent = 2 * duration / np.pi
         else:
-            exponent = cirq.chosen_angle_to_half_turns(half_turns=exponent,
-                                                       rads=rads,
-                                                       degs=degs)
+            exponent = cirq.chosen_angle_to_half_turns(half_turns=exponent, rads=rads, degs=degs)
 
         super().__init__(exponent=exponent)
 
@@ -70,49 +69,44 @@ class DoubleExcitationGate(cirq.EigenGate):
         plus_one_component[3, 3] = plus_one_component[12, 12] = 0.5
         plus_one_component[3, 12] = plus_one_component[12, 3] = 0.5
 
-        return [(0, np.diag([1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1])),
-                (-1, minus_one_component), (1, plus_one_component)]
+        return [
+            (0, np.diag([1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1])),
+            (-1, minus_one_component),
+            (1, plus_one_component),
+        ]
 
-    def _apply_unitary_(self,
-                        args: cirq.ApplyUnitaryArgs) -> Optional[np.ndarray]:
+    def _apply_unitary_(self, args: cirq.ApplyUnitaryArgs) -> Optional[np.ndarray]:
         if cirq.is_parameterized(self):
             return None
         inner_matrix = cirq.unitary(cirq.rx(-2 * np.pi * self.exponent))
         a = args.subspace_index(0b0011)
         b = args.subspace_index(0b1100)
-        return cirq.apply_matrix_to_slices(args.target_tensor,
-                                           inner_matrix,
-                                           slices=[a, b],
-                                           out=args.available_buffer)
+        return cirq.apply_matrix_to_slices(
+            args.target_tensor, inner_matrix, slices=[a, b], out=args.available_buffer
+        )
 
-    def _with_exponent(self, exponent: Union[sympy.Symbol, float]
-                      ) -> 'DoubleExcitationGate':
+    def _with_exponent(self, exponent: Union[sympy.Symbol, float]) -> 'DoubleExcitationGate':
         return DoubleExcitationGate(exponent=exponent)
 
     def _decompose_(self, qubits):
         p, q, r, s = qubits
 
-        rq_phase_block = [cirq.Z(q)**0.125, cirq.CNOT(r, q), cirq.Z(q)**-0.125]
+        rq_phase_block = [cirq.Z(q) ** 0.125, cirq.CNOT(r, q), cirq.Z(q) ** -0.125]
 
-        srq_parity_transform = [
-            cirq.CNOT(s, r), cirq.CNOT(r, q),
-            cirq.CNOT(s, r)
-        ]
+        srq_parity_transform = [cirq.CNOT(s, r), cirq.CNOT(r, q), cirq.CNOT(s, r)]
 
-        phase_parity_block = [[
-            rq_phase_block, srq_parity_transform, rq_phase_block
-        ]]
+        phase_parity_block = [[rq_phase_block, srq_parity_transform, rq_phase_block]]
 
         yield cirq.CNOT(r, s)
         yield cirq.CNOT(q, p)
         yield cirq.CNOT(q, r)
-        yield cirq.X(q)**-self.exponent
+        yield cirq.X(q) ** -self.exponent
         yield phase_parity_block
 
         yield cirq.CNOT(p, q)
         yield cirq.X(q)
         yield phase_parity_block
-        yield cirq.X(q)**self.exponent
+        yield cirq.X(q) ** self.exponent
         yield phase_parity_block
         yield cirq.CNOT(p, q)
         yield cirq.X(q)
@@ -122,21 +116,20 @@ class DoubleExcitationGate(cirq.EigenGate):
         yield cirq.CNOT(q, r)
         yield cirq.CNOT(r, s)
 
-    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs
-                              ) -> cirq.CircuitDiagramInfo:
+    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs) -> cirq.CircuitDiagramInfo:
         if args.use_unicode_characters:
             wire_symbols = ('⇅', '⇅', '⇵', '⇵')
         else:
             # pylint: disable=anomalous-backslash-in-string
             wire_symbols = (r'/\ \/', r'/\ \/', '\/ /\\', '\/ /\\')
-        return cirq.CircuitDiagramInfo(wire_symbols=wire_symbols,
-                                       exponent=self._diagram_exponent(args))
+        return cirq.CircuitDiagramInfo(
+            wire_symbols=wire_symbols, exponent=self._diagram_exponent(args)
+        )
 
     def __repr__(self):
         if self.exponent == 1:
             return 'openfermion.DoubleExcitation'
-        return '(openfermion.DoubleExcitation**{})'.format(
-            proper_repr(self.exponent))
+        return '(openfermion.DoubleExcitation**{})'.format(proper_repr(self.exponent))
 
 
 DoubleExcitation = DoubleExcitationGate()

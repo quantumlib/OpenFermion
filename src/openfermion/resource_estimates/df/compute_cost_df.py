@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 """ Determine costs for DF decomposition in QC """
 from typing import Tuple
 import numpy as np
@@ -6,16 +6,18 @@ from numpy.lib.scimath import arccos, arcsin  # has analytc continuation to cplx
 from openfermion.resource_estimates.utils import QR, QI, power_two
 
 
-def compute_cost(n: int,
-                 lam: float,
-                 dE: float,
-                 L: int,
-                 Lxi: int,
-                 chi: int,
-                 beta: int,
-                 stps: int,
-                 verbose: bool = False) -> Tuple[int, int, int]:
-    """ Determine fault-tolerant costs using DF decomposition in quantum chem
+def compute_cost(
+    n: int,
+    lam: float,
+    dE: float,
+    L: int,
+    Lxi: int,
+    chi: int,
+    beta: int,
+    stps: int,
+    verbose: bool = False,
+) -> Tuple[int, int, int]:
+    """Determine fault-tolerant costs using DF decomposition in quantum chem
 
     Args:
         n (int) - the number of spin-orbitals
@@ -52,11 +54,30 @@ def compute_cost(n: int,
     oh = [0] * 20
     for p in range(20):
         # JJG note: arccos arg may be > 1
-        v = np.round(np.power(2,p+1) / (2 * np.pi) * arccos(np.power(2,nL) /\
-            np.sqrt((L + 1)/2**eta)/2))
-        oh[p] = np.real(stps * (1 / (np.sin(3 * arcsin(np.cos(v * 2 * np.pi / \
-            np.power(2,p+1)) * \
-            np.sqrt((L + 1)/2**eta) / np.power(2,nL)))**2) - 1) + 4 * (p + 1))
+        v = np.round(
+            np.power(2, p + 1)
+            / (2 * np.pi)
+            * arccos(np.power(2, nL) / np.sqrt((L + 1) / 2**eta) / 2)
+        )
+        oh[p] = np.real(
+            stps
+            * (
+                1
+                / (
+                    np.sin(
+                        3
+                        * arcsin(
+                            np.cos(v * 2 * np.pi / np.power(2, p + 1))
+                            * np.sqrt((L + 1) / 2**eta)
+                            / np.power(2, nL)
+                        )
+                    )
+                    ** 2
+                )
+                - 1
+            )
+            + 4 * (p + 1)
+        )
 
     # Bits of precision for rotation
     br = int(np.argmin(oh) + 1)
@@ -107,8 +128,7 @@ def compute_cost(n: int,
 
     # The cost of the QROMs and inverse QROMs for the state preparation, where
     # in the first one we need + n/2 to account for the one-electron terms.
-    cost3c = QR(Lxi + n // 2, bp2)[1] + QI(Lxi + n // 2)[1] + QR(
-        Lxi, bp2)[1] + QI(Lxi)[1]
+    cost3c = QR(Lxi + n // 2, bp2)[1] + QI(Lxi + n // 2)[1] + QR(Lxi, bp2)[1] + QI(Lxi)[1]
 
     # The inequality test and state preparations.
     cost3d = 4 * (nxi + chi)
@@ -120,8 +140,12 @@ def compute_cost(n: int,
     cost4ah = 4 * (nLxi - 1)
 
     # The costs of the QROMs and their inverses in steps 4 (b) and (g).
-    cost4bg = QR(Lxi + n // 2, n * beta // 2)[1] + QI(Lxi + n // 2)[1] + QR(
-        Lxi, n * beta // 2)[1] + QI(Lxi)[1]
+    cost4bg = (
+        QR(Lxi + n // 2, n * beta // 2)[1]
+        + QI(Lxi + n // 2)[1]
+        + QR(Lxi, n * beta // 2)[1]
+        + QI(Lxi)[1]
+    )
 
     # The cost of the controlled swaps based on the spin qubit in steps 4c and f
     cost4cf = 2 * n
@@ -202,8 +226,7 @@ def compute_cost(n: int,
         print("  [+] cost = ", cost)
         print("  [+] iters = ", iters)
 
-    ancilla_cost = ac1 + ac2 + ac3 + ac4 + ac5 + ac6 + ac8 + ac9 + ac10 + ac11\
-                 + ac12 + ac13
+    ancilla_cost = ac1 + ac2 + ac3 + ac4 + ac5 + ac6 + ac8 + ac9 + ac10 + ac11 + ac12 + ac13
 
     # Sanity checks before returning as int
     assert cost.is_integer()

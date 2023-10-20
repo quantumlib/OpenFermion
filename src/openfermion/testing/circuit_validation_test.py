@@ -14,8 +14,7 @@
 import cirq
 from openfermion import QubitOperator
 
-from openfermion.testing.circuit_validation import\
-    validate_trotterized_evolution
+from openfermion.testing.circuit_validation import validate_trotterized_evolution
 
 
 def test_checking_passes():
@@ -35,12 +34,8 @@ def test_checking_passes_twoops():
     z_rotation_op = anglez * QubitOperator('Z0')
     x_rotation_op = anglex * QubitOperator('X0')
     qubits = [cirq.GridQubit(0, 0)]
-    circuit = cirq.Circuit([
-        cirq.rz(-2 * anglez).on(qubits[0]),
-        cirq.rx(-2 * anglex).on(qubits[0])
-    ])
-    res = validate_trotterized_evolution(circuit,
-                                         [z_rotation_op, x_rotation_op], qubits)
+    circuit = cirq.Circuit([cirq.rz(-2 * anglez).on(qubits[0]), cirq.rx(-2 * anglex).on(qubits[0])])
+    res = validate_trotterized_evolution(circuit, [z_rotation_op, x_rotation_op], qubits)
     assert res is True
 
 

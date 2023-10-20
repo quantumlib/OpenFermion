@@ -18,15 +18,15 @@ import numpy
 from openfermion.ops.representations import DiagonalCoulombHamiltonian
 from openfermion.transforms import jordan_wigner
 from openfermion.circuits.lcu_util import (
-    lambda_norm, _discretize_probability_distribution,
+    lambda_norm,
+    _discretize_probability_distribution,
     _preprocess_for_efficient_roulette_selection,
-    preprocess_lcu_coefficients_for_reversible_sampling)
+    preprocess_lcu_coefficients_for_reversible_sampling,
+)
 
 
 class LambdaNormTest(unittest.TestCase):
-
     def test_random(self):
-
         # Create random DiagonalCoulombHamiltonian.
         n_qubits = 8
         random.seed(n_qubits)
@@ -38,8 +38,7 @@ class LambdaNormTest(unittest.TestCase):
                 two_body[p, q] = random.random()
         one_body += one_body.T
         two_body += two_body.T
-        diagonal_operator = DiagonalCoulombHamiltonian(one_body, two_body,
-                                                       random.random())
+        diagonal_operator = DiagonalCoulombHamiltonian(one_body, two_body, random.random())
 
         # Compute the lambda norm using expensive (reliable) method.
         qubit_operator = jordan_wigner(diagonal_operator)
@@ -50,7 +49,7 @@ class LambdaNormTest(unittest.TestCase):
         test_norm = lambda_norm(diagonal_operator)
 
         # Third norm.
-        third_norm = 0.
+        third_norm = 0.0
         for _, coefficient in qubit_operator.terms.items():
             third_norm += abs(coefficient)
 
@@ -60,18 +59,16 @@ class LambdaNormTest(unittest.TestCase):
 
 
 class DiscretizeDistributionTest(unittest.TestCase):
-
     def assertGetDiscretizedDistribution(self, probabilities, epsilon):
         total_probability = sum(probabilities)
-        numers, denom, mu = _discretize_probability_distribution(
-            probabilities, epsilon)
+        numers, denom, mu = _discretize_probability_distribution(probabilities, epsilon)
         self.assertEqual(sum(numers), denom)
         self.assertEqual(len(numers), len(probabilities))
         self.assertEqual(len(probabilities) * 2**mu, denom)
         for i in range(len(numers)):
-            self.assertAlmostEqual(numers[i] / denom,
-                                   probabilities[i] / total_probability,
-                                   delta=epsilon)
+            self.assertAlmostEqual(
+                numers[i] / denom, probabilities[i] / total_probability, delta=epsilon
+            )
         return numers, denom
 
     def test_fuzz(self):
@@ -79,46 +76,42 @@ class DiscretizeDistributionTest(unittest.TestCase):
         for _ in range(100):
             n = random.randint(1, 50)
             weights = [random.random() for _ in range(n)]
-            self.assertGetDiscretizedDistribution(weights,
-                                                  2**-random.randint(1, 20))
+            self.assertGetDiscretizedDistribution(weights, 2 ** -random.randint(1, 20))
 
     def test_known_discretizations(self):
-        self.assertEqual(self.assertGetDiscretizedDistribution([1], 0.25),
-                         ([4], 4))
+        self.assertEqual(self.assertGetDiscretizedDistribution([1], 0.25), ([4], 4))
 
-        self.assertEqual(self.assertGetDiscretizedDistribution([1], 0.125),
-                         ([8], 8))
+        self.assertEqual(self.assertGetDiscretizedDistribution([1], 0.125), ([8], 8))
 
         self.assertEqual(
-            self.assertGetDiscretizedDistribution([0.1, 0.1, 0.1], 0.25),
-            ([2, 2, 2], 6))
+            self.assertGetDiscretizedDistribution([0.1, 0.1, 0.1], 0.25), ([2, 2, 2], 6)
+        )
 
         self.assertEqual(
-            self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.25),
-            ([2, 2, 2], 6))
+            self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.25), ([2, 2, 2], 6)
+        )
 
         self.assertEqual(
-            self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.1),
-            ([4, 4, 4], 12))
+            self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.1), ([4, 4, 4], 12)
+        )
 
         self.assertEqual(
-            self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.05),
-            ([7, 9, 8], 24))
+            self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.05), ([7, 9, 8], 24)
+        )
 
         self.assertEqual(
-            self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.01),
-            ([58, 70, 64], 192))
+            self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.01), ([58, 70, 64], 192)
+        )
 
         self.assertEqual(
             self.assertGetDiscretizedDistribution([0.09, 0.11, 0.1], 0.00335),
-            ([115, 141, 128], 384))
+            ([115, 141, 128], 384),
+        )
 
 
 class PreprocessForEfficientRouletteSelectionTest(unittest.TestCase):
-
     def assertPreprocess(self, weights):
-        alternates, keep_chances = (
-            _preprocess_for_efficient_roulette_selection(weights))
+        alternates, keep_chances = _preprocess_for_efficient_roulette_selection(weights)
 
         self.assertEqual(len(alternates), len(keep_chances))
 
@@ -148,36 +141,28 @@ class PreprocessForEfficientRouletteSelectionTest(unittest.TestCase):
 
     def test_already_uniform(self):
         self.assertEqual(self.assertPreprocess(weights=[1]), ([0], [0]))
-        self.assertEqual(self.assertPreprocess(weights=[1, 1]),
-                         ([0, 1], [0, 0]))
-        self.assertEqual(self.assertPreprocess(weights=[1, 1, 1]),
-                         ([0, 1, 2], [0, 0, 0]))
-        self.assertEqual(self.assertPreprocess(weights=[2, 2, 2]),
-                         ([0, 1, 2], [0, 0, 0]))
+        self.assertEqual(self.assertPreprocess(weights=[1, 1]), ([0, 1], [0, 0]))
+        self.assertEqual(self.assertPreprocess(weights=[1, 1, 1]), ([0, 1, 2], [0, 0, 0]))
+        self.assertEqual(self.assertPreprocess(weights=[2, 2, 2]), ([0, 1, 2], [0, 0, 0]))
 
     def test_donation(self):
         # v2 donates 1 to v0.
-        self.assertEqual(self.assertPreprocess(weights=[1, 2, 3]),
-                         ([2, 1, 2], [1, 0, 0]))
+        self.assertEqual(self.assertPreprocess(weights=[1, 2, 3]), ([2, 1, 2], [1, 0, 0]))
         # v0 donates 1 to v1.
-        self.assertEqual(self.assertPreprocess(weights=[3, 1, 2]),
-                         ([0, 0, 2], [0, 1, 0]))
+        self.assertEqual(self.assertPreprocess(weights=[3, 1, 2]), ([0, 0, 2], [0, 1, 0]))
         # v0 donates 1 to v1, then 2 to v2.
-        self.assertEqual(self.assertPreprocess(weights=[5, 1, 0]),
-                         ([0, 0, 0], [0, 1, 0]))
+        self.assertEqual(self.assertPreprocess(weights=[5, 1, 0]), ([0, 0, 0], [0, 1, 0]))
 
     def test_over_donation(self):
         # v0 donates 2 to v1, leaving v0 needy, then v2 donates 1 to v0.
-        self.assertEqual(self.assertPreprocess(weights=[3, 0, 3]),
-                         ([2, 0, 2], [1, 0, 0]))
+        self.assertEqual(self.assertPreprocess(weights=[3, 0, 3]), ([2, 0, 2], [1, 0, 0]))
 
 
 class PreprocessLCUCoefficientsForReversibleSamplingTest(unittest.TestCase):
-
     def assertPreprocess(self, lcu_coefs, epsilon):
-        alternates, keep_numers, mu = (
-            preprocess_lcu_coefficients_for_reversible_sampling(
-                lcu_coefs, epsilon))
+        alternates, keep_numers, mu = preprocess_lcu_coefficients_for_reversible_sampling(
+            lcu_coefs, epsilon
+        )
 
         n = len(lcu_coefs)
         keep_denom = 2**mu
@@ -192,9 +177,7 @@ class PreprocessLCUCoefficientsForReversibleSamplingTest(unittest.TestCase):
 
         total = sum(lcu_coefs)
         for i in range(n):
-            self.assertAlmostEqual(out_distribution[i],
-                                   lcu_coefs[i] / total,
-                                   delta=epsilon)
+            self.assertAlmostEqual(out_distribution[i], lcu_coefs[i] / total, delta=epsilon)
 
         return alternates, keep_numers, keep_denom
 
@@ -204,11 +187,11 @@ class PreprocessLCUCoefficientsForReversibleSamplingTest(unittest.TestCase):
             n = random.randint(1, 50)
             weights = [random.randint(0, 100) for _ in range(n)]
             weights[-1] += n - sum(weights) % n  # Ensure multiple of length.
-            self.assertPreprocess(weights, 2**-random.randint(1, 20))
+            self.assertPreprocess(weights, 2 ** -random.randint(1, 20))
 
     def test_known(self):
-        self.assertEqual(self.assertPreprocess([1, 2], epsilon=0.01),
-                         ([1, 1], [43, 0], 64))
+        self.assertEqual(self.assertPreprocess([1, 2], epsilon=0.01), ([1, 1], [43, 0], 64))
 
-        self.assertEqual(self.assertPreprocess([1, 2, 3], epsilon=0.01),
-                         ([2, 1, 2], [32, 0, 0], 64))
+        self.assertEqual(
+            self.assertPreprocess([1, 2, 3], epsilon=0.01), ([2, 1, 2], [32, 0, 0], 64)
+        )

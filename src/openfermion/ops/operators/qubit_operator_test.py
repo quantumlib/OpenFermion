@@ -14,28 +14,27 @@
 import numpy
 import pytest
 
-from openfermion.ops.operators.qubit_operator import (_PAULI_OPERATOR_PRODUCTS,
-                                                      QubitOperator)
+from openfermion.ops.operators.qubit_operator import _PAULI_OPERATOR_PRODUCTS, QubitOperator
 
 
 def test_pauli_operator_product():
     correct = {
-        ('I', 'I'): (1., 'I'),
-        ('I', 'X'): (1., 'X'),
-        ('X', 'I'): (1., 'X'),
-        ('I', 'Y'): (1., 'Y'),
-        ('Y', 'I'): (1., 'Y'),
-        ('I', 'Z'): (1., 'Z'),
-        ('Z', 'I'): (1., 'Z'),
-        ('X', 'X'): (1., 'I'),
-        ('Y', 'Y'): (1., 'I'),
-        ('Z', 'Z'): (1., 'I'),
-        ('X', 'Y'): (1.j, 'Z'),
-        ('X', 'Z'): (-1.j, 'Y'),
-        ('Y', 'X'): (-1.j, 'Z'),
-        ('Y', 'Z'): (1.j, 'X'),
-        ('Z', 'X'): (1.j, 'Y'),
-        ('Z', 'Y'): (-1.j, 'X')
+        ('I', 'I'): (1.0, 'I'),
+        ('I', 'X'): (1.0, 'X'),
+        ('X', 'I'): (1.0, 'X'),
+        ('I', 'Y'): (1.0, 'Y'),
+        ('Y', 'I'): (1.0, 'Y'),
+        ('I', 'Z'): (1.0, 'Z'),
+        ('Z', 'I'): (1.0, 'Z'),
+        ('X', 'X'): (1.0, 'I'),
+        ('Y', 'Y'): (1.0, 'I'),
+        ('Z', 'Z'): (1.0, 'I'),
+        ('X', 'Y'): (1.0j, 'Z'),
+        ('X', 'Z'): (-1.0j, 'Y'),
+        ('Y', 'X'): (-1.0j, 'Z'),
+        ('Y', 'Z'): (1.0j, 'X'),
+        ('Z', 'X'): (1.0j, 'Y'),
+        ('Z', 'Y'): (-1.0j, 'X'),
     }
     assert _PAULI_OPERATOR_PRODUCTS == correct
 
@@ -56,14 +55,13 @@ def test_init_simplify():
     assert QubitOperator("Y3 Y3 Y3 Y3 Y3") == QubitOperator("Y3")
     assert QubitOperator("Y4 Y4 Y4 Y4 Y4 Y4") == QubitOperator.identity()
     assert QubitOperator("X0 Y1 Y0 X1") == QubitOperator("Z0 Z1")
-    assert QubitOperator("X0 Y1 Z3 X2 Z3 Y0") == QubitOperator("Z0 Y1 X2",
-                                                               coefficient=1j)
+    assert QubitOperator("X0 Y1 Z3 X2 Z3 Y0") == QubitOperator("Z0 Y1 X2", coefficient=1j)
 
 
 def test_imul_inplace():
     qubit_op = QubitOperator("X1")
     prev_id = id(qubit_op)
-    qubit_op *= 3.
+    qubit_op *= 3.0
     assert id(qubit_op) == prev_id
 
 
@@ -72,10 +70,7 @@ def test_different_indices_commute():
     assert qubit_op.different_indices_commute is True
 
 
-@pytest.mark.parametrize(
-    "multiplier",
-    [0.5, 0.6j, numpy.float64(2.303),
-     numpy.complex128(-1j)])
+@pytest.mark.parametrize("multiplier", [0.5, 0.6j, numpy.float64(2.303), numpy.complex128(-1j)])
 def test_imul_scalar(multiplier):
     loc_op = ((1, 'X'), (2, 'Y'))
     qubit_op = QubitOperator(loc_op)
@@ -84,7 +79,7 @@ def test_imul_scalar(multiplier):
 
 
 def test_imul_qubit_op():
-    op1 = QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.j)
+    op1 = QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.0j)
     op2 = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
     op1 *= op2
     correct_term = ((0, 'Y'), (1, 'X'), (3, 'Z'), (11, 'X'))
@@ -132,12 +127,12 @@ def test_mul_bad_multiplier():
 
 
 def test_mul_out_of_place():
-    op1 = QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.j)
+    op1 = QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.0j)
     op2 = QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
     op3 = op1 * op2
-    correct_coefficient = 1.j * 3.0j * 0.5
+    correct_coefficient = 1.0j * 3.0j * 0.5
     correct_term = ((0, 'Y'), (1, 'X'), (3, 'Z'), (11, 'X'))
-    assert op1 == QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.j)
+    assert op1 == QubitOperator(((0, 'Y'), (3, 'X'), (8, 'Z'), (11, 'X')), 3.0j)
     assert op2 == QubitOperator(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
     assert op3 == QubitOperator(correct_term, correct_coefficient)
 
@@ -169,8 +164,8 @@ def test_renormalize():
     operator += QubitOperator(((2, 'Z'), (3, 'Y')), 1)
     operator.renormalize()
     for term in operator.terms:
-        assert operator.terms[term] == pytest.approx(1 / numpy.sqrt(2.))
-    assert operator.induced_norm(2) == pytest.approx(1.)
+        assert operator.terms[term] == pytest.approx(1 / numpy.sqrt(2.0))
+    assert operator.induced_norm(2) == pytest.approx(1.0)
 
 
 def test_get_operators_empty():

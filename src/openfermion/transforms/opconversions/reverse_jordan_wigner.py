@@ -11,7 +11,7 @@
 #   limitations under the License.
 """Reverse Jordan-Wigner transform on QubitOperators."""
 
-from openfermion.ops.operators import (FermionOperator, QubitOperator)
+from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.hamiltonians.special_operators import number_operator
 from openfermion.utils.operator_utils import count_qubits
 
@@ -53,19 +53,19 @@ def reverse_jordan_wigner(qubit_operator, n_qubits=None):
             working_term = QubitOperator(term)
             pauli_operator = term[-1]
             while pauli_operator is not None:
-
                 # Handle Pauli Z.
                 if pauli_operator[1] == 'Z':
-                    transformed_pauli = FermionOperator(
-                        ()) + number_operator(n_qubits, pauli_operator[0], -2.)
+                    transformed_pauli = FermionOperator(()) + number_operator(
+                        n_qubits, pauli_operator[0], -2.0
+                    )
 
                 # Handle Pauli X and Y.
                 else:
                     raising_term = FermionOperator(((pauli_operator[0], 1),))
                     lowering_term = FermionOperator(((pauli_operator[0], 0),))
                     if pauli_operator[1] == 'Y':
-                        raising_term *= 1.j
-                        lowering_term *= -1.j
+                        raising_term *= 1.0j
+                        lowering_term *= -1.0j
 
                     transformed_pauli = raising_term + lowering_term
 
@@ -75,7 +75,7 @@ def reverse_jordan_wigner(qubit_operator, n_qubits=None):
                         working_term = z_term * working_term
                     term_key = list(working_term.terms)[0]
                     transformed_pauli *= working_term.terms[term_key]
-                    working_term.terms[list(working_term.terms)[0]] = 1.
+                    working_term.terms[list(working_term.terms)[0]] = 1.0
 
                 # Get next non-identity operator acting below 'working_qubit'.
                 assert len(working_term.terms) == 1

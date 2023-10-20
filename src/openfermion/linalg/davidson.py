@@ -22,23 +22,19 @@ import scipy.sparse
 import scipy.sparse.linalg
 
 from openfermion.linalg.sparse_tools import get_linear_qubit_operator_diagonal
-from openfermion.linalg.linear_qubit_operator import \
-    generate_linear_qubit_operator
+from openfermion.linalg.linear_qubit_operator import generate_linear_qubit_operator
 
 
 class DavidsonError(Exception):
     """Exceptions."""
+
     pass
 
 
 class DavidsonOptions(object):
     """Davidson algorithm iteration options."""
 
-    def __init__(self,
-                 max_subspace=100,
-                 max_iterations=300,
-                 eps=1e-6,
-                 real_only=False):
+    def __init__(self, max_subspace=100, max_iterations=300, eps=1e-6, real_only=False):
         """
         Args:
             max_subspace(int): Max number of vectors in the auxiliary subspace.
@@ -51,9 +47,10 @@ class DavidsonOptions(object):
                 complex.
         """
         if max_subspace <= 2 or max_iterations <= 0 or eps <= 0:
-            raise ValueError('Invalid values for max_subspace, max_iterations '
-                             'and/ or eps: ({}, {}, {}).'.format(
-                                 max_subspace, max_iterations, eps))
+            raise ValueError(
+                'Invalid values for max_subspace, max_iterations '
+                'and/ or eps: ({}, {}, {}).'.format(max_subspace, max_iterations, eps)
+            )
 
         self.max_subspace = max_subspace
         self.max_iterations = max_iterations
@@ -87,11 +84,11 @@ class Davidson(object):
             options = DavidsonOptions()
 
         if not isinstance(
-                linear_operator,
-            (scipy.sparse.linalg.LinearOperator, scipy.sparse.spmatrix)):
+            linear_operator, (scipy.sparse.linalg.LinearOperator, scipy.sparse.spmatrix)
+        ):
             raise ValueError(
-                'linear_operator is not a LinearOperator: {}.'.format(
-                    type(linear_operator)))
+                'linear_operator is not a LinearOperator: {}.'.format(type(linear_operator))
+            )
 
         self.linear_operator = linear_operator
         self.linear_operator_diagonal = linear_operator_diagonal
@@ -125,21 +122,25 @@ class Davidson(object):
         # 1. Checks for number of states desired, should be in the range of
         # [0, max_subspace).
         if n_lowest <= 0 or n_lowest >= self.options.max_subspace:
-            raise ValueError('n_lowest {} is supposed to be in [1, {}).'.format(
-                n_lowest, self.options.max_subspace))
+            raise ValueError(
+                'n_lowest {} is supposed to be in [1, {}).'.format(
+                    n_lowest, self.options.max_subspace
+                )
+            )
 
         # 2. Checks for initial guess vectors' dimension is the same to that of
         # the operator.
         if initial_guess is None:
             initial_guess = generate_random_vectors(
-                len(self.linear_operator_diagonal),
-                n_lowest,
-                real_only=self.options.real_only)
+                len(self.linear_operator_diagonal), n_lowest, real_only=self.options.real_only
+            )
         if initial_guess.shape[0] != len(self.linear_operator_diagonal):
             raise ValueError(
                 'Guess vectors have a different dimension with '
                 'linear opearator diagonal elements: {} != {}.'.format(
-                    initial_guess.shape[1], len(self.linear_operator_diagonal)))
+                    initial_guess.shape[1], len(self.linear_operator_diagonal)
+                )
+            )
 
         # 3. Makes sure real guess vector if real_only is specified.
         if self.options.real_only:
@@ -149,27 +150,35 @@ class Davidson(object):
 
         # 4. Checks for non-trivial (non-zero) initial guesses.
         if numpy.max(numpy.abs(initial_guess)) < self.options.eps:
-            raise ValueError('Guess vectors are all zero! {}'.format(
-                initial_guess.shape))
+            raise ValueError('Guess vectors are all zero! {}'.format(initial_guess.shape))
         initial_guess = scipy.linalg.orth(initial_guess)
 
         # 5. Makes sure number of initial guess vector is at least n_lowest.
         if initial_guess.shape[1] < n_lowest:
             initial_guess = append_random_vectors(
-                initial_guess,
-                n_lowest - initial_guess.shape[1],
-                real_only=self.options.real_only)
+                initial_guess, n_lowest - initial_guess.shape[1], real_only=self.options.real_only
+            )
 
         success = False
         num_iterations = 0
         guess_v = initial_guess
         guess_mv = None
         max_iterations = max_iterations or self.options.max_iterations
-        while (num_iterations < max_iterations and not success):
-            (eigen_values, eigen_vectors, mat_eigen_vectors, max_trial_error,
-             guess_v, guess_mv) = self._iterate(n_lowest, guess_v, guess_mv)
-            logging.info("Eigenvalues for iteration %d: %s, error is %f.",
-                         num_iterations, eigen_values, max_trial_error)
+        while num_iterations < max_iterations and not success:
+            (
+                eigen_values,
+                eigen_vectors,
+                mat_eigen_vectors,
+                max_trial_error,
+                guess_v,
+                guess_mv,
+            ) = self._iterate(n_lowest, guess_v, guess_mv)
+            logging.info(
+                "Eigenvalues for iteration %d: %s, error is %f.",
+                num_iterations,
+                eigen_values,
+                max_trial_error,
+            )
 
             if max_trial_error < self.options.eps:
                 success = True
@@ -185,8 +194,7 @@ class Davidson(object):
             count_mvs = guess_mv.shape[1]
             guess_v = orthonormalize(guess_v, count_mvs, self.options.eps)
             if guess_v.shape[1] <= count_mvs:
-                guess_v = append_random_vectors(
-                    guess_v, n_lowest, real_only=self.options.real_only)
+                guess_v = append_random_vectors(guess_v, n_lowest, real_only=self.options.real_only)
 
             # Limits number of vectors to self.options.max_subspace, in this
             # case, keep the following:
@@ -196,27 +204,25 @@ class Davidson(object):
             # 3) new search directions which will be used for improvement for
             #    the next iteration.
             if guess_v.shape[1] >= self.options.max_subspace:
-                guess_v = numpy.hstack([
-                    eigen_vectors,
-                    guess_v[:, count_mvs:],
-                ])
+                guess_v = numpy.hstack([eigen_vectors, guess_v[:, count_mvs:]])
                 guess_mv = mat_eigen_vectors
 
                 if self.options.real_only:
-                    if (not numpy.allclose(numpy.real(guess_v), guess_v) or
-                            not numpy.allclose(numpy.real(guess_mv), guess_mv)):
+                    if not numpy.allclose(numpy.real(guess_v), guess_v) or not numpy.allclose(
+                        numpy.real(guess_mv), guess_mv
+                    ):
                         # Forces recalculation for matrix multiplication with
                         # vectors.
                         guess_mv = None
 
             num_iterations += 1
 
-        if (self.options.real_only and
-                not numpy.allclose(numpy.real(eigen_vectors), eigen_vectors)):
+        if self.options.real_only and not numpy.allclose(numpy.real(eigen_vectors), eigen_vectors):
             warnings.warn(
                 'Unable to get real only eigenvectors, return '
-                'complex vectors instead with success state {}.'.format(
-                    success), RuntimeWarning)
+                'complex vectors instead with success state {}.'.format(success),
+                RuntimeWarning,
+            )
         return success, eigen_values, eigen_vectors
 
     def _iterate(self, n_lowest, guess_v, guess_mv=None):
@@ -250,11 +256,9 @@ class Davidson(object):
 
         # Note that getting guess_mv is the most expensive step.
         if guess_mv.shape[1] < dimension:
-            guess_mv = numpy.hstack([
-                guess_mv,
-                self.linear_operator.dot(
-                    guess_v[:, guess_mv.shape[1]:dimension])
-            ])
+            guess_mv = numpy.hstack(
+                [guess_mv, self.linear_operator.dot(guess_v[:, guess_mv.shape[1] : dimension])]
+            )
         guess_vmv = numpy.dot(guess_v.conj().T, guess_mv)
 
         # Gets new set of eigenvalues and eigenvectors in the vmv space, with a
@@ -280,11 +284,11 @@ class Davidson(object):
         trial_error = trial_mv - trial_v * trial_lambda
 
         new_directions, max_trial_error = self._get_new_directions(
-            trial_error, trial_lambda, trial_v)
+            trial_error, trial_lambda, trial_v
+        )
         if new_directions:
             guess_v = numpy.hstack([guess_v, numpy.stack(new_directions).T])
-        return (trial_lambda, trial_v, trial_mv, max_trial_error, guess_v,
-                guess_mv)
+        return (trial_lambda, trial_v, trial_mv, max_trial_error, guess_v, guess_mv)
 
     def _get_new_directions(self, error_v, trial_lambda, trial_v):
         """Gets new directions from error vectors.
@@ -319,8 +323,7 @@ class Davidson(object):
                 # search for new directions.
                 continue
 
-            max_trial_error = max(max_trial_error,
-                                  numpy.linalg.norm(current_error_v))
+            max_trial_error = max(max_trial_error, numpy.linalg.norm(current_error_v))
             diagonal_inverse = numpy.ones(origonal_dimension)
             for j in range(origonal_dimension):
                 # Makes sure error vectors are bounded.
@@ -331,9 +334,11 @@ class Davidson(object):
                     diagonal_inverse[j] /= self.options.eps
             diagonal_inverse_error = diagonal_inverse * current_error_v
             diagonal_inverse_trial = diagonal_inverse * trial_v[:, i]
-            new_direction = -current_error_v + (trial_v[:, i] * numpy.dot(
-                trial_v[:, i].conj(), diagonal_inverse_error) / numpy.dot(
-                    trial_v[:, i].conj(), diagonal_inverse_trial))
+            new_direction = -current_error_v + (
+                trial_v[:, i]
+                * numpy.dot(trial_v[:, i].conj(), diagonal_inverse_error)
+                / numpy.dot(trial_v[:, i].conj(), diagonal_inverse_trial)
+            )
 
             new_directions.append(new_direction)
         return new_directions, max_trial_error
@@ -353,7 +358,8 @@ class QubitDavidson(Davidson):
         super(QubitDavidson, self).__init__(
             generate_linear_qubit_operator(qubit_operator, n_qubits, options),
             get_linear_qubit_operator_diagonal(qubit_operator, n_qubits),
-            options=options)
+            options=options,
+        )
 
 
 class SparseDavidson(Davidson):
@@ -365,9 +371,9 @@ class SparseDavidson(Davidson):
             sparse_matrix(scipy.sparse.spmatrix): A sparse matrix in scipy.
             options(DavidsonOptions): Iteration options.
         """
-        super(SparseDavidson, self).__init__(sparse_matrix,
-                                             sparse_matrix.diagonal(),
-                                             options=options)
+        super(SparseDavidson, self).__init__(
+            sparse_matrix, sparse_matrix.diagonal(), options=options
+        )
 
 
 def generate_random_vectors(row, col, real_only=False):
@@ -412,11 +418,14 @@ def append_random_vectors(vectors, col, max_trial=3, real_only=False):
     while vector_columns < total_columns:
         num_trial += 1
 
-        vectors = numpy.hstack([
-            vectors,
-            generate_random_vectors(vectors.shape[0],
-                                    total_columns - vector_columns, real_only)
-        ])
+        vectors = numpy.hstack(
+            [
+                vectors,
+                generate_random_vectors(
+                    vectors.shape[0], total_columns - vector_columns, real_only
+                ),
+            ]
+        )
         vectors = orthonormalize(vectors, vector_columns)
 
         # Checks whether there are any new vectors added successfully.
@@ -424,8 +433,9 @@ def append_random_vectors(vectors, col, max_trial=3, real_only=False):
             if num_trial > max_trial:
                 warnings.warn(
                     'Unable to generate specified number of random '
-                    'vectors {}: returning {} in total.'.format(
-                        col, vector_columns), RuntimeWarning)
+                    'vectors {}: returning {} in total.'.format(col, vector_columns),
+                    RuntimeWarning,
+                )
                 break
         else:
             num_trial = 1
@@ -456,13 +466,11 @@ def orthonormalize(vectors, num_orthonormals=1, eps=1e-6):
         vector_i = vectors[:, i]
         # Makes sure vector_i is orthogonal to all processed vectors.
         for j in range(i):
-            vector_i -= ortho_normals[:, j] * numpy.dot(
-                ortho_normals[:, j].conj(), vector_i)
+            vector_i -= ortho_normals[:, j] * numpy.dot(ortho_normals[:, j].conj(), vector_i)
 
         # Makes sure vector_i is normalized.
         if numpy.max(numpy.abs(vector_i)) < eps:
             continue
-        ortho_normals[:, count_orthonormals] = (vector_i /
-                                                numpy.linalg.norm(vector_i))
+        ortho_normals[:, count_orthonormals] = vector_i / numpy.linalg.norm(vector_i)
         count_orthonormals += 1
     return ortho_normals[:, :count_orthonormals]

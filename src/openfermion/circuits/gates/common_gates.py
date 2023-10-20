@@ -57,10 +57,9 @@ class FSwapPowGate(cirq.EigenGate, cirq.InterchangeableQubitsGate):
                        [0, -0.5, 0.5, 0],
                        [0, 0, 0, 1]])),
         ]
-        #yapf: enable
+        # yapf: enable
 
-    def _apply_unitary_(self,
-                        args: cirq.ApplyUnitaryArgs) -> Optional[np.ndarray]:
+    def _apply_unitary_(self, args: cirq.ApplyUnitaryArgs) -> Optional[np.ndarray]:
         if self.exponent != 1:
             return NotImplemented
 
@@ -73,14 +72,12 @@ class FSwapPowGate(cirq.EigenGate, cirq.InterchangeableQubitsGate):
         args.target_tensor[ii] *= -1
         return args.target_tensor
 
-    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs
-                              ) -> cirq.CircuitDiagramInfo:
+    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs) -> cirq.CircuitDiagramInfo:
         if args.use_unicode_characters:
             symbols = '×ᶠ', '×ᶠ'
         else:
             symbols = 'fswap', 'fswap'
-        return cirq.CircuitDiagramInfo(wire_symbols=symbols,
-                                       exponent=self._diagram_exponent(args))
+        return cirq.CircuitDiagramInfo(wire_symbols=symbols, exponent=self._diagram_exponent(args))
 
     def __str__(self) -> str:
         if self.exponent == 1:
@@ -114,7 +111,7 @@ def Rzz(rads: float) -> cirq.ZZPowGate:
 def rot11(rads: float) -> cirq.CZPowGate:
     """Phases the |11> state of two qubits by e^{i rads}."""
     pi = sympy.pi if isinstance(rads, sympy.Basic) else np.pi
-    return cirq.CZ**(rads / pi)
+    return cirq.CZ ** (rads / pi)
 
 
 FSWAP = FSwapPowGate()

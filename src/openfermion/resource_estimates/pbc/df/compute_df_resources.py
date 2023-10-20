@@ -18,14 +18,10 @@ from sympy import factorint
 
 from openfermion.resource_estimates.utils import QI
 
-from openfermion.resource_estimates.pbc.resources import (
-    ResourceEstimates,
-    QR3,
-)
+from openfermion.resource_estimates.pbc.resources import ResourceEstimates, QR3
 
 
-def compute_beta_for_resources(num_spin_orbs: int, num_kpts: int,
-                               de_for_qpe: float):
+def compute_beta_for_resources(num_spin_orbs: int, num_kpts: int, de_for_qpe: float):
     """Compute beta (number of bits for controlled rotations).
 
     Uses expression from https://arxiv.org/pdf/2007.14460.pdf.
@@ -39,14 +35,14 @@ def compute_beta_for_resources(num_spin_orbs: int, num_kpts: int,
 
 
 def compute_cost(
-        num_spin_orbs: int,
-        lambda_tot: float,
-        num_aux: int,
-        num_eig: int,
-        kmesh: List[int],
-        dE_for_qpe: float = 0.0016,
-        chi: int = 10,
-        beta: Union[int, None] = None,
+    num_spin_orbs: int,
+    lambda_tot: float,
+    num_aux: int,
+    num_eig: int,
+    kmesh: List[int],
+    dE_for_qpe: float = 0.0016,
+    chi: int = 10,
+    beta: Union[int, None] = None,
 ) -> ResourceEstimates:
     """Determine fault-tolerant costs using double factorized Hamiltonian.
 
@@ -95,26 +91,24 @@ def compute_cost(
         steps=steps,
     )
     estimates = ResourceEstimates(
-        toffolis_per_step=final_cost[0],
-        total_toffolis=final_cost[1],
-        logical_qubits=final_cost[2],
+        toffolis_per_step=final_cost[0], total_toffolis=final_cost[1], logical_qubits=final_cost[2]
     )
     return estimates
 
 
 def _compute_cost(
-        n: int,
-        lam: float,
-        dE: float,
-        L: int,
-        Lxi: int,
-        chi: int,
-        beta: int,
-        Nkx: int,
-        Nky: int,
-        Nkz: int,
-        steps: int,
-        verbose: bool = False,
+    n: int,
+    lam: float,
+    dE: float,
+    L: int,
+    Lxi: int,
+    chi: int,
+    beta: int,
+    Nkx: int,
+    Nky: int,
+    Nkz: int,
+    steps: int,
+    verbose: bool = False,
 ) -> Tuple[int, int, int]:
     """Determine fault-tolerant costs using DF decomposition.
 
@@ -139,8 +133,11 @@ def _compute_cost(
         total_cost: Total number of Toffolis
         ancilla_cost: Total ancilla cost
     """
-    nNk = (max(np.ceil(np.log2(Nkx)), 1) + max(np.ceil(np.log2(Nky)), 1) +
-           max(np.ceil(np.log2(Nkz)), 1))
+    nNk = (
+        max(np.ceil(np.log2(Nkx)), 1)
+        + max(np.ceil(np.log2(Nky)), 1)
+        + max(np.ceil(np.log2(Nkz)), 1)
+    )
     Nk = Nkx * Nky * Nkz
 
     # The number of bits used for the second register.
@@ -162,11 +159,29 @@ def _compute_cost(
     oh = [0] * 20
     for p in range(20):
         v = np.round(
-            np.power(2, p + 1) / (2 * np.pi) *
-            arccos(np.power(2, nL) / np.sqrt((L + 1) / 2**eta) / 2))
-        oh[p] = np.real(steps * (1 / (np.sin(3 * arcsin(
-            np.cos(v * 2 * np.pi / np.power(2, p + 1)) * np.sqrt(
-                (L + 1) / 2**eta) / np.power(2, nL)))**2) - 1) + 4 * (p + 1))
+            np.power(2, p + 1)
+            / (2 * np.pi)
+            * arccos(np.power(2, nL) / np.sqrt((L + 1) / 2**eta) / 2)
+        )
+        oh[p] = np.real(
+            steps
+            * (
+                1
+                / (
+                    np.sin(
+                        3
+                        * arcsin(
+                            np.cos(v * 2 * np.pi / np.power(2, p + 1))
+                            * np.sqrt((L + 1) / 2**eta)
+                            / np.power(2, nL)
+                        )
+                    )
+                    ** 2
+                )
+                - 1
+            )
+            + 4 * (p + 1)
+        )
 
     # Bits of precision for rotation
     br = int(np.argmin(oh) + 1)
@@ -218,8 +233,9 @@ def _compute_cost(
 
     # The cost of the QROMs and inverse QROMs for the state preparation, where
     # in the first one we need + n/2 to account for the one-electron terms.
-    cost3c = (QR3(Lxi + Nk * n // 2, bp2)[1] + QI(Lxi + Nk * n // 2)[1] +
-              QR3(Lxi, bp2)[1] + QI(Lxi)[1])
+    cost3c = (
+        QR3(Lxi + Nk * n // 2, bp2)[1] + QI(Lxi + Nk * n // 2)[1] + QR3(Lxi, bp2)[1] + QI(Lxi)[1]
+    )
 
     # The inequality test and state preparations.
     cost3d = 4 * (nxi + chi)
@@ -231,8 +247,12 @@ def _compute_cost(
     cost4ah = 4 * (nLxi - 1)
 
     # The costs of the QROMs and their inverses in steps 4 (b) and (g).
-    cost4bg = (QR3(Lxi + Nk * n // 2, 2 * n * beta + nNk)[1] +
-               QI(Lxi + Nk * n // 2)[1] + QR3(Lxi, 4 * n)[1] + QI(Lxi)[1])
+    cost4bg = (
+        QR3(Lxi + Nk * n // 2, 2 * n * beta + nNk)[1]
+        + QI(Lxi + Nk * n // 2)[1]
+        + QR3(Lxi, 4 * n)[1]
+        + QI(Lxi)[1]
+    )
 
     # The cost of the controlled swaps based on the spin qubit in steps 4c and f
     cost4cf = 2 * n * Nk
@@ -247,11 +267,11 @@ def _compute_cost(
     )  # extra cost of swapping into working registers and computing k-Q.
 
     # (*Adjustment for modular arithmetic costs.*)
-    if Nkx == 2**np.ceil(np.log2(Nkx)):
+    if Nkx == 2 ** np.ceil(np.log2(Nkx)):
         cost4e = cost4e - 2 * np.ceil(np.log2(Nkx))
-    if Nky == 2**np.ceil(np.log2(Nky)):
+    if Nky == 2 ** np.ceil(np.log2(Nky)):
         cost4e = cost4e - 2 * np.ceil(np.log2(Nky))
-    if Nkz == 2**np.ceil(np.log2(Nkz)):
+    if Nkz == 2 ** np.ceil(np.log2(Nkz)):
         cost4e = cost4e - 2 * np.ceil(np.log2(Nkz))
 
     # This is the cost of the controlled rotations for step 4.
@@ -327,8 +347,7 @@ def _compute_cost(
         print("  [+] cost = ", cost)
         print("  [+] iters = ", iters)
 
-    ancilla_cost = (ac1 + ac2 + ac3 + ac4 + ac5 + ac6 + ac8 + ac9 + ac10 +
-                    ac11 + ac12 + ac13 + ac14)
+    ancilla_cost = ac1 + ac2 + ac3 + ac4 + ac5 + ac6 + ac8 + ac9 + ac10 + ac11 + ac12 + ac13 + ac14
 
     # Sanity checks before returning as int
     assert cost.is_integer()

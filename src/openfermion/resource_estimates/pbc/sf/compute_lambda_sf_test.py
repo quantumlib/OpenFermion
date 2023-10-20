@@ -15,26 +15,23 @@ import numpy as np
 import pytest
 
 from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from ase.build import bulk
 
     from pyscf.pbc import gto, scf, mp
     from pyscf.pbc.tools import pyscf_ase
 
-    from openfermion.resource_estimates.pbc.sf.compute_lambda_sf import (
-        compute_lambda,)
-    from openfermion.resource_estimates.pbc.sf.sf_integrals import (
-        SingleFactorization,)
+    from openfermion.resource_estimates.pbc.sf.compute_lambda_sf import compute_lambda
+    from openfermion.resource_estimates.pbc.sf.sf_integrals import SingleFactorization
     from openfermion.resource_estimates.pbc.hamiltonian import (
         build_hamiltonian,
         cholesky_from_df_ints,
     )
-    from openfermion.resource_estimates.pbc.testing import (
-        make_diamond_113_szv,)
+    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_lambda_calc():
     mf = make_diamond_113_szv()
     hcore, Luv = build_hamiltonian(mf)
@@ -43,8 +40,7 @@ def test_lambda_calc():
     assert np.isclose(lambda_data.lambda_total, 2123.4342903006627)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_padding():
     ase_atom = bulk("H", "bcc", a=2.0, cubic=True)
     cell = gto.Cell()
@@ -71,26 +67,21 @@ def test_padding():
     assert mf.mo_coeff[0].shape[-1] != mo_coeff_padded[0].shape[-1]
 
     hcore_ao = mf.get_hcore()
-    hcore_no_padding = np.asarray([
-        reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
-        for k, mo in enumerate(mf.mo_coeff)
-    ])
-    hcore_padded = np.asarray([
-        reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
-        for k, mo in enumerate(mo_coeff_padded)
-    ])
+    hcore_no_padding = np.asarray(
+        [reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo)) for k, mo in enumerate(mf.mo_coeff)]
+    )
+    hcore_padded = np.asarray(
+        [reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo)) for k, mo in enumerate(mo_coeff_padded)]
+    )
     assert hcore_no_padding[0].shape != hcore_padded[0].shape
     assert np.isclose(np.sum(hcore_no_padding), np.sum(hcore_padded))
     Luv_no_padding = cholesky_from_df_ints(mymp, pad_mos_with_zeros=False)
     for k1 in range(nkpts):
         for k2 in range(nkpts):
-            assert np.isclose(np.sum(Luv_padded[k1, k2]),
-                              np.sum(Luv_no_padding[k1, k2]))
+            assert np.isclose(np.sum(Luv_padded[k1, k2]), np.sum(Luv_no_padding[k1, k2]))
 
-    helper_no_padding = SingleFactorization(cholesky_factor=Luv_no_padding,
-                                            kmf=mf)
+    helper_no_padding = SingleFactorization(cholesky_factor=Luv_no_padding, kmf=mf)
     lambda_data_pad = compute_lambda(hcore_no_padding, helper_no_padding)
     helper = SingleFactorization(cholesky_factor=Luv_padded, kmf=mf)
     lambda_data_no_pad = compute_lambda(hcore_padded, helper)
-    assert np.isclose(lambda_data_pad.lambda_total,
-                      lambda_data_no_pad.lambda_total)
+    assert np.isclose(lambda_data_pad.lambda_total, lambda_data_no_pad.lambda_total)

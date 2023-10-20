@@ -17,114 +17,77 @@ from openfermion.hamiltonians import mean_field_dwave
 
 
 class MeanfieldDwaveTest(unittest.TestCase):
-
     def setUp(self):
-        self.tunneling = 2.
-        self.sc_gap = 2.
-        self.chemical_potential = 2.
+        self.tunneling = 2.0
+        self.sc_gap = 2.0
+        self.chemical_potential = 2.0
 
     def test_two_by_two(self):
         # Test the 2 by 2 model.
 
         # Initialize the Hamiltonian.
-        mean_field_dwave_model = mean_field_dwave(2, 2, self.tunneling,
-                                                  self.sc_gap,
-                                                  self.chemical_potential)
+        mean_field_dwave_model = mean_field_dwave(
+            2, 2, self.tunneling, self.sc_gap, self.chemical_potential
+        )
 
         # Check on-site terms.
         for site in range(8):
             self.assertAlmostEqual(
-                mean_field_dwave_model.terms[((site, 1), (site, 0))],
-                -self.chemical_potential)
+                mean_field_dwave_model.terms[((site, 1), (site, 0))], -self.chemical_potential
+            )
 
         # Check up right/left hopping terms.
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((0, 1), (2, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((2, 1), (0, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 1), (6, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((6, 1), (4, 0))],
-                               -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((0, 1), (2, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((2, 1), (0, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 1), (6, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((6, 1), (4, 0))], -self.tunneling)
 
         # Check up top/bottom hopping terms.
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((0, 1), (4, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 1), (0, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((2, 1), (6, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((6, 1), (2, 0))],
-                               -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((0, 1), (4, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 1), (0, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((2, 1), (6, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((6, 1), (2, 0))], -self.tunneling)
 
         # Check down right/left hopping terms.
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((1, 1), (3, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((3, 1), (1, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((5, 1), (7, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((7, 1), (5, 0))],
-                               -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((1, 1), (3, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((3, 1), (1, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((5, 1), (7, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((7, 1), (5, 0))], -self.tunneling)
 
         # Check down top/bottom hopping terms.
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((1, 1), (5, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((5, 1), (1, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((3, 1), (7, 0))],
-                               -self.tunneling)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((7, 1), (3, 0))],
-                               -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((1, 1), (5, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((5, 1), (1, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((3, 1), (7, 0))], -self.tunneling)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((7, 1), (3, 0))], -self.tunneling)
 
         # Check right/left pairing terms.
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((0, 1), (3, 1))],
-                               -self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((1, 1), (2, 1))],
-                               self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((3, 0), (0, 0))],
-                               -self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((2, 0), (1, 0))],
-                               self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((0, 1), (3, 1))], -self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((1, 1), (2, 1))], self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((3, 0), (0, 0))], -self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((2, 0), (1, 0))], self.sc_gap / 2)
 
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 1), (7, 1))],
-                               -self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((5, 1), (6, 1))],
-                               self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((7, 0), (4, 0))],
-                               -self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((6, 0), (5, 0))],
-                               self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 1), (7, 1))], -self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((5, 1), (6, 1))], self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((7, 0), (4, 0))], -self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((6, 0), (5, 0))], self.sc_gap / 2)
 
         # Check top/bottom pairing terms.
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((0, 1), (5, 1))],
-                               self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((1, 1), (4, 1))],
-                               -self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((5, 0), (0, 0))],
-                               self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 0), (1, 0))],
-                               -self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((0, 1), (5, 1))], self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((1, 1), (4, 1))], -self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((5, 0), (0, 0))], self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 0), (1, 0))], -self.sc_gap / 2)
 
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((2, 1), (7, 1))],
-                               self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((3, 1), (6, 1))],
-                               -self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((7, 0), (2, 0))],
-                               self.sc_gap / 2)
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((6, 0), (3, 0))],
-                               -self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((2, 1), (7, 1))], self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((3, 1), (6, 1))], -self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((7, 0), (2, 0))], self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((6, 0), (3, 0))], -self.sc_gap / 2)
 
     def test_two_by_three_spinless_periodic_rudimentary(self):
-        mean_field_dwave_model = mean_field_dwave(2, 3, self.tunneling,
-                                                  self.sc_gap)
+        mean_field_dwave_model = mean_field_dwave(2, 3, self.tunneling, self.sc_gap)
         # Check top/bottom hopping terms.
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((8, 1), (1, 1))],
-                               self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((8, 1), (1, 1))], self.sc_gap / 2)
 
     def test_three_by_two_spinless_periodic_rudimentary(self):
-        mean_field_dwave_model = mean_field_dwave(3, 2, self.tunneling,
-                                                  self.sc_gap)
+        mean_field_dwave_model = mean_field_dwave(3, 2, self.tunneling, self.sc_gap)
         # Check right/left hopping terms.
-        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 1), (1, 1))],
-                               -self.sc_gap / 2)
+        self.assertAlmostEqual(mean_field_dwave_model.terms[((4, 1), (1, 1))], -self.sc_gap / 2)

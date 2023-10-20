@@ -21,60 +21,57 @@ from openfermion.transforms.opconversions import bravyi_kitaev_tree, reorder
 from openfermion.utils.indexing import up_then_down
 
 
-def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
-                                      active_fermions):
-    """ Returns the qubit Hamiltonian for the fermionic Hamiltonian
-        supplied, with two qubits removed using conservation of electron
-        spin and number, as described in arXiv:1701.08213.
+def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals, active_fermions):
+    """Returns the qubit Hamiltonian for the fermionic Hamiltonian
+    supplied, with two qubits removed using conservation of electron
+    spin and number, as described in arXiv:1701.08213.
 
-        Args:
-            fermion_hamiltonian: A fermionic hamiltonian obtained
-                                 using OpenFermion. An instance
-                                 of the FermionOperator class.
+    Args:
+        fermion_hamiltonian: A fermionic hamiltonian obtained
+                             using OpenFermion. An instance
+                             of the FermionOperator class.
 
-            active_orbitals: Int type object. The number of active orbitals
-                             being considered for the system.
+        active_orbitals: Int type object. The number of active orbitals
+                         being considered for the system.
 
-            active_fermions: Int type object. The number of active fermions
-                              being considered for the system (note, this
-                              is less than the number of electrons in a
-                              molecule if some orbitals have been assumed
-                              filled).
-        Returns:
-                qubit_hamiltonian: The qubit Hamiltonian corresponding to
-                                   the supplied fermionic Hamiltonian, with
-                                   two qubits removed using spin symmetries.
-        WARNING:
-                Reorders orbitals from the default even-odd ordering to all
-                spin-up orbitals, then all spin-down orbitals.
-        Raises:
-                ValueError if fermion_hamiltonian isn't of the type
-                FermionOperator, or active_orbitals isn't an integer,
-                or active_fermions isn't an integer.
+        active_fermions: Int type object. The number of active fermions
+                          being considered for the system (note, this
+                          is less than the number of electrons in a
+                          molecule if some orbitals have been assumed
+                          filled).
+    Returns:
+            qubit_hamiltonian: The qubit Hamiltonian corresponding to
+                               the supplied fermionic Hamiltonian, with
+                               two qubits removed using spin symmetries.
+    WARNING:
+            Reorders orbitals from the default even-odd ordering to all
+            spin-up orbitals, then all spin-down orbitals.
+    Raises:
+            ValueError if fermion_hamiltonian isn't of the type
+            FermionOperator, or active_orbitals isn't an integer,
+            or active_fermions isn't an integer.
 
-        Notes: This function reorders the spin orbitals as all spin-up, then
-               all spin-down. It uses the OpenFermion bravyi_kitaev_tree
-               mapping, rather than the bravyi-kitaev mapping.
-               Caution advised when using with a Fermi-Hubbard Hamiltonian;
-               this technique correctly reduces the Hamiltonian only for the
-               lowest energy even and odd fermion number states, not states
-               with an arbitrary number of fermions.
+    Notes: This function reorders the spin orbitals as all spin-up, then
+           all spin-down. It uses the OpenFermion bravyi_kitaev_tree
+           mapping, rather than the bravyi-kitaev mapping.
+           Caution advised when using with a Fermi-Hubbard Hamiltonian;
+           this technique correctly reduces the Hamiltonian only for the
+           lowest energy even and odd fermion number states, not states
+           with an arbitrary number of fermions.
     """
     # Catch errors if inputs are of wrong type.
     if not isinstance(fermion_hamiltonian, FermionOperator):
-        raise ValueError(
-            "Supplied operator should be an instance of FermionOperator class")
+        raise ValueError("Supplied operator should be an instance of FermionOperator class")
     if not isinstance(active_orbitals, int):
         raise ValueError("Number of active orbitals should be an integer.")
     if not isinstance(active_fermions, int):
         raise ValueError("Number of active fermions should be an integer.")
 
     # Arrange spins up then down, then BK map to qubit Hamiltonian.
-    fermion_hamiltonian_reorder = reorder(fermion_hamiltonian,
-                                          up_then_down,
-                                          num_modes=active_orbitals)
-    qubit_hamiltonian = bravyi_kitaev_tree(fermion_hamiltonian_reorder,
-                                           n_qubits=active_orbitals)
+    fermion_hamiltonian_reorder = reorder(
+        fermion_hamiltonian, up_then_down, num_modes=active_orbitals
+    )
+    qubit_hamiltonian = bravyi_kitaev_tree(fermion_hamiltonian_reorder, n_qubits=active_orbitals)
     qubit_hamiltonian.compress()
 
     # Allocates the parity factors for the orbitals as in arXiv:1704.05018.
@@ -93,21 +90,19 @@ def symmetry_conserving_bravyi_kitaev(fermion_hamiltonian, active_orbitals,
         parity_middle_orb = 1
 
     # Removes the final qubit, then the middle qubit.
-    qubit_hamiltonian = edit_hamiltonian_for_spin(qubit_hamiltonian,
-                                                  active_orbitals,
-                                                  parity_final_orb)
-    qubit_hamiltonian = edit_hamiltonian_for_spin(qubit_hamiltonian,
-                                                  active_orbitals / 2,
-                                                  parity_middle_orb)
-    qubit_hamiltonian = remove_indices(qubit_hamiltonian,
-                                       (active_orbitals / 2, active_orbitals))
+    qubit_hamiltonian = edit_hamiltonian_for_spin(
+        qubit_hamiltonian, active_orbitals, parity_final_orb
+    )
+    qubit_hamiltonian = edit_hamiltonian_for_spin(
+        qubit_hamiltonian, active_orbitals / 2, parity_middle_orb
+    )
+    qubit_hamiltonian = remove_indices(qubit_hamiltonian, (active_orbitals / 2, active_orbitals))
 
     return qubit_hamiltonian
 
 
 def edit_hamiltonian_for_spin(qubit_hamiltonian, spin_orbital, orbital_parity):
-    """ Removes the Z terms acting on the orbital from the Hamiltonian.
-    """
+    """Removes the Z terms acting on the orbital from the Hamiltonian."""
     new_qubit_dict = {}
     for term, coefficient in qubit_hamiltonian.terms.items():
         # If Z acts on the specified orbital, precompute its effect and

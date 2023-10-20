@@ -16,8 +16,7 @@ import numpy
 from openfermion.ops.operators import FermionOperator
 
 
-def _fourier_transform_helper(hamiltonian, grid, spinless, phase_factor,
-                              vec_func_1, vec_func_2):
+def _fourier_transform_helper(hamiltonian, grid, spinless, phase_factor, vec_func_1, vec_func_2):
     hamiltonian_t = FermionOperator.zero()
     normalize_factor = numpy.sqrt(1.0 / float(grid.num_points))
 
@@ -35,8 +34,7 @@ def _fourier_transform_helper(hamiltonian, grid, spinless, phase_factor,
                 if ladder_op_type == 1:
                     exp_index *= -1.0
 
-                element = FermionOperator(((orbital, ladder_op_type),),
-                                          numpy.exp(exp_index))
+                element = FermionOperator(((orbital, ladder_op_type),), numpy.exp(exp_index))
                 new_basis += element
 
             new_basis *= normalize_factor
@@ -66,12 +64,14 @@ def fourier_transform(hamiltonian, grid, spinless):
     Returns:
         FermionOperator: The fourier-transformed hamiltonian.
     """
-    return _fourier_transform_helper(hamiltonian=hamiltonian,
-                                     grid=grid,
-                                     spinless=spinless,
-                                     phase_factor=+1,
-                                     vec_func_1=grid.momentum_vector,
-                                     vec_func_2=grid.position_vector)
+    return _fourier_transform_helper(
+        hamiltonian=hamiltonian,
+        grid=grid,
+        spinless=spinless,
+        phase_factor=+1,
+        vec_func_1=grid.momentum_vector,
+        vec_func_2=grid.position_vector,
+    )
 
 
 def inverse_fourier_transform(hamiltonian, grid, spinless):
@@ -92,9 +92,11 @@ def inverse_fourier_transform(hamiltonian, grid, spinless):
     Returns:
         FermionOperator: The inverse-fourier-transformed hamiltonian.
     """
-    return _fourier_transform_helper(hamiltonian=hamiltonian,
-                                     grid=grid,
-                                     spinless=spinless,
-                                     phase_factor=-1,
-                                     vec_func_1=grid.position_vector,
-                                     vec_func_2=grid.momentum_vector)
+    return _fourier_transform_helper(
+        hamiltonian=hamiltonian,
+        grid=grid,
+        spinless=spinless,
+        phase_factor=-1,
+        vec_func_1=grid.position_vector,
+        vec_func_2=grid.momentum_vector,
+    )

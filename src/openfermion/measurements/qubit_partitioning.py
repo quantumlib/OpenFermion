@@ -99,10 +99,8 @@ def partition_iterator(qubit_list, partition_size, num_iterations=None):
         num_iterations = int(numpy.ceil(numpy.log2(num_qubits)))
 
     # First iterate over the outer binary partition
-    outer_iterator = binary_partition_iterator(qubit_list,
-                                               num_iterations=num_iterations)
+    outer_iterator = binary_partition_iterator(qubit_list, num_iterations=num_iterations)
     for set1, set2 in outer_iterator:
-
         # Each new partition needs to be subdivided fewer times
         # to prevent an additional k! factor in the scaling.
         num_iterations -= 1
@@ -110,18 +108,18 @@ def partition_iterator(qubit_list, partition_size, num_iterations=None):
         # Iterate over all possibilities of partitioning the first
         # set into l parts and the second set into k - l parts.
         for inner_partition_size in range(1, partition_size):
-            if inner_partition_size > len(set1) or\
-                    partition_size - inner_partition_size > len(set2):
+            if inner_partition_size > len(set1) or partition_size - inner_partition_size > len(
+                set2
+            ):
                 continue
 
             # subdivide the first partition
-            inner_iterator1 = partition_iterator(set1, inner_partition_size,
-                                                 num_iterations)
+            inner_iterator1 = partition_iterator(set1, inner_partition_size, num_iterations)
             for inner_partition1 in inner_iterator1:
-
                 # subdivide the second partition
                 inner_iterator2 = partition_iterator(
-                    set2, partition_size - inner_partition_size, num_iterations)
+                    set2, partition_size - inner_partition_size, num_iterations
+                )
                 for inner_partition2 in inner_iterator2:
                     yield inner_partition1 + inner_partition2
 
@@ -160,9 +158,7 @@ def pauli_string_iterator(num_qubits, max_word_size=2):
 def _find_compatible_basis(term, bases):
     for basis in bases:
         basis_qubits = {op[0] for op in basis}
-        conflicts = ((i, P)
-                     for (i, P) in term
-                     if i in basis_qubits and (i, P) not in basis)
+        conflicts = ((i, P) for (i, P) in term if i in basis_qubits and (i, P) not in basis)
         if any(conflicts):
             continue
         return basis
@@ -212,9 +208,10 @@ def group_into_tensor_product_basis_sets(operator, seed=None):
        TypeError: Operator of invalid type.
     """
     if not isinstance(operator, QubitOperator):
-        raise TypeError('Can only split QubitOperator into tensor product'
-                        ' basis sets. {} is not supported.'.format(
-                            type(operator).__name__))
+        raise TypeError(
+            'Can only split QubitOperator into tensor product'
+            ' basis sets. {} is not supported.'.format(type(operator).__name__)
+        )
 
     sub_operators = {}
     r = numpy.random.RandomState(seed)
@@ -228,8 +225,7 @@ def group_into_tensor_product_basis_sets(operator, seed=None):
             sub_operator = sub_operators.pop(basis)
             sub_operator += QubitOperator(term, coefficient)
             additions = tuple(op for op in term if op not in basis)
-            basis = tuple(
-                sorted(basis + additions, key=lambda factor: factor[0]))
+            basis = tuple(sorted(basis + additions, key=lambda factor: factor[0]))
             sub_operators[basis] = sub_operator
 
     return sub_operators

@@ -20,25 +20,29 @@ import sympy
 from openfermion.config import DATA_DIRECTORY
 from openfermion.hamiltonians import fermi_hubbard, number_operator
 from openfermion.chem import MolecularData
-from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
-                                       QubitOperator)
+from openfermion.ops.operators import FermionOperator, MajoranaOperator, QubitOperator
 from openfermion.ops.representations import InteractionOperator
-from openfermion.transforms.opconversions import (get_fermion_operator,
-                                                  reverse_jordan_wigner)
+from openfermion.transforms.opconversions import get_fermion_operator, reverse_jordan_wigner
 from openfermion.transforms.repconversions import (
-    get_diagonal_coulomb_hamiltonian, get_interaction_operator)
+    get_diagonal_coulomb_hamiltonian,
+    get_interaction_operator,
+)
 from openfermion.utils import hermitian_conjugated
 from openfermion.transforms.opconversions import normal_ordered
-from openfermion.testing.testing_utils import (random_interaction_operator,
-                                               random_quadratic_hamiltonian)
+from openfermion.testing.testing_utils import (
+    random_interaction_operator,
+    random_quadratic_hamiltonian,
+)
 
 from openfermion.transforms.opconversions.jordan_wigner import (
-    jordan_wigner, jordan_wigner_one_body, jordan_wigner_two_body,
-    _jordan_wigner_interaction_op)
+    jordan_wigner,
+    jordan_wigner_one_body,
+    jordan_wigner_two_body,
+    _jordan_wigner_interaction_op,
+)
 
 
 class JordanWignerTransformTest(unittest.TestCase):
-
     def setUp(self):
         self.n_qubits = 5
 
@@ -152,14 +156,10 @@ class JordanWignerTransformTest(unittest.TestCase):
     def test_transm_raise3lower0(self):
         # recall that creation gets -1j on Y and annihilation gets +1j on Y.
         term = jordan_wigner(FermionOperator(((3, 1), (0, 0))))
-        self.assertEqual(term.terms[((0, 'X'), (1, 'Z'), (2, 'Z'), (3, 'Y'))],
-                         0.25 * 1 * -1j)
-        self.assertEqual(term.terms[((0, 'Y'), (1, 'Z'), (2, 'Z'), (3, 'Y'))],
-                         0.25 * 1j * -1j)
-        self.assertEqual(term.terms[((0, 'Y'), (1, 'Z'), (2, 'Z'), (3, 'X'))],
-                         0.25 * 1j * 1)
-        self.assertEqual(term.terms[((0, 'X'), (1, 'Z'), (2, 'Z'), (3, 'X'))],
-                         0.25 * 1 * 1)
+        self.assertEqual(term.terms[((0, 'X'), (1, 'Z'), (2, 'Z'), (3, 'Y'))], 0.25 * 1 * -1j)
+        self.assertEqual(term.terms[((0, 'Y'), (1, 'Z'), (2, 'Z'), (3, 'Y'))], 0.25 * 1j * -1j)
+        self.assertEqual(term.terms[((0, 'Y'), (1, 'Z'), (2, 'Z'), (3, 'X'))], 0.25 * 1j * 1)
+        self.assertEqual(term.terms[((0, 'X'), (1, 'Z'), (2, 'Z'), (3, 'X'))], 0.25 * 1 * 1)
 
     def test_transm_number(self):
         n = number_operator(self.n_qubits, 3)
@@ -213,34 +213,28 @@ class JordanWignerTransformTest(unittest.TestCase):
     def test_ccr_onsite(self):
         c1 = FermionOperator(((1, 1),))
         a1 = hermitian_conjugated(c1)
-        self.assertTrue(
-            normal_ordered(c1 * a1) == FermionOperator(()) -
-            normal_ordered(a1 * c1))
-        self.assertTrue(
-            jordan_wigner(c1 * a1) == QubitOperator(()) -
-            jordan_wigner(a1 * c1))
+        self.assertTrue(normal_ordered(c1 * a1) == FermionOperator(()) - normal_ordered(a1 * c1))
+        self.assertTrue(jordan_wigner(c1 * a1) == QubitOperator(()) - jordan_wigner(a1 * c1))
 
     def test_jordan_wigner_transm_op(self):
         n = number_operator(self.n_qubits)
         n_jw = jordan_wigner(n)
         self.assertEqual(self.n_qubits + 1, len(n_jw.terms))
-        self.assertEqual(self.n_qubits / 2., n_jw.terms[()])
+        self.assertEqual(self.n_qubits / 2.0, n_jw.terms[()])
         for qubit in range(self.n_qubits):
             operators = ((qubit, 'Z'),)
             self.assertEqual(n_jw.terms[operators], -0.5)
 
 
 class InteractionOperatorsJWTest(unittest.TestCase):
-
     def setUp(self):
         self.n_qubits = 5
-        self.constant = 0.
+        self.constant = 0.0
         self.one_body = numpy.zeros((self.n_qubits, self.n_qubits), float)
         self.two_body = numpy.zeros(
-            (self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits), float)
-        self.interaction_operator = InteractionOperator(self.constant,
-                                                        self.one_body,
-                                                        self.two_body)
+            (self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits), float
+        )
+        self.interaction_operator = InteractionOperator(self.constant, self.one_body, self.two_body)
 
     def test_consistency(self):
         """Test consistency with JW for FermionOperators."""
@@ -253,15 +247,12 @@ class InteractionOperatorsJWTest(unittest.TestCase):
         self.assertEqual(op1, op2)
 
         # Interaction operator from molecule
-        geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., 1.45))]
+        geometry = [('Li', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 1.45))]
         basis = 'sto-3g'
         multiplicity = 1
 
         filename = os.path.join(DATA_DIRECTORY, 'H1-Li1_sto-3g_singlet_1.45')
-        molecule = MolecularData(geometry,
-                                 basis,
-                                 multiplicity,
-                                 filename=filename)
+        molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
         molecule.load()
 
         iop = molecule.get_molecular_hamiltonian()
@@ -283,8 +274,7 @@ class InteractionOperatorsJWTest(unittest.TestCase):
                 # Get correct qubit operator.
                 fermion_term = FermionOperator(((p, 1), (q, 0)), coefficient)
                 if p != q:
-                    fermion_term += FermionOperator(((q, 1), (p, 0)),
-                                                    coefficient.conjugate())
+                    fermion_term += FermionOperator(((q, 1), (p, 0)), coefficient.conjugate())
                 correct_op = jordan_wigner(fermion_term)
 
                 self.assertTrue(test_operator == correct_op)
@@ -300,37 +290,33 @@ class InteractionOperatorsJWTest(unittest.TestCase):
             test_operator = jordan_wigner_two_body(p, q, r, s, coefficient)
 
             # Get correct qubit operator.
-            fermion_term = FermionOperator(((p, 1), (q, 1), (r, 0), (s, 0)),
-                                           coefficient)
+            fermion_term = FermionOperator(((p, 1), (q, 1), (r, 0), (s, 0)), coefficient)
             if set([p, q]) != set([r, s]):
                 fermion_term += FermionOperator(
-                    ((s, 1), (r, 1), (q, 0), (p, 0)), coefficient.conjugate())
+                    ((s, 1), (r, 1), (q, 0), (p, 0)), coefficient.conjugate()
+                )
             correct_op = jordan_wigner(fermion_term)
 
-            self.assertTrue(test_operator == correct_op,
-                            str(test_operator - correct_op))
+            self.assertTrue(test_operator == correct_op, str(test_operator - correct_op))
 
     def test_jordan_wigner_twobody_interaction_op_allunique(self):
         test_op = FermionOperator('1^ 2^ 3 4')
         test_op += hermitian_conjugated(test_op)
 
         retransformed_test_op = reverse_jordan_wigner(
-            jordan_wigner(get_interaction_operator(test_op)))
+            jordan_wigner(get_interaction_operator(test_op))
+        )
 
-        self.assertTrue(
-            normal_ordered(retransformed_test_op) == normal_ordered(test_op))
+        self.assertTrue(normal_ordered(retransformed_test_op) == normal_ordered(test_op))
 
     def test_jordan_wigner_twobody_interaction_op_reversal_symmetric(self):
         test_op = FermionOperator('1^ 2^ 2 1')
         test_op += hermitian_conjugated(test_op)
-        self.assertTrue(
-            jordan_wigner(test_op) == jordan_wigner(
-                get_interaction_operator(test_op)))
+        self.assertTrue(jordan_wigner(test_op) == jordan_wigner(get_interaction_operator(test_op)))
 
     def test_jordan_wigner_interaction_op_too_few_n_qubits(self):
         with self.assertRaises(ValueError):
-            _jordan_wigner_interaction_op(self.interaction_operator,
-                                          self.n_qubits - 2)
+            _jordan_wigner_interaction_op(self.interaction_operator, self.n_qubits - 2)
 
     def test_jordan_wigner_interaction_op_with_zero_term(self):
         test_op = FermionOperator('1^ 2^ 3 4')
@@ -339,98 +325,89 @@ class InteractionOperatorsJWTest(unittest.TestCase):
         interaction_op = get_interaction_operator(test_op)
         interaction_op.constant = 0.0
 
-        retransformed_test_op = reverse_jordan_wigner(
-            jordan_wigner(interaction_op))
+        retransformed_test_op = reverse_jordan_wigner(jordan_wigner(interaction_op))
 
-        self.assertEqual(normal_ordered(retransformed_test_op),
-                         normal_ordered(test_op))
+        self.assertEqual(normal_ordered(retransformed_test_op), normal_ordered(test_op))
 
 
 class GetInteractionOperatorTest(unittest.TestCase):
-
     def setUp(self):
         self.n_qubits = 5
-        self.constant = 0.
+        self.constant = 0.0
         self.one_body = numpy.zeros((self.n_qubits, self.n_qubits), float)
         self.two_body = numpy.zeros(
-            (self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits), float)
+            (self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits), float
+        )
 
     def test_get_interaction_operator_identity(self):
-        interaction_operator = InteractionOperator(-2j, self.one_body,
-                                                   self.two_body)
+        interaction_operator = InteractionOperator(-2j, self.one_body, self.two_body)
         qubit_operator = jordan_wigner(interaction_operator)
         self.assertTrue(qubit_operator == -2j * QubitOperator(()))
         self.assertEqual(
             interaction_operator,
-            get_interaction_operator(reverse_jordan_wigner(qubit_operator),
-                                     self.n_qubits))
+            get_interaction_operator(reverse_jordan_wigner(qubit_operator), self.n_qubits),
+        )
 
     def test_get_interaction_operator_one_body(self):
-        interaction_operator = get_interaction_operator(FermionOperator('2^ 2'),
-                                                        self.n_qubits)
+        interaction_operator = get_interaction_operator(FermionOperator('2^ 2'), self.n_qubits)
         one_body = numpy.zeros((self.n_qubits, self.n_qubits), float)
-        one_body[2, 2] = 1.
-        self.assertEqual(interaction_operator,
-                         InteractionOperator(0.0, one_body, self.two_body))
+        one_body[2, 2] = 1.0
+        self.assertEqual(interaction_operator, InteractionOperator(0.0, one_body, self.two_body))
 
     def test_get_interaction_operator_one_body_twoterm(self):
         interaction_operator = get_interaction_operator(
-            FermionOperator('2^ 3', -2j) + FermionOperator('3^ 2', 3j),
-            self.n_qubits)
+            FermionOperator('2^ 3', -2j) + FermionOperator('3^ 2', 3j), self.n_qubits
+        )
         one_body = numpy.zeros((self.n_qubits, self.n_qubits), complex)
         one_body[2, 3] = -2j
         one_body[3, 2] = 3j
-        self.assertEqual(interaction_operator,
-                         InteractionOperator(0.0, one_body, self.two_body))
+        self.assertEqual(interaction_operator, InteractionOperator(0.0, one_body, self.two_body))
 
     def test_get_interaction_operator_two_body(self):
-        interaction_operator = get_interaction_operator(
-            FermionOperator('2^ 2 3^ 4'), self.n_qubits)
-        two_body = numpy.zeros(
-            (self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits), float)
-        two_body[3, 2, 4, 2] = -1.
-        self.assertEqual(interaction_operator,
-                         InteractionOperator(0.0, self.one_body, two_body))
+        interaction_operator = get_interaction_operator(FermionOperator('2^ 2 3^ 4'), self.n_qubits)
+        two_body = numpy.zeros((self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits), float)
+        two_body[3, 2, 4, 2] = -1.0
+        self.assertEqual(interaction_operator, InteractionOperator(0.0, self.one_body, two_body))
 
     def test_get_interaction_operator_two_body_distinct(self):
-        interaction_operator = get_interaction_operator(
-            FermionOperator('0^ 1^ 2 3'), self.n_qubits)
-        two_body = numpy.zeros(
-            (self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits), float)
-        two_body[1, 0, 3, 2] = 1.
-        self.assertEqual(interaction_operator,
-                         InteractionOperator(0.0, self.one_body, two_body))
+        interaction_operator = get_interaction_operator(FermionOperator('0^ 1^ 2 3'), self.n_qubits)
+        two_body = numpy.zeros((self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits), float)
+        two_body[1, 0, 3, 2] = 1.0
+        self.assertEqual(interaction_operator, InteractionOperator(0.0, self.one_body, two_body))
 
 
 class JordanWignerDiagonalCoulombHamiltonianTest(unittest.TestCase):
-
     def test_hubbard(self):
         x_dim = 4
         y_dim = 5
-        tunneling = 2.
-        coulomb = 3.
-        chemical_potential = 7.
-        magnetic_field = 11.
+        tunneling = 2.0
+        coulomb = 3.0
+        chemical_potential = 7.0
+        magnetic_field = 11.0
         periodic = False
 
-        hubbard_model = fermi_hubbard(x_dim, y_dim, tunneling, coulomb,
-                                      chemical_potential, magnetic_field,
-                                      periodic)
+        hubbard_model = fermi_hubbard(
+            x_dim, y_dim, tunneling, coulomb, chemical_potential, magnetic_field, periodic
+        )
 
         self.assertTrue(
-            jordan_wigner(hubbard_model) == jordan_wigner(
-                get_diagonal_coulomb_hamiltonian(hubbard_model)))
+            jordan_wigner(hubbard_model)
+            == jordan_wigner(get_diagonal_coulomb_hamiltonian(hubbard_model))
+        )
 
     def test_random_quadratic(self):
         n_qubits = 5
         quad_ham = random_quadratic_hamiltonian(n_qubits, True)
         ferm_op = get_fermion_operator(quad_ham)
         self.assertTrue(
-            jordan_wigner(ferm_op) == jordan_wigner(
-                get_diagonal_coulomb_hamiltonian(ferm_op)))
+            jordan_wigner(ferm_op) == jordan_wigner(get_diagonal_coulomb_hamiltonian(ferm_op))
+        )
 
 
 def test_jordan_wigner_majorana_op_consistent():
-    op = (MajoranaOperator((1, 3, 4), 0.5) + MajoranaOperator(
-        (3, 7, 8, 9, 10, 12), 1.8) + MajoranaOperator((0, 4)))
+    op = (
+        MajoranaOperator((1, 3, 4), 0.5)
+        + MajoranaOperator((3, 7, 8, 9, 10, 12), 1.8)
+        + MajoranaOperator((0, 4))
+    )
     assert jordan_wigner(op) == jordan_wigner(get_fermion_operator(op))

@@ -17,7 +17,6 @@ from openfermion.ops.operators.quad_operator import QuadOperator
 
 
 class QuadOperatorTest(unittest.TestCase):
-
     def test_is_normal_ordered_empty(self):
         op = QuadOperator() * 2
         self.assertTrue(op.is_normal_ordered())

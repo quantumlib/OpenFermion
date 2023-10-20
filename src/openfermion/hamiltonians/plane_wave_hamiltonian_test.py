@@ -15,27 +15,30 @@ import unittest
 import numpy as np
 
 from openfermion.hamiltonians.plane_wave_hamiltonian import (
-    jellium_model, jordan_wigner_dual_basis_hamiltonian, plane_wave_hamiltonian)
+    jellium_model,
+    jordan_wigner_dual_basis_hamiltonian,
+    plane_wave_hamiltonian,
+)
 from openfermion.transforms.opconversions import jordan_wigner
 from openfermion.linalg import eigenspectrum, get_sparse_operator
 from openfermion.utils import Grid, is_hermitian
 
 
 class PlaneWaveHamiltonianTest(unittest.TestCase):
-
     def test_plane_wave_hamiltonian_integration(self):
         length_set = [2, 3, 4]
         spinless_set = [True, False]
         length_scale = 1.1
-        for geometry in [[('H', (0,)), ('H', (0.8,))], [('H', (0.1,))],
-                         [('H', (0.1,))]]:
+        for geometry in [[('H', (0,)), ('H', (0.8,))], [('H', (0.1,))], [('H', (0.1,))]]:
             for l in length_set:
                 for spinless in spinless_set:
                     grid = Grid(dimensions=1, scale=length_scale, length=l)
                     h_plane_wave = plane_wave_hamiltonian(
-                        grid, geometry, spinless, True, include_constant=False)
+                        grid, geometry, spinless, True, include_constant=False
+                    )
                     h_dual_basis = plane_wave_hamiltonian(
-                        grid, geometry, spinless, False, include_constant=False)
+                        grid, geometry, spinless, False, include_constant=False
+                    )
 
                     # Test for Hermiticity
                     plane_wave_operator = get_sparse_operator(h_plane_wave)
@@ -48,10 +51,8 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
                     h_plane_wave_spectrum = eigenspectrum(jw_h_plane_wave)
                     h_dual_basis_spectrum = eigenspectrum(jw_h_dual_basis)
 
-                    max_diff = np.amax(h_plane_wave_spectrum -
-                                       h_dual_basis_spectrum)
-                    min_diff = np.amin(h_plane_wave_spectrum -
-                                       h_dual_basis_spectrum)
+                    max_diff = np.amax(h_plane_wave_spectrum - h_dual_basis_spectrum)
+                    min_diff = np.amin(h_plane_wave_spectrum - h_dual_basis_spectrum)
                     self.assertAlmostEqual(max_diff, 0)
                     self.assertAlmostEqual(min_diff, 0)
 
@@ -65,9 +66,7 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
             plane_wave_hamiltonian(grid, geometry=[('H', (0, 0, 0))])
 
         with self.assertRaises(ValueError):
-            plane_wave_hamiltonian(grid,
-                                   geometry=[('H', (0, 0, 0))],
-                                   include_constant=True)
+            plane_wave_hamiltonian(grid, geometry=[('H', (0, 0, 0))], include_constant=True)
 
     def test_plane_wave_hamiltonian_bad_element(self):
         grid = Grid(dimensions=3, scale=1.0, length=4)
@@ -75,44 +74,41 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
             plane_wave_hamiltonian(grid, geometry=[('Unobtainium', (0, 0, 0))])
 
     def test_jordan_wigner_dual_basis_hamiltonian(self):
-        grid = Grid(dimensions=2, length=3, scale=1.)
+        grid = Grid(dimensions=2, length=3, scale=1.0)
         spinless_set = [True, False]
         geometry = [('H', (0, 0)), ('H', (0.5, 0.8))]
         for spinless in spinless_set:
-            fermion_hamiltonian = plane_wave_hamiltonian(grid,
-                                                         geometry,
-                                                         spinless,
-                                                         False,
-                                                         include_constant=False)
+            fermion_hamiltonian = plane_wave_hamiltonian(
+                grid, geometry, spinless, False, include_constant=False
+            )
             qubit_hamiltonian = jordan_wigner(fermion_hamiltonian)
 
             test_hamiltonian = jordan_wigner_dual_basis_hamiltonian(
-                grid, geometry, spinless, include_constant=False)
+                grid, geometry, spinless, include_constant=False
+            )
             self.assertTrue(test_hamiltonian == qubit_hamiltonian)
 
     def test_jordan_wigner_dual_basis_hamiltonian_default_to_jellium(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)
         self.assertTrue(
-            jordan_wigner_dual_basis_hamiltonian(grid) == jordan_wigner(
-                jellium_model(grid, plane_wave=False)))
+            jordan_wigner_dual_basis_hamiltonian(grid)
+            == jordan_wigner(jellium_model(grid, plane_wave=False))
+        )
 
     def test_jordan_wigner_dual_basis_hamiltonian_bad_geometry(self):
         grid = Grid(dimensions=1, scale=1.0, length=4)
         with self.assertRaises(ValueError):
-            jordan_wigner_dual_basis_hamiltonian(grid,
-                                                 geometry=[('H', (0, 0, 0))])
+            jordan_wigner_dual_basis_hamiltonian(grid, geometry=[('H', (0, 0, 0))])
 
         with self.assertRaises(ValueError):
-            jordan_wigner_dual_basis_hamiltonian(grid,
-                                                 geometry=[('H', (0, 0, 0))],
-                                                 include_constant=True)
+            jordan_wigner_dual_basis_hamiltonian(
+                grid, geometry=[('H', (0, 0, 0))], include_constant=True
+            )
 
     def test_jordan_wigner_dual_basis_hamiltonian_bad_element(self):
         grid = Grid(dimensions=3, scale=1.0, length=4)
         with self.assertRaises(ValueError):
-            jordan_wigner_dual_basis_hamiltonian(grid,
-                                                 geometry=[('Unobtainium',
-                                                            (0, 0, 0))])
+            jordan_wigner_dual_basis_hamiltonian(grid, geometry=[('Unobtainium', (0, 0, 0))])
 
     def test_plane_wave_energy_cutoff(self):
         geometry = [('H', (0,)), ('H', (0.8,))]
@@ -123,13 +119,12 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
         jw_1 = jordan_wigner(h_1)
         spectrum_1 = eigenspectrum(jw_1)
 
-        h_2 = plane_wave_hamiltonian(grid, geometry, True, True, False,
-                                     e_cutoff)
+        h_2 = plane_wave_hamiltonian(grid, geometry, True, True, False, e_cutoff)
         jw_2 = jordan_wigner(h_2)
         spectrum_2 = eigenspectrum(jw_2)
 
         max_diff = np.amax(np.absolute(spectrum_1 - spectrum_2))
-        self.assertGreater(max_diff, 0.)
+        self.assertGreater(max_diff, 0.0)
 
     def test_plane_wave_period_cutoff(self):
         # TODO: After figuring out the correct formula for period cutoff for
@@ -144,13 +139,12 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
         jw_1 = jordan_wigner(h_1)
         spectrum_1 = eigenspectrum(jw_1)
 
-        h_2 = plane_wave_hamiltonian(grid, geometry, True, True, False, None,
-                                     True, period_cutoff)
+        h_2 = plane_wave_hamiltonian(grid, geometry, True, True, False, None, True, period_cutoff)
         jw_2 = jordan_wigner(h_2)
         spectrum_2 = eigenspectrum(jw_2)
 
         max_diff = np.amax(np.absolute(spectrum_1 - spectrum_2))
-        self.assertGreater(max_diff, 0.)
+        self.assertGreater(max_diff, 0.0)
 
         # TODO: This is only for code coverage. Remove after having real
         #     integration test.

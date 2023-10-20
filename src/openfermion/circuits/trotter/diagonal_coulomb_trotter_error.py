@@ -14,13 +14,14 @@
 import numpy
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.transforms.opconversions import (get_fermion_operator,
-                                                  normal_ordered)
+from openfermion.transforms.opconversions import get_fermion_operator, normal_ordered
 from openfermion.utils.operator_utils import count_qubits
 from openfermion.circuits.trotter.low_depth_trotter_error import (
-    simulation_ordered_grouped_low_depth_terms_with_info)
-from openfermion.transforms.opconversions import \
-    commutator_ordered_diagonal_coulomb_with_two_body_operator
+    simulation_ordered_grouped_low_depth_terms_with_info,
+)
+from openfermion.transforms.opconversions import (
+    commutator_ordered_diagonal_coulomb_with_two_body_operator,
+)
 
 
 def diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian):
@@ -41,8 +42,9 @@ def diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian):
         try:
             hamiltonian = normal_ordered(get_fermion_operator(hamiltonian))
         except TypeError:
-            raise TypeError('hamiltonian must be either a FermionOperator '
-                            'or DiagonalCoulombHamiltonian.')
+            raise TypeError(
+                'hamiltonian must be either a FermionOperator ' 'or DiagonalCoulombHamiltonian.'
+            )
 
     potential = FermionOperator.zero()
     kinetic = FermionOperator.zero()
@@ -54,18 +56,18 @@ def diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian):
         else:
             kinetic += FermionOperator(term, coeff)
 
-    potential_terms = numpy.array([
-        FermionOperator(term, coeff) for term, coeff in potential.terms.items()
-    ])
+    potential_terms = numpy.array(
+        [FermionOperator(term, coeff) for term, coeff in potential.terms.items()]
+    )
 
     kinetic_terms = numpy.array(
-        [FermionOperator(term, coeff) for term, coeff in kinetic.terms.items()])
+        [FermionOperator(term, coeff) for term, coeff in kinetic.terms.items()]
+    )
 
     return (potential_terms, kinetic_terms)
 
 
-def bit_mask_of_modes_acted_on_by_fermionic_terms(fermion_term_list,
-                                                  n_qubits=None):
+def bit_mask_of_modes_acted_on_by_fermionic_terms(fermion_term_list, n_qubits=None):
     """Create a mask of which modes of the system are acted on by which terms.
 
     Args:
@@ -97,8 +99,9 @@ def bit_mask_of_modes_acted_on_by_fermionic_terms(fermion_term_list,
                 try:
                     mask[mode][term_number] = True
                 except IndexError:
-                    raise ValueError('Bad n_qubits: must be greater than '
-                                     'highest mode in any FermionOperator.')
+                    raise ValueError(
+                        'Bad n_qubits: must be greater than ' 'highest mode in any FermionOperator.'
+                    )
 
     return mask
 
@@ -128,23 +131,20 @@ def split_operator_trotter_error_operator_diagonal_two_body(hamiltonian, order):
     """
     n_qubits = count_qubits(hamiltonian)
 
-    potential_terms, kinetic_terms = (
-        diagonal_coulomb_potential_and_kinetic_terms_as_arrays(hamiltonian))
+    potential_terms, kinetic_terms = diagonal_coulomb_potential_and_kinetic_terms_as_arrays(
+        hamiltonian
+    )
 
     # Cache halved potential and kinetic terms for the second commutator.
     halved_potential_terms = potential_terms / 2.0
     halved_kinetic_terms = kinetic_terms / 2.0
 
     # Assign the outer term of the second commutator based on the ordering.
-    outer_potential_terms = (halved_potential_terms
-                             if order == 'T+V' else potential_terms)
-    outer_kinetic_terms = (halved_kinetic_terms
-                           if order == 'V+T' else kinetic_terms)
+    outer_potential_terms = halved_potential_terms if order == 'T+V' else potential_terms
+    outer_kinetic_terms = halved_kinetic_terms if order == 'V+T' else kinetic_terms
 
-    potential_mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
-        potential_terms, n_qubits)
-    kinetic_mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
-        kinetic_terms, n_qubits)
+    potential_mask = bit_mask_of_modes_acted_on_by_fermionic_terms(potential_terms, n_qubits)
+    kinetic_mask = bit_mask_of_modes_acted_on_by_fermionic_terms(kinetic_terms, n_qubits)
 
     error_operator = FermionOperator.zero()
 
@@ -153,52 +153,49 @@ def split_operator_trotter_error_operator_diagonal_two_body(hamiltonian, order):
 
         for potential_term_action in potential_term.terms:
             modes_acted_on_by_potential_term.update(
-                set(operator[0] for operator in potential_term_action))
+                set(operator[0] for operator in potential_term_action)
+            )
 
         if not modes_acted_on_by_potential_term:
             continue
 
         potential_term_mode_mask = numpy.logical_or.reduce(
-            [kinetic_mask[mode] for mode in modes_acted_on_by_potential_term])
+            [kinetic_mask[mode] for mode in modes_acted_on_by_potential_term]
+        )
 
         for kinetic_term in kinetic_terms[potential_term_mode_mask]:
-            inner_commutator_term = (
-                commutator_ordered_diagonal_coulomb_with_two_body_operator(
-                    potential_term, kinetic_term))
+            inner_commutator_term = commutator_ordered_diagonal_coulomb_with_two_body_operator(
+                potential_term, kinetic_term
+            )
 
             modes_acted_on_by_inner_commutator = set()
             for inner_commutator_action in inner_commutator_term.terms:
                 modes_acted_on_by_inner_commutator.update(
-                    set(operator[0] for operator in inner_commutator_action))
+                    set(operator[0] for operator in inner_commutator_action)
+                )
 
             if not modes_acted_on_by_inner_commutator:
                 continue
 
-            inner_commutator_mode_mask = numpy.logical_or.reduce([
-                potential_mask[mode]
-                for mode in modes_acted_on_by_inner_commutator
-            ])
+            inner_commutator_mode_mask = numpy.logical_or.reduce(
+                [potential_mask[mode] for mode in modes_acted_on_by_inner_commutator]
+            )
 
             # halved_potential_terms for T+V order, potential_terms for V+T
-            for outer_potential_term in outer_potential_terms[
-                    inner_commutator_mode_mask]:
+            for outer_potential_term in outer_potential_terms[inner_commutator_mode_mask]:
                 commutator_ordered_diagonal_coulomb_with_two_body_operator(
-                    outer_potential_term,
-                    inner_commutator_term,
-                    prior_terms=error_operator)
+                    outer_potential_term, inner_commutator_term, prior_terms=error_operator
+                )
 
-            inner_commutator_mode_mask = numpy.logical_or.reduce([
-                kinetic_mask[qubit]
-                for qubit in modes_acted_on_by_inner_commutator
-            ])
+            inner_commutator_mode_mask = numpy.logical_or.reduce(
+                [kinetic_mask[qubit] for qubit in modes_acted_on_by_inner_commutator]
+            )
 
             # kinetic_terms for T+V order, halved_kinetic_terms for V+T
-            for outer_kinetic_term in outer_kinetic_terms[
-                    inner_commutator_mode_mask]:
+            for outer_kinetic_term in outer_kinetic_terms[inner_commutator_mode_mask]:
                 commutator_ordered_diagonal_coulomb_with_two_body_operator(
-                    outer_kinetic_term,
-                    inner_commutator_term,
-                    prior_terms=error_operator)
+                    outer_kinetic_term, inner_commutator_term, prior_terms=error_operator
+                )
 
     # Divide by 12 to match the error operator definition.
     # If order='V+T', also flip the sign to account for inner_commutator_term
@@ -212,7 +209,8 @@ def split_operator_trotter_error_operator_diagonal_two_body(hamiltonian, order):
 
 
 def fermionic_swap_trotter_error_operator_diagonal_two_body(
-        hamiltonian, external_potential_at_end=False):
+    hamiltonian, external_potential_at_end=False
+):
     """Compute the fermionic swap network Trotter error of a diagonal
     two-body Hamiltonian.
 
@@ -229,25 +227,27 @@ def fermionic_swap_trotter_error_operator_diagonal_two_body(
     """
     single_terms = numpy.array(
         simulation_ordered_grouped_low_depth_terms_with_info(
-            hamiltonian,
-            external_potential_at_end=external_potential_at_end)[0])
+            hamiltonian, external_potential_at_end=external_potential_at_end
+        )[0]
+    )
 
     # Cache the halved terms for use in the second commutator.
     halved_single_terms = single_terms / 2.0
 
     term_mode_mask = bit_mask_of_modes_acted_on_by_fermionic_terms(
-        single_terms, count_qubits(hamiltonian))
+        single_terms, count_qubits(hamiltonian)
+    )
 
     error_operator = FermionOperator.zero()
 
     for beta, term_beta in enumerate(single_terms):
         modes_acted_on_by_term_beta = set()
         for beta_action in term_beta.terms:
-            modes_acted_on_by_term_beta.update(
-                set(operator[0] for operator in beta_action))
+            modes_acted_on_by_term_beta.update(set(operator[0] for operator in beta_action))
 
         beta_mode_mask = numpy.logical_or.reduce(
-            [term_mode_mask[mode] for mode in modes_acted_on_by_term_beta])
+            [term_mode_mask[mode] for mode in modes_acted_on_by_term_beta]
+        )
 
         # alpha_prime indices that could have a nonzero commutator, i.e.
         # there's overlap between the modes the corresponding terms act on.
@@ -259,23 +259,23 @@ def fermionic_swap_trotter_error_operator_diagonal_two_body(
         for alpha_prime in valid_alpha_primes:
             term_alpha_prime = single_terms[alpha_prime]
 
-            inner_commutator_term = (
-                commutator_ordered_diagonal_coulomb_with_two_body_operator(
-                    term_beta, term_alpha_prime))
+            inner_commutator_term = commutator_ordered_diagonal_coulomb_with_two_body_operator(
+                term_beta, term_alpha_prime
+            )
 
             modes_acted_on_by_inner_commutator = set()
             for inner_commutator_action in inner_commutator_term.terms:
                 modes_acted_on_by_inner_commutator.update(
-                    set(operator[0] for operator in inner_commutator_action))
+                    set(operator[0] for operator in inner_commutator_action)
+                )
 
             # If the inner commutator has no action, the commutator is zero.
             if not modes_acted_on_by_inner_commutator:
                 continue
 
-            inner_commutator_mask = numpy.logical_or.reduce([
-                term_mode_mask[mode]
-                for mode in modes_acted_on_by_inner_commutator
-            ])
+            inner_commutator_mask = numpy.logical_or.reduce(
+                [term_mode_mask[mode] for mode in modes_acted_on_by_inner_commutator]
+            )
 
             # alpha indices that could have a nonzero commutator.
             valid_alphas = numpy.where(inner_commutator_mask)[0]
@@ -291,9 +291,8 @@ def fermionic_swap_trotter_error_operator_diagonal_two_body(
 
                 # Add the partial double commutator to the error operator.
                 commutator_ordered_diagonal_coulomb_with_two_body_operator(
-                    outer_term_alpha,
-                    inner_commutator_term,
-                    prior_terms=error_operator)
+                    outer_term_alpha, inner_commutator_term, prior_terms=error_operator
+                )
 
     # Divide by 12 to match the error operator definition.
     error_operator /= 12.0

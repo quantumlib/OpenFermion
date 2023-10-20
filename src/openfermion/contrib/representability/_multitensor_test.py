@@ -2,10 +2,8 @@ import numpy as np
 import pytest
 import scipy as sp
 from openfermion.contrib.representability._namedtensor import Tensor
-from openfermion.contrib.representability._multitensor import MultiTensor, \
-    TMap
-from openfermion.contrib.representability._dualbasis import DualBasis, \
-    DualBasisElement
+from openfermion.contrib.representability._multitensor import MultiTensor, TMap
+from openfermion.contrib.representability._dualbasis import DualBasis, DualBasisElement
 
 
 def test_tmap():
@@ -158,11 +156,13 @@ def test_dual_basis_element():
     rdm = MultiTensor([opdm])
 
     def generate_dual_basis_element(i, j):
-        element = DualBasisElement(tensor_names=["opdm"],
-                                   tensor_elements=[(i, j)],
-                                   tensor_coeffs=[-1.0],
-                                   bias=1 if i == j else 0,
-                                   scalar=0)
+        element = DualBasisElement(
+            tensor_names=["opdm"],
+            tensor_elements=[(i, j)],
+            tensor_coeffs=[-1.0],
+            bias=1 if i == j else 0,
+            scalar=0,
+        )
         return element
 
     opdm_to_oqdm_map = DualBasis()

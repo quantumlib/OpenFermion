@@ -16,23 +16,18 @@ import pytest
 from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
-    from openfermion.resource_estimates.pbc.sf.\
-        generate_costing_table_sf import generate_costing_table
-    from openfermion.resource_estimates.pbc.testing import (
-        make_diamond_113_szv,)
+    from openfermion.resource_estimates.pbc.sf.generate_costing_table_sf import (
+        generate_costing_table,
+    )
+    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_generate_costing_table_sf():
     mf = make_diamond_113_szv()
     thresh = np.array([10, 54, 108])
-    table = generate_costing_table(mf,
-                                   naux_cutoffs=thresh,
-                                   chi=17,
-                                   dE_for_qpe=1e-3)
+    table = generate_costing_table(mf, naux_cutoffs=thresh, chi=17, dE_for_qpe=1e-3)
     assert np.allclose(table.dE, 1e-3)
     assert np.allclose(table.chi, 17)
     assert np.allclose(table.num_aux, [10, 54, 108])
-    assert np.isclose(table.approx_energy.values[2],
-                      table.exact_energy.values[0])
+    assert np.isclose(table.approx_energy.values[2], table.exact_energy.values[0])

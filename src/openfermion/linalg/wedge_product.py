@@ -59,8 +59,7 @@ def generate_parity_permutations(seq):
                 # insert new object starting at end of the list
                 new_index_list.insert(len(perm[0]) - put_index, index_to_inject)
 
-                new_permutations.append(
-                    (new_index_list, perm[1] * (-1)**(put_index)))
+                new_permutations.append((new_index_list, perm[1] * (-1) ** (put_index)))
 
         permutations = new_permutations
 
@@ -103,41 +102,42 @@ def wedge(left_tensor, right_tensor, left_index_ranks, right_index_ranks):
         right_tensor
     """
     if left_tensor.ndim != sum(left_index_ranks):
-        raise IndexError(
-            "n_tensor shape is not consistent with the input n_index rank")
+        raise IndexError("n_tensor shape is not consistent with the input n_index rank")
     if right_tensor.ndim != sum(right_index_ranks):
-        raise IndexError(
-            "n_tensor shape is not consistent with the input n_index rank")
+        raise IndexError("n_tensor shape is not consistent with the input n_index rank")
     # assign upper and lower indices for n_tensor
     total_upper = left_index_ranks[0] + right_index_ranks[0]
     total_lower = left_index_ranks[1] + right_index_ranks[1]
     upper_characters = EINSUM_CHARS[:total_upper]
-    lower_characters = EINSUM_CHARS[total_upper:total_upper + total_lower]
-    new_tensor = numpy.zeros(left_tensor.shape + right_tensor.shape,
-                             dtype=complex)
+    lower_characters = EINSUM_CHARS[total_upper : total_upper + total_lower]
+    new_tensor = numpy.zeros(left_tensor.shape + right_tensor.shape, dtype=complex)
     ordered_einsum_string = upper_characters + lower_characters
 
     for upper_order_parities, lower_order_parities in product(
-            generate_parity_permutations(upper_characters),
-            generate_parity_permutations(lower_characters[::-1])):
+        generate_parity_permutations(upper_characters),
+        generate_parity_permutations(lower_characters[::-1]),
+    ):
         # we reverse the order in the lower_chars so because
         # <a^ b^ c d> = D_{dc}^{ab} in this code.
-        n_upper_einsum_chars = upper_order_parities[0][:left_index_ranks[0]]
-        m_upper_einsum_chars = upper_order_parities[0][left_index_ranks[0]:]
-        n_lower_einsum_chars = lower_order_parities[0] \
-            [:left_index_ranks[1]][::-1]
-        m_lower_einsum_chars = lower_order_parities[0] \
-            [left_index_ranks[1]:][::-1]
+        n_upper_einsum_chars = upper_order_parities[0][: left_index_ranks[0]]
+        m_upper_einsum_chars = upper_order_parities[0][left_index_ranks[0] :]
+        n_lower_einsum_chars = lower_order_parities[0][: left_index_ranks[1]][::-1]
+        m_lower_einsum_chars = lower_order_parities[0][left_index_ranks[1] :][::-1]
 
         n_string = "".join(n_upper_einsum_chars + n_lower_einsum_chars)
         m_string = "".join(m_upper_einsum_chars + m_lower_einsum_chars)
 
         # we are doing lots of extra += operations but with the benefit of not
         # having to write a python loop over the entire new_tensor object.
-        new_tensor += upper_order_parities[1] * lower_order_parities[1] * \
-                      numpy.einsum('{},{}->{}'.format(n_string, m_string,
-                                                      ordered_einsum_string),
-                                   left_tensor, right_tensor)
+        new_tensor += (
+            upper_order_parities[1]
+            * lower_order_parities[1]
+            * numpy.einsum(
+                '{},{}->{}'.format(n_string, m_string, ordered_einsum_string),
+                left_tensor,
+                right_tensor,
+            )
+        )
 
     new_tensor /= factorial(total_upper) * factorial(total_lower)
 

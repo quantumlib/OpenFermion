@@ -12,19 +12,10 @@
 
 from .bch_expansion import bch_expand
 
-from .channel_state import (
-    amplitude_damping_channel,
-    dephasing_channel,
-    depolarizing_channel,
-)
+from .channel_state import amplitude_damping_channel, dephasing_channel, depolarizing_channel
 
 # Imports out of alphabetical order to avoid circular dependency.
-from .lattice import (
-    HubbardSquareLattice,
-    HubbardLattice,
-    SpinPairs,
-    Spin,
-)
+from .lattice import HubbardSquareLattice, HubbardLattice, SpinPairs, Spin
 
 from .commutators import (
     anticommutator,
@@ -37,11 +28,7 @@ from .commutators import (
 
 from .grid import Grid
 
-from .indexing import (
-    up_index,
-    down_index,
-    up_then_down,
-)
+from .indexing import up_index, down_index, up_then_down
 
 from .operator_utils import (
     count_qubits,

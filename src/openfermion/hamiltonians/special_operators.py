@@ -104,10 +104,8 @@ def sx_operator(n_spatial_orbitals: int) -> FermionOperator:
 
     operator = FermionOperator()
     for ni in range(n_spatial_orbitals):
-        operator += FermionOperator(((up_index(ni), 1), (down_index(ni), 0)),
-                                    .5)
-        operator += FermionOperator(((down_index(ni), 1), (up_index(ni), 0)),
-                                    .5)
+        operator += FermionOperator(((up_index(ni), 1), (down_index(ni), 0)), 0.5)
+        operator += FermionOperator(((down_index(ni), 1), (up_index(ni), 0)), 0.5)
 
     return operator
 
@@ -138,10 +136,8 @@ def sy_operator(n_spatial_orbitals: int) -> FermionOperator:
 
     operator = FermionOperator()
     for ni in range(n_spatial_orbitals):
-        operator += FermionOperator(((up_index(ni), 1), (down_index(ni), 0)),
-                                    -.5j)
-        operator += FermionOperator(((down_index(ni), 1), (up_index(ni), 0)),
-                                    .5j)
+        operator += FermionOperator(((up_index(ni), 1), (down_index(ni), 0)), -0.5j)
+        operator += FermionOperator(((down_index(ni), 1), (up_index(ni), 0)), 0.5j)
 
     return operator
 
@@ -173,8 +169,9 @@ def sz_operator(n_spatial_orbitals: int) -> FermionOperator:
     operator = FermionOperator()
     n_spinless_orbitals = 2 * n_spatial_orbitals
     for ni in range(n_spatial_orbitals):
-        operator += (number_operator(n_spinless_orbitals, up_index(ni), 0.5) +
-                     number_operator(n_spinless_orbitals, down_index(ni), -0.5))
+        operator += number_operator(n_spinless_orbitals, up_index(ni), 0.5) + number_operator(
+            n_spinless_orbitals, down_index(ni), -0.5
+        )
 
     return operator
 
@@ -204,15 +201,16 @@ def s_squared_operator(n_spatial_orbitals: int) -> FermionOperator:
         raise TypeError("n_orbitals must be specified as an integer")
 
     fermion_identity = FermionOperator(())
-    operator = (s_minus_operator(n_spatial_orbitals) *
-                s_plus_operator(n_spatial_orbitals))
-    operator += (sz_operator(n_spatial_orbitals) *
-                 (sz_operator(n_spatial_orbitals) + fermion_identity))
+    operator = s_minus_operator(n_spatial_orbitals) * s_plus_operator(n_spatial_orbitals)
+    operator += sz_operator(n_spatial_orbitals) * (
+        sz_operator(n_spatial_orbitals) + fermion_identity
+    )
     return operator
 
 
-def majorana_operator(term: Optional[Union[Tuple[int, int], str]] = None,
-                      coefficient=1.) -> FermionOperator:
+def majorana_operator(
+    term: Optional[Union[Tuple[int, int], str]] = None, coefficient=1.0
+) -> FermionOperator:
     r"""Initialize a Majorana operator.
 
     Args:
@@ -266,11 +264,10 @@ def majorana_operator(term: Optional[Union[Tuple[int, int], str]] = None,
             majorana_op = FermionOperator(((mode, 1),), coefficient)
             majorana_op += FermionOperator(((mode, 0),), coefficient)
         elif operator_type == 1:
-            majorana_op = FermionOperator(((mode, 1),), 1.j * coefficient)
-            majorana_op -= FermionOperator(((mode, 0),), 1.j * coefficient)
+            majorana_op = FermionOperator(((mode, 1),), 1.0j * coefficient)
+            majorana_op -= FermionOperator(((mode, 0),), 1.0j * coefficient)
         else:
-            raise ValueError('Invalid operator type: {}'.format(
-                str(operator_type)))
+            raise ValueError('Invalid operator type: {}'.format(str(operator_type)))
 
         return majorana_op
 
@@ -279,10 +276,9 @@ def majorana_operator(term: Optional[Union[Tuple[int, int], str]] = None,
         raise ValueError('Operator specified incorrectly.')
 
 
-def number_operator(n_modes: int,
-                    mode: Optional[int] = None,
-                    coefficient=1.,
-                    parity: int = -1) -> Union[BosonOperator, FermionOperator]:
+def number_operator(
+    n_modes: int, mode: Optional[int] = None, coefficient=1.0, parity: int = -1
+) -> Union[BosonOperator, FermionOperator]:
     """Return a fermionic or bosonic number operator.
 
     Args:

@@ -1,11 +1,9 @@
 import numpy as np
 from scipy.sparse import csr_matrix
-from openfermion.contrib.representability._dualbasis import \
-    DualBasisElement, DualBasis
+from openfermion.contrib.representability._dualbasis import DualBasisElement, DualBasis
 
 
 class TMap(object):
-
     def __init__(self, tensors):
         """
         provide a map of tensor name to tensors
@@ -25,7 +23,6 @@ class TMap(object):
 
 
 class MultiTensor(object):
-
     def __init__(self, tensors, dual_basis=DualBasis()):
         """
         A collection of tensor objects with maps from name to tensor
@@ -82,8 +79,7 @@ class MultiTensor(object):
         Add  a dual element to the dual basis
         """
         if not isinstance(dual_element, DualBasisElement):
-            raise TypeError(
-                "dual_element variable needs to be a DualBasisElement type")
+            raise TypeError("dual_element variable needs to be a DualBasisElement type")
 
         # we should extend TMap to add
         self.dual_basis.elements.extend(dual_element)
@@ -114,16 +110,16 @@ class MultiTensor(object):
             inner_prod_data_values.append(float(dual_element.dual_scalar))
             bias_data_values.append(dual_element.constant_bias)
         sparse_dual_operator = csr_matrix(
-            (dual_data_values, (dual_row_indices, dual_col_indices)),
-            [index + 1, self.vec_dim])
+            (dual_data_values, (dual_row_indices, dual_col_indices)), [index + 1, self.vec_dim]
+        )
 
         sparse_bias_vector = csr_matrix(
-            (bias_data_values, (range(index + 1), [0] * (index + 1))),
-            [index + 1, 1])
+            (bias_data_values, (range(index + 1), [0] * (index + 1))), [index + 1, 1]
+        )
 
         sparse_innerp_vector = csr_matrix(
-            (inner_prod_data_values, (range(index + 1), [0] * (index + 1))),
-            [index + 1, 1])
+            (inner_prod_data_values, (range(index + 1), [0] * (index + 1))), [index + 1, 1]
+        )
 
         return sparse_dual_operator, sparse_bias_vector, sparse_innerp_vector
 
@@ -136,8 +132,9 @@ class MultiTensor(object):
         col_idx = []
         data_vals = []
         for tlabel, velement, coeff in element:
-            col_idx.append(self.off_set_map[tlabel] +
-                           self.tensors[tlabel].index_vectorized(*velement))
+            col_idx.append(
+                self.off_set_map[tlabel] + self.tensors[tlabel].index_vectorized(*velement)
+            )
             data_vals.append(coeff)
 
         return col_idx, data_vals

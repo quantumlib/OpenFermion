@@ -17,7 +17,6 @@ from openfermion.hamiltonians import number_operator
 
 
 class FermionOperatorTest(unittest.TestCase):
-
     def test_is_normal_ordered_empty(self):
         op = FermionOperator() * 2
         self.assertTrue(op.is_normal_ordered())

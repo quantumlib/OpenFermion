@@ -1,11 +1,11 @@
-#coverage:ignore
+# coverage:ignore
 """ Double factorization rank reduction of ERIs """
 import numpy as np
 from openfermion.resource_estimates.utils import eigendecomp
 
 
 def factorize(eri_full, thresh):
-    """ Do double factorization of the ERI tensor
+    """Do double factorization of the ERI tensor
 
     Args:
        eri_full (np.ndarray) - 4D (N x N x N x N) full ERI tensor

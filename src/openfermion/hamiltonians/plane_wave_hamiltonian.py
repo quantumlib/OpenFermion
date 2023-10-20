@@ -14,8 +14,7 @@ from typing import List, Tuple, Optional, Union
 
 import numpy as np
 
-from openfermion.hamiltonians.jellium import (jellium_model,
-                                              jordan_wigner_dual_basis_jellium)
+from openfermion.hamiltonians.jellium import jellium_model, jordan_wigner_dual_basis_jellium
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.transforms.repconversions import inverse_fourier_transform
 from openfermion.utils.grid import Grid
@@ -24,12 +23,12 @@ import openfermion.chem.molecular_data as md
 
 
 def dual_basis_external_potential(
-        grid: Grid,
-        geometry: List[Tuple[str, Tuple[Union[int, float], Union[int, float],
-                                        Union[int, float]]]],
-        spinless: bool,
-        non_periodic: bool = False,
-        period_cutoff: Optional[float] = None) -> FermionOperator:
+    grid: Grid,
+    geometry: List[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]],
+    spinless: bool,
+    non_periodic: bool = False,
+    period_cutoff: Optional[float] = None,
+) -> FermionOperator:
     """Return the external potential in the dual basis of arXiv:1706.00023.
 
     The external potential resulting from electrons interacting with nuclei
@@ -54,7 +53,7 @@ def dual_basis_external_potential(
     """
     prefactor = -4.0 * np.pi / grid.volume_scale()
     if non_periodic and period_cutoff is None:
-        period_cutoff = grid.volume_scale()**(1. / grid.dimensions)
+        period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
     operator = None
     if spinless:
         spins = [None]
@@ -71,9 +70,12 @@ def dual_basis_external_potential(
                     continue
 
                 cos_index = momenta.dot(coordinate_j - coordinate_p)
-                coefficient = (prefactor / momenta_squared *
-                               md.periodic_hash_table[nuclear_term[0]] *
-                               np.cos(cos_index))
+                coefficient = (
+                    prefactor
+                    / momenta_squared
+                    * md.periodic_hash_table[nuclear_term[0]]
+                    * np.cos(cos_index)
+                )
 
                 for spin_p in spins:
                     orbital_p = grid.orbital_id(pos_indices, spin_p)
@@ -86,13 +88,13 @@ def dual_basis_external_potential(
 
 
 def plane_wave_external_potential(
-        grid: Grid,
-        geometry: List[Tuple[str, Tuple[Union[int, float], Union[int, float],
-                                        Union[int, float]]]],
-        spinless: bool,
-        e_cutoff: Optional[float] = None,
-        non_periodic: bool = False,
-        period_cutoff: Optional[float] = None) -> FermionOperator:
+    grid: Grid,
+    geometry: List[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]],
+    spinless: bool,
+    e_cutoff: Optional[float] = None,
+    non_periodic: bool = False,
+    period_cutoff: Optional[float] = None,
+) -> FermionOperator:
     """Return the external potential operator in plane wave basis.
 
     The external potential resulting from electrons interacting with nuclei.
@@ -115,24 +117,26 @@ def plane_wave_external_potential(
     Returns:
         FermionOperator: The plane wave operator.
     """
-    dual_basis_operator = dual_basis_external_potential(grid, geometry,
-                                                        spinless, non_periodic,
-                                                        period_cutoff)
+    dual_basis_operator = dual_basis_external_potential(
+        grid, geometry, spinless, non_periodic, period_cutoff
+    )
     operator = inverse_fourier_transform(dual_basis_operator, grid, spinless)
 
     return operator
 
 
 def plane_wave_hamiltonian(
-        grid: Grid,
-        geometry: Optional[List[Tuple[str, Tuple[
-            Union[int, float], Union[int, float], Union[int, float]]]]] = None,
-        spinless: bool = False,
-        plane_wave: bool = True,
-        include_constant: bool = False,
-        e_cutoff: Optional[float] = None,
-        non_periodic: bool = False,
-        period_cutoff: Optional[float] = None) -> FermionOperator:
+    grid: Grid,
+    geometry: Optional[
+        List[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]]
+    ] = None,
+    spinless: bool = False,
+    plane_wave: bool = True,
+    include_constant: bool = False,
+    e_cutoff: Optional[float] = None,
+    non_periodic: bool = False,
+    period_cutoff: Optional[float] = None,
+) -> FermionOperator:
     """Returns Hamiltonian as FermionOperator class.
 
     Args:
@@ -155,8 +159,9 @@ def plane_wave_hamiltonian(
     if (geometry is not None) and (include_constant is True):
         raise ValueError('Constant term unsupported for non-uniform systems')
 
-    jellium_op = jellium_model(grid, spinless, plane_wave, include_constant,
-                               e_cutoff, non_periodic, period_cutoff)
+    jellium_op = jellium_model(
+        grid, spinless, plane_wave, include_constant, e_cutoff, non_periodic, period_cutoff
+    )
 
     if geometry is None:
         return jellium_op
@@ -169,20 +174,24 @@ def plane_wave_hamiltonian(
 
     if plane_wave:
         external_potential = plane_wave_external_potential(
-            grid, geometry, spinless, e_cutoff, non_periodic, period_cutoff)
+            grid, geometry, spinless, e_cutoff, non_periodic, period_cutoff
+        )
     else:
         external_potential = dual_basis_external_potential(
-            grid, geometry, spinless, non_periodic, period_cutoff)
+            grid, geometry, spinless, non_periodic, period_cutoff
+        )
 
     return jellium_op + external_potential
 
 
 def jordan_wigner_dual_basis_hamiltonian(
-        grid: Grid,
-        geometry: Optional[List[Tuple[str, Tuple[
-            Union[int, float], Union[int, float], Union[int, float]]]]] = None,
-        spinless: bool = False,
-        include_constant: bool = False) -> QubitOperator:
+    grid: Grid,
+    geometry: Optional[
+        List[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]]
+    ] = None,
+    spinless: bool = False,
+    include_constant: bool = False,
+) -> QubitOperator:
     """Return the dual basis Hamiltonian as QubitOperator.
 
     Args:
@@ -199,8 +208,7 @@ def jordan_wigner_dual_basis_hamiltonian(
     if (geometry is not None) and (include_constant is True):
         raise ValueError('Constant term unsupported for non-uniform systems')
 
-    jellium_op = jordan_wigner_dual_basis_jellium(grid, spinless,
-                                                  include_constant)
+    jellium_op = jordan_wigner_dual_basis_jellium(grid, spinless, include_constant)
 
     if geometry is None:
         return jellium_op
@@ -234,10 +242,14 @@ def jordan_wigner_dual_basis_hamiltonian(
                 coordinate_j = np.array(nuclear_term[1], float)
 
                 cos_index = momenta.dot(coordinate_j - coordinate_p)
-                coefficient = (prefactor / momenta_squared *
-                               md.periodic_hash_table[nuclear_term[0]] *
-                               np.cos(cos_index))
-                external_potential += (QubitOperator(
-                    (), coefficient) - QubitOperator(((p, 'Z'),), coefficient))
+                coefficient = (
+                    prefactor
+                    / momenta_squared
+                    * md.periodic_hash_table[nuclear_term[0]]
+                    * np.cos(cos_index)
+                )
+                external_potential += QubitOperator((), coefficient) - QubitOperator(
+                    ((p, 'Z'),), coefficient
+                )
 
     return jellium_op + external_potential

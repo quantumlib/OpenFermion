@@ -2,40 +2,60 @@ from itertools import product
 import os
 import numpy as np
 from openfermion.contrib.representability.constraints.spin_orbital_2pos_constraints import (  # pylint: disable=line-too-long
-    tpdm_antisymmetry_constraint, tpdm_trace_constraint, _coord_generator,
-    tpdm_to_opdm_mapping, opdm_to_ohdm_mapping, sz_constraint, na_constraint,
-    nb_constraint, tpdm_to_thdm_mapping, tpdm_to_phdm_mapping,
-    spin_orbital_linear_constraints)
-from openfermion.contrib.representability._dualbasis import \
-    DualBasisElement, DualBasis
+    tpdm_antisymmetry_constraint,
+    tpdm_trace_constraint,
+    _coord_generator,
+    tpdm_to_opdm_mapping,
+    opdm_to_ohdm_mapping,
+    sz_constraint,
+    na_constraint,
+    nb_constraint,
+    tpdm_to_thdm_mapping,
+    tpdm_to_phdm_mapping,
+    spin_orbital_linear_constraints,
+)
+from openfermion.contrib.representability._dualbasis import DualBasisElement, DualBasis
 from openfermion.contrib.representability._namedtensor import Tensor
 from openfermion.contrib.representability._multitensor import MultiTensor
 from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
-from openfermion.utils import map_two_pdm_to_two_hole_dm, \
-    map_two_pdm_to_particle_hole_dm
+from openfermion.utils import map_two_pdm_to_two_hole_dm, map_two_pdm_to_particle_hole_dm
 
 
 def test_trace_constraint():
     dbe = tpdm_trace_constraint(4, 10)
     assert dbe.primal_tensors_names == ['cckk'] * 4**2
-    assert dbe.primal_elements == [
-        (i, j, i, j) for i, j in product(range(4), repeat=2)
-    ]
+    assert dbe.primal_elements == [(i, j, i, j) for i, j in product(range(4), repeat=2)]
     assert np.isclose(dbe.constant_bias, 0)
     assert np.isclose(dbe.dual_scalar, 10)
 
 
 def test_coord_generator():
     i, j, k, l = 0, 1, 2, 3
-    true_set = {(i, j, k, l), (j, i, k, l), (i, j, l, k), (j, i, l, k),
-                (k, l, i, j), (k, l, j, i), (l, k, i, j), (l, k, j, i)}
+    true_set = {
+        (i, j, k, l),
+        (j, i, k, l),
+        (i, j, l, k),
+        (j, i, l, k),
+        (k, l, i, j),
+        (k, l, j, i),
+        (l, k, i, j),
+        (l, k, j, i),
+    }
 
     assert true_set == set(_coord_generator(i, j, k, l))
 
     i, j, k, l = 1, 1, 2, 3
-    true_set = {(i, j, k, l), (j, i, k, l), (i, j, l, k), (j, i, l, k),
-                (k, l, i, j), (k, l, j, i), (l, k, i, j), (l, k, j, i)}
+    true_set = {
+        (i, j, k, l),
+        (j, i, k, l),
+        (i, j, l, k),
+        (j, i, l, k),
+        (k, l, i, j),
+        (k, l, j, i),
+        (l, k, i, j),
+        (l, k, j, i),
+    }
     assert true_set == set(_coord_generator(i, j, k, l))
 
 
@@ -43,8 +63,7 @@ def test_d2_antisymm():
     db = tpdm_antisymmetry_constraint(4)
     for dbe in db:
         i, j, k, l = dbe.primal_elements[0]
-        assert len(list(_coord_generator(i, j, k,
-                                         l))) == len(dbe.primal_elements)
+        assert len(list(_coord_generator(i, j, k, l))) == len(dbe.primal_elements)
         assert np.isclose(dbe.constant_bias, 0)
         assert np.isclose(dbe.dual_scalar, 0)
         assert np.unique(dbe.primal_coeffs)
@@ -69,10 +88,9 @@ def test_tpdm_opdm_mapping():
                 assert dbe.primal_coeffs
             elif len(element) == 2:
                 gem_idx = [len(x) for x in dbe.primal_elements].index(4)
-                assert sorted(element) == sorted([
-                    dbe.primal_elements[gem_idx][0],
-                    dbe.primal_elements[gem_idx][2]
-                ])
+                assert sorted(element) == sorted(
+                    [dbe.primal_elements[gem_idx][0], dbe.primal_elements[gem_idx][2]]
+                )
 
 
 def test_opdm_to_ohdm_mapping():
@@ -159,9 +177,6 @@ def test_d2_to_g2():
 
 def test_spin_orbital_dual_basis_construction():
     db = spin_orbital_linear_constraints(
-        dim=6,
-        num_alpha=3,
-        num_beta=3,
-        constraint_list=['ck', 'kc', 'cckk', 'kkcc', 'ckck'],
-        sz=0)
+        dim=6, num_alpha=3, num_beta=3, constraint_list=['ck', 'kc', 'cckk', 'kkcc', 'ckck'], sz=0
+    )
     assert isinstance(db, DualBasis)

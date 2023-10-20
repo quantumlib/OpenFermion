@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 """Test cases for pyscf_utils.py
 """
 import unittest
@@ -14,18 +14,21 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
 
     from openfermion.resource_estimates import df, sf
     from openfermion.resource_estimates.molecule import (
-        ccsd_t, factorized_ccsd_t, load_casfile_to_pyscf, open_shell_t1_d1,
-        pyscf_to_cas, stability)
+        ccsd_t,
+        factorized_ccsd_t,
+        load_casfile_to_pyscf,
+        open_shell_t1_d1,
+        pyscf_to_cas,
+        stability,
+    )
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 @pytest.mark.slow
 class OpenFermionPyscfUtilsTest(unittest.TestCase):
-
     def test_full_ccsd_t(self):
-        """ Test resource_estimates full CCSD(T) from h1/eri/ecore tensors
-            matches regular PySCF CCSD(T)
+        """Test resource_estimates full CCSD(T) from h1/eri/ecore tensors
+        matches regular PySCF CCSD(T)
         """
 
         for scf_type in ['rhf', 'rohf']:
@@ -53,8 +56,8 @@ class OpenFermionPyscfUtilsTest(unittest.TestCase):
             # Do PySCF CCSD(T)
             mycc = cc.CCSD(mf)
             mycc.max_cycle = 500
-            mycc.conv_tol = 1E-9
-            mycc.conv_tol_normt = 1E-5
+            mycc.conv_tol = 1e-9
+            mycc.conv_tol_normt = 1e-5
             mycc.diis_space = 24
             mycc.diis_start_cycle = 4
             mycc.kernel()
@@ -68,18 +71,15 @@ class OpenFermionPyscfUtilsTest(unittest.TestCase):
             n_elec = mol.nelectron
             n_orb = mf.mo_coeff[0].shape[-1]
 
-            resource_estimates_results = ccsd_t(
-                *pyscf_to_cas(mf, n_orb, n_elec))
+            resource_estimates_results = ccsd_t(*pyscf_to_cas(mf, n_orb, n_elec))
             resource_estimates_results = np.asarray(resource_estimates_results)
 
             # ignore relative tolerance, we just want absolute tolerance
-            assert np.allclose(pyscf_results,
-                               resource_estimates_results,
-                               rtol=1E-14)
+            assert np.allclose(pyscf_results, resource_estimates_results, rtol=1e-14)
 
     def test_reduced_ccsd_t(self):
-        """ Test resource_estimates reduced (2e space) CCSD(T) from tensors
-            matches PySCF CAS(2e,No)
+        """Test resource_estimates reduced (2e space) CCSD(T) from tensors
+        matches PySCF CAS(2e,No)
         """
 
         for scf_type in ['rhf', 'rohf']:
@@ -113,35 +113,34 @@ class OpenFermionPyscfUtilsTest(unittest.TestCase):
 
             # Don't do triples (it's zero anyway for 2e) b/c div by zero w/ ROHF
             _, _, resource_estimates_etot = ccsd_t(
-                *pyscf_to_cas(mf, n_orb, n_elec), no_triples=True)
+                *pyscf_to_cas(mf, n_orb, n_elec), no_triples=True
+            )
 
             # ignore relative tolerance, we just want absolute tolerance
-            assert np.isclose(pyscf_etot, resource_estimates_etot, rtol=1E-14)
+            assert np.isclose(pyscf_etot, resource_estimates_etot, rtol=1e-14)
 
     def test_reiher_sf_ccsd_t(self):
-        """ Reproduce Reiher et al FeMoco SF CCSD(T) errors from paper """
+        """Reproduce Reiher et al FeMoco SF CCSD(T) errors from paper"""
 
         NAME = path.join(path.dirname(__file__), '../integrals/eri_reiher.h5')
         _, mf = load_casfile_to_pyscf(NAME, num_alpha=27, num_beta=27)
-        _, ecorr, _ = factorized_ccsd_t(
-            mf, eri_rr=None)  # use full (local) ERIs for 2-body
+        _, ecorr, _ = factorized_ccsd_t(mf, eri_rr=None)  # use full (local) ERIs for 2-body
         exact_energy = ecorr
         rank = 100
         eri_rr, _ = sf.factorize(mf._eri, rank)
         _, ecorr, _ = factorized_ccsd_t(mf, eri_rr)
         appx_energy = ecorr
 
-        error = (appx_energy - exact_energy) * 1E3  # mEh
+        error = (appx_energy - exact_energy) * 1e3  # mEh
 
         assert np.isclose(np.round(error, decimals=2), 1.55)
 
     def test_reiher_df_ccsd_t(self):
-        """ Reproduce Reiher et al FeMoco DF CCSD(T) errors from paper """
+        """Reproduce Reiher et al FeMoco DF CCSD(T) errors from paper"""
 
         NAME = path.join(path.dirname(__file__), '../integrals/eri_reiher.h5')
         _, mf = load_casfile_to_pyscf(NAME, num_alpha=27, num_beta=27)
-        _, ecorr, _ = factorized_ccsd_t(
-            mf, eri_rr=None)  # use full (local) ERIs for 2-body
+        _, ecorr, _ = factorized_ccsd_t(mf, eri_rr=None)  # use full (local) ERIs for 2-body
         exact_energy = ecorr
         appx_energy = []
         THRESH = 0.00125
@@ -149,7 +148,7 @@ class OpenFermionPyscfUtilsTest(unittest.TestCase):
         _, ecorr, _ = factorized_ccsd_t(mf, eri_rr)
         appx_energy = ecorr
 
-        error = (appx_energy - exact_energy) * 1E3  # mEh
+        error = (appx_energy - exact_energy) * 1e3  # mEh
 
         assert np.isclose(np.round(error, decimals=2), 0.44)
 
@@ -174,8 +173,8 @@ class OpenFermionPyscfUtilsTest(unittest.TestCase):
         mycc_uhf.kernel()
         t1a, t1b = mycc_uhf.t1
         test_t1d, test_d1d = open_shell_t1_d1(
-            t1a, t1b, uhf_mf.mo_occ[0] + uhf_mf.mo_occ[1], uhf_mf.nelec[0],
-            uhf_mf.nelec[1])
+            t1a, t1b, uhf_mf.mo_occ[0] + uhf_mf.mo_occ[1], uhf_mf.nelec[0], uhf_mf.nelec[1]
+        )
 
         assert np.isclose(test_t1d, true_t1d)
         assert np.isclose(test_d1d, true_d1d)
@@ -232,8 +231,8 @@ class OpenFermionPyscfUtilsTest(unittest.TestCase):
 
         t1a, t1b = mycc_uhf.t1
         test_t1d, test_d1d = open_shell_t1_d1(
-            t1a, t1b, uhf_mf.mo_occ[0] + uhf_mf.mo_occ[1], uhf_mf.nelec[0],
-            uhf_mf.nelec[1])
+            t1a, t1b, uhf_mf.mo_occ[0] + uhf_mf.mo_occ[1], uhf_mf.nelec[0], uhf_mf.nelec[1]
+        )
 
         assert np.isclose(mf.e_tot, -149.651708, atol=1e-6)
         assert np.isclose(mycc_uhf.e_corr, -0.464507, atol=1e-6)
@@ -256,6 +255,6 @@ class OpenFermionPyscfUtilsTest(unittest.TestCase):
         mycc_uhf.kernel()
         t1a, t1b = mycc_uhf.t1
         test_t1d, test_d1d = open_shell_t1_d1(
-            t1a, t1b, uhf_mf.mo_occ[0] + uhf_mf.mo_occ[1], uhf_mf.nelec[0],
-            uhf_mf.nelec[1])
+            t1a, t1b, uhf_mf.mo_occ[0] + uhf_mf.mo_occ[1], uhf_mf.nelec[0], uhf_mf.nelec[1]
+        )
         assert np.sqrt(2) * test_t1d <= test_d1d
