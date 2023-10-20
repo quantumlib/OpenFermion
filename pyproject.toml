@@ -1,0 +1,13 @@
+[tool.black]
+line-length = 100
+target_version = ['py39', 'py310']
+skip-string-normalization = true
+skip-magic-trailing-comma = true
+exclude = "qualtran/protos/*"
+
+[tool.isort]
+profile = 'black'
+order_by_type = false
+line_length = 100
+remove_redundant_aliases = true
+skip_glob = ["qualtran/protos/*"]
