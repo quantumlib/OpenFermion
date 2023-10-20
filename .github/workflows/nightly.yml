@@ -1,4 +1,4 @@
-name: Cirq Pre-release
+name: Nightly
 
 on:
   schedule:
@@ -20,7 +20,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install requirements
         run: |
-          pip install -r dev_tools/requirements/pytest.env.txt
+          pip install -r dev_tools/requirements/envs/pytest.env.txt
           pip install -U cirq-core --pre
       - name: Pytest check
         run: check/pytest
