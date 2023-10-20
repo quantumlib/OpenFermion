@@ -1,5 +1,4 @@
 name: Continuous Integration
-
 on: [pull_request]
 
 jobs:
@@ -14,8 +13,8 @@ jobs:
         with:
           python-version: '3.10'
           architecture: 'x64'
-      - name: Install yapf
-        run: pip install -r dev_tools/requirements/format.env.txt
+      - name: Install requirements
+        run: pip install -r dev_tools/requirements/envs/format.env.txt
       - name: Format
         run: check/format-incremental
   mypy:
@@ -27,11 +26,11 @@ jobs:
         with:
           python-version: '3.10'
           architecture: 'x64'
-      - name: Install mypy
-        run: pip install -r dev_tools/requirements/mypy.env.txt
+      - name: Install requirements
+        run: pip install -r dev_tools/requirements/envs/mypy.env.txt
       - name: Type check
         run: check/mypy
-  lint:
+  pylint:
     name: Lint check
     runs-on: ubuntu-latest
     steps:
@@ -40,54 +39,58 @@ jobs:
         with:
           python-version: '3.10'
           architecture: 'x64'
-      - name: Install pylint
-        run: pip install -r dev_tools/requirements/pylint.env.txt
+      - name: Install requirements
+        run: pip install -r dev_tools/requirements/envs/pylint.env.txt
       - name: Lint
         run: check/pylint
+  pytest-max-compat:
+    name: Pytest max compat
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install requirements
+        run: |
+          pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+      - name: Pytest check
+        run: check/pytest
+        shell: bash
   pytest:
     name: Pytest
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # On each operating system, check latest version of python and cirq
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        python-version: [ '3.10' ]
-        cirq-version: [ '~=1.0' ]
-        # Also check least-supported versions (linux only)
-        include:
-          - os: ubuntu-latest
-            python-version: 3.8
-            cirq-version: '~=0.15.0'
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.10'
       - name: Install requirements
         run: |
-          pip install -r dev_tools/requirements/pytest.env.txt
+          pip install -r dev_tools/requirements/envs/pytest.env.txt
           pip install cirq-core${{matrix.cirq-version}}
       - name: Pytest check
         run: check/pytest
         shell: bash
-  pytest_resource_estimates:
-    name: Pytest Resource Estimates
+  pytest-extra:
+    name: Pytest extra
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [ '3.10' ]
-        cirq-version: [ '~=1.0' ]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.10'
       - name: Install requirements
         run: |
-          pip install -r dev_tools/requirements/resource_estimates.env.txt
+          pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
           pip install cirq-core${{matrix.cirq-version}}
       - name: Pytest check resources
         run: check/pytest -m 'not slow' src/openfermion/resource_estimates
@@ -102,8 +105,7 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: '3.10'
-          architecture: 'x64'
       - name: Install requirements
-        run: pip install -r dev_tools/requirements/pytest.env.txt
+        run: pip install -r dev_tools/requirements/envs/pytest.env.txt
       - name: Coverage check
         run: check/pytest-and-incremental-coverage
