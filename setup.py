@@ -29,9 +29,7 @@ requirements = open('dev_tools/requirements/deps/runtime.txt').readlines()
 requirements = [r.strip() for r in requirements]
 requirements = [r for r in requirements if not r.startswith('#')]
 # Resource estimates requirements.
-resource_requirements = open(
-    'dev_tools/requirements/deps/resource_estimates.txt'
-).readlines()
+resource_requirements = open('dev_tools/requirements/deps/resource_estimates.txt').readlines()
 resource_requirements = [r.strip() for r in resource_requirements]
 resource_requirements = [r for r in resource_requirements if not r.startswith('#')]
 
@@ -61,10 +59,8 @@ setup(
         '': [
             os.path.join('src', 'openfermion', 'testing', '*.npy'),
             os.path.join('src', 'openfermion', 'testing', '*.hdf5'),
-        ],
+        ]
     },
-    extras_require={
-        'resources': resource_requirements,
-    },
+    extras_require={'resources': resource_requirements},
     data_files=docs_data_files_tuples,
 )
