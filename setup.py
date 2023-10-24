@@ -12,17 +12,14 @@
 import io
 import os
 
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 # This reads the __version__ variable from openfermion/_version.py
 __version__ = ''
 exec(open('src/openfermion/_version.py').read())
 
 # Readme file as long_description:
-long_description = ('===========\n' +
-                    'OpenFermion\n' +
-                    '===========\n')
+long_description = '===========\n' + 'OpenFermion\n' + '===========\n'
 stream = io.open('README.rst', encoding='utf-8')
 stream.readline()
 long_description += stream.read()
@@ -31,6 +28,10 @@ long_description += stream.read()
 requirements = open('dev_tools/requirements/deps/runtime.txt').readlines()
 requirements = [r.strip() for r in requirements]
 requirements = [r for r in requirements if not r.startswith('#')]
+# Resource estimates requirements.
+resource_requirements = open('dev_tools/requirements/deps/resource_estimates.txt').readlines()
+resource_requirements = [r.strip() for r in resource_requirements]
+resource_requirements = [r for r in resource_requirements if not r.startswith('#')]
 
 docs_files_gen = os.walk('docs')
 docs_data_files_tuples = []
@@ -38,8 +39,8 @@ for cwd, subdirs, files in list(docs_files_gen)[1:]:
     if 'ipynb_checkpoints' in cwd:
         continue
     docs_data_files_tuples.append(
-        (os.path.join('openfermion',
-                      cwd), [os.path.join(cwd, file) for file in files]))
+        (os.path.join('openfermion', cwd), [os.path.join(cwd, file) for file in files])
+    )
 
 setup(
     name='openfermion',
@@ -58,7 +59,8 @@ setup(
         '': [
             os.path.join('src', 'openfermion', 'testing', '*.npy'),
             os.path.join('src', 'openfermion', 'testing', '*.hdf5'),
-        ],
+        ]
     },
+    extras_require={'resources': resource_requirements},
     data_files=docs_data_files_tuples,
 )
