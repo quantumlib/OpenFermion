@@ -2,6 +2,7 @@ include LICENSE
 include MANIFEST.in
 include NOTICE
 include README.rst
-include requirements.txt
+include dev_tools/requirements/deps/runtime.txt
+include dev_tools/requirements/deps/resource_estimates_runtime.txt
 include setup.py
 recursive-include src *.py *.hdf5 *.npy bad_type_operator.data geometry_example.txt
