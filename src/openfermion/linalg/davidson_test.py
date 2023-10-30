@@ -20,7 +20,6 @@ import scipy.linalg
 import scipy.sparse
 import scipy.sparse.linalg
 
-from openfermion.ops.operators import QubitOperator
 from openfermion.linalg.davidson import (
     Davidson,
     DavidsonOptions,
@@ -29,6 +28,7 @@ from openfermion.linalg.davidson import (
     append_random_vectors,
     orthonormalize,
 )
+from openfermion.ops.operators import QubitOperator
 
 
 def generate_matrix(dimension):

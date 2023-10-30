@@ -11,6 +11,7 @@
 #   limitations under the License.
 
 import itertools
+
 import numpy
 import scipy
 import scipy.linalg
@@ -246,7 +247,7 @@ class Grid:
         for dimension, grid_coordinate in enumerate(grid_coordinates):
             # Make sure coordinate is an integer in the correct bounds.
             if isinstance(grid_coordinate, int) and grid_coordinate < self.length[dimension]:
-                tensor_factor += grid_coordinate * int(numpy.product(self.length[:dimension]))
+                tensor_factor += grid_coordinate * int(numpy.prod(self.length[:dimension]))
             else:
                 # Raise for invalid model.
                 raise OrbitalSpecificationError('Invalid orbital coordinates provided.')
@@ -270,7 +271,7 @@ class Grid:
             grid_indices (numpy.ndarray[int]):
                 The location of the qubit on the grid.
         """
-        if not (numpy.product(self.length) * (2 - spinless) > qubit_id >= 0):
+        if not (numpy.prod(self.length) * (2 - spinless) > qubit_id >= 0):
             raise OrbitalSpecificationError('Invalid qubit_id provided.')
 
         # Remove spin degree of freedom if it exists.
@@ -282,8 +283,8 @@ class Grid:
         # Get grid indices.
         grid_indices = []
         for dimension in range(self.dimensions):
-            remainder = orbital_id % int(numpy.product(self.length[: dimension + 1]))
-            grid_index = remainder // int(numpy.product(self.length[:dimension]))
+            remainder = orbital_id % int(numpy.prod(self.length[: dimension + 1]))
+            grid_index = remainder // int(numpy.prod(self.length[:dimension]))
             grid_indices += [grid_index]
         return grid_indices
 
