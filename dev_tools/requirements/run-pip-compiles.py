@@ -65,9 +65,7 @@ PLATFORMS = {
             "format": EnvRecipe({"runtime", "format"}),
             "pylint": EnvRecipe({"runtime", "pylint"}),
             "pytest": EnvRecipe({"runtime", "pytest"}),
-            "pytest-extra": EnvRecipe(
-                {"runtime", "resource_estimates_runtime", "pytest"}
-            ),
+            "pytest-extra": EnvRecipe({"runtime", "resource_estimates_runtime", "pytest"}),
             "mypy": EnvRecipe({"runtime", "mypy"}),
             "pip-tools": EnvRecipe({"pip-tools"}),
         }
@@ -76,7 +74,9 @@ PLATFORMS = {
     # includes the additional deps/oldest-versions.txt constraint file.
     "max_compat": PlatformRecipe(
         {
-            "pytest-max-compat": EnvRecipe({"runtime", "pytest"}, {"oldest-versions"}),
+            "pytest-max-compat": EnvRecipe(
+                {"runtime", "pytest"}, addtl_constraints={"oldest-versions"}
+            )
         },
         env_out_dir="max_compat",
     ),
@@ -91,10 +91,7 @@ def run(*args):
 def pip_compile(env_name: str, env_recipe: EnvRecipe, env_out_dir: str, constrain=True):
     """Run `pip-compile` to create the named environment."""
     dep_args = [f"deps/{dep_name}.txt" for dep_name in env_recipe.deps]
-    dep_args += [
-        f"--constraint=deps/{cons_name}.txt"
-        for cons_name in env_recipe.addtl_constraints
-    ]
+    dep_args += [f"--constraint=deps/{cons_name}.txt" for cons_name in env_recipe.addtl_constraints]
     if constrain:
         dep_args.append(f"--constraint={env_out_dir}/dev.env.txt")
 
