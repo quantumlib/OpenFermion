@@ -72,7 +72,7 @@ PLATFORMS = {
             "pip-tools": EnvRecipe({"pip-tools"}),
         }
     ),
-    # The following is intended to be run on an older verion of python and
+    # The following is intended to be run on an older version of python and
     # includes the additional deps/oldest-versions.txt constraint file.
     "max_compat": PlatformRecipe(
         {
