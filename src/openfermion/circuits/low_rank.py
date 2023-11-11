@@ -159,7 +159,7 @@ def low_rank_two_body_decomposition(two_body_coefficients,
             one_body_correction, truncation_value)
 
 
-def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
+def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True, truncation_ref=None):
     r"""Get Givens angles and DiagonalHamiltonian to simulate squared one-body.
 
     The goal here will be to prepare to simulate evolution under
@@ -167,14 +167,14 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
     $R e^{-i \sum_{pq} V_{pq} n_p n_q} R^\dagger$ where
     $R$ is a basis transformation matrix.
 
-    TODO: Add option for truncation based on one-body eigenvalues.
-
     Args:
         one_body_matrix (ndarray of floats): an N by N array storing the
             coefficients of a one-body operator to be squared. For instance,
             in the above the elements of this matrix are $h_{pq}$.
         spin_basis (bool): Whether the matrix is passed in the
             spin orbital basis.
+        truncation_ref (float): Eigenvalues under this threshold reference will
+            be truncated for density matrix calculation.
 
     Returns:
         density_density_matrix(ndarray of floats) an N by N array storing
@@ -205,6 +205,18 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
         basis_transformation_matrix = numpy.kron(basis_transformation_matrix,
                                                  numpy.eye(2))
         eigenvalues = numpy.kron(eigenvalues, numpy.ones(2))
+
+    # If the truncation reference is valid, 
+    # build truncated eigenvalues and eigenvectors
+    # based on the reference for density matrix
+    if truncation_ref is not None and isinstance(truncation_ref, float):
+        valid_indices = numpy.where(eigenvalues >= truncation_ref)[0]
+        retained_indices = numpy.where(eigenvalues < truncation_ref)[0]
+        eigenvalues = eigenvalues[valid_indices]
+        eigenvectors = eigenvectors[:, valid_indices]
+        print(f"Retained {len(valid_indices)} eigenvalues and truncated {len(retained_indices)} eigenvalues from the one-body-matrix.")
+    else:
+        raise ValueError("truncation_ref argument must be a valid float.")
 
     # Obtain the diagonal two-body matrix.
     density_density_matrix = numpy.outer(eigenvalues, eigenvalues)
