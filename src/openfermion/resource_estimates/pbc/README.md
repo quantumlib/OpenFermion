@@ -76,11 +76,10 @@ Further details are provided in a [tutorial](./notebooks/resource_estimates.ipyn
 
 Similar to the case of molecular resource estimation, we do not wish to burden all OpenFermion users with these dependencies, and testing with GitHub workflows is disabled. Currently we only check if pyscf is available. If it is then pytest will pick up the pbc module and run the tests. Note the tests can be quite slow due to the cost associated with building the integrals.
 
-## Requirements
-Requirements can be found in [resource_estimates.txt](../../../../dev_tools/requirements/deps/resource_estimates.txt)
+## Installation
+
+The additional requirements required can be installed with openfermion by doing
+
 ```
-pyscf
-jax
-jaxlib
-ase
+pip install openfermion[resources]
 ```
