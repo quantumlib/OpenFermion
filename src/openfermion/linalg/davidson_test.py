@@ -117,7 +117,7 @@ class DavidsonOptionsTest(unittest.TestCase):
 
 
 class DavidsonTest(unittest.TestCase):
-    """ "Tests for Davidson class with a real matrix."""
+    """Tests for Davidson class with a real matrix."""
 
     def setUp(self):
         """Sets up all variables needed for Davidson class."""
