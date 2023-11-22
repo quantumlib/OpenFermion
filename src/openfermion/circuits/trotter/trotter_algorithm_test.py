@@ -22,7 +22,6 @@ def test_trotter_algorithm_is_abstract_cant_instantiate():
 
 
 def test_trotter_algorithm_is_abstract_must_implement():
-
     class Missing(TrotterStep):
         pass
 
@@ -31,9 +30,7 @@ def test_trotter_algorithm_is_abstract_must_implement():
 
 
 def test_trotter_algorithm_is_abstract_can_implement():
-
     class Included(TrotterStep):
-
         def trotter_step(self, qubits, time, control_qubit):
             pass
 

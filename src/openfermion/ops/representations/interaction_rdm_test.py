@@ -22,16 +22,12 @@ from openfermion.transforms.opconversions import jordan_wigner
 
 
 class InteractionRDMTest(unittest.TestCase):
-
     def setUp(self):
-        geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
+        geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
         basis = 'sto-3g'
         multiplicity = 1
         filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
-        self.molecule = MolecularData(geometry,
-                                      basis,
-                                      multiplicity,
-                                      filename=filename)
+        self.molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
         self.molecule.load()
         self.cisd_energy = self.molecule.cisd_energy
         self.rdm = self.molecule.get_molecular_rdm()
@@ -44,8 +40,7 @@ class InteractionRDMTest(unittest.TestCase):
         test_energy = 0.0
         for qubit_term in qubit_expectations.terms:
             term_coefficient = qubit_operator.terms[qubit_term]
-            test_energy += (term_coefficient *
-                            qubit_expectations.terms[qubit_term])
+            test_energy += term_coefficient * qubit_expectations.terms[qubit_term]
         self.assertLess(abs(test_energy - self.cisd_energy), EQ_TOLERANCE)
 
     def test_get_qubit_expectations_nonmolecular_term(self):
@@ -68,22 +63,16 @@ class InteractionRDMTest(unittest.TestCase):
 
     def test_addition(self):
         rdm2 = self.rdm + self.rdm
-        self.assertTrue(
-            numpy.array_equal(rdm2.one_body_tensor,
-                              rdm2.n_body_tensors[(1, 0)]))
-        self.assertTrue(
-            numpy.array_equal(rdm2.two_body_tensor,
-                              rdm2.n_body_tensors[(1, 1, 0, 0)]))
+        self.assertTrue(numpy.array_equal(rdm2.one_body_tensor, rdm2.n_body_tensors[(1, 0)]))
+        self.assertTrue(numpy.array_equal(rdm2.two_body_tensor, rdm2.n_body_tensors[(1, 1, 0, 0)]))
 
     def test_rdm_setters(self):
         temp_rdm = self.molecule.get_molecular_rdm()
         one_body_tensor_test = numpy.eye(4)
         temp_rdm.one_body_tensor = one_body_tensor_test
-        self.assertTrue(
-            numpy.array_equal(temp_rdm.n_body_tensors[(1, 0)],
-                              one_body_tensor_test))
+        self.assertTrue(numpy.array_equal(temp_rdm.n_body_tensors[(1, 0)], one_body_tensor_test))
         two_body_tensor_test = numpy.zeros([4, 4, 4, 4])
         temp_rdm.two_body_tensor = two_body_tensor_test
         self.assertTrue(
-            numpy.array_equal(temp_rdm.n_body_tensors[(1, 1, 0, 0)],
-                              two_body_tensor_test))
+            numpy.array_equal(temp_rdm.n_body_tensors[(1, 1, 0, 0)], two_body_tensor_test)
+        )

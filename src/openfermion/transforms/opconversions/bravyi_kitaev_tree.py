@@ -12,8 +12,7 @@
 """Bravyi-Kitaev transform on fermionic operators."""
 
 from openfermion.ops.operators import QubitOperator
-from openfermion.transforms.opconversions.bravyi_kitaev import (inline_product,
-                                                                inline_sum)
+from openfermion.transforms.opconversions.bravyi_kitaev import inline_product, inline_sum
 from openfermion.transforms.opconversions.fenwick_tree import FenwickTree
 
 
@@ -44,6 +43,7 @@ def bravyi_kitaev_tree(operator, n_qubits=None):
     """
     # Compute the number of qubits.
     from openfermion.utils import count_qubits
+
     if n_qubits is None:
         n_qubits = count_qubits(operator)
     if n_qubits < count_qubits(operator):
@@ -53,9 +53,12 @@ def bravyi_kitaev_tree(operator, n_qubits=None):
     fenwick_tree = FenwickTree(n_qubits)
 
     # Compute transformed operator.
-    transformed_terms = (_transform_operator_term(
-        term=term, coefficient=operator.terms[term], fenwick_tree=fenwick_tree)
-                         for term in operator.terms)
+    transformed_terms = (
+        _transform_operator_term(
+            term=term, coefficient=operator.terms[term], fenwick_tree=fenwick_tree
+        )
+        for term in operator.terms
+    )
     return inline_sum(summands=transformed_terms, seed=QubitOperator())
 
 
@@ -71,10 +74,10 @@ def _transform_operator_term(term, coefficient, fenwick_tree):
     """
 
     # Build the Bravyi-Kitaev transformed operators.
-    transformed_ladder_ops = (_transform_ladder_operator(
-        ladder_operator, fenwick_tree) for ladder_operator in term)
-    return inline_product(factors=transformed_ladder_ops,
-                          seed=QubitOperator((), coefficient))
+    transformed_ladder_ops = (
+        _transform_ladder_operator(ladder_operator, fenwick_tree) for ladder_operator in term
+    )
+    return inline_product(factors=transformed_ladder_ops, seed=QubitOperator((), coefficient))
 
 
 def _transform_ladder_operator(ladder_operator, fenwick_tree):
@@ -94,21 +97,29 @@ def _transform_ladder_operator(ladder_operator, fenwick_tree):
     ancestors = [node.index for node in fenwick_tree.get_update_set(index)]
 
     # The C(j) set.
-    ancestor_children = [
-        node.index for node in fenwick_tree.get_remainder_set(index)
-    ]
+    ancestor_children = [node.index for node in fenwick_tree.get_remainder_set(index)]
 
     # Switch between lowering/raising operators.
-    d_coefficient = -.5j if ladder_operator[1] else .5j
+    d_coefficient = -0.5j if ladder_operator[1] else 0.5j
 
     # The fermion lowering operator is given by
     # a = (c+id)/2 where c, d are the majoranas.
-    d_majorana_component = QubitOperator((((ladder_operator[0], 'Y'),) + tuple(
-        (index, 'Z') for index in ancestor_children) + tuple(
-            (index, 'X') for index in ancestors)), d_coefficient)
+    d_majorana_component = QubitOperator(
+        (
+            ((ladder_operator[0], 'Y'),)
+            + tuple((index, 'Z') for index in ancestor_children)
+            + tuple((index, 'X') for index in ancestors)
+        ),
+        d_coefficient,
+    )
 
-    c_majorana_component = QubitOperator((((ladder_operator[0], 'X'),) + tuple(
-        (index, 'Z') for index in parity_set) + tuple(
-            (index, 'X') for index in ancestors)), 0.5)
+    c_majorana_component = QubitOperator(
+        (
+            ((ladder_operator[0], 'X'),)
+            + tuple((index, 'Z') for index in parity_set)
+            + tuple((index, 'X') for index in ancestors)
+        ),
+        0.5,
+    )
 
     return c_majorana_component + d_majorana_component

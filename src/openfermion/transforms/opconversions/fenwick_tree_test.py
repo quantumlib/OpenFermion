@@ -18,7 +18,6 @@ from openfermion.transforms.opconversions.fenwick_tree import FenwickTree
 
 
 class FenwickTreeTest(unittest.TestCase):
-
     def setUp(self):
         pass
 

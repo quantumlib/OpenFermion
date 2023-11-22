@@ -1,8 +1,7 @@
 from typing import Iterable, Generator, Optional, Union
 from itertools import zip_longest
 import numpy as np
-from openfermion.contrib.representability._bijections import Bijection, \
-    index_index_basis
+from openfermion.contrib.representability._bijections import Bijection, index_index_basis
 
 
 class Tensor(object):
@@ -10,11 +9,13 @@ class Tensor(object):
     Instantiation of named tensor
     """
 
-    def __init__(self,
-                 *,
-                 tensor: Optional[Union[None, np.ndarray]] = None,
-                 basis: Optional[Union[None, Bijection]] = None,
-                 name: Optional[Union[None, str]] = None):
+    def __init__(
+        self,
+        *,
+        tensor: Optional[Union[None, np.ndarray]] = None,
+        basis: Optional[Union[None, Bijection]] = None,
+        name: Optional[Union[None, str]] = None,
+    ):
         """
         Named Tensor that allows one to label elements with different indices
 
@@ -99,8 +100,7 @@ class Tensor(object):
 
         Note: the start returns a tuple of n-indices. That includes 1
         """
-        return self.index_bijection(self.index_transform(indices), self.ndim,
-                                    self.dim)
+        return self.index_bijection(self.index_transform(indices), self.ndim, self.dim)
 
     def index_transform(self, indices):
         """
@@ -112,8 +112,7 @@ class Tensor(object):
         codomain_element_size = self.basis.domain_element_sizes()[1]
         index_set = []
         for idx_set in grouper(indices, codomain_element_size):
-            index_set.append(
-                self.basis.rev(idx_set[0] if len(idx_set) == 1 else idx_set))
+            index_set.append(self.basis.rev(idx_set[0] if len(idx_set) == 1 else idx_set))
 
         return tuple(index_set)
 
@@ -123,14 +122,13 @@ class Tensor(object):
         calculate the bijection with tensor dim counting
         """
         if len(indices) != ndim:
-            raise TypeError(
-                "indices are inappriopriate length for the given ndim")
+            raise TypeError("indices are inappriopriate length for the given ndim")
 
         # C-order canonical vectorization--i.e. right most index in indices
         # changes with the highest frequency
         bijection = 0
         for n in range(ndim):
-            bijection += indices[n] * dim**(ndim - n - 1)
+            bijection += indices[n] * dim ** (ndim - n - 1)
         return bijection
 
     def utri_iterator(self) -> Generator:
@@ -159,17 +157,15 @@ class Tensor(object):
         Iterate over the a data store yielding the upper/lower/all values
         """
         if ultri not in ['upper', 'lower', 'all']:
-            raise TypeError(
-                "iteration type {} is not 'upper', 'lower', or 'all'".format(
-                    ultri))
+            raise TypeError("iteration type {} is not 'upper', 'lower', or 'all'".format(ultri))
 
         it = np.nditer(self.data, flags=['multi_index'])
         while not it.finished:
             indices = it.multi_index
-            left_idx_set = self.index_bijection(indices[:self.ndim // 2],
-                                                self.ndim // 2, self.dim)
-            right_idx_set = self.index_bijection(indices[self.ndim // 2:],
-                                                 self.ndim // 2, self.dim)
+            left_idx_set = self.index_bijection(indices[: self.ndim // 2], self.ndim // 2, self.dim)
+            right_idx_set = self.index_bijection(
+                indices[self.ndim // 2 :], self.ndim // 2, self.dim
+            )
 
             if ultri == 'upper' and left_idx_set <= right_idx_set:
                 yield it[0], map(lambda x: self.basis.fwd(x), it.multi_index)
@@ -190,9 +186,7 @@ class Tensor(object):
 
 
 # from standard library itertools recipe book
-def grouper(iterable: Iterable,
-            n: int,
-            fillvalue: Optional[Union[None, str]] = None):
+def grouper(iterable: Iterable, n: int, fillvalue: Optional[Union[None, str]] = None):
     """Collect data into fixed-length chunks or blocks"""
     # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
     args = [iter(iterable)] * n

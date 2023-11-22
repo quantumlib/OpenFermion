@@ -18,18 +18,15 @@ from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf.pbc import gto, scf, cc
 
-    from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
-        solve_kmeans_kpisdf,)
+    from openfermion.resource_estimates.pbc.thc.factorizations.isdf import solve_kmeans_kpisdf
     from openfermion.resource_estimates.pbc.thc.thc_integrals import (
         KPTHCDoubleTranslation,
         KPTHCSingleTranslation,
     )
-    from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
-        build_approximate_eris,)
+    from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import build_approximate_eris
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 @pytest.mark.slow
 def test_thc_helper():
     cell = gto.Cell()
@@ -75,29 +72,22 @@ def test_thc_helper():
             ik_minus_q = helper.k_transfer_map[iq, ik]
             for ik_prime in range(num_kpts):
                 ik_prime_minus_q = helper.k_transfer_map[iq, ik_prime]
-                eri_thc = helper.get_eri(
-                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime])
-                eri_exact = helper.get_eri_exact(
-                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime])
+                eri_thc = helper.get_eri([ik, ik_minus_q, ik_prime_minus_q, ik_prime])
+                eri_exact = helper.get_eri_exact([ik, ik_minus_q, ik_prime_minus_q, ik_prime])
                 assert np.allclose(eri_thc, eri_exact)
 
     eris_approx = build_approximate_eris(approx_cc, helper)
     emp2, _, _ = approx_cc.init_amps(eris_approx)
     assert np.isclose(emp2, exact_emp2)
-    kpt_thc = solve_kmeans_kpisdf(mf,
-                                  np.prod(cell.mesh),
-                                  single_translation=True,
-                                  verbose=False)
+    kpt_thc = solve_kmeans_kpisdf(mf, np.prod(cell.mesh), single_translation=True, verbose=False)
     helper = KPTHCSingleTranslation(kpt_thc.chi, kpt_thc.zeta, mf)
     for iq in range(num_kpts):
         for ik in range(num_kpts):
             ik_minus_q = helper.k_transfer_map[iq, ik]
             for ik_prime in range(num_kpts):
                 ik_prime_minus_q = helper.k_transfer_map[iq, ik_prime]
-                eri_thc = helper.get_eri(
-                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime])
-                eri_exact = helper.get_eri_exact(
-                    [ik, ik_minus_q, ik_prime_minus_q, ik_prime])
+                eri_thc = helper.get_eri([ik, ik_minus_q, ik_prime_minus_q, ik_prime])
+                eri_exact = helper.get_eri_exact([ik, ik_minus_q, ik_prime_minus_q, ik_prime])
                 assert np.allclose(eri_thc, eri_exact)
 
     eris_approx = build_approximate_eris(approx_cc, helper)

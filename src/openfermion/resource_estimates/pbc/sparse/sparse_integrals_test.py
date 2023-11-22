@@ -18,26 +18,25 @@ from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf.pbc import mp
 
-    from openfermion.resource_estimates.pbc.hamiltonian import (
-        cholesky_from_df_ints,)
-    from openfermion.resource_estimates.pbc.testing.systems import (
-        make_diamond_113_szv,)
+    from openfermion.resource_estimates.pbc.hamiltonian import cholesky_from_df_ints
+    from openfermion.resource_estimates.pbc.testing.systems import make_diamond_113_szv
     from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
-        unique_iter, unique_iter_pr_qs, unique_iter_ps_qr, unique_iter_pq_rs,
-        SparseFactorization)
+        unique_iter,
+        unique_iter_pr_qs,
+        unique_iter_ps_qr,
+        unique_iter_pq_rs,
+        SparseFactorization,
+    )
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_sparse_int_obj():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
     Luv = cholesky_from_df_ints(mymp)
     for thresh in [1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6]:
         abs_sum_coeffs = 0
-        helper = SparseFactorization(cholesky_factor=Luv,
-                                     kmf=mf,
-                                     threshold=thresh)
+        helper = SparseFactorization(cholesky_factor=Luv, kmf=mf, threshold=thresh)
         nkpts = len(mf.kpts)
         # recall (k, k-q|k'-q, k')
         for kidx in range(nkpts):
@@ -45,15 +44,13 @@ def test_sparse_int_obj():
                 for qidx in range(nkpts):
                     kmq_idx = helper.k_transfer_map[qidx, kidx]
                     kpmq_idx = helper.k_transfer_map[qidx, kpidx]
-                    test_eri_block = helper.get_eri(
-                        [kidx, kmq_idx, kpmq_idx, kpidx])
-                    abs_sum_coeffs += np.sum(np.abs(
-                        test_eri_block.real)) + np.sum(
-                            np.abs(test_eri_block.imag))
+                    test_eri_block = helper.get_eri([kidx, kmq_idx, kpmq_idx, kpidx])
+                    abs_sum_coeffs += np.sum(np.abs(test_eri_block.real)) + np.sum(
+                        np.abs(test_eri_block.imag)
+                    )
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_get_num_unique():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
@@ -102,7 +99,7 @@ def test_get_num_unique():
                 completed[kp, kq, kr] = True
                 tally[kp, kq, kr] += 1
                 for ftuple in unique_iter(
-                        nmo
+                    nmo
                 ):  # iterate over unique whenever all momentum indices are the
                     # same
                     p, q, r, s = ftuple
@@ -154,8 +151,7 @@ def test_get_num_unique():
                         fulltally[kp, kq, kr, q, p, s, r] += 1
                         fulltally[kr, ks, kp, s, r, q, p] += 1
 
-                for p, q, r, s in itertools.product(range(helper.nao),
-                                                    repeat=4):
+                for p, q, r, s in itertools.product(range(helper.nao), repeat=4):
                     if not np.isclose(test_block[p, q, r, s], 1):
                         print(p, q, r, s, test_block[p, q, r, s])
                 assert np.allclose(test_block, 1)
@@ -185,8 +181,7 @@ def test_get_num_unique():
                         fulltally[kp, kq, kr, s, r, q, p] += 1
                         fulltally[kr, ks, kp, q, p, s, r] += 1
 
-                for p, q, r, s in itertools.product(range(helper.nao),
-                                                    repeat=4):
+                for p, q, r, s in itertools.product(range(helper.nao), repeat=4):
                     if not np.isclose(test_block[p, q, r, s], 1):
                         print(p, q, r, s, test_block[p, q, r, s])
                 assert np.allclose(test_block, 1)
@@ -215,8 +210,7 @@ def test_get_num_unique():
                         fulltally[kp, kq, kr, r, s, p, q] += 1
                         fulltally[kq, kp, ks, s, r, q, p] += 1
 
-                for p, q, r, s in itertools.product(range(helper.nao),
-                                                    repeat=4):
+                for p, q, r, s in itertools.product(range(helper.nao), repeat=4):
                     if not np.isclose(test_block[p, q, r, s], 1):
                         print(p, q, r, s, test_block[p, q, r, s])
                 assert np.allclose(test_block, 1)

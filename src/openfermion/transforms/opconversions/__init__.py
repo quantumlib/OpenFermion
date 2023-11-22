@@ -19,12 +19,7 @@ from .binary_codes import (
     interleaved_code,
 )
 
-from .binary_code_transform import (
-    binary_code_transform,
-    extractor,
-    dissolve,
-    make_parity_list,
-)
+from .binary_code_transform import binary_code_transform, extractor, dissolve, make_parity_list
 
 from .bksf import (
     bravyi_kitaev_fast,
@@ -37,16 +32,13 @@ from .bksf import (
     generate_fermions,
 )
 
-from .bravyi_kitaev import (
-    bravyi_kitaev,
-    inline_sum,
-    inline_product,
-)
+from .bravyi_kitaev import bravyi_kitaev, inline_sum, inline_product
 
 from .bravyi_kitaev_tree import bravyi_kitaev_tree
 
 from .commutator_diagonal_coulomb_operator import (
-    commutator_ordered_diagonal_coulomb_with_two_body_operator,)
+    commutator_ordered_diagonal_coulomb_with_two_body_operator,
+)
 
 from .conversions import (
     get_fermion_operator,
@@ -56,27 +48,14 @@ from .conversions import (
     check_no_sympy,
 )
 
-from .fenwick_tree import (
-    FenwickNode,
-    FenwickTree,
-)
+from .fenwick_tree import FenwickNode, FenwickTree
 
-from .jordan_wigner import (
-    jordan_wigner,
-    jordan_wigner_one_body,
-    jordan_wigner_two_body,
-)
+from .jordan_wigner import jordan_wigner, jordan_wigner_one_body, jordan_wigner_two_body
 
 from .qubitoperator_to_paulisum import qubit_operator_to_pauli_sum
 
 from .reverse_jordan_wigner import reverse_jordan_wigner
 
-from .remove_symmetry_qubits import (
-    symmetry_conserving_bravyi_kitaev,
-    edit_hamiltonian_for_spin,
-)
+from .remove_symmetry_qubits import symmetry_conserving_bravyi_kitaev, edit_hamiltonian_for_spin
 
-from .verstraete_cirac import (
-    verstraete_cirac_2d_square,
-    vertical_edges_snake,
-)
+from .verstraete_cirac import verstraete_cirac_2d_square, vertical_edges_snake

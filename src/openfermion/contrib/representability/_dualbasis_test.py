@@ -1,16 +1,15 @@
 import pytest
 import numpy as np
-from openfermion.contrib.representability._dualbasis import \
-    DualBasisElement, DualBasis
+from openfermion.contrib.representability._dualbasis import DualBasisElement, DualBasis
 
 
 def test_dualbasis_element_init():
     dbe = DualBasisElement()
     assert isinstance(dbe, DualBasisElement)
 
-    dbe = DualBasisElement(tensor_names=['A'] * 5,
-                           tensor_coeffs=[1] * 5,
-                           tensor_elements=[(i, i) for i in range(5)])
+    dbe = DualBasisElement(
+        tensor_names=['A'] * 5, tensor_coeffs=[1] * 5, tensor_elements=[(i, i) for i in range(5)]
+    )
 
     assert dbe.primal_tensors_names == ['A'] * 5
     assert dbe.primal_coeffs == [1] * 5
@@ -22,9 +21,9 @@ def test_dualbasis_element_init():
 def test_daulbasis_init():
     db = DualBasis()
     assert isinstance(db, DualBasis)
-    dbe = DualBasisElement(tensor_names=['A'] * 5,
-                           tensor_coeffs=[1] * 5,
-                           tensor_elements=[(i, i) for i in range(5)])
+    dbe = DualBasisElement(
+        tensor_names=['A'] * 5, tensor_coeffs=[1] * 5, tensor_elements=[(i, i) for i in range(5)]
+    )
     db = DualBasis(elements=[dbe])
     assert db[0] == dbe
     assert len(db) == 1
@@ -35,9 +34,9 @@ def test_daulbasis_init():
     assert isinstance(db2, DualBasis)
     assert len(db2) == 2
 
-    tdbe = DualBasisElement(tensor_names=['B'] * 5,
-                            tensor_coeffs=[1] * 5,
-                            tensor_elements=[(i, i) for i in range(5)])
+    tdbe = DualBasisElement(
+        tensor_names=['B'] * 5, tensor_coeffs=[1] * 5, tensor_elements=[(i, i) for i in range(5)]
+    )
     tdb = DualBasis(elements=[tdbe])
     db3 = db + tdb
     assert isinstance(db3, DualBasis)
@@ -69,17 +68,17 @@ def test_dbe_element_add():
 
 
 def test_dbe_string():
-    dbe = DualBasisElement(tensor_names=['A'] * 5,
-                           tensor_coeffs=[1] * 5,
-                           tensor_elements=[(i, i) for i in range(5)])
+    dbe = DualBasisElement(
+        tensor_names=['A'] * 5, tensor_coeffs=[1] * 5, tensor_elements=[(i, i) for i in range(5)]
+    )
 
     assert dbe.id() == "A(0,0)	A(1,1)	A(2,2)	A(3,3)	A(4,4)\t"
 
 
 def test_dbe_iterator():
-    dbe = DualBasisElement(tensor_names=['A'] * 5,
-                           tensor_coeffs=[1] * 5,
-                           tensor_elements=[(i, i) for i in range(5)])
+    dbe = DualBasisElement(
+        tensor_names=['A'] * 5, tensor_coeffs=[1] * 5, tensor_elements=[(i, i) for i in range(5)]
+    )
     for idx, (t, v, c) in enumerate(dbe):
         assert t == 'A'
         assert v == (idx, idx)
@@ -131,9 +130,7 @@ def test_simplify():
     names = ['opdm'] * 3 + ['oqdm']
     elements = [(i, j), (i, j), (i, l), (l, k)]
     coeffs = [1, 1, 0.25, 0.3]
-    dbe = DualBasisElement(tensor_names=names,
-                           tensor_elements=elements,
-                           tensor_coeffs=coeffs)
+    dbe = DualBasisElement(tensor_names=names, tensor_elements=elements, tensor_coeffs=coeffs)
     dbe.simplify()
     assert len(dbe.primal_tensors_names) == 3
     assert set(dbe.primal_coeffs) == {2, 0.25, 0.3}

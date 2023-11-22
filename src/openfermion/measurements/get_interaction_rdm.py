@@ -18,6 +18,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
 
     # Avoid circular import.
     from openfermion.transforms import jordan_wigner
+
     if n_qubits is None:
         n_qubits = count_qubits(qubit_operator)
     one_rdm = numpy.zeros((n_qubits,) * 2, dtype=complex)
@@ -32,8 +33,7 @@ def get_interaction_rdm(qubit_operator, n_qubits=None):
 
     # Two-RDM.
     for i, j, k, l in itertools.product(range(n_qubits), repeat=4):
-        transformed_operator = jordan_wigner(
-            FermionOperator(((i, 1), (j, 1), (k, 0), (l, 0))))
+        transformed_operator = jordan_wigner(FermionOperator(((i, 1), (j, 1), (k, 0), (l, 0))))
         for term, coefficient in transformed_operator.terms.items():
             if term in qubit_operator.terms:
                 two_rdm[i, j, k, l] += coefficient * qubit_operator.terms[term]

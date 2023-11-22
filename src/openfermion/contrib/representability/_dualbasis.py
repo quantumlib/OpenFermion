@@ -18,14 +18,15 @@ class DualBasisElement(object):
     for all i in [1, dim(`M')].
     """
 
-    def __init__(self,
-                 *,
-                 tensor_names: Optional[Union[None, List[str]]] = None,
-                 tensor_elements: Optional[
-                     Union[None, List[Tuple[int, ...]]]] = None,
-                 tensor_coeffs: Optional[Union[None, List[float]]] = None,
-                 bias: Optional[int] = 0,
-                 scalar: Optional[int] = 0):
+    def __init__(
+        self,
+        *,
+        tensor_names: Optional[Union[None, List[str]]] = None,
+        tensor_elements: Optional[Union[None, List[Tuple[int, ...]]]] = None,
+        tensor_coeffs: Optional[Union[None, List[float]]] = None,
+        bias: Optional[int] = 0,
+        scalar: Optional[int] = 0,
+    ):
         """
         Define a linear operator on a tensor `A', a bias `b', and a result `c'
         satisfying
@@ -106,9 +107,9 @@ class DualBasisElement(object):
         Mutate the DualBasisElement so that non-unique terms get summed together
         """
         id_dict = {}
-        for tname, telement, tcoeff in zip(self.primal_tensors_names,
-                                           self.primal_elements,
-                                           self.primal_coeffs):
+        for tname, telement, tcoeff in zip(
+            self.primal_tensors_names, self.primal_elements, self.primal_coeffs
+        ):
             id_str = tname + ".".join([str(x) for x in telement])
             if id_str not in id_dict:
                 id_dict[id_str] = (tname, telement, tcoeff)
@@ -134,15 +135,14 @@ class DualBasisElement(object):
         Get the unique string identifier for the dual basis element
         """
         id_str = ""
-        for name, element in zip(self.primal_tensors_names,
-                                 self.primal_elements):
+        for name, element in zip(self.primal_tensors_names, self.primal_elements):
             id_str += name + "(" + ",".join([repr(x) for x in element]) + ")\t"
         return id_str
 
     def __iter__(self):
-        for t_label, velement, coeff in zip(self.primal_tensors_names,
-                                            self.primal_elements,
-                                            self.primal_coeffs):
+        for t_label, velement, coeff in zip(
+            self.primal_tensors_names, self.primal_elements, self.primal_coeffs
+        ):
             yield t_label, velement, coeff
 
     def __add__(self, other):
@@ -151,15 +151,11 @@ class DualBasisElement(object):
         elif isinstance(other, DualBasis):
             return other + self
         else:
-            raise TypeError(
-                "DualBasisElement can be added to same type or DualBasis")
+            raise TypeError("DualBasisElement can be added to same type or DualBasis")
 
 
 class DualBasis(object):
-
-    def __init__(
-            self,
-            elements: Optional[Union[None, List[DualBasisElement]]] = None):
+    def __init__(self, elements: Optional[Union[None, List[DualBasisElement]]] = None):
         """
         A collection of DualBasisElements
 
@@ -196,5 +192,4 @@ class DualBasis(object):
             return DualBasis(elements=new_elements)
 
         else:
-            raise TypeError(
-                "DualBasis adds DualBasisElements or DualBasis only")
+            raise TypeError("DualBasis adds DualBasisElements or DualBasis only")

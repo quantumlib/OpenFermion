@@ -17,16 +17,15 @@ from openfermion.functionals.contextuality import is_contextual
 
 
 class IsContextualTest(unittest.TestCase):
-
     def setUp(self):
-        self.x1 = QubitOperator('X1', 1.)
-        self.x2 = QubitOperator('X2', 1.)
-        self.x3 = QubitOperator('X3', 1.)
-        self.x4 = QubitOperator('X4', 1.)
-        self.z1 = QubitOperator('Z1', 1.)
-        self.z2 = QubitOperator('Z2', 1.)
-        self.x1x2 = QubitOperator('X1 X2', 1.)
-        self.y1y2 = QubitOperator('Y1 Y2', 1.)
+        self.x1 = QubitOperator('X1', 1.0)
+        self.x2 = QubitOperator('X2', 1.0)
+        self.x3 = QubitOperator('X3', 1.0)
+        self.x4 = QubitOperator('X4', 1.0)
+        self.z1 = QubitOperator('Z1', 1.0)
+        self.z2 = QubitOperator('Z2', 1.0)
+        self.x1x2 = QubitOperator('X1 X2', 1.0)
+        self.y1y2 = QubitOperator('Y1 Y2', 1.0)
 
     def test_raises_exception(self):
         with self.assertRaises(TypeError):
@@ -46,15 +45,9 @@ class IsContextualTest(unittest.TestCase):
         self.assertTrue(is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2))
 
     def test_contextual_hamiltonians_with_extra_terms(self):
-        self.assertTrue(
-            is_contextual(self.x1 + self.x2 + self.z1 + self.z2 + self.x3 +
-                          self.x4))
-        self.assertTrue(
-            is_contextual(self.x1 + self.x1x2 + self.z1 + self.z2 + self.x3 +
-                          self.x4))
-        self.assertTrue(
-            is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2 + self.x3 +
-                          self.x4))
+        self.assertTrue(is_contextual(self.x1 + self.x2 + self.z1 + self.z2 + self.x3 + self.x4))
+        self.assertTrue(is_contextual(self.x1 + self.x1x2 + self.z1 + self.z2 + self.x3 + self.x4))
+        self.assertTrue(is_contextual(self.x1 + self.y1y2 + self.z1 + self.z2 + self.x3 + self.x4))
 
     def test_commuting_hamiltonian(self):
         self.assertFalse(is_contextual(self.x1 + self.x2 + self.x3 + self.x4))

@@ -19,9 +19,8 @@ import numpy
 from openfermion.ops.operators import BinaryCode, BinaryPolynomial
 
 
-def linearize_decoder(matrix: Union[numpy.ndarray, list]
-                     ) -> List[BinaryPolynomial]:
-    """ Outputs  linear decoding function from input matrix
+def linearize_decoder(matrix: Union[numpy.ndarray, list]) -> List[BinaryPolynomial]:
+    """Outputs  linear decoding function from input matrix
 
     Args:
         matrix (np.ndarray or list): list of lists or 2D numpy array
@@ -43,7 +42,7 @@ def linearize_decoder(matrix: Union[numpy.ndarray, list]
 
 
 def _encoder_bk(n_modes: int) -> numpy.ndarray:
-    """  Helper function for bravyi_kitaev_code that outputs the binary-tree
+    """Helper function for bravyi_kitaev_code that outputs the binary-tree
     (dimension x dimension)-matrix used for the encoder in the
     Bravyi-Kitaev transform.
 
@@ -57,12 +56,12 @@ def _encoder_bk(n_modes: int) -> numpy.ndarray:
     for repetition in numpy.arange(1, reps + 1):
         mtx = numpy.kron(numpy.eye(2, dtype=int), mtx)
         for column in numpy.arange(0, 2**repetition):
-            mtx[2**(repetition + 1) - 1, column] = 1
+            mtx[2 ** (repetition + 1) - 1, column] = 1
     return mtx[0:n_modes, 0:n_modes]
 
 
 def _decoder_bk(n_modes: int) -> numpy.ndarray:
-    """ Helper function for bravyi_kitaev_code that outputs the inverse of the
+    """Helper function for bravyi_kitaev_code that outputs the inverse of the
     binary tree matrix utilized for decoder in the Bravyi-Kitaev transform.
 
     Args:
@@ -74,12 +73,12 @@ def _decoder_bk(n_modes: int) -> numpy.ndarray:
     mtx = numpy.array([[1, 0], [1, 1]])
     for repetition in numpy.arange(1, reps + 1):
         mtx = numpy.kron(numpy.eye(2, dtype=int), mtx)
-        mtx[2**(repetition + 1) - 1, 2**repetition - 1] = 1
+        mtx[2 ** (repetition + 1) - 1, 2**repetition - 1] = 1
     return mtx[0:n_modes, 0:n_modes]
 
 
 def _encoder_checksum(modes: int) -> numpy.ndarray:
-    """ Helper function for checksum_code that outputs the encoder matrix.
+    """Helper function for checksum_code that outputs the encoder matrix.
 
     Args:
         modes (int):  matrix size is (modes - 1) x modes
@@ -92,9 +91,8 @@ def _encoder_checksum(modes: int) -> numpy.ndarray:
     return enc
 
 
-def _decoder_checksum(modes: int,
-                      odd: Union[int, bool]) -> List[BinaryPolynomial]:
-    """ Helper function for checksum_code that outputs the decoder.
+def _decoder_checksum(modes: int, odd: Union[int, bool]) -> List[BinaryPolynomial]:
+    """Helper function for checksum_code that outputs the decoder.
 
     Args:
         modes (int):  number of modes
@@ -117,9 +115,8 @@ def _decoder_checksum(modes: int,
     return djw
 
 
-def _binary_address(digits: int,
-                    address: int) -> Tuple[List[int], BinaryPolynomial]:
-    """ Helper function to fill in an encoder column/decoder component of a
+def _binary_address(digits: int, address: int) -> Tuple[List[int], BinaryPolynomial]:
+    """Helper function to fill in an encoder column/decoder component of a
     certain number.
 
     Args:
@@ -134,14 +131,13 @@ def _binary_address(digits: int,
     address = bin(address)[2:]
     address = ('0' * (digits - len(address))) + address
     for index in numpy.arange(digits):
-        binary_expression *= BinaryPolynomial('w' + str(index) + ' + 1 + ' +
-                                              address[index])
+        binary_expression *= BinaryPolynomial('w' + str(index) + ' + 1 + ' + address[index])
 
     return list(map(int, list(address))), binary_expression
 
 
 def checksum_code(n_modes: int, odd: Union[int, bool]) -> BinaryCode:
-    """ Checksum code for either even or odd Hamming weight. The Hamming weight
+    """Checksum code for either even or odd Hamming weight. The Hamming weight
     is defined such that it yields the total occupation number for a given basis
     state. A Checksum code with odd weight will encode all states with odd
     occupation number. This code saves one qubit: n_qubits = n_modes - 1.
@@ -153,24 +149,24 @@ def checksum_code(n_modes: int, odd: Union[int, bool]) -> BinaryCode:
 
     Returns (BinaryCode): The checksum BinaryCode
     """
-    return BinaryCode(_encoder_checksum(n_modes),
-                      _decoder_checksum(n_modes, odd))
+    return BinaryCode(_encoder_checksum(n_modes), _decoder_checksum(n_modes, odd))
 
 
 def jordan_wigner_code(n_modes: int) -> BinaryCode:
-    """ The Jordan-Wigner transform as binary code.
+    """The Jordan-Wigner transform as binary code.
 
     Args:
         n_modes (int): number of modes
 
     Returns (BinaryCode): The Jordan-Wigner BinaryCode
     """
-    return BinaryCode(numpy.identity(n_modes, dtype=int),
-                      linearize_decoder(numpy.identity(n_modes, dtype=int)))
+    return BinaryCode(
+        numpy.identity(n_modes, dtype=int), linearize_decoder(numpy.identity(n_modes, dtype=int))
+    )
 
 
 def bravyi_kitaev_code(n_modes: int) -> BinaryCode:
-    """ The Bravyi-Kitaev transform as binary code. The implementation
+    """The Bravyi-Kitaev transform as binary code. The implementation
     follows arXiv:1208.5986.
 
     Args:
@@ -178,12 +174,11 @@ def bravyi_kitaev_code(n_modes: int) -> BinaryCode:
 
     Returns (BinaryCode): The Bravyi-Kitaev BinaryCode
     """
-    return BinaryCode(_encoder_bk(n_modes),
-                      linearize_decoder(_decoder_bk(n_modes)))
+    return BinaryCode(_encoder_bk(n_modes), linearize_decoder(_decoder_bk(n_modes)))
 
 
 def parity_code(n_modes: int) -> BinaryCode:
-    """ The parity transform (arXiv:1208.5986) as binary code. This code is
+    """The parity transform (arXiv:1208.5986) as binary code. This code is
     very similar to the Jordan-Wigner transform, but with long update strings
     instead of parity strings. It does not save qubits: n_qubits = n_modes.
 
@@ -193,15 +188,16 @@ def parity_code(n_modes: int) -> BinaryCode:
     Returns (BinaryCode): The parity transform BinaryCode
     """
     dec_mtx = numpy.reshape(
-        ([1] + [0] * (n_modes - 1)) + ([1, 1] + (n_modes - 1) * [0]) *
-        (n_modes - 2) + [1, 1], (n_modes, n_modes))
+        ([1] + [0] * (n_modes - 1)) + ([1, 1] + (n_modes - 1) * [0]) * (n_modes - 2) + [1, 1],
+        (n_modes, n_modes),
+    )
     enc_mtx = numpy.tril(numpy.ones((n_modes, n_modes), dtype=int))
 
     return BinaryCode(enc_mtx, linearize_decoder(dec_mtx))
 
 
 def weight_one_binary_addressing_code(exponent: int) -> BinaryCode:
-    """ Weight-1 binary addressing code (arXiv:1712.07067). This highly
+    """Weight-1 binary addressing code (arXiv:1712.07067). This highly
     non-linear code works for a number of modes that is an integer power
     of two. It encodes all possible vectors with Hamming weight 1, which
     corresponds to all states with total occupation one. The amount of
@@ -219,13 +215,12 @@ def weight_one_binary_addressing_code(exponent: int) -> BinaryCode:
     encoder = numpy.zeros((exponent, 2**exponent), dtype=int)
     decoder = [0] * (2**exponent)
     for counter in numpy.arange(2**exponent):
-        encoder[:, counter], decoder[counter] = \
-            _binary_address(exponent, counter)
+        encoder[:, counter], decoder[counter] = _binary_address(exponent, counter)
     return BinaryCode(encoder, decoder)
 
 
 def weight_one_segment_code() -> BinaryCode:
-    """ Weight-1 segment code (arXiv:1712.07067). Outputs a 3-mode, 2-qubit
+    """Weight-1 segment code (arXiv:1712.07067). Outputs a 3-mode, 2-qubit
     code, which encodes all the vectors (states) with Hamming weight
     (occupation) 0 and 1. n_qubits = 2, n_modes = 3.
     A linear amount of qubits can be saved  appending several instances of this
@@ -236,12 +231,11 @@ def weight_one_segment_code() -> BinaryCode:
 
     Returns (BinaryCode): weight one segment code
     """
-    return BinaryCode([[1, 0, 1], [0, 1, 1]],
-                      ['w0 w1 + w0', 'w0 w1 + w1', ' w0 w1'])
+    return BinaryCode([[1, 0, 1], [0, 1, 1]], ['w0 w1 + w0', 'w0 w1 + w1', ' w0 w1'])
 
 
 def weight_two_segment_code() -> BinaryCode:
-    """ Weight-2 segment code (arXiv:1712.07067). Outputs a 5-mode, 4-qubit
+    """Weight-2 segment code (arXiv:1712.07067). Outputs a 5-mode, 4-qubit
     code, which encodes all the vectors (states) with Hamming weight
     (occupation) 2 and 1. n_qubits = 4, n_modes = 5.
     A linear amount of qubits can be saved  appending several instances of this
@@ -252,18 +246,16 @@ def weight_two_segment_code() -> BinaryCode:
 
     Returns (BinaryCode): weight-2 segment code
     """
-    switch = ('w0 w1 w2 + w0 w1 w3 + w0 w2 w3 + w1 w2 w3 + w0 w1 w2 +'
-              ' w0 w1 w2 w3')
+    switch = 'w0 w1 w2 + w0 w1 w3 + w0 w2 w3 + w1 w2 w3 + w0 w1 w2 +' ' w0 w1 w2 w3'
 
     return BinaryCode(
-        [[1, 0, 0, 0, 1], [0, 1, 0, 0, 1], [0, 0, 1, 0, 1], [0, 0, 0, 1, 1]], [
-            'w0 + ' + switch, 'w1 + ' + switch, 'w2 + ' + switch,
-            'w3 + ' + switch, switch
-        ])
+        [[1, 0, 0, 0, 1], [0, 1, 0, 0, 1], [0, 0, 1, 0, 1], [0, 0, 0, 1, 1]],
+        ['w0 + ' + switch, 'w1 + ' + switch, 'w2 + ' + switch, 'w3 + ' + switch, switch],
+    )
 
 
 def interleaved_code(modes: int) -> BinaryCode:
-    """ Linear code that reorders orbitals from even-odd to up-then-down.
+    """Linear code that reorders orbitals from even-odd to up-then-down.
     In up-then-down convention, one can append two instances of the same
     code 'c' in order to have two symmetric subcodes that are symmetric for
     spin-up and -down modes: ' c + c '.

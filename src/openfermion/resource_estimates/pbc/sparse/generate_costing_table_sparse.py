@@ -18,28 +18,24 @@ from pyscf.pbc import scf
 from pyscf.pbc.tools.k2gamma import kpts_to_kmesh
 
 from openfermion.resource_estimates.pbc.resources import PBCResources
-from openfermion.resource_estimates.pbc.sparse.sparse_integrals import (
-    SparseFactorization,)
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    build_hamiltonian,)
+from openfermion.resource_estimates.pbc.sparse.sparse_integrals import SparseFactorization
+from openfermion.resource_estimates.pbc.hamiltonian import build_hamiltonian
 from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
     build_approximate_eris,
     build_cc_inst,
     build_approximate_eris_rohf,
 )
-from openfermion.resource_estimates.pbc.sparse.compute_lambda_sparse import (
-    compute_lambda,)
-from openfermion.resource_estimates.pbc.sparse.compute_sparse_resources import (
-    compute_cost,)
+from openfermion.resource_estimates.pbc.sparse.compute_lambda_sparse import compute_lambda
+from openfermion.resource_estimates.pbc.sparse.compute_sparse_resources import compute_cost
 
 
 def generate_costing_table(
-        pyscf_mf: scf.HF,
-        name="pbc",
-        chi: int = 10,
-        thresholds: np.ndarray = np.logspace(-1, -5, 6),
-        dE_for_qpe=0.0016,
-        energy_method="MP2",
+    pyscf_mf: scf.HF,
+    name="pbc",
+    chi: int = 10,
+    thresholds: np.ndarray = np.logspace(-1, -5, 6),
+    dE_for_qpe=0.0016,
+    energy_method="MP2",
 ) -> pd.DataFrame:
     """Generate resource estimate costing table given a set of cutoffs for
         sparse Hamiltonian.
@@ -82,17 +78,11 @@ def generate_costing_table(
     )
     approx_eris = exact_eris
     for thresh in thresholds:
-        sparse_helper = SparseFactorization(cholesky_factor=chol,
-                                            kmf=pyscf_mf,
-                                            threshold=thresh)
+        sparse_helper = SparseFactorization(cholesky_factor=chol, kmf=pyscf_mf, threshold=thresh)
         if pyscf_mf.cell.spin == 0:
-            approx_eris = build_approximate_eris(cc_inst,
-                                                 sparse_helper,
-                                                 eris=approx_eris)
+            approx_eris = build_approximate_eris(cc_inst, sparse_helper, eris=approx_eris)
         else:
-            approx_eris = build_approximate_eris_rohf(cc_inst,
-                                                      sparse_helper,
-                                                      eris=approx_eris)
+            approx_eris = build_approximate_eris_rohf(cc_inst, sparse_helper, eris=approx_eris)
         approx_energy, _, _ = energy_function(approx_eris)
 
         sparse_data = compute_lambda(hcore, sparse_helper)

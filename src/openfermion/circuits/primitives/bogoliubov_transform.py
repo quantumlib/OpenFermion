@@ -11,7 +11,7 @@
 #   limitations under the License.
 """The Bogoliubov transformation."""
 
-from typing import (Iterable, List, Optional, Sequence, Tuple, Union, cast)
+from typing import Iterable, List, Optional, Sequence, Tuple, Union, cast
 
 import numpy
 
@@ -21,9 +21,9 @@ from openfermion import circuits, linalg
 
 
 def bogoliubov_transform(
-        qubits: Sequence[cirq.Qid],
-        transformation_matrix: numpy.ndarray,
-        initial_state: Optional[Union[int, Sequence[int]]] = None
+    qubits: Sequence[cirq.Qid],
+    transformation_matrix: numpy.ndarray,
+    initial_state: Optional[Union[int, Sequence[int]]] = None,
 ) -> cirq.OP_TREE:
     r"""Perform a Bogoliubov transformation.
 
@@ -81,10 +81,12 @@ def bogoliubov_transform(
     n_qubits = len(qubits)
     shape = transformation_matrix.shape
     if shape not in [(n_qubits, n_qubits), (n_qubits, 2 * n_qubits)]:
-        raise ValueError('Bad shape for transformation_matrix. '
-                         'Expected {} or {} but got {}.'.format(
-                             (n_qubits, n_qubits), (n_qubits, 2 * n_qubits),
-                             shape))
+        raise ValueError(
+            'Bad shape for transformation_matrix. '
+            'Expected {} or {} but got {}.'.format(
+                (n_qubits, n_qubits), (n_qubits, 2 * n_qubits), shape
+            )
+        )
 
     if isinstance(initial_state, int):
         initial_state = _occupied_orbitals(initial_state, n_qubits)
@@ -93,51 +95,40 @@ def bogoliubov_transform(
     # If the transformation matrix is block diagonal with two blocks,
     # do each block separately
     if _is_spin_block_diagonal(transformation_matrix):
-        up_block = transformation_matrix[:n_qubits // 2, :n_qubits // 2]
-        up_qubits = qubits[:n_qubits // 2]
+        up_block = transformation_matrix[: n_qubits // 2, : n_qubits // 2]
+        up_qubits = qubits[: n_qubits // 2]
 
-        down_block = transformation_matrix[n_qubits // 2:, n_qubits // 2:]
-        down_qubits = qubits[n_qubits // 2:]
+        down_block = transformation_matrix[n_qubits // 2 :, n_qubits // 2 :]
+        down_qubits = qubits[n_qubits // 2 :]
 
         if initially_occupied_orbitals is None:
             up_orbitals = None
             down_orbitals = None
         else:
-            up_orbitals = [
-                i for i in initially_occupied_orbitals if i < n_qubits // 2
-            ]
+            up_orbitals = [i for i in initially_occupied_orbitals if i < n_qubits // 2]
             down_orbitals = [
-                i - n_qubits // 2
-                for i in initially_occupied_orbitals
-                if i >= n_qubits // 2
+                i - n_qubits // 2 for i in initially_occupied_orbitals if i >= n_qubits // 2
             ]
 
-        yield bogoliubov_transform(up_qubits,
-                                   up_block,
-                                   initial_state=up_orbitals)
-        yield bogoliubov_transform(down_qubits,
-                                   down_block,
-                                   initial_state=down_orbitals)
+        yield bogoliubov_transform(up_qubits, up_block, initial_state=up_orbitals)
+        yield bogoliubov_transform(down_qubits, down_block, initial_state=down_orbitals)
         return
 
     if shape == (n_qubits, n_qubits):
         # We're performing a particle-number conserving "Slater" basis change
-        yield _slater_basis_change(qubits, transformation_matrix,
-                                   initially_occupied_orbitals)
+        yield _slater_basis_change(qubits, transformation_matrix, initially_occupied_orbitals)
     else:
         # We're performing a more general Gaussian unitary
-        yield _gaussian_basis_change(qubits, transformation_matrix,
-                                     initially_occupied_orbitals)
+        yield _gaussian_basis_change(qubits, transformation_matrix, initially_occupied_orbitals)
 
 
 def _is_spin_block_diagonal(matrix) -> bool:
     n = matrix.shape[0]
     if n % 2:
         return False
-    max_upper_right = numpy.max(numpy.abs(matrix[:n // 2, n // 2:]))
-    max_lower_left = numpy.max(numpy.abs(matrix[n // 2:, :n // 2]))
-    return (numpy.isclose(max_upper_right, 0.0) and
-            numpy.isclose(max_lower_left, 0.0))
+    max_upper_right = numpy.max(numpy.abs(matrix[: n // 2, n // 2 :]))
+    max_lower_left = numpy.max(numpy.abs(matrix[n // 2 :, : n // 2]))
+    return numpy.isclose(max_upper_right, 0.0) and numpy.isclose(max_lower_left, 0.0)
 
 
 def _occupied_orbitals(computational_basis_state: int, n_qubits) -> List[int]:
@@ -147,42 +138,40 @@ def _occupied_orbitals(computational_basis_state: int, n_qubits) -> List[int]:
     return [j for j in range(len(bitstring)) if bitstring[j] == '1']
 
 
-def _slater_basis_change(qubits: Sequence[cirq.Qid],
-                         transformation_matrix: numpy.ndarray,
-                         initially_occupied_orbitals: Optional[Sequence[int]]
-                        ) -> cirq.OP_TREE:
+def _slater_basis_change(
+    qubits: Sequence[cirq.Qid],
+    transformation_matrix: numpy.ndarray,
+    initially_occupied_orbitals: Optional[Sequence[int]],
+) -> cirq.OP_TREE:
     n_qubits = len(qubits)
 
     if initially_occupied_orbitals is None:
-        decomposition, diagonal = linalg.givens_decomposition_square(
-            transformation_matrix)
+        decomposition, diagonal = linalg.givens_decomposition_square(transformation_matrix)
         circuit_description = list(reversed(decomposition))
         # The initial state is not a computational basis state so the
         # phases left on the diagonal in the decomposition matter
-        yield (cirq.rz(rads=numpy.angle(diagonal[j])).on(qubits[j])
-               for j in range(n_qubits))
+        yield (cirq.rz(rads=numpy.angle(diagonal[j])).on(qubits[j]) for j in range(n_qubits))
     else:
-        initially_occupied_orbitals = cast(Sequence[int],
-                                           initially_occupied_orbitals)
-        transformation_matrix = transformation_matrix[list(
-            initially_occupied_orbitals)]
+        initially_occupied_orbitals = cast(Sequence[int], initially_occupied_orbitals)
+        transformation_matrix = transformation_matrix[list(initially_occupied_orbitals)]
         n_occupied = len(initially_occupied_orbitals)
         # Flip bits so that the first n_occupied are 1 and the rest 0
         initially_occupied_orbitals_set = set(initially_occupied_orbitals)
-        yield (cirq.X(qubits[j])
-               for j in range(n_qubits)
-               if (j < n_occupied) != (j in initially_occupied_orbitals_set))
-        circuit_description = circuits.slater_determinant_preparation_circuit(
-            transformation_matrix)
+        yield (
+            cirq.X(qubits[j])
+            for j in range(n_qubits)
+            if (j < n_occupied) != (j in initially_occupied_orbitals_set)
+        )
+        circuit_description = circuits.slater_determinant_preparation_circuit(transformation_matrix)
 
-    yield _ops_from_givens_rotations_circuit_description(
-        qubits, circuit_description)
+    yield _ops_from_givens_rotations_circuit_description(qubits, circuit_description)
 
 
-def _gaussian_basis_change(qubits: Sequence[cirq.Qid],
-                           transformation_matrix: numpy.ndarray,
-                           initially_occupied_orbitals: Optional[Sequence[int]]
-                          ) -> cirq.OP_TREE:
+def _gaussian_basis_change(
+    qubits: Sequence[cirq.Qid],
+    transformation_matrix: numpy.ndarray,
+    initially_occupied_orbitals: Optional[Sequence[int]],
+) -> cirq.OP_TREE:
     n_qubits = len(qubits)
 
     # Rearrange the transformation matrix because the OpenFermion routine
@@ -190,32 +179,31 @@ def _gaussian_basis_change(qubits: Sequence[cirq.Qid],
     # operators
     left_block = transformation_matrix[:, :n_qubits]
     right_block = transformation_matrix[:, n_qubits:]
-    transformation_matrix = numpy.block(
-        [numpy.conjugate(right_block),
-         numpy.conjugate(left_block)])
+    transformation_matrix = numpy.block([numpy.conjugate(right_block), numpy.conjugate(left_block)])
 
-    decomposition, left_decomposition, _, left_diagonal = (
-        linalg.fermionic_gaussian_decomposition(transformation_matrix))
+    decomposition, left_decomposition, _, left_diagonal = linalg.fermionic_gaussian_decomposition(
+        transformation_matrix
+    )
 
-    if (initially_occupied_orbitals is not None and
-            len(initially_occupied_orbitals) == 0):
+    if initially_occupied_orbitals is not None and len(initially_occupied_orbitals) == 0:
         # Starting with the vacuum state yields additional symmetry
         circuit_description = list(reversed(decomposition))
     else:
         if initially_occupied_orbitals is None:
             # The initial state is not a computational basis state so the
             # phases left on the diagonal in the Givens decomposition matter
-            yield (cirq.rz(rads=numpy.angle(left_diagonal[j])).on(qubits[j])
-                   for j in range(n_qubits))
+            yield (
+                cirq.rz(rads=numpy.angle(left_diagonal[j])).on(qubits[j]) for j in range(n_qubits)
+            )
         circuit_description = list(reversed(decomposition + left_decomposition))
 
-    yield _ops_from_givens_rotations_circuit_description(
-        qubits, circuit_description)
+    yield _ops_from_givens_rotations_circuit_description(qubits, circuit_description)
 
 
 def _ops_from_givens_rotations_circuit_description(
-        qubits: Sequence[cirq.Qid], circuit_description: Iterable[Iterable[
-            Union[str, Tuple[int, int, float, float]]]]) -> cirq.OP_TREE:
+    qubits: Sequence[cirq.Qid],
+    circuit_description: Iterable[Iterable[Union[str, Tuple[int, int, float, float]]]],
+) -> cirq.OP_TREE:
     """Yield operations from a Givens rotations circuit obtained from
     OpenFermion.
     """
@@ -226,4 +214,4 @@ def _ops_from_givens_rotations_circuit_description(
             else:
                 i, j, theta, phi = cast(Tuple[int, int, float, float], op)
                 yield circuits.Ryxxy(theta).on(qubits[i], qubits[j])
-                yield cirq.Z(qubits[j])**(phi / numpy.pi)
+                yield cirq.Z(qubits[j]) ** (phi / numpy.pi)

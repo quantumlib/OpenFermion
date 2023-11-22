@@ -17,19 +17,14 @@ from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf.pbc import mp, cc
-    from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
-        build_approximate_eris,)
+    from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import build_approximate_eris
 
-    from openfermion.resource_estimates.pbc.sf.sf_integrals import (
-        SingleFactorization,)
-    from openfermion.resource_estimates.pbc.hamiltonian import (
-        cholesky_from_df_ints,)
-    from openfermion.resource_estimates.pbc.testing import (
-        make_diamond_113_szv,)
+    from openfermion.resource_estimates.pbc.sf.sf_integrals import SingleFactorization
+    from openfermion.resource_estimates.pbc.hamiltonian import cholesky_from_df_ints
+    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 @pytest.mark.slow
 def test_sf_helper_trunc():
     mf = make_diamond_113_szv()

@@ -92,8 +92,10 @@ class BosonOperator(SymbolicOperator):
                 for j in range(i, 0, -1):
                     right_operator = term[j]
                     left_operator = term[j - 1]
-                    if (right_operator[0] == left_operator[0] and
-                            right_operator[1] > left_operator[1]):
+                    if (
+                        right_operator[0] == left_operator[0]
+                        and right_operator[1] > left_operator[1]
+                    ):
                         return False
         return True
 
@@ -107,7 +109,7 @@ class BosonOperator(SymbolicOperator):
             # Make sure term conserves particle number
             particles = 0
             for operator in term:
-                particles += (-1)**operator[1]  # add 1 if create, else -1
+                particles += (-1) ** operator[1]  # add 1 if create, else -1
             if not (particles == 0):
                 return False
         return True

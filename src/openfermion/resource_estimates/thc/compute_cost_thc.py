@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 """ Determine costs for THC decomposition in QC """
 from typing import Tuple
 import numpy as np
@@ -6,15 +6,10 @@ from numpy.lib.scimath import arccos, arcsin  # has analytc continuatn to cplx
 from openfermion.resource_estimates.utils import QR, QI
 
 
-def compute_cost(n: int,
-                 lam: float,
-                 dE: float,
-                 chi: int,
-                 beta: int,
-                 M: int,
-                 stps: int,
-                 verbose: bool = False) -> Tuple[int, int, int]:
-    """ Determine fault-tolerant costs using THC decomposition in quantum chem
+def compute_cost(
+    n: int, lam: float, dE: float, chi: int, beta: int, M: int, stps: int, verbose: bool = False
+) -> Tuple[int, int, int]:
+    """Determine fault-tolerant costs using THC decomposition in quantum chem
 
     Args:
         n (int) - the number of spin-orbitals
@@ -48,12 +43,20 @@ def compute_cost(n: int,
     oh = [0] * 20
     for p in range(20):
         # arccos arg may be > 1
-        v = np.round(
-            np.power(2, p + 1) / (2 * np.pi) *
-            arccos(np.power(2, nM) / np.sqrt(d) / 2))
-        oh[p] = stps * (1 / (np.sin(3 * arcsin(np.cos(v * 2 * np.pi / \
-            np.power(2,p+1)) * \
-            np.sqrt(d) / np.power(2,nM)))**2) - 1) + 4 * (p + 1)
+        v = np.round(np.power(2, p + 1) / (2 * np.pi) * arccos(np.power(2, nM) / np.sqrt(d) / 2))
+        oh[p] = stps * (
+            1
+            / (
+                np.sin(
+                    3
+                    * arcsin(
+                        np.cos(v * 2 * np.pi / np.power(2, p + 1)) * np.sqrt(d) / np.power(2, nM)
+                    )
+                )
+                ** 2
+            )
+            - 1
+        ) + 4 * (p + 1)
 
     # Set it to be the number of bits that minimises the cost, usually 7.
     # Python is 0-index, so need to add the one back in vs mathematica nb

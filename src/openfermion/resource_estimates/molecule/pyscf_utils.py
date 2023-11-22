@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 """ Drivers for various PySCF electronic structure routines """
 from typing import Tuple, Optional
 import sys
@@ -26,7 +26,7 @@ def stability(pyscf_mf):
 
 
 def localize(pyscf_mf, loc_type='pm', verbose=0):
-    """ Localize orbitals given a PySCF mean-field object
+    """Localize orbitals given a PySCF mean-field object
 
     Args:
         pyscf_mf:  PySCF mean field object
@@ -44,52 +44,42 @@ def localize(pyscf_mf, loc_type='pm', verbose=0):
     # followed by calling mf.kernel()). But consistent localization is not a
     # given (not unique) despite restoring data this way, hence the message.
     if len(pyscf_mf.mol.atom) == 0:
-        sys.exit("`localize()` requires atom loc. and atomic basis to be" + \
-                 " defined.\n  " + \
-                 "It also can be sensitive to the initial guess and MO" + \
-                 " coefficients.\n  " + \
-                 "Best to try re-creating the PySCF molecule and doing the" + \
-                 " SCF, rather than\n  " + \
-                 "try to load the mean-field object with" + \
-                 " `load_casfile_to_pyscf()`. You can \n " + \
-                 "try to provide the missing information, but consistency" + \
-                 " cannot be guaranteed!")
+        sys.exit(
+            "`localize()` requires atom loc. and atomic basis to be"
+            + " defined.\n  "
+            + "It also can be sensitive to the initial guess and MO"
+            + " coefficients.\n  "
+            + "Best to try re-creating the PySCF molecule and doing the"
+            + " SCF, rather than\n  "
+            + "try to load the mean-field object with"
+            + " `load_casfile_to_pyscf()`. You can \n "
+            + "try to provide the missing information, but consistency"
+            + " cannot be guaranteed!"
+        )
 
     # Split-localize (localize DOCC, SOCC, and virtual separately)
-    docc_idx = np.where(np.isclose(pyscf_mf.mo_occ, 2.))[0]
-    socc_idx = np.where(np.isclose(pyscf_mf.mo_occ, 1.))[0]
-    virt_idx = np.where(np.isclose(pyscf_mf.mo_occ, 0.))[0]
+    docc_idx = np.where(np.isclose(pyscf_mf.mo_occ, 2.0))[0]
+    socc_idx = np.where(np.isclose(pyscf_mf.mo_occ, 1.0))[0]
+    virt_idx = np.where(np.isclose(pyscf_mf.mo_occ, 0.0))[0]
 
     # Pipek-Mezey
     if loc_type.lower() == 'pm':
         print("Localizing doubly occupied ... ", end="")
-        loc_docc_mo = lo.PM(
-            pyscf_mf.mol,
-            pyscf_mf.mo_coeff[:, docc_idx]).kernel(verbose=verbose)
+        loc_docc_mo = lo.PM(pyscf_mf.mol, pyscf_mf.mo_coeff[:, docc_idx]).kernel(verbose=verbose)
         print("singly occupied ... ", end="")
-        loc_socc_mo = lo.PM(
-            pyscf_mf.mol,
-            pyscf_mf.mo_coeff[:, socc_idx]).kernel(verbose=verbose)
+        loc_socc_mo = lo.PM(pyscf_mf.mol, pyscf_mf.mo_coeff[:, socc_idx]).kernel(verbose=verbose)
         print("virtual ... ", end="")
-        loc_virt_mo = lo.PM(
-            pyscf_mf.mol,
-            pyscf_mf.mo_coeff[:, virt_idx]).kernel(verbose=verbose)
+        loc_virt_mo = lo.PM(pyscf_mf.mol, pyscf_mf.mo_coeff[:, virt_idx]).kernel(verbose=verbose)
         print("DONE")
 
     # Edmiston-Rudenberg
     elif loc_type.lower() == 'er':
         print("Localizing doubly occupied ... ", end="")
-        loc_docc_mo = lo.ER(
-            pyscf_mf.mol,
-            pyscf_mf.mo_coeff[:, docc_idx]).kernel(verbose=verbose)
+        loc_docc_mo = lo.ER(pyscf_mf.mol, pyscf_mf.mo_coeff[:, docc_idx]).kernel(verbose=verbose)
         print("singly occupied ... ", end="")
-        loc_socc_mo = lo.ER(
-            pyscf_mf.mol,
-            pyscf_mf.mo_coeff[:, socc_idx]).kernel(verbose=verbose)
+        loc_socc_mo = lo.ER(pyscf_mf.mol, pyscf_mf.mo_coeff[:, socc_idx]).kernel(verbose=verbose)
         print("virtual ... ", end="")
-        loc_virt_mo = lo.ER(
-            pyscf_mf.mol,
-            pyscf_mf.mo_coeff[:, virt_idx]).kernel(verbose=verbose)
+        loc_virt_mo = lo.ER(pyscf_mf.mol, pyscf_mf.mo_coeff[:, virt_idx]).kernel(verbose=verbose)
         print("DONE")
 
     # overwrite orbitals with localized orbitals
@@ -100,11 +90,8 @@ def localize(pyscf_mf, loc_type='pm', verbose=0):
     return pyscf_mf
 
 
-def avas_active_space(pyscf_mf,
-                      ao_list=None,
-                      molden_fname='avas_localized_orbitals',
-                      **kwargs):
-    """ Return AVAS active space as PySCF molecule and mean-field object
+def avas_active_space(pyscf_mf, ao_list=None, molden_fname='avas_localized_orbitals', **kwargs):
+    """Return AVAS active space as PySCF molecule and mean-field object
 
     Args:
         pyscf_mf:  PySCF mean field object
@@ -128,11 +115,7 @@ def avas_active_space(pyscf_mf,
     # Note: requires openshell_option = 3 for this to work, which keeps all
     #     singly occupied in CAS
     # we also require canonicalize = False so that we don't destroy local orbs
-    avas_output = avas.avas(pyscf_mf,
-                            ao_list,
-                            canonicalize=False,
-                            openshell_option=3,
-                            **kwargs)
+    avas_output = avas.avas(pyscf_mf, ao_list, canonicalize=False, openshell_option=3, **kwargs)
     active_norb, active_ne, reordered_orbitals = avas_output
 
     active_alpha, _ = get_num_active_alpha_beta(pyscf_mf, active_ne)
@@ -148,25 +131,26 @@ def avas_active_space(pyscf_mf,
 
         active_space_idx = slice(frozen_alpha, frozen_alpha + active_norb)
         active_mos = reordered_orbitals[:, active_space_idx]
-        tools.molden.from_mo(pyscf_mf.mol,
-                             molden_fname + '.molden',
-                             mo_coeff=active_mos)
+        tools.molden.from_mo(pyscf_mf.mol, molden_fname + '.molden', mo_coeff=active_mos)
 
     # Choosing an active space changes the molecule ("freezing" electrons,
     # for example), so we
     # form the active space tensors first, then re-form the PySCF objects to
     # ensure consistency
     pyscf_active_space_mol, pyscf_active_space_mf = cas_to_pyscf(
-        *pyscf_to_cas(pyscf_mf,
-                      cas_orbitals=active_norb,
-                      cas_electrons=active_ne,
-                      avas_orbs=reordered_orbitals))
+        *pyscf_to_cas(
+            pyscf_mf,
+            cas_orbitals=active_norb,
+            cas_electrons=active_ne,
+            avas_orbs=reordered_orbitals,
+        )
+    )
 
     return pyscf_active_space_mol, pyscf_active_space_mf
 
 
 def cas_to_pyscf(h1, eri, ecore, num_alpha, num_beta):
-    """ Return a PySCF molecule and mean-field object from pre-computed CAS Ham
+    """Return a PySCF molecule and mean-field object from pre-computed CAS Ham
 
     Args:
         h1 (ndarray) - 2D matrix containing one-body terms (MO basis)
@@ -193,12 +177,12 @@ def cas_to_pyscf(h1, eri, ecore, num_alpha, num_beta):
     # have two h1s, etc.
     if num_alpha == num_beta:
         pyscf_mf = scf.RHF(pyscf_mol)
-        scf_energy = ecore + \
-                     2*np.einsum('ii',  h1[:num_alpha,:num_alpha]) + \
-                     2*np.einsum('iijj',
-                           eri[:num_alpha,:num_alpha,:num_alpha,:num_alpha]) - \
-                       np.einsum('ijji',
-                           eri[:num_alpha,:num_alpha,:num_alpha,:num_alpha])
+        scf_energy = (
+            ecore
+            + 2 * np.einsum('ii', h1[:num_alpha, :num_alpha])
+            + 2 * np.einsum('iijj', eri[:num_alpha, :num_alpha, :num_alpha, :num_alpha])
+            - np.einsum('ijji', eri[:num_alpha, :num_alpha, :num_alpha, :num_alpha])
+        )
 
     else:
         pyscf_mf = scf.ROHF(pyscf_mol)
@@ -206,17 +190,19 @@ def cas_to_pyscf(h1, eri, ecore, num_alpha, num_beta):
         # grab singly and doubly occupied orbitals (assume high-spin open shell)
         docc = slice(None, min(num_alpha, num_beta))
         socc = slice(min(num_alpha, num_beta), max(num_alpha, num_beta))
-        scf_energy = ecore + \
-                     2.0*np.einsum('ii',h1[docc, docc]) + \
-                         np.einsum('ii',h1[socc, socc]) + \
-                     2.0*np.einsum('iijj',eri[docc, docc, docc, docc]) - \
-                         np.einsum('ijji',eri[docc, docc, docc, docc]) + \
-                         np.einsum('iijj',eri[socc, socc, docc, docc]) - \
-                     0.5*np.einsum('ijji',eri[socc, docc, docc, socc]) + \
-                         np.einsum('iijj',eri[docc, docc, socc, socc]) - \
-                     0.5*np.einsum('ijji',eri[docc, socc, socc, docc]) + \
-                     0.5*np.einsum('iijj',eri[socc, socc, socc, socc]) - \
-                     0.5*np.einsum('ijji',eri[socc, socc, socc, socc])
+        scf_energy = (
+            ecore
+            + 2.0 * np.einsum('ii', h1[docc, docc])
+            + np.einsum('ii', h1[socc, socc])
+            + 2.0 * np.einsum('iijj', eri[docc, docc, docc, docc])
+            - np.einsum('ijji', eri[docc, docc, docc, docc])
+            + np.einsum('iijj', eri[socc, socc, docc, docc])
+            - 0.5 * np.einsum('ijji', eri[socc, docc, docc, socc])
+            + np.einsum('iijj', eri[docc, docc, socc, socc])
+            - 0.5 * np.einsum('ijji', eri[docc, socc, socc, docc])
+            + 0.5 * np.einsum('iijj', eri[socc, socc, socc, socc])
+            - 0.5 * np.einsum('ijji', eri[socc, socc, socc, socc])
+        )
 
     pyscf_mf.get_hcore = lambda *args: np.asarray(h1)
     pyscf_mf.get_ovlp = lambda *args: np.eye(h1.shape[0])
@@ -232,11 +218,13 @@ def cas_to_pyscf(h1, eri, ecore, num_alpha, num_beta):
     return pyscf_mol, pyscf_mf
 
 
-def pyscf_to_cas(pyscf_mf,
-                 cas_orbitals: Optional[int] = None,
-                 cas_electrons: Optional[int] = None,
-                 avas_orbs=None):
-    """ Return CAS Hamiltonian tensors from a PySCF mean-field object
+def pyscf_to_cas(
+    pyscf_mf,
+    cas_orbitals: Optional[int] = None,
+    cas_electrons: Optional[int] = None,
+    avas_orbs=None,
+):
+    """Return CAS Hamiltonian tensors from a PySCF mean-field object
 
     Args:
         pyscf_mf: PySCF mean field object
@@ -274,7 +262,7 @@ def pyscf_to_cas(pyscf_mf,
 
 
 def get_num_active_alpha_beta(pyscf_mf, cas_electrons):
-    """ Return number of alpha and beta electrons in the active space given
+    """Return number of alpha and beta electrons in the active space given
         number of CAS electrons
         This assumes that all the unpaired electrons are in the active space
 
@@ -307,10 +295,8 @@ def get_num_active_alpha_beta(pyscf_mf, cas_electrons):
     return num_alpha, num_beta
 
 
-def load_casfile_to_pyscf(fname,
-                          num_alpha: Optional[int] = None,
-                          num_beta: Optional[int] = None):
-    """ Load CAS Hamiltonian from pre-computed HD5 file into a PySCF molecule
+def load_casfile_to_pyscf(fname, num_alpha: Optional[int] = None, num_beta: Optional[int] = None):
+    """Load CAS Hamiltonian from pre-computed HD5 file into a PySCF molecule
         and mean-field object
 
     Args:
@@ -350,31 +336,37 @@ def load_casfile_to_pyscf(fname,
             try:
                 num_alpha = int(f['active_nalpha'][()])
             except KeyError:
-                sys.exit("In `load_casfile_to_pyscf()`: \n" + \
-                         " No values found on file for num_alpha " + \
-                         "(key: 'active_nalpha' in h5). " + \
-                         " Try passing in a value for num_alpha, or" + \
-                         " re-check integral file.")
+                sys.exit(
+                    "In `load_casfile_to_pyscf()`: \n"
+                    + " No values found on file for num_alpha "
+                    + "(key: 'active_nalpha' in h5). "
+                    + " Try passing in a value for num_alpha, or"
+                    + " re-check integral file."
+                )
             try:
                 num_beta = int(f['active_nbeta'][()])
             except KeyError:
-                sys.exit("In `load_casfile_to_pyscf()`: \n" + \
-                         " No values found on file for num_beta " + \
-                         "(key: 'active_nbeta' in h5). " + \
-                         " Try passing in a value for num_beta, or" + \
-                         " re-check integral file.")
+                sys.exit(
+                    "In `load_casfile_to_pyscf()`: \n"
+                    + " No values found on file for num_beta "
+                    + "(key: 'active_nbeta' in h5). "
+                    + " Try passing in a value for num_beta, or"
+                    + " re-check integral file."
+                )
 
     pyscf_mol, pyscf_mf = cas_to_pyscf(h1, eri, ecore, num_alpha, num_beta)
 
     return pyscf_mol, pyscf_mf
 
 
-def save_pyscf_to_casfile(fname,
-                          pyscf_mf,
-                          cas_orbitals: Optional[int] = None,
-                          cas_electrons: Optional[int] = None,
-                          avas_orbs=None):
-    """ Save CAS Hamiltonian from a PySCF mean-field object to an HD5 file
+def save_pyscf_to_casfile(
+    fname,
+    pyscf_mf,
+    cas_orbitals: Optional[int] = None,
+    cas_electrons: Optional[int] = None,
+    avas_orbs=None,
+):
+    """Save CAS Hamiltonian from a PySCF mean-field object to an HD5 file
 
     Args:
         fname (str): path to hd5 file to be created containing CAS terms
@@ -383,22 +375,22 @@ def save_pyscf_to_casfile(fname,
         cas_electrons (int, optional): number of elec in CAS, default all elec
         avas_orbs (ndarray, optional): orbitals selected by AVAS in PySCF
     """
-    h1, eri, ecore, num_alpha, num_beta = \
-        pyscf_to_cas(pyscf_mf, cas_orbitals, cas_electrons, avas_orbs)
+    h1, eri, ecore, num_alpha, num_beta = pyscf_to_cas(
+        pyscf_mf, cas_orbitals, cas_electrons, avas_orbs
+    )
 
     with h5py.File(fname, 'w') as fid:
         fid.create_dataset('ecore', data=float(ecore), dtype=float)
-        fid.create_dataset(
-            'h0',
-            data=h1)  # note the name change to be consistent with THC paper
+        fid.create_dataset('h0', data=h1)  # note the name change to be consistent with THC paper
         fid.create_dataset('eri', data=eri)
         fid.create_dataset('active_nalpha', data=int(num_alpha), dtype=int)
         fid.create_dataset('active_nbeta', data=int(num_beta), dtype=int)
 
 
-def factorized_ccsd_t(pyscf_mf, eri_rr = None, use_kernel = True,\
-    no_triples=False) -> Tuple[float, float, float]:
-    """ Compute CCSD(T) energy using rank-reduced ERIs
+def factorized_ccsd_t(
+    pyscf_mf, eri_rr=None, use_kernel=True, no_triples=False
+) -> Tuple[float, float, float]:
+    """Compute CCSD(T) energy using rank-reduced ERIs
 
     Args:
         pyscf_mf - PySCF mean field object
@@ -417,15 +409,17 @@ def factorized_ccsd_t(pyscf_mf, eri_rr = None, use_kernel = True,\
     if eri_rr is None:
         eri_rr = eri_full
 
-    e_scf, e_cor, e_tot = ccsd_t(h1, eri_rr, ecore, num_alpha, num_beta,\
-        eri_full, use_kernel, no_triples)
+    e_scf, e_cor, e_tot = ccsd_t(
+        h1, eri_rr, ecore, num_alpha, num_beta, eri_full, use_kernel, no_triples
+    )
 
     return e_scf, e_cor, e_tot
 
 
-def ccsd_t(h1, eri, ecore, num_alpha: int, num_beta: int, eri_full = None,\
-    use_kernel=True, no_triples=False) -> Tuple[float, float, float]:
-    """ Helper function to do CCSD(T) on set of one- and two-body Hamil elems
+def ccsd_t(
+    h1, eri, ecore, num_alpha: int, num_beta: int, eri_full=None, use_kernel=True, no_triples=False
+) -> Tuple[float, float, float]:
+    """Helper function to do CCSD(T) on set of one- and two-body Hamil elems
 
     Args:
         h1 (ndarray) - 2D matrix containing one-body terms (MO basis)
@@ -458,16 +452,12 @@ def ccsd_t(h1, eri, ecore, num_alpha: int, num_beta: int, eri_full = None,\
     # either RHF or ROHF ... should be OK since UHF will have two h1s, etc.
     if num_alpha == num_beta:
         mf = scf.RHF(mol)
-        scf_energy = ecore + \
-                     2*np.einsum('ii',h1[:num_alpha,:num_alpha]) + \
-                     2*np.einsum('iijj',eri_full[:num_alpha,\
-                                                 :num_alpha,\
-                                                 :num_alpha,\
-                                                 :num_alpha]) - \
-                       np.einsum('ijji',eri_full[:num_alpha,\
-                                                 :num_alpha,\
-                                                 :num_alpha,\
-                                                 :num_alpha])
+        scf_energy = (
+            ecore
+            + 2 * np.einsum('ii', h1[:num_alpha, :num_alpha])
+            + 2 * np.einsum('iijj', eri_full[:num_alpha, :num_alpha, :num_alpha, :num_alpha])
+            - np.einsum('ijji', eri_full[:num_alpha, :num_alpha, :num_alpha, :num_alpha])
+        )
 
     else:
         mf = scf.ROHF(mol)
@@ -475,17 +465,19 @@ def ccsd_t(h1, eri, ecore, num_alpha: int, num_beta: int, eri_full = None,\
         # grab singly and doubly occupied orbitals (assume high-spin open shell)
         docc = slice(None, min(num_alpha, num_beta))
         socc = slice(min(num_alpha, num_beta), max(num_alpha, num_beta))
-        scf_energy = ecore + \
-                     2.0*np.einsum('ii',h1[docc, docc]) + \
-                         np.einsum('ii',h1[socc, socc]) + \
-                     2.0*np.einsum('iijj',eri_full[docc, docc, docc, docc]) - \
-                         np.einsum('ijji',eri_full[docc, docc, docc, docc]) + \
-                         np.einsum('iijj',eri_full[socc, socc, docc, docc]) - \
-                     0.5*np.einsum('ijji',eri_full[socc, docc, docc, socc]) + \
-                         np.einsum('iijj',eri_full[docc, docc, socc, socc]) - \
-                     0.5*np.einsum('ijji',eri_full[docc, socc, socc, docc]) + \
-                     0.5*np.einsum('iijj',eri_full[socc, socc, socc, socc]) - \
-                     0.5*np.einsum('ijji',eri_full[socc, socc, socc, socc])
+        scf_energy = (
+            ecore
+            + 2.0 * np.einsum('ii', h1[docc, docc])
+            + np.einsum('ii', h1[socc, socc])
+            + 2.0 * np.einsum('iijj', eri_full[docc, docc, docc, docc])
+            - np.einsum('ijji', eri_full[docc, docc, docc, docc])
+            + np.einsum('iijj', eri_full[socc, socc, docc, docc])
+            - 0.5 * np.einsum('ijji', eri_full[socc, docc, docc, socc])
+            + np.einsum('iijj', eri_full[docc, docc, socc, socc])
+            - 0.5 * np.einsum('ijji', eri_full[docc, socc, socc, docc])
+            + 0.5 * np.einsum('iijj', eri_full[socc, socc, socc, socc])
+            - 0.5 * np.einsum('ijji', eri_full[socc, socc, socc, socc])
+        )
 
     mf.get_hcore = lambda *args: np.asarray(h1)
     mf.get_ovlp = lambda *args: np.eye(h1.shape[0])
@@ -510,8 +502,7 @@ def ccsd_t(h1, eri, ecore, num_alpha: int, num_beta: int, eri_full = None,\
         mf.level_shift = 0.5
         mf.conv_check = False
         mf.max_cycle = 800
-        mf.kernel(mf.make_rdm1(mf.mo_coeff,
-                               mf.mo_occ))  # use MO info to generate guess
+        mf.kernel(mf.make_rdm1(mf.mo_coeff, mf.mo_occ))  # use MO info to generate guess
         mf = stability(mf)
         mf = stability(mf)
         mf = stability(mf)
@@ -521,12 +512,10 @@ def ccsd_t(h1, eri, ecore, num_alpha: int, num_beta: int, eri_full = None,\
             assert np.isclose(scf_energy, mf.e_tot, rtol=1e-14)
         except AssertionError:
             print(
-                "WARNING: E(SCF) from input integrals does not match E(SCF)" + \
-                " from mf.kernel()")
-            print("  Will use E(SCF) = {:12.6f} from mf.kernel going forward.".
-                  format(mf.e_tot))
-        print("E(SCF, ints) = {:12.6f} whereas E(SCF) = {:12.6f}".format(
-            scf_energy, mf.e_tot))
+                "WARNING: E(SCF) from input integrals does not match E(SCF)" + " from mf.kernel()"
+            )
+            print("  Will use E(SCF) = {:12.6f} from mf.kernel going forward.".format(mf.e_tot))
+        print("E(SCF, ints) = {:12.6f} whereas E(SCF) = {:12.6f}".format(scf_energy, mf.e_tot))
 
         # New SCF energy and orbitals for CCSD(T)
         scf_energy = mf.e_tot
@@ -537,8 +526,8 @@ def ccsd_t(h1, eri, ecore, num_alpha: int, num_beta: int, eri_full = None,\
 
     mycc = cc.CCSD(mf)
     mycc.max_cycle = 800
-    mycc.conv_tol = 1E-8
-    mycc.conv_tol_normt = 1E-4
+    mycc.conv_tol = 1e-8
+    mycc.conv_tol_normt = 1e-4
     mycc.diis_space = 24
     mycc.verbose = 4
     mycc.kernel()
@@ -588,14 +577,14 @@ def open_shell_t1_d1(t1a, t1b, mo_occ, nalpha, nbeta):
     doi: 10.1063/1.464352.
     """
     # compute t1-diagnostic
-    docc_idx = np.where(np.isclose(mo_occ, 2.))[0]
-    socc_idx = np.where(np.isclose(mo_occ, 1.))[0]
-    virt_idx = np.where(np.isclose(mo_occ, 0.))[0]
+    docc_idx = np.where(np.isclose(mo_occ, 2.0))[0]
+    socc_idx = np.where(np.isclose(mo_occ, 1.0))[0]
+    virt_idx = np.where(np.isclose(mo_occ, 0.0))[0]
     t1a_docc = t1a[docc_idx, :]  # double occ-> virtual
-    t1b_docc = t1b[docc_idx, :][:, -len(virt_idx):]  # double occ-> virtual
+    t1b_docc = t1b[docc_idx, :][:, -len(virt_idx) :]  # double occ-> virtual
     if len(socc_idx) > 0:
         t1_xa = t1a[socc_idx, :]  # single occ -> virtual
-        t1_ix = t1b[docc_idx, :][:, :len(socc_idx)]  # double occ -> single occ
+        t1_ix = t1b[docc_idx, :][:, : len(socc_idx)]  # double occ -> single occ
     else:
         t1_xa = np.array(())
         t1_ix = np.array(())
@@ -603,7 +592,9 @@ def open_shell_t1_d1(t1a, t1b, mo_occ, nalpha, nbeta):
     if nalpha - nbeta + len(virt_idx) != t1b.shape[1]:
         raise ValueError(
             "Inconsistent shapes na {}, nb {}, t1b.shape {},{}".format(
-                nalpha, nbeta, t1b.shape[0], t1b.shape[1]))
+                nalpha, nbeta, t1b.shape[0], t1b.shape[1]
+            )
+        )
 
     if t1a_docc.shape != (len(docc_idx), len(virt_idx)):
         raise ValueError("T1a_ia does not have the right shape")
@@ -616,8 +607,8 @@ def open_shell_t1_d1(t1a, t1b, mo_occ, nalpha, nbeta):
             raise ValueError("T1_xa does not have the right shape")
 
     t1_diagnostic = np.sqrt(
-        np.sum((t1a_docc + t1b_docc)**2) + 2 * np.sum(t1_xa**2) +
-        2 * np.sum(t1_ix**2)) / (2 * np.sqrt(nalpha + nbeta))
+        np.sum((t1a_docc + t1b_docc) ** 2) + 2 * np.sum(t1_xa**2) + 2 * np.sum(t1_ix**2)
+    ) / (2 * np.sqrt(nalpha + nbeta))
     # compute D1-diagnostic
     f_ia = 0.5 * (t1a_docc + t1b_docc)
     s_f_ia_2, _ = np.linalg.eigh(f_ia @ f_ia.T)
@@ -634,7 +625,6 @@ def open_shell_t1_d1(t1a, t1b, mo_occ, nalpha, nbeta):
     s_f_xa_2_norm = np.sqrt(np.max(s_f_xa_2, initial=0))
     s_f_ix_2_norm = np.sqrt(np.max(s_f_ix_2, initial=0))
 
-    d1_diagnostic = np.max(
-        np.array([s_f_ia_2_norm, s_f_xa_2_norm, s_f_ix_2_norm]))
+    d1_diagnostic = np.max(np.array([s_f_ia_2_norm, s_f_xa_2_norm, s_f_ix_2_norm]))
 
     return t1_diagnostic, d1_diagnostic

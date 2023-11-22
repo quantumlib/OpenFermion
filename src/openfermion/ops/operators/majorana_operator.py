@@ -59,7 +59,7 @@ class MajoranaOperator:
         self.terms = {}
         if term is not None:
             term, parity = _sort_majorana_term(term)
-            self.terms[term] = coefficient * (-1)**parity
+            self.terms[term] = coefficient * (-1) ** parity
 
     @staticmethod
     def from_dict(terms):
@@ -78,13 +78,10 @@ class MajoranaOperator:
     def commutes_with(self, other):
         """Test commutation with another MajoranaOperator"""
         if not isinstance(other, type(self)):
-            raise TypeError(
-                'Can only test commutation with another MajoranaOperator.')
+            raise TypeError('Can only test commutation with another MajoranaOperator.')
 
         if len(self.terms) == 1 and len(other.terms) == 1:
-            return _majorana_terms_commute(
-                list(self.terms.keys())[0],
-                list(other.terms.keys())[0])
+            return _majorana_terms_commute(list(self.terms.keys())[0], list(other.terms.keys())[0])
         return self * other == other * self
 
     def with_basis_rotated_by(self, transformation_matrix):
@@ -174,18 +171,14 @@ class MajoranaOperator:
             return NotImplemented
 
         if isinstance(other, (int, float, complex)):
-            terms = {
-                term: coefficient * other
-                for term, coefficient in self.terms.items()
-            }
+            terms = {term: coefficient * other for term, coefficient in self.terms.items()}
             return MajoranaOperator.from_dict(terms)
 
         terms = {}
         for left_term, left_coefficient in self.terms.items():
             for right_term, right_coefficient in other.terms.items():
                 new_term, parity = _merge_majorana_terms(left_term, right_term)
-                coefficient = left_coefficient * right_coefficient * (
-                    -1)**parity
+                coefficient = left_coefficient * right_coefficient * (-1) ** parity
                 if new_term in terms:
                     terms[new_term] += coefficient
                 else:
@@ -212,10 +205,7 @@ class MajoranaOperator:
         if not isinstance(other, (int, float, complex)):
             return NotImplemented
 
-        terms = {
-            term: coefficient / other
-            for term, coefficient in self.terms.items()
-        }
+        terms = {term: coefficient / other for term, coefficient in self.terms.items()}
         return MajoranaOperator.from_dict(terms)
 
     def __itruediv__(self, other):
@@ -371,5 +361,8 @@ def _rotate_basis(term, transformation_matrix):
 
 def _is_real_orthogonal(matrix):
     n, m = matrix.shape
-    return (n == m and numpy.allclose(numpy.imag(matrix), 0.0) and
-            numpy.allclose(numpy.dot(matrix.T, matrix), numpy.eye(n)))
+    return (
+        n == m
+        and numpy.allclose(numpy.imag(matrix), 0.0)
+        and numpy.allclose(numpy.dot(matrix.T, matrix), numpy.eye(n))
+    )

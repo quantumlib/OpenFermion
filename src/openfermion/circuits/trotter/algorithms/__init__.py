@@ -16,10 +16,7 @@ from openfermion.circuits.trotter.algorithms.linear_swap_network import (
     LinearSwapNetworkTrotterAlgorithm,
 )
 
-from openfermion.circuits.trotter.algorithms.low_rank import (
-    LOW_RANK,
-    LowRankTrotterAlgorithm,
-)
+from openfermion.circuits.trotter.algorithms.low_rank import LOW_RANK, LowRankTrotterAlgorithm
 
 from .split_operator import (
     SplitOperatorTrotterAlgorithm,

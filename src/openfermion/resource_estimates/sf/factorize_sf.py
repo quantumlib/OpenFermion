@@ -1,11 +1,11 @@
-#coverage:ignore
+# coverage:ignore
 """ Single factorization of the ERI tensor """
 import numpy as np
 from openfermion.resource_estimates.utils import eigendecomp
 
 
 def factorize(eri_full, rank):
-    """ Do single factorization of the ERI tensor
+    """Do single factorization of the ERI tensor
 
     Args:
        eri_full (np.ndarray) - 4D (N x N x N x N) full ERI tensor
@@ -33,7 +33,7 @@ def factorize(eri_full, rank):
             assert LR.shape[2] == rank
         except AssertionError:
             sys.exit(
-                "LR.shape:     %s\nrank: %s\nLR.shape and rank are inconsistent"
-                % (LR.shape, rank))
+                "LR.shape:     %s\nrank: %s\nLR.shape and rank are inconsistent" % (LR.shape, rank)
+            )
 
     return eri_rr, LR

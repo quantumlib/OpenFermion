@@ -55,13 +55,13 @@ def _bch_expand_multiple_terms(*ops, **kwargs):
     if n_ops == 2:
         return _bch_expand_two_terms(ops[0], ops[1], order=order)
     else:
-        left_ops = ops[:n_ops // 2]
-        right_ops = ops[n_ops // 2:]
-        return _bch_expand_two_terms(_bch_expand_multiple_terms(*left_ops,
-                                                                order=order),
-                                     _bch_expand_multiple_terms(*right_ops,
-                                                                order=order),
-                                     order=order)
+        left_ops = ops[: n_ops // 2]
+        right_ops = ops[n_ops // 2 :]
+        return _bch_expand_two_terms(
+            _bch_expand_multiple_terms(*left_ops, order=order),
+            _bch_expand_multiple_terms(*right_ops, order=order),
+            order=order,
+        )
 
 
 def _bch_expand_two_terms(x, y, order=6):
@@ -121,9 +121,7 @@ def _generate_nested_commutator(order):
     coeff_list = []
 
     for i in range(1, order + 1):
-        term_of_order_i = [
-            list(x) for x in itertools.product(['0', '1'], repeat=i)
-        ]
+        term_of_order_i = [list(x) for x in itertools.product(['0', '1'], repeat=i)]
 
         # filter out trivially zero terms by checking if last two terms are
         # the same
@@ -170,8 +168,7 @@ def _compute_coeff(split_bin_str):
     def cn(n):
         return _coeff_monomial(split_bin_str, n, len(split_bin_str))
 
-    c = sum([(-1)**(n + 1) / float(n) * cn(n)
-             for n in range(num_block + 1, order + 1)])
+    c = sum([(-1) ** (n + 1) / float(n) * cn(n) for n in range(num_block + 1, order + 1)])
     return c / order
 
 
@@ -190,24 +187,18 @@ def _coeff_monomial(split_bin_str, n, l):
         coeff = 0
 
     def depth_first_search(split_bin_str, n, l, sol=None, cur_sum=0):
-        ''' Partition an integer value of n into l bins each with min 1
-        '''
+        '''Partition an integer value of n into l bins each with min 1'''
         sol = sol or []
         cur_idx = len(sol)
         if cur_idx < l:
             m = len(split_bin_str[cur_idx])
             n_avail = n - cur_sum
             for j in range(1, min(m, n_avail - (l - 1 - cur_idx)) + 1):
-                depth_first_search(split_bin_str,
-                                   n,
-                                   l,
-                                   sol=sol + [j],
-                                   cur_sum=cur_sum + j)
+                depth_first_search(split_bin_str, n, l, sol=sol + [j], cur_sum=cur_sum + j)
         elif cur_idx == l:
             if cur_sum == n:
                 partition_list = sol
-                context.coeff += _coeff_monomial_with_partition(
-                    split_bin_str, partition_list)
+                context.coeff += _coeff_monomial_with_partition(split_bin_str, partition_list)
 
     # start from the root
     depth_first_search(split_bin_str, n, l)
@@ -234,11 +225,13 @@ def _coeff_for_non_descending_block(cnt_x, cnt_y, eta):
 
     ret = 0
     for eta_x in range(1, eta):
-        ret += (_coeff_for_consectutive_op(cnt_x, eta_x) *
-                _coeff_for_consectutive_op(cnt_y, eta - eta_x))
+        ret += _coeff_for_consectutive_op(cnt_x, eta_x) * _coeff_for_consectutive_op(
+            cnt_y, eta - eta_x
+        )
     for eta_x in range(1, eta + 1):
-        ret += (_coeff_for_consectutive_op(cnt_x, eta_x) *
-                _coeff_for_consectutive_op(cnt_y, eta + 1 - eta_x))
+        ret += _coeff_for_consectutive_op(cnt_x, eta_x) * _coeff_for_consectutive_op(
+            cnt_y, eta + 1 - eta_x
+        )
     return ret
 
 
@@ -249,6 +242,7 @@ def _coeff_for_consectutive_op(cnt_x, num_partition):
     """
     ret = 0
     for num_zero in range(num_partition):
-        ret += ((-1)**num_zero * (num_partition - num_zero)**cnt_x *
-                comb(num_partition, num_zero))
+        ret += (
+            (-1) ** num_zero * (num_partition - num_zero) ** cnt_x * comb(num_partition, num_zero)
+        )
     return ret / float(factorial(cnt_x))

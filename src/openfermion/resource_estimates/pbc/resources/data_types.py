@@ -14,8 +14,7 @@
 from dataclasses import dataclass, asdict, field
 import pandas as pd
 
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    HamiltonianProperties,)
+from openfermion.resource_estimates.pbc.hamiltonian import HamiltonianProperties
 
 
 @dataclass(frozen=True)
@@ -77,11 +76,11 @@ class PBCResources:
         return df
 
     def add_resources(
-            self,
-            ham_properties: HamiltonianProperties,
-            resource_estimates: ResourceEstimates,
-            cutoff: float,
-            approx_energy: float,
+        self,
+        ham_properties: HamiltonianProperties,
+        resource_estimates: ResourceEstimates,
+        cutoff: float,
+        approx_energy: float,
     ) -> None:
         """Add resource estimates to container for given cutoff value.
 

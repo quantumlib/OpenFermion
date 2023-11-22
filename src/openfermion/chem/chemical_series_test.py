@@ -14,27 +14,28 @@
 import unittest
 import numpy
 
-from openfermion.chem.chemical_series import (MolecularLatticeError,
-                                              make_atomic_lattice, make_atom,
-                                              make_atomic_ring)
-from openfermion.chem.molecular_data import (periodic_table,
-                                             periodic_polarization)
+from openfermion.chem.chemical_series import (
+    MolecularLatticeError,
+    make_atomic_lattice,
+    make_atom,
+    make_atomic_ring,
+)
+from openfermion.chem.molecular_data import periodic_table, periodic_polarization
 
 
 class ChemicalSeries(unittest.TestCase):
-
     def test_make_atomic_ring(self):
-        spacing = 1.
+        spacing = 1.0
         basis = 'sto-3g'
         for n_atoms in range(2, 10):
             molecule = make_atomic_ring(n_atoms, spacing, basis)
 
             # Check that ring is centered.
-            vector_that_should_sum_to_zero = 0.
+            vector_that_should_sum_to_zero = 0.0
             for atom in molecule.geometry:
                 for coordinate in atom[1]:
                     vector_that_should_sum_to_zero += coordinate
-            self.assertAlmostEqual(vector_that_should_sum_to_zero, 0.)
+            self.assertAlmostEqual(vector_that_should_sum_to_zero, 0.0)
 
             # Check that the spacing between the atoms is correct.
             for atom_index in range(n_atoms):
@@ -44,9 +45,10 @@ class ChemicalSeries(unittest.TestCase):
                     atom_a = molecule.geometry[atom_index - 1]
                     coords_a = atom_a[1]
                     observed_spacing = numpy.sqrt(
-                        numpy.square(coords_b[0] - coords_a[0]) +
-                        numpy.square(coords_b[1] - coords_a[1]) +
-                        numpy.square(coords_b[2] - coords_a[2]))
+                        numpy.square(coords_b[0] - coords_a[0])
+                        + numpy.square(coords_b[1] - coords_a[1])
+                        + numpy.square(coords_b[2] - coords_a[2])
+                    )
                     self.assertAlmostEqual(observed_spacing, spacing)
 
     def test_make_atomic_lattice_1d(self):
@@ -54,8 +56,7 @@ class ChemicalSeries(unittest.TestCase):
         basis = 'sto-3g'
         atom_type = 'H'
         for n_atoms in range(2, 10):
-            molecule = make_atomic_lattice(n_atoms, 1, 1, spacing, basis,
-                                           atom_type)
+            molecule = make_atomic_lattice(n_atoms, 1, 1, spacing, basis, atom_type)
 
             # Check that the spacing between the atoms is correct.
             for atom_index in range(n_atoms):
@@ -73,8 +74,7 @@ class ChemicalSeries(unittest.TestCase):
         basis = 'sto-3g'
         atom_type = 'H'
         atom_dim = 7
-        molecule = make_atomic_lattice(atom_dim, atom_dim, 1, spacing, basis,
-                                       atom_type)
+        molecule = make_atomic_lattice(atom_dim, atom_dim, 1, spacing, basis, atom_type)
 
         # Check that the spacing between the atoms is correct.
         for atom in range(atom_dim**2):
@@ -93,8 +93,7 @@ class ChemicalSeries(unittest.TestCase):
         basis = 'sto-3g'
         atom_type = 'H'
         atom_dim = 4
-        molecule = make_atomic_lattice(atom_dim, atom_dim, atom_dim, spacing,
-                                       basis, atom_type)
+        molecule = make_atomic_lattice(atom_dim, atom_dim, atom_dim, spacing, basis, atom_type)
 
         # Check that the spacing between the atoms is correct.
         for atom in range(atom_dim**3):
@@ -118,8 +117,7 @@ class ChemicalSeries(unittest.TestCase):
         atom_type = 'H'
         atom_dim = 0
         with self.assertRaises(MolecularLatticeError):
-            make_atomic_lattice(atom_dim, atom_dim, atom_dim, spacing, basis,
-                                atom_type)
+            make_atomic_lattice(atom_dim, atom_dim, atom_dim, spacing, basis, atom_type)
 
     def test_make_atom(self):
         basis = 'sto-3g'
@@ -127,6 +125,6 @@ class ChemicalSeries(unittest.TestCase):
         for n_electrons in range(1, largest_atom):
             atom_name = periodic_table[n_electrons]
             atom = make_atom(atom_name, basis)
-            expected_spin = periodic_polarization[n_electrons] / 2.
+            expected_spin = periodic_polarization[n_electrons] / 2.0
             expected_multiplicity = int(2 * expected_spin + 1)
             self.assertAlmostEqual(expected_multiplicity, atom.multiplicity)

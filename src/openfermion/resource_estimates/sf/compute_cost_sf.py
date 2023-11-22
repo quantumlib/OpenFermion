@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 """ Determine costs for SF decomposition in QC """
 from typing import Tuple
 import numpy as np
@@ -6,14 +6,10 @@ from numpy.lib.scimath import arccos, arcsin  # has analytic continutn to cplx
 from openfermion.resource_estimates.utils import QR, QI, QR2, power_two
 
 
-def compute_cost(n: int,
-                 lam: float,
-                 dE: float,
-                 L: int,
-                 chi: int,
-                 stps: int,
-                 verbose: bool = False) -> Tuple[int, int, int]:
-    """ Determine fault-tolerant costs using SF decomposition in quantum chem
+def compute_cost(
+    n: int, lam: float, dE: float, L: int, chi: int, stps: int, verbose: bool = False
+) -> Tuple[int, int, int]:
+    """Determine fault-tolerant costs using SF decomposition in quantum chem
 
     Args:
         n (int) - the number of spin-orbitals
@@ -44,11 +40,30 @@ def compute_cost(n: int,
     oh = [0] * 20
     for p in range(20):
         # JJG note: arccos arg may be > 1
-        v = np.round(np.power(2,p+1) / (2 * np.pi) * arccos(np.power(2,nL) /\
-            np.sqrt((L + 1)/2**eta)/2))
-        oh[p] = np.real(stps * (1 / (np.sin(3 * arcsin(np.cos(v * 2 * np.pi / \
-            np.power(2,p+1)) * \
-            np.sqrt((L + 1)/2**eta) / np.power(2,nL)))**2) - 1) + 4 * (p + 1))
+        v = np.round(
+            np.power(2, p + 1)
+            / (2 * np.pi)
+            * arccos(np.power(2, nL) / np.sqrt((L + 1) / 2**eta) / 2)
+        )
+        oh[p] = np.real(
+            stps
+            * (
+                1
+                / (
+                    np.sin(
+                        3
+                        * arcsin(
+                            np.cos(v * 2 * np.pi / np.power(2, p + 1))
+                            * np.sqrt((L + 1) / 2**eta)
+                            / np.power(2, nL)
+                        )
+                    )
+                    ** 2
+                )
+                - 1
+            )
+            + 4 * (p + 1)
+        )
 
     # Bits of precision for rotation
     br = int(np.argmin(oh) + 1)
@@ -72,11 +87,27 @@ def compute_cost(n: int,
     nprime = int(n**2 // 8 + n // 4)
     for p in range(20):
         v = np.round(
-            np.power(2, p + 1) / (2 * np.pi) *
-            arccos(np.power(2, 2 * nN) / np.sqrt(nprime) / 2))
-        oh[p] = np.real(20000 * (1 / (np.sin(3 * arcsin(np.cos(v * 2 * np.pi / \
-            np.power(2, p+1)) * \
-            np.sqrt(nprime) / np.power(2,2*nN)))**2) - 1) + 4 * (p + 1))
+            np.power(2, p + 1) / (2 * np.pi) * arccos(np.power(2, 2 * nN) / np.sqrt(nprime) / 2)
+        )
+        oh[p] = np.real(
+            20000
+            * (
+                1
+                / (
+                    np.sin(
+                        3
+                        * arcsin(
+                            np.cos(v * 2 * np.pi / np.power(2, p + 1))
+                            * np.sqrt(nprime)
+                            / np.power(2, 2 * nN)
+                        )
+                    )
+                    ** 2
+                )
+                - 1
+            )
+            + 4 * (p + 1)
+        )
 
     # Bits of precision for rotation for preparing the next equal
     # superposition states
@@ -98,8 +129,7 @@ def compute_cost(n: int,
     bp = int(2 * nN + chi + 2)
 
     # Cost of QROMs for state preparation on p and q in step 2 (c).
-    cost2c = QR2(L + 1, nprime, bp)[-1] + QI(n1)[-1] + QR2(L, nprime,
-                                                           bp)[-1] + QI(n2)[-1]
+    cost2c = QR2(L + 1, nprime, bp)[-1] + QI(n1)[-1] + QR2(L, nprime, bp)[-1] + QI(n2)[-1]
 
     # The cost of the inequality test and controlled swap for the quantum alias
     # sampling in steps 2 (d) and (e).
@@ -130,8 +160,21 @@ def compute_cost(n: int,
     iters = np.ceil(np.pi * lam / (dE * 2))
 
     # The total Toffoli costs for a step.
-    cost = cost1a + cost1b + cost1cd + cost2a + cost2b + cost2c + cost2de + \
-           cost3 + cost4 + cost6 + cost7 + cost9 + cost10
+    cost = (
+        cost1a
+        + cost1b
+        + cost1cd
+        + cost2a
+        + cost2b
+        + cost2c
+        + cost2de
+        + cost3
+        + cost4
+        + cost6
+        + cost7
+        + cost9
+        + cost10
+    )
 
     # Control for phase estimation and its iteration
     ac1 = 2 * np.ceil(np.log2(iters)) - 1
@@ -160,8 +203,7 @@ def compute_cost(n: int,
     ac8 = br
 
     # The QROM on the p & q registers
-    ac9 = kp[0] * kp[1] * bp + np.ceil(np.log2(
-        (L + 1) / kp[0])) + np.ceil(np.log2(nprime / kp[1]))
+    ac9 = kp[0] * kp[1] * bp + np.ceil(np.log2((L + 1) / kp[0])) + np.ceil(np.log2(nprime / kp[1]))
 
     if verbose:
         print("[*] Top of routine")

@@ -13,8 +13,7 @@
 """
 from itertools import chain, product
 import numpy
-from openfermion.ops.representations import (PolynomialTensor,
-                                             get_tensors_from_integrals)
+from openfermion.ops.representations import PolynomialTensor, get_tensors_from_integrals
 from openfermion.ops.representations import DOCIHamiltonian
 from openfermion.ops import QubitOperator
 
@@ -68,16 +67,19 @@ class RichardsonGaudin(DOCIHamiltonian):
 
     @DOCIHamiltonian.constant.setter
     def constant(self, value):
-        raise TypeError('Raw edits of the constant of a RichardsonGaudin model'
-                        'is not allowed. Either adjust the g parameter '
-                        'or cast to another PolynomialTensor class.')
+        raise TypeError(
+            'Raw edits of the constant of a RichardsonGaudin model'
+            'is not allowed. Either adjust the g parameter '
+            'or cast to another PolynomialTensor class.'
+        )
 
     @DOCIHamiltonian.n_body_tensors.setter
     def n_body_tensors(self, value):
         raise TypeError(
             'Raw edits of the n_body_tensors of a RichardsonGaudin model'
             'is not allowed. Either adjust the g parameter '
-            'or cast to another PolynomialTensor class.')
+            'or cast to another PolynomialTensor class.'
+        )
 
     def get_antisymmetrized_tensors(self):
         r"""Antisymmetrized Tensors

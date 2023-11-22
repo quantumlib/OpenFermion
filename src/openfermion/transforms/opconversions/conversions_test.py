@@ -15,21 +15,28 @@ import pytest
 import numpy
 import sympy
 
-from openfermion.ops.operators import (QuadOperator, BosonOperator,
-                                       FermionOperator, MajoranaOperator,
-                                       QubitOperator)
-from openfermion.transforms.repconversions.conversions import (
-    get_diagonal_coulomb_hamiltonian)
+from openfermion.ops.operators import (
+    QuadOperator,
+    BosonOperator,
+    FermionOperator,
+    MajoranaOperator,
+    QubitOperator,
+)
+from openfermion.transforms.repconversions.conversions import get_diagonal_coulomb_hamiltonian
 from openfermion.transforms.opconversions.term_reordering import normal_ordered
 
 from openfermion.transforms.opconversions.conversions import (
-    get_quad_operator, get_boson_operator, get_majorana_operator,
-    get_fermion_operator, check_no_sympy,
-    _fermion_operator_to_majorana_operator, _fermion_term_to_majorana_operator)
+    get_quad_operator,
+    get_boson_operator,
+    get_majorana_operator,
+    get_fermion_operator,
+    check_no_sympy,
+    _fermion_operator_to_majorana_operator,
+    _fermion_term_to_majorana_operator,
+)
 
 
 class GetQuadOperatorTest(unittest.TestCase):
-
     def setUp(self):
         self.hbar = 0.5
 
@@ -66,37 +73,53 @@ class GetQuadOperatorTest(unittest.TestCase):
         b = BosonOperator('0^ 2')
         q = get_quad_operator(b, hbar=self.hbar)
         expected = QuadOperator('q0') - 1j * QuadOperator('p0')
-        expected *= (QuadOperator('q2') + 1j * QuadOperator('p2'))
+        expected *= QuadOperator('q2') + 1j * QuadOperator('p2')
         expected /= 2 * self.hbar
         self.assertTrue(q == expected)
 
     def test_two_term(self):
         b = BosonOperator('0^ 0') + BosonOperator('0 0^')
         q = get_quad_operator(b, hbar=self.hbar)
-        expected = (QuadOperator('q0') - 1j*QuadOperator('p0')) \
-            * (QuadOperator('q0') + 1j*QuadOperator('p0')) \
-            + (QuadOperator('q0') + 1j*QuadOperator('p0')) \
-            * (QuadOperator('q0') - 1j*QuadOperator('p0'))
+        expected = (QuadOperator('q0') - 1j * QuadOperator('p0')) * (
+            QuadOperator('q0') + 1j * QuadOperator('p0')
+        ) + (QuadOperator('q0') + 1j * QuadOperator('p0')) * (
+            QuadOperator('q0') - 1j * QuadOperator('p0')
+        )
         expected /= 2 * self.hbar
         self.assertTrue(q == expected)
 
     def test_q_squared(self):
-        b = self.hbar * (BosonOperator('0^ 0^') + BosonOperator('0 0') +
-                         BosonOperator('') + 2 * BosonOperator('0^ 0')) / 2
+        b = (
+            self.hbar
+            * (
+                BosonOperator('0^ 0^')
+                + BosonOperator('0 0')
+                + BosonOperator('')
+                + 2 * BosonOperator('0^ 0')
+            )
+            / 2
+        )
         q = normal_ordered(get_quad_operator(b, hbar=self.hbar), hbar=self.hbar)
         expected = QuadOperator('q0 q0')
         self.assertTrue(q == expected)
 
     def test_p_squared(self):
-        b = self.hbar * (-BosonOperator('1^ 1^') - BosonOperator('1 1') +
-                         BosonOperator('') + 2 * BosonOperator('1^ 1')) / 2
+        b = (
+            self.hbar
+            * (
+                -BosonOperator('1^ 1^')
+                - BosonOperator('1 1')
+                + BosonOperator('')
+                + 2 * BosonOperator('1^ 1')
+            )
+            / 2
+        )
         q = normal_ordered(get_quad_operator(b, hbar=self.hbar), hbar=self.hbar)
         expected = QuadOperator('p1 p1')
         self.assertTrue(q == expected)
 
 
 class GetBosonOperatorTest(unittest.TestCase):
-
     def setUp(self):
         self.hbar = 0.5
 
@@ -132,31 +155,48 @@ class GetBosonOperatorTest(unittest.TestCase):
     def test_two_mode(self):
         q = QuadOperator('p2 q0')
         b = get_boson_operator(q, hbar=self.hbar)
-        expected = -1j*self.hbar/2 \
-            * (BosonOperator('0') + BosonOperator('0^')) \
+        expected = (
+            -1j
+            * self.hbar
+            / 2
+            * (BosonOperator('0') + BosonOperator('0^'))
             * (BosonOperator('2') - BosonOperator('2^'))
+        )
         self.assertTrue(b == expected)
 
     def test_two_term(self):
         q = QuadOperator('p0 q0') + QuadOperator('q0 p0')
         b = get_boson_operator(q, hbar=self.hbar)
-        expected = -1j*self.hbar/2 \
-            * ((BosonOperator('0') + BosonOperator('0^'))
-               * (BosonOperator('0') - BosonOperator('0^'))
-               + (BosonOperator('0') - BosonOperator('0^'))
-               * (BosonOperator('0') + BosonOperator('0^')))
+        expected = (
+            -1j
+            * self.hbar
+            / 2
+            * (
+                (BosonOperator('0') + BosonOperator('0^'))
+                * (BosonOperator('0') - BosonOperator('0^'))
+                + (BosonOperator('0') - BosonOperator('0^'))
+                * (BosonOperator('0') + BosonOperator('0^'))
+            )
+        )
         self.assertTrue(b == expected)
 
 
 def test_get_fermion_operator_majorana_operator():
     a = MajoranaOperator((0, 3), 2.0) + MajoranaOperator((1, 2, 3))
     op = get_fermion_operator(a)
-    expected_op = (-2j * (FermionOperator(((0, 0), (1, 0))) - FermionOperator(
-        ((0, 0), (1, 1))) + FermionOperator(((0, 1), (1, 0))) - FermionOperator(
-            ((0, 1), (1, 1)))) - 2 * FermionOperator(
-                ((0, 0), (1, 1), (1, 0))) + 2 * FermionOperator(
-                    ((0, 1), (1, 1), (1, 0))) + FermionOperator(
-                        (0, 0)) - FermionOperator((0, 1)))
+    expected_op = (
+        -2j
+        * (
+            FermionOperator(((0, 0), (1, 0)))
+            - FermionOperator(((0, 0), (1, 1)))
+            + FermionOperator(((0, 1), (1, 0)))
+            - FermionOperator(((0, 1), (1, 1)))
+        )
+        - 2 * FermionOperator(((0, 0), (1, 1), (1, 0)))
+        + 2 * FermionOperator(((0, 1), (1, 1), (1, 0)))
+        + FermionOperator((0, 0))
+        - FermionOperator((0, 1))
+    )
     assert normal_ordered(op) == normal_ordered(expected_op)
 
 
@@ -179,34 +219,34 @@ class GetMajoranaOperatorTest(unittest.TestCase):
 
     def test_get_majorana_operator_fermion_operator(self):
         """Test conversion FermionOperator to MajoranaOperator."""
-        fermion_op = (-2j * (FermionOperator(
-            ((0, 0), (1, 0))) - FermionOperator(
-                ((0, 0), (1, 1))) + FermionOperator(
-                    ((0, 1), (1, 0))) - FermionOperator(
-                        ((0, 1), (1, 1)))) - 2 * FermionOperator(
-                            ((0, 0), (1, 1), (1, 0))) + 2 * FermionOperator(
-                                ((0, 1), (1, 1), (1, 0))) + FermionOperator(
-                                    (0, 0)) - FermionOperator((0, 1)))
+        fermion_op = (
+            -2j
+            * (
+                FermionOperator(((0, 0), (1, 0)))
+                - FermionOperator(((0, 0), (1, 1)))
+                + FermionOperator(((0, 1), (1, 0)))
+                - FermionOperator(((0, 1), (1, 1)))
+            )
+            - 2 * FermionOperator(((0, 0), (1, 1), (1, 0)))
+            + 2 * FermionOperator(((0, 1), (1, 1), (1, 0)))
+            + FermionOperator((0, 0))
+            - FermionOperator((0, 1))
+        )
 
         majorana_op = get_majorana_operator(fermion_op)
-        expected_op = (MajoranaOperator((0, 3), 2.0) + MajoranaOperator(
-            (1, 2, 3)))
+        expected_op = MajoranaOperator((0, 3), 2.0) + MajoranaOperator((1, 2, 3))
         self.assertTrue(majorana_op == expected_op)
 
     def test_get_majorana_operator_diagonalcoulomb(self):
         """Test get majorana from Diagonal Coulomb."""
-        fermion_op = (FermionOperator('0^ 1', 1.0) +
-                      FermionOperator('1^ 0', 1.0))
+        fermion_op = FermionOperator('0^ 1', 1.0) + FermionOperator('1^ 0', 1.0)
 
         diagonal_ham = get_diagonal_coulomb_hamiltonian(fermion_op)
 
-        self.assertTrue(
-            get_majorana_operator(diagonal_ham) == get_majorana_operator(
-                fermion_op))
+        self.assertTrue(get_majorana_operator(diagonal_ham) == get_majorana_operator(fermion_op))
 
 
 class RaisesSympyExceptionTest(unittest.TestCase):
-
     def test_raises_sympy_expression(self):
         operator = FermionOperator('0^', sympy.Symbol('x'))
         with self.assertRaises(TypeError):

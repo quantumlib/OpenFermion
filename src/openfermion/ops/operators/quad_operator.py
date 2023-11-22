@@ -98,9 +98,11 @@ class QuadOperator(SymbolicOperator):
                 for j in range(i, 0, -1):
                     right_operator = term[j]
                     left_operator = term[j - 1]
-                    if (right_operator[0] == left_operator[0] and
-                            right_operator[1] == 'q' and
-                            left_operator[1] == 'p'):
+                    if (
+                        right_operator[0] == left_operator[0]
+                        and right_operator[1] == 'q'
+                        and left_operator[1] == 'p'
+                    ):
                         return False
         return True
 

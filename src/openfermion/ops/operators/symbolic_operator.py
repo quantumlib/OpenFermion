@@ -119,11 +119,9 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
     __hash__ = None
 
-    def __init__(self, term=None, coefficient=1.):
+    def __init__(self, term=None, coefficient=1.0):
         if not isinstance(coefficient, COEFFICIENT_TYPES):
-            raise ValueError(
-                'Coefficient must be a numeric type. Got {}'.format(
-                    type(coefficient)))
+            raise ValueError('Coefficient must be a numeric type. Got {}'.format(type(coefficient)))
 
         # Initialize the terms dictionary
         self.terms = {}
@@ -165,7 +163,6 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
         pattern = r'(.*?)\[(.*?)\]'  # regex for a term
         for match in re.findall(pattern, long_string, flags=re.DOTALL):
-
             # Determine the coefficient for this term
             coef_string = re.sub(r"\s+", "", match[0])
             if coef_string and coef_string[0] == '+':
@@ -184,8 +181,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                     else:
                         coef = float(coef_string)
                 except ValueError:
-                    raise ValueError(
-                        'Invalid coefficient {}.'.format(coef_string))
+                    raise ValueError('Invalid coefficient {}.'.format(coef_string))
             coef *= coefficient
 
             # Parse the term, simpify it and add to the dict
@@ -204,14 +200,16 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         index, action = factor
 
         if action not in self.actions:
-            raise ValueError('Invalid action in factor {}. '
-                             'Valid actions are: {}'.format(
-                                 factor, self.actions))
+            raise ValueError(
+                'Invalid action in factor {}. ' 'Valid actions are: {}'.format(factor, self.actions)
+            )
 
         if not isinstance(index, int) or index < 0:
-            raise ValueError('Invalid index in factor {}. '
-                             'The index should be a non-negative '
-                             'integer.'.format(factor))
+            raise ValueError(
+                'Invalid index in factor {}. '
+                'The index should be a non-negative '
+                'integer.'.format(factor)
+            )
 
     def _simplify(self, term, coefficient=1.0):
         """Simplifies a term."""
@@ -261,9 +259,11 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                 while index_start > 0 and factor[index_start - 1].isdigit():
                     index_start -= 1
                 if factor[index_start - 1] == '-':
-                    raise ValueError('Invalid index in factor {}. '
-                                     'The index should be a non-negative '
-                                     'integer.'.format(factor))
+                    raise ValueError(
+                        'Invalid index in factor {}. '
+                        'The index should be a non-negative '
+                        'integer.'.format(factor)
+                    )
 
                 index = int(factor[index_start:])
                 action_string = factor[:index_start]
@@ -271,14 +271,15 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                 # The index is at the beginning of the string; find where
                 # it ends
                 if factor[0] == '-':
-                    raise ValueError('Invalid index in factor {}. '
-                                     'The index should be a non-negative '
-                                     'integer.'.format(factor))
+                    raise ValueError(
+                        'Invalid index in factor {}. '
+                        'The index should be a non-negative '
+                        'integer.'.format(factor)
+                    )
                 if not factor[0].isdigit():
                     raise ValueError('Invalid factor {}.'.format(factor))
                 index_end = 1
-                while (index_end <= len(factor) - 1 and
-                       factor[index_end].isdigit()):
+                while index_end <= len(factor) - 1 and factor[index_end].isdigit():
                     index_end += 1
 
                 index = int(factor[:index_end])
@@ -288,9 +289,10 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             if action_string in self.action_strings:
                 action = self.actions[self.action_strings.index(action_string)]
             else:
-                raise ValueError('Invalid action in factor {}. '
-                                 'Valid actions are: {}'.format(
-                                     factor, self.action_strings))
+                raise ValueError(
+                    'Invalid action in factor {}. '
+                    'Valid actions are: {}'.format(factor, self.action_strings)
+                )
 
             # Add the factor to the list as a tuple
             processed_term.append((index, action))
@@ -378,7 +380,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                     new_term = left_term + right_term
 
                     new_coefficient, new_term = self._simplify(
-                        new_term, coefficient=new_coefficient)
+                        new_term, coefficient=new_coefficient
+                    )
 
                     # Update result dict.
                     if new_term in result_terms:
@@ -390,8 +393,11 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
         # Invalid multiplier type
         else:
-            raise TypeError('Cannot multiply {} with {}'.format(
-                self.__class__.__name__, multiplier.__class__.__name__))
+            raise TypeError(
+                'Cannot multiply {} with {}'.format(
+                    self.__class__.__name__, multiplier.__class__.__name__
+                )
+            )
 
     def __mul__(self, multiplier):
         """Return self * multiplier for a scalar, or a SymbolicOperator.
@@ -410,8 +416,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             product *= multiplier
             return product
         else:
-            raise TypeError('Object of invalid type cannot multiply with ' +
-                            type(self) + '.')
+            raise TypeError('Object of invalid type cannot multiply with ' + type(self) + '.')
 
     def __iadd__(self, addend):
         """In-place method for += addition of SymbolicOperator.
@@ -428,8 +433,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """
         if isinstance(addend, type(self)):
             for term in addend.terms:
-                self.terms[term] = (self.terms.get(term, 0.0) +
-                                    addend.terms[term])
+                self.terms[term] = self.terms.get(term, 0.0) + addend.terms[term]
                 if self._issmall(self.terms[term]):
                     del self.terms[term]
         elif isinstance(addend, COEFFICIENT_TYPES):
@@ -476,15 +480,13 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """
         if isinstance(subtrahend, type(self)):
             for term in subtrahend.terms:
-                self.terms[term] = (self.terms.get(term, 0.0) -
-                                    subtrahend.terms[term])
+                self.terms[term] = self.terms.get(term, 0.0) - subtrahend.terms[term]
                 if self._issmall(self.terms[term]):
                     del self.terms[term]
         elif isinstance(subtrahend, COEFFICIENT_TYPES):
             self.constant -= subtrahend
         else:
-            raise TypeError('Cannot subtract invalid type from {}.'.format(
-                type(self)))
+            raise TypeError('Cannot subtract invalid type from {}.'.format(type(self)))
         return self
 
     def __sub__(self, subtrahend):
@@ -527,8 +529,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
           TypeError: Object of invalid type cannot multiply SymbolicOperator.
         """
         if not isinstance(multiplier, COEFFICIENT_TYPES):
-            raise TypeError('Object of invalid type cannot multiply with ' +
-                            type(self) + '.')
+            raise TypeError('Object of invalid type cannot multiply with ' + type(self) + '.')
         return self * multiplier
 
     def __truediv__(self, divisor):
@@ -549,23 +550,21 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
         """
         if not isinstance(divisor, COEFFICIENT_TYPES):
-            raise TypeError('Cannot divide ' + type(self) +
-                            ' by non-scalar type.')
+            raise TypeError('Cannot divide ' + type(self) + ' by non-scalar type.')
         return self * (1.0 / divisor)
 
     def __div__(self, divisor):
-        """ For compatibility with Python 2. """
+        """For compatibility with Python 2."""
         return self.__truediv__(divisor)
 
     def __itruediv__(self, divisor):
         if not isinstance(divisor, COEFFICIENT_TYPES):
-            raise TypeError('Cannot divide ' + type(self) +
-                            ' by non-scalar type.')
-        self *= (1.0 / divisor)
+            raise TypeError('Cannot divide ' + type(self) + ' by non-scalar type.')
+        self *= 1.0 / divisor
         return self
 
     def __idiv__(self, divisor):
-        """ For compatibility with Python 2. """
+        """For compatibility with Python 2."""
         return self.__itruediv__(divisor)
 
     def __neg__(self):
@@ -592,7 +591,9 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         if not isinstance(exponent, int) or exponent < 0:
             raise ValueError(
                 'exponent must be a non-negative int, but was {} {}'.format(
-                    type(exponent), repr(exponent)))
+                    type(exponent), repr(exponent)
+                )
+            )
 
         # Initialized identity.
         exponentiated = self.__class__(())
@@ -665,7 +666,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                     coeff = sympy.re(coeff)
                 if sympy.simplify(sympy.re(coeff) <= abs_tol) == True:
                     coeff = 1j * sympy.im(coeff)
-                if (sympy.simplify(abs(coeff) <= abs_tol) != True):
+                if sympy.simplify(abs(coeff) <= abs_tol) != True:
                     new_terms[term] = coeff
                 continue
 
@@ -673,7 +674,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             if abs(coeff.imag) <= abs_tol:
                 coeff = coeff.real
             if abs(coeff.real) <= abs_tol:
-                coeff = 1.j * coeff.imag
+                coeff = 1.0j * coeff.imag
 
             # Add the term if the coefficient is large enough
             if abs(coeff) > abs_tol:
@@ -694,10 +695,10 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Args:
             order(int): the order of the induced norm.
         """
-        norm = 0.
+        norm = 0.0
         for coefficient in self.terms.values():
-            norm += abs(coefficient)**order
-        return norm**(1. / order)
+            norm += abs(coefficient) ** order
+        return norm ** (1.0 / order)
 
     def many_body_order(self):
         """Compute the many-body order of a SymbolicOperator.
@@ -713,9 +714,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             return 0
         else:
             return max(
-                len(term)
-                for term, coeff in self.terms.items()
-                if (self._issmall(coeff) is False))
+                len(term) for term, coeff in self.terms.items() if (self._issmall(coeff) is False)
+            )
 
     @classmethod
     def accumulate(cls, operators, start=None):
@@ -744,13 +744,12 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                 self.
         """
         if num_groups < 1:
-            warnings.warn('Invalid num_groups {} < 1.'.format(num_groups),
-                          RuntimeWarning)
+            warnings.warn('Invalid num_groups {} < 1.'.format(num_groups), RuntimeWarning)
             num_groups = 1
 
         operators = self.get_operators()
         num_groups = min(num_groups, len(self.terms))
         for i in range(num_groups):
             yield self.accumulate(
-                itertools.islice(operators,
-                                 len(range(i, len(self.terms), num_groups))))
+                itertools.islice(operators, len(range(i, len(self.terms), num_groups)))
+            )

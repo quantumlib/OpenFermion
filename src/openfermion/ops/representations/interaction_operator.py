@@ -64,11 +64,9 @@ class InteractionOperator(PolynomialTensor):
                 n_qubits numpy array of floats.
         """
         # Make sure nonzero elements are only for normal ordered terms.
-        super(InteractionOperator, self).__init__({
-            (): constant,
-            (1, 0): one_body_tensor,
-            (1, 1, 0, 0): two_body_tensor
-        })
+        super(InteractionOperator, self).__init__(
+            {(): constant, (1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor}
+        )
 
     @property
     def one_body_tensor(self):
@@ -126,18 +124,23 @@ class InteractionOperator(PolynomialTensor):
 
     @classmethod
     def zero(cls, n_qubits):
-        return cls(0, numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
-                   numpy.zeros((n_qubits,) * 4, dtype=numpy.complex128))
+        return cls(
+            0,
+            numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
+            numpy.zeros((n_qubits,) * 4, dtype=numpy.complex128),
+        )
 
     def projected(self, indices, exact=False):
         projected_n_body_tensors = self.projected_n_body_tensors(indices, exact)
-        return type(self)(*(projected_n_body_tensors[key]
-                            for key in [(), (1, 0), (1, 1, 0, 0)]))
+        return type(self)(*(projected_n_body_tensors[key] for key in [(), (1, 0), (1, 1, 0, 0)]))
 
     def with_function_applied_elementwise(self, func):
-        return type(self)(*(
-            func(tensor) for tensor in
-            [self.constant, self.one_body_tensor, self.two_body_tensor]))
+        return type(self)(
+            *(
+                func(tensor)
+                for tensor in [self.constant, self.one_body_tensor, self.two_body_tensor]
+            )
+        )
 
 
 def _symmetric_two_body_terms(quad, complex_valued):
@@ -167,50 +170,42 @@ def get_tensors_from_integrals(one_body_integrals, two_body_integrals):
 
     # Initialize Hamiltonian coefficients.
     one_body_coefficients = numpy.zeros((n_qubits, n_qubits))
-    two_body_coefficients = numpy.zeros(
-        (n_qubits, n_qubits, n_qubits, n_qubits))
+    two_body_coefficients = numpy.zeros((n_qubits, n_qubits, n_qubits, n_qubits))
     # Loop through integrals.
     for p in range(n_qubits // 2):
         for q in range(n_qubits // 2):
-
             # Populate 1-body coefficients. Require p and q have same spin.
             one_body_coefficients[2 * p, 2 * q] = one_body_integrals[p, q]
-            one_body_coefficients[2 * p + 1, 2 * q +
-                                  1] = one_body_integrals[p, q]
+            one_body_coefficients[2 * p + 1, 2 * q + 1] = one_body_integrals[p, q]
             # Continue looping to prepare 2-body coefficients.
             for r in range(n_qubits // 2):
                 for s in range(n_qubits // 2):
-
                     # Mixed spin
-                    two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 *
-                                          s] = (two_body_integrals[p, q, r, s] /
-                                                2.)
-                    two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s +
-                                          1] = (two_body_integrals[p, q, r, s] /
-                                                2.)
+                    two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 * s] = (
+                        two_body_integrals[p, q, r, s] / 2.0
+                    )
+                    two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s + 1] = (
+                        two_body_integrals[p, q, r, s] / 2.0
+                    )
 
                     # Same spin
-                    two_body_coefficients[2 * p, 2 * q, 2 * r, 2 *
-                                          s] = (two_body_integrals[p, q, r, s] /
-                                                2.)
-                    two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r +
-                                          1, 2 * s +
-                                          1] = (two_body_integrals[p, q, r, s] /
-                                                2.)
+                    two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = (
+                        two_body_integrals[p, q, r, s] / 2.0
+                    )
+                    two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r + 1, 2 * s + 1] = (
+                        two_body_integrals[p, q, r, s] / 2.0
+                    )
 
     # Truncate.
-    one_body_coefficients[
-        numpy.absolute(one_body_coefficients) < EQ_TOLERANCE] = 0.
-    two_body_coefficients[
-        numpy.absolute(two_body_coefficients) < EQ_TOLERANCE] = 0.
+    one_body_coefficients[numpy.absolute(one_body_coefficients) < EQ_TOLERANCE] = 0.0
+    two_body_coefficients[numpy.absolute(two_body_coefficients) < EQ_TOLERANCE] = 0.0
 
     return one_body_coefficients, two_body_coefficients
 
 
-def get_active_space_integrals(one_body_integrals,
-                               two_body_integrals,
-                               occupied_indices=None,
-                               active_indices=None):
+def get_active_space_integrals(
+    one_body_integrals, two_body_integrals, occupied_indices=None, active_indices=None
+):
     """Restricts a molecule at a spatial orbital level to an active space
 
     This active space may be defined by a list of active indices and
@@ -240,7 +235,7 @@ def get_active_space_integrals(one_body_integrals,
     """
     # Fix data type for a few edge cases
     occupied_indices = [] if occupied_indices is None else occupied_indices
-    if (len(active_indices) < 1):
+    if len(active_indices) < 1:
         raise ValueError('Some active indices required for reduction.')
 
     # Determine core constant
@@ -248,8 +243,7 @@ def get_active_space_integrals(one_body_integrals,
     for i in occupied_indices:
         core_constant += 2 * one_body_integrals[i, i]
         for j in occupied_indices:
-            core_constant += (2 * two_body_integrals[i, j, j, i] -
-                              two_body_integrals[i, j, i, j])
+            core_constant += 2 * two_body_integrals[i, j, j, i] - two_body_integrals[i, j, i, j]
 
     # Modified one electron integrals
     one_body_integrals_new = numpy.copy(one_body_integrals)
@@ -257,11 +251,14 @@ def get_active_space_integrals(one_body_integrals,
         for v in active_indices:
             for i in occupied_indices:
                 one_body_integrals_new[u, v] += (
-                    2 * two_body_integrals[i, u, v, i] -
-                    two_body_integrals[i, u, i, v])
+                    2 * two_body_integrals[i, u, v, i] - two_body_integrals[i, u, i, v]
+                )
 
     # Restrict integral ranges and change M appropriately
-    return (core_constant,
-            one_body_integrals_new[numpy.ix_(active_indices, active_indices)],
-            two_body_integrals[numpy.ix_(active_indices, active_indices,
-                                         active_indices, active_indices)])
+    return (
+        core_constant,
+        one_body_integrals_new[numpy.ix_(active_indices, active_indices)],
+        two_body_integrals[
+            numpy.ix_(active_indices, active_indices, active_indices, active_indices)
+        ],
+    )

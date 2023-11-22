@@ -17,8 +17,10 @@ from openfermion.hamiltonians import fermi_hubbard
 from openfermion.linalg import get_sparse_operator, get_ground_state
 from openfermion.transforms.opconversions import verstraete_cirac_2d_square
 from openfermion.transforms.opconversions.verstraete_cirac import (
-    coordinates_to_snake_index, snake_index_to_coordinates,
-    stabilizer_local_2d_square)
+    coordinates_to_snake_index,
+    snake_index_to_coordinates,
+    stabilizer_local_2d_square,
+)
 
 
 class VerstraeteCirac2dSquareGroundStateTest(unittest.TestCase):
@@ -29,13 +31,15 @@ class VerstraeteCirac2dSquareGroundStateTest(unittest.TestCase):
         self.y_dimension = 3
 
         # Create a Hamiltonian with nearest-neighbor hopping terms
-        self.ferm_op = fermi_hubbard(self.x_dimension, self.y_dimension, 1., 0.,
-                                     0., 0., False, True)
+        self.ferm_op = fermi_hubbard(
+            self.x_dimension, self.y_dimension, 1.0, 0.0, 0.0, 0.0, False, True
+        )
 
         # Get the ground energy and ground state
         self.ferm_op_sparse = get_sparse_operator(self.ferm_op)
-        self.ferm_op_ground_energy, self.ferm_op_ground_state = (
-            get_ground_state(self.ferm_op_sparse))
+        self.ferm_op_ground_energy, self.ferm_op_ground_state = get_ground_state(
+            self.ferm_op_sparse
+        )
 
         # Transform the FermionOperator to a QubitOperator
         self.transformed_op = verstraete_cirac_2d_square(
@@ -43,17 +47,18 @@ class VerstraeteCirac2dSquareGroundStateTest(unittest.TestCase):
             self.x_dimension,
             self.y_dimension,
             add_auxiliary_hamiltonian=True,
-            snake=False)
+            snake=False,
+        )
 
         # Get the ground energy and state of the transformed operator
         self.transformed_sparse = get_sparse_operator(self.transformed_op)
-        self.transformed_ground_energy, self.transformed_ground_state = (
-            get_ground_state(self.transformed_sparse))
+        self.transformed_ground_energy, self.transformed_ground_state = get_ground_state(
+            self.transformed_sparse
+        )
 
     def test_ground_energy(self):
         """Test that the transformation preserves the ground energy."""
-        self.assertAlmostEqual(self.transformed_ground_energy,
-                               self.ferm_op_ground_energy)
+        self.assertAlmostEqual(self.transformed_ground_energy, self.ferm_op_ground_energy)
 
 
 class VerstraeteCirac2dSquareOperatorLocalityTest(unittest.TestCase):
@@ -64,8 +69,9 @@ class VerstraeteCirac2dSquareOperatorLocalityTest(unittest.TestCase):
         self.y_dimension = 6
 
         # Create a Hubbard Hamiltonian
-        self.ferm_op = fermi_hubbard(self.x_dimension, self.y_dimension, 1.0,
-                                     4.0, 0.0, 0.0, False, True)
+        self.ferm_op = fermi_hubbard(
+            self.x_dimension, self.y_dimension, 1.0, 4.0, 0.0, 0.0, False, True
+        )
 
         # Transform the FermionOperator to a QubitOperator without including
         # the auxiliary Hamiltonian
@@ -74,7 +80,8 @@ class VerstraeteCirac2dSquareOperatorLocalityTest(unittest.TestCase):
             self.x_dimension,
             self.y_dimension,
             add_auxiliary_hamiltonian=False,
-            snake=False)
+            snake=False,
+        )
         self.transformed_op_no_aux.compress()
 
         # Transform the FermionOperator to a QubitOperator, including
@@ -84,7 +91,8 @@ class VerstraeteCirac2dSquareOperatorLocalityTest(unittest.TestCase):
             self.x_dimension,
             self.y_dimension,
             add_auxiliary_hamiltonian=True,
-            snake=False)
+            snake=False,
+        )
         self.transformed_op_aux.compress()
 
     def test_operator_locality_no_aux(self):
@@ -104,7 +112,7 @@ class ExceptionTest(unittest.TestCase):
     """Test that exceptions are raised correctly."""
 
     def test_verstraete_cirac_2d_square(self):
-        ferm_op = fermi_hubbard(3, 2, 1., 0., spinless=True)
+        ferm_op = fermi_hubbard(3, 2, 1.0, 0.0, spinless=True)
         with self.assertRaises(NotImplementedError):
             _ = verstraete_cirac_2d_square(ferm_op, 3, 2)
 

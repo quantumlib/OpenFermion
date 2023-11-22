@@ -24,8 +24,8 @@ def trivially_commutes(term_a, term_b):
     position_b = 0
     commutes = True
 
-    term_op_a, = term_a.terms.keys()
-    term_op_b, = term_b.terms.keys()
+    (term_op_a,) = term_a.terms.keys()
+    (term_op_b,) = term_b.terms.keys()
 
     while position_a < len(term_op_a) and position_b < len(term_op_b):
         qubit_a, action_a = term_op_a[position_a]
@@ -56,16 +56,17 @@ def trivially_double_commutes(term_a, term_b, term_c):
         qubits) is empty, then the double commutator is trivially zero.
     """
     # determine the set of qubits each term acts on
-    term_op_a, = term_a.terms.keys()
-    term_op_b, = term_b.terms.keys()
-    term_op_c, = term_c.terms.keys()
+    (term_op_a,) = term_a.terms.keys()
+    (term_op_b,) = term_b.terms.keys()
+    (term_op_c,) = term_c.terms.keys()
 
     qubits_a = set([index for index, _ in term_op_a])
     qubits_b = set([index for index, _ in term_op_b])
     qubits_c = set([index for index, _ in term_op_c])
 
-    return (trivially_commutes(term_b, term_c) or
-            not qubits_a.intersection(set(qubits_b.union(qubits_c))))
+    return trivially_commutes(term_b, term_c) or not qubits_a.intersection(
+        set(qubits_b.union(qubits_c))
+    )
 
 
 def error_operator(terms, series_order=2):
@@ -92,11 +93,10 @@ def error_operator(terms, series_order=2):
     for beta in range(len(terms)):
         for alpha in range(beta + 1):
             for alpha_prime in range(beta):
-                if not trivially_double_commutes(terms[alpha], terms[beta],
-                                                 terms[alpha_prime]):
+                if not trivially_double_commutes(terms[alpha], terms[beta], terms[alpha_prime]):
                     double_com = commutator(
-                        terms[alpha], commutator(terms[beta],
-                                                 terms[alpha_prime]))
+                        terms[alpha], commutator(terms[beta], terms[alpha_prime])
+                    )
                     error_operator += double_com
                     if alpha == beta:
                         error_operator -= double_com / 2.0
@@ -136,22 +136,21 @@ def error_bound(terms, tight=False):
 
     if tight:
         # return the 1-norm of the error operator (upper bound on error)
-        error = sum(
-            abs(coefficient)
-            for coefficient in error_operator(terms).terms.values())
+        error = sum(abs(coefficient) for coefficient in error_operator(terms).terms.values())
 
     elif not tight:
         for alpha in range(len(terms)):
             term_a = terms[alpha]
-            coefficient_a, = term_a.terms.values()
+            (coefficient_a,) = term_a.terms.values()
             if coefficient_a:
-                error_a = 0.
+                error_a = 0.0
 
                 for beta in range(alpha + 1, len(terms)):
                     term_b = terms[beta]
-                    coefficient_b, = term_b.terms.values()
-                    if not (trivially_commutes(term_a, term_b) or
-                            commutator(term_a, term_b) == zero):
+                    (coefficient_b,) = term_b.terms.values()
+                    if not (
+                        trivially_commutes(term_a, term_b) or commutator(term_a, term_b) == zero
+                    ):
                         error_a += abs(coefficient_b)
 
                 error += 4.0 * abs(coefficient_a) * error_a**2

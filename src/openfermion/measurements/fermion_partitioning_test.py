@@ -12,15 +12,19 @@
 """Tests for _qubit_partitioning.py"""
 import unittest
 import numpy
-from .fermion_partitioning import (pair_within, pair_within_simultaneously,
-                                   pair_within_simultaneously_binned,
-                                   pair_within_simultaneously_symmetric,
-                                   _gen_partitions, _get_padding,
-                                   _parallel_iter, _asynchronous_iter)
+from .fermion_partitioning import (
+    pair_within,
+    pair_within_simultaneously,
+    pair_within_simultaneously_binned,
+    pair_within_simultaneously_symmetric,
+    _gen_partitions,
+    _get_padding,
+    _parallel_iter,
+    _asynchronous_iter,
+)
 
 
 class TestPairWithin(unittest.TestCase):
-
     def test_zero(self):
         count = 0
         for _ in pair_within([]):
@@ -61,9 +65,7 @@ class TestPairWithin(unittest.TestCase):
                 self.assertEqual(len(pairings_list), num_indices)
             for pairing in pairings_list:
                 print(pairing)
-            all_pairs = [(i, j)
-                         for i in range(num_indices)
-                         for j in range(i + 1, num_indices)]
+            all_pairs = [(i, j) for i in range(num_indices) for j in range(i + 1, num_indices)]
             checksum = [0 for _ in all_pairs]
             for pairing in pairings_list:
                 for j, pair in enumerate(all_pairs):
@@ -75,16 +77,18 @@ class TestPairWithin(unittest.TestCase):
 
 
 class TestPairWithinSimultaneously(unittest.TestCase):
-
     def test_small(self):
         for num_indices in [4, 5, 7, 10, 15]:
             print()
             print('Trying with num_indices = {}'.format(num_indices))
             labels = [j for j in range(num_indices)]
-            all_quads = [((i, j, k, l)) for i in range(num_indices)
-                         for j in range(i + 1, num_indices)
-                         for k in range(j + 1, num_indices)
-                         for l in range(k + 1, num_indices)]
+            all_quads = [
+                ((i, j, k, l))
+                for i in range(num_indices)
+                for j in range(i + 1, num_indices)
+                for k in range(j + 1, num_indices)
+                for l in range(k + 1, num_indices)
+            ]
             checksum = [0 for pp2 in all_quads]
             for pairing in pair_within_simultaneously(labels):
                 print(pairing)
@@ -103,7 +107,6 @@ class TestPairWithinSimultaneously(unittest.TestCase):
 
 
 class TestPadding(unittest.TestCase):
-
     def test_primes(self):
         bin_size = 11
         for num_bins in range(10):
@@ -116,12 +119,9 @@ class TestPadding(unittest.TestCase):
 
 
 class TestIterators(unittest.TestCase):
-
     def test_asynchronous_three(self):
         lists = [[0, 1, 2], [0, 1, 2], [0, 1, 2], [0, 1, 2]]
-        test_matrices = [
-            [numpy.zeros((3, 3)) for j in range(4)] for k in range(4)
-        ]
+        test_matrices = [[numpy.zeros((3, 3)) for j in range(4)] for k in range(4)]
         iterator = _asynchronous_iter(lists)
         count = 0
         for next_tuple in iterator:
@@ -147,7 +147,6 @@ class TestIterators(unittest.TestCase):
         self.assertEqual(count, 25)
 
     def test_parallel(self):
-
         def iter1():
             for j in range(4):
                 yield j
@@ -163,7 +162,6 @@ class TestIterators(unittest.TestCase):
         self.assertEqual(count, 5)
 
     def test_parallel_flatten(self):
-
         def iter1():
             for j in range(4):
                 yield [j]
@@ -181,7 +179,6 @@ class TestIterators(unittest.TestCase):
 
 
 class TestPairingWithSymmetries(unittest.TestCase):
-
     def test_two_fermions(self):
         bins = [[1], [2], [3], [4]]
         count = 0
@@ -243,9 +240,7 @@ class TestPairingWithSymmetries(unittest.TestCase):
 
 
 def test_gen_partitions_1input():
-    labels = [
-        0,
-    ]
+    labels = [0]
     count = 0
     for _ in _gen_partitions(labels):
         count += 1

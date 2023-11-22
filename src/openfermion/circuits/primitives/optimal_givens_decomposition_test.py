@@ -14,13 +14,13 @@ import numpy
 import scipy
 import cirq
 
-from openfermion.linalg import (givens_matrix_elements, givens_rotate,
-                                get_sparse_operator)
+from openfermion.linalg import givens_matrix_elements, givens_rotate, get_sparse_operator
 from openfermion.ops import QubitOperator, FermionOperator
 from openfermion.transforms import jordan_wigner
 
-from openfermion.circuits.primitives.optimal_givens_decomposition import \
-    optimal_givens_decomposition
+from openfermion.circuits.primitives.optimal_givens_decomposition import (
+    optimal_givens_decomposition,
+)
 
 
 def test_givens_inverse():
@@ -40,10 +40,8 @@ def test_givens_inverse():
     b = numpy.random.random() + 1j * numpy.random.random()
     ab_rotation = givens_matrix_elements(a, b, which='right')
 
-    assert numpy.allclose(ab_rotation.dot(numpy.conj(ab_rotation).T),
-                          numpy.eye(2))
-    assert numpy.allclose(
-        numpy.conj(ab_rotation).T.dot(ab_rotation), numpy.eye(2))
+    assert numpy.allclose(ab_rotation.dot(numpy.conj(ab_rotation).T), numpy.eye(2))
+    assert numpy.allclose(numpy.conj(ab_rotation).T.dot(ab_rotation), numpy.eye(2))
 
 
 def test_row_eliminate():
@@ -51,8 +49,7 @@ def test_row_eliminate():
     Test elemination of element in U[i, j] by rotating in i-1 and i.
     """
     dim = 3
-    u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random(
-        (dim, dim))
+    u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random((dim, dim))
     u_generator = u_generator - numpy.conj(u_generator).T
 
     # make sure the generator is actually antihermitian
@@ -99,8 +96,7 @@ def test_col_eliminate():
     inverse givens
     """
     dim = 3
-    u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random(
-        (dim, dim))
+    u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random((dim, dim))
     u_generator = u_generator - numpy.conj(u_generator).T
     # make sure the generator is actually antihermitian
     assert numpy.allclose(-1 * u_generator, numpy.conj(u_generator).T)
@@ -182,8 +178,7 @@ def test_front_back_iteration():
 def test_circuit_generation_and_accuracy():
     for dim in range(2, 10):
         qubits = cirq.LineQubit.range(dim)
-        u_generator = numpy.random.random(
-            (dim, dim)) + 1j * numpy.random.random((dim, dim))
+        u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random((dim, dim))
         u_generator = u_generator - numpy.conj(u_generator).T
         assert numpy.allclose(-1 * u_generator, numpy.conj(u_generator).T)
 
@@ -193,17 +188,15 @@ def test_circuit_generation_and_accuracy():
 
         fermion_generator = QubitOperator(()) * 0.0
         for i, j in product(range(dim), repeat=2):
-            fermion_generator += jordan_wigner(
-                FermionOperator(((i, 1), (j, 0)), u_generator[i, j]))
+            fermion_generator += jordan_wigner(FermionOperator(((i, 1), (j, 0)), u_generator[i, j]))
 
-        true_unitary = scipy.linalg.expm(
-            get_sparse_operator(fermion_generator).toarray())
-        assert numpy.allclose(true_unitary.conj().T.dot(true_unitary),
-                              numpy.eye(2**dim, dtype=complex))
+        true_unitary = scipy.linalg.expm(get_sparse_operator(fermion_generator).toarray())
+        assert numpy.allclose(
+            true_unitary.conj().T.dot(true_unitary), numpy.eye(2**dim, dtype=complex)
+        )
 
         test_unitary = cirq.unitary(circuit)
-        assert numpy.isclose(
-            abs(numpy.trace(true_unitary.conj().T.dot(test_unitary))), 2**dim)
+        assert numpy.isclose(abs(numpy.trace(true_unitary.conj().T.dot(test_unitary))), 2**dim)
 
 
 def test_circuit_generation_state():
@@ -213,21 +206,22 @@ def test_circuit_generation_state():
     simulator = cirq.Simulator()
     circuit = cirq.Circuit()
     qubits = cirq.LineQubit.range(4)
-    circuit.append([
-        cirq.X(qubits[0]),
-        cirq.X(qubits[1]),
-        cirq.X(qubits[1]),
-        cirq.X(qubits[2]),
-        cirq.X(qubits[3]),
-        cirq.X(qubits[3])
-    ])  # alpha-spins are first then beta spins
+    circuit.append(
+        [
+            cirq.X(qubits[0]),
+            cirq.X(qubits[1]),
+            cirq.X(qubits[1]),
+            cirq.X(qubits[2]),
+            cirq.X(qubits[3]),
+            cirq.X(qubits[3]),
+        ]
+    )  # alpha-spins are first then beta spins
 
     wavefunction = numpy.zeros((2**4, 1), dtype=complex)
     wavefunction[10, 0] = 1.0
 
     dim = 2
-    u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random(
-        (dim, dim))
+    u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random((dim, dim))
     u_generator = u_generator - numpy.conj(u_generator).T
     unitary = scipy.linalg.expm(u_generator)
 
@@ -235,11 +229,9 @@ def test_circuit_generation_state():
 
     fermion_generator = QubitOperator(()) * 0.0
     for i, j in product(range(dim), repeat=2):
-        fermion_generator += jordan_wigner(
-            FermionOperator(((i, 1), (j, 0)), u_generator[i, j]))
+        fermion_generator += jordan_wigner(FermionOperator(((i, 1), (j, 0)), u_generator[i, j]))
 
-    test_unitary = scipy.linalg.expm(
-        get_sparse_operator(fermion_generator, 4).toarray())
+    test_unitary = scipy.linalg.expm(get_sparse_operator(fermion_generator, 4).toarray())
     test_final_state = test_unitary.dot(wavefunction)
     cirq_wf = simulator.simulate(circuit).final_state_vector
 

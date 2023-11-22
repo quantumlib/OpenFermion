@@ -20,10 +20,7 @@ from .davidson import (
     orthonormalize,
 )
 
-from .erpa import (
-    erpa_eom_hamiltonian,
-    singlet_erpa,
-)
+from .erpa import erpa_eom_hamiltonian, singlet_erpa
 
 from .givens_rotations import (
     givens_decomposition,
@@ -43,8 +40,7 @@ from .linear_qubit_operator import (
     ParallelLinearQubitOperator,
 )
 
-from .rdm_reconstruction import (
-    valdemoro_reconstruction,)
+from .rdm_reconstruction import valdemoro_reconstruction
 
 from .sparse_tools import (
     wrapped_kronecker,
@@ -84,12 +80,6 @@ from .sparse_tools import (
     get_number_preserving_sparse_operator,
 )
 
-from .wave_fitting import (
-    fit_known_frequencies,
-    prony,
-)
+from .wave_fitting import fit_known_frequencies, prony
 
-from .wedge_product import (
-    generate_parity_permutations,
-    wedge,
-)
+from .wedge_product import generate_parity_permutations, wedge

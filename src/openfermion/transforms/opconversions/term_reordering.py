@@ -14,8 +14,7 @@
 import itertools
 import numpy
 
-from openfermion.ops.operators import (BosonOperator, FermionOperator,
-                                       QuadOperator)
+from openfermion.ops.operators import BosonOperator, FermionOperator, QuadOperator
 from openfermion.ops.representations import InteractionOperator
 
 
@@ -53,16 +52,14 @@ def chemist_ordered(fermion_operator):
             # Possibly add new one-body term.
             if term[1][0] == term[2][0]:
                 new_one_body_term = (term[0], term[3])
-                chemist_ordered_operator += FermionOperator(
-                    new_one_body_term, coefficient)
+                chemist_ordered_operator += FermionOperator(new_one_body_term, coefficient)
             # Reorder two-body term.
             new_two_body_term = (term[0], term[2], term[1], term[3])
-            chemist_ordered_operator += FermionOperator(new_two_body_term,
-                                                        -coefficient)
+            chemist_ordered_operator += FermionOperator(new_two_body_term, -coefficient)
     return chemist_ordered_operator
 
 
-def normal_ordered(operator, hbar=1.):
+def normal_ordered(operator, hbar=1.0):
     r"""Compute and return the normal ordered form of a FermionOperator,
     BosonOperator, QuadOperator, or InteractionOperator.
 
@@ -108,33 +105,44 @@ def normal_ordered(operator, hbar=1.):
         n_modes = operator.n_qubits
         one_body_tensor = operator.one_body_tensor.copy()
         two_body_tensor = numpy.zeros_like(operator.two_body_tensor)
-        quadratic_index_pairs = (
-            (pq, pq) for pq in itertools.combinations(range(n_modes)[::-1], 2))
+        quadratic_index_pairs = ((pq, pq) for pq in itertools.combinations(range(n_modes)[::-1], 2))
         cubic_index_pairs = (
             index_pair
             for p, q, r in itertools.combinations(range(n_modes)[::-1], 3)
-            for index_pair in [((p, q), (p, r)), ((p, r), (
-                p, q)), ((p, q), (q, r)), ((q, r),
-                                           (p, q)), ((p, r),
-                                                     (q, r)), ((q, r), (p, r))])
+            for index_pair in [
+                ((p, q), (p, r)),
+                ((p, r), (p, q)),
+                ((p, q), (q, r)),
+                ((q, r), (p, q)),
+                ((p, r), (q, r)),
+                ((q, r), (p, r)),
+            ]
+        )
         quartic_index_pairs = (
             index_pair
             for p, q, r, s in itertools.combinations(range(n_modes)[::-1], 4)
-            for index_pair in [((p, q), (r, s)), ((r, s), (
-                p, q)), ((p, r), (q, s)), ((q, s),
-                                           (p, r)), ((p, s),
-                                                     (q, r)), ((q, r), (p, s))])
-        index_pairs = itertools.chain(quadratic_index_pairs, cubic_index_pairs,
-                                      quartic_index_pairs)
+            for index_pair in [
+                ((p, q), (r, s)),
+                ((r, s), (p, q)),
+                ((p, r), (q, s)),
+                ((q, s), (p, r)),
+                ((p, s), (q, r)),
+                ((q, r), (p, s)),
+            ]
+        )
+        index_pairs = itertools.chain(quadratic_index_pairs, cubic_index_pairs, quartic_index_pairs)
         for pq, rs in index_pairs:
             two_body_tensor[pq + rs] = sum(
                 s * ss * operator.two_body_tensor[pq[::s] + rs[::ss]]
-                for s, ss in itertools.product([-1, 1], repeat=2))
+                for s, ss in itertools.product([-1, 1], repeat=2)
+            )
         return InteractionOperator(constant, one_body_tensor, two_body_tensor)
 
     else:
-        raise TypeError('Can only normal order FermionOperator, '
-                        'BosonOperator, QuadOperator, or InteractionOperator.')
+        raise TypeError(
+            'Can only normal order FermionOperator, '
+            'BosonOperator, QuadOperator, or InteractionOperator.'
+        )
 
     for term, coefficient in operator.terms.items():
         ordered_operator += order_fn(term, coefficient, **kwargs)
@@ -198,15 +206,15 @@ def normal_ordered_ladder_term(term, coefficient, parity=-1):
                 # Replace a a^\dagger with 1 + parity*a^\dagger a
                 # if indices are the same.
                 if right_operator[0] == left_operator[0]:
-                    new_term = term[:(j - 1)] + term[(j + 1):]
+                    new_term = term[: (j - 1)] + term[(j + 1) :]
 
                     # Recursively add the processed new term.
                     ordered_term += normal_ordered_ladder_term(
-                        tuple(new_term), parity * coefficient, parity)
+                        tuple(new_term), parity * coefficient, parity
+                    )
 
             # Handle case when operator type is the same.
             elif right_operator[1] == left_operator[1]:
-
                 # If same two Fermionic operators are repeated,
                 # evaluate to zero.
                 if parity == -1 and right_operator[0] == left_operator[0]:
@@ -223,7 +231,7 @@ def normal_ordered_ladder_term(term, coefficient, parity=-1):
     return ordered_term
 
 
-def normal_ordered_quad_term(term, coefficient, hbar=1.):
+def normal_ordered_quad_term(term, coefficient, hbar=1.0):
     """Return a normal ordered QuadOperator corresponding to single term.
 
     Args:
@@ -263,15 +271,15 @@ def normal_ordered_quad_term(term, coefficient, hbar=1.):
                 # Replace p q with i hbar + q p
                 # if indices are the same.
                 if right_operator[0] == left_operator[0]:
-                    new_term = term[:(j - 1)] + term[(j + 1)::]
+                    new_term = term[: (j - 1)] + term[(j + 1) : :]
 
                     # Recursively add the processed new term.
                     ordered_term += normal_ordered_quad_term(
-                        tuple(new_term), -coefficient * 1j * hbar)
+                        tuple(new_term), -coefficient * 1j * hbar
+                    )
 
             # Handle case when operator type is the same.
             elif right_operator[1] == left_operator[1]:
-
                 # Swap if same type but lower index on left.
                 if right_operator[0] > left_operator[0]:
                     term[j - 1] = right_operator
@@ -303,13 +311,9 @@ def reorder(operator, order_function, num_modes=None, reverse=False):
     """
 
     if num_modes is None:
-        num_modes = max(
-            [factor[0] for term in operator.terms for factor in term]) + 1
+        num_modes = max([factor[0] for term in operator.terms for factor in term]) + 1
 
-    mode_map = {
-        mode_idx: order_function(mode_idx, num_modes)
-        for mode_idx in range(num_modes)
-    }
+    mode_map = {mode_idx: order_function(mode_idx, num_modes) for mode_idx in range(num_modes)}
 
     if reverse:
         mode_map = {val: key for key, val in mode_map.items()}

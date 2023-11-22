@@ -16,8 +16,9 @@ import numpy
 import scipy
 
 
-def fit_known_frequencies(signal: numpy.ndarray, times: numpy.ndarray,
-                          frequencies: numpy.ndarray) -> numpy.ndarray:
+def fit_known_frequencies(
+    signal: numpy.ndarray, times: numpy.ndarray, frequencies: numpy.ndarray
+) -> numpy.ndarray:
     """Fits a set of known exponential components to a dataset
 
     Decomposes a function g(t) as g(t)=sum_jA_jexp(iw_jt), where the frequencies
@@ -31,9 +32,9 @@ def fit_known_frequencies(signal: numpy.ndarray, times: numpy.ndarray,
     Returns:
         amplitudes {numpy.ndarray} -- the found amplitudes A_j
     """
-    generation_matrix = numpy.array([
-        [numpy.exp(1j * time * freq) for freq in frequencies] for time in times
-    ])
+    generation_matrix = numpy.array(
+        [[numpy.exp(1j * time * freq) for freq in frequencies] for time in times]
+    )
     amplitudes = scipy.linalg.lstsq(generation_matrix, signal)[0]
     return amplitudes
 
@@ -59,18 +60,16 @@ def prony(signal: numpy.ndarray) -> Tuple[numpy.ndarray, numpy.ndarray]:
     """
 
     num_freqs = len(signal) // 2
-    hankel0 = scipy.linalg.hankel(c=signal[:num_freqs],
-                                  r=signal[num_freqs - 1:-1])
-    hankel1 = scipy.linalg.hankel(c=signal[1:num_freqs + 1],
-                                  r=signal[num_freqs:])
+    hankel0 = scipy.linalg.hankel(c=signal[:num_freqs], r=signal[num_freqs - 1 : -1])
+    hankel1 = scipy.linalg.hankel(c=signal[1 : num_freqs + 1], r=signal[num_freqs:])
     shift_matrix = scipy.linalg.lstsq(hankel0.T, hankel1.T)[0]
     phases = numpy.linalg.eigvals(shift_matrix.T)
 
-    generation_matrix = numpy.array(
-        [[phase**k for phase in phases] for k in range(len(signal))])
+    generation_matrix = numpy.array([[phase**k for phase in phases] for k in range(len(signal))])
     amplitudes = scipy.linalg.lstsq(generation_matrix, signal)[0]
 
-    amplitudes, phases = zip(*sorted(
-        zip(amplitudes, phases), key=lambda x: numpy.abs(x[0]), reverse=True))
+    amplitudes, phases = zip(
+        *sorted(zip(amplitudes, phases), key=lambda x: numpy.abs(x[0]), reverse=True)
+    )
 
     return numpy.array(amplitudes), numpy.array(phases)

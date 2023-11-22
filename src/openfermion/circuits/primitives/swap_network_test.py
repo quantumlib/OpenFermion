@@ -19,10 +19,10 @@ def test_swap_network():
     n_qubits = 4
     qubits = cirq.LineQubit.range(n_qubits)
 
-    circuit = cirq.Circuit(
-        swap_network(qubits, lambda i, j, q0, q1: cirq.ISWAP(q0, q1)**-1))
+    circuit = cirq.Circuit(swap_network(qubits, lambda i, j, q0, q1: cirq.ISWAP(q0, q1) ** -1))
     cirq.testing.assert_has_diagram(
-        circuit, """
+        circuit,
+        """
 0: ───iSwap──────×──────────────────iSwap──────×──────────────────
       │          │                  │          │
 1: ───iSwap^-1───×───iSwap──────×───iSwap^-1───×───iSwap──────×───
@@ -30,15 +30,17 @@ def test_swap_network():
 2: ───iSwap──────×───iSwap^-1───×───iSwap──────×───iSwap^-1───×───
       │          │                  │          │
 3: ───iSwap^-1───×──────────────────iSwap^-1───×──────────────────
-""")
+""",
+    )
 
     circuit = cirq.Circuit(
-        swap_network(qubits,
-                     lambda i, j, q0, q1: cirq.ISWAP(q0, q1)**-1,
-                     fermionic=True,
-                     offset=True))
-    cirq.testing.assert_has_diagram(circuit,
-                                    """
+        swap_network(
+            qubits, lambda i, j, q0, q1: cirq.ISWAP(q0, q1) ** -1, fermionic=True, offset=True
+        )
+    )
+    cirq.testing.assert_has_diagram(
+        circuit,
+        """
 0     1        2        3
 │     │        │        │
 │     iSwap────iSwap^-1 │
@@ -58,16 +60,19 @@ iSwap─iSwap^-1 iSwap────iSwap^-1
 ×ᶠ────×ᶠ       ×ᶠ───────×ᶠ
 │     │        │        │
 """,
-                                    transpose=True)
+        transpose=True,
+    )
 
     n_qubits = 5
     qubits = cirq.LineQubit.range(n_qubits)
 
-    circuit = cirq.Circuit(swap_network(
-        qubits, lambda i, j, q0, q1: (), fermionic=True),
-                           strategy=cirq.InsertStrategy.EARLIEST)
+    circuit = cirq.Circuit(
+        swap_network(qubits, lambda i, j, q0, q1: (), fermionic=True),
+        strategy=cirq.InsertStrategy.EARLIEST,
+    )
     cirq.testing.assert_has_diagram(
-        circuit, """
+        circuit,
+        """
 0: ───×ᶠ────────×ᶠ────────×ᶠ───
       │         │         │
 1: ───×ᶠ───×ᶠ───×ᶠ───×ᶠ───×ᶠ───
@@ -77,13 +82,16 @@ iSwap─iSwap^-1 iSwap────iSwap^-1
 3: ───×ᶠ───×ᶠ───×ᶠ───×ᶠ───×ᶠ───
            │         │
 4: ────────×ᶠ────────×ᶠ────────
-""")
+""",
+    )
 
-    circuit = cirq.Circuit(swap_network(
-        qubits, lambda i, j, q0, q1: (), offset=True),
-                           strategy=cirq.InsertStrategy.EARLIEST)
-    cirq.testing.assert_has_diagram(circuit,
-                                    """
+    circuit = cirq.Circuit(
+        swap_network(qubits, lambda i, j, q0, q1: (), offset=True),
+        strategy=cirq.InsertStrategy.EARLIEST,
+    )
+    cirq.testing.assert_has_diagram(
+        circuit,
+        """
 0 1 2 3 4
 │ │ │ │ │
 │ ×─× ×─×
@@ -97,7 +105,8 @@ iSwap─iSwap^-1 iSwap────iSwap^-1
 │ ×─× ×─×
 │ │ │ │ │
 """,
-                                    transpose=True)
+        transpose=True,
+    )
 
 
 def test_reusable():

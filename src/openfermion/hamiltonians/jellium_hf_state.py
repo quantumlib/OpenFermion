@@ -30,11 +30,9 @@ def lowest_single_particle_energy_states(hamiltonian, n_states):
     n_single_particle_states = count_qubits(hamiltonian)
 
     # Compute the energies for each of the single-particle states.
-    single_particle_energies = numpy.zeros(n_single_particle_states,
-                                           dtype=float)
+    single_particle_energies = numpy.zeros(n_single_particle_states, dtype=float)
     for i in range(n_single_particle_states):
-        single_particle_energies[i] = hamiltonian.terms.get(((i, 1), (i, 0)),
-                                                            0.0)
+        single_particle_energies[i] = hamiltonian.terms.get(((i, 1), (i, 0)), 0.0)
 
     # Find the n_states lowest states.
     occupied_states = single_particle_energies.argsort()[:n_states]
@@ -42,10 +40,7 @@ def lowest_single_particle_energy_states(hamiltonian, n_states):
     return list(occupied_states)
 
 
-def hartree_fock_state_jellium(grid,
-                               n_electrons,
-                               spinless=True,
-                               plane_wave=False):
+def hartree_fock_state_jellium(grid, n_electrons, spinless=True, plane_wave=False):
     """Give the Hartree-Fock state of jellium.
 
     Args:
@@ -70,15 +65,13 @@ def hartree_fock_state_jellium(grid,
 
     # The number of occupied single-particle states is the number of electrons.
     # Those states with the lowest single-particle energies are occupied first.
-    occupied_states = lowest_single_particle_energy_states(
-        hamiltonian, n_electrons)
+    occupied_states = lowest_single_particle_energy_states(hamiltonian, n_electrons)
     occupied_states = numpy.array(occupied_states)
 
     if plane_wave:
         # In the plane wave basis the HF state is a single determinant.
         hartree_fock_state_index = numpy.sum(2**occupied_states)
-        hartree_fock_state = numpy.zeros(2**count_qubits(hamiltonian),
-                                         dtype=complex)
+        hartree_fock_state = numpy.zeros(2 ** count_qubits(hamiltonian), dtype=complex)
         hartree_fock_state[hartree_fock_state_index] = 1.0
 
     else:
@@ -86,22 +79,21 @@ def hartree_fock_state_jellium(grid,
         # to the dual basis state, then use that to get the dual basis state.
         hartree_fock_state_creation_operator = FermionOperator.identity()
         for state in occupied_states[::-1]:
-            hartree_fock_state_creation_operator *= (FermionOperator(
-                ((int(state), 1),)))
+            hartree_fock_state_creation_operator *= FermionOperator(((int(state), 1),))
         dual_basis_hf_creation_operator = inverse_fourier_transform(
-            hartree_fock_state_creation_operator, grid, spinless)
+            hartree_fock_state_creation_operator, grid, spinless
+        )
 
         dual_basis_hf_creation = normal_ordered(dual_basis_hf_creation_operator)
 
         # Initialize the HF state.
-        hartree_fock_state = numpy.zeros(2**count_qubits(hamiltonian),
-                                         dtype=complex)
+        hartree_fock_state = numpy.zeros(2 ** count_qubits(hamiltonian), dtype=complex)
 
         # Populate the elements of the HF state in the dual basis.
         for term in dual_basis_hf_creation.terms:
             index = 0
             for operator in term:
-                index += 2**operator[0]
+                index += 2 ** operator[0]
             hartree_fock_state[index] = dual_basis_hf_creation.terms[term]
 
     return hartree_fock_state

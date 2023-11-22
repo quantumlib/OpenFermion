@@ -18,8 +18,8 @@ from .wave_fitting import prony, fit_known_frequencies
 def test_prony_zeros():
     signal = numpy.zeros(10)
     amplitudes, phases = prony(signal)
-    assert (len(amplitudes) == 5)
-    assert (len(phases) == 5)
+    assert len(amplitudes) == 5
+    assert len(phases) == 5
     for j in range(5):
         numpy.testing.assert_allclose(amplitudes[j], 0)
         numpy.testing.assert_allclose(phases[j], 0)
@@ -27,14 +27,17 @@ def test_prony_zeros():
 
 def test_prony_signal():
     x_vec = numpy.linspace(0, 1, 11)
-    y_vec = (0.5 * numpy.exp(1j * x_vec * 3) + 0.3 * numpy.exp(1j * x_vec * 5) +
-             0.15 * numpy.exp(1j * x_vec * 1.5) +
-             0.1 * numpy.exp(1j * x_vec * 4) +
-             0.05 * numpy.exp(1j * x_vec * 1.2))
+    y_vec = (
+        0.5 * numpy.exp(1j * x_vec * 3)
+        + 0.3 * numpy.exp(1j * x_vec * 5)
+        + 0.15 * numpy.exp(1j * x_vec * 1.5)
+        + 0.1 * numpy.exp(1j * x_vec * 4)
+        + 0.05 * numpy.exp(1j * x_vec * 1.2)
+    )
     print(y_vec)
     amplitudes, phases = prony(y_vec)
-    assert (len(amplitudes) == 5)
-    assert (len(phases) == 5)
+    assert len(amplitudes) == 5
+    assert len(phases) == 5
     for a, p in zip(amplitudes, phases):
         print(a, numpy.angle(p))
     numpy.testing.assert_allclose(numpy.abs(amplitudes[0]), 0.5, atol=1e-4)
@@ -53,13 +56,14 @@ def test_fitting_signal():
     frequencies = numpy.array([0.4, 0.5, 0.8])
     amplitudes = numpy.array([0.2, 0.4, 0.4])
     times = numpy.linspace(0, 10, 21)
-    signal = numpy.array([
-        numpy.sum([
-            amp * numpy.exp(1j * time * freq)
-            for freq, amp in zip(frequencies, amplitudes)
-        ])
-        for time in times
-    ])
+    signal = numpy.array(
+        [
+            numpy.sum(
+                [amp * numpy.exp(1j * time * freq) for freq, amp in zip(frequencies, amplitudes)]
+            )
+            for time in times
+        ]
+    )
     amplitudes_guess = fit_known_frequencies(signal, times, frequencies)
     assert len(amplitudes_guess == 3)
     for index in range(3):

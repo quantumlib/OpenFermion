@@ -57,11 +57,8 @@ def build_hamiltonian(mf: "scf.KRHF") -> Tuple[npt.NDArray, npt.NDArray]:
     # Build temporary mp2 object so MO coeffs can potentially be padded if mean
     # field solution yields different number of MOs per k-point.
     tmp_mp2 = mp.KMP2(mf)
-    mo_coeff_padded = _add_padding(tmp_mp2, tmp_mp2.mo_coeff,
-                                   tmp_mp2.mo_energy)[0]
-    hcore_mo = np.asarray([
-        C.conj().T @ hk @ C for (C, hk) in zip(mo_coeff_padded, mf.get_hcore())
-    ])
+    mo_coeff_padded = _add_padding(tmp_mp2, tmp_mp2.mo_coeff, tmp_mp2.mo_energy)[0]
+    hcore_mo = np.asarray([C.conj().T @ hk @ C for (C, hk) in zip(mo_coeff_padded, mf.get_hcore())])
     chol = cholesky_from_df_ints(tmp_mp2)
     return hcore_mo, chol
 
@@ -102,15 +99,15 @@ def cholesky_from_df_ints(mp2_inst, pad_mos_with_zeros=True) -> npt.NDArray:
     mo_coeff = mp2_inst._scf.mo_coeff
     kpts = mp2_inst.kpts
     if pad_mos_with_zeros:
-        mo_coeff = _add_padding(mp2_inst, mp2_inst.mo_coeff,
-                                mp2_inst.mo_energy)[0]
+        mo_coeff = _add_padding(mp2_inst, mp2_inst.mo_coeff, mp2_inst.mo_energy)[0]
         nmo = mp2_inst.nmo
     else:
         nmo = nao
         num_mo_per_kpt = np.array([C.shape[-1] for C in mo_coeff])
         if not (num_mo_per_kpt == nmo).all():
-            log.info("Number of MOs differs at each k-point or is not the same "
-                     "as the number of AOs.")
+            log.info(
+                "Number of MOs differs at each k-point or is not the same " "as the number of AOs."
+            )
     nkpts = len(kpts)
     if gamma_point(kpts):
         dtype = np.double
@@ -138,10 +135,7 @@ def cholesky_from_df_ints(mp2_inst, pad_mos_with_zeros=True) -> npt.NDArray:
                 mo = np.asarray(mo, dtype=dtype, order="F")
                 if dtype == np.double:
                     out = _ao2mo.nr_e2(
-                        Lpq_ao,
-                        mo,
-                        (bra_start, bra_end, ket_start, ket_end),
-                        aosym="s2",
+                        Lpq_ao, mo, (bra_start, bra_end, ket_start, ket_end), aosym="s2"
                     )
                 else:
                     # Note: Lpq.shape[0] != naux if linear dependency is found
@@ -149,11 +143,7 @@ def cholesky_from_df_ints(mp2_inst, pad_mos_with_zeros=True) -> npt.NDArray:
                     if Lpq_ao[0].size != nao**2:  # aosym = 's2'
                         Lpq_ao = lib.unpack_tril(Lpq_ao).astype(np.complex128)
                     out = _ao2mo.r_e2(
-                        Lpq_ao,
-                        mo,
-                        (bra_start, bra_end, ket_start, ket_end),
-                        tao,
-                        ao_loc,
+                        Lpq_ao, mo, (bra_start, bra_end, ket_start, ket_end), tao, ao_loc
                     )
                 Lchol[ki, kj] = out.reshape(-1, nmo, nmo)
 
@@ -162,19 +152,18 @@ def cholesky_from_df_ints(mp2_inst, pad_mos_with_zeros=True) -> npt.NDArray:
     return Lchol
 
 
-def build_momentum_transfer_mapping(cell: gto.Cell,
-                                    kpoints: np.ndarray) -> np.ndarray:
+def build_momentum_transfer_mapping(cell: gto.Cell, kpoints: np.ndarray) -> np.ndarray:
     # Define mapping momentum_transfer_map[Q][k1] = k2 that satisfies
     # k1 - k2 + G = Q.
     a = cell.lattice_vectors() / (2 * np.pi)
-    delta_k1_k2_Q = (kpoints[:, None, None, :] - kpoints[None, :, None, :] -
-                     kpoints[None, None, :, :])
+    delta_k1_k2_Q = (
+        kpoints[:, None, None, :] - kpoints[None, :, None, :] - kpoints[None, None, :, :]
+    )
     delta_k1_k2_Q += kpoints[0][None, None, None, :]  # shift to center
     delta_dot_a = np.einsum("wx,kpQx->kpQw", a, delta_k1_k2_Q)
     int_delta_dot_a = np.rint(delta_dot_a)
     # Should be zero if transfer is statisfied (2*pi*n)
-    mapping = np.where(
-        np.sum(np.abs(delta_dot_a - int_delta_dot_a), axis=3) < 1e-10)
+    mapping = np.where(np.sum(np.abs(delta_dot_a - int_delta_dot_a), axis=3) < 1e-10)
     num_kpoints = len(kpoints)
     momentum_transfer_map = np.zeros((num_kpoints,) * 2, dtype=np.int32)
     # Note index flip due to Q being first index in map but broadcasted last..

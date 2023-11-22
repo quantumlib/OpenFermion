@@ -23,21 +23,16 @@ from sympy import factorint
 
 from openfermion.resource_estimates.utils import QI
 from openfermion.resource_estimates.utils import QR2 as QR2_of
-from openfermion.resource_estimates.pbc.resources import (
-    ResourceEstimates,
-    QR3,
-    QR2,
-    QI2,
-)
+from openfermion.resource_estimates.pbc.resources import ResourceEstimates, QR3, QR2, QI2
 
 
 def compute_cost(
-        num_spin_orbs: int,
-        lambda_tot: float,
-        num_aux: int,
-        kmesh: list[int],
-        dE_for_qpe: float = 0.0016,
-        chi: int = 10,
+    num_spin_orbs: int,
+    lambda_tot: float,
+    num_aux: int,
+    kmesh: list[int],
+    dE_for_qpe: float = 0.0016,
+    chi: int = 10,
 ) -> ResourceEstimates:
     """Determine fault-tolerant costs using single factorizated Hamiltonian.
 
@@ -55,47 +50,29 @@ def compute_cost(
     """
     # run once to determine stps parameter
     init_cost = _compute_cost(
-        num_spin_orbs,
-        lambda_tot,
-        num_aux,
-        dE_for_qpe,
-        chi,
-        20_000,
-        kmesh[0],
-        kmesh[1],
-        kmesh[2],
+        num_spin_orbs, lambda_tot, num_aux, dE_for_qpe, chi, 20_000, kmesh[0], kmesh[1], kmesh[2]
     )
     steps = init_cost[0]
     final_cost = _compute_cost(
-        num_spin_orbs,
-        lambda_tot,
-        num_aux,
-        dE_for_qpe,
-        chi,
-        steps,
-        kmesh[0],
-        kmesh[1],
-        kmesh[2],
+        num_spin_orbs, lambda_tot, num_aux, dE_for_qpe, chi, steps, kmesh[0], kmesh[1], kmesh[2]
     )
     estimates = ResourceEstimates(
-        toffolis_per_step=final_cost[0],
-        total_toffolis=final_cost[1],
-        logical_qubits=final_cost[2],
+        toffolis_per_step=final_cost[0], total_toffolis=final_cost[1], logical_qubits=final_cost[2]
     )
     return estimates
 
 
 def _compute_cost(
-        n: int,
-        lam: float,
-        M: int,
-        dE: float,
-        chi: int,
-        stps: int,
-        Nkx: int,
-        Nky: int,
-        Nkz: int,
-        verbose: bool = False,
+    n: int,
+    lam: float,
+    M: int,
+    dE: float,
+    chi: int,
+    stps: int,
+    Nkx: int,
+    Nky: int,
+    Nkz: int,
+    verbose: bool = False,
 ) -> Tuple[int, int, int]:
     """Determine fault-tolerant costs using SF decomposition in quantum chem
 
@@ -119,8 +96,11 @@ def _compute_cost(
         total_cost: Total number of Toffolis
         total_qubit_count: Total qubit count
     """
-    nNk = (max(np.ceil(np.log2(Nkx)), 1) + max(np.ceil(np.log2(Nky)), 1) +
-           max(np.ceil(np.log2(Nkz)), 1))
+    nNk = (
+        max(np.ceil(np.log2(Nkx)), 1)
+        + max(np.ceil(np.log2(Nky)), 1)
+        + max(np.ceil(np.log2(Nkz)), 1)
+    )
     Nk = Nkx * Nky * Nkz
     L = Nk * n**2 // 2
 
@@ -144,15 +124,31 @@ def _compute_cost(
         # JJG note: arccos arg may be > 1
         # v = Round[2^p/(2*\[Pi])*ArcCos[2^nL/Sqrt[(L + 1)/2^\[Eta]]/2]];
         v = np.round(
-            np.power(2, p + 1) / (2 * np.pi) *
-            arccos(np.power(2, nMN) / np.sqrt(M * Nk + 1) / 2))
+            np.power(2, p + 1) / (2 * np.pi) * arccos(np.power(2, nMN) / np.sqrt(M * Nk + 1) / 2)
+        )
         #   oh[[p]] = stps*(1/N[Sin[3*ArcSin[Cos[v*2*\[Pi]/2^p]*Sqrt[(L +
         #   1)/2^\[Eta]]/2^nL]]^2] - 1) + 4*p];
         #   stps*(1/N[Sin[3*ArcSin[Cos[v*2*\[Pi]/2^p]*Sqrt[M*Nk + 1]/2^nMN]]^2]
         #   - 1) + 4*p]
-        oh[p] = np.real(stps * (1 / (np.sin(3 * arcsin(
-            np.cos(v * 2 * np.pi / np.power(2, p + 1)) * np.sqrt(M * Nk + 1) /
-            np.power(2, nMN)))**2) - 1) + 4 * (p + 1))
+        oh[p] = np.real(
+            stps
+            * (
+                1
+                / (
+                    np.sin(
+                        3
+                        * arcsin(
+                            np.cos(v * 2 * np.pi / np.power(2, p + 1))
+                            * np.sqrt(M * Nk + 1)
+                            / np.power(2, nMN)
+                        )
+                    )
+                    ** 2
+                )
+                - 1
+            )
+            + 4 * (p + 1)
+        )
 
     # Bits of precision for rotation
     br1 = int(np.argmin(oh) + 1)
@@ -162,16 +158,33 @@ def _compute_cost(
         # JJG note: arccos arg may be > 1
         # v = Round[2^p/(2*\[Pi])*ArcCos[2^nL/Sqrt[(L + 1)/2^\[Eta]]/2]];
         v = np.round(
-            np.power(2, p + 1) / (2 * np.pi) *
-            arccos(np.power(2, nL) / np.sqrt(L / np.power(2, eta)) / 2))
+            np.power(2, p + 1)
+            / (2 * np.pi)
+            * arccos(np.power(2, nL) / np.sqrt(L / np.power(2, eta)) / 2)
+        )
         #   oh[[p]] = stps*(1/N[Sin[3*ArcSin[Cos[v*2*\[Pi]/2^p]*Sqrt[(L +
         #   1)/2^\[Eta]]/2^nL]]^2] - 1) + 4*p]; oh2[[p]] =
         #   stps*(1/N[Sin[3*ArcSin[Cos[v*2*\[Pi]/2^p]*Sqrt[L/2^\[Eta]]/2^nL]]^2]
         #   - 1) + 4*p];
-        oh2[p] = np.real(stps * (1 / (np.sin(3 * arcsin(
-            np.cos(v * 2 * np.pi / np.power(2, p + 1)) *
-            np.sqrt(L / np.power(2, eta)) / np.power(2, nL)))**2) - 1) + 4 *
-                         (p + 1))
+        oh2[p] = np.real(
+            stps
+            * (
+                1
+                / (
+                    np.sin(
+                        3
+                        * arcsin(
+                            np.cos(v * 2 * np.pi / np.power(2, p + 1))
+                            * np.sqrt(L / np.power(2, eta))
+                            / np.power(2, nL)
+                        )
+                    )
+                    ** 2
+                )
+                - 1
+            )
+            + 4 * (p + 1)
+        )
     br2 = int(np.argmin(oh2) + 1)
 
     # Cost of preparing the equal superposition state on the 1st register in 1a
@@ -195,8 +208,7 @@ def _compute_cost(
     bp = 6 * np.ceil(np.log2(Nk) / 3) + 4 * nN + chi + 3
 
     # Cost of QROMs for state preparation on p and q in step 2 (c).
-    cost2b = (QR2(M * Nk + 1, L, bp) + QI2(M * Nk + 1, L) + QR2(M * Nk, L, bp) +
-              QI2(M * Nk, L))
+    cost2b = QR2(M * Nk + 1, L, bp) + QI2(M * Nk + 1, L) + QR2(M * Nk, L, bp) + QI2(M * Nk, L)
 
     # The cost of the inequality test and controlled swap for the
     # quantum alias sampling in steps 2(c) and (d).
@@ -205,11 +217,11 @@ def _compute_cost(
     # Computing k - Q and k' - Q, then below we perform adjustments for non -
     # modular arithmetic.
     cost3 = 4 * nNk
-    if Nkx == 2**np.ceil(np.log2(Nkx)):
+    if Nkx == 2 ** np.ceil(np.log2(Nkx)):
         cost3 = cost3 - 2 * np.ceil(np.log2(Nkx))
-    if Nky == 2**np.ceil(np.log2(Nky)):
+    if Nky == 2 ** np.ceil(np.log2(Nky)):
         cost3 = cost3 - 2 * np.ceil(np.log2(Nky))
-    if Nkz == 2**np.ceil(np.log2(Nkz)):
+    if Nkz == 2 ** np.ceil(np.log2(Nkz)):
         cost3 = cost3 - 2 * np.ceil(np.log2(Nkz))
 
     # The SELECT operation in step 4, which needs to be done twice.
@@ -234,8 +246,20 @@ def _compute_cost(
     iters = np.ceil(np.pi * lam / (dE * 2))
 
     # The total Toffoli costs for a step.
-    cost = (cost1a + cost1b + cost1cd + cost2a + cost2b + cost2cd + cost3 +
-            cost4 + cost6 + cost7 + cost9 + cost10)
+    cost = (
+        cost1a
+        + cost1b
+        + cost1cd
+        + cost2a
+        + cost2b
+        + cost2cd
+        + cost3
+        + cost4
+        + cost6
+        + cost7
+        + cost9
+        + cost10
+    )
 
     # Control for phase estimation and its iteration
     ac1 = 2 * np.ceil(np.log2(iters)) - 1
@@ -263,8 +287,7 @@ def _compute_cost(
     ac8 = 4
 
     # The QROM on the p & q registers
-    ac9 = (kp[0] * kp[1] * bp + np.ceil(np.log2(
-        (M * Nk + 1) / kp[0])) + np.ceil(np.log2(L / kp[1])))
+    ac9 = kp[0] * kp[1] * bp + np.ceil(np.log2((M * Nk + 1) / kp[0])) + np.ceil(np.log2(L / kp[1]))
 
     if verbose:
         print("[*] Top of routine")

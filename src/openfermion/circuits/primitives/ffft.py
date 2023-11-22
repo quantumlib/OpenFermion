@@ -11,7 +11,7 @@
 #   limitations under the License.
 """The fast fermionic Fourier transform."""
 
-from typing import (Iterable, List, Sequence)
+from typing import Iterable, List, Sequence
 
 import numpy as np
 from sympy.ntheory import factorint
@@ -67,15 +67,20 @@ class _F0Gate(cirq.MatrixGate):
 
     def __init__(self):
         """Initializes $F_0$ gate."""
-        cirq.MatrixGate.__init__(self,
-                                 np.array([[1, 0, 0, 0],
-                                           [0, -2**(-0.5), 2**(-0.5), 0],
-                                           [0, 2**(-0.5), 2**(-0.5), 0],
-                                           [0, 0, 0, -1]]),
-                                 qid_shape=(2, 2))
+        cirq.MatrixGate.__init__(
+            self,
+            np.array(
+                [
+                    [1, 0, 0, 0],
+                    [0, -(2 ** (-0.5)), 2 ** (-0.5), 0],
+                    [0, 2 ** (-0.5), 2 ** (-0.5), 0],
+                    [0, 0, 0, -1],
+                ]
+            ),
+            qid_shape=(2, 2),
+        )
 
-    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs
-                              ) -> cirq.CircuitDiagramInfo:
+    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs) -> cirq.CircuitDiagramInfo:
         if args.use_unicode_characters:
             symbols = 'F₀', 'F₀'
         else:
@@ -111,16 +116,15 @@ class _TwiddleGate(cirq.Gate):
     def _num_qubits_(self) -> int:
         return 1
 
-    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs
-                              ) -> cirq.CircuitDiagramInfo:
+    def _circuit_diagram_info_(self, args: cirq.CircuitDiagramInfoArgs) -> cirq.CircuitDiagramInfo:
         if args.use_unicode_characters:
-            symbols = 'ω^{}_{}'.format(self.k, self.n),
+            symbols = ('ω^{}_{}'.format(self.k, self.n),)
         else:
-            symbols = 'w^{}_{}'.format(self.k, self.n),
+            symbols = ('w^{}_{}'.format(self.k, self.n),)
         return cirq.CircuitDiagramInfo(wire_symbols=symbols)
 
     def _decompose_(self, qubits: Iterable[cirq.Qid]):
-        q, = qubits
+        (q,) = qubits
         exponent = -2 * self.k / self.n
         yield cirq.ZPowGate(exponent=exponent, global_shift=0).on(q)
 
@@ -210,11 +214,9 @@ def ffft(qubits: Sequence[cirq.Qid]) -> cirq.OP_TREE:
 
 
 def _ffft_prime(qubits: Sequence[cirq.Qid]) -> cirq.OP_TREE:
-
     def fft_matrix(n):
         unit = np.exp(-2j * np.pi / n)
-        return np.array([[unit**(j * k) for k in range(n)] for j in range(n)
-                        ]) / np.sqrt(n)
+        return np.array([[unit ** (j * k) for k in range(n)] for j in range(n)]) / np.sqrt(n)
 
     n = len(qubits)
 
@@ -253,7 +255,7 @@ def _ffft(qubits: Sequence[cirq.Qid], factors: List[int]) -> cirq.OP_TREE:
 
     # Performs ny recursive FFFTs, each of size nx.
     for y in range(ny):
-        operations.append(_ffft(qubits[nx * y:nx * (y + 1)], factors_x))
+        operations.append(_ffft(qubits[nx * y : nx * (y + 1)], factors_x))
 
     # The second part is to perform ny FFFTs of size nx on qubits which are
     # consecutive in the original sequence. To place qubits in a correct order
@@ -265,7 +267,7 @@ def _ffft(qubits: Sequence[cirq.Qid], factors: List[int]) -> cirq.OP_TREE:
     for x in range(nx):
         for y in range(1, ny):
             operations.append(_TwiddleGate(x * y, n).on(qubits[ny * x + y]))
-        operations.append(_ffft(qubits[ny * x:ny * (x + 1)], factors_y))
+        operations.append(_ffft(qubits[ny * x : ny * (x + 1)], factors_y))
 
     # The result of performing FFFT on k-th group of nx qubits is a new group
     # of fermionic operators with indices k, k + ny, k + 2ny, ... of the final
@@ -276,8 +278,7 @@ def _ffft(qubits: Sequence[cirq.Qid], factors: List[int]) -> cirq.OP_TREE:
     return operations
 
 
-def _permute(qubits: Sequence[cirq.Qid],
-             permutation: List[int]) -> cirq.OP_TREE:
+def _permute(qubits: Sequence[cirq.Qid], permutation: List[int]) -> cirq.OP_TREE:
     """
     Generates a circuit which reorders Fermionic modes.
 
@@ -296,5 +297,5 @@ def _permute(qubits: Sequence[cirq.Qid],
         Gate that reorders the qubits accordingly.
     """
     return cirq.contrib.acquaintance.permutation.LinearPermutationGate(
-        len(qubits), {i: permutation[i] for i in range(len(permutation))},
-        FSWAP).on(*qubits)
+        len(qubits), {i: permutation[i] for i in range(len(permutation))}, FSWAP
+    ).on(*qubits)

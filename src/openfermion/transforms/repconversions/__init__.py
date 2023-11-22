@@ -5,21 +5,11 @@ from .conversions import (
     get_quadratic_hamiltonian,
 )
 
-from .fourier_transforms import (
-    fourier_transform,
-    inverse_fourier_transform,
-)
+from .fourier_transforms import fourier_transform, inverse_fourier_transform
 
-from .operator_tapering import (
-    freeze_orbitals,
-    prune_unused_indices,
-)
+from .operator_tapering import freeze_orbitals, prune_unused_indices
 
-from .qubit_operator_transforms import (
-    project_onto_sector,
-    projection_error,
-    rotate_qubit_by_pauli,
-)
+from .qubit_operator_transforms import project_onto_sector, projection_error, rotate_qubit_by_pauli
 
 from .qubit_tapering_from_stabilizer import (
     StabilizerError,
@@ -30,8 +20,4 @@ from .qubit_tapering_from_stabilizer import (
     fix_single_term,
 )
 
-from .weyl_ordering import (
-    mccoy,
-    weyl_polynomial_quantization,
-    symmetric_ordering,
-)
+from .weyl_ordering import mccoy, weyl_polynomial_quantization, symmetric_ordering

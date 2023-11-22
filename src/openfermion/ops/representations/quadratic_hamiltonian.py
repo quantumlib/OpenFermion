@@ -48,11 +48,10 @@ class QuadraticHamiltonian(PolynomialTensor):
     Attributes:
         chemical_potential(float): The chemical potential $\mu$.
     """
-    def __init__(self,
-                 hermitian_part,
-                 antisymmetric_part=None,
-                 constant=0.0,
-                 chemical_potential=0.0):
+
+    def __init__(
+        self, hermitian_part, antisymmetric_part=None, constant=0.0, chemical_potential=0.0
+    ):
         r"""
         Initialize the QuadraticHamiltonian class.
 
@@ -76,28 +75,22 @@ class QuadraticHamiltonian(PolynomialTensor):
         if not chemical_potential:
             combined_hermitian_part = hermitian_part
         else:
-            combined_hermitian_part = (hermitian_part -
-                                       chemical_potential * numpy.eye(n_qubits))
+            combined_hermitian_part = hermitian_part - chemical_potential * numpy.eye(n_qubits)
 
         # Initialize the PolynomialTensor
         if antisymmetric_part is None:
-            super(QuadraticHamiltonian, self).__init__({
-                ():
-                constant,
-                (1, 0):
-                combined_hermitian_part
-            })
+            super(QuadraticHamiltonian, self).__init__(
+                {(): constant, (1, 0): combined_hermitian_part}
+            )
         else:
-            super(QuadraticHamiltonian, self).__init__({
-                ():
-                constant,
-                (1, 0):
-                combined_hermitian_part,
-                (1, 1):
-                0.5 * antisymmetric_part,
-                (0, 0):
-                -0.5 * antisymmetric_part.conj()
-            })
+            super(QuadraticHamiltonian, self).__init__(
+                {
+                    (): constant,
+                    (1, 0): combined_hermitian_part,
+                    (1, 1): 0.5 * antisymmetric_part,
+                    (0, 0): -0.5 * antisymmetric_part.conj(),
+                }
+            )
 
         # Add remaining attributes
         self.chemical_potential = chemical_potential
@@ -111,15 +104,14 @@ class QuadraticHamiltonian(PolynomialTensor):
     def antisymmetric_part(self):
         """The antisymmetric part."""
         if (1, 1) in self.n_body_tensors:
-            return 2. * self.n_body_tensors[1, 1]
+            return 2.0 * self.n_body_tensors[1, 1]
         else:
             return numpy.zeros((self.n_qubits, self.n_qubits), complex)
 
     @property
     def hermitian_part(self):
         """The Hermitian part not including the chemical potential."""
-        return (self.combined_hermitian_part +
-                self.chemical_potential * numpy.eye(self.n_qubits))
+        return self.combined_hermitian_part + self.chemical_potential * numpy.eye(self.n_qubits)
 
     @property
     def conserves_particle_number(self):
@@ -129,16 +121,13 @@ class QuadraticHamiltonian(PolynomialTensor):
 
     def add_chemical_potential(self, chemical_potential):
         """Increase (or decrease) the chemical potential by some value."""
-        self.n_body_tensors[1, 0] -= (chemical_potential *
-                                      numpy.eye(self.n_qubits))
+        self.n_body_tensors[1, 0] -= chemical_potential * numpy.eye(self.n_qubits)
         self.chemical_potential += chemical_potential
 
     def ground_energy(self):
         """Return the ground energy."""
-        orbital_energies, _, constant = (
-            self.diagonalizing_bogoliubov_transform())
-        return numpy.sum(
-            orbital_energies[numpy.where(orbital_energies < 0.0)[0]]) + constant
+        orbital_energies, _, constant = self.diagonalizing_bogoliubov_transform()
+        return numpy.sum(orbital_energies[numpy.where(orbital_energies < 0.0)[0]]) + constant
 
     def majorana_form(self):
         r"""Return the Majorana represention of the Hamiltonian.
@@ -167,25 +156,48 @@ class QuadraticHamiltonian(PolynomialTensor):
         # Compute the Majorana matrix using block matrix manipulations
         majorana_matrix = numpy.zeros((2 * self.n_qubits, 2 * self.n_qubits))
         # Set upper left block
-        majorana_matrix[:self.n_qubits, :self.n_qubits] = numpy.real(
-            -0.5j * (hermitian_part - hermitian_part.conj() +
-                     antisymmetric_part - antisymmetric_part.conj()))
+        majorana_matrix[: self.n_qubits, : self.n_qubits] = numpy.real(
+            -0.5j
+            * (
+                hermitian_part
+                - hermitian_part.conj()
+                + antisymmetric_part
+                - antisymmetric_part.conj()
+            )
+        )
         # Set upper right block
-        majorana_matrix[:self.n_qubits, self.n_qubits:] = numpy.real(
-            0.5 * (hermitian_part + hermitian_part.conj() - antisymmetric_part -
-                   antisymmetric_part.conj()))
+        majorana_matrix[: self.n_qubits, self.n_qubits :] = numpy.real(
+            0.5
+            * (
+                hermitian_part
+                + hermitian_part.conj()
+                - antisymmetric_part
+                - antisymmetric_part.conj()
+            )
+        )
         # Set lower left block
-        majorana_matrix[self.n_qubits:, :self.n_qubits] = numpy.real(
-            -0.5 * (hermitian_part + hermitian_part.conj() +
-                    antisymmetric_part + antisymmetric_part.conj()))
+        majorana_matrix[self.n_qubits :, : self.n_qubits] = numpy.real(
+            -0.5
+            * (
+                hermitian_part
+                + hermitian_part.conj()
+                + antisymmetric_part
+                + antisymmetric_part.conj()
+            )
+        )
         # Set lower right block
-        majorana_matrix[self.n_qubits:, self.n_qubits:] = numpy.real(
-            -0.5j * (hermitian_part - hermitian_part.conj() -
-                     antisymmetric_part + antisymmetric_part.conj()))
+        majorana_matrix[self.n_qubits :, self.n_qubits :] = numpy.real(
+            -0.5j
+            * (
+                hermitian_part
+                - hermitian_part.conj()
+                - antisymmetric_part
+                + antisymmetric_part.conj()
+            )
+        )
 
         # Compute the constant
-        majorana_constant = (0.5 * numpy.real(numpy.trace(hermitian_part)) +
-                             self.n_body_tensors[()])
+        majorana_constant = 0.5 * numpy.real(numpy.trace(hermitian_part)) + self.n_body_tensors[()]
 
         return majorana_matrix, majorana_constant
 
@@ -267,8 +279,8 @@ class QuadraticHamiltonian(PolynomialTensor):
         n_modes = self.combined_hermitian_part.shape[0]
         if spin_sector is not None and n_modes % 2:
             raise ValueError(
-                'Spin sector was specified but Hamiltonian contains '
-                'an odd number of modes')
+                'Spin sector was specified but Hamiltonian contains ' 'an odd number of modes'
+            )
 
         if self.conserves_particle_number:
             return self._particle_conserving_bogoliubov_transform(spin_sector)
@@ -277,9 +289,9 @@ class QuadraticHamiltonian(PolynomialTensor):
             if spin_sector is not None:
                 raise NotImplementedError(
                     'Specifying spin sector for non-particle-conserving '
-                    'Hamiltonians is not yet supported.')
-            return self._non_particle_conserving_bogoliubov_transform(
-                spin_sector)
+                    'Hamiltonians is not yet supported.'
+                )
+            return self._non_particle_conserving_bogoliubov_transform(spin_sector)
 
     def _particle_conserving_bogoliubov_transform(self, spin_sector):
         n_modes = self.combined_hermitian_part.shape[0]
@@ -290,33 +302,26 @@ class QuadraticHamiltonian(PolynomialTensor):
                 return i + spin_sector * n_sites
 
             spin_indices = [index_map(i) for i in range(n_sites)]
-            matrix = self.combined_hermitian_part[numpy.ix_(
-                spin_indices, spin_indices)]
-            orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(
-                matrix)
+            matrix = self.combined_hermitian_part[numpy.ix_(spin_indices, spin_indices)]
+            orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(matrix)
         else:
             matrix = self.combined_hermitian_part
 
             if _is_spin_block_diagonal(matrix):
-                up_block = matrix[:n_modes // 2, :n_modes // 2]
-                down_block = matrix[n_modes // 2:, n_modes // 2:]
+                up_block = matrix[: n_modes // 2, : n_modes // 2]
+                down_block = matrix[n_modes // 2 :, n_modes // 2 :]
 
-                up_orbital_energies, up_diagonalizing_unitary_T = (
-                    numpy.linalg.eigh(up_block))
-                down_orbital_energies, down_diagonalizing_unitary_T = (
-                    numpy.linalg.eigh(down_block))
+                up_orbital_energies, up_diagonalizing_unitary_T = numpy.linalg.eigh(up_block)
+                down_orbital_energies, down_diagonalizing_unitary_T = numpy.linalg.eigh(down_block)
 
-                orbital_energies = numpy.concatenate(
-                    (up_orbital_energies, down_orbital_energies))
-                diagonalizing_unitary_T = numpy.zeros((n_modes, n_modes),
-                                                      dtype=complex)
-                diagonalizing_unitary_T[:n_modes // 2, :n_modes //
-                                        2] = up_diagonalizing_unitary_T
-                diagonalizing_unitary_T[n_modes // 2:, n_modes //
-                                        2:] = down_diagonalizing_unitary_T
+                orbital_energies = numpy.concatenate((up_orbital_energies, down_orbital_energies))
+                diagonalizing_unitary_T = numpy.zeros((n_modes, n_modes), dtype=complex)
+                diagonalizing_unitary_T[: n_modes // 2, : n_modes // 2] = up_diagonalizing_unitary_T
+                diagonalizing_unitary_T[
+                    n_modes // 2 :, n_modes // 2 :
+                ] = down_diagonalizing_unitary_T
             else:
-                orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(
-                    matrix)
+                orbital_energies, diagonalizing_unitary_T = numpy.linalg.eigh(matrix)
 
         return orbital_energies, diagonalizing_unitary_T.T, self.constant
 
@@ -326,27 +331,23 @@ class QuadraticHamiltonian(PolynomialTensor):
         # Get the orthogonal transformation that puts majorana_matrix
         # into canonical form
         canonical, orthogonal = antisymmetric_canonical_form(majorana_matrix)
-        orbital_energies = canonical[range(self.n_qubits),
-                                     range(self.n_qubits, 2 * self.n_qubits)]
+        orbital_energies = canonical[range(self.n_qubits), range(self.n_qubits, 2 * self.n_qubits)]
         constant = -0.5 * numpy.sum(orbital_energies) + majorana_constant
 
         # Create the matrix that converts between fermionic ladder and
         # Majorana bases
-        normalized_identity = (numpy.eye(self.n_qubits, dtype=complex) /
-                               numpy.sqrt(2.))
-        majorana_basis_change = numpy.eye(2 * self.n_qubits,
-                                          dtype=complex) / numpy.sqrt(2.)
-        majorana_basis_change[self.n_qubits:, self.n_qubits:] *= -1.j
-        majorana_basis_change[:self.n_qubits, self.
-                              n_qubits:] = normalized_identity
-        majorana_basis_change[self.n_qubits:, :self.
-                              n_qubits] = 1.j * normalized_identity
+        normalized_identity = numpy.eye(self.n_qubits, dtype=complex) / numpy.sqrt(2.0)
+        majorana_basis_change = numpy.eye(2 * self.n_qubits, dtype=complex) / numpy.sqrt(2.0)
+        majorana_basis_change[self.n_qubits :, self.n_qubits :] *= -1.0j
+        majorana_basis_change[: self.n_qubits, self.n_qubits :] = normalized_identity
+        majorana_basis_change[self.n_qubits :, : self.n_qubits] = 1.0j * normalized_identity
 
         # Compute the unitary and return
         diagonalizing_unitary = majorana_basis_change.T.conj().dot(
-            orthogonal.dot(majorana_basis_change))
+            orthogonal.dot(majorana_basis_change)
+        )
 
-        return orbital_energies, diagonalizing_unitary[:self.n_qubits], constant
+        return orbital_energies, diagonalizing_unitary[: self.n_qubits], constant
 
     def diagonalizing_circuit(self):
         r"""Get a circuit for a unitary that diagonalizes this Hamiltonian
@@ -374,14 +375,16 @@ class QuadraticHamiltonian(PolynomialTensor):
         # Adding inline import here to prevent circular issues
         # TODO: move this out once we have a better solution
         from openfermion.linalg.givens_rotations import (
-            fermionic_gaussian_decomposition, givens_decomposition_square)
+            fermionic_gaussian_decomposition,
+            givens_decomposition_square,
+        )
+
         _, transformation_matrix, _ = self.diagonalizing_bogoliubov_transform()
 
         if self.conserves_particle_number:
             # The Hamiltonian conserves particle number, so we don't need
             # to use the most general procedure.
-            decomposition, _ = givens_decomposition_square(
-                transformation_matrix)
+            decomposition, _ = givens_decomposition_square(transformation_matrix)
             circuit_description = list(reversed(decomposition))
         else:
             # The Hamiltonian does not conserve particle number, so we
@@ -389,24 +392,23 @@ class QuadraticHamiltonian(PolynomialTensor):
             # Rearrange the transformation matrix because the circuit
             # generation routine expects it to describe annihilation
             # operators rather than creation operators.
-            left_block = transformation_matrix[:, :self.n_qubits]
-            right_block = transformation_matrix[:, self.n_qubits:]
+            left_block = transformation_matrix[:, : self.n_qubits]
+            right_block = transformation_matrix[:, self.n_qubits :]
 
             # Can't use numpy.block because that requires numpy>=1.13.0
             new_transformation_matrix = numpy.empty(
-                (self.n_qubits, 2 * self.n_qubits), dtype=complex)
-            new_transformation_matrix[:, :self.n_qubits] = numpy.conjugate(
-                right_block)
-            new_transformation_matrix[:, self.n_qubits:] = numpy.conjugate(
-                left_block)
+                (self.n_qubits, 2 * self.n_qubits), dtype=complex
+            )
+            new_transformation_matrix[:, : self.n_qubits] = numpy.conjugate(right_block)
+            new_transformation_matrix[:, self.n_qubits :] = numpy.conjugate(left_block)
 
             # Get the circuit description
-            decomposition, left_decomposition, _, _ = (
-                fermionic_gaussian_decomposition(new_transformation_matrix))
+            decomposition, left_decomposition, _, _ = fermionic_gaussian_decomposition(
+                new_transformation_matrix
+            )
 
             # need to use left_diagonal too
-            circuit_description = list(
-                reversed(decomposition + left_decomposition))
+            circuit_description = list(reversed(decomposition + left_decomposition))
 
         return circuit_description
 
@@ -442,10 +444,11 @@ class QuadraticHamiltonian(PolynomialTensor):
         warnings.warn(
             'The method `orbital_energies` is deprecated. '
             'Use the method `diagonalizing_bogoliubov_transform` '
-            'instead.', DeprecationWarning)
+            'instead.',
+            DeprecationWarning,
+        )
 
-        orbital_energies, _, constant = (
-            self.diagonalizing_bogoliubov_transform())
+        orbital_energies, _, constant = self.diagonalizing_bogoliubov_transform()
 
         return orbital_energies, constant
 
@@ -476,11 +479,11 @@ def antisymmetric_canonical_form(antisymmetric_matrix):
     # Shifted here to prevent circular import issues
     # TODO: move this out when a better solution is found.
     from openfermion.linalg.givens_rotations import swap_columns, swap_rows
+
     m, p = antisymmetric_matrix.shape
 
     if m != p or p % 2 != 0:
-        raise ValueError('The input matrix must be square with even '
-                         'dimension.')
+        raise ValueError('The input matrix must be square with even ' 'dimension.')
 
     # Check that input matrix is antisymmetric
     matrix_plus_transpose = antisymmetric_matrix + antisymmetric_matrix.T
@@ -545,7 +548,6 @@ def _is_spin_block_diagonal(matrix):
     n = matrix.shape[0]
     if n % 2:
         return False
-    max_upper_right = numpy.max(numpy.abs(matrix[:n // 2, n // 2:]))
-    max_lower_left = numpy.max(numpy.abs(matrix[n // 2:, :n // 2]))
-    return (numpy.isclose(max_upper_right, 0.0) and
-            numpy.isclose(max_lower_left, 0.0))
+    max_upper_right = numpy.max(numpy.abs(matrix[: n // 2, n // 2 :]))
+    max_lower_left = numpy.max(numpy.abs(matrix[n // 2 :, : n // 2]))
+    return numpy.isclose(max_upper_right, 0.0) and numpy.isclose(max_lower_left, 0.0)

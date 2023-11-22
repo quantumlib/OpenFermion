@@ -12,16 +12,17 @@
 """Tests for qubit_partitioning.py"""
 import unittest
 
-from openfermion.ops.operators import (QubitOperator, FermionOperator,
-                                       BosonOperator)
+from openfermion.ops.operators import QubitOperator, FermionOperator, BosonOperator
 
-from .qubit_partitioning import (binary_partition_iterator, partition_iterator,
-                                 pauli_string_iterator,
-                                 group_into_tensor_product_basis_sets)
+from .qubit_partitioning import (
+    binary_partition_iterator,
+    partition_iterator,
+    pauli_string_iterator,
+    group_into_tensor_product_basis_sets,
+)
 
 
 class BinaryPartitionIteratorTest(unittest.TestCase):
-
     def test_num_partitions(self):
         qubit_list = range(6)
         bpi = binary_partition_iterator(qubit_list)
@@ -94,11 +95,10 @@ class BinaryPartitionIteratorTest(unittest.TestCase):
 
 
 class PartitionIteratorTest(unittest.TestCase):
-
     def test_unary_case(self):
         qubit_list = list(range(6))
         bpi = partition_iterator(qubit_list, 1)
-        for p1, in bpi:
+        for (p1,) in bpi:
             self.assertEqual(p1, qubit_list)
 
     def test_binary_case(self):
@@ -146,15 +146,10 @@ class PartitionIteratorTest(unittest.TestCase):
                         pi = partition_iterator(qubit_list, 3)
                         count = 0
                         for p1, p2, p3 in pi:
-                            self.assertEqual(
-                                len(p1) + len(p2) + len(p3), len(qubit_list))
+                            self.assertEqual(len(p1) + len(p2) + len(p3), len(qubit_list))
                             self.assertEqual(set(p1 + p2 + p3), set(qubit_list))
                             print('Partition obtained: ', p1, p2, p3)
-                            if max(
-                                    sum(1
-                                        for x in p
-                                        if x in [i, j, k])
-                                    for p in [p1, p2, p3]) == 1:
+                            if max(sum(1 for x in p if x in [i, j, k]) for p in [p1, p2, p3]) == 1:
                                 count += 1
                         print('count = {}'.format(count))
                         self.assertTrue(count > 0)
@@ -162,7 +157,6 @@ class PartitionIteratorTest(unittest.TestCase):
 
 
 class PauliStringIteratorTest(unittest.TestCase):
-
     def test_eightpartition_three(self):
         for i1 in range(8):
             for i2 in range(i1 + 1, 8):
@@ -173,9 +167,11 @@ class PauliStringIteratorTest(unittest.TestCase):
                                 psg = pauli_string_iterator(8, 3)
                                 count = 0
                                 for pauli_string in psg:
-                                    if (pauli_string[i1] == l1 and
-                                            pauli_string[i2] == l2 and
-                                            pauli_string[i3] == l3):
+                                    if (
+                                        pauli_string[i1] == l1
+                                        and pauli_string[i2] == l2
+                                        and pauli_string[i3] == l3
+                                    ):
                                         count += 1
                                 self.assertTrue(count > 0)
 
@@ -196,45 +192,50 @@ class PauliStringIteratorTest(unittest.TestCase):
 
 
 class GroupTensorProductBasisTest(unittest.TestCase):
-
     def test_demo_qubit_operator(self):
         for seed in [None, 0, 10000]:
-            op = QubitOperator('X0 Y1', 2.) + QubitOperator('X1 Y2', 3.j)
+            op = QubitOperator('X0 Y1', 2.0) + QubitOperator('X1 Y2', 3.0j)
             sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
             expected = {
-                ((0, 'X'), (1, 'Y')): QubitOperator('X0 Y1', 2.),
-                ((1, 'X'), (2, 'Y')): QubitOperator('X1 Y2', 3.j)
+                ((0, 'X'), (1, 'Y')): QubitOperator('X0 Y1', 2.0),
+                ((1, 'X'), (2, 'Y')): QubitOperator('X1 Y2', 3.0j),
             }
             self.assertEqual(sub_operators, expected)
 
-            op = QubitOperator('X0 Y1', 2.) + QubitOperator('Y1 Y2', 3.j)
+            op = QubitOperator('X0 Y1', 2.0) + QubitOperator('Y1 Y2', 3.0j)
             sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
             expected = {((0, 'X'), (1, 'Y'), (2, 'Y')): op}
             self.assertEqual(sub_operators, expected)
 
-            op = QubitOperator('', 4.) + QubitOperator('X1', 2.j)
+            op = QubitOperator('', 4.0) + QubitOperator('X1', 2.0j)
             sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
             expected = {((1, 'X'),): op}
             self.assertEqual(sub_operators, expected)
 
-            op = (QubitOperator('X0 X1', 0.1) + QubitOperator('X1 X2', 2.j) +
-                  QubitOperator('Y2 Z3', 3.) + QubitOperator('X3 Z4', 5.))
+            op = (
+                QubitOperator('X0 X1', 0.1)
+                + QubitOperator('X1 X2', 2.0j)
+                + QubitOperator('Y2 Z3', 3.0)
+                + QubitOperator('X3 Z4', 5.0)
+            )
             sub_operators = group_into_tensor_product_basis_sets(op, seed=seed)
             expected1 = {
-                ((0, 'X'), (1, 'X'), (2, 'X'), (3, 'X'), (4, 'Z')):
-                (QubitOperator('X0 X1', 0.1) + QubitOperator('X1 X2', 2.j) +
-                 QubitOperator('X3 Z4', 5.)),
-                ((2, 'Y'), (3, 'Z')):
-                QubitOperator('Y2 Z3', 3.)
+                ((0, 'X'), (1, 'X'), (2, 'X'), (3, 'X'), (4, 'Z')): (
+                    QubitOperator('X0 X1', 0.1)
+                    + QubitOperator('X1 X2', 2.0j)
+                    + QubitOperator('X3 Z4', 5.0)
+                ),
+                ((2, 'Y'), (3, 'Z')): QubitOperator('Y2 Z3', 3.0),
             }
             expected2 = {
-                ((0, 'X'), (1, 'X'), (2, 'Y'), (3, 'Z')):
-                (QubitOperator('X0 X1', 0.1) + QubitOperator('Y2 Z3', 3.)),
-                ((1, 'X'), (2, 'X'), (3, 'X'), (4, 'Z')):
-                (QubitOperator('X1 X2', 2.j) + QubitOperator('X3 Z4', 5.))
+                ((0, 'X'), (1, 'X'), (2, 'Y'), (3, 'Z')): (
+                    QubitOperator('X0 X1', 0.1) + QubitOperator('Y2 Z3', 3.0)
+                ),
+                ((1, 'X'), (2, 'X'), (3, 'X'), (4, 'Z')): (
+                    QubitOperator('X1 X2', 2.0j) + QubitOperator('X3 Z4', 5.0)
+                ),
             }
-            self.assertTrue(sub_operators == expected1 or
-                            sub_operators == expected2)
+            self.assertTrue(sub_operators == expected1 or sub_operators == expected2)
 
     def test_empty_qubit_operator(self):
         sub_operators = group_into_tensor_product_basis_sets(QubitOperator())

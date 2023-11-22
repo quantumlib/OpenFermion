@@ -12,7 +12,7 @@
 #   limitations under the License.
 import numpy as np
 
-from openfermion.resource_estimates.pbc.resources.qrom import (QR2, QI2)
+from openfermion.resource_estimates.pbc.resources.qrom import QR2, QI2
 
 
 def test_qr2():

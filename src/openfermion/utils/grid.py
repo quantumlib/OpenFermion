@@ -60,16 +60,25 @@ class Grid:
         if not isinstance(dimensions, int) or dimensions <= 0:
             raise ValueError(
                 'dimensions must be a positive int but was {} {}'.format(
-                    type(dimensions), repr(dimensions)))
-        if ((not isinstance(length, int) or length < 0) and
-            (not isinstance(length, tuple)) and (not isinstance(length, list))):
-            raise ValueError('length must be a non-negative int or tuple '
-                             'but was {} {}'.format(type(length), repr(length)))
-        if ((not isinstance(scale, float) or not scale > 0) and
-            (not isinstance(scale, numpy.ndarray))):
+                    type(dimensions), repr(dimensions)
+                )
+            )
+        if (
+            (not isinstance(length, int) or length < 0)
+            and (not isinstance(length, tuple))
+            and (not isinstance(length, list))
+        ):
+            raise ValueError(
+                'length must be a non-negative int or tuple '
+                'but was {} {}'.format(type(length), repr(length))
+            )
+        if (not isinstance(scale, float) or not scale > 0) and (
+            not isinstance(scale, numpy.ndarray)
+        ):
             raise ValueError(
                 'scale must be a positive float or ndarray but was '
-                '{} {}'.format(type(scale), repr(scale)))
+                '{} {}'.format(type(scale), repr(scale))
+            )
 
         self.dimensions = dimensions
 
@@ -109,8 +118,7 @@ class Grid:
             iterable[tuple[int]]:
                 The index-coordinate tuple of each point in the grid.
         """
-        return itertools.product(
-            *[range(self.length[i]) for i in range(self.dimensions)])
+        return itertools.product(*[range(self.length[i]) for i in range(self.dimensions)])
 
     def position_vector(self, position_indices):
         """Given grid point coordinate, return position vector with dimensions.
@@ -126,16 +134,18 @@ class Grid:
         # Raise exceptions.
         if isinstance(position_indices, int):
             position_indices = [position_indices]
-        if not all(0 <= e < self.length[i]
-                   for i, e in enumerate(position_indices)):
+        if not all(0 <= e < self.length[i] for i, e in enumerate(position_indices)):
             raise OrbitalSpecificationError(
-                'Position indices must be integers in [0, grid_length).')
+                'Position indices must be integers in [0, grid_length).'
+            )
 
         # Compute position vector
-        vector = sum([
-            (float(n - self.shifts[i]) / self.length[i]) * self.scale[:, i]
-            for i, n in enumerate(position_indices)
-        ])
+        vector = sum(
+            [
+                (float(n - self.shifts[i]) / self.length[i]) * self.scale[:, i]
+                for i, n in enumerate(position_indices)
+            ]
+        )
         return vector
 
     def momentum_vector(self, momentum_indices, periodic=True):
@@ -153,10 +163,10 @@ class Grid:
         # Raise exceptions.
         if isinstance(momentum_indices, int):
             momentum_indices = [momentum_indices]
-        if (not all(0 <= e < self.length[i]
-                    for i, e in enumerate(momentum_indices))):
+        if not all(0 <= e < self.length[i] for i, e in enumerate(momentum_indices)):
             raise OrbitalSpecificationError(
-                'Momentum indices must be integers in [0, grid_length).')
+                'Momentum indices must be integers in [0, grid_length).'
+            )
 
         # Compute momentum vector.
         momentum_ints = self.index_to_momentum_ints(momentum_indices)
@@ -172,9 +182,7 @@ class Grid:
             Integer momentum vector
         """
         # Set baseline for grid between [-N//2, N//2]
-        momentum_int = [
-            index[i] - self.shifts[i] for i in range(self.dimensions)
-        ]
+        momentum_int = [index[i] - self.shifts[i] for i in range(self.dimensions)]
 
         return numpy.array(momentum_int, dtype=int)
 
@@ -207,12 +215,11 @@ class Grid:
         """
         # Alias the higher momentum modes
         if periodic:
-            momentum_ints = self.index_to_momentum_ints(
-                self.momentum_ints_to_index(momentum_ints))
+            momentum_ints = self.index_to_momentum_ints(self.momentum_ints_to_index(momentum_ints))
 
-        momentum_vector = sum([
-            n * self.reciprocal_scale[:, i] for i, n in enumerate(momentum_ints)
-        ])
+        momentum_vector = sum(
+            [n * self.reciprocal_scale[:, i] for i, n in enumerate(momentum_ints)]
+        )
         return momentum_vector
 
     def orbital_id(self, grid_coordinates, spin=None):
@@ -237,16 +244,12 @@ class Grid:
         # Loop through dimensions of coordinate tuple.
         tensor_factor = 0
         for dimension, grid_coordinate in enumerate(grid_coordinates):
-
             # Make sure coordinate is an integer in the correct bounds.
-            if (isinstance(grid_coordinate, int) and
-                    grid_coordinate < self.length[dimension]):
-                tensor_factor += (grid_coordinate *
-                                  int(numpy.product(self.length[:dimension])))
+            if isinstance(grid_coordinate, int) and grid_coordinate < self.length[dimension]:
+                tensor_factor += grid_coordinate * int(numpy.product(self.length[:dimension]))
             else:
                 # Raise for invalid model.
-                raise OrbitalSpecificationError(
-                    'Invalid orbital coordinates provided.')
+                raise OrbitalSpecificationError('Invalid orbital coordinates provided.')
 
         # Account for spin and return.
         if spin is None:
@@ -279,19 +282,19 @@ class Grid:
         # Get grid indices.
         grid_indices = []
         for dimension in range(self.dimensions):
-            remainder = (orbital_id %
-                         int(numpy.product(self.length[:dimension + 1])))
-            grid_index = (remainder //
-                          int(numpy.product(self.length[:dimension])))
+            remainder = orbital_id % int(numpy.product(self.length[: dimension + 1]))
+            grid_index = remainder // int(numpy.product(self.length[:dimension]))
             grid_indices += [grid_index]
         return grid_indices
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
-        return (self.dimensions == other.dimensions and
-                (self.scale == other.scale).all() and
-                self.length == other.length)
+        return (
+            self.dimensions == other.dimensions
+            and (self.scale == other.scale).all()
+            and self.length == other.length
+        )
 
     def __ne__(self, other):
         return not self == other

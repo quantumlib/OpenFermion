@@ -13,17 +13,21 @@ import unittest
 
 import numpy
 
-from openfermion.testing.testing_utils import (random_quadratic_hamiltonian,
-                                               random_unitary_matrix)
+from openfermion.testing.testing_utils import random_quadratic_hamiltonian, random_unitary_matrix
 
 from openfermion.linalg.givens_rotations import (
-    double_givens_rotate, fermionic_gaussian_decomposition, swap_columns,
-    givens_matrix_elements, givens_rotate, givens_decomposition, swap_rows,
-    givens_decomposition_square)
+    double_givens_rotate,
+    fermionic_gaussian_decomposition,
+    swap_columns,
+    givens_matrix_elements,
+    givens_rotate,
+    givens_decomposition,
+    swap_rows,
+    givens_decomposition_square,
+)
 
 
 class SwapTests(unittest.TestCase):
-
     def test_swap_rows(self):
         A = numpy.array([0, 1])
         swap_rows(A, 0, 1)
@@ -50,20 +54,19 @@ class SwapTests(unittest.TestCase):
 
 
 class GivensMatrixElementsTest(unittest.TestCase):
-
     def setUp(self):
         self.num_test_repetitions = 5
 
     def test_already_zero(self):
         """Test when some entries are already zero."""
         # Test when left entry is zero
-        v = numpy.array([0., numpy.random.randn()])
+        v = numpy.array([0.0, numpy.random.randn()])
         G = givens_matrix_elements(v[0], v[1])
-        self.assertAlmostEqual(G.dot(v)[0], 0.)
+        self.assertAlmostEqual(G.dot(v)[0], 0.0)
         # Test when right entry is zero
-        v = numpy.array([numpy.random.randn(), 0.])
+        v = numpy.array([numpy.random.randn(), 0.0])
         G = givens_matrix_elements(v[0], v[1])
-        self.assertAlmostEqual(G.dot(v)[0], 0.)
+        self.assertAlmostEqual(G.dot(v)[0], 0.0)
 
     def test_real(self):
         """Test that the procedure works for real numbers."""
@@ -71,19 +74,19 @@ class GivensMatrixElementsTest(unittest.TestCase):
             v = numpy.random.randn(2)
             G_left = givens_matrix_elements(v[0], v[1], which='left')
             G_right = givens_matrix_elements(v[0], v[1], which='right')
-            self.assertAlmostEqual(G_left.dot(v)[0], 0.)
-            self.assertAlmostEqual(G_right.dot(v)[1], 0.)
+            self.assertAlmostEqual(G_left.dot(v)[0], 0.0)
+            self.assertAlmostEqual(G_right.dot(v)[1], 0.0)
 
     def test_approximately_real(self):
         """Test that the procedure throws out small imaginary components."""
         for _ in range(self.num_test_repetitions):
-            v = numpy.random.randn(2) + 1.j * 1e-14
+            v = numpy.random.randn(2) + 1.0j * 1e-14
             G_left = givens_matrix_elements(v[0], v[1], which='left')
             G_right = givens_matrix_elements(v[0], v[1], which='right')
             self.assertAlmostEqual(G_left[0, 0], G_left[1, 1])
             self.assertAlmostEqual(G_right[0, 0], G_right[1, 1])
-            self.assertAlmostEqual(G_left.dot(v)[0], 0.)
-            self.assertAlmostEqual(G_right.dot(v)[1], 0.)
+            self.assertAlmostEqual(G_left.dot(v)[0], 0.0)
+            self.assertAlmostEqual(G_right.dot(v)[1], 0.0)
 
     def test_bad_input(self):
         """Test bad input."""
@@ -93,7 +96,6 @@ class GivensMatrixElementsTest(unittest.TestCase):
 
 
 class GivensRotateTest(unittest.TestCase):
-
     def test_bad_input(self):
         """Test bad input."""
         with self.assertRaises(ValueError):
@@ -103,7 +105,6 @@ class GivensRotateTest(unittest.TestCase):
 
 
 class DoubleGivensRotateTest(unittest.TestCase):
-
     def test_odd_dimension(self):
         """Test that it raises an error for odd-dimensional input."""
         A = numpy.random.randn(3, 3)
@@ -124,10 +125,18 @@ class DoubleGivensRotateTest(unittest.TestCase):
 
 
 class GivensDecompositionTest(unittest.TestCase):
-
     def setUp(self):
-        self.test_dimensions = [(3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9),
-                                (4, 7), (4, 8), (4, 9)]
+        self.test_dimensions = [
+            (3, 4),
+            (3, 5),
+            (3, 6),
+            (3, 7),
+            (3, 8),
+            (3, 9),
+            (4, 7),
+            (4, 8),
+            (4, 9),
+        ]
 
     def test_forced_insertion(self):
         Q = numpy.zeros([2, 4])
@@ -156,9 +165,8 @@ class GivensDecompositionTest(unittest.TestCase):
                 for i, j, theta, phi in reversed(parallel_set):
                     c = numpy.cos(theta)
                     s = numpy.sin(theta)
-                    phase = numpy.exp(1.j * phi)
-                    G = numpy.array([[c, -phase * s], [s, phase * c]],
-                                    dtype=complex)
+                    phase = numpy.exp(1.0j * phi)
+                    G = numpy.array([[c, -phase * s], [s, phase * c]], dtype=complex)
                     givens_rotate(combined_givens, G, i, j)
                 U = combined_givens.dot(U)
 
@@ -190,9 +198,8 @@ class GivensDecompositionTest(unittest.TestCase):
                 for i, j, theta, phi in reversed(parallel_set):
                     c = numpy.cos(theta)
                     s = numpy.sin(theta)
-                    phase = numpy.exp(1.j * phi)
-                    G = numpy.array([[c, -phase * s], [s, phase * c]],
-                                    dtype=complex)
+                    phase = numpy.exp(1.0j * phi)
+                    G = numpy.array([[c, -phase * s], [s, phase * c]], dtype=complex)
                     givens_rotate(combined_givens, G, i, j)
                 U = combined_givens.dot(U)
 
@@ -235,14 +242,14 @@ class GivensDecompositionTest(unittest.TestCase):
 
         # The diagonal should be ones
         for d in diagonal:
-            self.assertAlmostEqual(d, 1.)
+            self.assertAlmostEqual(d, 1.0)
 
     def test_antidiagonal(self):
         m, n = (3, 3)
         Q = numpy.zeros((m, n), dtype=complex)
-        Q[0, 2] = 1.
-        Q[1, 1] = 1.
-        Q[2, 0] = 1.
+        Q[0, 2] = 1.0
+        Q[1, 1] = 1.0
+        Q[2, 0] = 1.0
         givens_rotations, V, diagonal = givens_decomposition(Q)
 
         # There should be no Givens rotations
@@ -284,7 +291,6 @@ class GivensDecompositionTest(unittest.TestCase):
 
 
 class FermionicGaussianDecompositionTest(unittest.TestCase):
-
     def setUp(self):
         self.test_dimensions = [3, 4, 5, 6, 7, 8, 9]
 
@@ -294,8 +300,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             quadratic_hamiltonian = random_quadratic_hamiltonian(n)
 
             # Get the diagonalizing transformation
-            _, transformation_matrix, _ = (
-                quadratic_hamiltonian.diagonalizing_bogoliubov_transform())
+            _, transformation_matrix, _ = quadratic_hamiltonian.diagonalizing_bogoliubov_transform()
             left_block = transformation_matrix[:, :n]
             right_block = transformation_matrix[:, n:]
             lower_unitary = numpy.empty((n, 2 * n), dtype=complex)
@@ -303,8 +308,12 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             lower_unitary[:, n:] = numpy.conjugate(left_block)
 
             # Get fermionic Gaussian decomposition of lower_unitary
-            decomposition, left_decomposition, diagonal, left_diagonal = (
-                fermionic_gaussian_decomposition(lower_unitary))
+            (
+                decomposition,
+                left_decomposition,
+                diagonal,
+                left_diagonal,
+            ) = fermionic_gaussian_decomposition(lower_unitary)
 
             # Compute left_unitary
             left_unitary = numpy.eye(n, dtype=complex)
@@ -314,9 +323,8 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
                     i, j, theta, phi = op
                     c = numpy.cos(theta)
                     s = numpy.sin(theta)
-                    phase = numpy.exp(1.j * phi)
-                    givens_rotation = numpy.array(
-                        [[c, -phase * s], [s, phase * c]], dtype=complex)
+                    phase = numpy.exp(1.0j * phi)
+                    givens_rotation = numpy.array([[c, -phase * s], [s, phase * c]], dtype=complex)
                     givens_rotate(combined_op, givens_rotation, i, j)
                 left_unitary = combined_op.dot(left_unitary)
             for i in range(n):
@@ -330,7 +338,7 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             product = left_unitary.dot(lower_unitary)
             for i in range(n - 1):
                 for j in range(n - 1 - i):
-                    self.assertAlmostEqual(product[i, j], 0.)
+                    self.assertAlmostEqual(product[i, j], 0.0)
 
             # Compute right_unitary
             right_unitary = numpy.eye(2 * n, dtype=complex)
@@ -343,15 +351,15 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
                         i, j, theta, phi = op
                         c = numpy.cos(theta)
                         s = numpy.sin(theta)
-                        phase = numpy.exp(1.j * phi)
+                        phase = numpy.exp(1.0j * phi)
                         givens_rotation = numpy.array(
-                            [[c, -phase * s], [s, phase * c]], dtype=complex)
+                            [[c, -phase * s], [s, phase * c]], dtype=complex
+                        )
                         double_givens_rotate(combined_op, givens_rotation, i, j)
                 right_unitary = combined_op.dot(right_unitary)
 
             # Compute left_unitary * lower_unitary * right_unitary^\dagger
-            product = left_unitary.dot(lower_unitary.dot(
-                right_unitary.T.conj()))
+            product = left_unitary.dot(lower_unitary.dot(right_unitary.T.conj()))
 
             # Construct the diagonal matrix
             diag = numpy.zeros((n, 2 * n), dtype=complex)

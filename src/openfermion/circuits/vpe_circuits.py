@@ -16,9 +16,13 @@ import numpy
 import cirq
 
 
-def vpe_single_circuit(qubits: Sequence[cirq.Qid], prep: cirq.Circuit,
-                       evolve: cirq.Circuit, initial_rotation: cirq.Gate,
-                       final_rotation: cirq.Gate) -> cirq.Circuit:
+def vpe_single_circuit(
+    qubits: Sequence[cirq.Qid],
+    prep: cirq.Circuit,
+    evolve: cirq.Circuit,
+    initial_rotation: cirq.Gate,
+    final_rotation: cirq.Gate,
+) -> cirq.Circuit:
     """
     Combines the different parts that make up a VPE circuit
 
@@ -63,12 +67,13 @@ standard_vpe_rotation_set = [
 # yapf: enable
 
 
-def vpe_circuits_single_timestep(qubits: Sequence[cirq.Qid],
-                                 prep: cirq.Circuit,
-                                 evolve: cirq.Circuit,
-                                 target_qubit: cirq.Qid,
-                                 rotation_set: Optional[Sequence] = None
-                                ) -> Sequence[cirq.Circuit]:
+def vpe_circuits_single_timestep(
+    qubits: Sequence[cirq.Qid],
+    prep: cirq.Circuit,
+    evolve: cirq.Circuit,
+    target_qubit: cirq.Qid,
+    rotation_set: Optional[Sequence] = None,
+) -> Sequence[cirq.Circuit]:
     """Prepares the circuits to perform VPE at a fixed time
 
     Puts together the set of pre- and post-rotations to implement
@@ -95,7 +100,9 @@ def vpe_circuits_single_timestep(qubits: Sequence[cirq.Qid],
     if rotation_set is None:
         rotation_set = standard_vpe_rotation_set
     circuits = [
-        vpe_single_circuit(qubits, prep, evolve, rdata[1].on(target_qubit),
-                           rdata[2].on(target_qubit)) for rdata in rotation_set
+        vpe_single_circuit(
+            qubits, prep, evolve, rdata[1].on(target_qubit), rdata[2].on(target_qubit)
+        )
+        for rdata in rotation_set
     ]
     return circuits

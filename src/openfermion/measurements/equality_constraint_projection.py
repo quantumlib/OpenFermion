@@ -50,8 +50,7 @@ def linearize_term(term, n_orbitals):
         q = term[1][0]
         r = term[2][0]
         s = term[3][0]
-        return (1 + n_orbitals**2 + p + q * n_orbitals + r * n_orbitals**2 +
-                s * n_orbitals**3)
+        return 1 + n_orbitals**2 + p + q * n_orbitals + r * n_orbitals**2 + s * n_orbitals**3
 
 
 def unlinearize_term(index, n_orbitals):
@@ -66,8 +65,8 @@ def unlinearize_term(index, n_orbitals):
     """
     # Handle identity term.
     if not index:
-        return (())
-    elif (0 < index < 1 + n_orbitals**2):
+        return ()
+    elif 0 < index < 1 + n_orbitals**2:
         # Handle one-body terms.
         shift = 1
         new_index = index - shift
@@ -82,9 +81,8 @@ def unlinearize_term(index, n_orbitals):
         s = new_index // n_orbitals**3
         r = (new_index - s * n_orbitals**3) // n_orbitals**2
         q = (new_index - s * n_orbitals**3 - r * n_orbitals**2) // n_orbitals
-        p = (new_index - q * n_orbitals - r * n_orbitals**2 - s * n_orbitals**3)
-        assert index == (shift + p + q * n_orbitals + r * n_orbitals**2 +
-                         s * n_orbitals**3)
+        p = new_index - q * n_orbitals - r * n_orbitals**2 - s * n_orbitals**3
+        assert index == (shift + p + q * n_orbitals + r * n_orbitals**2 + s * n_orbitals**3)
         return ((p, 1), (q, 1), (r, 0), (s, 0))
 
 
@@ -172,13 +170,13 @@ def apply_constraints(operator, n_fermions):
 
     # Get vectorized operator.
     vectorized_operator = operator_to_vector(operator)
-    initial_bound = numpy.sum(numpy.absolute(vectorized_operator[1::]))**2
+    initial_bound = numpy.sum(numpy.absolute(vectorized_operator[1::])) ** 2
     print('Initial bound on measurements is %f.' % initial_bound)
 
     # Get linear programming coefficient vector.
     n_variables = n_constraints + n_terms
     lp_vector = numpy.zeros(n_variables, float)
-    lp_vector[-n_terms:] = 1.
+    lp_vector[-n_terms:] = 1.0
 
     # Get linear programming constraint matrix.
     lp_constraint_matrix = scipy.sparse.dok_matrix((2 * n_terms, n_variables))
@@ -187,8 +185,8 @@ def apply_constraints(operator, n_fermions):
             lp_constraint_matrix[j, i] = value
             lp_constraint_matrix[n_terms + j, i] = -value
     for i in range(n_terms):
-        lp_constraint_matrix[i, n_constraints + i] = -1.
-        lp_constraint_matrix[n_terms + i, n_constraints + i] = -1.
+        lp_constraint_matrix[i, n_constraints + i] = -1.0
+        lp_constraint_matrix[n_terms + i, n_constraints + i] = -1.0
 
     # Get linear programming constraint vector.
     lp_constraint_vector = numpy.zeros(2 * n_terms, float)
@@ -199,22 +197,24 @@ def apply_constraints(operator, n_fermions):
     print('Starting linear programming.')
     options = {'maxiter': int(1e6)}
     bound = n_constraints * [(None, None)] + n_terms * [(0, None)]
-    solution = scipy.optimize.linprog(c=lp_vector,
-                                      A_ub=lp_constraint_matrix.toarray(),
-                                      b_ub=lp_constraint_vector,
-                                      bounds=bound,
-                                      options=options)
+    solution = scipy.optimize.linprog(
+        c=lp_vector,
+        A_ub=lp_constraint_matrix.toarray(),
+        b_ub=lp_constraint_vector,
+        bounds=bound,
+        options=options,
+    )
 
     # Analyze results.
     print(solution['message'])
     assert solution['success']
     solution_vector = solution['x']
-    solution['fun']**2
+    solution['fun'] ** 2
     print('Program terminated after %i iterations.' % solution['nit'])
 
     # Alternative bound.
     residuals = solution_vector[-n_terms:]
-    alternative_bound = numpy.sum(numpy.absolute(residuals[1::]))**2
+    alternative_bound = numpy.sum(numpy.absolute(residuals[1::])) ** 2
     print('Bound implied by solution vector is %f.' % alternative_bound)
 
     # Make sure residuals are positive.
@@ -223,12 +223,10 @@ def apply_constraints(operator, n_fermions):
 
     # Get bound on updated Hamiltonian.
     weights = solution_vector[:n_constraints]
-    final_vectorized_operator = (vectorized_operator -
-                                 constraints.transpose() * weights)
-    final_bound = numpy.sum(numpy.absolute(final_vectorized_operator[1::]))**2
+    final_vectorized_operator = vectorized_operator - constraints.transpose() * weights
+    final_bound = numpy.sum(numpy.absolute(final_vectorized_operator[1::])) ** 2
     print('Actual bound determined is %f.' % final_bound)
 
     # Return modified operator.
-    modified_operator = vector_to_operator(final_vectorized_operator,
-                                           n_orbitals)
-    return (modified_operator + hermitian_conjugated(modified_operator)) / 2.
+    modified_operator = vector_to_operator(final_vectorized_operator, n_orbitals)
+    return (modified_operator + hermitian_conjugated(modified_operator)) / 2.0

@@ -7,9 +7,8 @@ from numpy.lib.scimath import arccos, arcsin  # has analytc continuation to cplx
 from openfermion.resource_estimates.utils import QI, power_two
 
 
-def cost_sparse(n: int, lam: float, d: int, dE: float, chi: int,
-                stps: int) -> Tuple[int, int, int]:
-    """ Determine fault-tolerant costs using sparse decomposition in quantum
+def cost_sparse(n: int, lam: float, d: int, dE: float, chi: int, stps: int) -> Tuple[int, int, int]:
+    """Determine fault-tolerant costs using sparse decomposition in quantum
         chemistry
 
     Args:
@@ -48,11 +47,28 @@ def cost_sparse(n: int, lam: float, d: int, dE: float, chi: int,
 
     for p in range(2, 22):
         # JJG note: arccos arg may be > 1
-        v = np.round(np.power(2,p+1) / (2 * np.pi) * arccos(np.power(2,nM) /\
-            np.sqrt(d/2**eta)/2))
-        oh[p-2] = np.real(stps * (1 / (np.sin(3 * arcsin(np.cos(v * 2 * np.pi /\
-            np.power(2,p+1)) * \
-            np.sqrt(d/2**eta) / np.power(2,nM)))**2) - 1) + 4 * (p + 1))
+        v = np.round(
+            np.power(2, p + 1) / (2 * np.pi) * arccos(np.power(2, nM) / np.sqrt(d / 2**eta) / 2)
+        )
+        oh[p - 2] = np.real(
+            stps
+            * (
+                1
+                / (
+                    np.sin(
+                        3
+                        * arcsin(
+                            np.cos(v * 2 * np.pi / np.power(2, p + 1))
+                            * np.sqrt(d / 2**eta)
+                            / np.power(2, nM)
+                        )
+                    )
+                    ** 2
+                )
+                - 1
+            )
+            + 4 * (p + 1)
+        )
 
     # Bits of precision for rotation
     br = int(np.argmin(oh) + 1) + 2
@@ -61,8 +77,18 @@ def cost_sparse(n: int, lam: float, d: int, dE: float, chi: int,
     k1 = 32
 
     # Equation (A17)
-    cost = np.ceil(d/k1) + m * (k1 -1) + QI(d)[1] + 4 * n + 8 * nN + 2 * chi + \
-        7 * np.ceil(np.log2(d)) - 6 * eta + 4 * br - 19
+    cost = (
+        np.ceil(d / k1)
+        + m * (k1 - 1)
+        + QI(d)[1]
+        + 4 * n
+        + 8 * nN
+        + 2 * chi
+        + 7 * np.ceil(np.log2(d))
+        - 6 * eta
+        + 4 * br
+        - 19
+    )
 
     # Number of iterations needed for the phase estimation.
     iters = np.ceil(np.pi * lam / (dE * 2))

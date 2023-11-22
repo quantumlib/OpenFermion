@@ -17,8 +17,7 @@ import numpy.typing as npt
 from pyscf.pbc import scf
 from pyscf.pbc.lib.kpts_helper import unique, member
 
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    build_momentum_transfer_mapping,)
+from openfermion.resource_estimates.pbc.hamiltonian import build_momentum_transfer_mapping
 
 from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
     build_g_vector_mappings_double_translation,
@@ -29,13 +28,12 @@ from openfermion.resource_estimates.pbc.thc.factorizations.isdf import (
 
 
 class KPTHCDoubleTranslation:
-
     def __init__(
-            self,
-            chi: npt.NDArray,
-            zeta: npt.NDArray,
-            kmf: scf.HF,
-            chol: Union[npt.NDArray, None] = None,
+        self,
+        chi: npt.NDArray,
+        zeta: npt.NDArray,
+        kmf: scf.HF,
+        chol: Union[npt.NDArray, None] = None,
     ):
         """Class for constructing THC factorized ERIs.
 
@@ -56,17 +54,16 @@ class KPTHCDoubleTranslation:
         self.kmf = kmf
         self.nk = len(self.kmf.kpts)
         self.kpts = self.kmf.kpts
-        self.k_transfer_map = build_momentum_transfer_mapping(
-            self.kmf.cell, self.kmf.kpts)
-        self.reverse_k_transfer_map = np.zeros_like(
-            self.k_transfer_map)  # [kidx, kmq_idx] = qidx
+        self.k_transfer_map = build_momentum_transfer_mapping(self.kmf.cell, self.kmf.kpts)
+        self.reverse_k_transfer_map = np.zeros_like(self.k_transfer_map)  # [kidx, kmq_idx] = qidx
         for kidx in range(self.nk):
             for qidx in range(self.nk):
                 kmq_idx = self.k_transfer_map[qidx, kidx]
                 self.reverse_k_transfer_map[kidx, kmq_idx] = qidx
         # Two-translation ISDF zeta[iq, dG, dG']
         _, _, g_map_unique, _ = build_g_vector_mappings_double_translation(
-            self.kmf.cell, self.kmf.kpts, self.k_transfer_map)
+            self.kmf.cell, self.kmf.kpts, self.k_transfer_map
+        )
         self.g_mapping = g_map_unique
         self.chol = chol
 
@@ -87,8 +84,7 @@ class KPTHCDoubleTranslation:
         """
         ikp, ikq, _, _ = ikpts
         q_indx = self.reverse_k_transfer_map[ikp, ikq]
-        return build_eri_isdf_double_translation(self.chi, self.zeta, q_indx,
-                                                 ikpts, self.g_mapping)
+        return build_eri_isdf_double_translation(self.chi, self.zeta, q_indx, ikpts, self.g_mapping)
 
     def get_eri_exact(self, kpts: list) -> npt.NDArray:
         """Construct (pkp qkq| rkr sks) exactly from cholesky factors.
@@ -103,10 +99,7 @@ class KPTHCDoubleTranslation:
         ikp, ikq, ikr, iks = kpts
         if self.chol is not None:
             return np.einsum(
-                "npq,nsr->pqrs",
-                self.chol[ikp, ikq],
-                self.chol[iks, ikr].conj(),
-                optimize=True,
+                "npq,nsr->pqrs", self.chol[ikp, ikq], self.chol[iks, ikr].conj(), optimize=True
             )
         else:
             eri_kpt = self.kmf.with_df.ao2mo(
@@ -114,21 +107,13 @@ class KPTHCDoubleTranslation:
                 [self.kmf.kpts[i] for i in (ikp, ikq, ikr, iks)],
                 compact=False,
             )
-            shape_pqrs = [
-                self.kmf.mo_coeff[i].shape[-1] for i in (ikp, ikq, ikr, iks)
-            ]
+            shape_pqrs = [self.kmf.mo_coeff[i].shape[-1] for i in (ikp, ikq, ikr, iks)]
             eri_kpt = eri_kpt.reshape(shape_pqrs)
         return eri_kpt
 
 
 class KPTHCSingleTranslation(KPTHCDoubleTranslation):
-
-    def __init__(
-            self,
-            chi: npt.NDArray,
-            zeta: npt.NDArray,
-            kmf: scf.HF,
-    ):
+    def __init__(self, chi: npt.NDArray, zeta: npt.NDArray, kmf: scf.HF):
         """Class for constructing THC factorized ERIs.
 
         Assumes one delta G (i.e. a single translation vector.)
@@ -147,21 +132,17 @@ class KPTHCSingleTranslation(KPTHCDoubleTranslation):
         # one-translation ISDF zeta[iq, dG]
         num_kpts = len(self.kmf.kpts)
         kpts = self.kmf.kpts
-        kpts_pq = np.array([(kp, kpts[ikq])
-                            for ikp, kp in enumerate(kpts)
-                            for ikq in range(num_kpts)])
-        kpts_pq_indx = np.array([
-            (ikp, ikq) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)
-        ])
+        kpts_pq = np.array(
+            [(kp, kpts[ikq]) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)]
+        )
+        kpts_pq_indx = np.array(
+            [(ikp, ikq) for ikp, kp in enumerate(kpts) for ikq in range(num_kpts)]
+        )
         transfers = kpts_pq[:, 0] - kpts_pq[:, 1]
         _, unique_indx, _ = unique(transfers)
-        (
-            _,
-            _,
-            g_map_unique,
-            _,
-        ) = build_g_vector_mappings_single_translation(
-            kmf.cell, kpts, kpts_pq_indx[unique_indx])
+        (_, _, g_map_unique, _) = build_g_vector_mappings_single_translation(
+            kmf.cell, kpts, kpts_pq_indx[unique_indx]
+        )
         self.g_mapping = g_map_unique
         self.momentum_transfers = transfers[unique_indx]
 
@@ -185,8 +166,7 @@ class KPTHCSingleTranslation(KPTHCDoubleTranslation):
         ikp, ikq, _, _ = ikpts
         mom_transfer = self.kpts[ikp] - self.kpts[ikq]
         q_indx = member(mom_transfer, self.momentum_transfers)[0]
-        return build_eri_isdf_single_translation(self.chi, self.zeta, q_indx,
-                                                 ikpts, self.g_mapping)
+        return build_eri_isdf_single_translation(self.chi, self.zeta, q_indx, ikpts, self.g_mapping)
 
     def get_eri_exact(self, kpts):
         """Construct (pkp qkq| rkr sks) exactly from cholesky factors.
@@ -201,10 +181,7 @@ class KPTHCSingleTranslation(KPTHCDoubleTranslation):
         ikp, ikq, ikr, iks = kpts
         if self.chol is not None:
             return np.einsum(
-                "npq,nsr->pqrs",
-                self.chol[ikp, ikq],
-                self.chol[iks, ikr].conj(),
-                optimize=True,
+                "npq,nsr->pqrs", self.chol[ikp, ikq], self.chol[iks, ikr].conj(), optimize=True
             )
         else:
             eri_kpt = self.kmf.with_df.ao2mo(
@@ -212,8 +189,6 @@ class KPTHCSingleTranslation(KPTHCDoubleTranslation):
                 [self.kmf.kpts[i] for i in (ikp, ikq, ikr, iks)],
                 compact=False,
             )
-            shape_pqrs = [
-                self.kmf.mo_coeff[i].shape[-1] for i in (ikp, ikq, ikr, iks)
-            ]
+            shape_pqrs = [self.kmf.mo_coeff[i].shape[-1] for i in (ikp, ikq, ikr, iks)]
             eri_kpt = eri_kpt.reshape(shape_pqrs)
         return eri_kpt

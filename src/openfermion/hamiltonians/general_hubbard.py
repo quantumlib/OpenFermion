@@ -15,34 +15,35 @@
 from collections import namedtuple
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.utils import (SpinPairs, Spin)
+from openfermion.utils import SpinPairs, Spin
 
-TunnelingParameter = namedtuple('TunnelingParameter',
-                                ('edge_type', 'dofs', 'coefficient'))
+TunnelingParameter = namedtuple('TunnelingParameter', ('edge_type', 'dofs', 'coefficient'))
 InteractionParameter = namedtuple(
-    'InteractionParameter', ('edge_type', 'dofs', 'coefficient', 'spin_pairs'))
+    'InteractionParameter', ('edge_type', 'dofs', 'coefficient', 'spin_pairs')
+)
 PotentialParameter = namedtuple('PotentialParameter', ('dof', 'coefficient'))
 
 
-def number_operator(i, coefficient=1., particle_hole_symmetry=False):
+def number_operator(i, coefficient=1.0, particle_hole_symmetry=False):
     op = FermionOperator(((i, 1), (i, 0)), coefficient)
     if particle_hole_symmetry:
         op -= FermionOperator((), 0.5)
     return op
 
 
-def interaction_operator(i, j, coefficient=1., particle_hole_symmetry=False):
-    return (number_operator(
-        i, coefficient, particle_hole_symmetry=particle_hole_symmetry) *
-            number_operator(j, particle_hole_symmetry=particle_hole_symmetry))
+def interaction_operator(i, j, coefficient=1.0, particle_hole_symmetry=False):
+    return number_operator(
+        i, coefficient, particle_hole_symmetry=particle_hole_symmetry
+    ) * number_operator(j, particle_hole_symmetry=particle_hole_symmetry)
 
 
-def tunneling_operator(i, j, coefficient=1.):
-    return (FermionOperator(((i, 1), (j, 0)), coefficient) + FermionOperator(
-        ((j, 1), (i, 0)), coefficient.conjugate()))
+def tunneling_operator(i, j, coefficient=1.0):
+    return FermionOperator(((i, 1), (j, 0)), coefficient) + FermionOperator(
+        ((j, 1), (i, 0)), coefficient.conjugate()
+    )
 
 
-def number_difference_operator(i, j, coefficient=1.):
+def number_difference_operator(i, j, coefficient=1.0):
     return number_operator(i, coefficient) - number_operator(j, coefficient)
 
 
@@ -160,13 +161,15 @@ class FermiHubbardModel:
         \end{align}
     """
 
-    def __init__(self,
-                 lattice,
-                 tunneling_parameters=None,
-                 interaction_parameters=None,
-                 potential_parameters=None,
-                 magnetic_field=0.,
-                 particle_hole_symmetry=False):
+    def __init__(
+        self,
+        lattice,
+        tunneling_parameters=None,
+        interaction_parameters=None,
+        potential_parameters=None,
+        magnetic_field=0.0,
+        particle_hole_symmetry=False,
+    ):
         r"""A Hubbard model defined on a lattice.
 
         Args:
@@ -258,12 +261,9 @@ class FermiHubbardModel:
 
         self.lattice = lattice
 
-        self.tunneling_parameters = self.parse_tunneling_parameters(
-            tunneling_parameters)
-        self.interaction_parameters = self.parse_interaction_parameters(
-            interaction_parameters)
-        self.potential_parameters = self.parse_potential_parameters(
-            potential_parameters)
+        self.tunneling_parameters = self.parse_tunneling_parameters(tunneling_parameters)
+        self.interaction_parameters = self.parse_interaction_parameters(interaction_parameters)
+        self.potential_parameters = self.parse_potential_parameters(potential_parameters)
         self.magnetic_field = magnetic_field
         self.particle_hole_symmetry = particle_hole_symmetry
 
@@ -275,10 +275,13 @@ class FermiHubbardModel:
             parameter = TunnelingParameter(*parameter)
             self.lattice.validate_edge_type(parameter.edge_type)
             self.lattice.validate_dofs(parameter.dofs, 2)
-            if ((parameter.edge_type in self.lattice.onsite_edge_types) and
-                (len(set(parameter.dofs)) == 1)):
-                raise ValueError('Invalid onsite tunneling parameter between '
-                                 'same dof {}.'.format(parameter.dofs))
+            if (parameter.edge_type in self.lattice.onsite_edge_types) and (
+                len(set(parameter.dofs)) == 1
+            ):
+                raise ValueError(
+                    'Invalid onsite tunneling parameter between '
+                    'same dof {}.'.format(parameter.dofs)
+                )
             parsed_parameters.append(parameter)
         return parsed_parameters
 
@@ -289,18 +292,19 @@ class FermiHubbardModel:
         for parameter in parameters:
             if len(parameter) not in (3, 4):
                 raise ValueError('len(parameter) not in (3, 4)')
-            spin_pairs = (SpinPairs.ALL
-                          if len(parameter) < 4 else parameter[-1])
-            parameter = InteractionParameter(*parameter[:3],
-                                             spin_pairs=spin_pairs)
+            spin_pairs = SpinPairs.ALL if len(parameter) < 4 else parameter[-1]
+            parameter = InteractionParameter(*parameter[:3], spin_pairs=spin_pairs)
             self.lattice.validate_edge_type(parameter.edge_type)
             self.lattice.validate_dofs(parameter.dofs, 2)
-            if ((len(set(parameter.dofs)) == 1) and
-                (parameter.edge_type in self.lattice.onsite_edge_types) and
-                (parameter.spin_pairs == SpinPairs.SAME)):
+            if (
+                (len(set(parameter.dofs)) == 1)
+                and (parameter.edge_type in self.lattice.onsite_edge_types)
+                and (parameter.spin_pairs == SpinPairs.SAME)
+            ):
                 raise ValueError(
-                    'Parameter {} specifies '.format(parameter) +
-                    'invalid interaction between spin orbital and itself.')
+                    'Parameter {} specifies '.format(parameter)
+                    + 'invalid interaction between spin orbital and itself.'
+                )
             parsed_parameters.append(parameter)
         return parsed_parameters
 
@@ -333,15 +337,14 @@ class FermiHubbardModel:
             for r, rr in self.lattice.site_pairs_iter(param.edge_type, a != aa):
                 same_spatial_orbital = (a, r) == (aa, rr)
                 for s, ss in self.lattice.spin_pairs_iter(
-                        SpinPairs.DIFF if same_spatial_orbital else
-                        param.spin_pairs, not same_spatial_orbital):
+                    SpinPairs.DIFF if same_spatial_orbital else param.spin_pairs,
+                    not same_spatial_orbital,
+                ):
                     i = self.lattice.to_spin_orbital_index(r, a, s)
                     j = self.lattice.to_spin_orbital_index(rr, aa, ss)
                     terms += interaction_operator(
-                        i,
-                        j,
-                        param.coefficient,
-                        particle_hole_symmetry=self.particle_hole_symmetry)
+                        i, j, param.coefficient, particle_hole_symmetry=self.particle_hole_symmetry
+                    )
         return terms
 
     def potential_terms(self):
@@ -349,12 +352,10 @@ class FermiHubbardModel:
         for param in self.potential_parameters:
             for site_index in self.lattice.site_indices:
                 for spin_index in self.lattice.spin_indices:
-                    i = self.lattice.to_spin_orbital_index(
-                        site_index, param.dof, spin_index)
+                    i = self.lattice.to_spin_orbital_index(site_index, param.dof, spin_index)
                     terms += number_operator(
-                        i,
-                        -param.coefficient,
-                        particle_hole_symmetry=self.particle_hole_symmetry)
+                        i, -param.coefficient, particle_hole_symmetry=self.particle_hole_symmetry
+                    )
         return terms
 
     def field_terms(self):
@@ -364,11 +365,14 @@ class FermiHubbardModel:
         for site_index in self.lattice.site_indices:
             for dof in self.lattice.dof_indices:
                 i = self.lattice.to_spin_orbital_index(site_index, dof, Spin.UP)
-                j = self.lattice.to_spin_orbital_index(site_index, dof,
-                                                       Spin.DOWN)
+                j = self.lattice.to_spin_orbital_index(site_index, dof, Spin.DOWN)
                 terms += number_difference_operator(i, j, -self.magnetic_field)
         return terms
 
     def hamiltonian(self):
-        return (self.tunneling_terms() + self.interaction_terms() +
-                self.potential_terms() + self.field_terms())
+        return (
+            self.tunneling_terms()
+            + self.interaction_terms()
+            + self.potential_terms()
+            + self.field_terms()
+        )

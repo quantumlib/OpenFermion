@@ -8,8 +8,9 @@ from openfermion.utils.rdm_mapping_functions import kronecker_delta as kdelta
 from openfermion.utils.rdm_mapping_functions import map_two_pdm_to_one_pdm
 
 
-def erpa_eom_hamiltonian(h_ijkl: numpy.ndarray, tpdm: numpy.ndarray, p: int,
-                         q: int, r: int, s: int) -> Union[float, complex]:
+def erpa_eom_hamiltonian(
+    h_ijkl: numpy.ndarray, tpdm: numpy.ndarray, p: int, q: int, r: int, s: int
+) -> Union[float, complex]:
     """
     Evaluate sum_{a,b,c,d}h_{a, b, d, c}<psi[p^ q, [a^ b^ c d, r^ s]]psi>
 
@@ -77,8 +78,9 @@ def erpa_eom_hamiltonian(h_ijkl: numpy.ndarray, tpdm: numpy.ndarray, p: int,
     return h_mat
 
 
-def singlet_erpa(tpdm: numpy.ndarray, h_ijkl: numpy.ndarray) \
-        -> Tuple[numpy.ndarray, numpy.ndarray, Dict]:
+def singlet_erpa(
+    tpdm: numpy.ndarray, h_ijkl: numpy.ndarray
+) -> Tuple[numpy.ndarray, numpy.ndarray, Dict]:
     """
     Generate the singlet ERPA equations
 
@@ -113,19 +115,24 @@ def singlet_erpa(tpdm: numpy.ndarray, h_ijkl: numpy.ndarray) \
         for ckey, cidx in full_basis.items():
             r, s = ckey
             for sigma, tau in product([0, 1], repeat=2):
-                erpa_mat[ridx, cidx] += 0.5 * erpa_eom_hamiltonian(
-                    permuted_hijkl, tpdm, 2 * q + sigma, 2 * p + sigma,
-                    2 * r + tau, 2 * s + tau).real
-                metric_mat[ridx, cidx] += 0.5 * (
-                    opdm[2 * q + sigma, 2 * s + tau] *
-                    kdelta(2 * r + tau, 2 * p + sigma) -
-                    opdm[2 * p + sigma, 2 * r + tau] *
-                    kdelta(2 * q + sigma, 2 * s + tau)).real
+                erpa_mat[ridx, cidx] += (
+                    0.5
+                    * erpa_eom_hamiltonian(
+                        permuted_hijkl, tpdm, 2 * q + sigma, 2 * p + sigma, 2 * r + tau, 2 * s + tau
+                    ).real
+                )
+                metric_mat[ridx, cidx] += (
+                    0.5
+                    * (
+                        opdm[2 * q + sigma, 2 * s + tau] * kdelta(2 * r + tau, 2 * p + sigma)
+                        - opdm[2 * p + sigma, 2 * r + tau] * kdelta(2 * q + sigma, 2 * s + tau)
+                    ).real
+                )
 
     # The metric is hermetian and can be diagonalized
     # this allows us to project into the non-zero eigenvalue space
     ws, vs = numpy.linalg.eigh(metric_mat)
-    non_zero_idx = numpy.where(numpy.abs(ws) > 1.0E-8)[0]
+    non_zero_idx = numpy.where(numpy.abs(ws) > 1.0e-8)[0]
     left_mat = vs[:, non_zero_idx].T @ erpa_mat @ vs[:, non_zero_idx]
     right_mat = vs[:, non_zero_idx].T @ metric_mat @ vs[:, non_zero_idx]
 
@@ -134,11 +141,10 @@ def singlet_erpa(tpdm: numpy.ndarray, h_ijkl: numpy.ndarray) \
 
     # the spectrum is symmetric (-w, w)
     # find the positive spectrum eigensystem and return
-    real_eig_idx = numpy.where(numpy.abs(w.imag) < 1.0E-8)[0]
+    real_eig_idx = numpy.where(numpy.abs(w.imag) < 1.0e-8)[0]
     real_eigs = w[real_eig_idx]
     real_eig_vecs = v[:, real_eig_idx]
     reverse_projected_eig_vecs = vs[:, non_zero_idx] @ real_eig_vecs
     pos_indices = numpy.where(real_eigs > 0)[0]
     pos_indices = pos_indices[numpy.argsort(real_eigs[pos_indices])]
-    return real_eigs[pos_indices], reverse_projected_eig_vecs[:, pos_indices], \
-           full_basis
+    return real_eigs[pos_indices], reverse_projected_eig_vecs[:, pos_indices], full_basis

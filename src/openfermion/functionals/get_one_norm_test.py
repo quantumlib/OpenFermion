@@ -13,9 +13,14 @@
 
 import os
 import pytest
-from openfermion import (get_one_norm_mol, get_one_norm_mol_woconst,
-                         get_one_norm_int, get_one_norm_int_woconst,
-                         MolecularData, jordan_wigner)
+from openfermion import (
+    get_one_norm_mol,
+    get_one_norm_mol_woconst,
+    get_one_norm_int,
+    get_one_norm_int_woconst,
+    MolecularData,
+    jordan_wigner,
+)
 from openfermion.config import DATA_DIRECTORY
 
 filename = os.path.join(DATA_DIRECTORY, "H1-Li1_sto-3g_singlet_1.45.hdf5")
@@ -25,23 +30,20 @@ qubit_hamiltonian = jordan_wigner(molecular_hamiltonian)
 
 
 def test_one_norm_from_molecule():
-    assert qubit_hamiltonian.induced_norm() == pytest.approx(
-        get_one_norm_mol(molecule))
+    assert qubit_hamiltonian.induced_norm() == pytest.approx(get_one_norm_mol(molecule))
 
 
 def test_one_norm_from_ints():
     assert qubit_hamiltonian.induced_norm() == pytest.approx(
         get_one_norm_int(
-            molecule.nuclear_repulsion,
-            molecule.one_body_integrals,
-            molecule.two_body_integrals,
-        ))
+            molecule.nuclear_repulsion, molecule.one_body_integrals, molecule.two_body_integrals
+        )
+    )
 
 
 def test_one_norm_woconst():
-    one_norm_woconst = (qubit_hamiltonian.induced_norm() -
-                        abs(qubit_hamiltonian.constant))
+    one_norm_woconst = qubit_hamiltonian.induced_norm() - abs(qubit_hamiltonian.constant)
     assert one_norm_woconst == pytest.approx(get_one_norm_mol_woconst(molecule))
     assert one_norm_woconst == pytest.approx(
-        get_one_norm_int_woconst(molecule.one_body_integrals,
-                                 molecule.two_body_integrals))
+        get_one_norm_int_woconst(molecule.one_body_integrals, molecule.two_body_integrals)
+    )

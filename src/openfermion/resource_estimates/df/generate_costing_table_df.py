@@ -1,21 +1,22 @@
-#coverage:ignore
+# coverage:ignore
 """ Pretty-print a table comparing DF vector thresh vs accuracy and cost """
 import numpy as np
 from pyscf import scf
 from openfermion.resource_estimates import df
-from openfermion.resource_estimates.molecule import (factorized_ccsd_t,
-                                                     cas_to_pyscf, pyscf_to_cas)
+from openfermion.resource_estimates.molecule import factorized_ccsd_t, cas_to_pyscf, pyscf_to_cas
 
 
-def generate_costing_table(pyscf_mf,
-                           name='molecule',
-                           thresh_range=None,
-                           dE=0.001,
-                           chi=10,
-                           beta=20,
-                           use_kernel=True,
-                           no_triples=False):
-    """ Print a table to file for testing how various DF thresholds impact cost,
+def generate_costing_table(
+    pyscf_mf,
+    name='molecule',
+    thresh_range=None,
+    dE=0.001,
+    chi=10,
+    beta=20,
+    use_kernel=True,
+    no_triples=False,
+):
+    """Print a table to file for testing how various DF thresholds impact cost,
         accuracy, etc.
 
     Args:
@@ -62,80 +63,80 @@ def generate_costing_table(pyscf_mf,
         _, pyscf_mf = cas_to_pyscf(*pyscf_to_cas(pyscf_mf))
 
     # Reference calculation (eri_rr= None is full rank / exact ERIs)
-    escf, ecor, etot = factorized_ccsd_t(pyscf_mf,
-                                         eri_rr=None,
-                                         use_kernel=use_kernel,
-                                         no_triples=no_triples)
+    escf, ecor, etot = factorized_ccsd_t(
+        pyscf_mf, eri_rr=None, use_kernel=use_kernel, no_triples=no_triples
+    )
 
-    #exact_ecor = ecor
+    # exact_ecor = ecor
     exact_etot = etot
 
     filename = 'double_factorization_' + name + '.txt'
 
     with open(filename, 'w') as f:
-        print("\n Double low rank factorization data for '" + name + "'.",
-              file=f)
+        print("\n Double low rank factorization data for '" + name + "'.", file=f)
         print("    [*] using " + cas_info, file=f)
         print("        [+]                      E(SCF): %18.8f" % escf, file=f)
         if no_triples:
-            print("        [+]    Active space CCSD E(cor): %18.8f" % ecor,
-                  file=f)
-            print("        [+]    Active space CCSD E(tot): %18.8f" % etot,
-                  file=f)
+            print("        [+]    Active space CCSD E(cor): %18.8f" % ecor, file=f)
+            print("        [+]    Active space CCSD E(tot): %18.8f" % etot, file=f)
         else:
-            print("        [+] Active space CCSD(T) E(cor): %18.8f" % ecor,
-                  file=f)
-            print("        [+] Active space CCSD(T) E(tot): %18.8f" % etot,
-                  file=f)
+            print("        [+] Active space CCSD(T) E(cor): %18.8f" % ecor, file=f)
+            print("        [+] Active space CCSD(T) E(tot): %18.8f" % etot, file=f)
         print("{}".format('=' * 139), file=f)
         if no_triples:
-            print("{:^12} {:^18} {:^12} {:^12} {:^12} {:^24} {:^20} {:^20}".
-                  format('threshold', '||ERI - DF||', 'L', 'eigenvectors',
-                         'lambda', 'CCSD error (mEh)', 'logical qubits',
-                         'Toffoli count'),
-                  file=f)
+            print(
+                "{:^12} {:^18} {:^12} {:^12} {:^12} {:^24} {:^20} {:^20}".format(
+                    'threshold',
+                    '||ERI - DF||',
+                    'L',
+                    'eigenvectors',
+                    'lambda',
+                    'CCSD error (mEh)',
+                    'logical qubits',
+                    'Toffoli count',
+                ),
+                file=f,
+            )
         else:
-            print("{:^12} {:^18} {:^12} {:^12} {:^12} {:^24} {:^20} {:^20}".
-                  format('threshold', '||ERI - DF||', 'L', 'eigenvectors',
-                         'lambda', 'CCSD(T) error (mEh)', 'logical qubits',
-                         'Toffoli count'),
-                  file=f)
+            print(
+                "{:^12} {:^18} {:^12} {:^12} {:^12} {:^24} {:^20} {:^20}".format(
+                    'threshold',
+                    '||ERI - DF||',
+                    'L',
+                    'eigenvectors',
+                    'lambda',
+                    'CCSD(T) error (mEh)',
+                    'logical qubits',
+                    'Toffoli count',
+                ),
+                file=f,
+            )
         print("{}".format('-' * 139), file=f)
     for thresh in thresh_range:
         # First, up: lambda and CCSD(T)
         eri_rr, LR, L, Lxi = df.factorize(pyscf_mf._eri, thresh=thresh)
         lam = df.compute_lambda(pyscf_mf, LR)
-        escf, ecor, etot = factorized_ccsd_t(pyscf_mf,
-                                             eri_rr,
-                                             use_kernel=use_kernel,
-                                             no_triples=no_triples)
-        error = (etot - exact_etot) * 1E3  # to mEh
-        l2_norm_error_eri = np.linalg.norm(
-            eri_rr - pyscf_mf._eri)  # ERI reconstruction error
+        escf, ecor, etot = factorized_ccsd_t(
+            pyscf_mf, eri_rr, use_kernel=use_kernel, no_triples=no_triples
+        )
+        error = (etot - exact_etot) * 1e3  # to mEh
+        l2_norm_error_eri = np.linalg.norm(eri_rr - pyscf_mf._eri)  # ERI reconstruction error
 
         # now do costing
-        stps1 = df.compute_cost(num_spinorb,
-                                lam,
-                                DE,
-                                L=L,
-                                Lxi=Lxi,
-                                chi=CHI,
-                                beta=BETA,
-                                stps=20000)[0]
-        _, df_total_cost, df_logical_qubits = df.compute_cost(num_spinorb,
-                                                              lam,
-                                                              DE,
-                                                              L=L,
-                                                              Lxi=Lxi,
-                                                              chi=CHI,
-                                                              beta=BETA,
-                                                              stps=stps1)
+        stps1 = df.compute_cost(num_spinorb, lam, DE, L=L, Lxi=Lxi, chi=CHI, beta=BETA, stps=20000)[
+            0
+        ]
+        _, df_total_cost, df_logical_qubits = df.compute_cost(
+            num_spinorb, lam, DE, L=L, Lxi=Lxi, chi=CHI, beta=BETA, stps=stps1
+        )
 
         with open(filename, 'a') as f:
             print(
                 "{:^12.6f} {:^18.4e} {:^12} {:^12} {:^12.1f} {:^24.2f} {:^20} \
-                 {:^20.1e}".format(thresh, l2_norm_error_eri, L, Lxi, lam,
-                                   error, df_logical_qubits, df_total_cost),
-                file=f)
+                 {:^20.1e}".format(
+                    thresh, l2_norm_error_eri, L, Lxi, lam, error, df_logical_qubits, df_total_cost
+                ),
+                file=f,
+            )
     with open(filename, 'a') as f:
         print("{}".format('=' * 139), file=f)

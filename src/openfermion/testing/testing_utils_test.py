@@ -20,17 +20,22 @@ from openfermion.ops.operators import QubitOperator
 from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.utils import count_qubits, is_hermitian
 from openfermion.testing.testing_utils import (
-    EqualsTester, haar_random_vector, random_antisymmetric_matrix,
-    random_diagonal_coulomb_hamiltonian, random_hermitian_matrix,
-    random_interaction_operator, random_quadratic_hamiltonian,
-    random_qubit_operator, random_unitary_matrix, module_importable,
-    _ClassUnknownToSubjects)
+    EqualsTester,
+    haar_random_vector,
+    random_antisymmetric_matrix,
+    random_diagonal_coulomb_hamiltonian,
+    random_hermitian_matrix,
+    random_interaction_operator,
+    random_quadratic_hamiltonian,
+    random_qubit_operator,
+    random_unitary_matrix,
+    module_importable,
+    _ClassUnknownToSubjects,
+)
 
 
 def test_random_qubit_operator():
-    op = random_qubit_operator(n_qubits=20,
-                               max_num_terms=20,
-                               max_many_body_order=20)
+    op = random_qubit_operator(n_qubits=20, max_num_terms=20, max_many_body_order=20)
 
     assert isinstance(op, QubitOperator)
     assert op.many_body_order() <= 20
@@ -50,18 +55,16 @@ def test_hashing_unknown_class():
 
 
 class EqualsTesterTest(unittest.TestCase):
-
     def test_add_equality_group_correct(self):
         eq = EqualsTester(self)
 
         eq.add_equality_group(fractions.Fraction(1, 1))
 
-        eq.add_equality_group(fractions.Fraction(1, 2),
-                              fractions.Fraction(2, 4))
+        eq.add_equality_group(fractions.Fraction(1, 2), fractions.Fraction(2, 4))
 
-        eq.add_equality_group(fractions.Fraction(2, 3),
-                              fractions.Fraction(12, 18),
-                              fractions.Fraction(14, 21))
+        eq.add_equality_group(
+            fractions.Fraction(2, 3), fractions.Fraction(12, 18), fractions.Fraction(14, 21)
+        )
 
         eq.add_equality_group(2, 2.0, fractions.Fraction(2, 1))
 
@@ -100,9 +103,7 @@ class EqualsTesterTest(unittest.TestCase):
             eq.add_equality_group(1)
 
     def test_add_equality_group_bad_hash(self):
-
         class KeyHash(object):
-
             def __init__(self, k, h):
                 self._k = k
                 self._h = h
@@ -123,9 +124,7 @@ class EqualsTesterTest(unittest.TestCase):
             eq.add_equality_group(KeyHash('c', 2), KeyHash('c', 3))
 
     def test_add_equality_group_exception_hash(self):
-
         class FailHash(object):
-
             def __hash__(self):
                 raise ValueError('injected failure')
 
@@ -137,7 +136,6 @@ class EqualsTesterTest(unittest.TestCase):
         eq = EqualsTester(self)
 
         class NoTypeCheckEqualImplementation(object):
-
             def __init__(self):
                 self.x = 1
 
@@ -174,7 +172,6 @@ class EqualsTesterTest(unittest.TestCase):
         eq = EqualsTester(self)
 
         class InconsistentNeImplementation(object):
-
             def __init__(self):
                 self.x = 1
 
@@ -191,7 +188,6 @@ class EqualsTesterTest(unittest.TestCase):
         eq = EqualsTester(self)
 
         class NotReflexiveImplementation(object):
-
             def __init__(self):
                 self.x = 1
 
@@ -205,7 +201,6 @@ class EqualsTesterTest(unittest.TestCase):
         eq = EqualsTester(self)
 
         class NotCommutativeImplementation(object):
-
             def __init__(self, x):
                 self.x = x
 
@@ -216,16 +211,13 @@ class EqualsTesterTest(unittest.TestCase):
                 return not self == other
 
         with self.assertRaises(AssertionError):
-            eq.add_equality_group(NotCommutativeImplementation(0),
-                                  NotCommutativeImplementation(1))
+            eq.add_equality_group(NotCommutativeImplementation(0), NotCommutativeImplementation(1))
 
         with self.assertRaises(AssertionError):
-            eq.add_equality_group(NotCommutativeImplementation(1),
-                                  NotCommutativeImplementation(0))
+            eq.add_equality_group(NotCommutativeImplementation(1), NotCommutativeImplementation(0))
 
 
 class RandomInteractionOperatorTest(unittest.TestCase):
-
     def test_hermiticity(self):
         n_orbitals = 5
 
@@ -235,9 +227,7 @@ class RandomInteractionOperatorTest(unittest.TestCase):
         self.assertTrue(is_hermitian(ferm_op))
 
         # Real, spin
-        iop = random_interaction_operator(n_orbitals,
-                                          expand_spin=True,
-                                          real=True)
+        iop = random_interaction_operator(n_orbitals, expand_spin=True, real=True)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
 
@@ -247,9 +237,7 @@ class RandomInteractionOperatorTest(unittest.TestCase):
         self.assertTrue(is_hermitian(ferm_op))
 
         # Complex, spin
-        iop = random_interaction_operator(n_orbitals,
-                                          expand_spin=True,
-                                          real=False)
+        iop = random_interaction_operator(n_orbitals, expand_spin=True, real=False)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
 
@@ -257,48 +245,50 @@ class RandomInteractionOperatorTest(unittest.TestCase):
         n_orbitals = 5
 
         # Real.
-        iop = random_interaction_operator(n_orbitals,
-                                          expand_spin=False,
-                                          real=True)
+        iop = random_interaction_operator(n_orbitals, expand_spin=False, real=True)
         ferm_op = get_fermion_operator(iop)
         self.assertTrue(is_hermitian(ferm_op))
         two_body_coefficients = iop.two_body_tensor
         for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
+            self.assertAlmostEqual(
+                two_body_coefficients[p, q, r, s], two_body_coefficients[r, q, p, s]
+            )
 
-            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
-                                   two_body_coefficients[r, q, p, s])
+            self.assertAlmostEqual(
+                two_body_coefficients[p, q, r, s], two_body_coefficients[p, s, r, q]
+            )
 
-            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
-                                   two_body_coefficients[p, s, r, q])
+            self.assertAlmostEqual(
+                two_body_coefficients[p, q, r, s], two_body_coefficients[s, r, q, p]
+            )
 
-            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
-                                   two_body_coefficients[s, r, q, p])
+            self.assertAlmostEqual(
+                two_body_coefficients[p, q, r, s], two_body_coefficients[q, p, s, r]
+            )
 
-            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
-                                   two_body_coefficients[q, p, s, r])
+            self.assertAlmostEqual(
+                two_body_coefficients[p, q, r, s], two_body_coefficients[r, s, p, q]
+            )
 
-            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
-                                   two_body_coefficients[r, s, p, q])
+            self.assertAlmostEqual(
+                two_body_coefficients[p, q, r, s], two_body_coefficients[s, p, q, r]
+            )
 
-            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
-                                   two_body_coefficients[s, p, q, r])
-
-            self.assertAlmostEqual(two_body_coefficients[p, q, r, s],
-                                   two_body_coefficients[q, r, s, p])
+            self.assertAlmostEqual(
+                two_body_coefficients[p, q, r, s], two_body_coefficients[q, r, s, p]
+            )
 
 
 class HaarRandomVectorTest(unittest.TestCase):
-
     def test_vector_norm(self):
         n = 15
         seed = 8317
         vector = haar_random_vector(n, seed)
         norm = vector.dot(numpy.conjugate(vector))
-        self.assertAlmostEqual(1. + 0.j, norm)
+        self.assertAlmostEqual(1.0 + 0.0j, norm)
 
 
 class RandomSeedingTest(unittest.TestCase):
-
     def test_random_operators_are_reproducible(self):
         op1 = random_diagonal_coulomb_hamiltonian(5, seed=5947)
         op2 = random_diagonal_coulomb_hamiltonian(5, seed=5947)
@@ -312,10 +302,8 @@ class RandomSeedingTest(unittest.TestCase):
 
         op1 = random_quadratic_hamiltonian(5, seed=17711)
         op2 = random_quadratic_hamiltonian(5, seed=17711)
-        numpy.testing.assert_allclose(op1.combined_hermitian_part,
-                                      op2.combined_hermitian_part)
-        numpy.testing.assert_allclose(op1.antisymmetric_part,
-                                      op2.antisymmetric_part)
+        numpy.testing.assert_allclose(op1.combined_hermitian_part, op2.combined_hermitian_part)
+        numpy.testing.assert_allclose(op1.antisymmetric_part, op2.antisymmetric_part)
 
         op1 = random_antisymmetric_matrix(5, seed=24074)
         op2 = random_antisymmetric_matrix(5, seed=24074)

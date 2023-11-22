@@ -18,9 +18,11 @@ import numpy
 from scipy.linalg import qr
 
 from openfermion.ops.operators import QubitOperator
-from openfermion.ops.representations import (DiagonalCoulombHamiltonian,
-                                             QuadraticHamiltonian,
-                                             InteractionOperator)
+from openfermion.ops.representations import (
+    DiagonalCoulombHamiltonian,
+    QuadraticHamiltonian,
+    InteractionOperator,
+)
 
 
 def haar_random_vector(n, seed=None):
@@ -28,7 +30,7 @@ def haar_random_vector(n, seed=None):
     if seed is not None:
         numpy.random.seed(seed)
     vector = numpy.random.randn(n).astype(complex)
-    vector += 1.j * numpy.random.randn(n).astype(complex)
+    vector += 1.0j * numpy.random.randn(n).astype(complex)
     normalization = numpy.sqrt(vector.dot(numpy.conjugate(vector)))
     return vector / normalization
 
@@ -41,7 +43,7 @@ def random_antisymmetric_matrix(n, real=False, seed=None):
     if real:
         rand_mat = numpy.random.randn(n, n)
     else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
+        rand_mat = numpy.random.randn(n, n) + 1.0j * numpy.random.randn(n, n)
     antisymmetric_mat = rand_mat - rand_mat.T
     return antisymmetric_mat
 
@@ -54,7 +56,7 @@ def random_hermitian_matrix(n, real=False, seed=None):
     if real:
         rand_mat = numpy.random.randn(n, n)
     else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
+        rand_mat = numpy.random.randn(n, n) + 1.0j * numpy.random.randn(n, n)
     hermitian_mat = rand_mat + rand_mat.T.conj()
     return hermitian_mat
 
@@ -67,15 +69,12 @@ def random_unitary_matrix(n, real=False, seed=None):
     if real:
         rand_mat = numpy.random.randn(n, n)
     else:
-        rand_mat = numpy.random.randn(n, n) + 1.j * numpy.random.randn(n, n)
+        rand_mat = numpy.random.randn(n, n) + 1.0j * numpy.random.randn(n, n)
     Q, _ = qr(rand_mat)
     return Q
 
 
-def random_qubit_operator(n_qubits=16,
-                          max_num_terms=16,
-                          max_many_body_order=16,
-                          seed=None):
+def random_qubit_operator(n_qubits=16, max_num_terms=16, max_many_body_order=16, seed=None):
     prng = numpy.random.RandomState(seed)
     op = QubitOperator()
     num_terms = prng.randint(1, max_num_terms + 1)
@@ -107,10 +106,7 @@ def random_diagonal_coulomb_hamiltonian(n_qubits, real=False, seed=None):
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
 
 
-def random_interaction_operator(n_orbitals,
-                                expand_spin=False,
-                                real=True,
-                                seed=None):
+def random_interaction_operator(n_orbitals, expand_spin=False, real=True, seed=None):
     """Generate a random instance of InteractionOperator.
 
     Args:
@@ -136,12 +132,11 @@ def random_interaction_operator(n_orbitals,
     one_body_coefficients = random_hermitian_matrix(n_orbitals, real)
 
     # Generate random two-body coefficients.
-    two_body_coefficients = numpy.zeros(
-        (n_orbitals, n_orbitals, n_orbitals, n_orbitals), dtype)
+    two_body_coefficients = numpy.zeros((n_orbitals, n_orbitals, n_orbitals, n_orbitals), dtype)
     for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
         coeff = numpy.random.randn()
         if not real and len(set([p, q, r, s])) >= 3:
-            coeff += 1.j * numpy.random.randn()
+            coeff += 1.0j * numpy.random.randn()
 
         # Four point symmetry.
         two_body_coefficients[p, q, r, s] = coeff
@@ -165,36 +160,31 @@ def random_interaction_operator(n_orbitals,
 
         # Expand two-body tensor.
         new_two_body_coefficients = numpy.zeros(
-            (n_spin_orbitals, n_spin_orbitals, n_spin_orbitals,
-             n_spin_orbitals),
-            dtype=complex)
+            (n_spin_orbitals, n_spin_orbitals, n_spin_orbitals, n_spin_orbitals), dtype=complex
+        )
         for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
             coefficient = two_body_coefficients[p, q, r, s]
 
             # Mixed spin.
-            new_two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 *
-                                      s] = (coefficient)
-            new_two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s +
-                                      1] = (coefficient)
+            new_two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 * s] = coefficient
+            new_two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s + 1] = coefficient
 
             # Same spin.
             new_two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = coefficient
-            new_two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r + 1, 2 * s +
-                                      1] = coefficient
+            new_two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r + 1, 2 * s + 1] = coefficient
         two_body_coefficients = new_two_body_coefficients
 
     # Create the InteractionOperator.
-    interaction_operator = InteractionOperator(constant, one_body_coefficients,
-                                               two_body_coefficients)
+    interaction_operator = InteractionOperator(
+        constant, one_body_coefficients, two_body_coefficients
+    )
 
     return interaction_operator
 
 
-def random_quadratic_hamiltonian(n_orbitals,
-                                 conserves_particle_number=False,
-                                 real=False,
-                                 expand_spin=False,
-                                 seed=None):
+def random_quadratic_hamiltonian(
+    n_orbitals, conserves_particle_number=False, real=False, expand_spin=False, seed=None
+):
     """Generate a random instance of QuadraticHamiltonian.
 
     Args:
@@ -226,8 +216,7 @@ def random_quadratic_hamiltonian(n_orbitals,
         if antisymmetric_mat is not None:
             antisymmetric_mat = numpy.kron(antisymmetric_mat, numpy.eye(2))
 
-    return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat, constant,
-                                chemical_potential)
+    return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat, constant, chemical_potential)
 
 
 class EqualsTester(object):
@@ -261,15 +250,15 @@ class EqualsTester(object):
             self.test_case.assertTrue(not v1 != v2)
 
             # __eq__ and __ne__ should both be correct or not implemented.
-            self.test_case.assertTrue(
-                hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
+            self.test_case.assertTrue(hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
             # Careful: python2 int doesn't have __eq__ or __ne__.
             if hasattr(v1, '__eq__'):
                 eq = v1.__eq__(v2)
                 ne = v1.__ne__(v2)
-                self.test_case.assertIn((eq, ne),
-                                        [(True, False), (NotImplemented, False),
-                                         (NotImplemented, NotImplemented)])
+                self.test_case.assertIn(
+                    (eq, ne),
+                    [(True, False), (NotImplemented, False), (NotImplemented, NotImplemented)],
+                )
 
         # Check that this group's items don't overlap with other groups.
         for other_group in self.groups:
@@ -279,31 +268,30 @@ class EqualsTester(object):
                 self.test_case.assertTrue(v1 != v2)
 
                 # __eq__ and __ne__ should both be correct or not implemented.
-                self.test_case.assertTrue(
-                    hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
+                self.test_case.assertTrue(hasattr(v1, '__eq__') == hasattr(v1, '__ne__'))
                 # Careful: python2 int doesn't have __eq__ or __ne__.
                 if hasattr(v1, '__eq__'):
                     eq = v1.__eq__(v2)
                     ne = v1.__ne__(v2)
-                    self.test_case.assertIn((eq, ne),
-                                            [(False, True),
-                                             (NotImplemented, True),
-                                             (NotImplemented, NotImplemented)])
+                    self.test_case.assertIn(
+                        (eq, ne),
+                        [(False, True), (NotImplemented, True), (NotImplemented, NotImplemented)],
+                    )
 
         # Check that group items hash to the same thing, or are all unhashable.
-        hashes = [
-            hash(v) if isinstance(v, collections.abc.Hashable) else None
-            for v in group_items
-        ]
+        hashes = [hash(v) if isinstance(v, collections.abc.Hashable) else None for v in group_items]
         if len(set(hashes)) > 1:
-            examples = ((v1, h1, v2, h2)
-                        for v1, h1 in zip(group_items, hashes)
-                        for v2, h2 in zip(group_items, hashes)
-                        if h1 != h2)
+            examples = (
+                (v1, h1, v2, h2)
+                for v1, h1 in zip(group_items, hashes)
+                for v2, h2 in zip(group_items, hashes)
+                if h1 != h2
+            )
             example = next(examples)
             raise AssertionError(
                 'Items in the same group produced different hashes. '
-                'Example: hash({}) is {} but hash({}) is {}.'.format(*example))
+                'Example: hash({}) is {} but hash({}) is {}.'.format(*example)
+            )
 
         # Remember this group, to enable disjoint checks vs later groups.
         self.groups.append(group_items)
@@ -351,12 +339,15 @@ def module_importable(module):
 
     """
     import sys
+
     if sys.version_info >= (3, 4):
         from importlib import util
+
         plug_spec = util.find_spec(module)
     else:
         # Won't enter unless Python<3.4, so ignore for testing
         import pkgutil  # pragma: ignore
+
         plug_spec = pkgutil.find_loader(module)  # pragma: no cover
     if plug_spec is None:
         return False

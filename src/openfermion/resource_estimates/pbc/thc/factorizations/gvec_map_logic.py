@@ -73,9 +73,11 @@ def get_delta_kp_kq_q(int_scaled_kpts):
     Returns:
         np.ndarray mapping D_{kp, kq, Q}.
     """
-    delta_k1_k2_q_int = (int_scaled_kpts[:, None, None, :] -
-                         int_scaled_kpts[None, :, None, :] -
-                         int_scaled_kpts[None, None, :, :])
+    delta_k1_k2_q_int = (
+        int_scaled_kpts[:, None, None, :]
+        - int_scaled_kpts[None, :, None, :]
+        - int_scaled_kpts[None, None, :, :]
+    )
     return delta_k1_k2_q_int
 
 
@@ -107,7 +109,7 @@ def build_transfer_map(kmesh, scaled_kpts):
                 np.rint(delta_k1_k2_q_int[kpidx, kqidx, qidx][1]) % kmesh[1],
                 np.rint(delta_k1_k2_q_int[kpidx, kqidx, qidx][2]) % kmesh[2],
             ],
-                0,
+            0,
         ):
             transfer_map[qidx, kpidx] = kqidx
     return transfer_map
@@ -124,19 +126,17 @@ def build_conjugate_map(kmesh, scaled_kpts):
         kconj_map: conjugate k-point mapping
     """
     nkpts = len(scaled_kpts)
-    kpoint_dict = dict(
-        zip(
-            [tuple(map(int, scaled_kpts[x])) for x in range(nkpts)],
-            range(nkpts),
-        ))
+    kpoint_dict = dict(zip([tuple(map(int, scaled_kpts[x])) for x in range(nkpts)], range(nkpts)))
     kconj_map = np.zeros((nkpts), dtype=int)
     for kidx in range(nkpts):
         negative_k_scaled = -scaled_kpts[kidx]
-        fb_negative_k_scaled = tuple((
-            int(negative_k_scaled[0]) % kmesh[0],
-            int(negative_k_scaled[1]) % kmesh[1],
-            int(negative_k_scaled[2]) % kmesh[2],
-        ))
+        fb_negative_k_scaled = tuple(
+            (
+                int(negative_k_scaled[0]) % kmesh[0],
+                int(negative_k_scaled[1]) % kmesh[1],
+                int(negative_k_scaled[2]) % kmesh[2],
+            )
+        )
         kconj_map[kidx] = kpoint_dict[fb_negative_k_scaled]
     return kconj_map
 

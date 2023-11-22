@@ -17,37 +17,34 @@ import numpy
 from openfermion.config import DATA_DIRECTORY
 
 from openfermion.chem import MolecularData
-from openfermion.transforms.opconversions import (get_fermion_operator,
-                                                  normal_ordered, jordan_wigner,
-                                                  reverse_jordan_wigner)
+from openfermion.transforms.opconversions import (
+    get_fermion_operator,
+    normal_ordered,
+    jordan_wigner,
+    reverse_jordan_wigner,
+)
 from openfermion.transforms.repconversions import freeze_orbitals
 from openfermion.measurements import get_interaction_rdm
 from openfermion.linalg import get_sparse_operator, get_ground_state
-from openfermion.linalg.sparse_tools import (expectation, jw_hartree_fock_state,
-                                             get_density_matrix)
+from openfermion.linalg.sparse_tools import expectation, jw_hartree_fock_state, get_density_matrix
 from openfermion.utils.operator_utils import count_qubits
 
 
 class LiHIntegrationTest(unittest.TestCase):
-
     def setUp(self):
         # Set up molecule.
-        geometry = [('Li', (0., 0., 0.)), ('H', (0., 0., 1.45))]
+        geometry = [('Li', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 1.45))]
         basis = 'sto-3g'
         multiplicity = 1
         filename = os.path.join(DATA_DIRECTORY, 'H1-Li1_sto-3g_singlet_1.45')
-        self.molecule = MolecularData(geometry,
-                                      basis,
-                                      multiplicity,
-                                      filename=filename)
+        self.molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
         self.molecule.load()
 
         # Get molecular Hamiltonian
         self.molecular_hamiltonian = self.molecule.get_molecular_hamiltonian()
-        self.molecular_hamiltonian_no_core = (
-            self.molecule.get_molecular_hamiltonian(
-                occupied_indices=[0],
-                active_indices=range(1, self.molecule.n_orbitals)))
+        self.molecular_hamiltonian_no_core = self.molecule.get_molecular_hamiltonian(
+            occupied_indices=[0], active_indices=range(1, self.molecule.n_orbitals)
+        )
 
         # Get FCI RDM.
         self.fci_rdm = self.molecule.get_molecular_rdm(use_fci=1)
@@ -58,8 +55,7 @@ class LiHIntegrationTest(unittest.TestCase):
         self.two_body = self.molecular_hamiltonian.two_body_tensor
 
         # Get fermion Hamiltonian.
-        self.fermion_hamiltonian = normal_ordered(
-            get_fermion_operator(self.molecular_hamiltonian))
+        self.fermion_hamiltonian = normal_ordered(get_fermion_operator(self.molecular_hamiltonian))
 
         # Get qubit Hamiltonian.
         self.qubit_hamiltonian = jordan_wigner(self.fermion_hamiltonian)
@@ -70,13 +66,10 @@ class LiHIntegrationTest(unittest.TestCase):
         self.two_body = self.molecular_hamiltonian.two_body_tensor
 
         # Get matrix form.
-        self.hamiltonian_matrix = get_sparse_operator(
-            self.molecular_hamiltonian)
-        self.hamiltonian_matrix_no_core = get_sparse_operator(
-            self.molecular_hamiltonian_no_core)
+        self.hamiltonian_matrix = get_sparse_operator(self.molecular_hamiltonian)
+        self.hamiltonian_matrix_no_core = get_sparse_operator(self.molecular_hamiltonian_no_core)
 
     def test_all(self):
-
         # Test reverse Jordan-Wigner.
         fermion_hamiltonian = reverse_jordan_wigner(self.qubit_hamiltonian)
         fermion_hamiltonian = normal_ordered(fermion_hamiltonian)
@@ -89,10 +82,8 @@ class LiHIntegrationTest(unittest.TestCase):
 
         # Test RDM energy.
         fci_rdm_energy = self.nuclear_repulsion
-        fci_rdm_energy += numpy.sum(self.fci_rdm.one_body_tensor *
-                                    self.one_body)
-        fci_rdm_energy += numpy.sum(self.fci_rdm.two_body_tensor *
-                                    self.two_body)
+        fci_rdm_energy += numpy.sum(self.fci_rdm.one_body_tensor * self.one_body)
+        fci_rdm_energy += numpy.sum(self.fci_rdm.two_body_tensor * self.two_body)
         self.assertAlmostEqual(fci_rdm_energy, self.molecule.fci_energy)
 
         # Confirm expectation on qubit Hamiltonian using reverse JW matches.
@@ -114,26 +105,26 @@ class LiHIntegrationTest(unittest.TestCase):
         self.assertAlmostEqual(expected_energy, energy)
 
         # Make sure you can reproduce Hartree-Fock energy.
-        hf_state = jw_hartree_fock_state(self.molecule.n_electrons,
-                                         count_qubits(self.qubit_hamiltonian))
-        hf_density = get_density_matrix([hf_state], [1.])
-        expected_hf_density_energy = expectation(self.hamiltonian_matrix,
-                                                 hf_density)
+        hf_state = jw_hartree_fock_state(
+            self.molecule.n_electrons, count_qubits(self.qubit_hamiltonian)
+        )
+        hf_density = get_density_matrix([hf_state], [1.0])
+        expected_hf_density_energy = expectation(self.hamiltonian_matrix, hf_density)
         expected_hf_energy = expectation(self.hamiltonian_matrix, hf_state)
         self.assertAlmostEqual(expected_hf_energy, self.molecule.hf_energy)
-        self.assertAlmostEqual(expected_hf_density_energy,
-                               self.molecule.hf_energy)
+        self.assertAlmostEqual(expected_hf_density_energy, self.molecule.hf_energy)
 
         # Check that frozen core result matches frozen core FCI from psi4.
         # Recore frozen core result from external calculation.
         self.frozen_core_fci_energy = -7.8807607374168
-        no_core_fci_energy = numpy.linalg.eigh(
-            self.hamiltonian_matrix_no_core.toarray())[0][0]
+        no_core_fci_energy = numpy.linalg.eigh(self.hamiltonian_matrix_no_core.toarray())[0][0]
         self.assertAlmostEqual(no_core_fci_energy, self.frozen_core_fci_energy)
 
         # Check that the freeze_orbitals function has the same effect as the
         # as the occupied_indices option of get_molecular_hamiltonian.
         frozen_hamiltonian = freeze_orbitals(
-            get_fermion_operator(self.molecular_hamiltonian), [0, 1])
-        self.assertTrue(frozen_hamiltonian == get_fermion_operator(
-            self.molecular_hamiltonian_no_core))
+            get_fermion_operator(self.molecular_hamiltonian), [0, 1]
+        )
+        self.assertTrue(
+            frozen_hamiltonian == get_fermion_operator(self.molecular_hamiltonian_no_core)
+        )

@@ -19,6 +19,7 @@ import h5py
 
 from openfermion.config import EQ_TOLERANCE, DATA_DIRECTORY
 import openfermion.ops.representations as reps
+
 r"""NOTE ON PQRS CONVENTION:
   The data structures which hold fermionic operators / integrals /
   coefficients assume a particular convention which depends on how integrals
@@ -58,15 +59,110 @@ def angstroms_to_bohr(distance):
 
 # The Periodic Table as a python list and dictionary.
 periodic_table = [  #
-    '?', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al',
-    'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe',
-    'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y',
-    'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb',
-    'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd',
-    'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir',
-    'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac',
-    'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No',
-    'Lr'
+    '?',
+    'H',
+    'He',
+    'Li',
+    'Be',
+    'B',
+    'C',
+    'N',
+    'O',
+    'F',
+    'Ne',
+    'Na',
+    'Mg',
+    'Al',
+    'Si',
+    'P',
+    'S',
+    'Cl',
+    'Ar',
+    'K',
+    'Ca',
+    'Sc',
+    'Ti',
+    'V',
+    'Cr',
+    'Mn',
+    'Fe',
+    'Co',
+    'Ni',
+    'Cu',
+    'Zn',
+    'Ga',
+    'Ge',
+    'As',
+    'Se',
+    'Br',
+    'Kr',
+    'Rb',
+    'Sr',
+    'Y',
+    'Zr',
+    'Nb',
+    'Mo',
+    'Tc',
+    'Ru',
+    'Rh',
+    'Pd',
+    'Ag',
+    'Cd',
+    'In',
+    'Sn',
+    'Sb',
+    'Te',
+    'I',
+    'Xe',
+    'Cs',
+    'Ba',
+    'La',
+    'Ce',
+    'Pr',
+    'Nd',
+    'Pm',
+    'Sm',
+    'Eu',
+    'Gd',
+    'Tb',
+    'Dy',
+    'Ho',
+    'Er',
+    'Tm',
+    'Yb',
+    'Lu',
+    'Hf',
+    'Ta',
+    'W',
+    'Re',
+    'Os',
+    'Ir',
+    'Pt',
+    'Au',
+    'Hg',
+    'Tl',
+    'Pb',
+    'Bi',
+    'Po',
+    'At',
+    'Rn',
+    'Fr',
+    'Ra',
+    'Ac',
+    'Th',
+    'Pa',
+    'U',
+    'Np',
+    'Pu',
+    'Am',
+    'Cm',
+    'Bk',
+    'Cf',
+    'Es',
+    'Fm',
+    'Md',
+    'No',
+    'Lr',
 ]
 
 periodic_hash_table = {}
@@ -75,9 +171,61 @@ for atomic_number, atom in enumerate(periodic_table):
 
 # Spin polarization of atoms on period table.
 periodic_polarization = [
-    -1, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 6,
-    5, 4, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 5, 6, 5, 8, 9, 0, 1, 0, 1,
-    2, 3, 2, 1, 0
+    -1,
+    1,
+    0,
+    1,
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0,
+    1,
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0,
+    1,
+    0,
+    1,
+    2,
+    3,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1,
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0,
+    1,
+    0,
+    1,
+    2,
+    5,
+    6,
+    5,
+    8,
+    9,
+    0,
+    1,
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0,
 ]
 
 
@@ -104,8 +252,7 @@ def name_molecule(geometry, basis, multiplicity, charge, description):
         # Get sorted atom vector.
         atoms = [item[0] for item in geometry]
         atom_charge_info = [(atom, atoms.count(atom)) for atom in set(atoms)]
-        sorted_info = sorted(atom_charge_info,
-                             key=lambda atom: periodic_hash_table[atom[0]])
+        sorted_info = sorted(atom_charge_info, key=lambda atom: periodic_hash_table[atom[0]])
 
         # Name molecule.
         name = '{}{}'.format(sorted_info[0][0], sorted_info[0][1])
@@ -130,9 +277,9 @@ def name_molecule(geometry, basis, multiplicity, charge, description):
         9: 'nonet',
         10: 'dectet',
         11: 'undectet',
-        12: 'duodectet'
+        12: 'duodectet',
     }
-    if (multiplicity not in multiplicity_dict):
+    if multiplicity not in multiplicity_dict:
         raise MoleculeNameError('Invalid spin multiplicity provided.')
     else:
         name += '_{}'.format(multiplicity_dict[multiplicity])
@@ -199,8 +346,7 @@ def j_mat(two_body_integrals):
     j_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
         (in chemist notation).
     """
-    chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2),
-                               order='C')
+    chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2), order='C')
     return numpy.einsum('iijj -> ij', chem_ordering)
 
 
@@ -214,8 +360,7 @@ def k_mat(two_body_integrals):
     k_matr : Numpy array of the exchange integrals K_{p,q} = (pq|qp)
         (in chemist notation).
     """
-    chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2),
-                               order='C')
+    chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2), order='C')
     return numpy.einsum('ijji -> ij', chem_ordering)
 
 
@@ -224,38 +369,35 @@ def spinorb_from_spatial(one_body_integrals, two_body_integrals):
 
     # Initialize Hamiltonian coefficients.
     one_body_coefficients = numpy.zeros((n_qubits, n_qubits))
-    two_body_coefficients = numpy.zeros(
-        (n_qubits, n_qubits, n_qubits, n_qubits))
+    two_body_coefficients = numpy.zeros((n_qubits, n_qubits, n_qubits, n_qubits))
     # Loop through integrals.
     for p in range(n_qubits // 2):
         for q in range(n_qubits // 2):
-
             # Populate 1-body coefficients. Require p and q have same spin.
             one_body_coefficients[2 * p, 2 * q] = one_body_integrals[p, q]
-            one_body_coefficients[2 * p + 1, 2 * q +
-                                  1] = one_body_integrals[p, q]
+            one_body_coefficients[2 * p + 1, 2 * q + 1] = one_body_integrals[p, q]
             # Continue looping to prepare 2-body coefficients.
             for r in range(n_qubits // 2):
                 for s in range(n_qubits // 2):
-
                     # Mixed spin
-                    two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 *
-                                          s] = (two_body_integrals[p, q, r, s])
-                    two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s +
-                                          1] = (two_body_integrals[p, q, r, s])
+                    two_body_coefficients[2 * p, 2 * q + 1, 2 * r + 1, 2 * s] = two_body_integrals[
+                        p, q, r, s
+                    ]
+                    two_body_coefficients[2 * p + 1, 2 * q, 2 * r, 2 * s + 1] = two_body_integrals[
+                        p, q, r, s
+                    ]
 
                     # Same spin
-                    two_body_coefficients[2 * p, 2 * q, 2 * r, 2 *
-                                          s] = (two_body_integrals[p, q, r, s])
-                    two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r +
-                                          1, 2 * s +
-                                          1] = (two_body_integrals[p, q, r, s])
+                    two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = two_body_integrals[
+                        p, q, r, s
+                    ]
+                    two_body_coefficients[
+                        2 * p + 1, 2 * q + 1, 2 * r + 1, 2 * s + 1
+                    ] = two_body_integrals[p, q, r, s]
 
     # Truncate.
-    one_body_coefficients[
-        numpy.absolute(one_body_coefficients) < EQ_TOLERANCE] = 0.
-    two_body_coefficients[
-        numpy.absolute(two_body_coefficients) < EQ_TOLERANCE] = 0.
+    one_body_coefficients[numpy.absolute(one_body_coefficients) < EQ_TOLERANCE] = 0.0
+    two_body_coefficients[numpy.absolute(two_body_coefficients) < EQ_TOLERANCE] = 0.0
 
     return one_body_coefficients, two_body_coefficients
 
@@ -306,14 +448,16 @@ class MolecularData(object):
             for this system annotated by the key.
     """
 
-    def __init__(self,
-                 geometry=None,
-                 basis=None,
-                 multiplicity=None,
-                 charge=0,
-                 description="",
-                 filename="",
-                 data_directory=None):
+    def __init__(
+        self,
+        geometry=None,
+        basis=None,
+        multiplicity=None,
+        charge=0,
+        description="",
+        filename="",
+        data_directory=None,
+    ):
         """Initialize molecular metadata which defines class.
 
         Args:
@@ -336,18 +480,19 @@ class MolecularData(object):
                 data directory specified in config file.
         """
         # Check appropriate data as been provided and autoload if requested.
-        if ((geometry is None) or (basis is None) or (multiplicity is None)):
+        if (geometry is None) or (basis is None) or (multiplicity is None):
             if filename:
                 if filename[-5:] == '.hdf5':
-                    self.filename = filename[:(len(filename) - 5)]
+                    self.filename = filename[: (len(filename) - 5)]
                 else:
                     self.filename = filename
                 self.load()
                 self.init_lazy_properties()
                 return
             else:
-                raise ValueError("Geometry, basis, multiplicity must be"
-                                 "specified when not loading from file.")
+                raise ValueError(
+                    "Geometry, basis, multiplicity must be" "specified when not loading from file."
+                )
 
         # Metadata fields which must be provided.
         self.geometry = geometry
@@ -356,16 +501,15 @@ class MolecularData(object):
 
         # Metadata fields with default values.
         self.charge = charge
-        if (not isinstance(description, basestring)):
+        if not isinstance(description, basestring):
             raise TypeError("description must be a string.")
         self.description = description
 
         # Name molecule and get associated filename
-        self.name = name_molecule(geometry, basis, multiplicity, charge,
-                                  description)
+        self.name = name_molecule(geometry, basis, multiplicity, charge, description)
         if filename:
             if filename[-5:] == '.hdf5':
-                filename = filename[:(len(filename) - 5)]
+                filename = filename[: (len(filename) - 5)]
             self.filename = filename
         else:
             if data_directory is None:
@@ -376,8 +520,9 @@ class MolecularData(object):
         # Attributes generated automatically by class.
         if not isinstance(geometry, basestring):
             self.n_atoms = len(geometry)
-            self.atoms = sorted([row[0] for row in geometry],
-                                key=lambda atom: periodic_hash_table[atom])
+            self.atoms = sorted(
+                [row[0] for row in geometry], key=lambda atom: periodic_hash_table[atom]
+            )
             self.protons = [periodic_hash_table[atom] for atom in self.atoms]
             self.n_electrons = sum(self.protons) - charge
         else:
@@ -448,8 +593,7 @@ class MolecularData(object):
     def canonical_orbitals(self):
         if self._canonical_orbitals is None:
             data = self.get_from_file("canonical_orbitals")
-            self._canonical_orbitals = (data if data is not None and
-                                        data.dtype.num != 0 else None)
+            self._canonical_orbitals = data if data is not None and data.dtype.num != 0 else None
         return self._canonical_orbitals
 
     @canonical_orbitals.setter
@@ -460,8 +604,7 @@ class MolecularData(object):
     def overlap_integrals(self):
         if self._overlap_integrals is None:
             data = self.get_from_file("overlap_integrals")
-            self._overlap_integrals = (data if data is not None and
-                                       data.dtype.num != 0 else None)
+            self._overlap_integrals = data if data is not None and data.dtype.num != 0 else None
         return self._overlap_integrals
 
     @overlap_integrals.setter
@@ -472,8 +615,7 @@ class MolecularData(object):
     def one_body_integrals(self):
         if self._one_body_integrals is None:
             data = self.get_from_file("one_body_integrals")
-            self._one_body_integrals = (data if data is not None and
-                                        data.dtype.num != 0 else None)
+            self._one_body_integrals = data if data is not None and data.dtype.num != 0 else None
         return self._one_body_integrals
 
     @one_body_integrals.setter
@@ -484,8 +626,7 @@ class MolecularData(object):
     def two_body_integrals(self):
         if self._two_body_integrals is None:
             data = self.get_from_file("two_body_integrals")
-            self._two_body_integrals = (data if data is not None and
-                                        data.dtype.num != 0 else None)
+            self._two_body_integrals = data if data is not None and data.dtype.num != 0 else None
         return self._two_body_integrals
 
     @two_body_integrals.setter
@@ -496,8 +637,7 @@ class MolecularData(object):
     def cisd_one_rdm(self):
         if self._cisd_one_rdm is None:
             data = self.get_from_file("cisd_one_rdm")
-            self._cisd_one_rdm = (data if data is not None and
-                                  data.dtype.num != 0 else None)
+            self._cisd_one_rdm = data if data is not None and data.dtype.num != 0 else None
         return self._cisd_one_rdm
 
     @cisd_one_rdm.setter
@@ -508,8 +648,7 @@ class MolecularData(object):
     def cisd_two_rdm(self):
         if self._cisd_two_rdm is None:
             data = self.get_from_file("cisd_two_rdm")
-            self._cisd_two_rdm = (data if data is not None and
-                                  data.dtype.num != 0 else None)
+            self._cisd_two_rdm = data if data is not None and data.dtype.num != 0 else None
         return self._cisd_two_rdm
 
     @cisd_two_rdm.setter
@@ -520,8 +659,7 @@ class MolecularData(object):
     def fci_one_rdm(self):
         if self._fci_one_rdm is None:
             data = self.get_from_file("fci_one_rdm")
-            self._fci_one_rdm = (data if data is not None and
-                                 data.dtype.num != 0 else None)
+            self._fci_one_rdm = data if data is not None and data.dtype.num != 0 else None
         return self._fci_one_rdm
 
     @fci_one_rdm.setter
@@ -532,8 +670,7 @@ class MolecularData(object):
     def fci_two_rdm(self):
         if self._fci_two_rdm is None:
             data = self.get_from_file("fci_two_rdm")
-            self._fci_two_rdm = (data if data is not None and
-                                 data.dtype.num != 0 else None)
+            self._fci_two_rdm = data if data is not None and data.dtype.num != 0 else None
         return self._fci_two_rdm
 
     @fci_two_rdm.setter
@@ -544,8 +681,7 @@ class MolecularData(object):
     def ccsd_single_amps(self):
         if self._ccsd_single_amps is None:
             data = self.get_from_file("ccsd_single_amps")
-            self._ccsd_single_amps = (data if data is not None and
-                                      data.dtype.num != 0 else None)
+            self._ccsd_single_amps = data if data is not None and data.dtype.num != 0 else None
         return self._ccsd_single_amps
 
     @ccsd_single_amps.setter
@@ -556,8 +692,7 @@ class MolecularData(object):
     def ccsd_double_amps(self):
         if self._ccsd_double_amps is None:
             data = self.get_from_file("ccsd_double_amps")
-            self._ccsd_double_amps = (data if data is not None and
-                                      data.dtype.num != 0 else None)
+            self._ccsd_double_amps = data if data is not None and data.dtype.num != 0 else None
         return self._ccsd_double_amps
 
     @ccsd_double_amps.setter
@@ -574,16 +709,12 @@ class MolecularData(object):
             d_geom = f.create_group("geometry")
             if not isinstance(self.geometry, basestring):
                 atoms = [numpy.string_(item[0]) for item in self.geometry]
-                positions = numpy.array(
-                    [list(item[1]) for item in self.geometry])
+                positions = numpy.array([list(item[1]) for item in self.geometry])
             else:
                 atoms = numpy.string_(self.geometry)
                 positions = None
-            d_geom.create_dataset("atoms",
-                                  data=(atoms if atoms is not None else False))
-            d_geom.create_dataset(
-                "positions",
-                data=(positions if positions is not None else False))
+            d_geom.create_dataset("atoms", data=(atoms if atoms is not None else False))
+            d_geom.create_dataset("positions", data=(positions if positions is not None else False))
             # Save basis:
             f.create_dataset("basis", data=numpy.string_(self.basis))
             # Save multiplicity:
@@ -591,8 +722,7 @@ class MolecularData(object):
             # Save charge:
             f.create_dataset("charge", data=self.charge)
             # Save description:
-            f.create_dataset("description",
-                             data=numpy.string_(self.description))
+            f.create_dataset("description", data=numpy.string_(self.description))
             # Save name:
             f.create_dataset("name", data=numpy.string_(self.name))
             # Save n_atoms:
@@ -604,107 +734,106 @@ class MolecularData(object):
             # Save n_electrons:
             f.create_dataset("n_electrons", data=self.n_electrons)
             # Save generic attributes from calculations:
-            f.create_dataset("n_orbitals",
-                             data=(self.n_orbitals
-                                   if self.n_orbitals is not None else False))
             f.create_dataset(
-                "n_qubits",
-                data=(self.n_qubits if self.n_qubits is not None else False))
+                "n_orbitals", data=(self.n_orbitals if self.n_orbitals is not None else False)
+            )
+            f.create_dataset(
+                "n_qubits", data=(self.n_qubits if self.n_qubits is not None else False)
+            )
             f.create_dataset(
                 "nuclear_repulsion",
-                data=(self.nuclear_repulsion
-                      if self.nuclear_repulsion is not None else False))
+                data=(self.nuclear_repulsion if self.nuclear_repulsion is not None else False),
+            )
             # Save attributes generated from SCF calculation.
             f.create_dataset(
-                "hf_energy",
-                data=(self.hf_energy if self.hf_energy is not None else False))
+                "hf_energy", data=(self.hf_energy if self.hf_energy is not None else False)
+            )
             f.create_dataset(
                 "canonical_orbitals",
-                data=(self.canonical_orbitals
-                      if self.canonical_orbitals is not None else False),
-                compression=("gzip"
-                             if self.canonical_orbitals is not None else None))
+                data=(self.canonical_orbitals if self.canonical_orbitals is not None else False),
+                compression=("gzip" if self.canonical_orbitals is not None else None),
+            )
             f.create_dataset(
                 "overlap_integrals",
-                data=(self.overlap_integrals
-                      if self.overlap_integrals is not None else False),
-                compression=("gzip"
-                             if self.overlap_integrals is not None else None))
+                data=(self.overlap_integrals if self.overlap_integrals is not None else False),
+                compression=("gzip" if self.overlap_integrals is not None else None),
+            )
             f.create_dataset(
                 "orbital_energies",
-                data=(self.orbital_energies
-                      if self.orbital_energies is not None else False))
+                data=(self.orbital_energies if self.orbital_energies is not None else False),
+            )
             # Save attributes generated from integrals.
             f.create_dataset(
                 "one_body_integrals",
-                data=(self.one_body_integrals
-                      if self.one_body_integrals is not None else False),
-                compression=("gzip"
-                             if self.one_body_integrals is not None else None))
+                data=(self.one_body_integrals if self.one_body_integrals is not None else False),
+                compression=("gzip" if self.one_body_integrals is not None else None),
+            )
             f.create_dataset(
                 "two_body_integrals",
-                data=(self.two_body_integrals
-                      if self.two_body_integrals is not None else False),
-                compression=("gzip"
-                             if self.two_body_integrals is not None else None))
+                data=(self.two_body_integrals if self.two_body_integrals is not None else False),
+                compression=("gzip" if self.two_body_integrals is not None else None),
+            )
             # Save attributes generated from MP2 calculation.
-            f.create_dataset("mp2_energy",
-                             data=(self.mp2_energy
-                                   if self.mp2_energy is not None else False))
+            f.create_dataset(
+                "mp2_energy", data=(self.mp2_energy if self.mp2_energy is not None else False)
+            )
             # Save attributes generated from CISD calculation.
-            f.create_dataset("cisd_energy",
-                             data=(self.cisd_energy
-                                   if self.cisd_energy is not None else False))
+            f.create_dataset(
+                "cisd_energy", data=(self.cisd_energy if self.cisd_energy is not None else False)
+            )
             f.create_dataset(
                 "cisd_one_rdm",
-                data=(self.cisd_one_rdm
-                      if self.cisd_one_rdm is not None else False),
-                compression=("gzip" if self.cisd_one_rdm is not None else None))
+                data=(self.cisd_one_rdm if self.cisd_one_rdm is not None else False),
+                compression=("gzip" if self.cisd_one_rdm is not None else None),
+            )
             f.create_dataset(
                 "cisd_two_rdm",
-                data=(self.cisd_two_rdm
-                      if self.cisd_two_rdm is not None else False),
-                compression=("gzip" if self.cisd_two_rdm is not None else None))
+                data=(self.cisd_two_rdm if self.cisd_two_rdm is not None else False),
+                compression=("gzip" if self.cisd_two_rdm is not None else None),
+            )
             # Save attributes generated from exact diagonalization.
-            f.create_dataset("fci_energy",
-                             data=(self.fci_energy
-                                   if self.fci_energy is not None else False))
+            f.create_dataset(
+                "fci_energy", data=(self.fci_energy if self.fci_energy is not None else False)
+            )
             f.create_dataset(
                 "fci_one_rdm",
-                data=(self.fci_one_rdm
-                      if self.fci_one_rdm is not None else False),
-                compression=("gzip" if self.fci_one_rdm is not None else None))
+                data=(self.fci_one_rdm if self.fci_one_rdm is not None else False),
+                compression=("gzip" if self.fci_one_rdm is not None else None),
+            )
             f.create_dataset(
                 "fci_two_rdm",
-                data=(self.fci_two_rdm
-                      if self.fci_two_rdm is not None else False),
-                compression=("gzip" if self.fci_two_rdm is not None else None))
+                data=(self.fci_two_rdm if self.fci_two_rdm is not None else False),
+                compression=("gzip" if self.fci_two_rdm is not None else None),
+            )
             # Save attributes generated from CCSD calculation.
-            f.create_dataset("ccsd_energy",
-                             data=(self.ccsd_energy
-                                   if self.ccsd_energy is not None else False))
+            f.create_dataset(
+                "ccsd_energy", data=(self.ccsd_energy if self.ccsd_energy is not None else False)
+            )
             f.create_dataset(
                 "ccsd_single_amps",
-                data=(self.ccsd_single_amps
-                      if self.ccsd_single_amps is not None else False),
-                compression=("gzip"
-                             if self.ccsd_single_amps is not None else None))
+                data=(self.ccsd_single_amps if self.ccsd_single_amps is not None else False),
+                compression=("gzip" if self.ccsd_single_amps is not None else None),
+            )
             f.create_dataset(
                 "ccsd_double_amps",
-                data=(self.ccsd_double_amps
-                      if self.ccsd_double_amps is not None else False),
-                compression=("gzip"
-                             if self.ccsd_double_amps is not None else None))
+                data=(self.ccsd_double_amps if self.ccsd_double_amps is not None else False),
+                compression=("gzip" if self.ccsd_double_amps is not None else None),
+            )
 
             # Save general calculation data
             key_list = list(self.general_calculations.keys())
-            f.create_dataset("general_calculations_keys",
-                             data=([numpy.string_(key) for key in key_list]
-                                   if len(key_list) > 0 else False))
+            f.create_dataset(
+                "general_calculations_keys",
+                data=([numpy.string_(key) for key in key_list] if len(key_list) > 0 else False),
+            )
             f.create_dataset(
                 "general_calculations_values",
-                data=([self.general_calculations[key] for key in key_list]
-                      if len(key_list) > 0 else False))
+                data=(
+                    [self.general_calculations[key] for key in key_list]
+                    if len(key_list) > 0
+                    else False
+                ),
+            )
 
         # Remove old file first for compatibility with systems that don't allow
         # rename replacement.  Catching OSError for when file does not exist
@@ -723,8 +852,7 @@ class MolecularData(object):
             # Load geometry:
             data = f["geometry/atoms"]
             if data.shape != (()):
-                for atom, pos in zip(f["geometry/atoms"][...],
-                                     f["geometry/positions"][...]):
+                for atom, pos in zip(f["geometry/atoms"][...], f["geometry/positions"][...]):
                     geometry.append((atom.tobytes().decode('utf-8'), list(pos)))
                 self.geometry = geometry
             else:
@@ -736,8 +864,7 @@ class MolecularData(object):
             # Load charge:
             self.charge = int(f["charge"][...])
             # Load description:
-            self.description = f["description"][...].tobytes().decode(
-                'utf-8').rstrip(u'\x00')
+            self.description = f["description"][...].tobytes().decode('utf-8').rstrip(u'\x00')
             # Load name:
             self.name = f["name"][...].tobytes().decode('utf-8')
             # Load n_atoms:
@@ -754,8 +881,7 @@ class MolecularData(object):
             data = f["n_qubits"][...]
             self.n_qubits = int(data) if data.dtype.num != 0 else None
             data = f["nuclear_repulsion"][...]
-            self.nuclear_repulsion = (float(data)
-                                      if data.dtype.num != 0 else None)
+            self.nuclear_repulsion = float(data) if data.dtype.num != 0 else None
             # Load attributes generated from SCF calculation.
             data = f["hf_energy"][...]
             self.hf_energy = data if data.dtype.num != 0 else None
@@ -774,8 +900,7 @@ class MolecularData(object):
             data = f["ccsd_energy"][...]
             self.ccsd_energy = data if data.dtype.num != 0 else None
             # Load general calculations
-            if ("general_calculations_keys" in f and
-                    "general_calculations_values" in f):
+            if "general_calculations_keys" in f and "general_calculations_values" in f:
                 keys = f["general_calculations_keys"]
                 values = f["general_calculations_values"]
                 if keys.shape != (()):
@@ -833,12 +958,11 @@ class MolecularData(object):
         if self.one_body_integrals is None or self.two_body_integrals is None:
             raise MissingCalculationError(
                 'Missing integral calculation in {}, run before loading '
-                'integrals.'.format(self.filename))
+                'integrals.'.format(self.filename)
+            )
         return self.one_body_integrals, self.two_body_integrals
 
-    def get_active_space_integrals(self,
-                                   occupied_indices=None,
-                                   active_indices=None):
+    def get_active_space_integrals(self, occupied_indices=None, active_indices=None):
         """Restricts a molecule at a spatial orbital level to an active space
 
         This active space may be defined by a list of active indices and
@@ -866,18 +990,16 @@ class MolecularData(object):
         """
         # Fix data type for a few edge cases
         occupied_indices = [] if occupied_indices is None else occupied_indices
-        if (len(active_indices) < 1):
+        if len(active_indices) < 1:
             raise ValueError('Some active indices required for reduction.')
 
         # Get integrals.
         one_body_integrals, two_body_integrals = self.get_integrals()
-        return reps.get_active_space_integrals(one_body_integrals,
-                                               two_body_integrals,
-                                               occupied_indices, active_indices)
+        return reps.get_active_space_integrals(
+            one_body_integrals, two_body_integrals, occupied_indices, active_indices
+        )
 
-    def get_molecular_hamiltonian(self,
-                                  occupied_indices=None,
-                                  active_indices=None):
+    def get_molecular_hamiltonian(self, occupied_indices=None, active_indices=None):
         """Output arrays of the second quantized Hamiltonian coefficients.
 
         Args:
@@ -899,16 +1021,21 @@ class MolecularData(object):
             one_body_integrals, two_body_integrals = self.get_integrals()
             constant = self.nuclear_repulsion
         else:
-            core_adjustment, one_body_integrals, two_body_integrals = self. \
-                get_active_space_integrals(occupied_indices, active_indices)
+            (
+                core_adjustment,
+                one_body_integrals,
+                two_body_integrals,
+            ) = self.get_active_space_integrals(occupied_indices, active_indices)
             constant = self.nuclear_repulsion + core_adjustment
 
         one_body_coefficients, two_body_coefficients = spinorb_from_spatial(
-            one_body_integrals, two_body_integrals)
+            one_body_integrals, two_body_integrals
+        )
 
         # Cast to InteractionOperator class and return.
         molecular_hamiltonian = reps.InteractionOperator(
-            constant, one_body_coefficients, 1 / 2 * two_body_coefficients)
+            constant, one_body_coefficients, 1 / 2 * two_body_coefficients
+        )
 
         return molecular_hamiltonian
 
@@ -930,21 +1057,23 @@ class MolecularData(object):
         if use_fci:
             if self.fci_energy is None:
                 raise MissingCalculationError(
-                    'Missing FCI RDM in {}'.format(self.filename) +
-                    'Run FCI calculation before loading FCI RDMs.')
+                    'Missing FCI RDM in {}'.format(self.filename)
+                    + 'Run FCI calculation before loading FCI RDMs.'
+                )
             one_rdm = self.fci_one_rdm
             two_rdm = self.fci_two_rdm
         else:
             if self.cisd_energy is None:
                 raise MissingCalculationError(
-                    'Missing CISD RDM in {}'.format(self.filename) +
-                    'Run CISD calculation before loading CISD RDMs.')
+                    'Missing CISD RDM in {}'.format(self.filename)
+                    + 'Run CISD calculation before loading CISD RDMs.'
+                )
             one_rdm = self.cisd_one_rdm
             two_rdm = self.cisd_two_rdm
 
         # Truncate.
-        one_rdm[numpy.absolute(one_rdm) < EQ_TOLERANCE] = 0.
-        two_rdm[numpy.absolute(two_rdm) < EQ_TOLERANCE] = 0.
+        one_rdm[numpy.absolute(one_rdm) < EQ_TOLERANCE] = 0.0
+        two_rdm[numpy.absolute(two_rdm) < EQ_TOLERANCE] = 0.0
 
         # Cast to InteractionRDM class.
         rdm = reps.InteractionRDM(one_rdm, two_rdm)
@@ -964,7 +1093,8 @@ class MolecularData(object):
         if self.two_body_integrals is None:
             raise MissingCalculationError(
                 'Missing integral calculation in {}, run before loading '
-                'integrals.'.format(self.filename))
+                'integrals.'.format(self.filename)
+            )
         return j_mat(self.two_body_integrals)
 
     def get_k(self):
@@ -981,7 +1111,8 @@ class MolecularData(object):
         if self.two_body_integrals is None:
             raise MissingCalculationError(
                 'Missing integral calculation in {}, run before loading '
-                'integrals.'.format(self.filename))
+                'integrals.'.format(self.filename)
+            )
         return k_mat(self.two_body_integrals)
 
     def get_antisym(self):
@@ -998,18 +1129,17 @@ class MolecularData(object):
         if self.two_body_integrals is None:
             raise MissingCalculationError(
                 'Missing integral calculation in {}, run before loading '
-                'integrals.'.format(self.filename))
-        _, two_body_coefficients = spinorb_from_spatial(self.one_body_integrals,
-                                                        self.two_body_integrals)
+                'integrals.'.format(self.filename)
+            )
+        _, two_body_coefficients = spinorb_from_spatial(
+            self.one_body_integrals, self.two_body_integrals
+        )
         return antisymtei(two_body_coefficients)
 
 
-def load_molecular_hamiltonian(geometry,
-                               basis,
-                               multiplicity,
-                               description,
-                               n_active_electrons=None,
-                               n_active_orbitals=None):
+def load_molecular_hamiltonian(
+    geometry, basis, multiplicity, description, n_active_electrons=None, n_active_orbitals=None
+):
     """Attempt to load a molecular Hamiltonian with the given properties.
 
     Args:
@@ -1030,10 +1160,7 @@ def load_molecular_hamiltonian(geometry,
         The Hamiltonian as an InteractionOperator.
     """
 
-    molecule = MolecularData(geometry,
-                             basis,
-                             multiplicity,
-                             description=description)
+    molecule = MolecularData(geometry, basis, multiplicity, description=description)
     molecule.load()
 
     if n_active_electrons is None:
@@ -1046,8 +1173,8 @@ def load_molecular_hamiltonian(geometry,
     if n_active_orbitals is None:
         active_indices = None
     else:
-        active_indices = list(
-            range(n_core_orbitals, n_core_orbitals + n_active_orbitals))
+        active_indices = list(range(n_core_orbitals, n_core_orbitals + n_active_orbitals))
 
-    return molecule.get_molecular_hamiltonian(occupied_indices=occupied_indices,
-                                              active_indices=active_indices)
+    return molecule.get_molecular_hamiltonian(
+        occupied_indices=occupied_indices, active_indices=active_indices
+    )

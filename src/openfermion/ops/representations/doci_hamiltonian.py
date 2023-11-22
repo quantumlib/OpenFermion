@@ -13,8 +13,7 @@
 import numpy
 
 from openfermion.ops import QubitOperator
-from openfermion.ops.representations import (PolynomialTensor,
-                                             get_tensors_from_integrals)
+from openfermion.ops.representations import PolynomialTensor, get_tensors_from_integrals
 
 COEFFICIENT_TYPES = (int, float, complex)
 
@@ -124,8 +123,7 @@ class DOCIHamiltonian(PolynomialTensor):
         Returns:
             [QubitOperator] -- Z term on the chosen qubit.
         """
-        return QubitOperator("Z" + str(p),
-                             -self.hc[p] / 2 - sum(self.hr2[:, p]) / 2)
+        return QubitOperator("Z" + str(p), -self.hc[p] / 2 - sum(self.hr2[:, p]) / 2)
 
     def zz_term(self, p, q):
         """Returns the ZZ term on a single pair of qubits as a QubitOperator
@@ -142,30 +140,30 @@ class DOCIHamiltonian(PolynomialTensor):
         in QubitOperator form.
         """
         return QubitOperator(
-            (), self.constant + numpy.sum(self.hc) / 2 +
-            numpy.sum(self.hr2) / 4 + numpy.sum(numpy.diag(self.hr2)) / 4)
+            (),
+            self.constant
+            + numpy.sum(self.hc) / 2
+            + numpy.sum(self.hr2) / 4
+            + numpy.sum(numpy.diag(self.hr2)) / 4,
+        )
 
     @property
     def xx_part(self):
         """Returns the XX part of the QubitOperator representation of this
         DOCIHamiltonian
         """
-        return sum([
-            self.xx_term(p, q)
-            for p in range(self.n_qubits)
-            for q in range(p + 1, self.n_qubits)
-        ])
+        return sum(
+            [self.xx_term(p, q) for p in range(self.n_qubits) for q in range(p + 1, self.n_qubits)]
+        )
 
     @property
     def yy_part(self):
         """Returns the YY part of the QubitOperator representation of this
         DOCIHamiltonian
         """
-        return sum([
-            self.yy_term(p, q)
-            for p in range(self.n_qubits)
-            for q in range(p + 1, self.n_qubits)
-        ])
+        return sum(
+            [self.yy_term(p, q) for p in range(self.n_qubits) for q in range(p + 1, self.n_qubits)]
+        )
 
     @property
     def xy_part(self):
@@ -179,18 +177,15 @@ class DOCIHamiltonian(PolynomialTensor):
         """Returns the ZZ part of the QubitOperator representation of this
         DOCIHamiltonian
         """
-        return sum([
-            self.zz_term(p, q)
-            for p in range(self.n_qubits)
-            for q in range(p + 1, self.n_qubits)
-        ])
+        return sum(
+            [self.zz_term(p, q) for p in range(self.n_qubits) for q in range(p + 1, self.n_qubits)]
+        )
 
     @property
     def z_part(self):
         """Return the Z and ZZ part of the QubitOperator representation of this
         DOCI Hamiltonian"""
-        return self.zz_part + sum(
-            [self.z_term(p) for p in range(self.n_qubits)])
+        return self.zz_part + sum([self.z_term(p) for p in range(self.n_qubits)])
 
     @property
     def hc(self):
@@ -230,41 +225,49 @@ class DOCIHamiltonian(PolynomialTensor):
     # Override base class to generate on the fly
     @property
     def n_body_tensors(self):
-        one_body_coefficients, two_body_coefficients =\
-            get_tensors_from_doci(self.hc, self.hr1, self.hr2)
+        one_body_coefficients, two_body_coefficients = get_tensors_from_doci(
+            self.hc, self.hr1, self.hr2
+        )
         n_body_tensors = {
             (): self.constant,
             (1, 0): one_body_coefficients,
-            (1, 1, 0, 0): two_body_coefficients
+            (1, 1, 0, 0): two_body_coefficients,
         }
         return n_body_tensors
 
     @n_body_tensors.setter
     def n_body_tensors(self, value):
-        raise TypeError('Raw edits of the n_body_tensors of a DOCIHamiltonian '
-                        'is not allowed. Either adjust the hc/hr1/hr2 terms '
-                        'or cast to another PolynomialTensor class.')
+        raise TypeError(
+            'Raw edits of the n_body_tensors of a DOCIHamiltonian '
+            'is not allowed. Either adjust the hc/hr1/hr2 terms '
+            'or cast to another PolynomialTensor class.'
+        )
 
     def _get_onebody_term(self, key, index):
         if key[0] != 1 or key[1] != 0:
-            raise IndexError('DOCIHamiltonian class only contains '
-                             'one-body terms in the (1, 0) sector.')
+            raise IndexError(
+                'DOCIHamiltonian class only contains ' 'one-body terms in the (1, 0) sector.'
+            )
         if index[0] != index[1]:
-            raise IndexError('DOCIHamiltonian class only contains '
-                             'diagonal one-body electron integrals.')
+            raise IndexError(
+                'DOCIHamiltonian class only contains ' 'diagonal one-body electron integrals.'
+            )
         return self.hc[index[0] // 2] / 2
 
     def _get_twobody_term(self, key, index):
         if key[0] != 1 or key[1] != 1 or key[2] != 0 or key[3] != 0:
-            raise IndexError('DOCIHamiltonian class only contains '
-                             'two-body terms in the (1, 1, 0, 0) sector.')
+            raise IndexError(
+                'DOCIHamiltonian class only contains ' 'two-body terms in the (1, 1, 0, 0) sector.'
+            )
         if index[0] == index[3] and index[1] == index[2]:
             return self.hr2[index[0] // 2, index[1] // 2] / 2
         if index[0] // 2 == index[1] // 2 and index[2] // 2 == index[3] // 2:
             return self.hr1[index[0] // 2, index[2] // 2] / 2
-        raise IndexError('DOCIHamiltonian class only contains '
-                         'two-electron integrals corresponding '
-                         'to a double excitation.')
+        raise IndexError(
+            'DOCIHamiltonian class only contains '
+            'two-electron integrals corresponding '
+            'to a double excitation.'
+        )
 
     # Override base class
     def __getitem__(self, args):
@@ -284,8 +287,9 @@ class DOCIHamiltonian(PolynomialTensor):
             return self._get_onebody_term(key, index)
         if len(index) == 4:
             return self._get_twobody_term(key, index)
-        raise IndexError('DOCIHamiltonian class only contains '
-                         'one and two-electron and constant terms.')
+        raise IndexError(
+            'DOCIHamiltonian class only contains ' 'one and two-electron and constant terms.'
+        )
 
     # Override root class
     def __setitem__(self, args, value):
@@ -294,9 +298,11 @@ class DOCIHamiltonian(PolynomialTensor):
         # make the user update the hr1/hr2/hc terms --- if they really
         # want to play around with the n_body_tensors here they should
         # be casting this to a raw PolynomialTensor.
-        raise TypeError('Raw edits of the n_body_tensors of a DOCIHamiltonian '
-                        'is not allowed. Either adjust the hc/hr1/hr2 terms '
-                        'or cast to another PolynomialTensor class.')
+        raise TypeError(
+            'Raw edits of the n_body_tensors of a DOCIHamiltonian '
+            'is not allowed. Either adjust the hc/hr1/hr2 terms '
+            'or cast to another PolynomialTensor class.'
+        )
 
     # Override root class
     def __iadd__(self, addend):
@@ -347,18 +353,20 @@ class DOCIHamiltonian(PolynomialTensor):
 
     @classmethod
     def from_integrals(cls, constant, one_body_integrals, two_body_integrals):
-        hc, hr1, hr2 = get_doci_from_integrals(one_body_integrals,
-                                               two_body_integrals)
+        hc, hr1, hr2 = get_doci_from_integrals(one_body_integrals, two_body_integrals)
         return cls(constant, hc, hr1, hr2)
 
     @classmethod
     def zero(cls, n_qubits):
-        return cls(0, numpy.zeros((n_qubits,), dtype=numpy.complex128),
-                   numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
-                   numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128))
+        return cls(
+            0,
+            numpy.zeros((n_qubits,), dtype=numpy.complex128),
+            numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
+            numpy.zeros((n_qubits,) * 2, dtype=numpy.complex128),
+        )
 
     def get_projected_integrals(self):
-        ''' Creates the one and two body integrals that would correspond to a
+        '''Creates the one and two body integrals that would correspond to a
         hypothetic electronic structure Hamiltonian, which would satisfy the
         given set of hc, hr1 and hr2.
 
@@ -396,8 +404,9 @@ class DOCIHamiltonian(PolynomialTensor):
            projected_twobody_integrals [numpy array]: The corresponding two body
                integrals for the electronic structure Hamiltonian
         '''
-        one_body_integrals, two_body_integrals = \
-            get_projected_integrals_from_doci(self.hc, self.hr1, self.hr2)
+        one_body_integrals, two_body_integrals = get_projected_integrals_from_doci(
+            self.hc, self.hr1, self.hr2
+        )
         return one_body_integrals, two_body_integrals
 
 
@@ -417,13 +426,12 @@ def get_tensors_from_doci(hc, hr1, hr2):
         two_body_coefficients [numpy array]: The corresponding two body
             tensor for the electronic structure Hamiltonian
     '''
-    one_body_integrals, two_body_integrals =\
-        get_projected_integrals_from_doci(hc, hr1, hr2)
+    one_body_integrals, two_body_integrals = get_projected_integrals_from_doci(hc, hr1, hr2)
     one_body_coefficients, two_body_coefficients = get_tensors_from_integrals(
-        one_body_integrals, two_body_integrals)
+        one_body_integrals, two_body_integrals
+    )
 
-    two_body_coefficients = two_body_coefficients - numpy.einsum(
-        'ijlk', two_body_coefficients)
+    two_body_coefficients = two_body_coefficients - numpy.einsum('ijlk', two_body_coefficients)
 
     return one_body_coefficients, two_body_coefficients
 
@@ -458,10 +466,10 @@ def get_projected_integrals_from_doci(hc, hr1, hr2):
             integrals for the electronic structure Hamiltonian
     '''
     n_qubits = hr1.shape[0]
-    projected_onebody_integrals = numpy.zeros((n_qubits, n_qubits),
-                                              dtype=hc.dtype)
+    projected_onebody_integrals = numpy.zeros((n_qubits, n_qubits), dtype=hc.dtype)
     projected_twobody_integrals = numpy.zeros(
-        (n_qubits, n_qubits, n_qubits, n_qubits), dtype=hc.dtype)
+        (n_qubits, n_qubits, n_qubits, n_qubits), dtype=hc.dtype
+    )
     for p in range(n_qubits):
         projected_onebody_integrals[p, p] = hc[p] / 2
         projected_twobody_integrals[p, p, p, p] = hr2[p, p]
@@ -469,10 +477,8 @@ def get_projected_integrals_from_doci(hc, hr1, hr2):
             if p <= q:
                 continue
 
-            projected_twobody_integrals[p, q, q,
-                                        p] = hr2[p, q] / 2 + hr1[p, q] / 2
-            projected_twobody_integrals[q, p, p,
-                                        q] = hr2[q, p] / 2 + hr1[p, q] / 2
+            projected_twobody_integrals[p, q, q, p] = hr2[p, q] / 2 + hr1[p, q] / 2
+            projected_twobody_integrals[q, p, p, q] = hr2[q, p] / 2 + hr1[p, q] / 2
 
             projected_twobody_integrals[p, p, q, q] += hr1[p, q]
             projected_twobody_integrals[p, q, p, q] += hr1[p, q]
@@ -504,8 +510,7 @@ def get_doci_from_integrals(one_body_integrals, two_body_integrals):
     for p in range(n_qubits):
         hc[p] = 2 * one_body_integrals[p, p]
         for q in range(n_qubits):
-            hr2[p, q] = (2 * two_body_integrals[p, q, q, p] -
-                         two_body_integrals[p, q, p, q])
+            hr2[p, q] = 2 * two_body_integrals[p, q, q, p] - two_body_integrals[p, q, p, q]
             if p == q:
                 continue
             hr1[p, q] = two_body_integrals[p, p, q, q]

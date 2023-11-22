@@ -43,37 +43,30 @@ def bch_expand_baseline(x, y, order):
 
     # Second order.
     if order > 1:
-        z += commutator(x, y) / 2.
+        z += commutator(x, y) / 2.0
 
     # Third order.
     if order > 2:
-        z += commutator(x, commutator(x, y)) / 12.
-        z += commutator(y, commutator(y, x)) / 12.
+        z += commutator(x, commutator(x, y)) / 12.0
+        z += commutator(y, commutator(y, x)) / 12.0
 
     # Fourth order.
     if order > 3:
-        z -= commutator(y, commutator(x, commutator(x, y))) / 24.
+        z -= commutator(y, commutator(x, commutator(x, y))) / 24.0
 
     # Fifth order.
     if order > 4:
-        z -= commutator(y, commutator(y, commutator(y, commutator(y,
-                                                                  x)))) / 720.
-        z -= commutator(x, commutator(x, commutator(x, commutator(x,
-                                                                  y)))) / 720.
-        z += commutator(x, commutator(y, commutator(y, commutator(y,
-                                                                  x)))) / 360.
-        z += commutator(y, commutator(x, commutator(x, commutator(x,
-                                                                  y)))) / 360.
-        z += commutator(y, commutator(x, commutator(y, commutator(x,
-                                                                  y)))) / 120.
-        z += commutator(x, commutator(y, commutator(x, commutator(y,
-                                                                  x)))) / 120.
+        z -= commutator(y, commutator(y, commutator(y, commutator(y, x)))) / 720.0
+        z -= commutator(x, commutator(x, commutator(x, commutator(x, y)))) / 720.0
+        z += commutator(x, commutator(y, commutator(y, commutator(y, x)))) / 360.0
+        z += commutator(y, commutator(x, commutator(x, commutator(x, y)))) / 360.0
+        z += commutator(y, commutator(x, commutator(y, commutator(x, y)))) / 120.0
+        z += commutator(x, commutator(y, commutator(x, commutator(y, x)))) / 120.0
 
     return z
 
 
 class BCHTest(unittest.TestCase):
-
     def setUp(self):
         """Initialize a few density matrices"""
         self.seed = [13579, 34628, 2888, 11111, 67917]
@@ -94,10 +87,9 @@ class BCHTest(unittest.TestCase):
             self.assertAlmostEqual(norm(test - baseline), 0.0)
 
             test = bch_expand(x, y, z, order=self.test_order)
-            baseline = bch_expand_baseline(x,
-                                           bch_expand_baseline(
-                                               y, z, order=self.test_order),
-                                           order=self.test_order)
+            baseline = bch_expand_baseline(
+                x, bch_expand_baseline(y, z, order=self.test_order), order=self.test_order
+            )
             self.assertAlmostEqual(norm(test - baseline), 0.0)
 
     def test_verification(self):

@@ -16,32 +16,30 @@ import itertools
 import numpy
 
 from openfermion.hamiltonians import number_operator
-from openfermion.ops.operators import (FermionOperator, BosonOperator,
-                                       QuadOperator)
-from openfermion.transforms.opconversions import (jordan_wigner,
-                                                  get_fermion_operator)
+from openfermion.ops.operators import FermionOperator, BosonOperator, QuadOperator
+from openfermion.transforms.opconversions import jordan_wigner, get_fermion_operator
 from openfermion.testing.testing_utils import random_interaction_operator
 from openfermion.utils import up_then_down
 
 from openfermion.transforms.opconversions.term_reordering import (
-    normal_ordered, chemist_ordered, reorder)
+    normal_ordered,
+    chemist_ordered,
+    reorder,
+)
 
 
 class ChemistOrderingTest(unittest.TestCase):
-
     def test_convert_forward_back(self):
         n_qubits = 6
-        random_operator = get_fermion_operator(
-            random_interaction_operator(n_qubits))
+        random_operator = get_fermion_operator(random_interaction_operator(n_qubits))
         chemist_operator = chemist_ordered(random_operator)
         normalized_chemist = normal_ordered(chemist_operator)
         difference = normalized_chemist - normal_ordered(random_operator)
-        self.assertAlmostEqual(0., difference.induced_norm())
+        self.assertAlmostEqual(0.0, difference.induced_norm())
 
     def test_exception(self):
         n_qubits = 6
-        random_operator = get_fermion_operator(
-            random_interaction_operator(n_qubits))
+        random_operator = get_fermion_operator(random_interaction_operator(n_qubits))
         bad_term = ((2, 1), (3, 1))
         random_operator += FermionOperator(bad_term)
         with self.assertRaises(TypeError):
@@ -49,8 +47,7 @@ class ChemistOrderingTest(unittest.TestCase):
 
     def test_form(self):
         n_qubits = 6
-        random_operator = get_fermion_operator(
-            random_interaction_operator(n_qubits))
+        random_operator = get_fermion_operator(random_interaction_operator(n_qubits))
         chemist_operator = chemist_ordered(random_operator)
         for term, _ in chemist_operator.terms.items():
             if len(term) == 2 or not len(term):
@@ -65,16 +62,14 @@ class ChemistOrderingTest(unittest.TestCase):
 
 
 class TestNormalOrdering(unittest.TestCase):
-
     def test_boson_single_term(self):
         op = BosonOperator('4 3 2 1') + BosonOperator('3 2')
         self.assertTrue(op == normal_ordered(op))
 
     def test_boson_two_term(self):
-        op_b = BosonOperator(((2, 0), (4, 0), (2, 1)), 88.)
+        op_b = BosonOperator(((2, 0), (4, 0), (2, 1)), 88.0)
         normal_ordered_b = normal_ordered(op_b)
-        expected = (BosonOperator(((4, 0),), 88.) + BosonOperator(
-            ((2, 1), (4, 0), (2, 0)), 88.))
+        expected = BosonOperator(((4, 0),), 88.0) + BosonOperator(((2, 1), (4, 0), (2, 0)), 88.0)
         self.assertTrue(normal_ordered_b == expected)
 
     def test_boson_number(self):
@@ -98,8 +93,7 @@ class TestNormalOrdering(unittest.TestCase):
 
     def test_boson_multi(self):
         op = BosonOperator(((2, 0), (1, 1), (2, 1)))
-        expected = (BosonOperator(((2, 1), (1, 1), (2, 0))) + BosonOperator(
-            ((1, 1),)))
+        expected = BosonOperator(((2, 1), (1, 1), (2, 0))) + BosonOperator(((1, 1),))
         self.assertTrue(expected == normal_ordered(op))
 
     def test_boson_triple(self):
@@ -116,10 +110,11 @@ class TestNormalOrdering(unittest.TestCase):
         self.assertTrue(op == normal_ordered(op))
 
     def test_fermion_two_term(self):
-        op_b = FermionOperator(((2, 0), (4, 0), (2, 1)), -88.)
+        op_b = FermionOperator(((2, 0), (4, 0), (2, 1)), -88.0)
         normal_ordered_b = normal_ordered(op_b)
-        expected = (FermionOperator(((4, 0),), 88.) + FermionOperator(
-            ((2, 1), (4, 0), (2, 0)), 88.))
+        expected = FermionOperator(((4, 0),), 88.0) + FermionOperator(
+            ((2, 1), (4, 0), (2, 0)), 88.0
+        )
         self.assertTrue(normal_ordered_b == expected)
 
     def test_fermion_number(self):
@@ -153,8 +148,7 @@ class TestNormalOrdering(unittest.TestCase):
 
     def test_fermion_multi(self):
         op = FermionOperator(((2, 0), (1, 1), (2, 1)))
-        expected = (-FermionOperator(
-            ((2, 1), (1, 1), (2, 0))) - FermionOperator(((1, 1),)))
+        expected = -FermionOperator(((2, 1), (1, 1), (2, 0))) - FermionOperator(((1, 1),))
         self.assertTrue(expected == normal_ordered(op))
 
     def test_fermion_triple(self):
@@ -171,14 +165,13 @@ class TestNormalOrdering(unittest.TestCase):
         self.assertTrue(op == normal_ordered(op))
 
         op = QuadOperator('q0 p0') - QuadOperator('p0 q0')
-        expected = QuadOperator('', 2.j)
-        self.assertTrue(expected == normal_ordered(op, hbar=2.))
+        expected = QuadOperator('', 2.0j)
+        self.assertTrue(expected == normal_ordered(op, hbar=2.0))
 
     def test_quad_two_term(self):
-        op_b = QuadOperator('p0 q0 p3', 88.)
+        op_b = QuadOperator('p0 q0 p3', 88.0)
         normal_ordered_b = normal_ordered(op_b, hbar=2)
-        expected = QuadOperator('p3', -88. * 2j) + QuadOperator(
-            'q0 p0 p3', 88.0)
+        expected = QuadOperator('p3', -88.0 * 2j) + QuadOperator('q0 p0 p3', 88.0)
         self.assertTrue(normal_ordered_b == expected)
 
     def test_quad_offsite(self):
@@ -200,8 +193,7 @@ class TestNormalOrdering(unittest.TestCase):
         self.assertTrue(op_132 == normal_ordered(op_321))
 
     def test_interaction_operator(self):
-        for n_orbitals, real, _ in itertools.product((1, 2, 5), (True, False),
-                                                     range(5)):
+        for n_orbitals, real, _ in itertools.product((1, 2, 5), (True, False), range(5)):
             operator = random_interaction_operator(n_orbitals, real=real)
             normal_ordered_operator = normal_ordered(operator)
             expected_qubit_operator = jordan_wigner(operator)
@@ -212,11 +204,11 @@ class TestNormalOrdering(unittest.TestCase):
             ones = numpy.ones((n_orbitals,) * 2)
             triu = numpy.triu(ones, 1)
             shape = (n_orbitals**2, 1)
-            mask = (triu.reshape(shape) * ones.reshape(shape[::-1]) +
-                    ones.reshape(shape) * triu.reshape(shape[::-1])).reshape(
-                        (n_orbitals,) * 4)
-            assert numpy.allclose(mask * two_body_tensor,
-                                  numpy.zeros((n_orbitals,) * 4))
+            mask = (
+                triu.reshape(shape) * ones.reshape(shape[::-1])
+                + ones.reshape(shape) * triu.reshape(shape[::-1])
+            ).reshape((n_orbitals,) * 4)
+            assert numpy.allclose(mask * two_body_tensor, numpy.zeros((n_orbitals,) * 4))
             for term in normal_ordered_operator:
                 order = len(term) // 2
                 left_term, right_term = term[:order], term[order:]
@@ -231,39 +223,31 @@ class TestNormalOrdering(unittest.TestCase):
 
 
 class TestReorder(unittest.TestCase):
-
     def test_reorder(self):
-
         def shift_by_one(x, y):
             return (x + 1) % y
 
         operator = FermionOperator('1^ 2^ 3 4', -3.17)
         reordered = reorder(operator, shift_by_one)
-        self.assertEqual(reordered.terms,
-                         {((2, 1), (3, 1), (4, 0), (0, 0)): -3.17})
+        self.assertEqual(reordered.terms, {((2, 1), (3, 1), (4, 0), (0, 0)): -3.17})
         reordered = reorder(operator, shift_by_one, reverse=True)
-        self.assertEqual(reordered.terms,
-                         {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
+        self.assertEqual(reordered.terms, {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
 
     def test_reorder_boson(self):
         shift_by_one = lambda x, y: (x + 1) % y
         operator = BosonOperator('1^ 2^ 3 4', -3.17)
         reordered = reorder(operator, shift_by_one)
-        self.assertEqual(reordered.terms,
-                         {((0, 0), (2, 1), (3, 1), (4, 0)): -3.17})
+        self.assertEqual(reordered.terms, {((0, 0), (2, 1), (3, 1), (4, 0)): -3.17})
         reordered = reorder(operator, shift_by_one, reverse=True)
-        self.assertEqual(reordered.terms,
-                         {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
+        self.assertEqual(reordered.terms, {((0, 1), (1, 1), (2, 0), (3, 0)): -3.17})
 
     def test_reorder_quad(self):
         shift_by_one = lambda x, y: (x + 1) % y
         operator = QuadOperator('q1 q2 p3 p4', -3.17)
         reordered = reorder(operator, shift_by_one)
-        self.assertEqual(reordered.terms,
-                         {((0, 'p'), (2, 'q'), (3, 'q'), (4, 'p')): -3.17})
+        self.assertEqual(reordered.terms, {((0, 'p'), (2, 'q'), (3, 'q'), (4, 'p')): -3.17})
         reordered = reorder(operator, shift_by_one, reverse=True)
-        self.assertEqual(reordered.terms,
-                         {((0, 'q'), (1, 'q'), (2, 'p'), (3, 'p')): -3.17})
+        self.assertEqual(reordered.terms, {((0, 'q'), (1, 'q'), (2, 'p'), (3, 'p')): -3.17})
 
     def test_up_then_down(self):
         for LadderOp in (FermionOperator, BosonOperator):

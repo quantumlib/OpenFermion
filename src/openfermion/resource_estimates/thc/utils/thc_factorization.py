@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 import os
 from uuid import uuid4
 import h5py
@@ -11,10 +11,13 @@ import jax.numpy as jnp
 from jax.config import config
 from jax import jit, grad
 from .adagrad import adagrad
-from .thc_objectives import (thc_objective, thc_objective_grad,
-                             thc_objective_and_grad,
-                             cp_ls_cholesky_factor_objective,
-                             thc_objective_regularized)
+from .thc_objectives import (
+    thc_objective,
+    thc_objective_grad,
+    thc_objective_and_grad,
+    cp_ls_cholesky_factor_objective,
+    thc_objective_regularized,
+)
 
 # set mkl thread count for numpy einsum/tensordot calls
 # leave one CPU un used  so we can still access this computer
@@ -23,10 +26,9 @@ config.update("jax_enable_x64", True)
 
 
 class CallBackStore:
-
     def __init__(self, chkpoint_file, freqency=500):
         """Generic callback function  for storing intermediates from BFGS and
-           Adagrad optimizations
+        Adagrad optimizations
         """
         self.chkpoint_file = chkpoint_file
         self.freq = freqency
@@ -39,13 +41,9 @@ class CallBackStore:
             f.close()
 
 
-def lbfgsb_opt_thc(eri,
-                   nthc,
-                   chkfile_name=None,
-                   initial_guess=None,
-                   random_seed=None,
-                   maxiter=150_000,
-                   disp=False):
+def lbfgsb_opt_thc(
+    eri, nthc, chkfile_name=None, initial_guess=None, random_seed=None, maxiter=150_000, disp=False
+):
     """
     Least-squares fit of two-electron integral tensors with  L-BFGS-B
     """
@@ -68,35 +66,36 @@ def lbfgsb_opt_thc(eri,
         x = initial_guess  # add more checks here for safety
 
     # L-BFGS-B optimization
-    res = minimize(thc_objective_and_grad,
-                   x,
-                   args=(norb, nthc, eri),
-                   jac=True,
-                   method='L-BFGS-B',
-                   options={
-                       'disp': disp,
-                       'maxiter': maxiter
-                   },
-                   callback=callback_func)
+    res = minimize(
+        thc_objective_and_grad,
+        x,
+        args=(norb, nthc, eri),
+        jac=True,
+        method='L-BFGS-B',
+        options={'disp': disp, 'maxiter': maxiter},
+        callback=callback_func,
+    )
     # print(res)
     params = res.x
     x = numpy.array(params)
     f = h5py.File(chkfile_name, "w")
-    f["etaPp"] = x[:norb * nthc].reshape(nthc, norb)
-    f["ZPQ"] = x[norb * nthc:].reshape(nthc, nthc)
+    f["etaPp"] = x[: norb * nthc].reshape(nthc, norb)
+    f["ZPQ"] = x[norb * nthc :].reshape(nthc, nthc)
     f.close()
     return params
 
 
-def lbfgsb_opt_thc_l2reg(eri,
-                         nthc,
-                         chkfile_name=None,
-                         initial_guess=None,
-                         random_seed=None,
-                         maxiter=150_000,
-                         disp_freq=98,
-                         penalty_param=None,
-                         disp=False):
+def lbfgsb_opt_thc_l2reg(
+    eri,
+    nthc,
+    chkfile_name=None,
+    initial_guess=None,
+    random_seed=None,
+    maxiter=150_000,
+    disp_freq=98,
+    penalty_param=None,
+    disp=False,
+):
     """
     Least-squares fit of two-electron integral tensors with  L-BFGS-B with
     l2-regularization of lambda
@@ -105,12 +104,10 @@ def lbfgsb_opt_thc_l2reg(eri,
     disp_freq sets the freqnecy of printing
     """
     if disp_freq > 98 or disp_freq < 1:
-        raise ValueError(
-            "disp_freq {} is not valid. must be between [1, 98]".format(
-                disp_freq))
+        raise ValueError("disp_freq {} is not valid. must be between [1, 98]".format(disp_freq))
 
     if chkfile_name is None:
-        #chkfile_name = str(uuid4()) + '.h5'
+        # chkfile_name = str(uuid4()) + '.h5'
         callback_func = None
     else:
         # callback func stores checkpoints
@@ -128,29 +125,21 @@ def lbfgsb_opt_thc_l2reg(eri,
         x = initial_guess  # add more checks here for safety
 
     # compute inital lambda to set penalty param
-    etaPp = x[:norb * nthc].reshape(nthc, norb)  # leaf tensor  nthc x norb
-    MPQ = x[norb * nthc:norb * nthc + nthc * nthc].reshape(
-        nthc, nthc)  # central tensor
-    SPQ = etaPp.dot(
-        etaPp.T)  # (nthc x norb)  x (norb x nthc) -> (nthc  x nthc) metric
-    cP = jnp.diag(jnp.diag(
-        SPQ))  # grab diagonal elements. equivalent to np.diag(np.diagonal(SPQ))
+    etaPp = x[: norb * nthc].reshape(nthc, norb)  # leaf tensor  nthc x norb
+    MPQ = x[norb * nthc : norb * nthc + nthc * nthc].reshape(nthc, nthc)  # central tensor
+    SPQ = etaPp.dot(etaPp.T)  # (nthc x norb)  x (norb x nthc) -> (nthc  x nthc) metric
+    cP = jnp.diag(jnp.diag(SPQ))  # grab diagonal elements. equivalent to np.diag(np.diagonal(SPQ))
     # no sqrts because we have two normalized THC vectors (index by mu and nu)
     # on each side.
     MPQ_normalized = cP.dot(MPQ).dot(cP)  # get normalized zeta in Eq. 11 & 12
     lambda_z = jnp.sum(jnp.abs(MPQ_normalized)) * 0.5
     # lambda_z = jnp.sum(MPQ_normalized**2) * 0.5
-    CprP = jnp.einsum("Pp,Pr->prP", etaPp,
-                      etaPp)  # this is einsum('mp,mq->pqm', etaPp, etaPp)
-    Iapprox = jnp.einsum('pqU,UV,rsV->pqrs',
-                         CprP,
-                         MPQ,
-                         CprP,
-                         optimize=[(0, 1), (0, 1)])
+    CprP = jnp.einsum("Pp,Pr->prP", etaPp, etaPp)  # this is einsum('mp,mq->pqm', etaPp, etaPp)
+    Iapprox = jnp.einsum('pqU,UV,rsV->pqrs', CprP, MPQ, CprP, optimize=[(0, 1), (0, 1)])
     deri = eri - Iapprox
     # set penalty
     if penalty_param is None:
-        sum_square_loss = 0.5 * numpy.sum((deri)**2)
+        sum_square_loss = 0.5 * numpy.sum((deri) ** 2)
         penalty_param = sum_square_loss / lambda_z
         print("lambda_z {}".format(lambda_z))
         print("penalty_param {}".format(penalty_param))
@@ -160,38 +149,38 @@ def lbfgsb_opt_thc_l2reg(eri,
     print("Initial Grad")
     print(thc_grad(jnp.array(x), norb, nthc, jnp.array(eri), penalty_param))
     print()
-    res = minimize(thc_objective_regularized,
-                   jnp.array(x),
-                   args=(norb, nthc, jnp.array(eri), penalty_param),
-                   method='L-BFGS-B',
-                   jac=thc_grad,
-                   options={
-                       'disp': None,
-                       'iprint': disp_freq,
-                       'maxiter': maxiter
-                   },
-                   callback=callback_func)
+    res = minimize(
+        thc_objective_regularized,
+        jnp.array(x),
+        args=(norb, nthc, jnp.array(eri), penalty_param),
+        method='L-BFGS-B',
+        jac=thc_grad,
+        options={'disp': None, 'iprint': disp_freq, 'maxiter': maxiter},
+        callback=callback_func,
+    )
 
     # print(res)
     params = numpy.array(res.x)
     x = numpy.array(params)
     if chkfile_name is not None:
         f = h5py.File(chkfile_name, "w")
-        f["etaPp"] = x[:norb * nthc].reshape(nthc, norb)
-        f["ZPQ"] = x[norb * nthc:].reshape(nthc, nthc)
+        f["etaPp"] = x[: norb * nthc].reshape(nthc, norb)
+        f["ZPQ"] = x[norb * nthc :].reshape(nthc, nthc)
         f.close()
     return params
 
 
-def adagrad_opt_thc(eri,
-                    nthc,
-                    chkfile_name=None,
-                    initial_guess=None,
-                    random_seed=None,
-                    stepsize=0.01,
-                    momentum=0.9,
-                    maxiter=50_000,
-                    gtol=1.0E-5):
+def adagrad_opt_thc(
+    eri,
+    nthc,
+    chkfile_name=None,
+    initial_guess=None,
+    random_seed=None,
+    stepsize=0.01,
+    momentum=0.9,
+    maxiter=50_000,
+    gtol=1.0e-5,
+):
     """
     THC opt usually starts with BFGS and then is completed with Adagrad or other
     first order solver.  This  function implements an Adagrad optimization.
@@ -216,8 +205,7 @@ def adagrad_opt_thc(eri,
             x = numpy.random.randn(norb * nthc + nthc * nthc)
     else:
         x = initial_guess  # add more checks here for safety
-    opt_init, opt_update, get_params = adagrad(step_size=stepsize,
-                                               momentum=momentum)
+    opt_init, opt_update, get_params = adagrad(step_size=stepsize, momentum=momentum)
     opt_state = opt_init(x)
 
     def update(i, opt_state):
@@ -244,17 +232,15 @@ def adagrad_opt_thc(eri,
     # save results before returning
     x = numpy.array(params)
     f = h5py.File(chkfile_name, "w")
-    f["etaPp"] = x[:norb * nthc].reshape(nthc, norb)
-    f["ZPQ"] = x[norb * nthc:].reshape(nthc, nthc)
+    f["etaPp"] = x[: norb * nthc].reshape(nthc, norb)
+    f["ZPQ"] = x[norb * nthc :].reshape(nthc, nthc)
     f.close()
     return params
 
 
-def lbfgsb_opt_cholesky(cholesky_factor,
-                        nthc,
-                        chkfile_name=None,
-                        initial_guess=None,
-                        random_seed=None):
+def lbfgsb_opt_cholesky(
+    cholesky_factor, nthc, chkfile_name=None, initial_guess=None, random_seed=None
+):
     """
     Least-squares fit of cholesky tensors with  L-BFGS-B
 
@@ -281,21 +267,20 @@ def lbfgsb_opt_cholesky(cholesky_factor,
         x = initial_guess  # add more checks here for safety
 
     # L-BFGS-B optimization
-    res = minimize(cp_ls_cholesky_factor_objective,
-                   x,
-                   args=(norb, nthc, cholesky_factor, True),
-                   jac=True,
-                   method='L-BFGS-B',
-                   options={
-                       'disp': True,
-                       'ftol': 1.0E-4
-                   },
-                   callback=callback_func)
+    res = minimize(
+        cp_ls_cholesky_factor_objective,
+        x,
+        args=(norb, nthc, cholesky_factor, True),
+        jac=True,
+        method='L-BFGS-B',
+        options={'disp': True, 'ftol': 1.0e-4},
+        callback=callback_func,
+    )
     print(res)
     params = res.x
     x = numpy.array(params)
     f = h5py.File(chkfile_name, "w")
-    f["etaPp"] = x[:norb * nthc].reshape(nthc, norb)
-    f["gamma"] = x[norb * nthc:].reshape(nthc, cholesky_factor.shape[-1])
+    f["etaPp"] = x[: norb * nthc].reshape(nthc, norb)
+    f["gamma"] = x[norb * nthc :].reshape(nthc, cholesky_factor.shape[-1])
     f.close()
     return params

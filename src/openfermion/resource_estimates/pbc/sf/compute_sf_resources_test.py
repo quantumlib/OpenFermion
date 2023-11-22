@@ -22,8 +22,7 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     )
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_estimate():
     n = 152
     lam = 3071.8
@@ -52,8 +51,7 @@ def test_estimate():
     assert np.isclose(res[2], 219526)
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_estimate_helper():
     n = 152
     lam = 3071.8
@@ -62,24 +60,14 @@ def test_estimate_helper():
     chi = 10
 
     res = compute_cost(
-        num_spin_orbs=n,
-        lambda_tot=lam,
-        num_aux=L,
-        kmesh=[3, 3, 3],
-        dE_for_qpe=dE,
-        chi=chi,
+        num_spin_orbs=n, lambda_tot=lam, num_aux=L, kmesh=[3, 3, 3], dE_for_qpe=dE, chi=chi
     )
     assert np.isclose(res.toffolis_per_step, 1663707)
     assert np.isclose(res.total_toffolis, 8027674096311)
     assert np.isclose(res.logical_qubits, 438452)
 
     res = compute_cost(
-        num_spin_orbs=n,
-        lambda_tot=lam,
-        num_aux=L,
-        kmesh=[3, 5, 1],
-        dE_for_qpe=dE,
-        chi=chi,
+        num_spin_orbs=n, lambda_tot=lam, num_aux=L, kmesh=[3, 5, 1], dE_for_qpe=dE, chi=chi
     )
     # 1663687, 8027577592851, 438447}
     assert np.isclose(res.toffolis_per_step, 907828)

@@ -22,35 +22,34 @@ from openfermion.config import DATA_DIRECTORY
 from openfermion.transforms import jordan_wigner
 from openfermion.linalg import get_sparse_operator
 from openfermion.ops.representations.doci_hamiltonian import (
-    DOCIHamiltonian, get_tensors_from_doci, get_projected_integrals_from_doci,
-    get_doci_from_integrals)
-from openfermion import (get_fermion_operator, InteractionOperator, \
-                         normal_ordered)
+    DOCIHamiltonian,
+    get_tensors_from_doci,
+    get_projected_integrals_from_doci,
+    get_doci_from_integrals,
+)
+from openfermion import get_fermion_operator, InteractionOperator, normal_ordered
 
 numpy.set_printoptions(linewidth=2000, threshold=sys.maxsize)
 
 
 class IntegralTransformsTest(unittest.TestCase):
-
     def setUp(self):
-        self.geometry = [('H', (0., 0., 0.)), ('Li', (0., 0., 1.45))]
+        self.geometry = [('H', (0.0, 0.0, 0.0)), ('Li', (0.0, 0.0, 1.45))]
         self.basis = 'sto-3g'
         self.multiplicity = 1
-        self.filename = os.path.join(DATA_DIRECTORY,
-                                     'H1-Li1_sto-3g_singlet_1.45')
-        self.molecule = MolecularData(self.geometry,
-                                      self.basis,
-                                      self.multiplicity,
-                                      filename=self.filename)
+        self.filename = os.path.join(DATA_DIRECTORY, 'H1-Li1_sto-3g_singlet_1.45')
+        self.molecule = MolecularData(
+            self.geometry, self.basis, self.multiplicity, filename=self.filename
+        )
         self.molecule.load()
 
     def test_integrals_self_inverse(self):
-        hc, hr1, hr2 = get_doci_from_integrals(self.molecule.one_body_integrals,
-                                               self.molecule.two_body_integrals)
+        hc, hr1, hr2 = get_doci_from_integrals(
+            self.molecule.one_body_integrals, self.molecule.two_body_integrals
+        )
         doci = DOCIHamiltonian(0, hc, hr1, hr2)
         proj_one_body, proj_two_body = doci.get_projected_integrals()
-        hc_test, hr1_test, hr2_test = get_doci_from_integrals(
-            proj_one_body, proj_two_body)
+        hc_test, hr1_test, hr2_test = get_doci_from_integrals(proj_one_body, proj_two_body)
         self.assertTrue(numpy.allclose(hc, hc_test))
         self.assertTrue(numpy.allclose(hr1, hr1_test))
         self.assertTrue(numpy.allclose(hr2, hr2_test))
@@ -58,48 +57,46 @@ class IntegralTransformsTest(unittest.TestCase):
     def test_fermionic_hamiltonian_from_integrals(self):
         constant = self.molecule.nuclear_repulsion
         doci_constant = constant
-        hc, hr1, hr2 = get_doci_from_integrals(self.molecule.one_body_integrals,
-                                               self.molecule.two_body_integrals)
+        hc, hr1, hr2 = get_doci_from_integrals(
+            self.molecule.one_body_integrals, self.molecule.two_body_integrals
+        )
 
         doci = DOCIHamiltonian(doci_constant, hc, hr1, hr2)
 
         doci_qubit_op = doci.qubit_operator
         doci_mat = get_sparse_operator(doci_qubit_op).toarray()
-        #doci_eigvals, doci_eigvecs = numpy.linalg.eigh(doci_mat)
+        # doci_eigvals, doci_eigvecs = numpy.linalg.eigh(doci_mat)
         doci_eigvals, _ = numpy.linalg.eigh(doci_mat)
 
         tensors = doci.n_body_tensors
-        one_body_tensors, two_body_tensors = tensors[(1, 0)], tensors[(1, 1, 0,
-                                                                       0)]
+        one_body_tensors, two_body_tensors = tensors[(1, 0)], tensors[(1, 1, 0, 0)]
         fermion_op1 = get_fermion_operator(
-            InteractionOperator(constant, one_body_tensors,
-                                0. * two_body_tensors))
+            InteractionOperator(constant, one_body_tensors, 0.0 * two_body_tensors)
+        )
 
         fermion_op2 = get_fermion_operator(
-            InteractionOperator(0, 0 * one_body_tensors,
-                                0.5 * two_body_tensors))
+            InteractionOperator(0, 0 * one_body_tensors, 0.5 * two_body_tensors)
+        )
 
         import openfermion as of
+
         fermion_op1_jw = of.transforms.jordan_wigner(fermion_op1)
         fermion_op2_jw = of.transforms.jordan_wigner(fermion_op2)
 
         fermion_op_jw = fermion_op1_jw + fermion_op2_jw
-        #fermion_eigvals, fermion_eigvecs = numpy.linalg.eigh(
+        # fermion_eigvals, fermion_eigvecs = numpy.linalg.eigh(
         #    get_sparse_operator(fermion_op_jw).toarray())
-        fermion_eigvals, _ = numpy.linalg.eigh(
-            get_sparse_operator(fermion_op_jw).toarray())
+        fermion_eigvals, _ = numpy.linalg.eigh(get_sparse_operator(fermion_op_jw).toarray())
 
         for eigval in doci_eigvals:
-            assert any(abs(fermion_eigvals -
-                           eigval) < 1e-6), "The DOCI spectrum should \
+            assert any(
+                abs(fermion_eigvals - eigval) < 1e-6
+            ), "The DOCI spectrum should \
             have been contained in the spectrum of the fermionic operators"
 
-        fermion_diagonal = get_sparse_operator(
-            fermion_op_jw).toarray().diagonal()
+        fermion_diagonal = get_sparse_operator(fermion_op_jw).toarray().diagonal()
         qubit_diagonal = doci_mat.diagonal()
-        assert numpy.isclose(
-            fermion_diagonal[0], qubit_diagonal[0]
-        ) and numpy.isclose(
+        assert numpy.isclose(fermion_diagonal[0], qubit_diagonal[0]) and numpy.isclose(
             fermion_diagonal[-1], qubit_diagonal[-1]
         ), "The first and last elements of hte qubit and fermionic diagonal of \
         the Hamiltonian maxtrix should be the same as the vaccum should be \
@@ -112,8 +109,7 @@ class IntegralTransformsTest(unittest.TestCase):
     def test_integrals_to_doci(self):
         one_body_integrals = self.molecule.one_body_integrals
         two_body_integrals = self.molecule.two_body_integrals
-        hc, hr1, hr2 = get_doci_from_integrals(one_body_integrals,
-                                               two_body_integrals)
+        hc, hr1, hr2 = get_doci_from_integrals(one_body_integrals, two_body_integrals)
         n_qubits = one_body_integrals.shape[0]
         self.assertEqual(hc.shape, (n_qubits,))
         self.assertEqual(hr1.shape, (n_qubits, n_qubits))
@@ -121,27 +117,26 @@ class IntegralTransformsTest(unittest.TestCase):
 
         for p in range(2):
             self.assertEqual(
-                hc[p] + hr2[p, p],
-                2 * one_body_integrals[p, p] + two_body_integrals[p, p, p, p])
+                hc[p] + hr2[p, p], 2 * one_body_integrals[p, p] + two_body_integrals[p, p, p, p]
+            )
             for q in range(2):
                 if p != q:
                     self.assertEqual(hr1[p, q], two_body_integrals[p, p, q, q])
                     self.assertEqual(
-                        hr2[p, q], 2 * two_body_integrals[p, q, q, p] -
-                        two_body_integrals[p, q, p, q])
+                        hr2[p, q],
+                        2 * two_body_integrals[p, q, q, p] - two_body_integrals[p, q, p, q],
+                    )
 
 
 class DOCIHamiltonianTest(unittest.TestCase):
-
     def setUp(self):
-        self.geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
+        self.geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
         self.basis = 'sto-3g'
         self.multiplicity = 1
         self.filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
-        self.molecule = MolecularData(self.geometry,
-                                      self.basis,
-                                      self.multiplicity,
-                                      filename=self.filename)
+        self.molecule = MolecularData(
+            self.geometry, self.basis, self.multiplicity, filename=self.filename
+        )
         self.molecule.load()
 
     def test_n_body_tensor_errors(self):
@@ -185,18 +180,18 @@ class DOCIHamiltonianTest(unittest.TestCase):
         doci_hamiltonian2 = DOCIHamiltonian.from_integrals(
             constant=self.molecule.nuclear_repulsion,
             one_body_integrals=self.molecule.one_body_integrals,
-            two_body_integrals=self.molecule.two_body_integrals)
-        self.assertTrue(doci_hamiltonian2 == doci_hamiltonian1 +
-                        doci_hamiltonian2)
-        self.assertTrue(doci_hamiltonian1 -
-                        doci_hamiltonian2 == doci_hamiltonian2 / -1)
+            two_body_integrals=self.molecule.two_body_integrals,
+        )
+        self.assertTrue(doci_hamiltonian2 == doci_hamiltonian1 + doci_hamiltonian2)
+        self.assertTrue(doci_hamiltonian1 - doci_hamiltonian2 == doci_hamiltonian2 / -1)
         self.assertTrue(doci_hamiltonian2 * 0 == doci_hamiltonian1)
 
     def test_error(self):
         doci_hamiltonian = DOCIHamiltonian.from_integrals(
             constant=self.molecule.nuclear_repulsion,
             one_body_integrals=self.molecule.one_body_integrals,
-            two_body_integrals=self.molecule.two_body_integrals)
+            two_body_integrals=self.molecule.two_body_integrals,
+        )
         with self.assertRaises(TypeError):
             doci_hamiltonian[((1, 0), (0, 1))] = 1
         with self.assertRaises(IndexError):
@@ -246,11 +241,11 @@ class DOCIHamiltonianTest(unittest.TestCase):
         doci_hamiltonian = DOCIHamiltonian.from_integrals(
             constant=self.molecule.nuclear_repulsion,
             one_body_integrals=self.molecule.one_body_integrals,
-            two_body_integrals=self.molecule.two_body_integrals).qubit_operator
+            two_body_integrals=self.molecule.two_body_integrals,
+        ).qubit_operator
 
         hamiltonian_matrix = get_sparse_operator(hamiltonian).toarray()
-        doci_hamiltonian_matrix = get_sparse_operator(
-            doci_hamiltonian).toarray()
+        doci_hamiltonian_matrix = get_sparse_operator(doci_hamiltonian).toarray()
         diagonal = numpy.real(numpy.diag(hamiltonian_matrix))
         doci_diagonal = numpy.real(numpy.diag(doci_hamiltonian_matrix))
         position_of_doci_diag_in_h = [0] * len(doci_diagonal)
@@ -258,21 +253,28 @@ class DOCIHamiltonianTest(unittest.TestCase):
             closest_in_diagonal = None
             for idx2, eig in enumerate(diagonal):
                 if closest_in_diagonal is None or abs(eig - doci_eigval) < abs(
-                        closest_in_diagonal - doci_eigval):
+                    closest_in_diagonal - doci_eigval
+                ):
                     closest_in_diagonal = eig
                     position_of_doci_diag_in_h[idx] = idx2
             assert abs(closest_in_diagonal - doci_eigval) < EQ_TOLERANCE, (
-                "Value " + str(doci_eigval) + " of the DOCI Hamiltonian " +
-                "diagonal did not appear in the diagonal of the full " +
-                "Hamiltonian. The closest value was " +
-                str(closest_in_diagonal))
+                "Value "
+                + str(doci_eigval)
+                + " of the DOCI Hamiltonian "
+                + "diagonal did not appear in the diagonal of the full "
+                + "Hamiltonian. The closest value was "
+                + str(closest_in_diagonal)
+            )
 
-        sub_matrix = hamiltonian_matrix[numpy.ix_(position_of_doci_diag_in_h,
-                                                  position_of_doci_diag_in_h)]
+        sub_matrix = hamiltonian_matrix[
+            numpy.ix_(position_of_doci_diag_in_h, position_of_doci_diag_in_h)
+        ]
         assert numpy.allclose(doci_hamiltonian_matrix, sub_matrix), (
-            "The coupling between the DOCI states in the DOCI Hamiltonian " +
-            "should be identical to that between these states in the full " +
-            "Hamiltonian but the DOCI hamiltonian matrix\n" +
-            str(doci_hamiltonian_matrix) +
-            "\ndoes not match the corresponding sub-matrix of the full " +
-            "Hamiltonian\n" + str(sub_matrix))
+            "The coupling between the DOCI states in the DOCI Hamiltonian "
+            + "should be identical to that between these states in the full "
+            + "Hamiltonian but the DOCI hamiltonian matrix\n"
+            + str(doci_hamiltonian_matrix)
+            + "\ndoes not match the corresponding sub-matrix of the full "
+            + "Hamiltonian\n"
+            + str(sub_matrix)
+        )

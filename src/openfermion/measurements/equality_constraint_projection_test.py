@@ -17,30 +17,32 @@ import numpy
 from openfermion.chem import MolecularData
 from openfermion.config import DATA_DIRECTORY
 from openfermion.transforms.opconversions import get_fermion_operator
-from openfermion.linalg import (get_sparse_operator, get_ground_state,
-                                jw_number_restrict_operator,
-                                sparse_eigenspectrum, expectation)
+from openfermion.linalg import (
+    get_sparse_operator,
+    get_ground_state,
+    jw_number_restrict_operator,
+    sparse_eigenspectrum,
+    expectation,
+)
 
-from .equality_constraint_projection import (apply_constraints,
-                                             constraint_matrix, linearize_term,
-                                             operator_to_vector,
-                                             unlinearize_term,
-                                             vector_to_operator)
+from .equality_constraint_projection import (
+    apply_constraints,
+    constraint_matrix,
+    linearize_term,
+    operator_to_vector,
+    unlinearize_term,
+    vector_to_operator,
+)
 
 
 class EqualityConstraintProjectionTest(unittest.TestCase):
-
     def setUp(self):
-
         # Set up molecule.
-        geometry = [('H', (0., 0., 0.)), ('H', (0., 0., 0.7414))]
+        geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
         basis = 'sto-3g'
         multiplicity = 1
         filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
-        molecule = MolecularData(geometry,
-                                 basis,
-                                 multiplicity,
-                                 filename=filename)
+        molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
         molecule.load()
         self.n_fermions = molecule.n_electrons
         self.n_orbitals = molecule.n_qubits
@@ -70,7 +72,6 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
         self.assertEqual(len(difference.terms), 0)
 
     def test_constraint_matrix(self):
-
         # Randomly project operator with constraints.
         numpy.random.seed(8)
         constraints = constraint_matrix(self.n_orbitals, self.n_fermions)
@@ -80,8 +81,7 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
         vectorized_operator = operator_to_vector(self.fermion_hamiltonian)
         modification_vector = constraints.transpose() * random_weights
         new_operator_vector = vectorized_operator + modification_vector
-        modified_operator = vector_to_operator(new_operator_vector,
-                                               self.n_orbitals)
+        modified_operator = vector_to_operator(new_operator_vector, self.n_orbitals)
 
         # Map both to sparse matrix under Jordan-Wigner.
         sparse_original = get_sparse_operator(self.fermion_hamiltonian)
@@ -93,20 +93,18 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
         self.assertAlmostEqual(modified_energy, energy)
 
     def test_apply_constraints(self):
-
         # Get norm of original operator.
-        original_norm = 0.
+        original_norm = 0.0
         for term, coefficient in self.fermion_hamiltonian.terms.items():
             if term != ():
                 original_norm += abs(coefficient)
 
         # Get modified operator.
-        modified_operator = apply_constraints(self.fermion_hamiltonian,
-                                              self.n_fermions)
+        modified_operator = apply_constraints(self.fermion_hamiltonian, self.n_fermions)
         modified_operator.compress()
 
         # Get norm of modified operator.
-        modified_norm = 0.
+        modified_norm = 0.0
         for term, coefficient in modified_operator.terms.items():
             if term != ():
                 modified_norm += abs(coefficient)
@@ -117,15 +115,12 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
         sparse_modified = get_sparse_operator(modified_operator)
 
         # Check spectra.
-        sparse_original = jw_number_restrict_operator(sparse_original,
-                                                      self.n_fermions)
-        sparse_modified = jw_number_restrict_operator(sparse_modified,
-                                                      self.n_fermions)
+        sparse_original = jw_number_restrict_operator(sparse_original, self.n_fermions)
+        sparse_modified = jw_number_restrict_operator(sparse_modified, self.n_fermions)
         original_spectrum = sparse_eigenspectrum(sparse_original)
         modified_spectrum = sparse_eigenspectrum(sparse_modified)
-        spectral_deviation = numpy.amax(
-            numpy.absolute(original_spectrum - modified_spectrum))
-        self.assertAlmostEqual(spectral_deviation, 0.)
+        spectral_deviation = numpy.amax(numpy.absolute(original_spectrum - modified_spectrum))
+        self.assertAlmostEqual(spectral_deviation, 0.0)
 
         # Check expectation value.
         energy, wavefunction = get_ground_state(sparse_original)

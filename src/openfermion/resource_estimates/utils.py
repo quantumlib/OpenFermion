@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 """ Utilities for FT costing calculations """
 from typing import Tuple, Optional
 import sys
@@ -8,7 +8,7 @@ import numpy as np
 
 
 def QR(L: int, M1: int) -> Tuple[int, int]:
-    """ This gives the optimal k and minimum cost for a QROM over L values of
+    """This gives the optimal k and minimum cost for a QROM over L values of
         size M.
 
     Args:
@@ -23,8 +23,10 @@ def QR(L: int, M1: int) -> Tuple[int, int]:
     try:
         assert k >= 0
     except AssertionError:
-        sys.exit("In function QR: L is smaller than M: increase RANK or lower "
-                 "THRESH (or alternatively decrease CHI)")
+        sys.exit(
+            "In function QR: L is smaller than M: increase RANK or lower "
+            "THRESH (or alternatively decrease CHI)"
+        )
     value = lambda k: L / np.power(2.0, k) + M1 * (np.power(2.0, k) - 1)
     k_int = [np.floor(k), np.ceil(k)]  # restrict optimal k to integers
     k_opt = k_int[np.argmin(value(k_int))]  # obtain optimal k
@@ -35,7 +37,7 @@ def QR(L: int, M1: int) -> Tuple[int, int]:
 
 
 def QR2(L1: int, L2: int, M1: int) -> Tuple[int, int, int]:
-    """ This gives the optimal k values and minimum cost for a QROM using
+    """This gives the optimal k values and minimum cost for a QROM using
         two L values of size M,
         e.g. the optimal k values for the QROM on two registers.
     Args:
@@ -55,9 +57,9 @@ def QR2(L1: int, L2: int, M1: int) -> Tuple[int, int, int]:
     # Biggest concern is if k1 / k2 range is not large enough!
     for k1 in range(1, 17):
         for k2 in range(1, 17):
-            value = np.ceil(L1 / np.power(2.0, k1)) * np.ceil(L2 / \
-                np.power(2.0, k2)) +\
-                M1 * (np.power(2.0, k1 + k2) - 1)
+            value = np.ceil(L1 / np.power(2.0, k1)) * np.ceil(L2 / np.power(2.0, k2)) + M1 * (
+                np.power(2.0, k1 + k2) - 1
+            )
             if value < val_opt:
                 val_opt = value
                 k1_opt = k1
@@ -68,7 +70,7 @@ def QR2(L1: int, L2: int, M1: int) -> Tuple[int, int, int]:
 
 
 def QI(L: int) -> Tuple[int, int]:
-    """ This gives the opt k and minimum cost for an inverse QROM over L vals
+    """This gives the opt k and minimum cost for an inverse QROM over L vals
 
     Args:
         L (int) -
@@ -90,7 +92,7 @@ def QI(L: int) -> Tuple[int, int]:
 
 # Is this ever used? It's defined in costingsf.nb, but I don't it's ever called.
 def QI2(L1: int, L2: int) -> Tuple[int, int, int]:
-    """ This gives the optimal k values and minimum cost for inverse QROM
+    """This gives the optimal k values and minimum cost for inverse QROM
         using two L values,
         e.g. the optimal k values for the inverse QROM on two registers.
 
@@ -110,9 +112,9 @@ def QI2(L1: int, L2: int) -> Tuple[int, int, int]:
     # Biggest concern is if k1 / k2 range is not large enough!
     for k1 in range(1, 17):
         for k2 in range(1, 17):
-            value = np.ceil(L1 / np.power(2.0, k1)) * np.ceil(L2 / \
-                np.power(2.0, k2)) +\
-                np.power(2.0, k1 + k2)
+            value = np.ceil(L1 / np.power(2.0, k1)) * np.ceil(L2 / np.power(2.0, k2)) + np.power(
+                2.0, k1 + k2
+            )
             if value < val_opt:
                 val_opt = value
                 k1_opt = k1
@@ -123,7 +125,7 @@ def QI2(L1: int, L2: int) -> Tuple[int, int, int]:
 
 
 def power_two(m: int) -> int:
-    """ Return the power of two that is a factor of m """
+    """Return the power of two that is a factor of m"""
     assert m >= 0
     if m % 2 == 0:
         count = 0
@@ -135,13 +137,13 @@ def power_two(m: int) -> int:
 
 
 class RunSilent(object):
-    """ Context manager to prevent function writing to stdout/stderr
-        e.g. for noisy_function(), wrap it like so
+    """Context manager to prevent function writing to stdout/stderr
+    e.g. for noisy_function(), wrap it like so
 
-        with RunSilent():
-            noisy_function()
+    with RunSilent():
+        noisy_function()
 
-        ... and your terminal will no longer be littered with prints
+    ... and your terminal will no longer be littered with prints
     """
 
     def __init__(self, stdout=None, stderr=None):
@@ -163,8 +165,8 @@ class RunSilent(object):
         self.devnull.close()
 
 
-def eigendecomp(M, tol=1.15E-16):
-    """ Decompose matrix M into L.L^T where rank(L) < rank(M) to some threshold
+def eigendecomp(M, tol=1.15e-16):
+    """Decompose matrix M into L.L^T where rank(L) < rank(M) to some threshold
 
     Args:
        M (np.ndarray) - (N x N) positive semi-definite matrix to be decomposed

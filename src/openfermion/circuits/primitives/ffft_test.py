@@ -24,8 +24,7 @@ if TYPE_CHECKING:
     from typing import Dict
 
 
-def _fourier_transform_single_fermionic_modes(amplitudes: List[complex]
-                                             ) -> List[complex]:
+def _fourier_transform_single_fermionic_modes(amplitudes: List[complex]) -> List[complex]:
     """Fermionic Fourier transform of a list of single Fermionic modes.
 
     Args:
@@ -44,8 +43,9 @@ def _fourier_transform_single_fermionic_modes(amplitudes: List[complex]
     return [fft(k, n) for k in range(n)]
 
 
-def _fourier_transform_multi_fermionic_mode(n: int, amplitude: complex,
-                                            modes: List[int]) -> np.ndarray:
+def _fourier_transform_multi_fermionic_mode(
+    n: int, amplitude: complex, modes: List[int]
+) -> np.ndarray:
     """Fermionic Fourier transform of a multi Fermionic mode base state.
 
     Args:
@@ -116,8 +116,7 @@ def _single_fermionic_modes_state(amplitudes: List[complex]) -> np.ndarray:
     return state / np.linalg.norm(state)
 
 
-def _multi_fermionic_mode_base_state(n: int, amplitude: complex,
-                                     modes: List[int]) -> np.ndarray:
+def _multi_fermionic_mode_base_state(n: int, amplitude: complex, modes: List[int]) -> np.ndarray:
     """Prepares state which is a base vector with list of desired modes.
 
     Prepares a state to be one of the basis vectors of an n-dimensional qubits
@@ -141,18 +140,17 @@ def _multi_fermionic_mode_base_state(n: int, amplitude: complex,
     return state
 
 
-@pytest.mark.parametrize('amplitudes',
-                         [[1, 0], [1j, 0], [0, 1], [0, -1j], [1, 1]])
+@pytest.mark.parametrize('amplitudes', [[1, 0], [1j, 0], [0, 1], [0, -1j], [1, 1]])
 def test_F0Gate_transform(amplitudes):
     qubits = LineQubit.range(2)
     sim = cirq.Simulator(dtype=np.complex128)
     initial_state = _single_fermionic_modes_state(amplitudes)
     expected_state = _single_fermionic_modes_state(
-        _fourier_transform_single_fermionic_modes(amplitudes))
+        _fourier_transform_single_fermionic_modes(amplitudes)
+    )
 
     circuit = cirq.Circuit(_F0Gate().on(*qubits))
-    state = sim.simulate(circuit,
-                         initial_state=initial_state).final_state_vector
+    state = sim.simulate(circuit, initial_state=initial_state).final_state_vector
 
     assert np.allclose(state, expected_state, rtol=0.0)
 
@@ -161,30 +159,39 @@ def test_F0Gate_text_unicode_diagram():
     qubits = LineQubit.range(2)
     circuit = cirq.Circuit(_F0Gate().on(*qubits))
 
-    assert circuit.to_text_diagram().strip() == """
+    assert (
+        circuit.to_text_diagram().strip()
+        == """
 0: ───F₀───
       │
 1: ───F₀───
     """.strip()
+    )
 
 
 def test_F0Gate_text_diagram():
     qubits = LineQubit.range(2)
     circuit = cirq.Circuit(_F0Gate().on(*qubits))
 
-    assert circuit.to_text_diagram(use_unicode_characters=False).strip() == """
+    assert (
+        circuit.to_text_diagram(use_unicode_characters=False).strip()
+        == """
 0: ---F0---
       |
 1: ---F0---
     """.strip()
+    )
 
 
-@pytest.mark.parametrize('k, n, qubit, initial, expected', [
-    (0, 2, 0, [1, 0], [1, 0]),
-    (2, 8, 0, [1, 0], [np.exp(-2 * np.pi * 1j * 2 / 8), 0]),
-    (4, 8, 1, [0, 1], [0, np.exp(-2 * np.pi * 1j * 4 / 8)]),
-    (3, 5, 0, [1, 1], [np.exp(-2 * np.pi * 1j * 3 / 5), 1]),
-])
+@pytest.mark.parametrize(
+    'k, n, qubit, initial, expected',
+    [
+        (0, 2, 0, [1, 0], [1, 0]),
+        (2, 8, 0, [1, 0], [np.exp(-2 * np.pi * 1j * 2 / 8), 0]),
+        (4, 8, 1, [0, 1], [0, np.exp(-2 * np.pi * 1j * 4 / 8)]),
+        (3, 5, 0, [1, 1], [np.exp(-2 * np.pi * 1j * 3 / 5), 1]),
+    ],
+)
 def test_TwiddleGate_transform(k, n, qubit, initial, expected):
     qubits = LineQubit.range(2)
     sim = cirq.Simulator(dtype=np.complex128)
@@ -192,9 +199,9 @@ def test_TwiddleGate_transform(k, n, qubit, initial, expected):
     expected_state = _single_fermionic_modes_state(expected)
 
     circuit = cirq.Circuit(_TwiddleGate(k, n).on(qubits[qubit]))
-    state = sim.simulate(circuit,
-                         initial_state=initial_state,
-                         qubit_order=qubits).final_state_vector
+    state = sim.simulate(
+        circuit, initial_state=initial_state, qubit_order=qubits
+    ).final_state_vector
 
     assert np.allclose(state, expected_state, rtol=0.0)
 
@@ -203,91 +210,116 @@ def test_TwiddleGate_text_unicode_diagram():
     qubit = LineQubit.range(1)
     circuit = cirq.Circuit(_TwiddleGate(2, 8).on(*qubit))
 
-    assert circuit.to_text_diagram().strip() == """
+    assert (
+        circuit.to_text_diagram().strip()
+        == """
 0: ───ω^2_8───
     """.strip()
+    )
 
 
 def test_TwiddleGate_text_diagram():
     qubit = LineQubit.range(1)
     circuit = cirq.Circuit(_TwiddleGate(2, 8).on(*qubit))
 
-    assert circuit.to_text_diagram(use_unicode_characters=False).strip() == """
+    assert (
+        circuit.to_text_diagram(use_unicode_characters=False).strip()
+        == """
 0: ---w^2_8---
     """.strip()
+    )
 
 
-@pytest.mark.parametrize('amplitudes',
-                         [[1], [1, 0], [0, 1], [1, 0, 0, 0], [0, 1, 0, 0],
-                          [0, 0, 1, 0], [0, 0, 0, 1], [1, 0, 0, 0, 0, 0, 0, 0],
-                          [0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0],
-                          [0, 0, 0, 0, 0, 0, 0, 1],
-                          [0, 0, -1j / np.sqrt(2), 0, 0, 1 / np.sqrt(2), 0, 0]])
+@pytest.mark.parametrize(
+    'amplitudes',
+    [
+        [1],
+        [1, 0],
+        [0, 1],
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1],
+        [0, 0, -1j / np.sqrt(2), 0, 0, 1 / np.sqrt(2), 0, 0],
+    ],
+)
 def test_ffft_single_fermionic_modes(amplitudes):
     sim = cirq.Simulator(dtype=np.complex128)
     initial_state = _single_fermionic_modes_state(amplitudes)
     expected_state = _single_fermionic_modes_state(
-        _fourier_transform_single_fermionic_modes(amplitudes))
+        _fourier_transform_single_fermionic_modes(amplitudes)
+    )
     qubits = LineQubit.range(len(amplitudes))
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
-    state = sim.simulate(circuit,
-                         initial_state=initial_state,
-                         qubit_order=qubits).final_state_vector
+    state = sim.simulate(
+        circuit, initial_state=initial_state, qubit_order=qubits
+    ).final_state_vector
 
     assert np.allclose(state, expected_state, rtol=0.0)
 
 
-@pytest.mark.parametrize('amplitudes', [
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1],
-    [0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0],
-    [0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-])
+@pytest.mark.parametrize(
+    'amplitudes',
+    [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+        [0, 0, 0, 1, 0],
+        [0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    ],
+)
 def test_ffft_single_fermionic_modes_non_power_of_2(amplitudes):
     sim = cirq.Simulator(dtype=np.complex128)
     initial_state = _single_fermionic_modes_state(amplitudes)
     expected_state = _single_fermionic_modes_state(
-        _fourier_transform_single_fermionic_modes(amplitudes))
+        _fourier_transform_single_fermionic_modes(amplitudes)
+    )
     qubits = LineQubit.range(len(amplitudes))
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
-    state = sim.simulate(circuit,
-                         initial_state=initial_state,
-                         qubit_order=qubits).final_state_vector
+    state = sim.simulate(
+        circuit, initial_state=initial_state, qubit_order=qubits
+    ).final_state_vector
 
-    cirq.testing.assert_allclose_up_to_global_phase(state,
-                                                    expected_state,
-                                                    atol=1e-8)
+    cirq.testing.assert_allclose_up_to_global_phase(state, expected_state, atol=1e-8)
 
 
-@pytest.mark.parametrize('n, initial', [
-    (2, (1, [0, 1])),
-    (4, (1, [0, 1])),
-    (4, (1, [1, 2])),
-    (4, (1, [2, 3])),
-    (8, (1, [0, 7])),
-    (8, (1, [3, 5])),
-    (8, (1, [0, 3, 5, 7])),
-    (8, (1, [0, 1, 2, 3])),
-    (8, (1, [0, 1, 6, 7])),
-    (8, (1j, [0, 3, 5, 7])),
-    (8, (-1j, [0, 1, 2, 3])),
-    (8, (np.sqrt(0.5) + np.sqrt(0.5) * 1j, [0, 1, 6, 7])),
-    (8, (1, [0, 1, 2, 3, 5, 6, 7])),
-    (8, (1, [0, 1, 2, 3, 4, 5, 6, 7])),
-])
+@pytest.mark.parametrize(
+    'n, initial',
+    [
+        (2, (1, [0, 1])),
+        (4, (1, [0, 1])),
+        (4, (1, [1, 2])),
+        (4, (1, [2, 3])),
+        (8, (1, [0, 7])),
+        (8, (1, [3, 5])),
+        (8, (1, [0, 3, 5, 7])),
+        (8, (1, [0, 1, 2, 3])),
+        (8, (1, [0, 1, 6, 7])),
+        (8, (1j, [0, 3, 5, 7])),
+        (8, (-1j, [0, 1, 2, 3])),
+        (8, (np.sqrt(0.5) + np.sqrt(0.5) * 1j, [0, 1, 6, 7])),
+        (8, (1, [0, 1, 2, 3, 5, 6, 7])),
+        (8, (1, [0, 1, 2, 3, 4, 5, 6, 7])),
+    ],
+)
 def test_ffft_multi_fermionic_mode(n, initial):
     sim = cirq.Simulator(dtype=np.complex128)
     initial_state = _multi_fermionic_mode_base_state(n, *initial)
@@ -295,21 +327,24 @@ def test_ffft_multi_fermionic_mode(n, initial):
     qubits = LineQubit.range(n)
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
-    state = sim.simulate(circuit,
-                         initial_state=initial_state,
-                         qubit_order=qubits).final_state_vector
+    state = sim.simulate(
+        circuit, initial_state=initial_state, qubit_order=qubits
+    ).final_state_vector
 
     assert np.allclose(state, expected_state, rtol=0.0)
 
 
-@pytest.mark.parametrize('n, initial', [
-    (3, (1, [0, 1])),
-    (3, (1, [0, 1])),
-    (5, (1, [0, 3, 4])),
-    (6, (1, [0, 1, 2, 3])),
-    (7, (1, [0, 1, 5, 6])),
-    (9, (1, [2, 4, 6])),
-])
+@pytest.mark.parametrize(
+    'n, initial',
+    [
+        (3, (1, [0, 1])),
+        (3, (1, [0, 1])),
+        (5, (1, [0, 3, 4])),
+        (6, (1, [0, 1, 2, 3])),
+        (7, (1, [0, 1, 5, 6])),
+        (9, (1, [2, 4, 6])),
+    ],
+)
 def test_ffft_multi_fermionic_mode_non_power_of_2(n, initial):
     initial_state = _multi_fermionic_mode_base_state(n, *initial)
     expected_state = _fourier_transform_multi_fermionic_mode(n, *initial)
@@ -317,13 +352,11 @@ def test_ffft_multi_fermionic_mode_non_power_of_2(n, initial):
     sim = cirq.Simulator(dtype=np.complex128)
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
-    state = sim.simulate(circuit,
-                         initial_state=initial_state,
-                         qubit_order=qubits).final_state_vector
+    state = sim.simulate(
+        circuit, initial_state=initial_state, qubit_order=qubits
+    ).final_state_vector
 
-    cirq.testing.assert_allclose_up_to_global_phase(state,
-                                                    expected_state,
-                                                    atol=1e-8)
+    cirq.testing.assert_allclose_up_to_global_phase(state, expected_state, atol=1e-8)
 
 
 def test_ffft_text_diagram():
@@ -331,7 +364,9 @@ def test_ffft_text_diagram():
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
 
-    assert circuit.to_text_diagram(transpose=True) == """
+    assert (
+        circuit.to_text_diagram(transpose=True)
+        == """
 0   1     2   3     4   5     6   7
 │   │     │   │     │   │     │   │
 0↦0─1↦4───2↦1─3↦5───4↦2─5↦6───6↦3─7↦7
@@ -357,6 +392,7 @@ F₀──F₀    F₀──F₀    F₀──F₀    F₀──F₀
 0↦0─1↦4───2↦1─3↦5───4↦2─5↦6───6↦3─7↦7
 │   │     │   │     │   │     │   │
     """.strip()
+    )
 
 
 def test_ffft_fails_without_qubits():
@@ -366,40 +402,32 @@ def test_ffft_fails_without_qubits():
 
 @pytest.mark.parametrize('size', [1, 2, 3, 4, 5, 6, 7, 8])
 def test_ffft_equal_to_bogoliubov(size):
-
     def fourier_transform_matrix():
         root_of_unity = np.exp(-2j * np.pi / size)
-        return np.array([[root_of_unity**(j * k)
-                          for k in range(size)]
-                         for j in range(size)]) / np.sqrt(size)
+        return np.array(
+            [[root_of_unity ** (j * k) for k in range(size)] for j in range(size)]
+        ) / np.sqrt(size)
 
     qubits = LineQubit.range(size)
 
-    ffft_circuit = cirq.Circuit(ffft(qubits),
-                                strategy=cirq.InsertStrategy.EARLIEST)
+    ffft_circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
     ffft_matrix = ffft_circuit.unitary(qubits_that_should_be_present=qubits)
 
-    bogoliubov_circuit = cirq.Circuit(bogoliubov_transform(
-        qubits, fourier_transform_matrix()),
-                                      strategy=cirq.InsertStrategy.EARLIEST)
-    bogoliubov_matrix = bogoliubov_circuit.unitary(
-        qubits_that_should_be_present=qubits)
+    bogoliubov_circuit = cirq.Circuit(
+        bogoliubov_transform(qubits, fourier_transform_matrix()),
+        strategy=cirq.InsertStrategy.EARLIEST,
+    )
+    bogoliubov_matrix = bogoliubov_circuit.unitary(qubits_that_should_be_present=qubits)
 
-    cirq.testing.assert_allclose_up_to_global_phase(ffft_matrix,
-                                                    bogoliubov_matrix,
-                                                    atol=1e-8)
+    cirq.testing.assert_allclose_up_to_global_phase(ffft_matrix, bogoliubov_matrix, atol=1e-8)
 
 
 @pytest.mark.parametrize('size', [1, 2, 3, 4, 5, 6, 7, 8])
 def test_ffft_inverse(size):
-
     qubits = LineQubit.range(size)
 
-    ffft_circuit = cirq.Circuit(ffft(qubits),
-                                strategy=cirq.InsertStrategy.EARLIEST)
+    ffft_circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
     ffft_circuit.append(cirq.inverse(ffft(qubits)))
     ffft_matrix = ffft_circuit.unitary(qubits_that_should_be_present=qubits)
 
-    cirq.testing.assert_allclose_up_to_global_phase(ffft_matrix,
-                                                    np.identity(1 << size),
-                                                    atol=1e-8)
+    cirq.testing.assert_allclose_up_to_global_phase(ffft_matrix, np.identity(1 << size), atol=1e-8)

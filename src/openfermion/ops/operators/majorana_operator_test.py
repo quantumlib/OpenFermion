@@ -62,17 +62,11 @@ def test_majorana_operator_with_basis_rotated_by():
 
     b = MajoranaOperator((0,), 2.0)
     op = b.with_basis_rotated_by(H)
-    assert op == MajoranaOperator.from_dict({
-        (0,): numpy.sqrt(2),
-        (1,): numpy.sqrt(2)
-    })
+    assert op == MajoranaOperator.from_dict({(0,): numpy.sqrt(2), (1,): numpy.sqrt(2)})
 
     c = MajoranaOperator((1,), 2.0)
     op = c.with_basis_rotated_by(H)
-    assert op == MajoranaOperator.from_dict({
-        (0,): numpy.sqrt(2),
-        (1,): -numpy.sqrt(2)
-    })
+    assert op == MajoranaOperator.from_dict({(0,): numpy.sqrt(2), (1,): -numpy.sqrt(2)})
 
     P = numpy.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]])
 
@@ -97,7 +91,7 @@ def test_majorana_operator_add_subtract():
     assert a.terms == {(0, 2, 3): -1.25, (1, 5, 7): 4.75, (3, 5, 7): 2.25}
 
     a += MajoranaOperator((0, 2, 3), 0.5)
-    assert a.terms == {(0, 2, 3): -.75, (1, 5, 7): 4.75, (3, 5, 7): 2.25}
+    assert a.terms == {(0, 2, 3): -0.75, (1, 5, 7): 4.75, (3, 5, 7): 2.25}
 
     a -= MajoranaOperator((0, 2, 3), 0.25)
     assert a.terms == {(0, 2, 3): -1.0, (1, 5, 7): 4.75, (3, 5, 7): 2.25}
@@ -127,7 +121,7 @@ def test_majorana_operator_multiply():
         (1, 3, 4, 7): 0.875,
         (0, 1, 2, 3, 6, 7): -0.125,
         (1, 3, 5, 6): 0.375,
-        (0, 1, 2, 3, 4, 5): -2.625
+        (0, 1, 2, 3, 4, 5): -2.625,
     }
     assert (2 * a).terms == (a * 2).terms == {(0, 1, 5): 3.0, (1, 2, 7): -1.0}
 
@@ -153,7 +147,7 @@ def test_majorana_operator_pow():
         _ = a**-1
 
     with pytest.raises(TypeError):
-        _ = a**'a'
+        _ = a ** 'a'
 
 
 def test_majorana_operator_divide():
@@ -177,10 +171,16 @@ def test_majorana_operator_neg():
 
 def test_majorana_operator_eq():
     a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5)
-    b = (MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator(
-        (1, 2, 7), -0.5) + MajoranaOperator((3, 4, 5), 0.0))
-    c = (MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator(
-        (1, 2, 7), -0.5) + MajoranaOperator((3, 4, 5), 0.1))
+    b = (
+        MajoranaOperator((0, 1, 5), 1.5)
+        + MajoranaOperator((1, 2, 7), -0.5)
+        + MajoranaOperator((3, 4, 5), 0.0)
+    )
+    c = (
+        MajoranaOperator((0, 1, 5), 1.5)
+        + MajoranaOperator((1, 2, 7), -0.5)
+        + MajoranaOperator((3, 4, 5), 0.1)
+    )
     d = MajoranaOperator((0, 1, 5), 1.75) + MajoranaOperator((1, 2, 7), -0.75)
     e = MajoranaOperator((0, 1, 5), 1.5) - MajoranaOperator((0, 3, 6), 0.25)
 
@@ -204,8 +204,11 @@ def test_majorana_operator_str():
     assert str(still_zero) == '0'
     assert str(a) == '1.5 (0, 1, 5)'
     assert str(b) == '-0.5 (1, 2, 7)'
-    assert str(a + b) == """1.5 (0, 1, 5) +
+    assert (
+        str(a + b)
+        == """1.5 (0, 1, 5) +
 -0.5 (1, 2, 7)"""
+    )
 
 
 def test_majorana_operator_repr():

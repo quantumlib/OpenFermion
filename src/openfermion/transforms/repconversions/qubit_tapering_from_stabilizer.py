@@ -93,8 +93,7 @@ def fix_single_term(term, position, fixed_op, other_op, stabilizer):
         term (QubitOperator): Updated term in a fiixed representation.
     """
     pauli_tuple = list(term.terms)[0]
-    if (position, fixed_op) in pauli_tuple or (position,
-                                               other_op) in pauli_tuple:
+    if (position, fixed_op) in pauli_tuple or (position, other_op) in pauli_tuple:
         return term * stabilizer
     else:
         return term
@@ -128,8 +127,7 @@ def _lookup_term(pauli_string, updated_terms_1, updated_terms_2):
     length = len(pauli_string)
 
     for x in numpy.arange(len(updated_terms_1)):
-        if (pauli_string == updated_terms_2[x] and
-            (length > len(list(updated_terms_1[x].terms)[0]))):
+        if pauli_string == updated_terms_2[x] and (length > len(list(updated_terms_1[x].terms)[0])):
             pauli_op = updated_terms_1[x]
             length = len(list(updated_terms_1[x].terms)[0])
     return pauli_op
@@ -188,29 +186,28 @@ def _reduce_terms(terms, stabilizer_list, manual_input, fixed_positions):
 
         new_terms = QubitOperator()
         for qubit_pauli in terms:
-            new_terms += fix_single_term(qubit_pauli, fixed_positions[i],
-                                         fixed_op, other_op, stabilizer_list[0])
+            new_terms += fix_single_term(
+                qubit_pauli, fixed_positions[i], fixed_op, other_op, stabilizer_list[0]
+            )
         updated_stabilizers = []
         for update_stab in stabilizer_list[1:]:
             updated_stabilizers += [
-                fix_single_term(update_stab, fixed_positions[i], fixed_op,
-                                other_op, stabilizer_list[0])
+                fix_single_term(
+                    update_stab, fixed_positions[i], fixed_op, other_op, stabilizer_list[0]
+                )
             ]
 
         # Update terms and stabilizer list.
         terms = new_terms
         stabilizer_list = updated_stabilizers
 
-        check_stabilizer_linearity(stabilizer_list,
-                                   msg='Linearly dependent stabilizers.')
-        check_commuting_stabilizers(stabilizer_list,
-                                    msg='Stabilizers anti-commute.')
+        check_stabilizer_linearity(stabilizer_list, msg='Linearly dependent stabilizers.')
+        check_commuting_stabilizers(stabilizer_list, msg='Stabilizers anti-commute.')
 
     return terms, fixed_positions
 
 
-def _reduce_terms_keep_length(terms, stabilizer_list, manual_input,
-                              fixed_positions):
+def _reduce_terms_keep_length(terms, stabilizer_list, manual_input, fixed_positions):
     """
     Perform the term reduction using stabilizer conditions.
 
@@ -265,44 +262,44 @@ def _reduce_terms_keep_length(terms, stabilizer_list, manual_input,
         updated_stabilizers = []
         for y in term_list:
             new_list += [
-                fix_single_term(y, fixed_positions[i], fixed_op, other_op,
-                                stabilizer_list[0])
+                fix_single_term(y, fixed_positions[i], fixed_op, other_op, stabilizer_list[0])
             ]
         for update_stab in stabilizer_list[1:]:
             updated_stabilizers += [
-                fix_single_term(update_stab, fixed_positions[i], fixed_op,
-                                other_op, stabilizer_list[0])
+                fix_single_term(
+                    update_stab, fixed_positions[i], fixed_op, other_op, stabilizer_list[0]
+                )
             ]
         term_list = new_list
         stabilizer_list = updated_stabilizers
 
-        check_stabilizer_linearity(stabilizer_list,
-                                   msg='Linearly dependent stabilizers.')
-        check_commuting_stabilizers(stabilizer_list,
-                                    msg='Stabilizers anti-commute.')
+        check_stabilizer_linearity(stabilizer_list, msg='Linearly dependent stabilizers.')
+        check_commuting_stabilizers(stabilizer_list, msg='Stabilizers anti-commute.')
 
     new_terms = QubitOperator()
     for x, ent in enumerate(term_list):
         new_terms += ent * terms.terms[term_list_duplicate[x]]
     for x, ent in enumerate(term_list):
-        term_list_duplicate[x] = (QubitOperator(term_list_duplicate[x]) /
-                                  list(ent.terms.items())[0][1])
+        term_list_duplicate[x] = (
+            QubitOperator(term_list_duplicate[x]) / list(ent.terms.items())[0][1]
+        )
         term_list[x] = list(ent.terms)[0]
 
     even_newer_terms = QubitOperator()
     for pauli_string, coefficient in new_terms.terms.items():
-        even_newer_terms += coefficient * _lookup_term(
-            pauli_string, term_list_duplicate, term_list)
+        even_newer_terms += coefficient * _lookup_term(pauli_string, term_list_duplicate, term_list)
 
     return even_newer_terms, fixed_positions
 
 
-def reduce_number_of_terms(operator,
-                           stabilizers,
-                           maintain_length=False,
-                           output_fixed_positions=False,
-                           manual_input=False,
-                           fixed_positions=None):
+def reduce_number_of_terms(
+    operator,
+    stabilizers,
+    maintain_length=False,
+    output_fixed_positions=False,
+    manual_input=False,
+    fixed_positions=None,
+):
     r"""
     Reduce the number of Pauli strings of operator using stabilizers.
 
@@ -368,10 +365,8 @@ def reduce_number_of_terms(operator,
 
     stabilizer_list = list(stabilizers)
 
-    check_stabilizer_linearity(stabilizer_list,
-                               msg='Trivial stabilizer (identity).')
-    check_commuting_stabilizers(stabilizer_list,
-                                msg='Stabilizer with complex coefficient.')
+    check_stabilizer_linearity(stabilizer_list, msg='Trivial stabilizer (identity).')
+    check_commuting_stabilizers(stabilizer_list, msg='Stabilizer with complex coefficient.')
 
     if manual_input:
         # Convert fixed_position into a list to allow any type of
@@ -380,20 +375,21 @@ def reduce_number_of_terms(operator,
             raise TypeError('List of qubit positions required.')
         fixed_positions = list(fixed_positions)
         if len(fixed_positions) != len(stabilizer_list):
-            raise StabilizerError('The number of stabilizers must be equal ' +
-                                  'to the number of qubits manually fixed.')
+            raise StabilizerError(
+                'The number of stabilizers must be equal '
+                + 'to the number of qubits manually fixed.'
+            )
         if len(set(fixed_positions)) != len(stabilizer_list):
             raise StabilizerError('All qubit positions must be different.')
 
     if maintain_length:
-        (reduced_operator,
-         fixed_positions) = _reduce_terms_keep_length(operator, stabilizer_list,
-                                                      manual_input,
-                                                      fixed_positions)
+        (reduced_operator, fixed_positions) = _reduce_terms_keep_length(
+            operator, stabilizer_list, manual_input, fixed_positions
+        )
     else:
-        (reduced_operator,
-         fixed_positions) = _reduce_terms(operator, stabilizer_list,
-                                          manual_input, fixed_positions)
+        (reduced_operator, fixed_positions) = _reduce_terms(
+            operator, stabilizer_list, manual_input, fixed_positions
+        )
 
     if output_fixed_positions:
         return reduced_operator, fixed_positions
@@ -401,11 +397,9 @@ def reduce_number_of_terms(operator,
         return reduced_operator
 
 
-def taper_off_qubits(operator,
-                     stabilizers,
-                     manual_input=False,
-                     fixed_positions=None,
-                     output_tapered_positions=False):
+def taper_off_qubits(
+    operator, stabilizers, manual_input=False, fixed_positions=None, output_tapered_positions=False
+):
     r"""
     Remove qubits from given operator.
 
@@ -456,13 +450,14 @@ def taper_off_qubits(operator,
 
     n_qbits = max(op_utils.count_qubits(operator), n_qbits_stabs)
 
-    (ham_to_update,
-     qbts_to_rm) = reduce_number_of_terms(operator,
-                                          stabilizers,
-                                          maintain_length=False,
-                                          manual_input=manual_input,
-                                          fixed_positions=fixed_positions,
-                                          output_fixed_positions=True)
+    (ham_to_update, qbts_to_rm) = reduce_number_of_terms(
+        operator,
+        stabilizers,
+        maintain_length=False,
+        manual_input=manual_input,
+        fixed_positions=fixed_positions,
+        output_fixed_positions=True,
+    )
 
     # Gets a list of the order of the qubits after tapering
     qbit_order = list(numpy.arange(n_qbits - len(qbts_to_rm), dtype=int))
