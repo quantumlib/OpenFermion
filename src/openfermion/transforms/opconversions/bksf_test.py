@@ -16,13 +16,13 @@ import unittest
 
 import numpy
 
-from openfermion.config import DATA_DIRECTORY
 from openfermion.chem import MolecularData
+from openfermion.config import DATA_DIRECTORY
+from openfermion.linalg import eigenspectrum, get_sparse_operator
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.ops.representations import InteractionOperator
 from openfermion.transforms.opconversions import bksf, get_fermion_operator, normal_ordered
 from openfermion.transforms.opconversions.jordan_wigner import jordan_wigner, jordan_wigner_one_body
-from openfermion.linalg import get_sparse_operator, eigenspectrum
 from openfermion.utils import count_qubits
 
 
@@ -173,8 +173,8 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         tot_23_fermions = numpy.dot(
             two_fermion_state.conjugate().T, numpy.dot(number_operator_23_matrix, two_fermion_state)
         )
-        self.assertTrue(2.0 - float(tot_fermions.real) < 1e-13)
-        self.assertTrue(2.0 - float(tot_23_fermions.real) < 1e-13)
+        self.assertTrue(2.0 - float(tot_fermions[0, 0].real) < 1e-13)
+        self.assertTrue(2.0 - float(tot_23_fermions[0, 0].real) < 1e-13)
 
     def test_bravyi_kitaev_fast_excitation_terms(self):
         # Testing on-site and excitation terms in Hamiltonian

@@ -11,6 +11,7 @@
 #   limitations under the License.
 """This module constructs Hamiltonians for the uniform electron gas."""
 
+import math
 from typing import Optional
 
 import numpy
@@ -42,15 +43,15 @@ def wigner_seitz_length_scale(
     if dimension % 2:
         volume_per_particle = (
             2
-            * numpy.math.factorial(half_dimension)
+            * math.factorial(half_dimension)
             * (4 * numpy.pi) ** half_dimension
-            / numpy.math.factorial(dimension)
+            / math.factorial(dimension)
             * wigner_seitz_radius**dimension
         )
     else:
         volume_per_particle = (
             numpy.pi**half_dimension
-            / numpy.math.factorial(half_dimension)
+            / math.factorial(half_dimension)
             * wigner_seitz_radius**dimension
         )
 
