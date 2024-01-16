@@ -809,8 +809,7 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate, cirq.Eige
         combined_rotations = {}
         # See: https://github.com/quantumlib/OpenFermion/issues/815
         # for scipy >= v0.10.0 there is a bug in la.sqrtm leading to a loss in
-        # precision, meaning this following code breaks causes unit tests to
-        # fail.
+        # precision, meaning this following code causes the unit tests to fail.
         # combined_rotations[0] = la.sqrtm(
         #     np.linalg.multi_dot(
         #         [
@@ -827,7 +826,7 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate, cirq.Eige
             )
         )
         eig_vec_inv = la.inv(eig_vec)
-        # A^{1/2} = V D V^{-1}, where D is the matrix of eigenvalues and V is the
+        # A^{1/2} = V D^{1/2} V^{-1}, where D is the matrix of eigenvalues and V is the
         # matrix of eigenvectors.
         combined_rotations[0] = np.linalg.multi_dot([eig_vec, np.diag(eig_val**0.5), eig_vec_inv])
         combined_rotations[1] = la.inv(combined_rotations[0])
