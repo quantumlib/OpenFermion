@@ -187,7 +187,7 @@ def sum_of_interaction_operator_gate_generators(
     return operator
 
 
-@cirq.value_equality(approximate=True)
+@cirq.value_equality(approximate=True, unhashable=True)
 class ParityPreservingFermionicGate(cirq.Gate, metaclass=abc.ABCMeta):
     r"""The Jordan-Wigner transform of $\exp(-i H)$ for a fermionic
     Hamiltonian $H$.
