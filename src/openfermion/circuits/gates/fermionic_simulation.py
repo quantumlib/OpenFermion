@@ -12,16 +12,16 @@
 
 import abc
 import itertools
-from typing import cast, Dict, Optional, Sequence, Tuple, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Dict, Optional, Sequence, Tuple, Union, cast
 
+import cirq
 import numpy as np
 import scipy.linalg as la
 import sympy
-import cirq
 
 import openfermion.ops as ops
-from openfermion.transforms import get_interaction_operator
 from openfermion.linalg import jordan_wigner_sparse
+from openfermion.transforms import get_interaction_operator
 from openfermion.utils import hermitian_conjugated
 
 if TYPE_CHECKING:
@@ -807,11 +807,28 @@ class QuarticFermionicSimulationGate(InteractionOperatorFermionicGate, cirq.Eige
         ]
 
         combined_rotations = {}
-        combined_rotations[0] = la.sqrtm(
+        # See: https://github.com/quantumlib/OpenFermion/issues/815
+        # for scipy >= v0.10.0 there is a bug in la.sqrtm leading to a loss in
+        # precision, meaning this following code causes the unit tests to fail.
+        # combined_rotations[0] = la.sqrtm(
+        #     np.linalg.multi_dot(
+        #         [
+        #           la.inv(individual_rotations[1]),
+        #           individual_rotations[0],
+        #           individual_rotations[2]
+        #         ]
+        #     )
+        # )
+        # Compute the square root through eigendecomposition instead until the issue is resolved.
+        eig_val, eig_vec = np.linalg.eig(
             np.linalg.multi_dot(
                 [la.inv(individual_rotations[1]), individual_rotations[0], individual_rotations[2]]
             )
         )
+        eig_vec_inv = la.inv(eig_vec)
+        # A^{1/2} = V D^{1/2} V^{-1}, where D is the matrix of eigenvalues and V is the
+        # matrix of eigenvectors.
+        combined_rotations[0] = np.linalg.multi_dot([eig_vec, np.diag(eig_val**0.5), eig_vec_inv])
         combined_rotations[1] = la.inv(combined_rotations[0])
         combined_rotations[2] = np.linalg.multi_dot(
             [la.inv(individual_rotations[0]), individual_rotations[1], combined_rotations[0]]
