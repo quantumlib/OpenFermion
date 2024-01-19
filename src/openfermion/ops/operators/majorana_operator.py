@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """The MajoranaOperator data structure."""
-
+import copy
 import itertools
 import numpy
 
@@ -77,6 +77,9 @@ class MajoranaOperator:
 
     def commutes_with(self, other):
         """Test commutation with another MajoranaOperator"""
+        if isinstance(other, (int, float, complex)):
+            return True
+
         if not isinstance(other, type(self)):
             raise TypeError('Can only test commutation with another MajoranaOperator.')
 
@@ -114,57 +117,61 @@ class MajoranaOperator:
             rotated_op += rotated_term
         return rotated_op
 
+    @property
+    def constant(self):
+        """The value of the constant term."""
+        return self.terms.get((), 0.0)
+
+    @constant.setter
+    def constant(self, value):
+        """Set the value of the constant term"""
+        self.terms[()] = value
+
+    @classmethod
+    def zero(cls):
+        """Returns additive_identity."""
+        return cls(term=None)
+
+    @classmethod
+    def identity(cls):
+        """Returns multiplicative_identity."""
+        return cls(term=(), coefficient=1.0)
+
     def __iadd__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        for term, coefficient in other.terms.items():
-            if term in self.terms:
-                self.terms[term] += coefficient
-            else:
-                self.terms[term] = coefficient
-
+        if isinstance(other, type(self)):
+            for term, coefficient in other.terms.items():
+                if term in self.terms:
+                    self.terms[term] += coefficient
+                else:
+                    self.terms[term] = coefficient
+        elif isinstance(other, (int, float, complex)):
+            self.constant += other
+        else:
+            raise TypeError("Cannot add invalid type to {}".format(type(self)))
         return self
 
     def __add__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        terms = {}
-        terms.update(self.terms)
-
-        for term, coefficient in other.terms.items():
-            if term in terms:
-                terms[term] += coefficient
-            else:
-                terms[term] = coefficient
-
-        return MajoranaOperator.from_dict(terms)
+        summand = copy.deepcopy(self)
+        summand += other
+        return summand
 
     def __isub__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        for term, coefficient in other.terms.items():
-            if term in self.terms:
-                self.terms[term] -= coefficient
-            else:
-                self.terms[term] = coefficient
-
+        if isinstance(other, type(self)):
+            for term, coefficient in other.terms.items():
+                if term in self.terms:
+                    self.terms[term] -= coefficient
+                else:
+                    self.terms[term] = -coefficient
+        elif isinstance(other, (int, float, complex)):
+            self.constant -= other
+        else:
+            raise TypeError("Cannot subtract invalid type from {}".format(type(self)))
         return self
 
     def __sub__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        terms = {}
-        terms.update(self.terms)
-        for term, coefficient in other.terms.items():
-            if term in terms:
-                terms[term] -= coefficient
-            else:
-                terms[term] = -coefficient
-        return MajoranaOperator.from_dict(terms)
+        minuend = copy.deepcopy(self)
+        minuend -= other
+        return minuend
 
     def __mul__(self, other):
         if not isinstance(other, (type(self), int, float, complex)):
