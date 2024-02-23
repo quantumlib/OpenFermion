@@ -29,6 +29,12 @@ def test_majorana_operator_init():
     op = MajoranaOperator((5, 10, 4, 3, 6, 9, 6))
     assert op.terms == {(3, 4, 5, 9, 10): -1.0}
 
+    op = MajoranaOperator((), 3.0)
+    assert op.terms == {(): 3.0}
+    assert op.constant == 3.0
+    op.constant += 1.0
+    assert op.constant == 4.0
+
 
 def test_majorana_operator_commutes_with():
     a = MajoranaOperator((0, 1, 5))
@@ -49,8 +55,9 @@ def test_majorana_operator_commutes_with():
 
     assert e.commutes_with(f)
 
-    with pytest.raises(TypeError):
-        _ = e.commutes_with(0)
+    assert e.commutes_with(0)
+    assert e.commutes_with(2.0)
+    assert e.commutes_with(4.0j)
 
 
 def test_majorana_operator_with_basis_rotated_by():
@@ -83,34 +90,48 @@ def test_majorana_operator_add_subtract():
     b = MajoranaOperator((0, 2, 3), -0.5)
     c = MajoranaOperator((1, 5, 7), 4.75)
     d = MajoranaOperator((3, 5, 7), 2.25)
+    const = MajoranaOperator((), 5.25)
+    o = MajoranaOperator.zero()
+    identity = MajoranaOperator.identity()
 
     a += c
     assert a.terms == {(0, 2, 3): -1.25, (1, 5, 7): 4.75}
 
     a -= d
-    assert a.terms == {(0, 2, 3): -1.25, (1, 5, 7): 4.75, (3, 5, 7): 2.25}
+    assert a.terms == {(0, 2, 3): -1.25, (1, 5, 7): 4.75, (3, 5, 7): -2.25}
 
     a += MajoranaOperator((0, 2, 3), 0.5)
-    assert a.terms == {(0, 2, 3): -0.75, (1, 5, 7): 4.75, (3, 5, 7): 2.25}
+    assert a.terms == {(0, 2, 3): -0.75, (1, 5, 7): 4.75, (3, 5, 7): -2.25}
 
     a -= MajoranaOperator((0, 2, 3), 0.25)
-    assert a.terms == {(0, 2, 3): -1.0, (1, 5, 7): 4.75, (3, 5, 7): 2.25}
+    assert a.terms == {(0, 2, 3): -1.0, (1, 5, 7): 4.75, (3, 5, 7): -2.25}
 
-    assert (a + b).terms == {(0, 2, 3): -1.5, (1, 5, 7): 4.75, (3, 5, 7): 2.25}
+    assert (a + b).terms == {(0, 2, 3): -1.5, (1, 5, 7): 4.75, (3, 5, 7): -2.25}
 
-    assert (a - b).terms == {(0, 2, 3): -0.5, (1, 5, 7): 4.75, (3, 5, 7): 2.25}
+    assert (a - b).terms == {(0, 2, 3): -0.5, (1, 5, 7): 4.75, (3, 5, 7): -2.25}
+
+    assert (a + const).terms == {(0, 2, 3): -1.0, (1, 5, 7): 4.75, (3, 5, 7): -2.25, (): 5.25}
+    assert (a + 5.25).terms == {(0, 2, 3): -1.0, (1, 5, 7): 4.75, (3, 5, 7): -2.25, (): 5.25}
+    assert (a - const).terms == {(0, 2, 3): -1.0, (1, 5, 7): 4.75, (3, 5, 7): -2.25, (): -5.25}
+    assert (a - 5.25).terms == {(0, 2, 3): -1.0, (1, 5, 7): 4.75, (3, 5, 7): -2.25, (): -5.25}
+
+    a += 5.25
+    assert a.constant == 5.25
+    a -= 10.5
+    assert a.constant == -5.25
+
+    assert a == a + 0
+    assert a == a - 0
+
+    assert a == a + o
+    assert a == a - o
+    assert a + 1.0 == a + identity
+    assert a - 1.0 == a - identity
 
     with pytest.raises(TypeError):
-        _ = a + 0
-
+        a -= 'a'
     with pytest.raises(TypeError):
-        a += 0
-
-    with pytest.raises(TypeError):
-        _ = a - 0
-
-    with pytest.raises(TypeError):
-        a -= 0
+        a += 'a'
 
 
 def test_majorana_operator_multiply():
@@ -128,6 +149,12 @@ def test_majorana_operator_multiply():
     a *= 2
     a *= MajoranaOperator(())
     assert a.terms == {(0, 1, 5): 3.0, (1, 2, 7): -1.0}
+
+    zero = MajoranaOperator.zero()
+    assert a * zero == zero
+
+    identity = MajoranaOperator.identity()
+    assert a * identity == a
 
     with pytest.raises(TypeError):
         _ = a * 'a'
@@ -165,8 +192,8 @@ def test_majorana_operator_divide():
 
 
 def test_majorana_operator_neg():
-    a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5)
-    assert (-a).terms == {(0, 1, 5): -1.5, (1, 2, 7): 0.5}
+    a = MajoranaOperator((0, 1, 5), 1.5) + MajoranaOperator((1, 2, 7), -0.5) + 2.5
+    assert (-a).terms == {(0, 1, 5): -1.5, (1, 2, 7): 0.5, (): -2.5}
 
 
 def test_majorana_operator_eq():
