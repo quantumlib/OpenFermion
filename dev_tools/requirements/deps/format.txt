@@ -1,2 +1,2 @@
 # Make sure this matches cirq/dev_tools/requirements/deps/format.txt
-black==23.3.0
+black==24.3.0
