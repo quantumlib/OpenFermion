@@ -18,6 +18,7 @@ def thc_via_cp3(
     bfgs_maxiter=5000,
     random_start_thc=True,
     verify=False,
+    penalty_param=None,
 ):
     """
     THC-CP3 performs an SVD decomposition of the eri matrix followed by a CP
@@ -36,6 +37,7 @@ def thc_via_cp3(
         random_start_thc - Perform random start for CP3.
                            If false perform HOSVD start.
         verify - check eri properties. Default is False
+        penalty_param - penalty parameter for L2 regularization. Default is None.
 
     returns:
         eri_thc - (N x N x N x N) reconstructed ERIs from THC factorization
@@ -115,7 +117,10 @@ def thc_via_cp3(
     if perform_bfgs_opt:
         x = np.hstack((thc_leaf.ravel(), thc_central.ravel()))
         # lbfgs_start_time = time.time()
-        x = lbfgsb_opt_thc_l2reg(eri_full, nthc, initial_guess=x, maxiter=bfgs_maxiter)
+        x = lbfgsb_opt_thc_l2reg(
+            eri_full, nthc, initial_guess=x, maxiter=bfgs_maxiter,
+            penalty_param=penalty_param
+        )
         # lbfgs_calc_time = time.time() - lbfgs_start_time
         thc_leaf = x[: norb * nthc].reshape(nthc, norb)  # leaf tensor  nthc x norb
         thc_central = x[norb * nthc : norb * nthc + nthc * nthc].reshape(

@@ -35,11 +35,9 @@ import numpy.typing as npt
 from pyscf.pbc import scf
 from scipy.optimize import minimize
 
-from jax.config import config
-
-config.update("jax_enable_x64", True)
-
 import jax
+jax.config.update("jax_enable_x64", True)
+
 import jax.numpy as jnp
 import jax.typing as jnpt
 
