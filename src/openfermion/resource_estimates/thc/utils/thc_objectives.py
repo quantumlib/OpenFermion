@@ -1,9 +1,11 @@
 # coverage:ignore
+# pylint: disable=wrong-import-position
 import os
 from uuid import uuid4
 import scipy.optimize
 
 import jax
+
 jax.config.update("jax_enable_x64", True)
 
 import jax.numpy as jnp

@@ -36,6 +36,7 @@ from pyscf.pbc import scf
 from scipy.optimize import minimize
 
 import jax
+
 jax.config.update("jax_enable_x64", True)
 
 import jax.numpy as jnp

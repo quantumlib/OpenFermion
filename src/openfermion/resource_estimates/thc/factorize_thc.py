@@ -118,8 +118,7 @@ def thc_via_cp3(
         x = np.hstack((thc_leaf.ravel(), thc_central.ravel()))
         # lbfgs_start_time = time.time()
         x = lbfgsb_opt_thc_l2reg(
-            eri_full, nthc, initial_guess=x, maxiter=bfgs_maxiter,
-            penalty_param=penalty_param
+            eri_full, nthc, initial_guess=x, maxiter=bfgs_maxiter, penalty_param=penalty_param
         )
         # lbfgs_calc_time = time.time() - lbfgs_start_time
         thc_leaf = x[: norb * nthc].reshape(nthc, norb)  # leaf tensor  nthc x norb
