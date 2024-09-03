@@ -1,4 +1,5 @@
 # coverage:ignore
+# pylint: disable=wrong-import-position
 import os
 from uuid import uuid4
 import h5py
@@ -6,9 +7,12 @@ import numpy
 import numpy.random
 import numpy.linalg
 from scipy.optimize import minimize
+
 import jax
+
+jax.config.update("jax_enable_x64", True)
+
 import jax.numpy as jnp
-from jax.config import config
 from jax import jit, grad
 from .adagrad import adagrad
 from .thc_objectives import (
@@ -22,7 +26,6 @@ from .thc_objectives import (
 # set mkl thread count for numpy einsum/tensordot calls
 # leave one CPU un used  so we can still access this computer
 os.environ["MKL_NUM_THREADS"] = "{}".format(os.cpu_count() - 1)
-config.update("jax_enable_x64", True)
 
 
 class CallBackStore:

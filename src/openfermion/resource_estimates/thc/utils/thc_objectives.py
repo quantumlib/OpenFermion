@@ -1,9 +1,14 @@
 # coverage:ignore
+# pylint: disable=wrong-import-position
 import os
 from uuid import uuid4
 import scipy.optimize
+
+import jax
+
+jax.config.update("jax_enable_x64", True)
+
 import jax.numpy as jnp
-from jax.config import config
 from jax import jit, grad
 import h5py
 import numpy
@@ -15,7 +20,6 @@ from .adagrad import adagrad
 # set mkl thread count for numpy einsum/tensordot calls
 # leave one CPU un used  so we can still access this computer
 os.environ["MKL_NUM_THREADS"] = "{}".format(os.cpu_count() - 1)
-config.update("jax_enable_x64", True)
 
 
 def thc_objective_jax(xcur, norb, nthc, eri):
