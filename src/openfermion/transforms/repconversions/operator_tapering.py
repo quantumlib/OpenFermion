@@ -56,7 +56,7 @@ def freeze_orbitals(fermion_operator, occupied, unoccupied=None, prune=True):
             n_swaps = 0  # Number of swaps that have been done
 
             for op in enumerate(reversed(term)):
-                if op[1][0] is item[0]:
+                if op[1][0] == item[0]:
                     n_ops += 1
 
                     # Determine number of swaps needed to bring the op in
