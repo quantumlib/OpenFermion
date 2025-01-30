@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   cirq-stable:
-    name: Test current stable Cirq release
+    name: Stable Cirq release
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
@@ -65,7 +65,7 @@ jobs:
           check/pytest
 
   cirq-dev:
-    name: Test latest Cirq pre-release
+    name: Cirq pre-release
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
