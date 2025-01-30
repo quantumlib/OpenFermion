@@ -1,28 +1,106 @@
-name: Nightly
+# Summary: OpenFermion nightly tests.
+#
+# This workflow runs nightly to run tests on the OpenFermion codebase.
+# It can also be invoked manually via the "Run workflow" button at
+# https://github.com/quantumlib/OpenFermion/actions/workflows/nightly.yaml
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+name: Nightly full tests
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "15 4 * * *"
+
+  # Allow manual invocation.
+  workflow_dispatch:
+
+concurrency:
+  # Cancel any previously-started but still active runs on the same branch.
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
 jobs:
-  cirq-next:
-    name: Cirq Pre-release
-    runs-on: ubuntu-latest
+  cirq-stable:
+    name: Test current stable Cirq release
+    runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
-        python-version: [ '3.10' ]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10.12", "3.11.9", "3.12.8"]
+        arch: [x64, arm64]
+        exclude:
+          - os: windows-latest
+            arch: arm64
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out a copy of the OpenFermion git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{matrix.python-version}}
+        uses: actions/setup-python@v5
+        id: cache
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{matrix.python-version}}
+          architecture: ${{matrix.arch}}
           cache: pip
-      - name: Install requirements
+          cache-dependency-path: dev_tools/requirements/envs/pytest.env.txt
+
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Install OpenFermion Python requirements
         run: |
           pip install -r dev_tools/requirements/envs/pytest.env.txt
+          echo "::group::List of installed pip packages and their versions"
+          pip list
+          echo "::endgroup::"
+
+        # The pytest.env.txt file includes cirq-core, but it's a pinned
+        # version. Here we install the latest released stable version, which
+        # may or may not be the same.
+      - name: Install cirq-core (current stable version)
+        run: |
+          pip install -U cirq-core
+
+      - name: Run Pytest
+        run: |
+          check/pytest
+
+  cirq-dev:
+    name: Test latest Cirq pre-release
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10.12", "3.11.9", "3.12.8"]
+        arch: ["x64", "arm64"]
+        exclude:
+          - os: windows-latest
+            arch: arm64
+      fail-fast: false
+    steps:
+      - name: Check out a copy of the OpenFermion git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{matrix.python-version}}
+        id: cache
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{matrix.python-version}}
+          architecture: ${{matrix.arch}}
+          cache: pip
+          cache-dependency-path: dev_tools/requirements/envs/pytest.env.txt
+
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Install OpenFermion Python requirements
+        run: |
+          pip install -r dev_tools/requirements/envs/pytest.env.txt
+          echo "::group::List of installed pip packages and their versions"
+          pip list
+          echo "::endgroup::"
+
+      - name: Install cirq-core (pre-release version)
+        run: |
           pip install -U cirq-core --pre
-      - name: Pytest check
-        run: check/pytest
-        shell: bash
+
+      - name: Run Pytest
+        run: |
+          check/pytest

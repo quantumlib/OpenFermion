@@ -1,4 +1,14 @@
-name: Continuous Integration
+# Summary: OpenFermion continuous integration status checks.
+#
+# This workflow runs various tests to verify that changes to the OpenFermion
+# codebase pass validation and conform to project format and style standards.
+# It triggers on certain events such as pull requests and merge-queue merges,
+# and can also be invoked manually via the "Run workflow" button at
+# https://github.com/quantumlib/OpenFermion/actions/workflows/ci.yaml
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+name: Continuous integration checks
+run-name: Continuous integration checks triggered by ${{github.event_name}}
 
 on:
   pull_request:
@@ -14,68 +24,146 @@ on:
     branches:
       - master
 
+  # Allow manual invocation.
+  workflow_dispatch:
+    inputs:
+      python_ver:
+        description: Version of Python to use
+        type: string
+        default: "3.10.11"
+
+concurrency:
+  # Cancel any previously-started but still active runs on the same branch.
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
+
+env:
+  # Default Python version to use.
+  python_ver: "3.10.11"
+
+  # Files listing dependencies we install using pip in the various jobs below.
+  # This is used by setup-python to check whether its cache needs updating.
+  python_dep_files: >-
+    dev_tools/requirements/envs/format.env.txt
+    dev_tools/requirements/envs/mypy.env.txt
+    dev_tools/requirements/envs/pylint.env.txt
+    dev_tools/requirements/envs/pytest-extra.env.txt
+    dev_tools/requirements/envs/pytest.env.txt
+    dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+
 jobs:
+  Setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out a copy of the OpenFermion git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python with caching of pip dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          architecture: "x64"
+          cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
+      - name: Install Python requirements
+        run: |
+          set -x
+          for file in ${{env.python_dep_files}}; do
+            pip install -r $file
+          done
+          set +x
+          echo "::group::List of installed pip packages and their versions"
+          pip list
+          echo "::endgroup::"
+
   format:
     name: Format check
+    needs: Setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-          architecture: 'x64'
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          architecture: "x64"
           cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/format.env.txt
+
       - name: Format
         run: check/format-incremental
+
   mypy:
     name: Type check
+    needs: Setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-          architecture: 'x64'
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          architecture: "x64"
           cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/mypy.env.txt
+
       - name: Type check
         run: check/mypy
+
   pylint:
     name: Lint check
+    needs: Setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-          architecture: 'x64'
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          architecture: "x64"
           cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pylint.env.txt
+
       - name: Lint
         run: check/pylint
+
   pytest-max-compat:
     name: Pytest max compat
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
+
+        # Note: deliberately not using our Python cache here b/c this runs
+        # a different version of Python.
       - uses: actions/setup-python@v5
         with:
           python-version: 3.8
-          cache: pip
+
       - name: Install requirements
         run: |
           pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+
       - name: Pytest check
         run: check/pytest
         shell: bash
+
   pytest:
     name: Pytest
+    needs: Setup
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -84,19 +172,25 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
       - name: Install requirements
         run: |
           pip install -r dev_tools/requirements/envs/pytest.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
+
       - name: Pytest check
         run: check/pytest
         shell: bash
+
   pytest-extra:
     name: Pytest extra
+    needs: Setup
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -105,29 +199,39 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
       - name: Install requirements
         run: |
           pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
+
       - name: Pytest check resources
-        run: check/pytest -m 'not slow' src/openfermion/resource_estimates
+        run: check/pytest -m "not slow" src/openfermion/resource_estimates
         shell: bash
+
   coverage:
     name: Coverage check
+    needs: Setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
+
       - name: Coverage check
         run: check/pytest-and-incremental-coverage
