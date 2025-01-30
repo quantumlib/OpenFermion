@@ -21,86 +21,13 @@ concurrency:
 
 jobs:
   cirq-stable:
-    name: Test current stable Cirq release
-    runs-on: ${{matrix.os}}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10.12", "3.11.9", "3.12.8"]
-        arch: [x64, arm64]
-        exclude:
-          - os: windows-latest
-            arch: arm64
-      fail-fast: false
-    steps:
-      - name: Check out a copy of the OpenFermion git repository
-        uses: actions/checkout@v4
+    name: Using stable Cirq release
+    uses: mhucka/openfermion/.github/workflows/nightly-pytest.yml@master
+    with:
+      args: ""
 
-      - name: Set up Python ${{matrix.python-version}}
-        uses: actions/setup-python@v5
-        id: cache
-        with:
-          python-version: ${{matrix.python-version}}
-          architecture: ${{matrix.arch}}
-          cache: pip
-          cache-dependency-path: dev_tools/requirements/envs/pytest.env.txt
-
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: Install OpenFermion Python requirements
-        run: |
-          pip install -r dev_tools/requirements/envs/pytest.env.txt
-          echo "::group::List of installed pip packages and their versions"
-          pip list
-          echo "::endgroup::"
-
-        # The pytest.env.txt file includes cirq-core, but it's a pinned
-        # version. Here we install the latest released stable version, which
-        # may or may not be the same.
-      - name: Install cirq-core (current stable version)
-        run: |
-          pip install -U cirq-core
-
-      - name: Run Pytest
-        run: |
-          check/pytest
-
-  cirq-dev:
-    name: Test latest Cirq pre-release
-    runs-on: ${{matrix.os}}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10.12", "3.11.9", "3.12.8"]
-        arch: ["x64", "arm64"]
-        exclude:
-          - os: windows-latest
-            arch: arm64
-      fail-fast: false
-    steps:
-      - name: Check out a copy of the OpenFermion git repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python ${{matrix.python-version}}
-        id: cache
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{matrix.python-version}}
-          architecture: ${{matrix.arch}}
-          cache: pip
-          cache-dependency-path: dev_tools/requirements/envs/pytest.env.txt
-
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: Install OpenFermion Python requirements
-        run: |
-          pip install -r dev_tools/requirements/envs/pytest.env.txt
-          echo "::group::List of installed pip packages and their versions"
-          pip list
-          echo "::endgroup::"
-
-      - name: Install cirq-core (pre-release version)
-        run: |
-          pip install -U cirq-core --pre
-
-      - name: Run Pytest
-        run: |
-          check/pytest
+  cirq-pre:
+    name: Using Cirq pre-release
+    uses: mhucka/openfermion/.github/workflows/nightly-pytest.yml@master
+    with:
+      args: "--pre"

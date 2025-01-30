@@ -1,0 +1,76 @@
+# Summary: reusable workflow called by nightly.yml
+#
+# This workflow expects input values passed by nightly.yml.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+name: Nightly full tests – Pytest subworkflow
+
+on:
+  workflow_call:
+    inputs:
+      args:
+        type: string
+        required: true
+
+jobs:
+  Pytest:
+    # Try to fit as much info as possible into the GHA sidebar at run-time.
+    name: Py ${{matrix.python-version}} + ${{matrix.os}}/${{matrix.arch}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        # These Python versions were carefully selected by trial and error
+        # to be available on as many os/arch combos as possible, while also
+        # making all necessary Python dependencies available on those combos.
+        # TODO: add "3.13.1" once Cirq 1.5 is released.
+        python-version: ["3.10.11", "3.11.9", "3.12.7"]
+        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-14, windows-latest]
+        arch: [x64, arm64]
+        exclude:
+          # MacOS 14 is only available for arm64.
+          - os: macos-14
+            arch: x64
+
+          # Windows is only available for x64.
+          - os: windows-latest
+            arch: arm64
+
+          # GitHub provides separate Ubuntu runners for ARM and x64.
+          # We have to exclude the incompatible combinations.
+          - os: ubuntu-22.04-arm
+            arch: x64
+          - os: ubuntu-22.04
+            arch: arm64
+
+          # 2025-01-31 dependency h5py fails to build on this combo (only).
+          - os: ubuntu-22.04-arm
+            arch: arm64
+            python-version: 3.12.7
+    steps:
+      - name: Check out a copy of the OpenFermion git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{matrix.python-version}}
+        uses: actions/setup-python@v5
+        id: cache
+        with:
+          python-version: ${{matrix.python-version}}
+          architecture: ${{matrix.arch}}
+          cache: pip
+          cache-dependency-path: dev_tools/requirements/envs/pytest.env.txt
+
+      - name: Install OpenFermion Python requirements
+        run: |
+          pip install -r dev_tools/requirements/envs/pytest.env.txt
+          echo "::group::List of installed pip packages and their versions"
+          pip list
+          echo "::endgroup::"
+
+      - name: Install cirq-core (current stable version)
+        run: |
+          pip install -U cirq-core ${{inputs.args}}
+
+      - name: Run Pytest
+        run: |
+          check/pytest
