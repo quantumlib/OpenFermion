@@ -10,6 +10,10 @@ on:
     types:
       - checks_requested
 
+  push:
+    branches:
+      - master
+
 jobs:
   format:
     name: Format check
