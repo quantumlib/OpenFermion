@@ -30,7 +30,7 @@ on:
       python_ver:
         description: Version of Python to use
         type: string
-        default: "3.10.12"
+        default: "3.10.11"
 
 concurrency:
   # Cancel any previously-started but still active runs on the same branch.
@@ -39,7 +39,7 @@ concurrency:
 
 env:
   # Default Python version to use.
-  python_ver: "3.10.12"
+  python_ver: "3.10.11"
 
   # Files listing dependencies we install using pip in the various jobs below.
   # This is used by setup-python to check whether its cache needs updating.
