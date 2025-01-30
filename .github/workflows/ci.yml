@@ -6,13 +6,14 @@ jobs:
     name: Format check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           architecture: 'x64'
+          cache: pip
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/format.env.txt
       - name: Format
@@ -21,11 +22,12 @@ jobs:
     name: Type check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           architecture: 'x64'
+          cache: pip
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/mypy.env.txt
       - name: Type check
@@ -34,11 +36,12 @@ jobs:
     name: Lint check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           architecture: 'x64'
+          cache: pip
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pylint.env.txt
       - name: Lint
@@ -47,10 +50,11 @@ jobs:
     name: Pytest max compat
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.8
+          cache: pip
       - name: Install requirements
         run: |
           pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
@@ -63,16 +67,18 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
+        cirq-version: [ 1.4.1 ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: pip
       - name: Install requirements
         run: |
           pip install -r dev_tools/requirements/envs/pytest.env.txt
-          pip install cirq-core${{matrix.cirq-version}}
+          pip install cirq-core==${{matrix.cirq-version}}
       - name: Pytest check
         run: check/pytest
         shell: bash
@@ -82,16 +88,18 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
+        cirq-version: [ 1.4.1 ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: pip
       - name: Install requirements
         run: |
           pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
-          pip install cirq-core${{matrix.cirq-version}}
+          pip install cirq-core==${{matrix.cirq-version}}
       - name: Pytest check resources
         run: check/pytest -m 'not slow' src/openfermion/resource_estimates
         shell: bash
@@ -99,12 +107,13 @@ jobs:
     name: Coverage check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: pip
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
       - name: Coverage check
