@@ -1,5 +1,14 @@
 name: Continuous Integration
-on: [pull_request]
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - master
+
+  merge_group:
+    types:
+      - checks_requested
 
 jobs:
   format:
