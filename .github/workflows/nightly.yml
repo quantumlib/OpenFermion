@@ -22,12 +22,12 @@ concurrency:
 jobs:
   cirq-stable:
     name: Using stable Cirq release
-    uses: mhucka/openfermion/.github/workflows/nightly-pytest.yml@master
+    uses: ${{github.repository}}/.github/workflows/nightly-pytest.yml@master
     with:
       args: ""
 
   cirq-pre:
     name: Using Cirq pre-release
-    uses: mhucka/openfermion/.github/workflows/nightly-pytest.yml@master
+    uses: ${{github.repository}}/.github/workflows/nightly-pytest.yml@master
     with:
       args: "--pre"
