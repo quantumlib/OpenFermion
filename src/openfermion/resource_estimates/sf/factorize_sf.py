@@ -1,5 +1,6 @@
 # coverage:ignore
-""" Single factorization of the ERI tensor """
+"""Single factorization of the ERI tensor"""
+import sys
 import numpy as np
 from openfermion.resource_estimates.utils import eigendecomp
 
