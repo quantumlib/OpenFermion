@@ -161,8 +161,8 @@ jobs:
         run: check/pytest
         shell: bash
 
-  pytest:
-    name: Pytest
+  pytest-matrix:
+    name: Pytest matrix
     needs: Setup
     runs-on: ${{ matrix.os }}
     strategy:
@@ -188,8 +188,22 @@ jobs:
         run: check/pytest
         shell: bash
 
-  pytest-extra:
-    name: Pytest extra
+  pytest:
+    if: always()
+    name: Pytest
+    needs: pytest-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          result="${{needs.pytest-matrix.result}}"
+          if [[ $result == "success" || $result == "skipped" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
+
+  pytest-extra-matrix:
+    name: Pytest extra matrix
     needs: Setup
     runs-on: ${{ matrix.os }}
     strategy:
@@ -214,6 +228,20 @@ jobs:
       - name: Pytest check resources
         run: check/pytest -m "not slow" src/openfermion/resource_estimates
         shell: bash
+
+  pytest-extra:
+    if: always()
+    name: Pytest extra
+    needs: pytest-extra-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          result="${{needs.pytest-extra-matrix.result}}"
+          if [[ $result == "success" || $result == "skipped" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
 
   coverage:
     name: Coverage check
