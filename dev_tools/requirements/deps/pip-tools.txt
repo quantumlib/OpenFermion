@@ -1,1 +1,1 @@
-pip-tools>=7.0
+pip-tools
