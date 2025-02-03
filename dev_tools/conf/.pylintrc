@@ -516,7 +516,7 @@ enable=
     deprecated-attribute,
     deprecated-class,
 #    deprecated-decorator,
-    deprecated-method,
+#    deprecated-method,
 #    deprecated-module,
     deprecated-pragma,
     dict-iter-missing-items,
