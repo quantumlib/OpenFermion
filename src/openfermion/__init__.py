@@ -77,7 +77,6 @@ from openfermion.hamiltonians import (
     sy_operator,
     sz_operator,
     majorana_operator,
-    number_operator,
 )
 
 from openfermion.linalg import (
