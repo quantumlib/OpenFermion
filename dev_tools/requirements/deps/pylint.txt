@@ -1,1 +1,5 @@
 pylint~=3.3
+
+-r resource_estimates_runtime.txt
+-r pytest.txt
+
