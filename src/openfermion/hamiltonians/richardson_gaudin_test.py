@@ -16,7 +16,7 @@ import numpy as np
 
 from openfermion.hamiltonians import RichardsonGaudin
 from openfermion.ops import QubitOperator
-from openfermion.transforms import get_fermion_operator
+#from openfermion.transforms import get_fermion_operator
 from openfermion.transforms import jordan_wigner
 from openfermion.linalg import get_sparse_operator
 from openfermion import get_fermion_operator, InteractionOperator, normal_ordered
