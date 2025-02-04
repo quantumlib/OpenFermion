@@ -28,9 +28,12 @@ on:
   workflow_dispatch:
     inputs:
       python_ver:
-        description: Version of Python to use
+        description: Normal version of Python to use
         type: string
-        default: "3.10.11"
+
+      python_compat_ver:
+        description: Max compat version of Python
+        type: string
 
 concurrency:
   # Cancel any previously-started but still active runs on the same branch.
@@ -40,6 +43,9 @@ concurrency:
 env:
   # Default Python version to use.
   python_ver: "3.10.11"
+
+  # Oldest Python version to use, for max_compat tests.
+  python_compat_ver: "3.10"
 
   # Files listing dependencies we install using pip in the various jobs below.
   # This is used by setup-python to check whether its cache needs updating.
@@ -151,7 +157,7 @@ jobs:
         # a different version of Python.
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: ${{env.python_compat_ver}}
 
       - name: Install requirements
         run: |
