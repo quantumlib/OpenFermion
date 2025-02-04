@@ -37,7 +37,7 @@ docker rm -v "$container_id"
 
 # Do it again for `max_compat`.
 # Set the docker build args; use a unique image name; use the correct output directory.
-docker build -t openfermion-pip-compile-max-compat --build-arg='PYTHON_VERSION=3.8' --build-arg='PLATFORM=max_compat' "$SCRIPT_DIR"
+docker build -t openfermion-pip-compile-max-compat --build-arg='PYTHON_VERSION=3.10' --build-arg='PLATFORM=max_compat' "$SCRIPT_DIR"
 container_id=$(docker create openfermion-pip-compile-max-compat)
 docker cp "$container_id:/pip-compile/max_compat" "$SCRIPT_DIR/"
 docker rm -v "$container_id"
