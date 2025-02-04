@@ -1,40 +1,61 @@
-.. image:: docs/images/logo_horizontal.svg
+.. image:: https://raw.githubusercontent.com/quantumlib/OpenFermion/refs/heads/master/docs/images/logo_horizontal.svg
+   :alt: OpenFermion logo
+   :width: 75%
+   :align: center
 
-OpenFermion is an open source library for compiling and analyzing quantum
+.. |ci| image:: https://img.shields.io/github/actions/workflow/status/quantumlib/openfermion/ci.yml?style=flat-square&logo=GitHub&label=Continous%20integration
+   :alt: Continuous integration status badge
+   :target: https://github.com/quantumlib/OpenFermion/workflows/Continuous%20Integration/badge.svg
+
+.. |python| image:: https://img.shields.io/badge/Python-3.10+-fcbc2c.svg?style=flat-square&logo=python&logoColor=white
+   :alt: Compatible with Python versions 3.10 and higher
+   :target: https://www.python.org/downloads/
+
+.. |license| image:: https://img.shields.io/badge/License-Apache%202.0-3c60b1.svg?logo=opensourceinitiative&logoColor=white&style=flat-square
+   :alt: Licensed under the Apache 2.0 license
+   :target: https://github.com/quantumlib/OpenFermion/blob/main/LICENSE
+
+.. |version| image:: https://img.shields.io/pypi/v/OpenFermion.svg?logo=semantic-release&logoColor=white&label=Release&style=flat-square&color=fcbc2c
+   :alt: OpenFermion project on PyPI
+   :target: https://pypi.org/project/OpenFermion
+
+.. |downloads| image:: https://img.shields.io/pypi/dm/openfermion?logo=PyPI&logoColor=white&style=flat-square&label=Downloads
+   :alt: OpenFermion downloads per month from PyPI
+   :target: https://img.shields.io/pypi/dm/OpenFermion
+
+.. class:: margin-top
+.. class:: centered
+
+|
+| |ci| |python| |license| |version| |downloads|
+
+.. |vertspace| image:: https://upload.wikimedia.org/wikipedia/commons/archive/c/ca/20200404084254%211x1.png
+   :alt: Blank space
+   :width: 1px
+   :height: 30px
+
+|vertspace| OpenFermion is an open source library for compiling and analyzing quantum
 algorithms to simulate fermionic systems, including quantum chemistry. Among
-other functionalities, this version features data structures and tools
-for obtaining and manipulating representations of fermionic and qubit
-Hamiltonians. For more information, see our
-`release paper <https://arxiv.org/abs/1710.07629>`__.
+other functionalities, it features data structures and tools for obtaining and
+manipulating representations of fermionic and qubit Hamiltonians. For more
+information, see our `release paper <https://arxiv.org/abs/1710.07629>`__.
 
+You can run the interactive Jupyter Notebooks in |Colab|_ or |MyBinder|_.
 
-
-.. image:: https://github.com/quantumlib/OpenFermion/workflows/Continuous%20Integration/badge.svg
-    :target: https://github.com/quantumlib/OpenFermion/workflows/Continuous%20Integration/badge.svg
-
-.. image:: https://readthedocs.org/projects/openfermion/badge/?version=latest
-    :target: http://openfermion.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
-
-.. image:: https://badge.fury.io/py/openfermion.svg
-    :target: https://badge.fury.io/py/openfermion
-
-.. image:: https://img.shields.io/pypi/dm/openfermion
-   :target: https://img.shields.io/pypi/dm/openfermion
-
-
-Run the interactive Jupyter Notebooks in Colab_ or MyBinder_:
-
+.. |Colab| replace:: Colab
 .. _Colab: https://colab.research.google.com/github/quantumlib/OpenFermion
-.. _MyBinder:  https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
 
+.. |MyBinder| replace:: MyBinder
+.. _MyBinder:  https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
 
 Installation and Documentation
 ==============================
 
-Installing the latest **stable** OpenFermion requires pip. Make sure that you are using an up-to-date version of it.
+Installing the latest **stable** OpenFermion requires the Python package
+installer `pip <https://pip.pypa.io>`__. Make sure that you are using an
+up-to-date version of it.
 
-Documentation can be found at `quantumai.google/openfermion <https://quantumai.google/openfermion>`__ and the following links
+Documentation can be found at `quantumai.google/openfermion <https://quantumai.google/openfermion>`__ and the following links:
 
 * `Installation <https://quantumai.google/openfermion/install>`__
 
@@ -51,17 +72,13 @@ and usage instructions in the
 The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
 The Docker installation should run on any operating system.
 
-You might also want to explore the alpha release of the
-`OpenFermion Cloud Library <https://github.com/quantumlib/OpenFermion/tree/master/cloud_library>`__
-where users can share and download precomputed molecular benchmark files.
-
-
 Developer install
 -----------------
 
-To install the latest version of OpenFermion (in development mode):
+To install the latest version of OpenFermion (in development mode), run
+the following commands:
 
-.. code-block:: bash
+.. code-block:: shell
 
   git clone https://github.com/quantumlib/OpenFermion
   cd OpenFermion
@@ -70,9 +87,10 @@ To install the latest version of OpenFermion (in development mode):
 Library install
 ---------------
 
-To install the latest PyPI release as a library (in user mode):
+To install the latest PyPI release as a library (in user mode), run
+the following commands:
 
-.. code-block:: bash
+.. code-block:: shell
 
   python -m pip install --user openfermion
 
@@ -84,21 +102,24 @@ Specifically, plugins are used to simulate and compile quantum circuits and to p
 classical electronic structure calculations.
 Follow the links below to learn more!
 
-High performance simulators
-------------------------------------------
+High-performance simulators
+---------------------------
+
 * `OpenFermion-FQE <https://github.com/quantumlib/OpenFermion-FQE>`__ is
-  a high performance emulator of fermionic quantum evolutions specified
+  a high-performance emulator of fermionic quantum evolutions specified
   by a sequence of fermion operators, which can exploit fermionic
   symmetries such as spin and particle number.
 
 Circuit compilation plugins
-------------------------------------------
+---------------------------
+
 * `Forest-OpenFermion <https://github.com/rigetticomputing/forestopenfermion>`__ to support integration with `Forest <https://www.rigetti.com/forest>`__.
 
 * `SFOpenBoson <https://github.com/XanaduAI/SFOpenBoson>`__ to support integration with `Strawberry Fields <https://github.com/XanaduAI/strawberryfields>`__.
 
 Electronic structure package plugins
 ------------------------------------
+
 * `OpenFermion-Psi4 <http://github.com/quantumlib/OpenFermion-Psi4>`__ to support integration with `Psi4 <http://psicode.org>`__.
 
 * `OpenFermion-PySCF <http://github.com/quantumlib/OpenFermion-PySCF>`__ to support integration with `PySCF <https://github.com/sunqm/pyscf>`__.
@@ -112,8 +133,9 @@ How to contribute
 
 We'd love to accept your contributions and patches to OpenFermion.
 There are a few small guidelines you need to follow.
-Contributions to OpenFermion must be accompanied by a Contributor License Agreement.
-You (or your employer) retain the copyright to your contribution,
+Contributions to OpenFermion must be accompanied by a Contributor License
+Agreement (CLA).
+You (or your employer) retain the copyright to your contribution; the CLA
 this simply gives us permission to use and redistribute your contributions as part of the project.
 Head over to https://cla.developers.google.com/
 to see your current agreements on file or to sign a new one.
@@ -180,8 +202,6 @@ Authors
 `Chris Winkler <https://github.com/quid256>`__ (University of Chicago),
 `Fang Zhang <https://github.com/fangzh-umich>`__ (University of Michigan) and
 `Emiel Koridon <https://github.com/Emieeel>`__ (Leiden University).
-
-
 
 How to cite
 ===========
