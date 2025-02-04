@@ -9,7 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import io
+
 import os
 
 from setuptools import find_packages, setup
@@ -19,10 +19,9 @@ __version__ = ''
 exec(open('src/openfermion/_version.py').read())
 
 # Readme file as long_description:
-long_description = '===========\n' + 'OpenFermion\n' + '===========\n'
-stream = io.open('README.rst', encoding='utf-8')
-stream.readline()
-long_description += stream.read()
+long_description = '===========\n' + 'OpenFermion\n' + '===========\n\n'
+with open('README.rst', 'r', encoding='utf-8') as readme:
+    long_description += readme.read()
 
 # Read in package requirements.txt
 requirements = open('dev_tools/requirements/deps/runtime.txt').readlines()

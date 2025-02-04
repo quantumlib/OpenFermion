@@ -182,7 +182,7 @@ class LinearQubitOperatorTest(unittest.TestCase):
                         [LinearQubitOperator(qubit_operator) * v for v in numpy.identity(16)]
                     )
                 ),
-                mat_expected.A,
+                mat_expected.toarray(),
             )
         )
 
