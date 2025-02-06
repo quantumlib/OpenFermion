@@ -23,11 +23,17 @@
 #
 # Usage:
 #     dev_tools/packaging/produce-package.sh output_dir [version]
+#
+# Note: since around 2021, the use of setup.py to build distributions has been
+# deprecated and replaced with using the Python 'build' package, and along with
+# this, stricter requirements for versioning were introduced. This means that
+# the "version" argument to this script must conform to patterns described at
+# https://packaging.python.org/en/latest/discussions/versioning/.
 ################################################################################
 
 PROJECT_NAME=openfermion
 
-set -e
+set -ex
 
 if [ -z "${1}" ]; then
   echo -e "\e[31mNo output directory given.\e[0m"
@@ -58,6 +64,6 @@ fi
 
 # Python wheel.
 echo "Producing python package files..."
-python3 setup.py -q sdist -d "${out_dir}"
+python -m build --outdir "${out_dir}"
 
 ls "${out_dir}"
