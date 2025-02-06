@@ -30,7 +30,6 @@
 set -e
 trap "{ echo -e '\e[31mFAILED\e[0m'; }" ERR
 
-
 PROJECT_NAME=openfermion
 PROJECT_VERSION=$1
 PROD_SWITCH=$2
@@ -60,34 +59,32 @@ tmp_dir=$(mktemp -d "/tmp/verify-published-package.XXXXXXXXXXXXXXXX")
 cd "${tmp_dir}"
 trap "{ rm -rf ${tmp_dir}; }" EXIT
 
-# Test both the python 2 and python 3 versions.
-for PYTHON_VERSION in python3; do
-    # Prepare.
-    RUNTIME_DEPS_FILE="${REPO_ROOT}/requirements.txt"
-    echo -e "\n\e[32m${PYTHON_VERSION}\e[0m"
-    echo "Working in a fresh virtualenv at ${tmp_dir}/${PYTHON_VERSION}"
-    virtualenv --quiet "--python=/usr/bin/${PYTHON_VERSION}" "${tmp_dir}/${PYTHON_VERSION}"
+# Prepare.
+PYTHON_VERSION=python3
+RUNTIME_DEPS_FILE="${REPO_ROOT}/dev_tools/requirements/envs/pytest.env.txt"
+echo "Working in a fresh virtualenv at ${tmp_dir}/${PYTHON_VERSION}"
+virtualenv --quiet "${tmp_dir}/${PYTHON_VERSION}"
+"${tmp_dir}/${PYTHON_VERSION}/bin/python" -m pip install --quiet --upgrade pip
 
-    # Install package.
-    if [ "${PYPI_REPO_NAME}" == "TEST" ]; then
-        echo "Pre-installing dependencies since they don't all exist in TEST pypi"
-        "${tmp_dir}/${PYTHON_VERSION}/bin/pip" install --quiet -r "${RUNTIME_DEPS_FILE}"
-    fi
-    echo Installing "${PROJECT_NAME}==${PROJECT_VERSION} from ${PYPI_REPO_NAME} pypi"
-    "${tmp_dir}/${PYTHON_VERSION}/bin/pip" install --quiet ${PYPI_REPOSITORY_FLAG} "${PROJECT_NAME}==${PROJECT_VERSION}"
+# Install package.
+if [ "${PYPI_REPO_NAME}" == "TEST" ]; then
+    echo "Pre-installing dependencies since they don't all exist in TEST pypi"
+    "${tmp_dir}/${PYTHON_VERSION}/bin/pip" install --quiet -r "${RUNTIME_DEPS_FILE}"
+fi
+echo Installing "${PROJECT_NAME}==${PROJECT_VERSION} from ${PYPI_REPO_NAME} pypi"
+"${tmp_dir}/${PYTHON_VERSION}/bin/pip" install --quiet ${PYPI_REPOSITORY_FLAG} "${PROJECT_NAME}==${PROJECT_VERSION}"
 
-    # Check that code runs without dev deps.
-    echo Checking that code executes
-    "${tmp_dir}/${PYTHON_VERSION}/bin/python" -c "import openfermion; print(openfermion.FermionOperator((1, 1)))"
-    "${tmp_dir}/${PYTHON_VERSION}/bin/python" -c "import openfermion; print(openfermion.QubitOperator((1, 'X')))"
+# Check that code runs without dev deps.
+echo Checking that code executes
+"${tmp_dir}/${PYTHON_VERSION}/bin/python" -c "import openfermion; print(openfermion.FermionOperator((1, 1)))"
+"${tmp_dir}/${PYTHON_VERSION}/bin/python" -c "import openfermion; print(openfermion.QubitOperator((1, 'X')))"
 
-    # Run tests.
-    echo Installing pytest
-    "${tmp_dir}/${PYTHON_VERSION}/bin/pip" install --quiet pytest
-    PY_VER=$(ls "${tmp_dir}/${PYTHON_VERSION}/lib")
-    echo Running tests
-    "${tmp_dir}/${PYTHON_VERSION}/bin/pytest" --quiet --disable-pytest-warnings "${tmp_dir}/${PYTHON_VERSION}/lib/${PY_VER}/site-packages/${PROJECT_NAME}"
-done
+# Run basic tests.
+echo Installing Pytest
+"${tmp_dir}/${PYTHON_VERSION}/bin/pip" install --quiet pytest
+PY_VER=$(ls "${tmp_dir}/${PYTHON_VERSION}/lib")
+echo Running tests
+"${tmp_dir}/${PYTHON_VERSION}/bin/pytest" --quiet --disable-pytest-warnings "${tmp_dir}/${PYTHON_VERSION}/lib/${PY_VER}/site-packages/${PROJECT_NAME}"
 
 echo
 echo -e '\e[32mVERIFIED\e[0m'
