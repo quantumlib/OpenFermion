@@ -8,7 +8,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: Continuous integration checks
-run-name: Continuous integration checks triggered by ${{github.event_name}}
+run-name: CI checks for ${{github.event_name}} by ${{github.actor}}
 
 on:
   pull_request:
@@ -20,13 +20,14 @@ on:
     types:
       - checks_requested
 
-  push:
-    branches:
-      - master
-
   # Allow manual invocation.
   workflow_dispatch:
     inputs:
+      sha:
+        description: 'SHA of commit to run against:'
+        type: string
+        required: true
+
       python_ver:
         description: Normal version of Python to use
         type: string
@@ -42,7 +43,7 @@ concurrency:
 
 env:
   # Default Python version to use.
-  python_ver: "3.10.11"
+  python_ver: "3.12"
 
   # Oldest Python version to use, for max_compat tests.
   python_compat_ver: "3.10"
@@ -58,13 +59,84 @@ env:
     dev_tools/requirements/max_compat/pytest-max-compat.env.txt
 
 jobs:
-  Setup:
-    runs-on: ubuntu-latest
+  # GitHub Actions can have path filters (i.e., the use of a "paths:" keyword
+  # on the trigger definitions in the "on:" block earlier in this file). Path
+  # filters *would* be the natural way to make workflows trigger only when the
+  # desired files are affected by a pull request – except that the way branch
+  # protection rules work today is: "If a workflow is skipped due to path
+  # filtering [...] then checks associated with that workflow will remain in a
+  # Pending state. A pull request that requires those checks to be successful
+  # will be blocked from merging." Surprisingly, GitHub doesn't provide
+  # guidance on how to handle this. Discussions about solutions sometimes
+  # suggest hacky solutions (c.f. https://stackoverflow.com/a/78003720/743730).
+  # The approach taken here is to forgo the use of path filtering rules in the
+  # trigger condition, and instead, do our own filtering using a combination
+  # of testing specific file patterns (in the changes job below) and "if:"
+  # conditions on individual jobs in the rest of this workflow.
+
+  changes:
+    name: (Find changed files)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      python: ${{steps.filter.outputs.python}}
+      python_files: ${{steps.filter.outputs.python_files}}
+      yaml: ${{steps.filter.outputs.yaml}}
+      yaml_files: ${{steps.filter.outputs.yaml_files}}
     steps:
+      # When invoked manually, use the given SHA to figure out the change list.
+      - if: github.event_name == 'workflow_dispatch'
+        name: Use the user-provided SHA as the basis for comparison
+        env:
+          GH_TOKEN: ${{github.token}}
+        run: |
+          set -x +e
+          url="repos/${{github.repository}}/commits/${{inputs.sha}}"
+          full_sha="$(gh api $url -q '.sha')"
+          if (( $? == 0 )); then
+            echo "base=$full_sha" >> "$GITHUB_ENV"
+          else
+            {
+            echo "### :x: Workflow error"
+            echo "The SHA provided to _Run Workflow_ does not exist:"
+            echo "<code>${{inputs.sha}}</code>"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - if: github.event_name != 'workflow_dispatch'
+        name: Use ref ${{github.ref_name}} as the basis for comparison
+        run: |
+          echo base=${{github.ref_name}} >> "$GITHUB_ENV"
+
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@v4
+
+      - name: Determine files changed by this ${{github.event_name}} event
+        uses: dorny/paths-filter@v3
+        id: filter
         with:
-          fetch-depth: 0
+          base: ${{env.base}}
+          list-files: 'shell'
+          # The outputs will be variables named "foo_files" for a filter "foo".
+          filters: |
+            python:
+              - added|modified:
+                  - '**/*.py'
+            yaml:
+              - added|modified:
+                  - '**/*.yaml'
+                  - '**/*.yml'
+
+  setup:
+    if: needs.changes.outputs.python == 'true'
+    name: (Set up Python)
+    needs: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
 
       - name: Set up Python with caching of pip dependencies
         uses: actions/setup-python@v5
@@ -85,16 +157,20 @@ jobs:
           pip list
           echo "::endgroup::"
 
-  format:
-    name: Format check
-    needs: Setup
+  python-format:
+    if: needs.changes.outputs.python == 'true'
+    name: Python format checks
+    needs: [changes, setup]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: "x64"
@@ -104,17 +180,21 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/format.env.txt
 
-      - name: Format
+      - name: Run format checks
         run: check/format-incremental
 
-  mypy:
-    name: Type check
-    needs: Setup
+  python-mypy:
+    if: needs.changes.outputs.python == 'true'
+    name: Python type checks
+    needs: [changes, setup]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: "x64"
@@ -127,14 +207,18 @@ jobs:
       - name: Type check
         run: check/mypy
 
-  pylint:
-    name: Lint check
-    needs: Setup
+  python-lint:
+    if: needs.changes.outputs.python == 'true'
+    name: Python lint checks
+    needs: [changes, setup]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: "x64"
@@ -144,42 +228,34 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pylint.env.txt
 
-      - name: Lint
+      - name: Run pylint
         run: check/pylint
 
-  pytest-max-compat:
-    name: Pytest max compat
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v4
-
-        # Note: deliberately not using our Python cache here b/c this runs
-        # a different version of Python.
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{env.python_compat_ver}}
-
-      - name: Install requirements
-        run: |
-          pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
-
-      - name: Pytest check
-        run: check/pytest
-        shell: bash
+  # The next set of matrix tests each consist of 2 job definitions. The job
+  # named "Thing-matrix" define a matrix of runs for different platforms. It's
+  # set with "fail-fast: false" so that a failure in one of matrix jobs doesn't
+  # cause this entire CI workflow to abort. Then, the job named "Thing" is the
+  # one that actually reports the results, and is the one used in the list of
+  # required status checks in the repository branch protection rules. It needs
+  # to be an independent job it has to test the results of all the matrix runs.
 
   pytest-matrix:
-    name: Pytest matrix
-    needs: Setup
+    if: needs.changes.outputs.python == 'true'
+    name: (Python pytest matrix)
+    needs: [changes, setup]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         cirq-version: [ 1.4.1 ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -190,14 +266,13 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
-      - name: Pytest check
+      - name: Run pytest
         run: check/pytest
-        shell: bash
 
   pytest:
-    if: always()
-    name: Pytest
-    needs: pytest-matrix
+    if: needs.changes.outputs.python == 'true' && (success() || failure())
+    name: Python pytest checks
+    needs: [changes, pytest-matrix]
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -209,18 +284,22 @@ jobs:
           fi
 
   pytest-extra-matrix:
-    name: Pytest extra matrix
-    needs: Setup
+    if: needs.changes.outputs.python == 'true'
+    name: (Python extra pytest matrix)
+    needs: [changes, setup]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
         cirq-version: [ 1.4.1 ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -231,14 +310,13 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
-      - name: Pytest check resources
+      - name: Run pytest
         run: check/pytest -m "not slow" src/openfermion/resource_estimates
-        shell: bash
 
   pytest-extra:
-    if: always()
-    name: Pytest extra
-    needs: pytest-extra-matrix
+    if: needs.changes.outputs.python == 'true' && (success() || failure())
+    name: Python extra pytest checks
+    needs: [changes, pytest-extra-matrix]
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -249,16 +327,44 @@ jobs:
             exit 1
           fi
 
-  coverage:
-    name: Coverage check
-    needs: Setup
-    runs-on: ubuntu-latest
+  python-compat:
+    if: needs.changes.outputs.python == 'true'
+    name: Python compatibility checks
+    needs: [changes, setup]
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
+
+        # Note: deliberately not using our Python cache here b/c this runs
+        # a different version of Python.
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{env.python_compat_ver}}
+
+      - name: Install requirements
+        run: |
+          pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+
+      - name: Run pytest
+        run: check/pytest
+
+  coverage:
+    if: needs.changes.outputs.python == 'true'
+    name: Python code coverage checks
+    needs: [changes, setup]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -267,5 +373,28 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
 
-      - name: Coverage check
+      - name: Run code coverage tests
         run: check/pytest-and-incremental-coverage
+
+  yaml-lint:
+    if: needs.changes.outputs.yaml == 'true'
+    name: YAML lint checks
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      changed_files: ${{needs.changes.outputs.yaml_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
+
+      - name: Set up yamllint output problem matcher
+        run: |
+          ls -la
+          echo "::add-matcher::.github/problem-matchers/yamllint.json"
+
+      - name: Run yamllint
+        run: |
+          set -x
+          # shellcheck disable=SC2086
+          yamllint $changed_files
