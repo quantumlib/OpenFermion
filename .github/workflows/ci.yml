@@ -8,7 +8,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: Continuous integration checks
-run-name: Continuous integration checks triggered by ${{github.event_name}}
+run-name: CI checks for ${{github.event_name}} by ${{github.actor}}
 
 on:
   pull_request:
@@ -56,6 +56,7 @@ env:
 jobs:
   Setup:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@v4
@@ -85,6 +86,7 @@ jobs:
     name: Format check
     needs: Setup
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -107,6 +109,7 @@ jobs:
     name: Type check
     needs: Setup
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -127,6 +130,7 @@ jobs:
     name: Lint check
     needs: Setup
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -146,6 +150,7 @@ jobs:
   pytest-max-compat:
     name: Pytest max compat
     runs-on: ubuntu-20.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -167,6 +172,7 @@ jobs:
     name: Pytest matrix
     needs: Setup
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
@@ -208,6 +214,7 @@ jobs:
     name: Pytest extra matrix
     needs: Setup
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
