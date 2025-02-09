@@ -65,6 +65,8 @@ jobs:
     outputs:
       python: ${{steps.filter.outputs.python}}
       python_files: ${{steps.filter.outputs.python_files}}
+      yaml: ${{steps.filter.outputs.yaml}}
+      yaml_files: ${{steps.filter.outputs.yaml_files}}
     steps:
       # When invoked manually, use the given SHA to figure out the change list.
       - if: github.event_name == 'workflow_dispatch'
@@ -106,6 +108,10 @@ jobs:
             python:
               - added|modified:
                   - '**/*.py'
+            yaml:
+              - added|modified:
+                  - '**/*.yaml'
+                  - '**/*.yml'
 
   Setup:
     if: needs.Changes.outputs.python == 'true'
@@ -347,3 +353,25 @@ jobs:
 
       - name: Coverage check
         run: check/pytest-and-incremental-coverage
+
+  YAML-lint:
+    if: needs.Changes.outputs.yaml == 'true'
+    name: YAML lint checks
+    needs: Changes
+    runs-on: ubuntu-24.04
+    env:
+      changed_files: ${{needs.Changes.outputs.yaml_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@v4
+
+      - name: Set up yamllint output problem matcher
+        run: |
+          ls -la
+          echo "::add-matcher::.github/problem-matchers/yamllint.json"
+
+      - name: Run yamllint
+        run: |
+          set -x
+          # shellcheck disable=SC2086
+          yamllint $changed_files
