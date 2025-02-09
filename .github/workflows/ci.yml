@@ -20,10 +20,6 @@ on:
     types:
       - checks_requested
 
-  push:
-    branches:
-      - master
-
   # Allow manual invocation.
   workflow_dispatch:
     inputs:
