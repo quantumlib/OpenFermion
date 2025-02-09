@@ -17,6 +17,7 @@ jobs:
     # Try to fit as much info as possible into the GHA sidebar at run-time.
     name: Py ${{matrix.python-version}} + ${{matrix.os}}/${{matrix.arch}}
     runs-on: ${{matrix.os}}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
