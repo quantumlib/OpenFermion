@@ -59,7 +59,23 @@ env:
     dev_tools/requirements/max_compat/pytest-max-compat.env.txt
 
 jobs:
-  Changes:
+  # GitHub Actions can have path filters (i.e., the use of a "paths:" keyword
+  # on the trigger definitions in the "on:" block earlier in this file). Path
+  # filters *would* be the natural way to make workflows trigger only when the
+  # desired files are affected by a pull request – except that the way branch
+  # protection rules work today is: "If a workflow is skipped due to path
+  # filtering [...] then checks associated with that workflow will remain in a
+  # Pending state. A pull request that requires those checks to be successful
+  # will be blocked from merging." Surprisingly, GitHub doesn't provide
+  # guidance on how to handle this. Discussions about solutions sometimes
+  # suggest hacky solutions (c.f. https://stackoverflow.com/a/78003720/743730).
+  # The approach taken here is to forgo the use of path filtering rules in the
+  # trigger condition, and instead, do our own filtering using a combination
+  # of testing specific file patterns (in the changes job below) and "if:"
+  # conditions on individual jobs in the rest of this workflow.
+
+  changes:
+    name: (Find changed files)
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -75,8 +91,7 @@ jobs:
           set -x +e
           url="repos/${{github.repository}}/commits/${{inputs.sha}}"
           full_sha="$(gh api $url -q '.sha')"
-          exit_code=$?
-          if [[ "$exit_code" == "0" ]]; then
+          if (( $? == 0 )); then
             echo "base=$full_sha" >> "$GITHUB_ENV"
           else
             {
@@ -107,9 +122,10 @@ jobs:
               - added|modified:
                   - '**/*.py'
 
-  Setup:
-    if: needs.Changes.outputs.python == 'true'
-    needs: Changes
+  setup:
+    if: needs.changes.outputs.python == 'true'
+    name: (Set up Python)
+    needs: changes
     runs-on: ubuntu-latest
     steps:
       - name: Check out a copy of the git repository
@@ -134,10 +150,10 @@ jobs:
           pip list
           echo "::endgroup::"
 
-  Python-format:
-    if: needs.Changes.outputs.python == 'true'
+  python-format:
+    if: needs.changes.outputs.python == 'true'
     name: Python format checks
-    needs: [Changes, Setup]
+    needs: [changes, setup]
     runs-on: ubuntu-latest
     steps:
       - name: Check out a copy of the git repository
@@ -156,13 +172,13 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/format.env.txt
 
-      - name: Format
+      - name: Run format checks
         run: check/format-incremental
 
-  Python-mypy:
-    if: needs.Changes.outputs.python == 'true'
+  python-mypy:
+    if: needs.changes.outputs.python == 'true'
     name: Python type checks
-    needs: [Changes, Setup]
+    needs: [changes, setup]
     runs-on: ubuntu-latest
     steps:
       - name: Check out a copy of the git repository
@@ -182,10 +198,10 @@ jobs:
       - name: Type check
         run: check/mypy
 
-  Python-lint:
-    if: needs.Changes.outputs.python == 'true'
+  python-lint:
+    if: needs.changes.outputs.python == 'true'
     name: Python lint checks
-    needs: [Changes, Setup]
+    needs: [changes, setup]
     runs-on: ubuntu-latest
     steps:
       - name: Check out a copy of the git repository
@@ -202,20 +218,21 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pylint.env.txt
 
-      - name: Lint
+      - name: Run pylint
         run: check/pylint
 
   # The next set of matrix tests each consist of 2 job definitions. The job
   # named "Thing-matrix" define a matrix of runs for different platforms. It's
   # set with "fail-fast: false" so that a failure in one of matrix jobs doesn't
   # cause this entire CI workflow to abort. Then, the job named "Thing" is the
-  # one that actually reports the results. It needs to be an independent job it
-  # has to test the results of all the matrix runs.
+  # one that actually reports the results, and is the one used in the list of
+  # required status checks in the repository branch protection rules. It needs
+  # to be an independent job it has to test the results of all the matrix runs.
 
-  Pytest-matrix:
-    if: needs.Changes.outputs.python == 'true'
-    name: Pytest matrix
-    needs: [Changes, Setup]
+  pytest-matrix:
+    if: needs.changes.outputs.python == 'true'
+    name: (Python pytest matrix)
+    needs: [changes, setup]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -238,14 +255,13 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
-      - name: Pytest check
+      - name: Run pytest
         run: check/pytest
-        shell: bash
 
-  Pytest:
-    if: needs.Changes.outputs.python == 'true' && (success() || failure())
-    name: Pytest
-    needs: [Changes, Pytest-matrix]
+  pytest:
+    if: needs.changes.outputs.python == 'true' && (success() || failure())
+    name: Python pytest checks
+    needs: [changes, pytest-matrix]
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -256,10 +272,10 @@ jobs:
             exit 1
           fi
 
-  Pytest-extra-matrix:
-    if: needs.Changes.outputs.python == 'true'
-    name: Pytest extra matrix
-    needs: [Changes, Setup]
+  pytest-extra-matrix:
+    if: needs.changes.outputs.python == 'true'
+    name: (Python extra pytest matrix)
+    needs: [changes, setup]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -282,14 +298,13 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
-      - name: Pytest check resources
+      - name: Run pytest
         run: check/pytest -m "not slow" src/openfermion/resource_estimates
-        shell: bash
 
-  Pytest-extra:
-    if: needs.Changes.outputs.python == 'true' && (success() || failure())
-    name: Pytest extra
-    needs: [Changes, Pytest-extra-matrix]
+  pytest-extra:
+    if: needs.changes.outputs.python == 'true' && (success() || failure())
+    name: Python extra pytest checks
+    needs: [changes, pytest-extra-matrix]
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -300,10 +315,10 @@ jobs:
             exit 1
           fi
 
-  Pytest-max-compat:
-    if: needs.Changes.outputs.python == 'true'
-    name: Pytest max compatibility
-    needs: [Changes, Setup]
+  python-compat:
+    if: needs.changes.outputs.python == 'true'
+    name: Python compatibility checks
+    needs: [changes, setup]
     runs-on: ubuntu-20.04
     steps:
       - name: Check out a copy of the git repository
@@ -320,14 +335,13 @@ jobs:
         run: |
           pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
 
-      - name: Pytest check
+      - name: Run pytest
         run: check/pytest
-        shell: bash
 
-  Coverage:
-    if: needs.Changes.outputs.python == 'true'
-    name: Code coverage checks
-    needs: [Changes, Setup]
+  coverage:
+    if: needs.changes.outputs.python == 'true'
+    name: Python code coverage checks
+    needs: [changes, setup]
     runs-on: ubuntu-latest
     steps:
       - name: Check out a copy of the git repository
@@ -345,5 +359,5 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
 
-      - name: Coverage check
+      - name: Run code coverage tests
         run: check/pytest-and-incremental-coverage
