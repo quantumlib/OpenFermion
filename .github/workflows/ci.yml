@@ -228,6 +228,9 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pylint.env.txt
 
+      - name: Set up Pylint output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pylint.json'
+
       - name: Run pylint
         run: check/pylint
 
@@ -390,7 +393,6 @@ jobs:
 
       - name: Set up yamllint output problem matcher
         run: |
-          ls -la
           echo "::add-matcher::.github/problem-matchers/yamllint.json"
 
       - name: Run yamllint
