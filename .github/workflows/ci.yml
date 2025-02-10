@@ -121,8 +121,7 @@ jobs:
           # The outputs will be variables named "foo_files" for a filter "foo".
           filters: |
             python:
-              - added|modified:
-                  - '**/*.py'
+              - '**/*.py'
             yaml:
               - added|modified:
                   - '**/*.yaml'
