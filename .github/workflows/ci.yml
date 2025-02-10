@@ -110,10 +110,10 @@ jobs:
           echo base=${{github.ref_name}} >> "$GITHUB_ENV"
 
       - name: Check out a copy of the OpenFermion git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Determine files changed by this ${{github.event_name}} event
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         id: filter
         with:
           base: ${{env.base}}
@@ -135,10 +135,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python with caching of pip dependencies
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: "x64"
@@ -164,12 +164,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: "x64"
@@ -190,10 +190,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: "x64"
@@ -214,10 +214,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: "x64"
@@ -254,10 +254,10 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -298,10 +298,10 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -337,12 +337,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
         # Note: deliberately not using our Python cache here b/c this runs
         # a different version of Python.
       - name: Set up Python and restore cache
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{env.python_compat_ver}}
 
@@ -361,12 +361,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -388,7 +388,7 @@ jobs:
       changed_files: ${{needs.changes.outputs.yaml_files}}
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up yamllint output problem matcher
         run: |
