@@ -1,4 +1,4 @@
 pyscf
-jax~=0.4.38
+jax~=0.5.0
 jaxlib~=0.4.38
 ase
