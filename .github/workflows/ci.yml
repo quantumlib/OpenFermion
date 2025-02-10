@@ -131,7 +131,7 @@ jobs:
     if: needs.changes.outputs.python == 'true'
     name: (Set up Python)
     needs: changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
@@ -160,7 +160,7 @@ jobs:
     if: needs.changes.outputs.python == 'true'
     name: Python format checks
     needs: [changes, setup]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
@@ -186,7 +186,7 @@ jobs:
     if: needs.changes.outputs.python == 'true'
     name: Python type checks
     needs: [changes, setup]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
@@ -210,7 +210,7 @@ jobs:
     if: needs.changes.outputs.python == 'true'
     name: Python lint checks
     needs: [changes, setup]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
@@ -249,7 +249,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-24.04, macos-14, windows-2022 ]
         cirq-version: [ 1.4.1 ]
       fail-fast: false
     steps:
@@ -275,7 +275,7 @@ jobs:
     if: needs.changes.outputs.python == 'true' && (success() || failure())
     name: Python pytest checks
     needs: [changes, pytest-matrix]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - run: |
           result="${{needs.pytest-matrix.result}}"
@@ -293,7 +293,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-24.04, macos-14]
         cirq-version: [ 1.4.1 ]
       fail-fast: false
     steps:
@@ -319,7 +319,7 @@ jobs:
     if: needs.changes.outputs.python == 'true' && (success() || failure())
     name: Python extra pytest checks
     needs: [changes, pytest-extra-matrix]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - run: |
           result="${{needs.pytest-extra-matrix.result}}"
@@ -357,7 +357,7 @@ jobs:
     if: needs.changes.outputs.python == 'true'
     name: Python code coverage checks
     needs: [changes, setup]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
