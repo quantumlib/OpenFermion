@@ -83,6 +83,8 @@ jobs:
       python_files: ${{steps.filter.outputs.python_files}}
       yaml: ${{steps.filter.outputs.yaml}}
       yaml_files: ${{steps.filter.outputs.yaml_files}}
+      cff: ${{steps.filter.outputs.cff}}
+      cff_files: ${{steps.filter.outputs.cff_files}}
     steps:
       # When invoked manually, use the given SHA to figure out the change list.
       - if: github.event_name == 'workflow_dispatch'
@@ -125,6 +127,9 @@ jobs:
               - added|modified:
                   - '**/*.yaml'
                   - '**/*.yml'
+            cff:
+              - added|modified:
+                  - '**/CITATION.cff'
 
   setup:
     if: needs.changes.outputs.python == 'true'
@@ -398,3 +403,23 @@ jobs:
           set -x
           # shellcheck disable=SC2086
           yamllint $changed_files
+
+  cff-validation:
+    if: needs.changes.outputs.cff == 'true'
+    name: Validate CITATION.cff file(s)
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      changed_files: ${{needs.changes.outputs.cff_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install cffconvert
+        run: |
+          pip install cffconvert
+
+      - name: Run cffconvert in validation mode
+        run: |
+          cffconvert --validate

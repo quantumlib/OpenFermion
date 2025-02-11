@@ -1,0 +1,193 @@
+cff-version: 1.2.0
+message: If you use OpenFermion, please cite it using this metadata.
+
+title: OpenFermion
+
+abstract: The electronic structure package for quantum computers.
+
+authors:
+- name: The OpenFermion Developers
+
+version: 1.7.0
+
+date-released: 2024-02-08
+
+url: https://github.com/quantumlib/openfermion
+
+repository-code: https://github.com/quantumlib/openfermion
+
+license: Apache-2.0
+
+type: software
+
+preferred-citation:
+  authors:
+    - family-names: McClean
+      given-names: Jarrod R.
+
+    - family-names: Rubin
+      given-names: Nicholas C.
+
+    - family-names: Sung
+      given-names: Kevin J.
+
+    - family-names: Kivlichan
+      given-names: Ian D.
+
+    - family-names: Bonet-Monroig
+      given-names: Xavier
+
+    - family-names: Cao
+      given-names: Yudong
+
+    - family-names: Dai
+      given-names: Chengyu
+
+    - family-names: Fried
+      given-names: E. Schuyler
+
+    - family-names: Gidney
+      given-names: Craig
+
+    - family-names: Gimby
+      given-names: Brendan
+
+    - family-names: Gokhale
+      given-names: Pranav
+
+    - family-names: Häner
+      given-names: Thomas
+
+    - family-names: Hardikar
+      given-names: Tarini
+
+    - family-names: Havlíček
+      given-names: Vojtěch
+
+    - family-names: Higgott
+      given-names: Oscar
+
+    - family-names: Huang
+      given-names: Cupjin
+
+    - family-names: Izaac
+      given-names: Josh
+
+    - family-names: Jiang
+      given-names: Zhang
+
+    - family-names: Liu
+      given-names: Xinle
+
+    - family-names: McArdle
+      given-names: Sam
+
+    - family-names: Neeley
+      given-names: Matthew
+
+    - family-names: O'Brien
+      given-names: Thomas
+
+    - family-names: O'Gorman
+      given-names: Bryan
+
+    - family-names: Ozfidan
+      given-names: Isil
+
+    - family-names: Radin
+      given-names: Maxwell D.
+
+    - family-names: Romero
+      given-names: Jhonathan
+
+    - family-names: Sawaya
+      given-names: Nicolas P. D.
+
+    - family-names: Senjean
+      given-names: Bruno
+
+    - family-names: Setia
+      given-names: Kanav
+
+    - family-names: Sim
+      given-names: Sukin
+
+    - family-names: Steiger
+      given-names: Damian S.
+
+    - family-names: Steudtner
+      given-names: Mark
+
+    - family-names: Sun
+      given-names: Qiming
+
+    - family-names: Sun
+      given-names: Wei
+
+    - family-names: Wang
+      given-names: Daochen
+
+    - family-names: Zhang
+      given-names: Fang
+
+    - family-names: Babbush
+      given-names: Ryan
+  title: "OpenFermion: The Electronic Structure Package for Quantum Computers"
+  type: article
+  journal: Quantum Science and Technology
+  year: 2020
+  volume: 5
+  issue: 3
+  doi: 10.1088/2058-9565/ab8ebc
+
+identifiers:
+  - description: The home page for OpenFermion
+    type: url
+    value: https://github.com/quantumlib/OpenFermion
+
+  - description: The GitHub repository for OpenFermion
+    type: url
+    value: https://quantumai.google/openfermion
+
+  - description: PyPI project for OpenFermion
+    type: url
+    value: https://pypi.org/project/openfermion
+
+keywords:
+  - algorithms
+  - API
+  - application programming interface
+  - chemistry
+  - Cirq
+  - electronic structure
+  - fermion
+  - fermionic systems
+  - Hamiltonians
+  - high performance
+  - NISQ
+  - noisy intermediate-scale quantum
+  - open-source software
+  - physics
+  - Python
+  - quantum algorithms
+  - quantum chemistry
+  - quantum circuit simulator
+  - quantum circuit
+  - quantum computer simulator
+  - quantum computing
+  - quantum information science
+  - quantum information
+  - quantum programming language
+  - quantum programming
+  - quantum simulation
+  - quantum state
+  - quantum system
+  - quantum theory
+  - quantum
+  - qubit Hamiltonians
+  - qubit
+  - science
+  - SDK
+  - simulation
+  - software development toolkit
+  - software
