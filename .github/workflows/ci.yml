@@ -42,11 +42,11 @@ concurrency:
   group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
 env:
-  # Default Python version to use.
-  python_ver: "3.12"
+  # Default Python version to use. Make sure to use full x.y.z number.
+  python_ver: "3.12.8"
 
   # Oldest Python version to use, for max_compat tests.
-  python_compat_ver: "3.10"
+  python_compat_ver: "3.10.15"
 
   # Files listing dependencies we install using pip in the various jobs below.
   # This is used by setup-python to check whether its cache needs updating.
@@ -83,6 +83,8 @@ jobs:
       python_files: ${{steps.filter.outputs.python_files}}
       yaml: ${{steps.filter.outputs.yaml}}
       yaml_files: ${{steps.filter.outputs.yaml_files}}
+      cff: ${{steps.filter.outputs.cff}}
+      cff_files: ${{steps.filter.outputs.cff_files}}
     steps:
       # When invoked manually, use the given SHA to figure out the change list.
       - if: github.event_name == 'workflow_dispatch'
@@ -92,8 +94,7 @@ jobs:
         run: |
           set -x +e
           url="repos/${{github.repository}}/commits/${{inputs.sha}}"
-          full_sha="$(gh api $url -q '.sha')"
-          if (( $? == 0 )); then
+          if full_sha="$(gh api $url -q '.sha')"; then
             echo "base=$full_sha" >> "$GITHUB_ENV"
           else
             {
@@ -126,6 +127,9 @@ jobs:
               - added|modified:
                   - '**/*.yaml'
                   - '**/*.yml'
+            cff:
+              - added|modified:
+                  - '**/CITATION.cff'
 
   setup:
     if: needs.changes.outputs.python == 'true'
@@ -399,3 +403,23 @@ jobs:
           set -x
           # shellcheck disable=SC2086
           yamllint $changed_files
+
+  cff-validation:
+    if: needs.changes.outputs.cff == 'true'
+    name: Validate CITATION.cff file(s)
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      changed_files: ${{needs.changes.outputs.cff_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install cffconvert
+        run: |
+          pip install cffconvert
+
+      - name: Run cffconvert in validation mode
+        run: |
+          cffconvert --validate

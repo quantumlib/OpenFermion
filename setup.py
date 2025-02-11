@@ -34,15 +34,6 @@ resource_requirements = open(
 resource_requirements = [r.strip() for r in resource_requirements]
 resource_requirements = [r for r in resource_requirements if not r.startswith('#')]
 
-docs_files_gen = os.walk('docs')
-docs_data_files_tuples = []
-for cwd, subdirs, files in list(docs_files_gen)[1:]:
-    if 'ipynb_checkpoints' in cwd:
-        continue
-    docs_data_files_tuples.append(
-        (os.path.join('openfermion', cwd), [os.path.join(cwd, file) for file in files])
-    )
-
 setup(
     name='openfermion',
     version=__version__,
@@ -67,7 +58,6 @@ setup(
             os.path.join('src', 'openfermion', 'testing', '*.hdf5'),
         ]
     },
-    data_files=docs_data_files_tuples,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
