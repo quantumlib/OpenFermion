@@ -42,11 +42,11 @@ concurrency:
   group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
 env:
-  # Default Python version to use.
-  python_ver: "3.12"
+  # Default Python version to use. Make sure to use full x.y.z number.
+  python_ver: "3.12.8"
 
   # Oldest Python version to use, for max_compat tests.
-  python_compat_ver: "3.10"
+  python_compat_ver: "3.10.15"
 
   # Files listing dependencies we install using pip in the various jobs below.
   # This is used by setup-python to check whether its cache needs updating.
@@ -92,8 +92,7 @@ jobs:
         run: |
           set -x +e
           url="repos/${{github.repository}}/commits/${{inputs.sha}}"
-          full_sha="$(gh api $url -q '.sha')"
-          if (( $? == 0 )); then
+          if full_sha="$(gh api $url -q '.sha')"; then
             echo "base=$full_sha" >> "$GITHUB_ENV"
           else
             {
