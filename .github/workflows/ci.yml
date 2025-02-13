@@ -85,6 +85,8 @@ jobs:
       yaml_files: ${{steps.filter.outputs.yaml_files}}
       cff: ${{steps.filter.outputs.cff}}
       cff_files: ${{steps.filter.outputs.cff_files}}
+      gha: ${{steps.filter.outputs.gha}}
+      gha_files: ${{steps.filter.outputs.gha_files}}
     steps:
       # When invoked manually, use the given SHA to figure out the change list.
       - if: github.event_name == 'workflow_dispatch'
@@ -121,15 +123,19 @@ jobs:
           list-files: 'shell'
           # The outputs will be variables named "foo_files" for a filter "foo".
           filters: |
+            cff:
+              - added|modified:
+                  - '**/CITATION.cff'
             python:
               - '**/*.py'
+            gha:
+              - added|modified:
+                  - './.github/workflows/*.yaml'
+                  - './.github/workflows/*.yml'
             yaml:
               - added|modified:
                   - '**/*.yaml'
                   - '**/*.yml'
-            cff:
-              - added|modified:
-                  - '**/CITATION.cff'
 
   setup:
     if: needs.changes.outputs.python == 'true'
@@ -423,3 +429,33 @@ jobs:
       - name: Run cffconvert in validation mode
         run: |
           cffconvert --validate
+
+  workflow-validation:
+    if: needs.changes.outputs.gha == 'true'
+    name: Validate GitHub Actions file(s)
+    needs: [changes, yaml-lint]
+    # This uses a Mac runner because actionlint isn't available via Linux apt.
+    runs-on: macos-14
+    timeout-minutes: 5
+    env:
+      changed_files: ${{needs.changes.outputs.gha_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      # The next action simply fails if there are any unpinned actions.
+      - name: Verify that all workflow actions have pinned versions
+        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@99589360fda82ecfac331cc6bfc9d7d74487359c
+
+      # If we didn't fail the previous check, go on to more time-consuming ones.
+      - name: Install actionlint
+        run: |
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install actionlint
+
+      - name: Set up actionlint output problem matcher
+        run: |
+          echo "::add-matcher::.github/problem-matchers/actionlint.json"
+
+      - name: Verify that all GitHub Actions workflows are valid
+        run: |
+          ./actionlint -color

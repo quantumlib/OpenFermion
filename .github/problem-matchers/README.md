@@ -17,3 +17,9 @@ license. The version of the files at the time they were copied was 2025.1.2.
 
 - [`pylint.json`](https://github.com/home-assistant/core/blob/dev/.github/workflows/matchers/pylint.json)
 - [`yamllint.json`](https://github.com/home-assistant/core/blob/dev/.github/workflows/matchers/yamllint.json)
+
+The following problem matcher JSON file came from the
+[actionlint](https://github.com/rhysd/actionlint/blob/v1.7.7/docs/usage.md)
+documentation (copied on 2025-02-12, version 1.7.7):
+
+- [`actionlint.json`](https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json)
