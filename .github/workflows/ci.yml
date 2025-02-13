@@ -458,4 +458,4 @@ jobs:
 
       - name: Verify that all GitHub Actions workflows are valid
         run: |
-          ./actionlint -color
+          /opt/homebrew/bin/actionlint -color
