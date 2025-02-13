@@ -433,7 +433,7 @@ jobs:
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
     name: Validate GitHub Actions file(s)
-    needs: changes
+    needs: [changes, yaml-lint]
     # This uses a Mac runner because actionlint isn't available via Linux apt.
     runs-on: macos-14
     timeout-minutes: 5
