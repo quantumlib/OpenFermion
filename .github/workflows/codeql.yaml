@@ -1,0 +1,57 @@
+# Summary: configuration for CodeQL.
+
+name: CodeQL code scanning
+run-name: Perform CodeQL code scan
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - '**/*.cff'
+      - '**/*.in'
+      - '**/*.ini'
+      - '**/*.json'
+      - '**/*.md'
+      - '**/*.rst'
+      - '**/*.svg'
+      - '**/*.txt'
+
+  schedule:
+    - cron: '37 13 * * 5'
+
+  # Allow manual invocation.
+  workflow_dispatch:
+
+# Declare default permissions as read only.
+permissions: read-all
+
+# Cancel any previously-started but still active runs on the same branch.
+concurrency:
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
+
+jobs:
+  codeql:
+    name: Run CodeQL analysis
+    runs-on: ubuntu-22.04
+    permissions:
+      security-events: write
+      packages: read
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@9e8d0789d4a0fa9ceb6b1738f7e269594bdd67f0 # v3
+        with:
+          languages: Python
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@9e8d0789d4a0fa9ceb6b1738f7e269594bdd67f0 # v3
+        with:
+          category: "/language:Python"
