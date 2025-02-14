@@ -1,0 +1,57 @@
+# Summary: workflow for OSSF Scorecard (https://github.com/ossf/scorecard).
+# Scorecard's use is suggested in Google's GitHub guidance (go/github-docs).
+
+name: Scorecard supply-chain security
+run-name: Analyze code for Scorecard
+
+on:
+  push:
+    branches:
+      - master
+
+  # To guarantee the Maintained check is occasionally updated. See
+  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
+  schedule:
+    - cron: '19 20 * * 6'
+
+  # Allow manual invocation.
+  workflow_dispatch:
+
+# Declare default permissions as read only.
+permissions: read-all
+
+# Cancel any previously-started but still active runs on the same branch.
+concurrency:
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
+
+jobs:
+  scorecard:
+    name: Perform Scorecard analysis
+    runs-on: ubuntu-22.04
+    permissions:
+      # Needed to upload the results to code-scanning dashboard.
+      security-events: write
+      # Needed to publish results and get a badge (see publish_results below).
+      id-token: write
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          persist-credentials: false
+
+      - name: Run Scorecard analysis
+        uses: ossf/scorecard-action@0864cf19026789058feabb7e87baa5f140aac736 # v2.3.1
+        with:
+          # Save the results
+          results_file: results.sarif
+          results_format: sarif
+
+          # Publish results to OpenSSF REST API.
+          # See https://github.com/ossf/scorecard-action#publishing-results.
+          publish_results: true
+
+      - name: Upload results to code-scanning dashboard
+        uses: github/codeql-action/upload-sarif@9e8d0789d4a0fa9ceb6b1738f7e269594bdd67f0 # v3
+        with:
+          sarif_file: results.sarif
