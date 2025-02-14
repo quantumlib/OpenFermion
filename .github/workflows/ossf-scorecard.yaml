@@ -5,12 +5,6 @@ name: Scorecard supply-chain security
 run-name: Analyze code for Scorecard
 
 on:
-  push:
-    branches:
-      - master
-
-  # To guarantee the Maintained check is occasionally updated. See
-  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
   schedule:
     - cron: '19 20 * * 6'
 
