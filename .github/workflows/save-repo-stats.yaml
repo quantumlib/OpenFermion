@@ -1,0 +1,35 @@
+# Summary: save GitHub traffic statistics.
+#
+# This uses https://github.com/marketplace/actions/github-repo-stats to save
+# daily GitHub repo statistics, so that they can be analyzed for longer
+# durations than GitHub's 14-day limit.
+
+name: GitHub repository statistics
+run-name: Save daily GitHub repo statistics
+
+on:
+  schedule:
+    - cron: '59 23 * * *'
+
+  # Allow manual invocation.
+  workflow_dispatch:
+
+# Declare default permissions as read only.
+permissions: read-all
+
+# Cancel any previously-started but still active runs on the same branch.
+concurrency:
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
+
+jobs:
+  save-stats:
+    name: Save GitHub repo stats
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Run GHRS action
+        uses: jgehrcke/github-repo-stats@306db38ad131cab2aa5f2cd3062bf6f8aa78c1aa
+        with:
+          ghtoken: ${{secrets.GHRS_GITHUB_API_TOKEN}}
+          databranch: github-repo-stats
