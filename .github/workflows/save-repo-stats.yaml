@@ -4,7 +4,7 @@
 # daily GitHub repo statistics, so that they can be analyzed for longer
 # durations than GitHub's 14-day limit.
 
-name: GitHub repository statistics
+name: GitHub repo statistics preservation
 run-name: Save daily GitHub repo statistics
 
 on:
