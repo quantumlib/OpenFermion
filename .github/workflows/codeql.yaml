@@ -1,27 +1,9 @@
 # Summary: configuration for CodeQL.
 
-name: CodeQL code scanning
-run-name: Perform CodeQL code scan
+name: Nightly CodeQL code scan
+run-name: Perform nightly CodeQL code scan
 
 on:
-  push:
-    branches:
-      - master
-
-  pull_request:
-    branches:
-      - master
-    paths-ignore:
-      - '**/*.cff'
-      - '**/*.in'
-      - '**/*.ini'
-      - '**/*.json'
-      - '**/*.md'
-      - '**/*.rst'
-      - '**/*.sarif'
-      - '**/*.svg'
-      - '**/*.txt'
-
   schedule:
     - cron: '37 13 * * 5'
 
@@ -39,7 +21,7 @@ concurrency:
 jobs:
   codeql:
     name: Run CodeQL analysis
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       packages: read
