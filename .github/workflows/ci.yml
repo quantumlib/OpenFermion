@@ -422,7 +422,7 @@ jobs:
 
   json-lint:
     if: needs.changes.outputs.json == 'true'
-    name: JSON file lint checks
+    name: JSON lint checks
     needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -491,7 +491,7 @@ jobs:
 
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
-    name: GitHub Actions file validation
+    name: GitHub Actions validation
     needs: [changes, yaml-lint]
     # This uses a Mac runner because actionlint isn't available via Linux apt.
     runs-on: macos-14
