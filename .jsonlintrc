@@ -1,0 +1,10 @@
+{
+  "comments": false,
+  "compact": true,
+  "endOfLine": "lf",
+  "indent": 2,
+  "no-duplicate-keys": true,
+  "patterns": ["**/*.json"],
+  "singleQuote": false,
+  "trailing-commas": false
+}

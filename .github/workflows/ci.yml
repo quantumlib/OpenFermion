@@ -87,6 +87,8 @@ jobs:
       cff_files: ${{steps.filter.outputs.cff_files}}
       gha: ${{steps.filter.outputs.gha}}
       gha_files: ${{steps.filter.outputs.gha_files}}
+      json: ${{steps.filter.outputs.json}}
+      json_files: ${{steps.filter.outputs.json_files}}
     steps:
       # When invoked manually, use the given SHA to figure out the change list.
       - if: github.event_name == 'workflow_dispatch'
@@ -136,6 +138,9 @@ jobs:
               - added|modified:
                   - '**/*.yaml'
                   - '**/*.yml'
+            json:
+              - added|modified:
+                  - '**/*.json'
 
   setup:
     if: needs.changes.outputs.python == 'true'
@@ -409,6 +414,26 @@ jobs:
           set -x
           # shellcheck disable=SC2086
           yamllint $changed_files
+
+  json-lint:
+    if: needs.changes.outputs.json == 'true'
+    name: Validate JSON files
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      changed_files: ${{needs.changes.outputs.json_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install jsonlint
+        run: |
+          npm install -g @prantlf/jsonlint
+
+      - name: Run jsonlint on JSON files
+        run: |
+          jsonlint --continue ${{env.changed_files}}
 
   cff-validation:
     if: needs.changes.outputs.cff == 'true'
