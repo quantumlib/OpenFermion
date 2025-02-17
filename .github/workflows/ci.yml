@@ -504,7 +504,7 @@ jobs:
 
       # The next action simply fails if there are any unpinned actions.
       - name: Verify that all workflow actions have pinned versions
-        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@99589360fda82ecfac331cc6bfc9d7d74487359c
+        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@25ed13d0628a1601b4b44048e63cc4328ed03633
 
       # If we didn't fail the previous check, go on to more time-consuming ones.
       - name: Install actionlint
