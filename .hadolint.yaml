@@ -1,0 +1,11 @@
+# Summary: configuration for hadolint used in CI checks.
+# Info about options can be found at https://github.com/hadolint/hadolint/.
+
+format: tty
+no-color: false
+no-fail: false
+failure-threshold: error
+ignored:
+  - DL3025
+  - DL3047
+  - DL3059
