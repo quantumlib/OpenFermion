@@ -422,7 +422,7 @@ jobs:
 
   json-lint:
     if: needs.changes.outputs.json == 'true'
-    name: Validate JSON files
+    name: JSON file lint checks
     needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -445,7 +445,7 @@ jobs:
 
   cff-validation:
     if: needs.changes.outputs.cff == 'true'
-    name: Validate CITATION.cff file(s)
+    name: CITATION.cff validation
     needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -465,7 +465,7 @@ jobs:
 
   docker-lint:
     if: needs.changes.outputs.docker == 'true'
-    name: Validate Docker files
+    name: Dockerfile lint checks
     needs: changes
     # This uses a Mac runner because hadolint isn't available via Linux apt.
     runs-on: macos-14
@@ -491,7 +491,7 @@ jobs:
 
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
-    name: Validate GitHub Actions file(s)
+    name: GitHub Actions file validation
     needs: [changes, yaml-lint]
     # This uses a Mac runner because actionlint isn't available via Linux apt.
     runs-on: macos-14
