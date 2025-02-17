@@ -89,6 +89,8 @@ jobs:
       gha_files: ${{steps.filter.outputs.gha_files}}
       json: ${{steps.filter.outputs.json}}
       json_files: ${{steps.filter.outputs.json_files}}
+      docker: ${{steps.filter.outputs.docker}}
+      docker_files: ${{steps.filter.outputs.docker_files}}
     steps:
       # When invoked manually, use the given SHA to figure out the change list.
       - if: github.event_name == 'workflow_dispatch'
@@ -141,6 +143,9 @@ jobs:
             json:
               - added|modified:
                   - '**/*.json'
+            docker:
+              - '**/dockerfile'
+              - '**/Dockerfile'
 
   setup:
     if: needs.changes.outputs.python == 'true'
@@ -457,6 +462,32 @@ jobs:
       - name: Run cffconvert in validation mode
         run: |
           cffconvert --validate
+
+  docker-lint:
+    if: needs.changes.outputs.docker == 'true'
+    name: Validate Docker files
+    needs: changes
+    # This uses a Mac runner because hadolint isn't available via Linux apt.
+    runs-on: macos-14
+    timeout-minutes: 5
+    env:
+      changed_files: ${{needs.changes.outputs.docker_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      # Note: there is a hadolint GitHub Actions available, but it only accepts
+      # one Dockerfile to check. We have > 1 file to check, so we need the CLI.
+      - name: Install hadolint
+        run: |
+          brew install hadolint
+
+      - name: Set up hadolint output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/hadolint.json'
+
+      - name: Run hadolint on Dockerfiles that have been changed
+        run: |
+          hadolint ${{env.changed_files}}
 
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
