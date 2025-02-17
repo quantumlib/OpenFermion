@@ -23,3 +23,9 @@ The following problem matcher JSON file came from the
 documentation (copied on 2025-02-12, version 1.7.7):
 
 - [`actionlint.json`](https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json)
+
+The following problem matcher JSON file came from the
+[hadolint-action](https://github.com/hadolint/hadolint-action) repository
+(copied on 2025-02-17, version 3.1.0):
+
+- [`problem-matcher.json`](https://github.com/hadolint/hadolint-action/blob/master/problem-matcher.json)
