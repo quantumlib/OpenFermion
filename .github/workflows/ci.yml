@@ -431,6 +431,9 @@ jobs:
         run: |
           npm install -g @prantlf/jsonlint
 
+      - name: Set up jsonlint output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/jsonlint.json'
+
       - name: Run jsonlint on JSON files
         run: |
           jsonlint --continue ${{env.changed_files}}
