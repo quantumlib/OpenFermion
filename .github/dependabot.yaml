@@ -31,7 +31,7 @@ updates:
   - package-ecosystem: "pip"
     # OpenFermion has requirements.txt files in multiple places.
     directories:
-      - "/dev_tools/requirements/"
+      - "/dev_tools/requirements/deps"
       - "/docs/tutorials/"
     schedule:
       interval: "weekly"
