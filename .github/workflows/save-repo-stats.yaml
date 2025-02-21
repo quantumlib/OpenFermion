@@ -5,7 +5,7 @@
 # durations than GitHub's 14-day limit.
 
 name: GitHub repo statistics preservation
-run-name: Save daily GitHub repo statistics for ${{github.repository}}
+run-name: Save daily GitHub statistics for ${{github.repository}}
 
 on:
   schedule:
@@ -56,3 +56,14 @@ jobs:
         with:
           ghtoken: ${{secrets.GHRS_GITHUB_API_TOKEN}}
           databranch: ${{env.databranch}}
+
+      - name: Print a note in the job summary pointing to the statistics
+        run: |
+          base="https://github.com/${{github.repository}}"
+          url="$base/tree/${{env.databranch}}/${{github.repository}}"
+          # shellcheck disable=SC2006
+          {
+          echo "### Location of saved repository statistics and reports"
+          echo "Data is saved in branch <code>${{env.databranch}}</code>."
+          echo "Visit the [README file]($url) there for links to the reports."
+          } >> "$GITHUB_STEP_SUMMARY"
