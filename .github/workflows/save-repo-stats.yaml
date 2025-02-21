@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Check if the data branch exists in this repo
         id: check-branch-exists
-        uses: GuillaumeFalourd/branch-exists@v1.1
+        uses: GuillaumeFalourd/branch-exists@009290475dc3d75b5d7ec680c0c5b614b0d9855d # v1.1
         with:
           branch: ${{env.databranch}}
 
