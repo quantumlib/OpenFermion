@@ -31,6 +31,8 @@ jobs:
     name: Save GitHub repo stats
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    permissions:
+      contents: write
     steps:
       - name: Check if the data branch exists in this repo
         id: check-branch-exists
@@ -39,17 +41,12 @@ jobs:
           branch: ${{env.databranch}}
 
       - if: steps.check-branch-exists.outputs.exists == 'false'
-        name: Check out a copy of the git repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-
-      - if: steps.check-branch-exists.outputs.exists == 'false'
         name: Create the data branch
-        run: |
-          set -x
-          git checkout ${{github.event.repository.default_branch}}
-          git switch --orphan ${{env.databranch}}
-          git commit --allow-empty -m "Create empty ${{env.databranch}} branch"
-          git push -u origin ${{env.databranch}}
+        uses: peterjgrainger/action-create-branch@10c7d268152480ae859347db45dc69086cef1d9c # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          branch: ${{env.databranch}}
 
       - name: Run GHRS action
         uses: jgehrcke/github-repo-stats@306db38ad131cab2aa5f2cd3062bf6f8aa78c1aa
