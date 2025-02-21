@@ -1,8 +1,10 @@
 # Summary: save GitHub traffic statistics.
 #
-# This uses https://github.com/marketplace/actions/github-repo-stats to save
-# daily GitHub repo statistics, so that they can be analyzed for longer
-# durations than GitHub's 14-day limit.
+# This saves GitHub repo statistics so that they can be analyzed for longer
+# durations than GitHub's 14-day limit. The workflow runs once a day and saves
+# the day's statistics in files in a branch of the git repository. Data files
+# accumulate over time. After every run, it generates a report based on the
+# cummulative data. The GitHub workflow summary page has a link to this report.
 
 name: GitHub repo statistics preservation
 run-name: Save daily GitHub statistics for ${{github.repository}}
@@ -30,7 +32,7 @@ jobs:
   save-stats:
     name: Save GitHub repo stats
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
@@ -48,13 +50,13 @@ jobs:
         with:
           branch: ${{env.databranch}}
 
-      - name: Run GHRS action
+      - name: Run the action to save repository data & create a report
         uses: jgehrcke/github-repo-stats@306db38ad131cab2aa5f2cd3062bf6f8aa78c1aa
         with:
           ghtoken: ${{secrets.GHRS_GITHUB_API_TOKEN}}
           databranch: ${{env.databranch}}
 
-      - name: Print a note in the job summary pointing to the statistics
+      - name: Print a note in the job summary pointing to the report
         run: |
           base="https://github.com/${{github.repository}}"
           url="$base/tree/${{env.databranch}}/${{github.repository}}"
