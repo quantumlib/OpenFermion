@@ -5,7 +5,7 @@
 # durations than GitHub's 14-day limit.
 
 name: GitHub repo statistics preservation
-run-name: Save daily GitHub repo statistics
+run-name: Save daily GitHub repo statistics for ${{github.repository}}
 
 on:
   schedule:
@@ -13,6 +13,10 @@ on:
 
   # Allow manual invocation.
   workflow_dispatch:
+
+env:
+  # Name of the git branch where the repository stats will be saved.
+  databranch: github-repo-stats
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -28,8 +32,27 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
+      - name: Check if the data branch exists in this repo
+        id: check-branch-exists
+        uses: GuillaumeFalourd/branch-exists@v1.1
+        with:
+          branch: ${{env.databranch}}
+
+      - if: steps.check-branch-exists.outputs.exists == 'false'
+        name: Check out a copy of the git repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - if: steps.check-branch-exists.outputs.exists == 'false'
+        name: Create the data branch
+        run: |
+          set -x
+          git checkout ${{github.event.repository.default_branch}}
+          git switch --orphan ${{env.databranch}}
+          git commit --allow-empty -m "Create empty ${{env.databranch}} branch"
+          git push -u origin ${{env.databranch}}
+
       - name: Run GHRS action
         uses: jgehrcke/github-repo-stats@306db38ad131cab2aa5f2cd3062bf6f8aa78c1aa
         with:
           ghtoken: ${{secrets.GHRS_GITHUB_API_TOKEN}}
-          databranch: github-repo-stats
+          databranch: ${{env.databranch}}
