@@ -1,12 +1,25 @@
 # Summary: workflow for OSSF Scorecard (https://github.com/ossf/scorecard).
-# Scorecard's use is suggested in Google's GitHub guidance (go/github-docs).
+#
+# Scorecard checks for security best practices. Its use is suggested in
+# Google's GitHub guidance.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Nightly tests and scans – Scorecard
-run-name: Do Scorecard code scan
+name: Tests and scans – Scorecard
+run-name: Do${{inputs.reason || ' '}}Scorecard code scan
 
 on:
+  merge_group:
+    types:
+      - checks_requested
+
   # Allow calling from nightly.yaml.
   workflow_call:
+    inputs:
+      # Why is this workflow being called?
+      reason:
+        type: string
+        required: false
+
   # Allow manual invocation.
   workflow_dispatch:
 
@@ -17,6 +30,7 @@ jobs:
   scorecard:
     name: Perform Scorecard analysis
     runs-on: ubuntu-22.04
+    timeout-minutes: 15
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write

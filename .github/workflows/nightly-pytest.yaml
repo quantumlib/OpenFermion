@@ -3,15 +3,23 @@
 # This workflow expects input values passed by nightly.yaml.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Nightly tests and scans – Pytest
-run-name: Run nightly Pytest full tests
+name: Tests and scans – Pytest
+run-name: Run${{inputs.reason || ' '}}Pytest full tests
 
 on:
   workflow_call:
     inputs:
+      # CLI argument string to pass to pytest.
       args:
         type: string
-        required: true
+        required: false
+      # Why is this workflow being called?
+      reason:
+        type: string
+        required: false
+
+  # Allow manual invocation.
+  workflow_dispatch:
 
 # Declare default permissions as read only.
 permissions: read-all

@@ -1,11 +1,18 @@
 # Summary: configuration for CodeQL.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Nightly tests and scans – CodeQL
-run-name: Do CodeQL code scan
+name: Tests and scans – CodeQL
+run-name: Do${{inputs.reason || ' '}}CodeQL code scan
 
 on:
   # Allow calling from nightly.yaml.
   workflow_call:
+    inputs:
+      # Why is this workflow being called?
+      reason:
+        type: string
+        required: false
+
   # Allow manual invocation.
   workflow_dispatch:
 
