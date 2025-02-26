@@ -5,7 +5,7 @@ name: Nightly tests and scans – Scorecard
 run-name: Do Scorecard code scan
 
 on:
-  # Allow calling from nightly.yml.
+  # Allow calling from nightly.yaml.
   workflow_call:
   # Allow manual invocation.
   workflow_dispatch:

@@ -10,7 +10,7 @@ run-name: Run nightly tests and code scans
 
 on:
   schedule:
-    - cron: "15 2 * * *"
+    - cron: '15 2 * * *'
 
   # Allow manual invocation.
   workflow_dispatch:
@@ -26,15 +26,15 @@ concurrency:
 jobs:
   cirq-stable:
     name: Pytest Cirq stable release
-    uses: ./.github/workflows/nightly-pytest.yml
+    uses: ./.github/workflows/nightly-pytest.yaml
     with:
-      args: ""
+      args: ''
 
   cirq-pre:
     name: Pytest Cirq pre-release
-    uses: ./.github/workflows/nightly-pytest.yml
+    uses: ./.github/workflows/nightly-pytest.yaml
     with:
-      args: "--pre"
+      args: '--pre'
 
   codeql:
     name: CodeQL code scan

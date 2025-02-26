@@ -1,6 +1,6 @@
-# Summary: reusable workflow called by nightly.yml
+# Summary: reusable workflow called by nightly.yaml.
 #
-# This workflow expects input values passed by nightly.yml.
+# This workflow expects input values passed by nightly.yaml.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: Nightly tests and scans – Pytest
