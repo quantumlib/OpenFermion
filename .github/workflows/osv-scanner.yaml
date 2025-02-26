@@ -1,0 +1,69 @@
+# Summary: run Open Source Vulnerabilities (OSV) code scan.
+#
+# For more examples and options, including how to ignore specific
+# vulnerabilities, see https://google.github.io/osv-scanner/github-action/.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+name: Tests and scans – OSV
+run-name: Do${{inputs.reason || ' '}}OSV code scan
+
+on:
+  merge_group:
+    types:
+      - checks_requested
+
+  # Allow calling from nightly.yaml.
+  workflow_call:
+    inputs:
+      # Why is this workflow being called?
+      reason:
+        type: string
+        required: false
+
+  # Allow manual invocation.
+  workflow_dispatch:
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  osv-scan:
+    name: Perform Open Source Vulnerabilities scan
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      # Needed to upload the results to code-scanning dashboard.
+      security-events: write
+      # Read commit contents
+      contents: read
+      actions: read
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Run OSV analysis
+        uses: google/osv-scanner-action/osv-scanner-action@f8115f2f28022984d4e8070d2f0f85abcf6f3458 # v1.9.2
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=osv-results.json
+            --recursive
+            --skip-git
+            ./
+
+      - name: Run osv-scanner-reporter
+        uses: google/osv-scanner-action/osv-reporter-action@f8115f2f28022984d4e8070d2f0f85abcf6f3458 # v1.9.2
+        with:
+          scan-args: |-
+            --output=osv-results.sarif
+            --new=osv-results.json
+            --gh-annotations=true
+            --fail-on-vuln=true
+
+      - name: Upload to code-scanning dashboard
+        uses: github/codeql-action/upload-sarif@dd746615b3b9d728a6a37ca2045b68ca76d4841a # v3.28.8
+        with:
+          sarif_file: osv-results.sarif
