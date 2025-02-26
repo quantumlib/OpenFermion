@@ -1,12 +1,11 @@
 # Summary: configuration for CodeQL.
 
-name: Nightly CodeQL code scan
-run-name: Perform nightly CodeQL code scan
+name: Nightly tests and scans – CodeQL
+run-name: Do CodeQL code scan
 
 on:
-  schedule:
-    - cron: '37 13 * * 5'
-
+  # Allow calling from nightly.yml.
+  workflow_call:
   # Allow manual invocation.
   workflow_dispatch:
 

@@ -3,7 +3,8 @@
 # This workflow expects input values passed by nightly.yml.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Nightly full tests – Pytest subworkflow
+name: Nightly tests and scans – Pytest
+run-name: Run nightly Pytest full tests
 
 on:
   workflow_call:
@@ -11,6 +12,9 @@ on:
       args:
         type: string
         required: true
+
+# Declare default permissions as read only.
+permissions: read-all
 
 jobs:
   Pytest:
@@ -48,6 +52,7 @@ jobs:
           - os: ubuntu-22.04-arm
             arch: arm64
             python-version: 3.12.7
+
     steps:
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4

@@ -1,23 +1,17 @@
 # Summary: workflow for OSSF Scorecard (https://github.com/ossf/scorecard).
 # Scorecard's use is suggested in Google's GitHub guidance (go/github-docs).
 
-name: Scorecard supply-chain security
-run-name: Analyze code for Scorecard
+name: Nightly tests and scans – Scorecard
+run-name: Do Scorecard code scan
 
 on:
-  schedule:
-    - cron: '19 20 * * 6'
-
+  # Allow calling from nightly.yml.
+  workflow_call:
   # Allow manual invocation.
   workflow_dispatch:
 
 # Declare default permissions as read only.
 permissions: read-all
-
-# Cancel any previously-started but still active runs on the same branch.
-concurrency:
-  cancel-in-progress: true
-  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
 jobs:
   scorecard:
