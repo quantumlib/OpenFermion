@@ -10,6 +10,8 @@ prominently in the GitHub user interface.
 This directory contains Problem Matchers used by the GitHub Actions workflows
 in the [`workflows`](./workflows) subdirectory.
 
+## Original sources
+
 The following problem matcher JSON files found in this directory were copied
 from the [Home Assistant](https://github.com/home-assistant/core) project on
 GitHub. The Home Assistant project is licensed under the Apache 2.0 open-source
