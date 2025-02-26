@@ -28,4 +28,10 @@ The following problem matcher JSON file came from the
 [hadolint-action](https://github.com/hadolint/hadolint-action) repository
 (copied on 2025-02-17, version 3.1.0):
 
-- [`problem-matcher.json`](https://github.com/hadolint/hadolint-action/blob/master/problem-matcher.json)
+- [`hadolint.json`](https://github.com/hadolint/hadolint-action/blob/master/problem-matcher.json)
+
+The Shellcheck problem matcher JSON file came from the
+[shellcheck-problem-matchers](uhttps://github.com/lumaxis/shellcheck-problem-matchers)
+repository (copied 2025-02-26, version v2.1.0).
+
+- [`shellcheck-tty.json`](https://github.com/lumaxis/shellcheck-problem-matchers/blob/main/.github/shellcheck-tty.json)
