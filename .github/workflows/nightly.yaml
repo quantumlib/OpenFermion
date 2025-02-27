@@ -1,0 +1,57 @@
+# Summary: run nightly tests and scans.
+#
+# This workflow runs nightly to run tests & scans on the OpenFermion codebase.
+# It can also be invoked manually via the "Run workflow" button at
+# https://github.com/quantumlib/OpenFermion/actions/workflows/nightly.yaml
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+name: Nightly tests and code scans
+run-name: Run nightly tests and code scans
+
+on:
+  schedule:
+    - cron: '15 2 * * *'
+
+  # Allow manual invocation.
+  workflow_dispatch:
+
+# Declare default permissions as read only.
+permissions: read-all
+
+concurrency:
+  # Cancel any previously-started but still active runs on the same branch.
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
+
+jobs:
+  cirq-stable:
+    name: Pytest Cirq stable release
+    uses: ./.github/workflows/nightly-pytest.yaml
+    with:
+      args: ''
+      reason: ' nightly '
+
+  cirq-pre:
+    name: Pytest Cirq pre-release
+    uses: ./.github/workflows/nightly-pytest.yaml
+    with:
+      args: '--pre'
+      reason: ' nightly '
+
+  codeql:
+    name: CodeQL code scan
+    uses: ./.github/workflows/codeql.yaml
+    with:
+      reason: ' nightly '
+
+  scorecard:
+    name: Scorecard code scan
+    uses: ./.github/workflows/ossf-scorecard.yaml
+    with:
+      reason: ' nightly '
+
+  osv:
+    name: OSV code scan
+    uses: ./.github/workflows/osv-scanner.yaml
+    with:
+      reason: ' nightly '
