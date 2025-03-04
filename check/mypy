@@ -8,8 +8,8 @@
 ################################################################################
 
 # Get the working directory to the repo root.
-cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$(git rev-parse --show-toplevel)"
+cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" || exit 1
+cd "$(git rev-parse --show-toplevel)" || exit 1
 
 echo -e -n "\033[31m"
 mypy --config-file=dev_tools/conf/mypy.ini "$@" .
