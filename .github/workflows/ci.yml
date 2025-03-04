@@ -79,19 +79,27 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      python: ${{steps.filter.outputs.python}}
-      python_files: ${{steps.filter.outputs.python_files}}
-      yaml: ${{steps.filter.outputs.yaml}}
-      yaml_files: ${{steps.filter.outputs.yaml_files}}
-      cff: ${{steps.filter.outputs.cff}}
-      cff_files: ${{steps.filter.outputs.cff_files}}
       gha: ${{steps.filter.outputs.gha}}
       gha_files: ${{steps.filter.outputs.gha_files}}
-      json: ${{steps.filter.outputs.json}}
+      # The following all test both the relevant file condition & the CI config
+      # because a change to the CI workflows can affect CI check results.
+      python: |-
+        ${{steps.filter.outputs.python}} || ${{steps.filter.outputs.ci}}
+      python_files: ${{steps.filter.outputs.python_files}}
+      yaml: |-
+        ${{steps.filter.outputs.yaml}} || ${{steps.filter.outputs.ci}}
+      yaml_files: ${{steps.filter.outputs.yaml_files}}
+      cff: |-
+        ${{steps.filter.outputs.cff}} || ${{steps.filter.outputs.ci}}
+      cff_files: ${{steps.filter.outputs.cff_files}}
+      json: |-
+        ${{steps.filter.outputs.json}} || ${{steps.filter.outputs.ci}}
       json_files: ${{steps.filter.outputs.json_files}}
-      docker: ${{steps.filter.outputs.docker}}
+      docker: |-
+        ${{steps.filter.outputs.docker}} || ${{steps.filter.outputs.ci}}
       docker_files: ${{steps.filter.outputs.docker_files}}
-      shell: ${{steps.filter.outputs.shell}}
+      shell: |-
+        ${{steps.filter.outputs.shell}} || ${{steps.filter.outputs.ci}}
       shell_files: ${{steps.filter.outputs.shell_files}}
     steps:
       # When invoked manually, use the given SHA to figure out the change list.
@@ -129,6 +137,10 @@ jobs:
           list-files: 'shell'
           # The outputs will be variables named "foo_files" for a filter "foo".
           filters: |
+            ci:
+              - './.github/workflows/ci.yml'
+              - './.github/workflows/codeql.yaml'
+              - './.github/workflows/osv-scanner.yaml'
             cff:
               - added|modified:
                   - '**/CITATION.cff'
