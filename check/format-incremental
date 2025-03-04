@@ -1,112 +1,212 @@
 #!/usr/bin/env bash
+# Summary: check files against style guidelines and optionally reformat them.
+# Run this program with the argument --help for usage information.
 
-################################################################################
-# Formats python files that have been modified.
-#
-# Usage:
-#     check/format-incremental [BASE_REVISION] [--apply] [--all]
-#
-# By default, the script analyzes python files that have changed relative to the
-# base revision and determines whether they need to be formatted. If any changes
-# are needed, it prints the diff and exits with code 1, otherwise it exits with
-# code 0.
-#
-# With '--apply', reformats the files instead of printing the diff and exits
-# with code 0.
-#
-# With '--all', analyzes all python files, instead of only changed files.
-#
-# You can specify a base git revision to compare against (i.e. to use when
-# determining whether or not a file is considered to have "changed"). For
-# example, you can compare against 'origin/master' or 'HEAD~1'.
-#
-# If you don't specify a base revision, the following defaults will be tried, in
-# order, until one exists:
-#
-#     1. upstream/master
-#     2. origin/master
-#     3. master
-#
-# If none exists, the script fails.
-################################################################################
+# Adjust some Bash options to avoid generally counterintuitive behaviors.
+set -o pipefail
+shopt -s nullglob
 
 # Get the working directory to the repo root.
 thisdir="$(dirname "${BASH_SOURCE[0]}")" || exit $?
 topdir="$(git -C "${thisdir}" rev-parse --show-toplevel)" || exit $?
 cd "${topdir}" || exit $?
 
+# Set default values.
+declare only_print=true
+declare only_changed=true
+declare use_color=true
+declare quiet=false
+declare main_name="main"
 
-# Parse arguments.
-only_print=1
-only_changed=1
-rev=""
-for arg in "$@"; do
-    if [[ "${arg}" == "--apply" ]]; then
-        only_print=0
-    elif [[ "${arg}" == "--all" ]]; then
-        only_changed=0
-    elif [ -z "${rev}" ]; then
-        if [ "$(git cat-file -t "${arg}" 2> /dev/null)" != "commit" ]; then
-            echo -e "\033[31mNo revision '${arg}'.\033[0m" >&2
-            exit 1
-        fi
-        rev="${arg}"
+declare -r RED="\033[31m"
+declare -r GREEN="\033[32m"
+declare -r RESET="\033[0m"
+
+# Does this repo use the name "main" or "master"?
+main_name=$(git branch -l main master --format '%(refname:short)')
+
+# Helper function used multiple times.
+function print_usage() {
+    local -r program=${0##*/}
+    cat <<EOF >&2
+Usage:
+
+$program [BASE_REV] [--help] [--apply] [--all] [--no-color] [--quiet]
+
+Check the format of Python source files against project style guidelines. If
+any changes are needed, this program prints the differences to stdout and exits
+with code 1; otherwise, it exits with code 0.
+
+Main options
+~~~~~~~~~~~~
+
+If the option '--apply' is supplied as an argument, then instead of printing
+differences, this program reformats the files and exits with code 0 if
+successful or 1 if an error occurs.
+
+By default, this program examines only those files that git reports to have
+changed in relation to the git revision (see next paragraph). With option
+'--all', this program will examine all files instead of only the changed files.
+
+File changes are considered relative to the base git revision in the repository
+unless a different git revision is given as an argument to this program. The
+revision can be given as a SHA value or a name such as 'origin/$main_name' or
+'HEAD~1'. If no git revision is provided as an argument, this program tries the
+following defaults, in order, until one is found to exist:
+
+      1. upstream/$main_name
+      2. origin/$main_name
+      3. $main_name
+
+If none of them exists, the program will fail and return exit code 1.
+
+Additional options
+~~~~~~~~~~~~~~~~~~
+
+Informative messages are printed to stdout unless option '--quiet' is given.
+
+Color is used to enhance the output unless the option '--no-color' is given.
+
+Running this program with the option '--help' will make it print this help text
+and exit with exit code 0 without doing anything else.
+EOF
+}
+
+function error() {
+    local -r msg="ERROR: $1"
+    if $use_color; then
+        echo -e "${RED}$msg${RESET}" >&2
     else
-        echo -e "\033[31mToo many arguments. Expected [revision] [--apply] [--all].\033[0m" >&2
-        exit 1
+        echo -e "$msg" >&2
     fi
+}
+
+function info() {
+    local use_escapes=""
+    if [[ $1 == "-e" ]]; then
+        use_escapes="-e"
+        shift
+    fi
+    if ! $quiet; then
+        echo $use_escapes "$1"
+    fi
+}
+
+declare rev=""
+
+# Parse the command line.
+# Don't be fussy about whether options are written upper case or lower case.
+shopt -s nocasematch
+while (( $# > 0 )); do
+    case $1 in
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        --apply)
+            only_print=false
+            shift
+            ;;
+        --all)
+            only_changed=false
+            shift
+            ;;
+        --no-color)
+            use_color=false
+            shift
+            ;;
+        --quiet)
+            quiet=true
+            shift
+            ;;
+        -*)
+            error "Unrecognized option $1."
+            print_usage
+            exit 1
+            ;;
+        *)
+            if [[ -n "$rev" ]]; then
+                error "Too many arguments."
+                print_usage
+                exit 1
+            fi
+            if ! git rev-parse -q --verify --no-revs "$1^{commit}"; then
+                error "Cannot find revision $1."
+                exit 1
+            fi
+            rev="$1"
+            shift
+            ;;
+    esac
 done
+shopt -u nocasematch
 
-typeset -a format_files
-if (( only_changed == 1 )); then
+# Gather a list of Python files that have been modified, added, or moved.
+declare -a modified_files=("")
+if $only_changed; then
     # Figure out which branch to compare against.
-    if [ -z "${rev}" ]; then
-        if [ "$(git cat-file -t upstream/master 2> /dev/null)" == "commit" ]; then
-            rev=upstream/master
-        elif [ "$(git cat-file -t origin/master 2> /dev/null)" == "commit" ]; then
-            rev=origin/master
-        elif [ "$(git cat-file -t master 2> /dev/null)" == "commit" ]; then
-            rev=master
-        else
-            echo -e "\033[31mNo default revision found to compare against. Argument #1 must be what to diff against (e.g. 'origin/master' or 'HEAD~1').\033[0m" >&2
+    if [[ -z "$rev" ]]; then
+        declare -a try=("upstream/$main_name" "origin/$main_name" "$main_name")
+        for name in "${try[@]}"; do
+            if [[ "$(git cat-file -t "$name" 2> /dev/null)" == "commit" ]]; then
+                rev="$name"
+                break
+            fi
+        done
+        if [[ -z "$rev" ]]; then
+            printf -v msg '%s' \
+                   "None of the defaults (${try[*]}) were found and no git" \
+                   " revision was given on the command line. Argument #1 must" \
+                   " be what to diff against (e.g., 'origin/main' or 'HEAD~1')."
+            error "$msg"
             exit 1
         fi
     fi
-    base="$(git merge-base "${rev}" HEAD)"
-    if [ "$(git rev-parse "${rev}")" == "${base}" ]; then
-        echo -e "Comparing against revision '${rev}'." >&2
-    else
-        echo -e "Comparing against revision '${rev}' (merge base ${base})." >&2
-        rev="${base}"
+    base="$(git merge-base "$rev" HEAD)"
+    base_info=""
+    if [[ "$(git rev-parse "$rev")" != "$base" ]]; then
+        rev="$base"
+        base_info=" (merge base $base)"
     fi
+    info "Comparing files to revision '$rev'$base_info."
 
-    # Get the modified, added and moved python files.
-    IFS=$'\n' read -r -d '' -a format_files < \
-        <(git diff --name-only --diff-filter=MAR "${rev}" -- '*.py' ':(exclude)*_pb2.py')
+    # Get the list of changed files.
+    IFS=$'\n' read -r -d '' -a modified_files < \
+        <(git diff --name-only --diff-filter=MAR "$rev" -- '*.py')
 else
-    echo -e "Formatting all python files." >&2
-    IFS=$'\n' read -r -d '' -a format_files < \
-        <(git ls-files '*.py' ':(exclude)*_pb2.py')
+    # The user asked for all files.
+    info "Formatting all Python files."
+    IFS=$'\n' read -r -d '' -a modified_files < <(git ls-files '*.py')
 fi
 
-if (( ${#format_files[@]} == 0 )); then
-    echo -e "\033[32mNo files to format\033[0m."
+if (( ${#modified_files[@]} == 0 )); then
+    info -e "${GREEN}No modified files found – no changes needed${RESET}."
     exit 0
 fi
 
-BLACKVERSION="$(black --version)"
+declare black_version
+black_version="$(black --version)"
+black_version=${black_version//[$'\n']/ }    # Remove annoying embedded newline.
+black_version=${black_version#black, }       # Remove leading "black, "
+info "Running 'black' (version $black_version) ..."
 
-echo "Running the black formatter... (version: $BLACKVERSION)"
-
-args=("--color")
-if (( only_print == 1 )); then
-    args+=("--check" "--diff")
+declare -a black_args
+if $only_print; then
+    black_args+=("--check" "--diff")
+fi
+if $quiet; then
+    black_args+=("--quiet")
+fi
+if $use_color; then
+    black_args+=("--color")
+else
+    black_args+=("--no-color")
 fi
 
-black "${args[@]}" "${format_files[@]}"
-BLACKSTATUS=$?
+black "${black_args[@]}" "${modified_files[@]}"
+declare -r exit_code=$?
 
-if [[ "$BLACKSTATUS" != "0"  ]]; then
+if (( exit_code > 0 )); then
   exit 1
 fi
 exit 0
