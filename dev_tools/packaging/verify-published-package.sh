@@ -57,7 +57,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 # Temporary workspace.
 tmp_dir=$(mktemp -d "/tmp/verify-published-package.XXXXXXXXXXXXXXXX")
 cd "${tmp_dir}"
-trap "{ rm -rf ${tmp_dir}; }" EXIT
+trap '{ rm -rf "$tmp_dir"; }' EXIT
 
 # Prepare.
 PYTHON_VERSION=python3
