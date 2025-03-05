@@ -28,7 +28,7 @@ permissions: read-all
 
 jobs:
   osv-scan:
-    name: Perform Open Source Vulnerabilities scan
+    name: Run
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     permissions:

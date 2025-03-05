@@ -4,7 +4,7 @@
 # Google's GitHub guidance.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: OpenSSF Scorecard analysis
+name: Scorecard analysis
 run-name: Do ${{inputs.reason}} Scorecard analysis
 
 on:
@@ -28,7 +28,7 @@ permissions: read-all
 
 jobs:
   scorecard:
-    name: Perform Scorecard analysis
+    name: Run
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     permissions:

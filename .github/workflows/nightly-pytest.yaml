@@ -1,9 +1,8 @@
 # Summary: reusable workflow called by nightly.yaml.
-#
 # This workflow expects input values passed by nightly.yml.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Full Pytest
+name: Nightly full tests – Pytest matrix
 run-name: Run ${{inputs.reason}} Pytest full tests
 
 on:
@@ -37,7 +36,7 @@ jobs:
         # to be available on as many os/arch combos as possible, while also
         # making all necessary Python dependencies available on those combos.
         # TODO: add '3.13.1' once Cirq 1.5 is released.
-        python-version: ['3.10.11', '3.11.9', '3.12.7', '3.13.1']
+        python-version: ['3.10.11', '3.11.9', '3.12.7']
         os: [ubuntu-22.04, ubuntu-22.04-arm, macos-14, windows-2022]
         arch: [x64, arm64]
         exclude:
