@@ -216,6 +216,9 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/format.env.txt
 
+      - name: Set up problem matcher for Black output
+        run: echo '::add-matcher::.github/problem-matchers/black.json'
+
       - name: Run format checks
         run: check/format-incremental
 

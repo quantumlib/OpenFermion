@@ -49,3 +49,10 @@ repository (copied 2025-02-26, version v2.1.0). The ShellCheck problem matchers
 are made available under the terms of the MIT license.
 
 -   [`shellcheck-tty.json`](https://github.com/lumaxis/shellcheck-problem-matchers/blob/main/.github/shellcheck-tty.json)
+
+The following problem matcher for Black came from a fork of the
+[MLflow](https://github.com/mlflow/mlflow) project by user Sumanth077 on
+GitHub. The MLflow project is licensed under the Apache 2.0 open-source
+license. The version of the file copied was dated 2022-05-29.
+
+-   [`black.json`](https://github.com/Sumanth077/mlflow/blob/problem-matcher-for-black/.github/workflows/matchers/black.json)
