@@ -429,6 +429,9 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
 
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
+
       - name: Run code coverage tests
         run: check/pytest-and-incremental-coverage
 
