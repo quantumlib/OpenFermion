@@ -82,7 +82,7 @@ jobs:
       gha: ${{steps.filter.outputs.gha}}
       gha_files: ${{steps.filter.outputs.gha_files}}
       # The following all test both the relevant file condition & the CI config
-      # because a change to the CI workflows can affect CI check results.
+      # because a change in the CI workflows can affect the CI check results.
       python: |-
         ${{steps.filter.outputs.python}} || ${{steps.filter.outputs.ci}}
       python_files: ${{steps.filter.outputs.python_files}}
@@ -240,6 +240,9 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/mypy.env.txt
 
+      - name: Set up Mypy output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/mypy.json'
+
       - name: Type check
         run: check/mypy
 
@@ -305,6 +308,9 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
+
       - name: Run pytest
         run: check/pytest
 
@@ -349,6 +355,9 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
+
       - name: Run pytest
         run: check/pytest -m "not slow" src/openfermion/resource_estimates
 
@@ -386,6 +395,9 @@ jobs:
       - name: Install requirements
         run: |
           pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
 
       - name: Run pytest
         run: check/pytest
