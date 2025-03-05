@@ -43,10 +43,10 @@ concurrency:
 
 env:
   # Default Python version to use. Make sure to use full x.y.z number.
-  python_ver: "3.12.8"
+  python_ver: '3.12.8'
 
   # Oldest Python version to use, for max_compat tests.
-  python_compat_ver: "3.10.15"
+  python_compat_ver: '3.10.15'
 
   # Files listing dependencies we install using pip in the various jobs below.
   # This is used by setup-python to check whether its cache needs updating.
@@ -178,7 +178,7 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: "x64"
+          architecture: 'x64'
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
@@ -209,7 +209,7 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: "x64"
+          architecture: 'x64'
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
@@ -236,7 +236,7 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: "x64"
+          architecture: 'x64'
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
@@ -263,7 +263,7 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: "x64"
+          architecture: 'x64'
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
