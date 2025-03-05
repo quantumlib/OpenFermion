@@ -396,8 +396,7 @@ jobs:
           python-version: ${{env.python_compat_ver}}
 
       - name: Install requirements
-        run: |
-          pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+        run: pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
 
       - name: Set up Pytest output problem matcher
         run: echo '::add-matcher::.github/problem-matchers/pytest.json'
@@ -443,8 +442,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up yamllint output problem matcher
-        run: |
-          echo "::add-matcher::.github/problem-matchers/yamllint.json"
+        run: echo "::add-matcher::.github/problem-matchers/yamllint.json"
 
       - name: Run yamllint
         run: |
@@ -465,15 +463,13 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Install jsonlint
-        run: |
-          npm install -g @prantlf/jsonlint
+        run: npm install -g @prantlf/jsonlint
 
       - name: Set up jsonlint output problem matcher
         run: echo '::add-matcher::.github/problem-matchers/jsonlint.json'
 
       - name: Run jsonlint on JSON files
-        run: |
-          jsonlint --continue ${{env.changed_files}}
+        run: jsonlint --continue ${{env.changed_files}}
 
   cff-validation:
     if: needs.changes.outputs.cff == 'true'
@@ -488,12 +484,10 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Install cffconvert
-        run: |
-          pip install cffconvert
+        run: pip install cffconvert
 
       - name: Run cffconvert in validation mode
-        run: |
-          cffconvert --validate
+        run: cffconvert --validate
 
   docker-lint:
     if: needs.changes.outputs.docker == 'true'
@@ -511,15 +505,13 @@ jobs:
       # Note: there is a hadolint GitHub Actions available, but it only accepts
       # one Dockerfile to check. We have > 1 file to check, so we need the CLI.
       - name: Install hadolint
-        run: |
-          brew install hadolint
+        run: brew install hadolint
 
       - name: Set up hadolint output problem matcher
         run: echo '::add-matcher::.github/problem-matchers/hadolint.json'
 
       - name: Run hadolint on Dockerfiles that have been changed
-        run: |
-          hadolint ${{env.changed_files}}
+        run: hadolint ${{env.changed_files}}
 
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
@@ -540,16 +532,13 @@ jobs:
 
       # If we didn't fail the previous check, go on to more time-consuming ones.
       - name: Install actionlint
-        run: |
-          HOMEBREW_NO_AUTO_UPDATE=1 brew install actionlint
+        run: HOMEBREW_NO_AUTO_UPDATE=1 brew install actionlint
 
       - name: Set up actionlint output problem matcher
-        run: |
-          echo "::add-matcher::.github/problem-matchers/actionlint.json"
+        run: echo "::add-matcher::.github/problem-matchers/actionlint.json"
 
       - name: Verify that all GitHub Actions workflows are valid
-        run: |
-          /opt/homebrew/bin/actionlint -color
+        run: /opt/homebrew/bin/actionlint -color
 
   shell-script-lint:
     if: needs.changes.outputs.shell == 'true'
@@ -564,9 +553,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up shellcheck output problem matcher
-        run: |
-          echo "::add-matcher::.github/problem-matchers/shellcheck.json"
+        run: echo "::add-matcher::.github/problem-matchers/shellcheck.json"
 
       - name: Run shellcheck on shell scripts that have been changed
-        run: |
-          shellcheck ${{env.changed_files}}
+        run: shellcheck ${{env.changed_files}}
