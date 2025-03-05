@@ -4,8 +4,8 @@
 # vulnerabilities, see https://google.github.io/osv-scanner/github-action/.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Tests and scans – OSV
-run-name: Do${{inputs.reason || ' '}}OSV code scan
+name: OSV code scan
+run-name: Do ${{inputs.reason}} OSV code scan
 
 on:
   merge_group:
@@ -56,6 +56,7 @@ jobs:
             ./
 
       - name: Run osv-scanner-reporter
+        # yamllint disable rule:line-length
         uses: google/osv-scanner-action/osv-reporter-action@f8115f2f28022984d4e8070d2f0f85abcf6f3458 # v1.9.2
         with:
           scan-args: |-

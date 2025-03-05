@@ -1,8 +1,8 @@
 # Summary: configuration for CodeQL.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Tests and scans – CodeQL
-run-name: Do${{inputs.reason || ' '}}CodeQL code scan
+name: CodeQL code scan
+run-name: Do ${{inputs.reason}} CodeQL code scan
 
 on:
   # Allow calling from nightly.yaml.
@@ -43,4 +43,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d # v3
         with:
-          category: "/language:Python"
+          category: '/language:Python'

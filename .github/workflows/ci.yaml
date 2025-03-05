@@ -36,6 +36,9 @@ on:
         description: Max compat version of Python
         type: string
 
+# Declare default permissions as read only.
+permissions: read-all
+
 concurrency:
   # Cancel any previously-started but still active runs on the same branch.
   cancel-in-progress: true

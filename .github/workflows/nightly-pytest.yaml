@@ -1,10 +1,10 @@
 # Summary: reusable workflow called by nightly.yaml.
 #
-# This workflow expects input values passed by nightly.yaml.
+# This workflow expects input values passed by nightly.yml.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Tests and scans – Pytest
-run-name: Run${{inputs.reason || ' '}}Pytest full tests
+name: Full Pytest
+run-name: Run ${{inputs.reason}} Pytest full tests
 
 on:
   workflow_call:
@@ -36,8 +36,8 @@ jobs:
         # These Python versions were carefully selected by trial and error
         # to be available on as many os/arch combos as possible, while also
         # making all necessary Python dependencies available on those combos.
-        # TODO: add "3.13.1" once Cirq 1.5 is released.
-        python-version: ["3.10.11", "3.11.9", "3.12.7", "3.13.1"]
+        # TODO: add '3.13.1' once Cirq 1.5 is released.
+        python-version: ['3.10.11', '3.11.9', '3.12.7', '3.13.1']
         os: [ubuntu-22.04, ubuntu-22.04-arm, macos-14, windows-2022]
         arch: [x64, arm64]
         exclude:
@@ -77,9 +77,9 @@ jobs:
       - name: Install OpenFermion Python requirements
         run: |
           pip install -r dev_tools/requirements/envs/pytest.env.txt
-          echo "::group::List of installed pip packages and their versions"
+          echo '::group::List of installed pip packages and their versions'
           pip list
-          echo "::endgroup::"
+          echo '::endgroup::'
 
       - name: Install cirq-core (current stable version)
         run: |

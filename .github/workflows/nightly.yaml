@@ -6,7 +6,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: Nightly tests and code scans
-run-name: Run nightly tests and code scans
+run-name: Run nightly tests and code scans in ${{github.repository}}
 
 on:
   schedule:
@@ -14,6 +14,11 @@ on:
 
   # Allow manual invocation.
   workflow_dispatch:
+    inputs:
+      sha:
+        description: 'SHA of commit to run against:'
+        type: string
+        required: true
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -29,29 +34,31 @@ jobs:
     uses: ./.github/workflows/nightly-pytest.yaml
     with:
       args: ''
-      reason: ' nightly '
+      reason: nightly
+      sha: ${{inputs.sha}}
 
   cirq-pre:
     name: Pytest Cirq pre-release
     uses: ./.github/workflows/nightly-pytest.yaml
     with:
       args: '--pre'
-      reason: ' nightly '
+      reason: nightly
+      sha: ${{inputs.sha}}
 
   codeql:
     name: CodeQL code scan
     uses: ./.github/workflows/codeql.yaml
     with:
-      reason: ' nightly '
+      reason: nightly
 
   scorecard:
     name: Scorecard code scan
     uses: ./.github/workflows/ossf-scorecard.yaml
     with:
-      reason: ' nightly '
+      reason: nightly
 
   osv:
     name: OSV code scan
     uses: ./.github/workflows/osv-scanner.yaml
     with:
-      reason: ' nightly '
+      reason: nightly

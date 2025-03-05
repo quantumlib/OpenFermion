@@ -4,8 +4,8 @@
 # Google's GitHub guidance.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Tests and scans – Scorecard
-run-name: Do${{inputs.reason || ' '}}Scorecard code scan
+name: OpenSSF Scorecard analysis
+run-name: Do ${{inputs.reason}} Scorecard analysis
 
 on:
   merge_group:
