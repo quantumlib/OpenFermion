@@ -1,12 +1,24 @@
 # Summary: workflow for OSSF Scorecard (https://github.com/ossf/scorecard).
-# Scorecard's use is suggested in Google's GitHub guidance (go/github-docs).
+#
+# Scorecard checks for security best practices. Its use is suggested in
+# Google's GitHub guidance.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Scorecard supply-chain security
-run-name: Analyze code for Scorecard
+name: Scorecard analysis
+run-name: Do ${{inputs.reason}} Scorecard analysis
 
 on:
-  schedule:
-    - cron: '19 20 * * 6'
+  merge_group:
+    types:
+      - checks_requested
+
+  # Allow calling from nightly.yaml.
+  workflow_call:
+    inputs:
+      # Why is this workflow being called?
+      reason:
+        type: string
+        required: false
 
   # Allow manual invocation.
   workflow_dispatch:
@@ -14,15 +26,11 @@ on:
 # Declare default permissions as read only.
 permissions: read-all
 
-# Cancel any previously-started but still active runs on the same branch.
-concurrency:
-  cancel-in-progress: true
-  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
-
 jobs:
   scorecard:
-    name: Perform Scorecard analysis
+    name: Run
     runs-on: ubuntu-22.04
+    timeout-minutes: 15
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
