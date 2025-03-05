@@ -68,6 +68,7 @@ function confirm() {
 if [ -n "$(git status --short)" ]; then
     echo -e "${RED}WARNING: There are uncommitted git changes."
     echo -e "They won't be included in the package.${RESET}"
+    # shellcheck disable=SC2310
     if ! confirm "${YELLOW}Proceed anyway?${RESET}"; then
         echo "Stopping."
         exit 1
@@ -75,7 +76,7 @@ if [ -n "$(git status --short)" ]; then
 fi
 
 tmp_git_dir=$(mktemp -d "/tmp/produce-package-git.XXXXXXXXXXXXXXXX")
-trap "{ rm -rf $tmp_git_dir; }" EXIT
+trap '{ rm -rf "$tmp_git_dir"; }' EXIT
 
 cd "$tmp_git_dir"
 git init --quiet

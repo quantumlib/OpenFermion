@@ -85,6 +85,9 @@ jobs:
         run: |
           pip install -U cirq-core ${{inputs.args}}
 
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
+
       - name: Run Pytest
         run: |
           check/pytest

@@ -46,10 +46,10 @@ concurrency:
 
 env:
   # Default Python version to use. Make sure to use full x.y.z number.
-  python_ver: "3.12.8"
+  python_ver: '3.12.8'
 
   # Oldest Python version to use, for max_compat tests.
-  python_compat_ver: "3.10.15"
+  python_compat_ver: '3.10.15'
 
   # Files listing dependencies we install using pip in the various jobs below.
   # This is used by setup-python to check whether its cache needs updating.
@@ -82,18 +82,28 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      python: ${{steps.filter.outputs.python}}
-      python_files: ${{steps.filter.outputs.python_files}}
-      yaml: ${{steps.filter.outputs.yaml}}
-      yaml_files: ${{steps.filter.outputs.yaml_files}}
-      cff: ${{steps.filter.outputs.cff}}
-      cff_files: ${{steps.filter.outputs.cff_files}}
       gha: ${{steps.filter.outputs.gha}}
       gha_files: ${{steps.filter.outputs.gha_files}}
-      json: ${{steps.filter.outputs.json}}
+      # The following all test both the relevant file condition & the CI config
+      # because a change in the CI workflows can affect the CI check results.
+      python: |-
+        ${{steps.filter.outputs.python}} || ${{steps.filter.outputs.ci}}
+      python_files: ${{steps.filter.outputs.python_files}}
+      yaml: |-
+        ${{steps.filter.outputs.yaml}} || ${{steps.filter.outputs.ci}}
+      yaml_files: ${{steps.filter.outputs.yaml_files}}
+      cff: |-
+        ${{steps.filter.outputs.cff}} || ${{steps.filter.outputs.ci}}
+      cff_files: ${{steps.filter.outputs.cff_files}}
+      json: |-
+        ${{steps.filter.outputs.json}} || ${{steps.filter.outputs.ci}}
       json_files: ${{steps.filter.outputs.json_files}}
-      docker: ${{steps.filter.outputs.docker}}
+      docker: |-
+        ${{steps.filter.outputs.docker}} || ${{steps.filter.outputs.ci}}
       docker_files: ${{steps.filter.outputs.docker_files}}
+      shell: |-
+        ${{steps.filter.outputs.shell}} || ${{steps.filter.outputs.ci}}
+      shell_files: ${{steps.filter.outputs.shell_files}}
     steps:
       # When invoked manually, use the given SHA to figure out the change list.
       - if: github.event_name == 'workflow_dispatch'
@@ -130,6 +140,10 @@ jobs:
           list-files: 'shell'
           # The outputs will be variables named "foo_files" for a filter "foo".
           filters: |
+            ci:
+              - './.github/workflows/ci.yml'
+              - './.github/workflows/codeql.yaml'
+              - './.github/workflows/osv-scanner.yaml'
             cff:
               - added|modified:
                   - '**/CITATION.cff'
@@ -149,6 +163,9 @@ jobs:
             docker:
               - '**/dockerfile'
               - '**/Dockerfile'
+            shell:
+              - '**/*.sh'
+              - 'check/*'
 
   setup:
     if: needs.changes.outputs.python == 'true'
@@ -164,7 +181,7 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: "x64"
+          architecture: 'x64'
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
@@ -195,15 +212,18 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: "x64"
+          architecture: 'x64'
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/format.env.txt
 
+      - name: Set up problem matcher for Black output
+        run: echo '::add-matcher::.github/problem-matchers/black.json'
+
       - name: Run format checks
-        run: check/format-incremental
+        run: check/format-incremental ${{inputs.sha}}
 
   python-mypy:
     if: needs.changes.outputs.python == 'true'
@@ -219,12 +239,15 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: "x64"
+          architecture: 'x64'
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/mypy.env.txt
+
+      - name: Set up Mypy output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/mypy.json'
 
       - name: Type check
         run: check/mypy
@@ -243,7 +266,7 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: "x64"
+          architecture: 'x64'
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
@@ -291,6 +314,9 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
+
       - name: Run pytest
         run: check/pytest
 
@@ -335,6 +361,9 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
+
       - name: Run pytest
         run: check/pytest -m "not slow" src/openfermion/resource_estimates
 
@@ -370,8 +399,10 @@ jobs:
           python-version: ${{env.python_compat_ver}}
 
       - name: Install requirements
-        run: |
-          pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+        run: pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
 
       - name: Run pytest
         run: check/pytest
@@ -414,8 +445,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up yamllint output problem matcher
-        run: |
-          echo "::add-matcher::.github/problem-matchers/yamllint.json"
+        run: echo "::add-matcher::.github/problem-matchers/yamllint.json"
 
       - name: Run yamllint
         run: |
@@ -436,15 +466,13 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Install jsonlint
-        run: |
-          npm install -g @prantlf/jsonlint
+        run: npm install -g @prantlf/jsonlint
 
       - name: Set up jsonlint output problem matcher
         run: echo '::add-matcher::.github/problem-matchers/jsonlint.json'
 
       - name: Run jsonlint on JSON files
-        run: |
-          jsonlint --continue ${{env.changed_files}}
+        run: jsonlint --continue ${{env.changed_files}}
 
   cff-validation:
     if: needs.changes.outputs.cff == 'true'
@@ -459,12 +487,10 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Install cffconvert
-        run: |
-          pip install cffconvert
+        run: pip install cffconvert
 
       - name: Run cffconvert in validation mode
-        run: |
-          cffconvert --validate
+        run: cffconvert --validate
 
   docker-lint:
     if: needs.changes.outputs.docker == 'true'
@@ -482,15 +508,13 @@ jobs:
       # Note: there is a hadolint GitHub Actions available, but it only accepts
       # one Dockerfile to check. We have > 1 file to check, so we need the CLI.
       - name: Install hadolint
-        run: |
-          brew install hadolint
+        run: brew install hadolint
 
       - name: Set up hadolint output problem matcher
         run: echo '::add-matcher::.github/problem-matchers/hadolint.json'
 
       - name: Run hadolint on Dockerfiles that have been changed
-        run: |
-          hadolint ${{env.changed_files}}
+        run: hadolint ${{env.changed_files}}
 
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
@@ -511,13 +535,28 @@ jobs:
 
       # If we didn't fail the previous check, go on to more time-consuming ones.
       - name: Install actionlint
-        run: |
-          HOMEBREW_NO_AUTO_UPDATE=1 brew install actionlint
+        run: HOMEBREW_NO_AUTO_UPDATE=1 brew install actionlint
 
       - name: Set up actionlint output problem matcher
-        run: |
-          echo "::add-matcher::.github/problem-matchers/actionlint.json"
+        run: echo "::add-matcher::.github/problem-matchers/actionlint.json"
 
       - name: Verify that all GitHub Actions workflows are valid
-        run: |
-          /opt/homebrew/bin/actionlint -color
+        run: /opt/homebrew/bin/actionlint -color
+
+  shell-script-lint:
+    if: needs.changes.outputs.shell == 'true'
+    name: Shell script checks
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      changed_files: ${{needs.changes.outputs.shell_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up shellcheck output problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/shellcheck.json"
+
+      - name: Run shellcheck on shell scripts that have been changed
+        run: shellcheck ${{env.changed_files}}
