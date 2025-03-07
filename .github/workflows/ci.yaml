@@ -84,25 +84,25 @@ jobs:
     outputs:
       gha: ${{steps.filter.outputs.gha}}
       gha_files: ${{steps.filter.outputs.gha_files}}
+
       # The following all test both the relevant file condition & the CI config
       # because a change in the CI workflows can affect the CI check results.
-      python: |-
-        ${{steps.filter.outputs.python}} || ${{steps.filter.outputs.ci}}
+      python: ${{steps.filter.outputs.python || steps.filter.outputs.ci}}
       python_files: ${{steps.filter.outputs.python_files}}
-      yaml: |-
-        ${{steps.filter.outputs.yaml}} || ${{steps.filter.outputs.ci}}
+
+      yaml: ${{steps.filter.outputs.yaml || steps.filter.outputs.ci}}
       yaml_files: ${{steps.filter.outputs.yaml_files}}
-      cff: |-
-        ${{steps.filter.outputs.cff}} || ${{steps.filter.outputs.ci}}
+
+      cff: ${{steps.filter.outputs.cff || steps.filter.outputs.ci}}
       cff_files: ${{steps.filter.outputs.cff_files}}
-      json: |-
-        ${{steps.filter.outputs.json}} || ${{steps.filter.outputs.ci}}
+
+      json: ${{steps.filter.outputs.json || steps.filter.outputs.ci}}
       json_files: ${{steps.filter.outputs.json_files}}
-      docker: |-
-        ${{steps.filter.outputs.docker}} || ${{steps.filter.outputs.ci}}
+
+      docker: ${{steps.filter.outputs.docker || steps.filter.outputs.ci}}
       docker_files: ${{steps.filter.outputs.docker_files}}
-      shell: |-
-        ${{steps.filter.outputs.shell}} || ${{steps.filter.outputs.ci}}
+
+      shell: ${{steps.filter.outputs.shell || steps.filter.outputs.ci}}
       shell_files: ${{steps.filter.outputs.shell_files}}
     steps:
       # When invoked manually, use the given SHA to figure out the change list.
@@ -223,7 +223,7 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/black.json'
 
       - name: Run format checks
-        run: check/format-incremental ${{inputs.sha}}
+        run: check/format-incremental ${{env.base}}
 
   python-mypy:
     if: needs.changes.outputs.python == 'true'
