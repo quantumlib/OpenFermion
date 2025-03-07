@@ -2,36 +2,10 @@
 # Summary: check files against style guidelines and optionally reformat them.
 # Run this program with the argument --help for usage information.
 
-# Adjust some Bash options to avoid generally counterintuitive behaviors.
-set -o pipefail
-shopt -s nullglob
-
-# Get the working directory to the repo root.
-thisdir="$(dirname "${BASH_SOURCE[0]}")" || exit $?
-topdir="$(git -C "${thisdir}" rev-parse --show-toplevel)" || exit $?
-cd "${topdir}" || exit $?
-
-# Set default values.
-declare only_print=true
-declare only_changed=true
-declare use_color=true
-declare quiet=false
-declare main_name="main"
-
-declare -r RED="\033[31m"
-declare -r GREEN="\033[32m"
-declare -r RESET="\033[0m"
-
-# Does this repo use the name "main" or "master"?
-main_name=$(git branch -l main master --format '%(refname:short)')
-
-# Helper function used multiple times.
-function print_usage() {
-    local -r program=${0##*/}
-    cat <<EOF >&2
+read -r -d '' usage <<-EOF
 Usage:
 
-$program [BASE_REV] [--help] [--apply] [--all] [--no-color] [--quiet]
+${0##*/} [BASE_REV] [--help] [--apply] [--all] [--no-color] [--quiet]
 
 Check the format of Python source files against project style guidelines. If
 any changes are needed, this program prints the differences to stdout and exits
@@ -50,13 +24,13 @@ changed in relation to the git revision (see next paragraph). With option
 
 File changes are considered relative to the base git revision in the repository
 unless a different git revision is given as an argument to this program. The
-revision can be given as a SHA value or a name such as 'origin/$main_name' or
+revision can be given as a SHA value or a name such as 'origin/main' or
 'HEAD~1'. If no git revision is provided as an argument, this program tries the
 following defaults, in order, until one is found to exist:
 
-      1. upstream/$main_name
-      2. origin/$main_name
-      3. $main_name
+      1. upstream/main (or upstream/master)
+      2. origin/main (or origin/master)
+      3. main (or master)
 
 If none of them exists, the program will fail and return exit code 1.
 
@@ -64,32 +38,38 @@ Additional options
 ~~~~~~~~~~~~~~~~~~
 
 Informative messages are printed to stdout unless option '--quiet' is given.
+(Error messages are always printed.)
 
 Color is used to enhance the output unless the option '--no-color' is given.
 
 Running this program with the option '--help' will make it print this help text
 and exit with exit code 0 without doing anything else.
+
+If an error occurs in Black itself, this program will return the non-zero error
+code returned by Black.
 EOF
-}
 
-function error() {
-    local -r msg="ERROR: $1"
-    if $use_color; then
-        echo -e "${RED}$msg${RESET}" >&2
-    else
-        echo -e "$msg" >&2
-    fi
-}
+# Change the working directory of this script to the root of the repo.
+thisdir="$(dirname "${BASH_SOURCE[0]}")" || exit $?
+cd "$(git -C "${thisdir}" rev-parse --show-toplevel)" || exit $?
 
-function info() {
-    local use_escapes=""
-    if [[ $1 == "-e" ]]; then
-        use_escapes="-e"
-        shift
-    fi
-    if ! $quiet; then
-        echo $use_escapes "$1"
-    fi
+# Set default values.
+declare only_print=true
+declare only_changed=true
+declare no_color=false
+declare be_quiet=false
+
+function print() {
+    local type="$1" msg="$2"
+    local red="" green="" reset=""
+    $no_color || red="\033[31;1m"
+    $no_color || green="\033[32;1m"
+    $no_color || reset="\033[0m"
+    case $type in
+        error) echo -e "${reset}${red}Error: $msg${reset}" >&2;;
+        info)  $be_quiet || echo -e "${reset}${green}$msg${reset}";;
+        *)     echo "$msg";;
+    esac
 }
 
 declare rev=""
@@ -99,8 +79,8 @@ declare rev=""
 shopt -s nocasematch
 while (( $# > 0 )); do
     case $1 in
-        -h|--help)
-            print_usage
+        -h | --help)
+            echo "$usage"
             exit 0
             ;;
         --apply)
@@ -112,26 +92,26 @@ while (( $# > 0 )); do
             shift
             ;;
         --no-color)
-            use_color=false
+            no_color=true
             shift
             ;;
         --quiet)
-            quiet=true
+            be_quiet=true
             shift
             ;;
         -*)
-            error "Unrecognized option $1."
-            print_usage
+            print error "Unrecognized option $1."
+            echo "$usage"
             exit 1
             ;;
         *)
             if [[ -n "$rev" ]]; then
-                error "Too many arguments."
-                print_usage
+                print error "Too many arguments."
+                echo "$usage"
                 exit 1
             fi
             if ! git rev-parse -q --verify --no-revs "$1^{commit}"; then
-                error "Cannot find revision $1."
+                print error "Cannot find revision $1."
                 exit 1
             fi
             rev="$1"
@@ -146,7 +126,8 @@ declare -a modified_files=("")
 if $only_changed; then
     # Figure out which branch to compare against.
     if [[ -z "$rev" ]]; then
-        declare -a try=("upstream/$main_name" "origin/$main_name" "$main_name")
+        declare -r -a try=("upstream/main" "origin/main" "main"
+                           "upstream/master" "origin/master" "master")
         for name in "${try[@]}"; do
             if [[ "$(git cat-file -t "$name" 2> /dev/null)" == "commit" ]]; then
                 rev="$name"
@@ -154,33 +135,31 @@ if $only_changed; then
             fi
         done
         if [[ -z "$rev" ]]; then
-            printf -v msg '%s' \
-                   "None of the defaults (${try[*]}) were found and no git" \
-                   " revision was given on the command line. Argument #1 must" \
-                   " be what to diff against (e.g., 'origin/main' or 'HEAD~1')."
-            error "$msg"
+            print error "None of the defaults (${try[*]}) were found and no" \
+                " git revision was provided as argument. Argument #1 must" \
+                " be what to diff against (e.g., 'origin/main' or 'HEAD~1')."
             exit 1
         fi
     fi
+    declare base base_info
     base="$(git merge-base "$rev" HEAD)"
-    base_info=""
     if [[ "$(git rev-parse "$rev")" != "$base" ]]; then
         rev="$base"
         base_info=" (merge base $base)"
     fi
-    info "Comparing files to revision '$rev'$base_info."
+    print info "Comparing files to revision '$rev'$base_info."
 
     # Get the list of changed files.
     IFS=$'\n' read -r -d '' -a modified_files < \
         <(git diff --name-only --diff-filter=MAR "$rev" -- '*.py')
 else
     # The user asked for all files.
-    info "Formatting all Python files."
+    print info "Formatting all Python files."
     IFS=$'\n' read -r -d '' -a modified_files < <(git ls-files '*.py')
 fi
 
 if (( ${#modified_files[@]} == 0 )); then
-    info -e "${GREEN}No modified files found – no changes needed${RESET}."
+    print info "No modified files found – no changes needed."
     exit 0
 fi
 
@@ -188,25 +167,11 @@ declare black_version
 black_version="$(black --version)"
 black_version=${black_version//[$'\n']/ }    # Remove annoying embedded newline.
 black_version=${black_version#black, }       # Remove leading "black, "
-info "Running 'black' (version $black_version) ..."
+print info "Running Black (version $black_version) ..."
 
 declare -a black_args
-if $only_print; then
-    black_args+=("--check" "--diff")
-fi
-if $quiet; then
-    black_args+=("--quiet")
-fi
-if $use_color; then
-    black_args+=("--color")
-else
-    black_args+=("--no-color")
-fi
+$only_print && black_args+=("--check" "--diff")
+$be_quiet   && black_args+=("--quiet")
+$no_color   && black_args+=("--no-color")
 
 black "${black_args[@]}" "${modified_files[@]}"
-declare -r exit_code=$?
-
-if (( exit_code > 0 )); then
-  exit 1
-fi
-exit 0
