@@ -1,11 +1,17 @@
 # Summary: configuration for CodeQL.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Nightly CodeQL code scan
-run-name: Perform nightly CodeQL code scan
+name: CodeQL code scan
+run-name: Do ${{inputs.reason}} CodeQL code scan
 
 on:
-  schedule:
-    - cron: '37 13 * * 5'
+  # Allow calling from nightly.yaml.
+  workflow_call:
+    inputs:
+      # Why is this workflow being called?
+      reason:
+        type: string
+        required: false
 
   # Allow manual invocation.
   workflow_dispatch:
@@ -20,7 +26,7 @@ concurrency:
 
 jobs:
   codeql:
-    name: Run CodeQL analysis
+    name: Run
     runs-on: ubuntu-24.04
     permissions:
       security-events: write
@@ -37,4 +43,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d # v3
         with:
-          category: "/language:Python"
+          category: '/language:Python'

@@ -1,16 +1,27 @@
-# Summary: reusable workflow called by nightly.yml
-#
+# Summary: reusable workflow called by nightly.yaml.
 # This workflow expects input values passed by nightly.yml.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Nightly full tests – Pytest subworkflow
+name: Nightly full tests – Pytest matrix
+run-name: Run ${{inputs.reason}} Pytest full tests
 
 on:
   workflow_call:
     inputs:
+      # CLI argument string to pass to pytest.
       args:
         type: string
-        required: true
+        required: false
+      # Why is this workflow being called?
+      reason:
+        type: string
+        required: false
+
+  # Allow manual invocation.
+  workflow_dispatch:
+
+# Declare default permissions as read only.
+permissions: read-all
 
 jobs:
   Pytest:
@@ -24,8 +35,8 @@ jobs:
         # These Python versions were carefully selected by trial and error
         # to be available on as many os/arch combos as possible, while also
         # making all necessary Python dependencies available on those combos.
-        # TODO: add "3.13.1" once Cirq 1.5 is released.
-        python-version: ["3.10.11", "3.11.9", "3.12.7", "3.13.1"]
+        # TODO: add '3.13.1' once Cirq 1.5 is released.
+        python-version: ['3.10.11', '3.11.9', '3.12.7']
         os: [ubuntu-22.04, ubuntu-22.04-arm, macos-14, windows-2022]
         arch: [x64, arm64]
         exclude:
@@ -48,6 +59,7 @@ jobs:
           - os: ubuntu-22.04-arm
             arch: arm64
             python-version: 3.12.7
+
     steps:
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -64,13 +76,16 @@ jobs:
       - name: Install OpenFermion Python requirements
         run: |
           pip install -r dev_tools/requirements/envs/pytest.env.txt
-          echo "::group::List of installed pip packages and their versions"
+          echo '::group::List of installed pip packages and their versions'
           pip list
-          echo "::endgroup::"
+          echo '::endgroup::'
 
       - name: Install cirq-core (current stable version)
         run: |
           pip install -U cirq-core ${{inputs.args}}
+
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
 
       - name: Run Pytest
         run: |

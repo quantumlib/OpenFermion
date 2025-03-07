@@ -3,9 +3,9 @@
    :width: 75%
    :align: center
 
-.. |ci| image:: https://img.shields.io/github/actions/workflow/status/quantumlib/openfermion/ci.yml?style=flat-square&logo=GitHub&label=Continous%20integration
+.. |ci| image:: https://img.shields.io/github/actions/workflow/status/quantumlib/openfermion/ci.yaml?style=flat-square&logo=GitHub&label=CI
    :alt: Continuous integration status badge
-   :target: https://github.com/quantumlib/OpenFermion/workflows/Continuous%20Integration/badge.svg
+   :target: https://github.com/quantumlib/OpenFermion/actions/workflows/ci.yaml
 
 .. |python| image:: https://img.shields.io/badge/Python-3.10+-fcbc2c.svg?style=flat-square&logo=python&logoColor=white
    :alt: Compatible with Python versions 3.10 and higher
