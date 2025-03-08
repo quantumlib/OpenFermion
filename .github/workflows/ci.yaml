@@ -223,7 +223,7 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/black.json'
 
       - name: Run format checks
-        run: check/format-incremental ${{env.base}}
+        run: check/format-incremental
 
   python-mypy:
     if: needs.changes.outputs.python == 'true'
