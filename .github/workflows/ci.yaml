@@ -486,7 +486,7 @@ jobs:
 
   cff-validation:
     if: needs.changes.outputs.cff == 'true'
-    name: CITATION.cff validation
+    name: CITATION.cff checks
     needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -528,7 +528,7 @@ jobs:
 
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
-    name: GitHub Actions validation
+    name: GitHub Actions workflow checks
     needs: [changes, yaml-lint]
     # This uses a Mac runner because actionlint isn't available via Linux apt.
     runs-on: macos-14
