@@ -1,0 +1,41 @@
+# Summary: config for Open Source Vulnerabilitis Scanner.
+# See https://google.github.io/osv-scanner/configuration/ for more info.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# OSV prior to version 2.0 is unable to parse pip version specs correctly:
+# https://github.com/google/osv-scanner/issues/1483#issuecomment-2585999293
+# The suggested workaround is to configure osv-scanner to ignore the particular
+# cases it complains about. The following are all about NumPy, because
+# osv-scanner can't understand the version spec "numpy>=1.24,<2.0" and
+# therefore raises errors about all versions of NumPy, including very old ones.
+# Ignoring these specific dependencies is okay because we will never use the
+# old versions of NumPy and it doesn't block detection of future new
+# vulnerabilities.
+
+[[IgnoredVulns]]
+id = "PYSEC-2018-34"
+reason = "false positive due to osv-scanner's buggy pip requirements parser"
+
+[[IgnoredVulns]]
+id = "PYSEC-2021-855"
+reason = "false positive due to osv-scanner's buggy pip requirements parser"
+
+[[IgnoredVulns]]
+id = "PYSEC-2021-856"
+reason = "false positive due to osv-scanner's buggy pip requirements parser"
+
+[[IgnoredVulns]]
+id = "PYSEC-2019-108"
+reason = "false positive due to osv-scanner's buggy pip requirements parser"
+
+[[IgnoredVulns]]
+id = "PYSEC-2018-33"
+reason = "false positive due to osv-scanner's buggy pip requirements parser"
+
+[[IgnoredVulns]]
+id = "PYSEC-2021-857"
+reason = "false positive due to osv-scanner's buggy pip requirements parser"
+
+[[IgnoredVulns]]
+id = "PYSEC-2017-1"
+reason = "false positive due to osv-scanner's buggy pip requirements parser"
