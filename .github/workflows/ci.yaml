@@ -102,6 +102,9 @@ jobs:
       docker: ${{steps.filter.outputs.docker || steps.filter.outputs.ci}}
       docker_files: ${{steps.filter.outputs.docker_files}}
 
+      requirements: ${{steps.filter.outputs.requirements || steps.filter.outputs.ci}}
+      requirements_files: ${{steps.filter.outputs.requirements_files}}
+
       shell: ${{steps.filter.outputs.shell || steps.filter.outputs.ci}}
       shell_files: ${{steps.filter.outputs.shell_files}}
     steps:
@@ -163,6 +166,10 @@ jobs:
             docker:
               - '**/dockerfile'
               - '**/Dockerfile'
+            requirements:
+              - 'dev_tools/requirements/deps/*.txt'
+              - 'docs/**/*-requirements.txt'
+              - 'docs/**/requirements.txt'
             shell:
               - '**/*.sh'
               - 'check/*'
@@ -479,7 +486,7 @@ jobs:
 
   cff-validation:
     if: needs.changes.outputs.cff == 'true'
-    name: CITATION.cff validation
+    name: CITATION.cff checks
     needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -521,7 +528,7 @@ jobs:
 
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
-    name: GitHub Actions validation
+    name: GitHub Actions workflow checks
     needs: [changes, yaml-lint]
     # This uses a Mac runner because actionlint isn't available via Linux apt.
     runs-on: macos-14
@@ -563,3 +570,12 @@ jobs:
 
       - name: Run shellcheck on shell scripts that have been changed
         run: shellcheck ${{env.changed_files}}
+
+  vulnerability-checks:
+    if: needs.changes.outputs.requirements == 'true'
+    name: Vulnerability checks
+    needs: changes
+    uses: ./.github/workflows/osv-scanner.yaml
+    permissions: write-all
+    with:
+      reason: CI
