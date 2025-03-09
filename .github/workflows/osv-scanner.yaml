@@ -1,5 +1,13 @@
 # Summary: run Open Source Vulnerabilities (OSV) code scan.
 #
+# The OSV project provides a GA workflow that you can reference as a step with
+# "uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml".
+# Unfortunately, that workflow inexplicably doesn't use the latest version of
+# the scanner and reporter workflows, and also does other things like hard-code
+# the value of the osv-scanner "--gh-annotations" option to "false". Using the
+# separate actions directly allows us to adjust the options and use Dependabot
+# to update the workflow versions as new ones are introduced.
+#
 # For more examples and options, including how to ignore specific
 # vulnerabilities, see https://google.github.io/osv-scanner/github-action/.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,7 +51,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Run OSV analysis
+      - name: Run OSV scanner
         # yamllint disable rule:line-length
         uses: google/osv-scanner-action/osv-scanner-action@f8115f2f28022984d4e8070d2f0f85abcf6f3458 # v1.9.2
         continue-on-error: true
@@ -52,10 +60,9 @@ jobs:
             --format=json
             --output=osv-results.json
             --recursive
-            --skip-git
             ./
 
-      - name: Run osv-scanner-reporter
+      - name: Run OSV reporter
         # yamllint disable rule:line-length
         uses: google/osv-scanner-action/osv-reporter-action@f8115f2f28022984d4e8070d2f0f85abcf6f3458 # v1.9.2
         with:
