@@ -57,6 +57,7 @@ jobs:
         continue-on-error: true
         with:
           scan-args: |-
+            --config=.osv-scanner.toml
             --format=json
             --output=osv-results.json
             --recursive
