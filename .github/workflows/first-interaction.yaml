@@ -17,6 +17,7 @@ permissions: read-all
 
 jobs:
   welcome:
+    if: github.actor != 'dependabot[bot]'
     name: Check for first interaction
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -27,14 +28,11 @@ jobs:
       repo: ${{github.server_url}}/${{github.repository}}
       files: ${{github.server_url}}/${{github.repository}}/blob/${{github.ref_name}}
     steps:
-      - name: Check out a copy of the git repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-
       - name: Add a welcome comment if appropriate
         uses: actions/first-interaction@2ec0f0fd78838633cd1c1342e4536d49ef72be54 # v1.3.0
         with:
           repo-token: ${{secrets.GITHUB_TOKEN}}
-          issue-message: |
+          issue-message: >
             Hello and welcome, ${{github.actor}} 👋!
 
             Thanks for filing your first issue with the ${{github.repository}}
@@ -55,7 +53,7 @@ jobs:
             any that look the same as this one. If you find a similar issue,
             consider closing this one; if you don't want to close this one, can
             you explain how this new one differs from the other one?
-          pr-message: |
+          pr-message: >
             Hello and welcome, ${{github.actor}} 👋!
 
             Thanks for making your first pull request to the
