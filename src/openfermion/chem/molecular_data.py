@@ -708,27 +708,27 @@ class MolecularData(object):
             # Save geometry (atoms and positions need to be separate):
             d_geom = f.create_group("geometry")
             if not isinstance(self.geometry, basestring):
-                atoms = [numpy.string_(item[0]) for item in self.geometry]
+                atoms = [numpy.byte_(item[0]) for item in self.geometry]
                 positions = numpy.array([list(item[1]) for item in self.geometry])
             else:
-                atoms = numpy.string_(self.geometry)
+                atoms = numpy.byte_(self.geometry)
                 positions = None
             d_geom.create_dataset("atoms", data=(atoms if atoms is not None else False))
             d_geom.create_dataset("positions", data=(positions if positions is not None else False))
             # Save basis:
-            f.create_dataset("basis", data=numpy.string_(self.basis))
+            f.create_dataset("basis", data=numpy.byte_(self.basis))
             # Save multiplicity:
             f.create_dataset("multiplicity", data=self.multiplicity)
             # Save charge:
             f.create_dataset("charge", data=self.charge)
             # Save description:
-            f.create_dataset("description", data=numpy.string_(self.description))
+            f.create_dataset("description", data=numpy.byte_(self.description))
             # Save name:
-            f.create_dataset("name", data=numpy.string_(self.name))
+            f.create_dataset("name", data=numpy.byte_(self.name))
             # Save n_atoms:
             f.create_dataset("n_atoms", data=self.n_atoms)
             # Save atoms:
-            f.create_dataset("atoms", data=numpy.string_(self.atoms))
+            f.create_dataset("atoms", data=numpy.byte_(self.atoms))
             # Save protons:
             f.create_dataset("protons", data=self.protons)
             # Save n_electrons:
@@ -824,7 +824,7 @@ class MolecularData(object):
             key_list = list(self.general_calculations.keys())
             f.create_dataset(
                 "general_calculations_keys",
-                data=([numpy.string_(key) for key in key_list] if len(key_list) > 0 else False),
+                data=([numpy.byte_(key) for key in key_list] if len(key_list) > 0 else False),
             )
             f.create_dataset(
                 "general_calculations_values",
