@@ -36,7 +36,7 @@
 
 |vertspace| OpenFermion is an open-source library for compiling and analyzing quantum
 algorithms to simulate fermionic systems, including quantum chemistry. Among
-other featurs, it includes data structures and tools for obtaining and
+other features, it includes data structures and tools for obtaining and
 manipulating representations of fermionic and qubit Hamiltonians. For more
 information, see our `release paper <https://arxiv.org/abs/1710.07629>`__.
 
