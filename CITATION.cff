@@ -100,7 +100,7 @@ preferred-citation:
   issue: 3
   doi: 10.1088/2058-9565/ab8ebc
 
-# The remaining fields define how the software in this repo should be cited.
+# The remaining metadata describes the current software release.
 
 title: OpenFermion
 authors:
@@ -115,9 +115,6 @@ type: software
 identifiers:
   - description: The home page for OpenFermion
     value: https://quantumai.google/openfermion
-    type: url
-  - description: The GitHub repository for OpenFermion
-    value: https://github.com/quantumlib/OpenFermion
     type: url
   - description: PyPI project for OpenFermion
     value: https://pypi.org/project/openfermion
