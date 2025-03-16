@@ -93,14 +93,14 @@ preferred-citation:
       given-names: Fang
     - family-names: Babbush
       given-names: Ryan
-  title: "OpenFermion: The Electronic Structure Package for Quantum Computers"
+  title: 'OpenFermion: The Electronic Structure Package for Quantum Computers'
   year: 2020
   journal: Quantum Science and Technology
   volume: 5
   issue: 3
   doi: 10.1088/2058-9565/ab8ebc
 
-# The remaining fields define how the software in this repo should be cited.
+# The remaining metadata describes the current software release.
 
 title: OpenFermion
 authors:
@@ -114,9 +114,6 @@ license: Apache-2.0
 type: software
 identifiers:
   - description: The home page for OpenFermion
-    value: https://github.com/quantumlib/OpenFermion
-    type: url
-  - description: The GitHub repository for OpenFermion
     value: https://quantumai.google/openfermion
     type: url
   - description: PyPI project for OpenFermion
@@ -155,6 +152,7 @@ keywords:
   - quantum
   - qubit Hamiltonians
   - qubit
+  - research
   - science
   - SDK
   - simulation
