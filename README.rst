@@ -34,9 +34,9 @@
    :width: 1px
    :height: 30px
 
-|vertspace| OpenFermion is an open source library for compiling and analyzing quantum
+|vertspace| OpenFermion is an open-source library for compiling and analyzing quantum
 algorithms to simulate fermionic systems, including quantum chemistry. Among
-other functionalities, it features data structures and tools for obtaining and
+other features, it includes data structures and tools for obtaining and
 manipulating representations of fermionic and qubit Hamiltonians. For more
 information, see our `release paper <https://arxiv.org/abs/1710.07629>`__.
 
@@ -66,11 +66,11 @@ Documentation can be found at `quantumai.google/openfermion <https://quantumai.g
 Currently, OpenFermion is tested on Mac, Windows, and Linux. We recommend using Mac or Linux because
 the electronic structure plugins are only compatible on these platforms. However,
 for those who would like to use Windows, or for anyone having other difficulties
-with installing OpenFermion or its plugins, we have provided a Docker image
+with installing OpenFermion or its plugins, we provide a Docker image
 and usage instructions in the
 `docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
 The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
-The Docker installation should run on any operating system.
+The Docker installation should run on any operating system where Docker can be used.
 
 Developer install
 -----------------
@@ -205,6 +205,7 @@ Authors
 
 How to cite
 ===========
+
 When using OpenFermion for research projects, please cite:
 
     Jarrod R McClean, Nicholas C Rubin, Kevin J Sung, Ian D Kivlichan, Xavier Bonet-Monroig,

@@ -5,8 +5,8 @@
 # https://github.com/quantumlib/OpenFermion/actions/workflows/nightly.yaml
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Nightly full tests
-run-name: Run nightly tests and code scans in ${{github.repository}}
+name: 'Nightly tests & scans'
+run-name: Run nightly tests and code scans
 
 on:
   schedule:
@@ -20,36 +20,37 @@ permissions: read-all
 
 jobs:
   cirq-stable:
-    name: Pytest Cirq stable release
+    name: Nightly Pytest Cirq stable
     uses: ./.github/workflows/nightly-pytest.yaml
     with:
       args: ''
-      reason: nightly
+      reason: '(nightly)'
 
   cirq-pre:
-    name: Pytest Cirq pre-release
+    name: Nightly Pytest Cirq pre-release
     uses: ./.github/workflows/nightly-pytest.yaml
     with:
       args: '--pre'
-      reason: nightly
+      reason: '(nightly)'
 
   codeql:
-    name: CodeQL code scan
+    name: Nightly CodeQL code scan
     uses: ./.github/workflows/codeql.yaml
     permissions: write-all
     with:
-      reason: nightly
-
-  scorecard:
-    name: Scorecard code scan
-    uses: ./.github/workflows/scorecard.yaml
-    permissions: write-all
-    with:
-      reason: nightly
+      reason: '(nightly)'
 
   osv:
-    name: OSV code scan
+    name: Nightly OSV code scan
     uses: ./.github/workflows/osv-scanner.yaml
     permissions: write-all
     with:
-      reason: nightly
+      reason: '(nightly)'
+
+  scorecard:
+    name: Nightly Scorecard analysis
+    uses: ./.github/workflows/scorecard.yaml
+    permissions: write-all
+    secrets: inherit
+    with:
+      reason: '(nightly)'
