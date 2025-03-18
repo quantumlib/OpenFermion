@@ -43,7 +43,7 @@ jobs:
     steps:
       - name: Get list of programming languages used in this repo
         id: matrix
-        uses: advanced-security/set-codeql-language-matrix@975244ea2e4c0668b8d289ac2b61fa7f0976f328 # v1
+        uses: advanced-security/set-codeql-language-matrix@975244ea2e4c0668b8d289ac2b61fa7f0976f328
         with:
           access-token: ${{secrets.GITHUB_TOKEN}}
           endpoint: ${{github.event.repository.languages_url}}
