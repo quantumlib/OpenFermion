@@ -2,8 +2,8 @@
 # This workflow expects input values passed by nightly.yml.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Nightly full tests – Pytest matrix
-run-name: Run ${{inputs.reason}} Pytest full tests
+name: 'Nightly tests & scans – Pytest matrix'
+run-name: Run nightly Pytest
 
 on:
   workflow_call:
