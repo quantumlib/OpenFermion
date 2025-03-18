@@ -1,46 +1,89 @@
-# Summary: configuration for CodeQL.
+# Zero-configuration modular workflow to run CodeQL code scans.
+#
+# CodeQL is a semantic code analysis tool that finds vulnerabilities by
+# understanding the code's logic. It is provided by GitHub. CodeQL's findings
+# are reported in the repo's code-scanning results page,
+# https://github.com/quantumlib/REPO/security/code-scanning/.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: CodeQL code scan
-run-name: Do ${{inputs.reason}} CodeQL code scan
+run-name: Run CodeQL code scan ${{inputs.reason}}
 
 on:
-  # Allow calling from nightly.yaml.
-  workflow_call:
-    inputs:
-      # Why is this workflow being called?
-      reason:
-        type: string
-        required: false
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+      - master
+
+  # Support merge queues.
+  merge_group:
+    types:
+      - checks_requested
 
   # Allow manual invocation.
   workflow_dispatch:
 
+  # Allow calling from nightly.yaml.
+  workflow_call:
+    inputs:
+      reason:
+        type: string
+
 # Declare default permissions as read only.
 permissions: read-all
 
-# Cancel any previously-started but still active runs on the same branch.
-concurrency:
-  cancel-in-progress: true
-  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
-
 jobs:
-  codeql:
-    name: Run
+  create-matrix:
+    name: Determine languages used
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      language-matrix: ${{steps.matrix.outputs.languages}}
+    steps:
+      - name: Get list of programming languages used in this repo
+        id: matrix
+        uses: advanced-security/set-codeql-language-matrix@975244ea2e4c0668b8d289ac2b61fa7f0976f328 # v1
+        with:
+          access-token: ${{secrets.GITHUB_TOKEN}}
+          endpoint: ${{github.event.repository.languages_url}}
+
+  codeql:
+    if: ${{needs.create-matrix.outputs.language-matrix != '[]'}}
+    name: Run CodeQL scanner for ${{matrix.language}}
+    needs: create-matrix
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
-      security-events: write
+      actions: read
+      contents: read
       packages: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{fromJSON(needs.create-matrix.outputs.language-matrix)}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3
+      - name: Initialize CodeQL scanning tool
+        uses: github/codeql-action/init@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d # v3
         with:
-          languages: Python
+          languages: ${{matrix.language}}
+          queries: security-and-quality
+          config: |
+            paths-ignore:
+              - '**/*.gltf'
+              - '**/*.json'
+              - '**/*.md'
+              - '**/*.png'
+              - '**/*.rst'
+              - '**/*.svg'
+              - '**/*.stim'
+              - '**/*.txt'
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3
         with:
-          category: '/language:Python'
+          category: "/language:${{matrix.language}}"
