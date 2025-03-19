@@ -88,7 +88,6 @@ jobs:
           scan-args: |-
             --format=json
             --output=old-results.json
-            --include-git-root
             --recursive
             ./
 
@@ -106,7 +105,6 @@ jobs:
           scan-args: |-
             --format=json
             --output=new-results.json
-            --include-git-root
             --recursive
             ./
 
