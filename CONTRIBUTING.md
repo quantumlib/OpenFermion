@@ -34,15 +34,18 @@ of conduct.
 ## Contribution process
 
 All submissions, including submissions by project members, require review. We
-use the tools provided by GitHub for pull requests for this purpose. The
-preferred manner for submitting pull requests is to fork the, create a new
-branch in this fork to do your work, and when ready, create a pull request from
-this branch to the main project repository. The subsections below describe the
-process in more detail.
+use the tools provided by GitHub for [pull
+requests](https://docs.github.com/articles/about-pull-requests) for this
+purpose. The preferred manner for submitting pull requests is to
+[fork](https://docs.github.com/articles/fork-a-repo) the repository, create a
+new [git branch](https://docs.github.com/articles/about-branches) in this fork
+to do your work, and when ready, create a pull request from your branch to the
+main project repository.
 
-Pleae make sure to follow the [Google Style
-Guides](https://google.github.io/styleguide/) in your code, particularly the
-[style guide for Python](https://google.github.io/styleguide/pyguide.html).
+We follow the [Google coding style](https://google.github.io/styleguide/) for
+the programming languages used in this project, with only a few deviations. The
+[`.editorconfig`](.editorconfig) file in this repository defines the settings
+we use.
 
 ### Repository forks
 
