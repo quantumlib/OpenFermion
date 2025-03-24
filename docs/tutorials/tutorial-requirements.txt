@@ -1,5 +1,5 @@
 numpy>=1.24,<2.0
-scipy~=1.15
+scipy~=1.13
 h5py>=3.10.0
 jupyter
 nbformat
