@@ -200,7 +200,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python with caching of pip dependencies
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -231,7 +231,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -258,7 +258,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -285,7 +285,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -325,7 +325,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -372,7 +372,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -416,7 +416,7 @@ jobs:
         # Note: deliberately not using our Python cache here b/c this runs
         # a different version of Python.
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{env.python_compat_ver}}
 
@@ -442,7 +442,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
