@@ -46,6 +46,6 @@ jobs:
           GH_TOKEN: ${{github.token}}
           pr-number: ${{inputs.pr-number || github.event.pull_request.number}}
         run: |
-          gh pr view ${{env.pr-number}} --json body --jq .body |\
+          gh pr view ${{env.pr-number}} -R ${{github.repository}} --json body -q .body |\
             sed '/(dependabot-automerge-end)/,/<\/details>/d' |\
-            gh pr edit ${{env.pr-number}} --body-file -
+            gh pr edit ${{env.pr-number}} -R ${{github.repository}} --body-file -
