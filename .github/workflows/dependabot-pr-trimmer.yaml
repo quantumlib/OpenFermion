@@ -43,6 +43,7 @@ jobs:
           github.event.pull_request.user.login == 'dependabot[bot]' ||
           github.event_name == 'workflow_dispatch'
         env:
+          GH_TOKEN: ${{github.token}}
           pr-number: ${{inputs.pr-number || github.event.pull_request.number}}
         run: |
           gh pr view ${{env.pr-number}} --json body --jq .body |\
