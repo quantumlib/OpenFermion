@@ -17,7 +17,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: Dependabot PR trimmer
-run-name: Filter message body of PR #
+run-name: Filter message body of PR ${{github.event.pull_request.number}}
 
 on:
   pull_request:
@@ -29,10 +29,15 @@ on:
         type: string
         required: true
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
-  setup:
+  filter-message:
+    name: Filter PR message body
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    permissions: write-all
     steps:
       - if: >-
           github.event.pull_request.user.login == 'dependabot[bot]' ||
