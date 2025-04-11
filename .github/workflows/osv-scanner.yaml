@@ -82,7 +82,7 @@ jobs:
 
       - name: Run OSV scanner on existing code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@98b584ee2ed2da3935ccce10e06739d54cdcd20b # v2.0.0
+        uses: google/osv-scanner-action/osv-scanner-action@6fc714450122bda9d00e4ad5d639ad6a39eedb1f # v2.0.1
         continue-on-error: true
         with:
           scan-args: |-
@@ -99,7 +99,7 @@ jobs:
 
       - name: Run OSV scanner on new code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@98b584ee2ed2da3935ccce10e06739d54cdcd20b # v2.0.0
+        uses: google/osv-scanner-action/osv-scanner-action@6fc714450122bda9d00e4ad5d639ad6a39eedb1f # v2.0.1
         continue-on-error: true
         with:
           scan-args: |-
@@ -110,7 +110,7 @@ jobs:
 
       - name: Run the OSV scanner reporter
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-reporter-action@98b584ee2ed2da3935ccce10e06739d54cdcd20b # v2.0.0
+        uses: google/osv-scanner-action/osv-reporter-action@6fc714450122bda9d00e4ad5d639ad6a39eedb1f # v2.0.1
         with:
           scan-args: |-
             --output=osv-results.sarif
