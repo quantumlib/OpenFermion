@@ -1,0 +1,73 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Clean up Dependabot PR text so that the git merge commits are more readable.
+#
+# This removes HTML markup and some content that Dependabot always includes in
+# PR message bodies. The editing doesn't need to be done unless the PR will be
+# merged, but it does need to be done *before* the merge so the final commit
+# message is based on the edited version. We can't use the GitHub events for PRs
+# getting merged or closed (because that's too late). Triggering on merge queue
+# events is also problematic because those events don't have the equivalent of
+# "pull_request.user", which we need for testing if the PR came from Dependabot.
+# So instead, this workflow triggers when auto-merge is enabled for a PR.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+name: Dependabot PR trimmer
+run-name: Filter message body of PR ${{github.event.pull_request.number}}
+
+on:
+  pull_request:
+    types:
+      - auto_merge_enabled
+
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: 'The PR number of the PR to edit:'
+        type: string
+        required: true
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  filter-message:
+    name: Filter PR message body
+    # Use a macos runner because it has textutil.
+    runs-on: macos-14
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - if: >-
+          github.event.pull_request.user.login == 'dependabot[bot]' ||
+          github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{github.token}}
+          pr: ${{inputs.pr-number || github.event.pull_request.number}}
+        run: |
+          # "gh pr view" returns GFM Markdown containing inline HTML. The first
+          # two sed commands remove some needless content added by Dependabot
+          # before we pass it to textutil to convert the HTML; the final sed
+          # command converts textutil's bullet lists to Markdown syntax.
+          gh pr view ${{env.pr}} -R ${{github.repository}} --json body -q .body |\
+            sed -e '/\[\!\[Dependabot compatibility$/,/^Signed-off-by:/ { /^Signed-off-by:/!d; }' \
+                -e 's/<details>/<br><br><details>/g' |\
+            textutil -stdin -format html -convert txt -stdout |\
+            sed $'s/\t•\t/* /g' |\
+            gh pr edit ${{env.pr}} -R ${{github.repository}} --body-file -
