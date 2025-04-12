@@ -20,8 +20,10 @@ name: Dependabot PR trimmer
 run-name: Filter message body of PR ${{github.event.pull_request.number}}
 
 on:
-  pull_request:
-    types: [opened]
+  merge_group:
+    types:
+      - checks_requested
+
   workflow_dispatch:
     inputs:
       pr-number:
@@ -37,7 +39,10 @@ jobs:
     name: Filter PR message body
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    permissions: write-all
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - if: >-
           github.event.pull_request.user.login == 'dependabot[bot]' ||
