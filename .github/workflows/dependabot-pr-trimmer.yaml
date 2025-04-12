@@ -20,9 +20,9 @@ name: Dependabot PR trimmer
 run-name: Filter message body of PR ${{github.event.pull_request.number}}
 
 on:
-  merge_group:
+  pull_request:
     types:
-      - checks_requested
+      - enqueued
 
   workflow_dispatch:
     inputs:
