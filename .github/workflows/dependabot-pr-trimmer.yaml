@@ -13,16 +13,23 @@
 # limitations under the License.
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Remove bloat from Dependabot's PR messages
+# Trim parts of the Dependabot PR text that are unnecessary in the git history.
+#
+# The trimming needs to be performed before the PR is merged so that the commit
+# message is based on the trimmed version. This prevents us from using events
+# such as the PR getting closed or merged. Triggering on merge queue events is
+# also problematic, because a merge_queue event doesn't have the equivalent of
+# "pull_request.user" and we need that to test if the PR came from Dependabot.
+# So instead, this workflow triggers when auto-merge is enabled for the PR.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: Dependabot PR trimmer
 run-name: Filter message body of PR ${{github.event.pull_request.number}}
 
 on:
-  merge_group:
+  pull_request:
     types:
-      - checks_requested
+      - auto_merge_enabled
 
   workflow_dispatch:
     inputs:
