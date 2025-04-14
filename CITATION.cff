@@ -1,98 +1,133 @@
 # Citation information for this repository.                         -*- yaml -*-
 #
-# CITATION.cff files provide human- & machine-readable citation information for
-# software and datasets. GitHub, Zenodo, and the Zotero browser plugin all use
-# CFF files automatically if provided. https://citation-file-format.github.io/.
+# CITATION.cff provide human- & machine-readable citation info for software and
+# datasets. GitHub, Zenodo, and the Zotero browser plugin all use CFF files
+# automatically. Tools exist to generate CITATION.cff files from other formats
+# such as BibTeX. For more info, visit https://citation-file-format.github.io/.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 cff-version: 1.2.0
-message: If you use this software, please cite it using this metadata.
+message: >-
+  Please cite your use of OpenFermion using the reference metadata provided here.
 
-# CITATION.cff files describe how to cite software or datasets, with the goal of
-# making software and data be citable in their own right. However, sometimes
-# projects want citations to go to a paper instead. 'Preferred-citation' serves
-# to communicate that. The distinction matters in different situations. If this
-# field is present, GitHub uses the value for the "cite this repository" button
-# and ignores the rest of this file; conversely, the Zenodo-GitHub integration
-# ignores this field when creating an entry for a new software release because
-# the Zenodo entry is specifically about the software in this repository.
+# If preferred-citation is present, GitHub uses its value for the "cite this
+# repository" button and ignores the rest of this file; conversely, the Zenodo-
+# GitHub integration ignores this field when archiving a new software release
+# and uses the metadata in the rest of this file.
 preferred-citation:
   type: article
   authors:
     - family-names: McClean
       given-names: Jarrod R.
+      affiliation: Google LLC
     - family-names: Rubin
       given-names: Nicholas C.
+      affiliation: Google LLC
     - family-names: Sung
       given-names: Kevin J.
+      affiliation: University of Michigan, Ann Arbor, Michigan, US
     - family-names: Kivlichan
       given-names: Ian D.
+      affiliation: Google LLC
     - family-names: Bonet-Monroig
       given-names: Xavier
+      affiliation: Leiden University, Leiden, NL
     - family-names: Cao
       given-names: Yudong
+      affiliation: Harvard University, Cambridge, Massachusetts, US
     - family-names: Dai
       given-names: Chengyu
+      affiliation: University of Michigan, Ann Arbor, Michigan, US
     - family-names: Fried
       given-names: E. Schuyler
+      affiliation: Harvard University, Cambridge, Massachusetts, US
     - family-names: Gidney
       given-names: Craig
+      affiliation: Google LLC
     - family-names: Gimby
       given-names: Brendan
+      affiliation: University of Michigan, Ann Arbor, Michigan, US
     - family-names: Gokhale
       given-names: Pranav
+      affiliation: University of Chicago, Chicago, Illinois, US
     - family-names: Häner
       given-names: Thomas
+      affiliation: ETH Zurich, Zurich, CH
     - family-names: Hardikar
       given-names: Tarini
+      affiliation: Dartmouth College, Hanover, New Hampshire, US
     - family-names: Havlíček
       given-names: Vojtěch
+      affiliation: Oxford University, Oxford, UK
     - family-names: Higgott
       given-names: Oscar
+      affiliation: University College London, London, UK
     - family-names: Huang
       given-names: Cupjin
+      affiliation: University of Michigan, Ann Arbor, Michigan, US
     - family-names: Izaac
       given-names: Josh
+      affiliation: Xanadu, Toronto, CA
     - family-names: Jiang
       given-names: Zhang
+      affiliation: Google LLC
     - family-names: Liu
       given-names: Xinle
+      affiliation: Google LLC
     - family-names: McArdle
       given-names: Sam
+      affiliation: Oxford University, Oxford, UK
     - family-names: Neeley
       given-names: Matthew
+      affiliation: Google LLC
     - family-names: O'Brien
       given-names: Thomas
+      affiliation: Universiteit Leiden, Leiden, NL
     - family-names: O'Gorman
       given-names: Bryan
+      affiliation: University of California, Berkeley, California, US
     - family-names: Ozfidan
       given-names: Isil
+      affiliation: D-Wave Systems Inc., Burnaby, British Columbia, CA
     - family-names: Radin
       given-names: Maxwell D.
+      affiliation: University of California Santa Barbara, Santa Barbara, California, US
     - family-names: Romero
       given-names: Jhonathan
+      affiliation: Harvard University, Cambridge, Michigan, US
     - family-names: Sawaya
       given-names: Nicolas P. D.
+      affiliation: Harvard University, Cambridge, Michigan, US
     - family-names: Senjean
       given-names: Bruno
+      affiliation: Leiden University, Leiden, NL
     - family-names: Setia
       given-names: Kanav
+      affiliation: Dartmouth College, Hanover, New Hampshire, US
     - family-names: Sim
       given-names: Sukin
+      affiliation: Harvard University, Cambridge, Massachusetts, US
     - family-names: Steiger
       given-names: Damian S.
+      affiliation: Google LLC
     - family-names: Steudtner
       given-names: Mark
+      affiliation: Universiteit Leiden, Leiden, NL
     - family-names: Sun
       given-names: Qiming
+      affiliation: California Institute of Technology, Pasadena, California, US
     - family-names: Sun
       given-names: Wei
+      affiliation: Google LLC
     - family-names: Wang
       given-names: Daochen
+      affiliation: University of Maryland, College Park, Maryland, US
     - family-names: Zhang
       given-names: Fang
+      affiliation: University of Michigan, Ann Arbor, Michigan, US
     - family-names: Babbush
       given-names: Ryan
+      affiliation: Google LLC
   title: 'OpenFermion: The Electronic Structure Package for Quantum Computers'
   year: 2020
   journal: Quantum Science and Technology
@@ -100,7 +135,7 @@ preferred-citation:
   issue: 3
   doi: 10.1088/2058-9565/ab8ebc
 
-# The remaining metadata describes the current software release.
+# The remaining metadata in this file describes the current software release.
 
 title: OpenFermion
 authors:
@@ -113,6 +148,12 @@ repository-code: https://github.com/quantumlib/openfermion
 license: Apache-2.0
 type: software
 identifiers:
+  - description: Publication about OpenFermion
+    value: 10.1088/2058-9565/ab8ebc
+    type: doi
+  - description: Preprint publication about OpenFermion
+    value: 10.48550/arXiv.1710.07629
+    type: doi
   - description: The home page for OpenFermion
     value: https://quantumai.google/openfermion
     type: url
