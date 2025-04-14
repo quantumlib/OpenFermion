@@ -1,12 +1,27 @@
-# Summary: run nightly tests and scans.
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Nightly tests and scans workflow.
 #
 # This workflow runs nightly to run tests & scans on the OpenFermion codebase.
 # It can also be invoked manually via the "Run workflow" button at
 # https://github.com/quantumlib/OpenFermion/actions/workflows/nightly.yaml
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: Nightly full tests
-run-name: Run nightly tests and code scans in ${{github.repository}}
+name: 'Nightly tests & scans'
+run-name: Run nightly tests and code scans
 
 on:
   schedule:
@@ -20,36 +35,37 @@ permissions: read-all
 
 jobs:
   cirq-stable:
-    name: Pytest Cirq stable release
+    name: Nightly Pytest Cirq stable
     uses: ./.github/workflows/nightly-pytest.yaml
     with:
       args: ''
-      reason: nightly
+      reason: '(nightly)'
 
   cirq-pre:
-    name: Pytest Cirq pre-release
+    name: Nightly Pytest Cirq pre-release
     uses: ./.github/workflows/nightly-pytest.yaml
     with:
       args: '--pre'
-      reason: nightly
+      reason: '(nightly)'
 
   codeql:
-    name: CodeQL code scan
+    name: Nightly CodeQL code scan
     uses: ./.github/workflows/codeql.yaml
     permissions: write-all
     with:
-      reason: nightly
-
-  scorecard:
-    name: Scorecard code scan
-    uses: ./.github/workflows/scorecard.yaml
-    permissions: write-all
-    with:
-      reason: nightly
+      reason: '(nightly)'
 
   osv:
-    name: OSV code scan
+    name: Nightly OSV code scan
     uses: ./.github/workflows/osv-scanner.yaml
     permissions: write-all
     with:
-      reason: nightly
+      reason: '(nightly)'
+
+  scorecard:
+    name: Nightly Scorecard analysis
+    uses: ./.github/workflows/scorecard.yaml
+    permissions: write-all
+    secrets: inherit
+    with:
+      reason: '(nightly)'

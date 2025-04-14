@@ -13,15 +13,20 @@
 # limitations under the License.
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Hadolint (Dockerfile linter) used in this project's CI checks.
-# Info about options can be found at https://github.com/hadolint/hadolint/.
+# Project configuration for jsonlint (https://github.com/prantlf/jsonlint).
+# Note: there are multiple programs named jsonlint. The one targeted by this
+# config file is an updated fork of a different "jsonlint".
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-format: tty
-no-color: false
-no-fail: false
-failure-threshold: error
-ignored:
-  - DL3025
-  - DL3047
-  - DL3059
+comments: false
+compact: true
+continue: true
+endOfLine: lf
+indent: 2
+log-files: false
+no-duplicate-keys: true
+patterns:
+  - '**/*.json'
+  - '!**/node_modules'
+singleQuote: false
+trailing-commas: false

@@ -1,158 +1,124 @@
+# Citation information for this repository.                         -*- yaml -*-
+#
+# CITATION.cff files provide human- & machine-readable citation information for
+# software and datasets. GitHub, Zenodo, and the Zotero browser plugin all use
+# CFF files automatically if provided. https://citation-file-format.github.io/.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 cff-version: 1.2.0
-message: If you use OpenFermion, please cite it using this metadata.
+message: If you use this software, please cite it using this metadata.
 
-title: OpenFermion
-
-abstract: The electronic structure package for quantum computers.
-
-authors:
-- name: The OpenFermion Developers
-
-version: 1.7.0
-
-date-released: 2024-02-08
-
-url: https://github.com/quantumlib/openfermion
-
-repository-code: https://github.com/quantumlib/openfermion
-
-license: Apache-2.0
-
-type: software
-
+# CITATION.cff files describe how to cite software or datasets, with the goal of
+# making software and data be citable in their own right. However, sometimes
+# projects want citations to go to a paper instead. 'Preferred-citation' serves
+# to communicate that. The distinction matters in different situations. If this
+# field is present, GitHub uses the value for the "cite this repository" button
+# and ignores the rest of this file; conversely, the Zenodo-GitHub integration
+# ignores this field when creating an entry for a new software release because
+# the Zenodo entry is specifically about the software in this repository.
 preferred-citation:
+  type: article
   authors:
     - family-names: McClean
       given-names: Jarrod R.
-
     - family-names: Rubin
       given-names: Nicholas C.
-
     - family-names: Sung
       given-names: Kevin J.
-
     - family-names: Kivlichan
       given-names: Ian D.
-
     - family-names: Bonet-Monroig
       given-names: Xavier
-
     - family-names: Cao
       given-names: Yudong
-
     - family-names: Dai
       given-names: Chengyu
-
     - family-names: Fried
       given-names: E. Schuyler
-
     - family-names: Gidney
       given-names: Craig
-
     - family-names: Gimby
       given-names: Brendan
-
     - family-names: Gokhale
       given-names: Pranav
-
     - family-names: Häner
       given-names: Thomas
-
     - family-names: Hardikar
       given-names: Tarini
-
     - family-names: Havlíček
       given-names: Vojtěch
-
     - family-names: Higgott
       given-names: Oscar
-
     - family-names: Huang
       given-names: Cupjin
-
     - family-names: Izaac
       given-names: Josh
-
     - family-names: Jiang
       given-names: Zhang
-
     - family-names: Liu
       given-names: Xinle
-
     - family-names: McArdle
       given-names: Sam
-
     - family-names: Neeley
       given-names: Matthew
-
     - family-names: O'Brien
       given-names: Thomas
-
     - family-names: O'Gorman
       given-names: Bryan
-
     - family-names: Ozfidan
       given-names: Isil
-
     - family-names: Radin
       given-names: Maxwell D.
-
     - family-names: Romero
       given-names: Jhonathan
-
     - family-names: Sawaya
       given-names: Nicolas P. D.
-
     - family-names: Senjean
       given-names: Bruno
-
     - family-names: Setia
       given-names: Kanav
-
     - family-names: Sim
       given-names: Sukin
-
     - family-names: Steiger
       given-names: Damian S.
-
     - family-names: Steudtner
       given-names: Mark
-
     - family-names: Sun
       given-names: Qiming
-
     - family-names: Sun
       given-names: Wei
-
     - family-names: Wang
       given-names: Daochen
-
     - family-names: Zhang
       given-names: Fang
-
     - family-names: Babbush
       given-names: Ryan
-  title: "OpenFermion: The Electronic Structure Package for Quantum Computers"
-  type: article
-  journal: Quantum Science and Technology
+  title: 'OpenFermion: The Electronic Structure Package for Quantum Computers'
   year: 2020
+  journal: Quantum Science and Technology
   volume: 5
   issue: 3
   doi: 10.1088/2058-9565/ab8ebc
 
+# The remaining metadata describes the current software release.
+
+title: OpenFermion
+authors:
+- name: The OpenFermion Developers
+abstract: The electronic structure package for quantum computers.
+version: 1.7.0
+date-released: 2024-02-08
+url: https://github.com/quantumlib/openfermion
+repository-code: https://github.com/quantumlib/openfermion
+license: Apache-2.0
+type: software
 identifiers:
   - description: The home page for OpenFermion
-    type: url
-    value: https://github.com/quantumlib/OpenFermion
-
-  - description: The GitHub repository for OpenFermion
-    type: url
     value: https://quantumai.google/openfermion
-
-  - description: PyPI project for OpenFermion
     type: url
+  - description: PyPI project for OpenFermion
     value: https://pypi.org/project/openfermion
-
+    type: url
 keywords:
   - algorithms
   - API
@@ -186,6 +152,7 @@ keywords:
   - quantum
   - qubit Hamiltonians
   - qubit
+  - research
   - science
   - SDK
   - simulation

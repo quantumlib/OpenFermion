@@ -1,4 +1,19 @@
-# Summary: OpenFermion continuous integration status checks.
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# OpenFermion continuous integration status checks.
 #
 # This workflow runs various tests to verify that changes to the OpenFermion
 # codebase pass validation and conform to project format and style standards.
@@ -185,7 +200,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python with caching of pip dependencies
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -216,7 +231,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -243,7 +258,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -270,7 +285,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -310,7 +325,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -357,7 +372,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -401,7 +416,7 @@ jobs:
         # Note: deliberately not using our Python cache here b/c this runs
         # a different version of Python.
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{env.python_compat_ver}}
 
@@ -427,7 +442,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -541,7 +556,7 @@ jobs:
 
       # The next action simply fails if there are any unpinned actions.
       - name: Verify that all workflow actions have pinned versions
-        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@25ed13d0628a1601b4b44048e63cc4328ed03633
+        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@4830be28ce81da52ec70d65c552a7403821d98d4
 
       # If we didn't fail the previous check, go on to more time-consuming ones.
       - name: Install actionlint

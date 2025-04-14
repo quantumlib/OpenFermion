@@ -1,41 +1,59 @@
-# Summary: workflow for OSSF Scorecard (https://github.com/ossf/scorecard).
+# Copyright 2025 Google LLC
 #
-# Scorecard checks for security best practices. Its use is suggested in
-# Google's GitHub guidance.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Zero-configuration modular workflow to run the OSSF Scorecard scanner.
+#
+# Scorecard (https://github.com/ossf/scorecard) is a repository-scanning tool
+# that evaluates a project's security practices. Its use is suggested by
+# Google's GitHub team. Scorecard's findings are reported in a repo's scanning
+# results page, https://github.com/quantumlib/REPO/security/code-scanning/.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: Scorecard analysis
-run-name: Do ${{inputs.reason}} Scorecard analysis
+run-name: Run Scorecard best-practices analyzer ${{inputs.reason}}
 
 on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+      - master
+
+  # Support merge queues.
   merge_group:
     types:
       - checks_requested
 
+  # Allow manual invocation.
+  workflow_dispatch:
+
   # Allow calling from nightly.yaml.
   workflow_call:
     inputs:
-      # Why is this workflow being called?
       reason:
         type: string
-        required: false
-
-  # Allow manual invocation.
-  workflow_dispatch:
 
 # Declare default permissions as read only.
 permissions: read-all
 
 jobs:
   scorecard:
-    name: Run
-    runs-on: ubuntu-22.04
+    name: Run Scorecard analyzer
+    runs-on: ubuntu-24.04
+    permissions: write-all
     timeout-minutes: 15
-    permissions:
-      # Needed to upload the results to code-scanning dashboard.
-      security-events: write
-      # Needed to publish results and get a badge (see publish_results below).
-      id-token: write
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -46,7 +64,7 @@ jobs:
         uses: ossf/scorecard-action@f49aabe0b5af0936a0987cfb85d86b75731b0186 # v2.4.1
         with:
           # Save the results
-          results_file: results.sarif
+          results_file: scorecard-results.sarif
           results_format: sarif
 
           # Publish results to OpenSSF REST API.
@@ -54,6 +72,6 @@ jobs:
           publish_results: true
 
       - name: Upload results to code-scanning dashboard
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3
+        uses: github/codeql-action/upload-sarif@45775bd8235c68ba998cffa5171334d58593da47 # v3
         with:
-          sarif_file: results.sarif
+          sarif_file: scorecard-results.sarif
