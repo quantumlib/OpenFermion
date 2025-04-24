@@ -16,10 +16,10 @@ from openfermion.ops.operators import FermionOperator
 def one_body_fermion_constraints(n_orbitals, n_fermions):
     """Generates one-body positivity constraints on fermionic RDMs.
 
-        The specific constraints implemented are known positivity constraints
-        on the one-fermion reduced density matrices. Constraints are generated
-        in the form of FermionOperators whose expectation value is known to be
-        zero for any N-Representable state. Generators are used for efficiency.
+    The specific constraints implemented are known positivity constraints
+    on the one-fermion reduced density matrices. Constraints are generated
+    in the form of FermionOperators whose expectation value is known to be
+    zero for any N-Representable state. Generators are used for efficiency.
 
     Args:
         n_orbitals(int): number of spin-orbitals on which operators act.
@@ -48,10 +48,10 @@ def one_body_fermion_constraints(n_orbitals, n_fermions):
 def two_body_fermion_constraints(n_orbitals, n_fermions):
     """Generates two-body positivity constraints on fermionic RDMs.
 
-        The specific constraints implemented are known positivity constraints
-        on the two-fermion reduced density matrices. Constraints are generated
-        in the form of FermionOperators whose expectation value is known to be
-        zero for any N-Representable state. Generators are used for efficiency.
+    The specific constraints implemented are known positivity constraints
+    on the two-fermion reduced density matrices. Constraints are generated
+    in the form of FermionOperators whose expectation value is known to be
+    zero for any N-Representable state. Generators are used for efficiency.
 
     Args:
         n_orbitals(int): number of spin-orbitals on which operators act.

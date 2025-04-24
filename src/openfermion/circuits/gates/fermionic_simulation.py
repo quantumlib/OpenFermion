@@ -52,6 +52,7 @@ def state_swap_eigen_component(x: str, y: str, sign: int = 1, angle: float = 0):
     """The +/- eigen-component of the operation that swaps states x and y.
 
     For example, state_swap_eigen_component('01', '10', ±1) with angle θ returns
+
         ┌                               ┐
         │0, 0,           0,            0│
         │0, 0.5,         ±0.5 e^{-iθ}, 0│
@@ -102,7 +103,7 @@ def fermionic_simulation_gates_from_interaction_operator(
 ):
     r"""
     Given $H = \sum_{I \subset [n]} H_I$, returns gates
-    $\left\{G_I\right\} = \left\{e^{i H_I\right\}$.
+    $\left\{G_I\right\} = \left\{e^{i H_I}\right\}$.
 
     Each term $H_I$ is the sum of all terms in $H$ that involve exactly the
     orbitals $I$.

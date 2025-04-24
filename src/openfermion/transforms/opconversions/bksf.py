@@ -53,11 +53,19 @@ def bravyi_kitaev_fast_interaction_op(iop: InteractionOperator) -> QubitOperator
     The electronic Hamiltonian is represented in terms of creation and
     annihilation operators. These creation and annihilation operators could be
     used to define Majorana modes as follows:
+
+    $$
         c_{2i} = a_i + a^{\dagger}_i,
         c_{2i+1} = (a_i - a^{\dagger}_{i})/(1j)
+    $$
+
     These Majorana modes can be used to define edge operators B_i and A_{ij}:
+
+    $$
         B_i=c_{2i}c_{2i+1},
         A_{ij}=c_{2i}c_{2j}
+    $$
+
     using these edge operators the fermionic algebra can be generated and
     hence all the terms in the electronic Hamiltonian can be expressed in
     terms of edge operators. The terms in electronic Hamiltonian can be

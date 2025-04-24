@@ -51,7 +51,7 @@ def bogoliubov_transform(
     given by
 
     $$
-        b^\dagger_p = \sum_{q=1}^N W_{pq} a^\dagger_q
+        b^\dagger_p = \sum_{q=1}^N W_{pq} a^\dagger_q \\
                       + \sum_{q=N+1}^{2N} W_{pq} a_q.
     $$
 
