@@ -22,30 +22,30 @@ class RichardsonGaudin(DOCIHamiltonian):
     r"""Richardson Gaudin model.
 
     Class for storing and constructing Richardson Gaudin hamiltonians
-    combining an equi-distant potential ladder like potential per
+    combining an equidistant potential ladder like potential per
     qubit with a uniform coupling between any pair of
-    qubits with coupling strength g, which can be either attractive
-    (g<0) or repulsive (g>0).
+    qubits with coupling strength `g`, which can be either attractive
+    (`g<0`) or repulsive (`g>0`).
 
-    The operators represented by this class has the form:
+    The operators represented by this class have the form:
 
-    .. math::
-
+    $$
         H = \sum_{p=0} (p + 1) N_p + g/2 \sum_{p < q} P_p^\dagger P_q,
+    $$
 
     where
 
-    .. math::
-
+    $$
         \begin{align}
         N_p &= (1 - \sigma^Z_p)/2, \\
         P_p &= a_{p,\beta} a_{p,\alpha} = S^{-} = \sigma^X + i \sigma^Y, \\
         g &= constant coupling term
         \end{align}
+    $$
 
     Note;
         The diagonal of the Hamiltonian is composed of the values in
-        range((n_qubits+1)*n_qubits//2+1).
+        `range((n_qubits+1)*n_qubits//2+1)`.
     """
 
     def __init__(self, g, n_qubits):

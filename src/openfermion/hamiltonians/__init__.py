@@ -56,6 +56,7 @@ from .plane_wave_hamiltonian import (
 
 from .special_operators import (
     s_plus_operator,
+    s_minus_operator,
     s_squared_operator,
     sx_operator,
     sy_operator,

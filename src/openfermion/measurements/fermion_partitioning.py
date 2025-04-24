@@ -22,16 +22,16 @@ def pair_within(labels: list) -> list:
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
 
-    labels = [1, 2, 3, 4, 5, 6, 7, 8]
+        labels = [1, 2, 3, 4, 5, 6, 7, 8]
 
     could be
 
-    [(1, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 2), (3, 4), (5, 6), (7, 8)]
 
     (Note that we insist each element only appears in a pairing once; the
     following is not a pairing:
 
-    [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
 
     This function generates a set of len(labels)-1 such pairings of the input
     list labels, such that each element in labels is paired with each other
@@ -86,16 +86,16 @@ def pair_between(frag1: list, frag2: list, start_offset: int = 0) -> tuple:
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
 
-    labels = [1, 2, 3, 4, 5, 6, 7, 8]
+        labels = [1, 2, 3, 4, 5, 6, 7, 8]
 
     could be
 
-    [(1, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 2), (3, 4), (5, 6), (7, 8)]
 
     (Note that we insist each element only appears in a pairing once; the
     following is not a pairing:
 
-    [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
 
     This function generates a set of pairings between elements of frag1
     and frag2 such that element1 in frag 1 and element2 in frag2,
@@ -202,16 +202,16 @@ def pair_within_simultaneously(labels: list) -> tuple:
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
 
-    labels = [1, 2, 3, 4, 5, 6, 7, 8]
+        labels = [1, 2, 3, 4, 5, 6, 7, 8]
 
     could be
 
-    [(1, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 2), (3, 4), (5, 6), (7, 8)]
 
     (Note that we insist each element only appears in a pairing once; the
     following is not a pairing:
 
-    [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
 
     This function generates a set of pairings such that for every four elements
     (i,j,k,l) in 'labels', there exists one pairing containing both (i,j) and
@@ -372,16 +372,16 @@ def pair_within_simultaneously_binned(binned_majoranas: list) -> tuple:
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
 
-    labels = [1, 2, 3, 4, 5, 6, 7, 8]
+        labels = [1, 2, 3, 4, 5, 6, 7, 8]
 
     could be
 
-    [(1, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 2), (3, 4), (5, 6), (7, 8)]
 
     (Note that we insist each element only appears in a pairing once; the
     following is not a pairing:
 
-    [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
 
     This function generates a pairing of a list of Majoranas that covers
     all 2-RDM elements that conserve a set of symmetry conditions. That is,
@@ -431,16 +431,16 @@ def pair_within_simultaneously_symmetric(num_fermions: int, num_symmetries: int)
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
 
-    labels = [1, 2, 3, 4, 5, 6, 7, 8]
+        labels = [1, 2, 3, 4, 5, 6, 7, 8]
 
     could be
 
-    [(1, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 2), (3, 4), (5, 6), (7, 8)]
 
     (Note that we insist each element only appears in a pairing once; the
     following is not a pairing:
 
-    [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
+        [(1, 1), (2, 2), (3, 4), (5, 6), (7, 8)]
 
     This function generates a pairing of a list of Majoranas that covers
     all 2-RDM elements that conserve a set of symmetry conditions. That is,

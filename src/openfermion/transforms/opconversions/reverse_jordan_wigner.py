@@ -21,9 +21,12 @@ def reverse_jordan_wigner(qubit_operator, n_qubits=None):
     Jordan-Wigner transform.
 
     Operators are mapped as follows:
-    Z_j -> I - 2 a^\dagger_j a_j
-    X_j -> (a^\dagger_j + a_j) Z_{j-1} Z_{j-2} .. Z_0
-    Y_j -> i (a^\dagger_j - a_j) Z_{j-1} Z_{j-2} .. Z_0
+
+    $$
+        Z_j -> I - 2 a^\dagger_j a_j
+        X_j -> (a^\dagger_j + a_j) Z_{j-1} Z_{j-2} .. Z_0
+        Y_j -> i (a^\dagger_j - a_j) Z_{j-1} Z_{j-2} .. Z_0
+    $$
 
     Args:
         qubit_operator: the QubitOperator to be transformed.
