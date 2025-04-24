@@ -15,10 +15,11 @@ def make_reduced_hamiltonian(
     lift the 1-body terms to the two-body space.
 
     Derivation:
-        use the fact that i^l = (1/(n -1)) sum_{jk}\delta_{jk}i^ j^ k l
-                          i^l = (-1/(n -1)) sum_{jk}\delta_{jk}j^ i^ k l
-                          i^l = (-1/(n -1)) sum_{jk}\delta_{jk}i^ j^ l k
-                          i^l = (1/(n -1)) sum_{jk}\delta_{jk}j^ i^ l k
+        use the fact that
+        - $i^l = (1/(n -1)) sum_{jk}\delta_{jk}i^ j^ k l$
+        - $i^l = (-1/(n -1)) sum_{jk}\delta_{jk}j^ i^ k l$
+        - $i^l = (-1/(n -1)) sum_{jk}\delta_{jk}i^ j^ l k$
+        - $i^l = (1/(n -1)) sum_{jk}\delta_{jk}j^ i^ l k$
 
         Rewrite each one-body term as an even weighting of all four 2-RDM
         elements with delta functions. Then rearrange terms so that each ijkl

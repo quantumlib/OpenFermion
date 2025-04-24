@@ -63,6 +63,7 @@ class FermiHubbardModel:
     form
 
     $$
+        \begin{align}
         H = &- \sum_{a < b} t_{a, b}^{(\mathrm{onsite})}
                \sum_{i} \sum_{\sigma}
                      (a^\dagger_{i, a, \sigma} a_{i, b, \sigma} +
@@ -104,6 +105,7 @@ class FermiHubbardModel:
             \\
             &- h \sum_{i} \sum_{a}
                 \left(n_{i, a, \uparrow} - n_{i, a, \downarrow}\right)
+        \end{align}
     $$
 
     where
@@ -159,6 +161,7 @@ class FermiHubbardModel:
             &- \sum_{a} \mu_a
                \sum_i n_{i, a}
         \end{align}
+    $$
     """
 
     def __init__(

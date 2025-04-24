@@ -12,7 +12,7 @@ def erpa_eom_hamiltonian(
     h_ijkl: numpy.ndarray, tpdm: numpy.ndarray, p: int, q: int, r: int, s: int
 ) -> Union[float, complex]:
     """
-    Evaluate sum_{a,b,c,d}h_{a, b, d, c}<psi[p^ q, [a^ b^ c d, r^ s]]psi>
+    Evaluate $\sum_{a,b,c,d}h_{a, b, d, c}<\psi[p^ q, [a^ b^ c d, r^ s]]\psi>$
 
     Args:
         h_ijkl: two-body integral tensors of full reduced Hamiltonian
@@ -84,7 +84,7 @@ def singlet_erpa(
     """
     Generate the singlet ERPA equations
 
-    [ea + eb, [H, sa, sb]] = [ea, [H, sa]]
+        [ea + eb, [H, sa, sb]] = [ea, [H, sa]]
 
     The erpa equations are solved with scipy.linalg.eig which calls
     lapack's geev

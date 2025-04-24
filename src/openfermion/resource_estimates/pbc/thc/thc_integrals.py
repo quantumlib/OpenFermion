@@ -70,14 +70,14 @@ class KPTHCDoubleTranslation:
     def get_eri(self, ikpts: list) -> npt.NDArray:
         r"""Construct ERIs given kpt indices.
 
-        .. math::
-
+        $$
             (pkp qkq| rkr sks) = \\sum_{mu nu} zeta[iq, dG, dG', mu, nu]
             chi[kp,p,mu]* chi[kq,q,mu] chi[kp,p,nu]* chi[ks,s,nu]
+        $$
 
         Arguments:
             ikpts: list of four integers representing the index of the kpoint in
-                self.kmf.kpts
+                `self.kmf.kpts`
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])

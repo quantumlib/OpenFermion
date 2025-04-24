@@ -34,7 +34,7 @@ class InteractionOperator(PolynomialTensor):
     class take the form:
 
         $$
-            constant + \sum_{p, q} h_{p, q} a^\dagger_p a_q +
+            \text{constant} + \sum_{p, q} h_{p, q} a^\dagger_p a_q +
             \sum_{p, q, r, s} h_{p, q, r, s} a^\dagger_p a^\dagger_q a_r a_s.
         $$
 

@@ -48,7 +48,7 @@ def s_plus_operator(n_spatial_orbitals: int) -> FermionOperator:
 
 
 def s_minus_operator(n_spatial_orbitals: int) -> FermionOperator:
-    r"""Return the s+ operator.
+    r"""Return the s- operator.
 
     $$
         \begin{align}
