@@ -25,8 +25,11 @@ def jordan_wigner(operator):
     to a QubitOperator.
 
     Operators are mapped as follows:
-    a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
-    a_j -> Z_0 .. Z_{j-1} (X_j + iY_j) / 2
+
+    $$
+        a_j^\dagger -> Z_0 .. Z_{j-1} (X_j - iY_j) / 2
+        a_j -> Z_0 .. Z_{j-1} (X_j + iY_j) / 2
+    $$
 
     Returns:
         transformed_operator: An instance of the QubitOperator class.

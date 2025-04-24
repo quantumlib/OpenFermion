@@ -44,8 +44,8 @@ def weyl_polynomial_quantization(polynomial):
     The Weyl quantization is performed by applying McCoy's formula
     directly to a polynomial term of the form q^m p^n:
 
-    q^m p^n ->
-        (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) \hat{q}^r \hat{p}^m q^{n-r}
+    $q^m p^n ->
+        (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) \hat{q}^r \hat{p}^m q^{n-r}$
 
     where q and p are phase space variables, and \hat{q} and \hat{p}
     are quadrature operators.
@@ -111,7 +111,7 @@ def symmetric_ordering(operator, ignore_coeff=True, ignore_identity=True):
     The symmetric ordering is performed by applying McCoy's formula
     directly to polynomial terms of quadrature operators:
 
-    q^m p^n -> (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) q^r p^m q^{n-r}
+    $q^m p^n -> (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) q^r p^m q^{n-r}$
 
     Note: in general, symmetric ordering is performed on a single term
     containing the tensor product of various operators. However, this

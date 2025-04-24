@@ -120,7 +120,7 @@ def rotate_qubit_by_pauli(qop, pauli, angle):
     r"""
     Rotate qubit operator by exponential of Pauli.
 
-    Perform the rotation e^{-i \theta * P}Qe^{i \theta * P}
+    Perform the rotation $e^{-i \theta * P}Qe^{i \theta * P}$
     on a qubitoperator Q and a Pauli operator P.
 
     Args:

@@ -166,6 +166,7 @@ def get_majorana_operator(
 
     Uses the convention of even + odd indexing of Majorana modes derived from
     a fermionic mode:
+
         fermion annhil.  c_k  -> ( gamma_{2k} + 1.j * gamma_{2k+1} ) / 2
         fermion creation c^_k -> ( gamma_{2k} - 1.j * gamma_{2k+1} ) / 2
 
