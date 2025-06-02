@@ -394,9 +394,9 @@ def spinorb_from_spatial(one_body_integrals, two_body_integrals):
                     two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = two_body_integrals[
                         p, q, r, s
                     ]
-                    two_body_coefficients[
-                        2 * p + 1, 2 * q + 1, 2 * r + 1, 2 * s + 1
-                    ] = two_body_integrals[p, q, r, s]
+                    two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r + 1, 2 * s + 1] = (
+                        two_body_integrals[p, q, r, s]
+                    )
 
     # Truncate.
     one_body_coefficients[numpy.absolute(one_body_coefficients) < EQ_TOLERANCE] = 0.0
@@ -1025,11 +1025,9 @@ class MolecularData(object):
             one_body_integrals, two_body_integrals = self.get_integrals()
             constant = self.nuclear_repulsion
         else:
-            (
-                core_adjustment,
-                one_body_integrals,
-                two_body_integrals,
-            ) = self.get_active_space_integrals(occupied_indices, active_indices)
+            (core_adjustment, one_body_integrals, two_body_integrals) = (
+                self.get_active_space_integrals(occupied_indices, active_indices)
+            )
             constant = self.nuclear_repulsion + core_adjustment
 
         one_body_coefficients, two_body_coefficients = spinorb_from_spatial(
