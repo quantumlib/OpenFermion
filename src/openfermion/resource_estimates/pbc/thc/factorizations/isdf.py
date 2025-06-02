@@ -575,12 +575,9 @@ def kpoint_isdf_double_translation(
     num_kpts = len(kpts)
     num_interp_points = xi.shape[1]
     assert xi.shape == (num_grid_points, num_interp_points)
-    (
-        g_vectors,
-        g_mapping,
-        g_mapping_unique,
-        delta_gs_unique,
-    ) = build_g_vector_mappings_double_translation(df_inst.cell, kpts, momentum_map)
+    (g_vectors, g_mapping, g_mapping_unique, delta_gs_unique) = (
+        build_g_vector_mappings_double_translation(df_inst.cell, kpts, momentum_map)
+    )
     if only_unique_g:
         g_mapping = g_mapping_unique
         delta_gs = delta_gs_unique
