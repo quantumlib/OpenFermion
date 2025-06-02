@@ -295,7 +295,6 @@ class BinaryCode(object):
 
     def __str__(self):
         """Return an easy-to-read string representation."""
-        # string_return = [list(map(list, self.encoder.toarray()))]
 
         def convert_to_native(value):
             return getattr(value, "tolist", lambda: value)()
