@@ -11,9 +11,9 @@
 #   limitations under the License.
 
 import os
+import random
 import pytest
 import numpy as np
-import random
 
 
 def pytest_configure(config):
