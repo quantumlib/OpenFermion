@@ -169,8 +169,10 @@ def get_tensors_from_integrals(one_body_integrals, two_body_integrals):
     n_qubits = 2 * one_body_integrals.shape[0]
 
     # Initialize Hamiltonian coefficients.
-    one_body_coefficients = numpy.zeros((n_qubits, n_qubits))
-    two_body_coefficients = numpy.zeros((n_qubits, n_qubits, n_qubits, n_qubits))
+    one_dtype = one_body_integrals.dtype
+    two_dtype = two_body_integrals.dtype
+    one_body_coefficients = numpy.zeros((n_qubits, n_qubits), dtype=one_dtype)
+    two_body_coefficients = numpy.zeros((n_qubits, n_qubits, n_qubits, n_qubits), dtype=two_dtype)
     # Loop through integrals.
     for p in range(n_qubits // 2):
         for q in range(n_qubits // 2):
