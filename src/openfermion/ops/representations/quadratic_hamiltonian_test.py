@@ -121,13 +121,15 @@ class QuadraticHamiltonianTest(unittest.TestCase):
     def test_orbital_energies(self):
         """Test getting the orbital energies."""
         # Test the particle-number-conserving case
-        orbital_energies, constant = self.quad_ham_pc.orbital_energies()
+        orbital_energies, _, constant = self.quad_ham_pc.diagonalizing_bogoliubov_transform()
+
         # Test the ground energy
         energy = numpy.sum(orbital_energies[orbital_energies < 0.0]) + constant
         self.assertAlmostEqual(energy, self.pc_ground_energy)
 
         # Test the non-particle-number-conserving case
-        orbital_energies, constant = self.quad_ham_npc.orbital_energies()
+        orbital_energies, _, constant = self.quad_ham_npc.diagonalizing_bogoliubov_transform()
+
         # Test the ground energy
         energy = constant
         self.assertAlmostEqual(energy, self.npc_ground_energy)
@@ -265,11 +267,9 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         quad_ham = get_quadratic_hamiltonian(reorder(get_fermion_operator(quad_ham), up_then_down))
 
         for spin_sector in range(2):
-            (
-                orbital_energies,
-                transformation_matrix,
-                _,
-            ) = quad_ham.diagonalizing_bogoliubov_transform(spin_sector=spin_sector)
+            (orbital_energies, transformation_matrix, _) = (
+                quad_ham.diagonalizing_bogoliubov_transform(spin_sector=spin_sector)
+            )
 
             def index_map(i):
                 return i + spin_sector * 5
@@ -286,7 +286,7 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         quad_ham = random_quadratic_hamiltonian(
             5, conserves_particle_number=True, expand_spin=False
         )
-        orbital_energies, _ = quad_ham.orbital_energies()
+        orbital_energies, _, _ = quad_ham.diagonalizing_bogoliubov_transform()
 
         _, transformation_matrix, _ = quad_ham.diagonalizing_bogoliubov_transform()
         numpy.testing.assert_allclose(
@@ -337,7 +337,9 @@ class DiagonalizingCircuitTest(unittest.TestCase):
             numpy.testing.assert_allclose(discrepancy, 0.0, atol=1e-7)
 
             # Check that the eigenvalues are in the expected order
-            orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+            orbital_energies, _, constant = (
+                quadratic_hamiltonian.diagonalizing_bogoliubov_transform()
+            )
             for index in range(2**n_qubits):
                 bitstring = bin(index)[2:].zfill(n_qubits)
                 subset = [j for j in range(n_qubits) if bitstring[j] == '1']
@@ -374,7 +376,9 @@ class DiagonalizingCircuitTest(unittest.TestCase):
             numpy.testing.assert_allclose(discrepancy, 0.0, atol=1e-7)
 
             # Check that the eigenvalues are in the expected order
-            orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+            orbital_energies, _, constant = (
+                quadratic_hamiltonian.diagonalizing_bogoliubov_transform()
+            )
             for index in range(2**n_qubits):
                 bitstring = bin(index)[2:].zfill(n_qubits)
                 subset = [j for j in range(n_qubits) if bitstring[j] == '1']

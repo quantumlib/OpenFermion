@@ -103,11 +103,9 @@ def gaussian_state_preparation_circuit(
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
 
-    (
-        orbital_energies,
-        transformation_matrix,
-        _,
-    ) = quadratic_hamiltonian.diagonalizing_bogoliubov_transform(spin_sector=spin_sector)
+    (orbital_energies, transformation_matrix, _) = (
+        quadratic_hamiltonian.diagonalizing_bogoliubov_transform(spin_sector=spin_sector)
+    )
 
     if quadratic_hamiltonian.conserves_particle_number:
         if occupied_orbitals is None:
@@ -221,7 +219,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
     n_qubits = quadratic_hamiltonian.n_qubits
 
     # Compute the energy
-    orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+    orbital_energies, _, constant = quadratic_hamiltonian.diagonalizing_bogoliubov_transform()
     if occupied_orbitals is None:
         # The ground energy is desired
         if quadratic_hamiltonian.conserves_particle_number:

@@ -198,7 +198,9 @@ class JWGetGaussianStateTest(unittest.TestCase):
             )
 
             # Compute the true energy
-            orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+            orbital_energies, _, constant = (
+                quadratic_hamiltonian.diagonalizing_bogoliubov_transform()
+            )
             energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
 
             # Check that the energies match
@@ -228,7 +230,9 @@ class JWGetGaussianStateTest(unittest.TestCase):
             )
 
             # Compute the true energy
-            orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+            orbital_energies, _, constant = (
+                quadratic_hamiltonian.diagonalizing_bogoliubov_transform()
+            )
             energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
 
             # Check that the energies match

@@ -488,7 +488,7 @@ class PolynomialTensorTest(unittest.TestCase):
         # Initialize a particle-number-conserving quadratic Hamiltonian
         # and compute its orbital energies
         quad_ham = random_quadratic_hamiltonian(n_qubits, True, real=real)
-        orbital_energies, constant = quad_ham.orbital_energies()
+        orbital_energies, _, constant = quad_ham.diagonalizing_bogoliubov_transform()
 
         # Rotate a basis where the Hamiltonian is diagonal
         _, diagonalizing_unitary, _ = quad_ham.diagonalizing_bogoliubov_transform()
@@ -504,7 +504,8 @@ class PolynomialTensorTest(unittest.TestCase):
         self.assertTrue(quad_ham.conserves_particle_number)
 
         # Check that the orbital energies and constant are the same
-        new_orbital_energies, new_constant = quad_ham.orbital_energies()
+        new_orbital_energies, _, new_constant = quad_ham.diagonalizing_bogoliubov_transform()
+
         self.assertTrue(numpy.allclose(orbital_energies, new_orbital_energies))
         self.assertAlmostEqual(constant, new_constant)
 
