@@ -324,13 +324,12 @@ def geometry_from_file(file_name):
 def antisymtei(two_body_integrals):
     """
     Args:
-
-    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
-        Ordering.
+        two_body_integrals: Numpy array of two-electron integrals with
+            OpenFermion Ordering.
 
     Returns:
-    antisymints : Numpy array of anti-symmetrized integrals
-        <ij||kl> = <ij|kl> - <ij|lk> (physicist ordering).
+        antisymints : Numpy array of anti-symmetrized integrals
+            <ij||kl> = <ij|kl> - <ij|lk> (physicist ordering).
     """
     symints = numpy.copy(two_body_integrals.transpose(0, 1, 3, 2), order='C')
     antisymints = symints - two_body_integrals
@@ -340,13 +339,12 @@ def antisymtei(two_body_integrals):
 def j_mat(two_body_integrals):
     """
     Args:
-
-    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
-        Ordering.
+        two_body_integrals: Numpy array of two-electron integrals with
+            OpenFermion Ordering.
 
     Returns:
-    j_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
-        (in chemist notation).
+        j_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
+            (in chemist notation).
     """
     chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2), order='C')
     return numpy.einsum('iijj -> ij', chem_ordering)
@@ -355,13 +353,12 @@ def j_mat(two_body_integrals):
 def k_mat(two_body_integrals):
     """
     Args:
-
-    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
-        Ordering.
+        two_body_integrals: Numpy array of two-electron integrals with
+            OpenFermion Ordering.
 
     Returns:
-    k_matr : Numpy array of the exchange integrals K_{p,q} = (pq|qp)
-        (in chemist notation).
+        k_matr : Numpy array of the exchange integrals K_{p,q} = (pq|qp)
+            (in chemist notation).
     """
     chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2), order='C')
     return numpy.einsum('ijji -> ij', chem_ordering)
@@ -406,8 +403,7 @@ def spinorb_from_spatial(one_body_integrals, two_body_integrals):
 
 
 class MolecularData(object):
-    """Class for storing molecule data from a fixed basis set at a fixed.
-
+    """Class for storing molecule data from a fixed basis set at a fixed
     geometry that is obtained from classical electronic structure
     packages. Not every field is filled in every calculation. All data
     that can (for some instance) exceed 10 MB should be saved
