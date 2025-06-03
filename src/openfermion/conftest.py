@@ -9,9 +9,20 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 import os
+import random
+import pytest
+import numpy as np
 
 
 def pytest_configure(config):
     # fail tests when using deprecated cirq functionality
     os.environ['CIRQ_TESTING'] = "true"
+
+
+@pytest.fixture(autouse=True)
+def set_random_seed():
+    """Set a fixed random seed when testing."""
+    random.seed(0)
+    np.random.seed(0)
