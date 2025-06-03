@@ -14,6 +14,7 @@
 import logging
 import unittest
 
+import pytest
 import numpy
 import numpy.linalg
 import scipy.linalg
@@ -406,9 +407,10 @@ class QubitDavidsonTest(unittest.TestCase):
         initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
         numpy.random.seed(dimension * 2)
         initial_guess += numpy.random.rand(dimension, n_lowest)
-        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
-            n_lowest, initial_guess, max_iterations=10
-        )
+        with pytest.warns(RuntimeWarning):
+            success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+                n_lowest, initial_guess, max_iterations=10
+            )
 
         # one half of the eigenvalues is -1 and the other half is +1, together
         # with the coefficient.
@@ -436,9 +438,11 @@ class QubitDavidsonTest(unittest.TestCase):
         initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
         numpy.random.seed(dimension * 2)
         initial_guess += numpy.random.rand(dimension, n_lowest)
-        success, _, eigen_vectors = davidson.get_lowest_n(
-            n_lowest, initial_guess, max_iterations=10
-        )
+        with pytest.warns(RuntimeWarning, match=("Unable to get real only eigenvectors"
+                                                 "|Initial guess is not real only!")):
+            success, _, eigen_vectors = davidson.get_lowest_n(
+                n_lowest, initial_guess, max_iterations=10
+            )
 
         self.assertFalse(success)
 
@@ -458,9 +462,11 @@ class QubitDavidsonTest(unittest.TestCase):
         initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
         numpy.random.seed(dimension * 2)
         initial_guess += numpy.random.rand(dimension, n_lowest)
-        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
-            n_lowest, initial_guess, max_iterations=10
-        )
+        with pytest.warns(RuntimeWarning, match=("Unable to get real only eigenvectors"
+                                                 "|Initial guess is not real only!")):
+            success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+                n_lowest, initial_guess, max_iterations=10
+            )
 
         # one half of the eigenvalues is -1 and the other half is +1, together
         # with the coefficient.
@@ -487,9 +493,11 @@ class QubitDavidsonTest(unittest.TestCase):
         initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
         numpy.random.seed(dimension * 2)
         initial_guess += numpy.random.rand(dimension, n_lowest)
-        success, eigen_values, eigen_vectors = davidson.get_lowest_n(
-            n_lowest, initial_guess, max_iterations=10
-        )
+        with pytest.warns(RuntimeWarning, match=("Unable to get real only eigenvectors"
+                                                 "|Initial guess is not real only!")):
+            success, eigen_values, eigen_vectors = davidson.get_lowest_n(
+                n_lowest, initial_guess, max_iterations=10
+            )
 
         # one half of the eigenvalues is -1 and the other half is +1, together
         # with the coefficient.
@@ -658,7 +666,8 @@ class DavidsonUtilityTest(unittest.TestCase):
         """Test append_random_vectors() with too many failed trial."""
         row = 10
         vectors = numpy.eye(row, row)
-        new_vectors = append_random_vectors(vectors, 1)
+        with pytest.warns(RuntimeWarning):
+            new_vectors = append_random_vectors(vectors, 1)
 
         self.assertTrue(numpy.allclose(new_vectors, vectors))
 
