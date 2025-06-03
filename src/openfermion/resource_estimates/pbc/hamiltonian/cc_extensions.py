@@ -69,7 +69,6 @@ def build_approximate_eris(krcc_inst, eri_helper, eris=None):
         eri_kpt = eri_helper.get_eri(kpts) / nkpts
         if dtype == float:
             eri_kpt = eri_kpt.real
-        eri_kpt = eri_kpt
         for kp, kq, kr in khelper.symm_map[(ikp, ikq, ikr)]:
             eri_kpt_symm = khelper.transform_symm(eri_kpt, kp, kq, kr).transpose(0, 2, 1, 3)
             out_eris.oooo[kp, kr, kq] = eri_kpt_symm[:nocc, :nocc, :nocc, :nocc]
