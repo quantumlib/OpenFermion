@@ -11,7 +11,7 @@
 #   limitations under the License.
 import numpy as np
 import pytest
-from scipy.linalg import expm, kron
+from scipy.linalg import expm
 import cirq
 
 import openfermion
@@ -84,8 +84,8 @@ def test_compare_ryxxy_to_cirq_equivalent(rads):
 def test_rxxyy_unitary(rads):
     X = np.array([[0, 1], [1, 0]])
     Y = np.array([[0, -1j], [1j, 0]])
-    XX = kron(X, X)
-    YY = kron(Y, Y)
+    XX = np.kron(X, X)
+    YY = np.kron(Y, Y)
     np.testing.assert_allclose(
         cirq.unitary(openfermion.Rxxyy(rads)), expm(-1j * rads * (XX + YY) / 2), atol=1e-8
     )
@@ -97,8 +97,8 @@ def test_rxxyy_unitary(rads):
 def test_ryxxy_unitary(rads):
     X = np.array([[0, 1], [1, 0]])
     Y = np.array([[0, -1j], [1j, 0]])
-    YX = kron(Y, X)
-    XY = kron(X, Y)
+    YX = np.kron(Y, X)
+    XY = np.kron(X, Y)
     np.testing.assert_allclose(
         cirq.unitary(openfermion.Ryxxy(rads)), expm(-1j * rads * (YX - XY) / 2), atol=1e-8
     )
