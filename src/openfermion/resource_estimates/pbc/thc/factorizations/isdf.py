@@ -575,18 +575,14 @@ def kpoint_isdf_double_translation(
     num_kpts = len(kpts)
     num_interp_points = xi.shape[1]
     assert xi.shape == (num_grid_points, num_interp_points)
-    (
-        g_vectors,
-        g_mapping,
-        g_mapping_unique,
-        delta_gs_unique,
-    ) = build_g_vector_mappings_double_translation(df_inst.cell, kpts, momentum_map)
+    (g_vectors, g_mapping, g_mapping_unique, delta_gs_unique) = (
+        build_g_vector_mappings_double_translation(df_inst.cell, kpts, momentum_map)
+    )
     if only_unique_g:
         g_mapping = g_mapping_unique
         delta_gs = delta_gs_unique
     else:
         delta_gs = [g_vectors] * num_kpts
-        g_mapping = g_mapping
     zeta = np.zeros((num_kpts,), dtype=object)
     for iq in range(num_kpts):
         num_g = len(delta_gs[iq])
@@ -914,7 +910,6 @@ def solve_kmeans_kpisdf(
         weighting_function = np.einsum(
             "kRi,kRi->R", bloch_orbitals_mo.conj(), bloch_orbitals_mo, optimize=True
         )
-        weighting_function = weighting_function
     else:
         raise ValueError(f"Unknown value for weighting function {kmeans_weighting_function}")
     interp_indx = kmeans.find_interpolating_points(
