@@ -438,8 +438,10 @@ class QubitDavidsonTest(unittest.TestCase):
         initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
         numpy.random.seed(dimension * 2)
         initial_guess += numpy.random.rand(dimension, n_lowest)
-        with pytest.warns(RuntimeWarning, match=("Unable to get real only eigenvectors"
-                                                 "|Initial guess is not real only!")):
+        with pytest.warns(
+            RuntimeWarning,
+            match=("Unable to get real only eigenvectors" "|Initial guess is not real only!"),
+        ):
             success, _, eigen_vectors = davidson.get_lowest_n(
                 n_lowest, initial_guess, max_iterations=10
             )
@@ -462,8 +464,10 @@ class QubitDavidsonTest(unittest.TestCase):
         initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
         numpy.random.seed(dimension * 2)
         initial_guess += numpy.random.rand(dimension, n_lowest)
-        with pytest.warns(RuntimeWarning, match=("Unable to get real only eigenvectors"
-                                                 "|Initial guess is not real only!")):
+        with pytest.warns(
+            RuntimeWarning,
+            match=("Unable to get real only eigenvectors" "|Initial guess is not real only!"),
+        ):
             success, eigen_values, eigen_vectors = davidson.get_lowest_n(
                 n_lowest, initial_guess, max_iterations=10
             )
@@ -493,8 +497,10 @@ class QubitDavidsonTest(unittest.TestCase):
         initial_guess = 1.0j * numpy.random.rand(dimension, n_lowest)
         numpy.random.seed(dimension * 2)
         initial_guess += numpy.random.rand(dimension, n_lowest)
-        with pytest.warns(RuntimeWarning, match=("Unable to get real only eigenvectors"
-                                                 "|Initial guess is not real only!")):
+        with pytest.warns(
+            RuntimeWarning,
+            match=("Unable to get real only eigenvectors" "|Initial guess is not real only!"),
+        ):
             success, eigen_values, eigen_vectors = davidson.get_lowest_n(
                 n_lowest, initial_guess, max_iterations=10
             )
