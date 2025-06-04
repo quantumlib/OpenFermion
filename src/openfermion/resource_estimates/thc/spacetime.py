@@ -28,10 +28,6 @@ def qubit_vs_toffoli(lam, dE, eps, n, chi, beta, M, algorithm='half', verbose=Fa
         verbose (bool) - do additional printing of intermediates?
 
     """
-    # only valid algorithms accepted
-    if algorithm not in ['half', 'full']:
-        raise ValueError(f'Invalid value {algorithm} for algorithm parameter.')
-
     # The number of iterations for the phase estimation.
     iters = np.ceil(pi * lam / (dE * 2))
     # The number of bits used for each register.
@@ -487,6 +483,9 @@ def qubit_vs_toffoli(lam, dE, eps, n, chi, beta, M, algorithm='half', verbose=Fa
         )
 
         colors = [color_dict[i] for i in labels]
+
+    else:
+        raise ValueError(f'Invalid value {algorithm} for algorithm parameter.')
 
     # check lists are at least consistent
     if not all(len(element) == len(tgates) for element in [qubits, labels, colors]):
