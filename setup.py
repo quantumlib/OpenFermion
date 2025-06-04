@@ -11,13 +11,13 @@
 #   limitations under the License.
 
 import os
+import runpy
 
 from setuptools import find_packages, setup
 
 # This reads the __version__ variable from openfermion/_version.py
-__version__ = ''
-with open('src/openfermion/_version.py') as v:
-    exec(v.read())
+__version__ = runpy.run_path('src/openfermion/_version.py')['__version__']
+assert __version__, 'Version string cannot be empty'
 
 # The readme file is used as the long_description:
 long_description = '===========\n' + 'OpenFermion\n' + '===========\n\n'
