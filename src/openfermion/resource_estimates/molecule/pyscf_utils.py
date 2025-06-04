@@ -1,5 +1,5 @@
 # coverage:ignore
-""" Drivers for various PySCF electronic structure routines """
+"""Drivers for various PySCF electronic structure routines"""
 from typing import Tuple, Optional
 import sys
 import h5py
