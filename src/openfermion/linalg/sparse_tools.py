@@ -1162,6 +1162,8 @@ def single_quad_op_sparse(n_modes, mode, quadrature, hbar, trunc):
         op = numpy.sqrt(hbar / 2) * (b + b.conj().T)
     elif quadrature == 'p':
         op = -1j * numpy.sqrt(hbar / 2) * (b - b.conj().T)
+    else:
+        raise ValueError(f'Invalid value {quadrature} for quadrature parameter.')
 
     Id = [scipy.sparse.identity(trunc, dtype=complex, format='csc')]
     operator_list = Id * mode + [op] + Id * (n_modes - mode - 1)
