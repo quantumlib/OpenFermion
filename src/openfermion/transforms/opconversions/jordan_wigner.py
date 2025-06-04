@@ -294,6 +294,8 @@ def jordan_wigner_two_body(p, q, r, s, coefficient=1.0):
                 a, b = p, r
                 coefficient = -coefficient
             c = q
+        else:
+            raise RuntimeError('Invalid parameter combination.')
 
         # Get operators.
         parity_string = tuple((z, 'Z') for z in range(a + 1, b))
