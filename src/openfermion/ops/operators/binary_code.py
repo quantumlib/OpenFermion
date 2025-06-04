@@ -9,7 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-""" Binary code class for Fermion-qubit mappings (arXiv:1712.07067) """
+"""Binary code class for Fermion-qubit mappings (arXiv:1712.07067)."""
 
 import copy
 
@@ -45,7 +45,7 @@ def shift_decoder(decoder, shift_constant):
 
 
 def double_decoding(decoder_1, decoder_2):
-    """Concatenates two decodings
+    """Concatenates two decodings.
 
     Args:
         decoder_1 (iterable): list of BinaryPolynomial
@@ -215,6 +215,7 @@ class BinaryCode(object):
 
     def __imul__(self, factor):
         """In-place code concatenation or appendage via *= .
+
         Multiplication with integer will yield appendage, otherwise
         concatenation.
 
@@ -258,7 +259,8 @@ class BinaryCode(object):
             return self
 
     def __mul__(self, factor):
-        """Concatenation of two codes or appendage the same code factor times
+        """Concatenation of two codes or appendage the same code factor times.
+
         in case of integer factor.
 
         Args:
@@ -293,7 +295,11 @@ class BinaryCode(object):
 
     def __str__(self):
         """Return an easy-to-read string representation."""
-        string_return = [list(map(list, self.encoder.toarray()))]
+
+        def convert_to_native(value):
+            return getattr(value, "tolist", lambda: value)()
+
+        string_return = [list(map(list, convert_to_native(self.encoder.toarray())))]
 
         dec_str = '['
         for term in self.decoder:

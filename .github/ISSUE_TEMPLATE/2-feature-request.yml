@@ -1,0 +1,43 @@
+name: Feature request
+description: Request a new feature or change
+type: Enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to fill out this feature request form!
+
+  - type: textarea
+    attributes:
+      label: Is your feature request related to a use case or problem?
+      description: >-
+        Please tell us the context of your request. Is it to help you do
+        something that you currently cannot due to limitations in this
+        software, or is it an idea for an enhancement or new functionality,
+        or something else?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: What solution or approach do you envision?
+      description: >-
+        If you have ideas or preferences for the solution, you can let us know
+        here. If you are aware of other similar or related work, please let us
+        know about it here.
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: How urgent is this for you?
+      description: >-
+        Please choose from among the following options. If the lack of this
+        feature is blocking important work, please choose from among P0–P2.
+      options:
+        - P0 – needed no later than a week
+        - P1 – needed by the next release
+        - P2 – needed within two quarters
+        - P3 – not blocked; it's an idea
+    validations:
+      required: false
