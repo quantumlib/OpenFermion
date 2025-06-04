@@ -841,6 +841,7 @@ class MolecularData(object):
         try:
             os.remove("{}.hdf5".format(self.filename))
         except OSError:
+            # Nothing to do but carry on.
             pass
 
         shutil.move("{}.hdf5".format(tmp_name), "{}.hdf5".format(self.filename))
