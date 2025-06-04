@@ -29,7 +29,8 @@ def qubit_vs_toffoli(lam, dE, eps, n, chi, beta, M, algorithm='half', verbose=Fa
 
     """
     # only valid algorithms accepted
-    assert algorithm in ['half', 'full']
+    if algorithm not in ['half', 'full']:
+        raise ValueError(f'Invalid value {algorithm} for algorithm parameter.')
 
     # The number of iterations for the phase estimation.
     iters = np.ceil(pi * lam / (dE * 2))
@@ -488,7 +489,8 @@ def qubit_vs_toffoli(lam, dE, eps, n, chi, beta, M, algorithm='half', verbose=Fa
         colors = [color_dict[i] for i in labels]
 
     # check lists are at least consistent
-    assert all(len(element) == len(tgates) for element in [qubits, labels, colors])
+    if not all(len(element) == len(tgates) for element in [qubits, labels, colors]):
+        raise RuntimeError('Failed to get a consistent result.')
 
     return tgates, qubits, labels, colors
 
@@ -579,10 +581,11 @@ def group_steps(labels, tgates, qubits):
         grouped_labels = ['R', 'QROM', 'I-QROM', 'QROM', 'R']
         grouped_tgates = [ 13,     30,       14,     40,  20]  (sum)
         grouped_qubits = [ 10,     30,        4,     70,  60]  (mean)
-
     """
-    assert len(labels) == len(tgates)
-    assert len(labels) == len(qubits)
+    if len(labels) != len(tgates):
+        raise ValueError('Number of labels must equal number of Toffoli gates.')
+    if len(labels) != len(qubits):
+        raise ValueError('Number of labels must equal number of qubits.')
 
     # Key function -- group identical nearest neighbors in labels (x[0])
     key_func = lambda x: x[0]
@@ -604,5 +607,6 @@ def group_steps(labels, tgates, qubits):
         grouped_qubits.append(np.mean([i[1] for i in group]))
 
     # sanity check -- shouldn't be losing total value in toffoli
-    assert np.sum(tgates) == np.sum(grouped_tgates)
+    if np.sum(tgates) != np.sum(grouped_tgates):
+        raise RuntimeError('Sum of Toffoli gates does not equal sum of grouped gates.')
     return grouped_labels, grouped_tgates, grouped_qubits
