@@ -189,6 +189,8 @@ def normal_ordered_ladder_term(term, coefficient, parity=-1):
         Op = FermionOperator
     elif parity == 1:
         Op = BosonOperator
+    else:
+        raise ValueError(f'Invalid value {parity} for parity parameter')
 
     ordered_term = Op()
 
