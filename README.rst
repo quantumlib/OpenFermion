@@ -3,10 +3,6 @@
    :width: 75%
    :align: center
 
-.. |ci| image:: https://img.shields.io/github/actions/workflow/status/quantumlib/openfermion/ci.yaml?style=flat-square&logo=GitHub&label=CI
-   :alt: Continuous integration status badge
-   :target: https://github.com/quantumlib/OpenFermion/actions/workflows/ci.yaml
-
 .. |python| image:: https://img.shields.io/badge/Python-3.10+-fcbc2c.svg?style=flat-square&logo=python&logoColor=white
    :alt: Compatible with Python versions 3.10 and higher
    :target: https://www.python.org/downloads/
@@ -19,7 +15,7 @@
    :alt: OpenFermion project on PyPI
    :target: https://pypi.org/project/OpenFermion
 
-.. |downloads| image:: https://img.shields.io/pypi/dm/openfermion?logo=PyPI&logoColor=white&style=flat-square&label=Downloads
+.. |downloads| image:: https://img.shields.io/pypi/dm/openfermion?logo=PyPI&color=d56420&logoColor=white&style=flat-square&label=Downloads
    :alt: OpenFermion downloads per month from PyPI
    :target: https://img.shields.io/pypi/dm/OpenFermion
 
@@ -27,7 +23,7 @@
 .. class:: centered
 
 |
-| |ci| |python| |license| |version| |downloads|
+| |python| |license| |version| |downloads|
 
 .. |vertspace| image:: https://upload.wikimedia.org/wikipedia/commons/archive/c/ca/20200404084254%211x1.png
    :alt: Blank space
