@@ -182,12 +182,31 @@ def run_cmd(*cmd: Optional[str],
         if abbreviate_non_option_arguments:
             cmd_desc = abbreviate_command_arguments_after_switches(cmd_desc)
         print('run:', cmd_desc, file=sys.stderr)
-    result = asyncio.get_event_loop().run_until_complete(
-        _async_wait_for_process(
-            asyncio.create_subprocess_exec(*kept_cmd,
-                                           stdout=asyncio.subprocess.PIPE,
-                                           stderr=asyncio.subprocess.PIPE,
-                                           **kwargs), out, err))
+
+    loop = None
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    try:
+        result = loop.run_until_complete(
+            _async_wait_for_process(
+                asyncio.create_subprocess_exec(
+                    *kept_cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    **kwargs,
+                ),
+                out,
+                err,
+            )
+        )
+    finally:
+        if loop != None:
+            loop.close()
+
     if raise_on_fail and result[2]:
         raise subprocess.CalledProcessError(result[2], kept_cmd)
     return result
@@ -233,12 +252,28 @@ def run_shell(cmd: str,
     """
     if log_run_to_stderr:
         print('shell:', cmd, file=sys.stderr)
-    result = asyncio.get_event_loop().run_until_complete(
-        _async_wait_for_process(
-            asyncio.create_subprocess_shell(cmd,
-                                            stdout=asyncio.subprocess.PIPE,
-                                            stderr=asyncio.subprocess.PIPE,
-                                            **kwargs), out, err))
+
+    loop = None
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    try:
+        result = loop.run_until_complete(
+            _async_wait_for_process(
+                asyncio.create_subprocess_shell(
+                    cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, **kwargs
+                ),
+                out,
+                err,
+            )
+        )
+    finally:
+        if loop != None:
+            loop.close()
+
     if raise_on_fail and result[2]:
         raise subprocess.CalledProcessError(result[2], cmd)
     return result
