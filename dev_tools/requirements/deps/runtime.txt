@@ -1,8 +1,8 @@
-cirq-core
+cirq-core>=1.4.1
 deprecation
 h5py>=3.10.0
 networkx
-numpy>=1.24,<2.0
+numpy>=1.26
 pubchempy
 requests~=2.32.2
 
