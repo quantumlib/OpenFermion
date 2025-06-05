@@ -23,8 +23,8 @@ updates:
     schedule:
       interval: "weekly"
     labels:
-      - "dependency bug"
-      - "docker"
+      - "area/dependencies"
+      - "area/docker"
 
   - package-ecosystem: "github-actions"
     # The "github-actions" code explicitly looks in /.github/workflows if the
@@ -33,8 +33,8 @@ updates:
     schedule:
       interval: "weekly"
     labels:
-      - "dependency bug"
-      - "github workflows"
+      - "area/dependencies"
+      - "area/devops"
 
   - package-ecosystem: "pip"
     # OpenFermion has requirements.txt files in multiple places.
@@ -45,4 +45,4 @@ updates:
       interval: "weekly"
     versioning-strategy: "increase-if-necessary"
     labels:
-      - "dependency bug"
+      - "area/dependencies"
