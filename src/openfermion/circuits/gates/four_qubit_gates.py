@@ -13,7 +13,6 @@
 
 from typing import Optional, Union
 
-import warnings
 import numpy as np
 import sympy
 
