@@ -1,5 +1,5 @@
 # coverage:ignore
-""" Drivers for various PySCF electronic structure routines """
+"""Drivers for various PySCF electronic structure routines"""
 from typing import Tuple, Optional
 import sys
 import h5py
@@ -81,6 +81,9 @@ def localize(pyscf_mf, loc_type='pm', verbose=0):
         print("virtual ... ", end="")
         loc_virt_mo = lo.ER(pyscf_mf.mol, pyscf_mf.mo_coeff[:, virt_idx]).kernel(verbose=verbose)
         print("DONE")
+
+    else:
+        raise ValueError(f'Invalid value {loc_type} for localization type parameter.')
 
     # overwrite orbitals with localized orbitals
     pyscf_mf.mo_coeff[:, docc_idx] = loc_docc_mo.copy()

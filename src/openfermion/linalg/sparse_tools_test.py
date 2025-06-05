@@ -1192,6 +1192,11 @@ class BosonSparseTest(unittest.TestCase):
         expected = numpy.kron(self.Id, self.p)
         self.assertTrue(numpy.allclose(res, expected))
 
+    def test_single_quad_op_sparse_invalid_quadrature(self):
+        """Test ValueError for invalid quadrature in single_quad_op_sparse."""
+        with self.assertRaisesRegex(ValueError, "Invalid value x for quadrature parameter."):
+            single_quad_op_sparse(n_modes=1, mode=0, quadrature='x', hbar=1.0, trunc=2)
+
     def test_boson_operator_sparse_trunc(self):
         op = BosonOperator('0')
         with self.assertRaises(ValueError):

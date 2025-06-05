@@ -120,8 +120,10 @@ class DoubleExcitationGate(cirq.EigenGate):
         if args.use_unicode_characters:
             wire_symbols = ('⇅', '⇅', '⇵', '⇵')
         else:
-            # pylint: disable=anomalous-backslash-in-string
-            wire_symbols = (r'/\ \/', r'/\ \/', '\/ /\\', '\/ /\\')
+            up_down = r'/\ \/'
+            # Split up this string to avoid SyntaxError in Python 3.12.
+            down_up = r'\/ /' + '\\'
+            wire_symbols = (up_down, up_down, down_up, down_up)
         return cirq.CircuitDiagramInfo(
             wire_symbols=wire_symbols, exponent=self._diagram_exponent(args)
         )

@@ -67,7 +67,7 @@ def generate_parity_permutations(seq):
 
 
 def wedge(left_tensor, right_tensor, left_index_ranks, right_index_ranks):
-    """
+    r"""
     Implement the wedge product between left_tensor and right_tensor
 
     The wedge product is defined as

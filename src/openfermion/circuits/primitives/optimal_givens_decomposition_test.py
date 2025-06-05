@@ -106,7 +106,6 @@ def test_col_eliminate():
     # mixing U[1, 0] and U[0, 0]
     unitary_original = unitary.copy()
     gmat = givens_matrix_elements(unitary[0, 0], unitary[1, 0], which='right')
-    vec = numpy.array([[unitary[0, 0]], [unitary[1, 0]]])
     fullgmat = create_givens(gmat, 0, 1, 3)
     zeroed_unitary = fullgmat.dot(unitary)
 

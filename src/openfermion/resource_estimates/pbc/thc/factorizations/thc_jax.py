@@ -943,6 +943,7 @@ def kpoint_thc_via_isdf(
     if verbose:
         print("Time for BFGS {:.4f}".format(time.time() - start))
     start = time.time()
+    opt_params = ()
     if perform_adagrad_opt:
         if save_checkpoints:
             chkfile_name = f"{checkpoint_basename}_adagrad.h5"

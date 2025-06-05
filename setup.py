@@ -11,26 +11,28 @@
 #   limitations under the License.
 
 import os
+import runpy
 
 from setuptools import find_packages, setup
 
 # This reads the __version__ variable from openfermion/_version.py
-__version__ = ''
-exec(open('src/openfermion/_version.py').read())
+__version__ = runpy.run_path('src/openfermion/_version.py')['__version__']
+assert __version__, 'Version string cannot be empty'
 
-# Readme file as long_description:
+# The readme file is used as the long_description:
 long_description = '===========\n' + 'OpenFermion\n' + '===========\n\n'
 with open('README.rst', 'r', encoding='utf-8') as readme:
     long_description += readme.read()
 
-# Read in package requirements.txt
-requirements = open('dev_tools/requirements/deps/runtime.txt').readlines()
+# Read in package requirements.txt.
+with open('dev_tools/requirements/deps/runtime.txt') as r:
+    requirements = r.readlines()
 requirements = [r.strip() for r in requirements]
 requirements = [r for r in requirements if not r.startswith('#')]
-# Resource estimates requirements.
-resource_requirements = open(
-    'dev_tools/requirements/deps/resource_estimates_runtime.txt'
-).readlines()
+
+# Read in resource estimates requirements.
+with open('dev_tools/requirements/deps/resource_estimates_runtime.txt') as r:
+    resource_requirements = r.readlines()
 resource_requirements = [r.strip() for r in resource_requirements]
 resource_requirements = [r for r in resource_requirements if not r.startswith('#')]
 
