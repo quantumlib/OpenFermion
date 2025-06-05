@@ -37,10 +37,12 @@ def adagrad(step_size, momentum=0.9):
         m = np.zeros_like(x0)
         return x0, g_sq, m
 
-    def update(i, g, state):
+    def update(i, g, state, eps=1e-9):
         x, g_sq, m = state
         g_sq += np.square(g)
-        g_sq_inv_sqrt = np.where(g_sq > 0, 1.0 / np.sqrt(g_sq), 0.0)
+        # Add a small number to avoid division by zero
+        g_sq_safe = g_sq + eps
+        g_sq_inv_sqrt = 1.0 / np.sqrt(g_sq_safe)
         m = (1.0 - momentum) * (g * g_sq_inv_sqrt) + momentum * m
         x = x - step_size(i) * m
         return x, g_sq, m
