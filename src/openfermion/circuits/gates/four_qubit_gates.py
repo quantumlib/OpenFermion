@@ -13,9 +13,9 @@
 
 from typing import Optional, Union
 
+import warnings
 import numpy as np
 import sympy
-import warnings
 
 import cirq
 from cirq._compat import proper_repr
