@@ -40,7 +40,7 @@ def fit_known_frequencies(
 
 
 def prony(signal: numpy.ndarray) -> Tuple[numpy.ndarray, numpy.ndarray]:
-    """Estimates amplitudes and phases of a sparse signal using Prony's method.
+    r"""Estimates amplitudes and phases of a sparse signal using Prony's method.
 
     Single-ancilla quantum phase estimation returns a signal
     $g(k)=\sum (aj*exp(i*k*phij))$, where aj and phij are the amplitudes
