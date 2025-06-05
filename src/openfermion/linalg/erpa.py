@@ -1,4 +1,5 @@
 """Code to generate the eigenvalue problem for the ERPA equations"""
+
 from typing import Dict, Tuple, Union
 from itertools import product
 import numpy
@@ -11,7 +12,7 @@ from openfermion.utils.rdm_mapping_functions import map_two_pdm_to_one_pdm
 def erpa_eom_hamiltonian(
     h_ijkl: numpy.ndarray, tpdm: numpy.ndarray, p: int, q: int, r: int, s: int
 ) -> Union[float, complex]:
-    """
+    r"""
     Evaluate $\sum_{a,b,c,d}h_{a, b, d, c}<\psi[p^ q, [a^ b^ c d, r^ s]]\psi>$
 
     Args:

@@ -23,6 +23,7 @@ from openfermion.utils import up_then_down
 
 from openfermion.transforms.opconversions.term_reordering import (
     normal_ordered,
+    normal_ordered_ladder_term,
     chemist_ordered,
     reorder,
 )
@@ -220,6 +221,22 @@ class TestNormalOrdering(unittest.TestCase):
     def test_exceptions(self):
         with self.assertRaises(TypeError):
             _ = normal_ordered(1)
+
+    def test_normal_ordered_ladder_term_invalid_parity(self):
+        term = ((0, 1), (1, 0))
+        coefficient = 1.0
+        invalid_parity_1 = 2
+        invalid_parity_2 = -2
+
+        with self.assertRaisesRegex(
+            ValueError, f"Invalid value {invalid_parity_1} for parity parameter"
+        ):
+            normal_ordered_ladder_term(term, coefficient, parity=invalid_parity_1)
+
+        with self.assertRaisesRegex(
+            ValueError, f"Invalid value {invalid_parity_2} for parity parameter"
+        ):
+            normal_ordered_ladder_term(term, coefficient, parity=invalid_parity_2)
 
 
 class TestReorder(unittest.TestCase):

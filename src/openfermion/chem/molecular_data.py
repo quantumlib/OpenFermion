@@ -324,12 +324,12 @@ def geometry_from_file(file_name):
 def antisymtei(two_body_integrals):
     """
     Args:
-    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
-        Ordering.
+        two_body_integrals: Numpy array of two-electron integrals with
+            OpenFermion Ordering.
 
     Returns:
-    antisymints : Numpy array of anti-symmetrized integrals
-        <ij||kl> = <ij|kl> - <ij|lk> (physicist ordering).
+        antisymints : Numpy array of anti-symmetrized integrals
+            <ij||kl> = <ij|kl> - <ij|lk> (physicist ordering).
     """
     symints = numpy.copy(two_body_integrals.transpose(0, 1, 3, 2), order='C')
     antisymints = symints - two_body_integrals
@@ -339,12 +339,12 @@ def antisymtei(two_body_integrals):
 def j_mat(two_body_integrals):
     """
     Args:
-    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
-        Ordering.
+        two_body_integrals: Numpy array of two-electron integrals with
+            OpenFermion Ordering.
 
     Returns:
-    j_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
-        (in chemist notation).
+        j_matr : Numpy array of the coulomb integrals J_{p,q} = (pp|qq)
+            (in chemist notation).
     """
     chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2), order='C')
     return numpy.einsum('iijj -> ij', chem_ordering)
@@ -353,12 +353,12 @@ def j_mat(two_body_integrals):
 def k_mat(two_body_integrals):
     """
     Args:
-    two_body_integrals : Numpy array of two-electron integrals with OpenFermion
-        Ordering.
+        two_body_integrals: Numpy array of two-electron integrals with
+            OpenFermion Ordering.
 
     Returns:
-    k_matr : Numpy array of the exchange integrals K_{p,q} = (pq|qp)
-        (in chemist notation).
+        k_matr : Numpy array of the exchange integrals K_{p,q} = (pq|qp)
+            (in chemist notation).
     """
     chem_ordering = numpy.copy(two_body_integrals.transpose(0, 3, 1, 2), order='C')
     return numpy.einsum('ijji -> ij', chem_ordering)
@@ -391,9 +391,9 @@ def spinorb_from_spatial(one_body_integrals, two_body_integrals):
                     two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = two_body_integrals[
                         p, q, r, s
                     ]
-                    two_body_coefficients[
-                        2 * p + 1, 2 * q + 1, 2 * r + 1, 2 * s + 1
-                    ] = two_body_integrals[p, q, r, s]
+                    two_body_coefficients[2 * p + 1, 2 * q + 1, 2 * r + 1, 2 * s + 1] = (
+                        two_body_integrals[p, q, r, s]
+                    )
 
     # Truncate.
     one_body_coefficients[numpy.absolute(one_body_coefficients) < EQ_TOLERANCE] = 0.0
@@ -559,7 +559,7 @@ class MolecularData(object):
         self.init_lazy_properties()
 
     def init_lazy_properties(self):
-        """Initializes properties loaded on demand to None"""
+        """Initializes properties loaded on demand to None."""
 
         # Molecular orbitals
         self._canonical_orbitals = None
@@ -708,27 +708,27 @@ class MolecularData(object):
             # Save geometry (atoms and positions need to be separate):
             d_geom = f.create_group("geometry")
             if not isinstance(self.geometry, basestring):
-                atoms = [numpy.string_(item[0]) for item in self.geometry]
+                atoms = [numpy.bytes_(item[0]) for item in self.geometry]
                 positions = numpy.array([list(item[1]) for item in self.geometry])
             else:
-                atoms = numpy.string_(self.geometry)
+                atoms = numpy.bytes_(self.geometry)
                 positions = None
             d_geom.create_dataset("atoms", data=(atoms if atoms is not None else False))
             d_geom.create_dataset("positions", data=(positions if positions is not None else False))
             # Save basis:
-            f.create_dataset("basis", data=numpy.string_(self.basis))
+            f.create_dataset("basis", data=numpy.bytes_(self.basis))
             # Save multiplicity:
             f.create_dataset("multiplicity", data=self.multiplicity)
             # Save charge:
             f.create_dataset("charge", data=self.charge)
             # Save description:
-            f.create_dataset("description", data=numpy.string_(self.description))
+            f.create_dataset("description", data=numpy.bytes_(self.description))
             # Save name:
-            f.create_dataset("name", data=numpy.string_(self.name))
+            f.create_dataset("name", data=numpy.bytes_(self.name))
             # Save n_atoms:
             f.create_dataset("n_atoms", data=self.n_atoms)
             # Save atoms:
-            f.create_dataset("atoms", data=numpy.string_(self.atoms))
+            f.create_dataset("atoms", data=numpy.bytes_(self.atoms))
             # Save protons:
             f.create_dataset("protons", data=self.protons)
             # Save n_electrons:
@@ -824,7 +824,7 @@ class MolecularData(object):
             key_list = list(self.general_calculations.keys())
             f.create_dataset(
                 "general_calculations_keys",
-                data=([numpy.string_(key) for key in key_list] if len(key_list) > 0 else False),
+                data=([numpy.bytes_(key) for key in key_list] if len(key_list) > 0 else False),
             )
             f.create_dataset(
                 "general_calculations_values",
@@ -841,6 +841,7 @@ class MolecularData(object):
         try:
             os.remove("{}.hdf5".format(self.filename))
         except OSError:
+            # Nothing to do but carry on.
             pass
 
         shutil.move("{}.hdf5".format(tmp_name), "{}.hdf5".format(self.filename))
@@ -915,7 +916,7 @@ class MolecularData(object):
                 self.general_calculations = None  # pragma: nocover
 
     def get_from_file(self, property_name):
-        """Helper routine to re-open HDF5 file and pull out single property
+        """Helper routine to re-open HDF5 file and pull out single property.
 
         Args:
             property_name: Property name to load from self.filename
@@ -963,7 +964,7 @@ class MolecularData(object):
         return self.one_body_integrals, self.two_body_integrals
 
     def get_active_space_integrals(self, occupied_indices=None, active_indices=None):
-        """Restricts a molecule at a spatial orbital level to an active space
+        """Restricts a molecule at a spatial orbital level to an active space.
 
         This active space may be defined by a list of active indices and
             doubly occupied indices. Note that one_body_integrals and
@@ -1021,11 +1022,9 @@ class MolecularData(object):
             one_body_integrals, two_body_integrals = self.get_integrals()
             constant = self.nuclear_repulsion
         else:
-            (
-                core_adjustment,
-                one_body_integrals,
-                two_body_integrals,
-            ) = self.get_active_space_integrals(occupied_indices, active_indices)
+            (core_adjustment, one_body_integrals, two_body_integrals) = (
+                self.get_active_space_integrals(occupied_indices, active_indices)
+            )
             constant = self.nuclear_repulsion + core_adjustment
 
         one_body_coefficients, two_body_coefficients = spinorb_from_spatial(

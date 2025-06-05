@@ -16,7 +16,7 @@ from scipy.special import comb, factorial
 
 
 def bch_expand(*ops, **kwargs):
-    """Compute $\log[e^{x_1} ... e^{x_N}]$ using the BCH formula.
+    r"""Compute $\log[e^{x_1} ... e^{x_N}]$ using the BCH formula.
 
     This implementation is explained in arXiv:1712.01348.
 
@@ -65,7 +65,7 @@ def _bch_expand_multiple_terms(*ops, **kwargs):
 
 
 def _bch_expand_two_terms(x, y, order=6):
-    """Compute $\log[e^x e^y]$ using the Baker-Campbell-Hausdorff formula.
+    r"""Compute $\log[e^x e^y]$ using the Baker-Campbell-Hausdorff formula.
 
     Args:
         x: An operator for which multiplication and addition are supported.

@@ -81,9 +81,7 @@ class MolecularDataTest(unittest.TestCase):
 
         # Check errors in naming
         with self.assertRaises(TypeError):
-            test_molecule = MolecularData(
-                self.geometry, self.basis, self.multiplicity, description=5
-            )
+            MolecularData(self.geometry, self.basis, self.multiplicity, description=5)
         correct_name = str('H2_sto-3g_singlet')
         test_molecule = self.molecule = MolecularData(
             self.geometry, self.basis, self.multiplicity, data_directory=DATA_DIRECTORY
@@ -222,11 +220,9 @@ class MolecularDataTest(unittest.TestCase):
         """Test simple active space truncation features"""
 
         # Start w/ no truncation
-        (
-            core_const,
-            one_body_integrals,
-            two_body_integrals,
-        ) = self.molecule.get_active_space_integrals(active_indices=[0, 1])
+        (core_const, one_body_integrals, two_body_integrals) = (
+            self.molecule.get_active_space_integrals(active_indices=[0, 1])
+        )
 
         self.assertAlmostEqual(core_const, 0.0)
         self.assertAlmostEqual(
