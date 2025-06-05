@@ -144,6 +144,8 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
 class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
     """A LinearOperator from a QubitOperator with multiple processors."""
 
+    _start_method_set = False
+
     def __init__(self, qubit_operator, n_qubits=None, options=None):
         """
         Args:
@@ -161,6 +163,10 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         self.qubit_operator = qubit_operator
         self.n_qubits = n_qubits
         self.options = options or LinearQubitOperatorOptions()
+
+        if not ParallelLinearQubitOperator._start_method_set:
+            multiprocessing.set_start_method('forkserver', force=True)
+            ParallelLinearQubitOperator._start_method_set = True
 
         self.qubit_operator_groups = list(
             qubit_operator.get_operator_groups(self.options.processes)
