@@ -51,6 +51,7 @@ def linearize_term(term, n_orbitals):
         r = term[2][0]
         s = term[3][0]
         return 1 + n_orbitals**2 + p + q * n_orbitals + r * n_orbitals**2 + s * n_orbitals**3
+    raise ValueError('Expect one-body (2 terms) or two-body (4 terms) operator but got {} terms. '.format(len(term)))
 
 
 def unlinearize_term(index, n_orbitals):
