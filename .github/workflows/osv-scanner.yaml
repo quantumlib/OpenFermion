@@ -82,7 +82,7 @@ jobs:
 
       - name: Run OSV scanner on existing code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@e69cc6c86b31f1e7e23935bbe7031b50e51082de # v2.0.2
+        uses: google/osv-scanner-action/osv-scanner-action@40a8940a65eab1544a6af759e43d936201a131a2 # v2.0.3
         continue-on-error: true
         with:
           scan-args: |-
@@ -99,7 +99,7 @@ jobs:
 
       - name: Run OSV scanner on new code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@e69cc6c86b31f1e7e23935bbe7031b50e51082de # v2.0.2
+        uses: google/osv-scanner-action/osv-scanner-action@40a8940a65eab1544a6af759e43d936201a131a2 # v2.0.3
         continue-on-error: true
         with:
           scan-args: |-
@@ -110,7 +110,7 @@ jobs:
 
       - name: Run the OSV scanner reporter
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-reporter-action@e69cc6c86b31f1e7e23935bbe7031b50e51082de # v2.0.2
+        uses: google/osv-scanner-action/osv-reporter-action@40a8940a65eab1544a6af759e43d936201a131a2 # v2.0.3
         with:
           scan-args: |-
             --output=osv-results.sarif
@@ -122,7 +122,7 @@ jobs:
       - name: Upload results to the repository's code-scanning results dashboard
         id: upload_artifact
         # yamllint disable rule:line-length
-        uses: github/codeql-action/upload-sarif@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
+        uses: github/codeql-action/upload-sarif@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3.29.0
         with:
           sarif_file: osv-results.sarif
 
