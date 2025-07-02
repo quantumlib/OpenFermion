@@ -13,10 +13,10 @@
 import os
 import unittest
 import numpy
+import openfermion
 
 from openfermion.chem import MolecularData
 from openfermion.config import DATA_DIRECTORY
-from openfermion.ops.operators import FermionOperator
 from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.linalg import (
     get_sparse_operator,
@@ -61,7 +61,7 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
             past_terms.add(index)
 
     def test_error_with_non_physical_term(self):
-        non_physical_operator = FermionOperator((0, 1))
+        non_physical_operator = openfermion.FermionOperator((0, 1))
         with self.assertRaises(ValueError):
             linearize_term(non_physical_operator, self.n_orbitals)
 
