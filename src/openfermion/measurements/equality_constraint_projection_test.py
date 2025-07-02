@@ -63,7 +63,6 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
         non_physical_operator = openfermion.FermionOperator((0, 1))
         with self.assertRaises(ValueError):
             linearize_term(non_physical_operator, self.n_orbitals)
-            
 
     def test_unlinearize_term_consistency(self):
         for term, _ in self.fermion_hamiltonian.terms.items():
