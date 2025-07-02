@@ -14,6 +14,7 @@ import os
 import unittest
 import numpy
 
+from openfermion.ops.operators import FermionOperator
 from openfermion.chem import MolecularData
 from openfermion.config import DATA_DIRECTORY
 from openfermion.transforms.opconversions import get_fermion_operator
@@ -58,6 +59,11 @@ class EqualityConstraintProjectionTest(unittest.TestCase):
             self.assertTrue(isinstance(index, int))
             self.assertFalse(index in past_terms)
             past_terms.add(index)
+
+    def test_error_with_non_physical_term(self):
+        non_physical_operator = FermionOperator((0, 1))
+        with self.assertRaises(ValueError):
+            linearize_term(non_physical_operator.terms, self.n_orbitals)
 
     def test_unlinearize_term_consistency(self):
         for term, _ in self.fermion_hamiltonian.terms.items():
