@@ -109,16 +109,17 @@ class MultiTensor(object):
             dual_data_values.extend(dval)
             inner_prod_data_values.append(float(dual_element.dual_scalar))
             bias_data_values.append(dual_element.constant_bias)
+        n_rows = len(self.dual_basis.elements)
         sparse_dual_operator = csr_matrix(
-            (dual_data_values, (dual_row_indices, dual_col_indices)), [index + 1, self.vec_dim]
+            (dual_data_values, (dual_row_indices, dual_col_indices)), [n_rows, self.vec_dim]
         )
 
         sparse_bias_vector = csr_matrix(
-            (bias_data_values, (range(index + 1), [0] * (index + 1))), [index + 1, 1]
+            (bias_data_values, (range(n_rows), [0] * n_rows)), [n_rows, 1]
         )
 
         sparse_innerp_vector = csr_matrix(
-            (inner_prod_data_values, (range(index + 1), [0] * (index + 1))), [index + 1, 1]
+            (inner_prod_data_values, (range(n_rows), [0] * (n_rows))), [n_rows, 1]
         )
 
         return sparse_dual_operator, sparse_bias_vector, sparse_innerp_vector
