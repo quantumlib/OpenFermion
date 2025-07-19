@@ -313,7 +313,7 @@ jobs:
     if: needs.changes.outputs.python == 'true'
     name: (Python pytest matrix)
     needs: [changes, setup]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{matrix.os}}
     timeout-minutes: 15
     strategy:
       matrix:
@@ -643,13 +643,3 @@ jobs:
           RUNNER_CONTEXT: ${{toJson(runner)}}
         shell: bash
         run: echo "${RUNNER_CONTEXT}"
-
-      - name: Dump strategy context
-        env:
-          STRATEGY_CONTEXT: ${{toJson(strategy)}}
-        run: echo "$STRATEGY_CONTEXT"
-
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{toJson(matrix)}}
-        run: echo "$MATRIX_CONTEXT"
