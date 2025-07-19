@@ -55,6 +55,13 @@ jobs:
         os: [ubuntu-latest, ubuntu-22.04, macos-15, macos-14, windows-latest, windows-2022]
         arch: [x64, arm64]
         exclude:
+          # Ubuntu runners no longer come in arm versions.
+          - os: ubuntu-latest
+            arch: arm64
+
+          - os: ubuntu-22.04
+            arch: arm64
+
           # MacOS 14 is only available for arm64.
           - os: macos-14
             arch: x64
@@ -64,6 +71,9 @@ jobs:
             arch: x64
 
           # Windows is only available for x64.
+          - os: windows-latest
+            arch: arm64
+
           - os: windows-2022
             arch: arm64
 
