@@ -96,3 +96,35 @@ jobs:
 
       - name: Run Pytest
         run: check/pytest
+
+      - name: Print debugging info upon job failure
+        if: failure()
+        shell: bash
+        env:
+          GITHUB_CONTEXT: ${{toJson(github)}}
+          RUNNER_CONTEXT: ${{toJson(runner)}}
+          MATRIX_CONTEXT: ${{toJson(matrix)}}
+          STRATEGY_CONTEXT: ${{toJson(strategy)}}
+        run: |
+          echo '::group:: Shell environment'
+          env
+          echo '::endgroup::'
+          echo '::group:: Installed Python packages'
+          pip list
+          echo '::endgroup::'
+          echo '::group:: GitHub context'
+          echo "The job_id is: $GITHUB_JOB"
+          echo "The id of this action is: $GITHUB_ACTION"
+          echo "The run id is: $GITHUB_RUN_ID"
+          echo "GitHub SHA: $GITHUB_SHA"
+          echo "$GITHUB_CONTEXT"
+          echo '::endgroup::'
+          echo '::group:: GitHub runner context'
+          echo "$RUNNER_CONTEXT"
+          echo '::endgroup::'
+          echo '::group:: Matrix context'
+          echo "$MATRIX_CONTEXT"
+          echo '::endgroup::'
+          echo '::group:: Strategy context'
+          echo "$STRATEGY_CONTEXT"
+          echo '::endgroup::'
