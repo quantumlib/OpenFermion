@@ -3,8 +3,8 @@
    :width: 75%
    :align: center
 
-.. |python| image:: https://img.shields.io/badge/Python-3.10+-fcbc2c.svg?style=flat-square&logo=python&logoColor=white
-   :alt: Compatible with Python versions 3.10 and higher
+.. |python| image:: https://img.shields.io/badge/Python-3.11+-fcbc2c.svg?style=flat-square&logo=python&logoColor=white
+   :alt: Compatible with Python versions 3.11 and higher
    :target: https://www.python.org/downloads/
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-3c60b1.svg?logo=opensourceinitiative&logoColor=white&style=flat-square
