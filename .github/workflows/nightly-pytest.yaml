@@ -35,7 +35,7 @@ on:
   # Allow manual invocation.
   workflow_dispatch:
 
-# Declare default permissions as read only.
+# Declare default workflow permissions as read only.
 permissions: read-all
 
 jobs:
@@ -50,30 +50,27 @@ jobs:
         # These Python versions were carefully selected by trial and error
         # to be available on as many os/arch combos as possible, while also
         # making all necessary Python dependencies available on those combos.
-        # TODO: add '3.13.1' once Cirq 1.5 is released.
-        python-version: ['3.10.11', '3.11.9', '3.12.7']
-        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-14, windows-2022]
+        python-version: ['3.11.9', '3.12.7', '3.13.1']
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-14, windows-2025]
         arch: [x64, arm64]
         exclude:
+          - os: ubuntu-24.04
+            arch: arm64
+
+          - os: ubuntu-24.04-arm
+            arch: x64
+
           # MacOS 14 is only available for arm64.
           - os: macos-14
             arch: x64
 
-          # Windows is only available for x64.
-          - os: windows-2022
-            arch: arm64
-
-          # GitHub provides separate Ubuntu runners for ARM and x64.
-          # We have to exclude the incompatible combinations.
-          - os: ubuntu-22.04-arm
+          # MacOS 15 is only available for arm64.
+          - os: macos-15
             arch: x64
-          - os: ubuntu-22.04
-            arch: arm64
 
-          # 2025-01-31 dependency h5py fails to build on this combo (only).
-          - os: ubuntu-22.04-arm
+          # Windows 2025 is only available for x64.
+          - os: windows-2025
             arch: arm64
-            python-version: 3.12.7
 
     steps:
       - name: Check out a copy of the OpenFermion git repository
@@ -89,19 +86,45 @@ jobs:
           cache-dependency-path: dev_tools/requirements/envs/pytest.env.txt
 
       - name: Install OpenFermion Python requirements
-        run: |
-          pip install -r dev_tools/requirements/envs/pytest.env.txt
-          echo '::group::List of installed pip packages and their versions'
-          pip list
-          echo '::endgroup::'
+        run: pip install -r dev_tools/requirements/envs/pytest.env.txt
 
       - name: Install cirq-core (current stable version)
-        run: |
-          pip install -U cirq-core ${{inputs.args}}
+        run: pip install -U cirq-core ${{inputs.args}}
 
       - name: Set up Pytest output problem matcher
         run: echo '::add-matcher::.github/problem-matchers/pytest.json'
 
       - name: Run Pytest
+        run: check/pytest
+
+      - name: Print debugging info upon job failure
+        if: failure()
+        shell: bash
+        env:
+          GITHUB_CONTEXT: ${{toJson(github)}}
+          RUNNER_CONTEXT: ${{toJson(runner)}}
+          MATRIX_CONTEXT: ${{toJson(matrix)}}
+          STRATEGY_CONTEXT: ${{toJson(strategy)}}
         run: |
-          check/pytest
+          echo '::group:: Shell environment'
+          env
+          echo '::endgroup::'
+          echo '::group:: Installed Python packages'
+          pip list
+          echo '::endgroup::'
+          echo '::group:: GitHub context'
+          echo "The job_id is: $GITHUB_JOB"
+          echo "The id of this action is: $GITHUB_ACTION"
+          echo "The run id is: $GITHUB_RUN_ID"
+          echo "GitHub SHA: $GITHUB_SHA"
+          echo "$GITHUB_CONTEXT"
+          echo '::endgroup::'
+          echo '::group:: GitHub runner context'
+          echo "$RUNNER_CONTEXT"
+          echo '::endgroup::'
+          echo '::group:: Matrix context'
+          echo "$MATRIX_CONTEXT"
+          echo '::endgroup::'
+          echo '::group:: Strategy context'
+          echo "$STRATEGY_CONTEXT"
+          echo '::endgroup::'
