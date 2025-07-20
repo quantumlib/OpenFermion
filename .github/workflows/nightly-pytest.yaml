@@ -51,9 +51,15 @@ jobs:
         # to be available on as many os/arch combos as possible, while also
         # making all necessary Python dependencies available on those combos.
         python-version: ['3.11.9', '3.12.7', '3.13.1']
-        os: [ubuntu-24.04, macos-15, macos-14, windows-2025]
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-14, windows-2025]
         arch: [x64, arm64]
         exclude:
+          - os: ubuntu-24.04
+            arch: arm64
+
+          - os: ubuntu-24.04-arm
+            arch: x64
+
           # MacOS 14 is only available for arm64.
           - os: macos-14
             arch: x64
