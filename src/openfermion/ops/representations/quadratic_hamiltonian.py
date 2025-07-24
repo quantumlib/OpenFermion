@@ -130,7 +130,7 @@ class QuadraticHamiltonian(PolynomialTensor):
         return numpy.sum(orbital_energies[numpy.where(orbital_energies < 0.0)[0]]) + constant
 
     def majorana_form(self):
-        r"""Return the Majorana represention of the Hamiltonian.
+        r"""Return the Majorana representation of the Hamiltonian.
 
         Any quadratic Hamiltonian can be written in the form
 
