@@ -12,48 +12,49 @@
 
 # Dockerfile for OpenFermion, Cirq, and select plugins.
 
-FROM ubuntu
+FROM ubuntu:22.04
 
 USER root
 
-RUN apt-get update
+WORKDIR /root/workspace
+COPY . /root/workspace
 
-# Install utilities
-RUN apt-get install -y bzip2
-RUN apt-get install -y cmake
-RUN apt-get install -y git
-RUN apt-get install -y wget
-RUN apt-get install -y libblas-dev
-RUN apt-get install -y liblapack-dev
+# Set PATH for miniconda
+ENV PATH=/root/miniconda3/bin:$PATH
+# Set PATH for pyscf
+ENV PYTHONPATH=/root/pyscf
 
-# Install Python 3
-RUN apt-get install -y python3
+RUN apt-get update && \
+    apt-get install -y build-essential \
+        bzip2 \
+        cmake \
+        git \
+        wget \
+        libblas-dev \
+        liblapack-dev \
+        curl
 
-# Install pip.
-RUN apt-get install -y python3-pip
-
-# Install Psi4.
-RUN cd /root; wget http://vergil.chemistry.gatech.edu/psicode-download/psi4conda-1.2.1-py36-Linux-x86_64.sh
-RUN echo '/root/psi4conda' | bash /root/psi4conda-1.2.1-py36-Linux-x86_64.sh
-RUN rm /root/psi4conda-1.2.1-py36-Linux-x86_64.sh
-RUN export PATH=/root/psi4conda/bin:$PATH
-
-# Install PySCF.
-RUN cd /root; git clone https://github.com/sunqm/pyscf
-RUN cd /root/pyscf/pyscf/lib; mkdir build; cd build; cmake ..; make
-
-# Install OpenFermion, Cirq, and plugins.
-RUN pip3 install openfermion
-RUN pip3 install cirq
-RUN pip3 install openfermioncirq
-RUN pip3 install openfermionpsi4
-RUN pip3 install openfermionpyscf
-
-# Update paths
-RUN export PATH=/root/psi4conda/bin:$PATH
-RUN export PYTHONPATH=/root/pyscf:$PYTHONPATH
-
-# Make python point to python3
-RUN ln -s /usr/bin/python3 /usr/bin/python
-
-ENTRYPOINT bash
+# Install miniconda for python 3.12, Linux aarch
+# https://www.anaconda.com/docs/getting-started/miniconda/install#quickstart-install-instructions
+RUN mkdir -p ~/miniconda3 && \
+    wget https://repo.anaconda.com/miniconda/Miniconda3-py312_25.5.1-1-Linux-aarch64.sh -O ~/miniconda3/miniconda.sh && \
+    bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3 && \
+    rm ~/miniconda3/miniconda.sh && \
+    /bin/bash -c "source ~/miniconda3/bin/activate" && \
+    conda init --all && \
+    # To accept a channel's Terms of Service
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r && \
+    # Create virtual env (fermion) with installing Psi4
+    conda create -n fermion psi4 python=3.12 -c conda-forge -y && \
+    conda install -n fermion pip -y && \
+    # Install OpenFermion, Cirq, and plugins
+    conda run -n fermion pip install openfermion \ cirq \ openfermioncirq \ openfermionpsi4 \ openfermionpyscf && \
+    # Install PySCF
+    cd /root && \
+    git clone https://github.com/sunqm/pyscf && \
+    cd /root/pyscf/pyscf/lib && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make
