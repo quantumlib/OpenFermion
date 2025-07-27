@@ -15,7 +15,8 @@ OpenFermion (or any of its plugins) using the standard procedure.
 ## What's included?
 
 - Git
-- Python 3
+- Python 3.12
+- [Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main)
 - [OpenFermion](https://github.com/quantumlib/OpenFermion)
 - [Cirq](https://github.com/quantumlib/Cirq)
 - [Psi4](http://www.psicode.org)
@@ -27,6 +28,25 @@ OpenFermion (or any of its plugins) using the standard procedure.
 
 ## Setting up Docker for the first time
 
+The Dockerfile is based on the [Ubuntu image](https://hub.docker.com/_/ubuntu) (ver. 22.04).
+It creates a Python (ver. 3.12) virtual environemnt (named `fermion`) using Miniconda and installs all dependencies within it. Psi4 is installed with a conda [command](https://psicode.org/installs/v191/).
+The default configuration uses the Miniconda installer (ver. 25.5.1-1) for Python 3.12 on Linux `aarch64` architecture.
+
+### Customizing the Environment
+You can manually edit the Dockerfile if you need to set up a different development environment (e.g., change the Ubuntu, Python, Miniconda, or Psi4 version).
+
+If your local machine builds Linux `x86_64` architecture with the Dockerfile, the `wget` command 
+for the Miniconda installer (Line 40 in the Dockerfile)
+```
+wget https://repo.anaconda.com/miniconda/Miniconda3-py312_25.5.1-1-Linux-aarch64.sh -O ~/miniconda3/miniconda.sh && \
+```
+must be changed to 
+```
+wget https://repo.anaconda.com/miniconda/Miniconda3-py312_25.5.1-1-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh && \
+```
+You can check other Miniconda installers [here](https://repo.anaconda.com/miniconda/).
+
+### Building Docker Image
 You first need to install [Docker](https://www.docker.com/).
 Once Docker is setup, one can navigate to the folder containing the
 Dockerfile for building the OpenFermion image (docker/dockerfile) and run
@@ -39,31 +59,14 @@ where "openfermion_docker" is just an arbitrary name for our docker image.
 Building the Dockerfile starts from a base image of Ubuntu and then installs
 OpenFermion, its plugins, and the necessary applications needed for running these
 programs. This is a fairly involved setup and will take some time
-(perhaps up to thiry minutes depending on the computer). Once installation has
-completed, run the image with
+(perhaps up to thirty minutes depending on the computer) and disk space (several gigabytes). Once installation has completed, run the image with
 
 ```
-docker run -it openfermion_docker
+docker run -it --name openfermion_container -v $(pwd):/root/workspace openfermion_docker
 ```
-
-With this command the terminal enters a new environment which emulates Ubuntu with
-OpenFermion and accessories installed. To transfer files from somewhere on the disk to the Docker
-container, first run `docker ps` in a separate terminal from the one running
-Docker. This returns a list of running containers, e.g.:
-
+where "openfermion_container" is an arbitrary choice for the name of our docker container. This command will mount your current local directory to `/root/workspace` inside the running container. You can activate the virtual environment `fermion` in the container with
 ```
-+CONTAINER ID        IMAGE               COMMAND             CREATED
-+STATUS              PORTS               NAMES
-+3cc87ed4205b        5a67a4d66d05        "/bin/bash"         2 hours ago
-+Up 2 hours                              competent_feynman
-```
-
-In this example, the container name is "competent_feynman" (the name is
-random and generated automatically). Using this name, one can then copy
-files into the active Docker session from other terminal using:
-
-```
-docker cp [path to file on disk] [container name]:[path in container]
+source activate fermion
 ```
 
 An alternative way of loading files onto the Docker container is through
