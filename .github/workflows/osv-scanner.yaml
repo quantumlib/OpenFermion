@@ -122,7 +122,7 @@ jobs:
       - name: Upload results to the repository's code-scanning results dashboard
         id: upload_artifact
         # yamllint disable rule:line-length
-        uses: github/codeql-action/upload-sarif@76621b61decf072c1cee8dd1ce2d2a82d33c17ed # v3.29.8
+        uses: github/codeql-action/upload-sarif@96f518a34f7a870018057716cc4d7a5c014bd61c # v3.29.10
         with:
           sarif_file: osv-results.sarif
 
