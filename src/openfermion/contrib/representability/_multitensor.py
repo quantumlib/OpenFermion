@@ -102,6 +102,7 @@ class MultiTensor(object):
         bias_data_values = []
         # this forms the c-vector of ax + b = c
         inner_prod_data_values = []
+        n_rows = len(self.dual_basis.elements)
         for index, dual_element in enumerate(self.dual_basis):
             dcol, dval = self.synthesize_element(dual_element)
             dual_row_indices.extend([index] * len(dcol))
@@ -109,7 +110,7 @@ class MultiTensor(object):
             dual_data_values.extend(dval)
             inner_prod_data_values.append(float(dual_element.dual_scalar))
             bias_data_values.append(dual_element.constant_bias)
-        n_rows = len(self.dual_basis.elements)
+
         sparse_dual_operator = csr_matrix(
             (dual_data_values, (dual_row_indices, dual_col_indices)), [n_rows, self.vec_dim]
         )

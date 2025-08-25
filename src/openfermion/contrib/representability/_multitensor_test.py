@@ -185,3 +185,20 @@ def test_cover_make_offset_dict():
     c = np.random.random((3, 3))
     with pytest.raises(TypeError):
         _ = MultiTensor.make_offset_dict([a, b, c])
+
+def test_synthesize_dual_basis_empty():
+    a = np.random.random((5, 5))
+    b = np.random.random((4, 4))
+    c = np.random.random((3, 3))
+    at = Tensor(tensor=a, name='a')
+    bt = Tensor(tensor=b, name='b')
+    ct = Tensor(tensor=c, name='c')
+    mt = MultiTensor([at, bt, ct], DualBasis(elements=[]))
+
+    A, c, b = mt.synthesize_dual_basis()
+    assert isinstance(A, sp.sparse.csr_matrix)
+    assert isinstance(c, sp.sparse.csr_matrix)
+    assert isinstance(b, sp.sparse.csr_matrix)
+    assert A.shape == (0, 50)
+    assert b.shape == (0, 1)
+    assert c.shape == (0, 1)
