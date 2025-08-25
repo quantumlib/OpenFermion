@@ -168,8 +168,6 @@ class DFABKpointIntegrals:
         """
         if thresh is None:
             thresh = 1.0e-13
-        if self.df_factors is not None:
-            return self.df_factors
 
         nkpts = self.nk
         nmo = self.nao
