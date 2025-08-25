@@ -625,4 +625,3 @@ jobs:
           echo '::group:: GitHub runner context'
           echo "$RUNNER_CONTEXT"
           echo '::endgroup::'
-          echo '::group:: Matrix context'
