@@ -9,8 +9,11 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Tests  fermion_operator.py."""
+
+"""Tests fermion_operator.py."""
+
 import unittest
+import sympy
 
 from openfermion.ops.operators.fermion_operator import FermionOperator
 from openfermion.hamiltonians import number_operator
@@ -78,3 +81,10 @@ class FermionOperatorTest(unittest.TestCase):
     def test_is_two_body_number_conserving_out_of_order(self):
         op = FermionOperator(((0, 1), (2, 0), (1, 1), (3, 0)))
         self.assertTrue(op.is_two_body_number_conserving())
+
+    def test_add_sympy_rational(self):
+        """Test adding operators with sympy.Rational coefficients."""
+        a = FermionOperator('0^ 0', sympy.Rational(1, 2))
+        b = FermionOperator('1^ 1', sympy.Rational(1, 2))
+        c = a + b
+        self.assertIsInstance(c.terms[((0, 1), (0, 0))], sympy.Rational)

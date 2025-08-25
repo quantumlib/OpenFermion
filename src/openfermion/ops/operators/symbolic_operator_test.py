@@ -20,6 +20,7 @@ from openfermion.config import EQ_TOLERANCE
 from openfermion.testing.testing_utils import EqualsTester
 
 from openfermion.ops.operators.symbolic_operator import SymbolicOperator
+from openfermion.ops.operators.fermion_operator import FermionOperator
 
 
 class DummyOperator1(SymbolicOperator):
@@ -686,6 +687,14 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertEqual(len(a.terms), 2)
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] - coeff_b - 0.5 == 0)
+
+    def test_add_sympy_new_term(self):
+        """Test adding a new term with a sympy coefficient."""
+        x = sympy.Symbol('x')
+        op = FermionOperator('1^', x)
+        op += FermionOperator('2', 2 * x)
+        self.assertEqual(op.terms[((1, 1),)], x)
+        self.assertEqual(op.terms[((2, 0),)], 2 * x)
 
     def test_radd(self):
         term_a = ((1, 1), (3, 0), (8, 1))
