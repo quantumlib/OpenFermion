@@ -12,8 +12,8 @@
 
 """Tests fermion_operator.py."""
 
-import unittest
 import sympy
+import unittest
 
 from openfermion.ops.operators.fermion_operator import FermionOperator
 from openfermion.hamiltonians import number_operator

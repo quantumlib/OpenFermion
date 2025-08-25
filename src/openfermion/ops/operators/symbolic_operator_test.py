@@ -9,13 +9,15 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 """Tests  symbolic_operator.py."""
+
 import copy
+import numpy
+import sympy
 import unittest
 import warnings
 
-import numpy
-import sympy
 from openfermion.config import EQ_TOLERANCE
 from openfermion.testing.testing_utils import EqualsTester
 
