@@ -55,7 +55,7 @@ jobs:
       security-events: write
     with:
       reason: '(weekly)'
-      debug: github.event.inputs.debug
+      debug: ${{github.event.inputs.debug || false}}
 
   scorecard-repo-scan:
     if: github.repository_owner == 'quantumlib'
@@ -68,4 +68,4 @@ jobs:
     secrets: inherit
     with:
       reason: '(weekly)'
-      debug: github.event.inputs.debug
+      debug: ${{github.event.inputs.debug || false}}
