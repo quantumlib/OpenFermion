@@ -36,17 +36,19 @@ permissions: read-all
 jobs:
   cirq-stable:
     name: Nightly Pytest Cirq stable
-    uses: ./.github/workflows/nightly-pytest.yaml
+    uses: ./.github/workflows/_nightly-cirq-test.yaml
     with:
       args: ''
       reason: '(nightly)'
+      cirq-release: 'stable'
 
   cirq-pre:
     name: Nightly Pytest Cirq pre-release
-    uses: ./.github/workflows/nightly-pytest.yaml
+    uses: ./.github/workflows/_nightly-cirq-test.yaml
     with:
       args: '--pre'
       reason: '(nightly)'
+      cirq-release: 'pre-release'
 
   codeql:
     name: Nightly CodeQL code scan

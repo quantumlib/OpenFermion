@@ -17,8 +17,10 @@
 # This workflow expects input values passed by nightly.yml.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: 'Nightly tests & scans – Pytest matrix'
-run-name: Run nightly Pytest
+# The tilde is only to make our sub-workflows be listed last in the GitHub UI.
+name: '~ Cirq version tests'
+run-name: >-
+  Run tests using the ${{inputs.cirq-release}} version of Cirq ${{inputs.reason}}
 
 on:
   workflow_call:
@@ -27,8 +29,12 @@ on:
       args:
         type: string
         required: false
-      # Why is this workflow being called?
+      # (For the job name) Why is this workflow being called?
       reason:
+        type: string
+        required: false
+      # (For the job name) What version of Cirq will be used?
+      cirq-release:
         type: string
         required: false
 
