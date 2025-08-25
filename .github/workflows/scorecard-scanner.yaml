@@ -63,7 +63,10 @@ jobs:
     if: github.repository_owner == 'quantumlib'
     name: Run Scorecard analyzer
     runs-on: ubuntu-24.04
-    permissions: write-all
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
