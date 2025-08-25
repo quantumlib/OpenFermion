@@ -48,7 +48,7 @@ def qubit_operator_to_pauli_sum(
         pauli_sum (PauliSum): cirq PauliSum object.
 
     Raises:
-        TypeError: if qubit_op is not a QubitOpertor.
+        TypeError: if qubit_op is not a QubitOperator.
     """
     if not isinstance(operator, QubitOperator):
         raise TypeError('Input must be a QubitOperator.')
