@@ -107,7 +107,12 @@ class OpenFermionPubChemTest(unittest.TestCase):
     def test_water_2d(self, mock_get_compounds):
         mock_compound = Mock()
         mock_compound.to_dict.return_value = {
-            'atoms': [{'element': 'O', 'x': 0, 'y': 0, 'z': 0}, {'element': 'H', 'x': 1, 'y': 0, 'z': 0}, {'element': 'H', 'x': 0, 'y': 1, 'z': 0}]}
+            'atoms': [
+                {'element': 'O', 'x': 0, 'y': 0, 'z': 0},
+                {'element': 'H', 'x': 1, 'y': 0, 'z': 0},
+                {'element': 'H', 'x': 0, 'y': 1, 'z': 0},
+            ]
+        }
         mock_get_compounds.return_value = [mock_compound]
         water_geometry = geometry_from_pubchem('water', structure='2d')
         self.water_natoms = len(water_geometry)
@@ -127,6 +132,7 @@ class OpenFermionPubChemTest(unittest.TestCase):
     @patch('openfermion.chem.pubchem.get_compounds')
     def test_retry_logic(self, mock_get_compounds):
         from pubchempy import ServerError
+
         mock_get_compounds.side_effect = [ServerError('Error'), 'Success']
         result = _get_compounds_with_retry('water', '3d')
         self.assertEqual(result, 'Success')
