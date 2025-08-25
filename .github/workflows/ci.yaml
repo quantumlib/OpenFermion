@@ -161,7 +161,7 @@ jobs:
           filters: |
             ci:
               - './.github/workflows/ci.yaml'
-              - './.github/workflows/nightly-pytest.yaml'
+              - './.github/workflows/_nightly-cirq-test.yaml'
             cff:
               - added|modified:
                   - '**/CITATION.cff'
