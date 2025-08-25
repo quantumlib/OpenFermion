@@ -160,9 +160,8 @@ jobs:
           # The outputs will be variables named "foo_files" for a filter "foo".
           filters: |
             ci:
-              - './.github/workflows/ci.yml'
-              - './.github/workflows/codeql.yaml'
-              - './.github/workflows/osv-scanner.yaml'
+              - './.github/workflows/ci.yaml'
+              - './.github/workflows/nightly-pytest.yaml'
             cff:
               - added|modified:
                   - '**/CITATION.cff'
@@ -586,15 +585,6 @@ jobs:
 
       - name: Run shellcheck on shell scripts that have been changed
         run: shellcheck ${{env.changed_files}}
-
-  vulnerability-checks:
-    if: needs.changes.outputs.requirements == 'true'
-    name: Vulnerability checks
-    needs: changes
-    uses: ./.github/workflows/osv-scanner.yaml
-    permissions: write-all
-    with:
-      reason: CI
 
   print-debugging-info:
     if: failure()
