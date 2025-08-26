@@ -13,16 +13,16 @@
 """Tests  symbolic_operator.py."""
 
 import copy
-import numpy
-import sympy
 import unittest
 import warnings
 
-from openfermion.config import EQ_TOLERANCE
-from openfermion.testing.testing_utils import EqualsTester
+import numpy
+import sympy
 
-from openfermion.ops.operators.symbolic_operator import SymbolicOperator
+from openfermion.config import EQ_TOLERANCE
 from openfermion.ops.operators.fermion_operator import FermionOperator
+from openfermion.ops.operators.symbolic_operator import SymbolicOperator
+from openfermion.testing.testing_utils import EqualsTester
 
 
 class DummyOperator1(SymbolicOperator):

@@ -12,11 +12,12 @@
 
 """Tests fermion_operator.py."""
 
-import sympy
 import unittest
 
-from openfermion.ops.operators.fermion_operator import FermionOperator
+import sympy
+
 from openfermion.hamiltonians import number_operator
+from openfermion.ops.operators.fermion_operator import FermionOperator
 
 
 class FermionOperatorTest(unittest.TestCase):
