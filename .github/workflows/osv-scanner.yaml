@@ -20,18 +20,18 @@
 # JavaScript, and others. The findings are reported in the repo's code-scanning
 # results page, https://github.com/quantumlib/REPO/security/code-scanning/.
 #
-# The OSV project provides a GA workflow that you can reference as a step with
+# Note: the OSV project provides a workflow you can reference as a step with
 # uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml.
 # Unfortunately, that workflow hardcodes some behaviors (such as uploading the
-# SARIF file to the workflow Actions tab, which we rarely need). The workflow
-# below is basically a heavily modified version of theirs.
+# SARIF file to the workflow Actions tab, which we have never needed). The
+# workflow in this file is basically a heavily modified version of theirs.
 #
 # For more OSV scanner examples and options, including how to ignore specific
 # vulnerabilities, see https://google.github.io/osv-scanner/github-action/.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-name: OSV code scan
-run-name: Run OSV vulnerability scanner ${{inputs.reason}}
+name: OSV known vulnerabilities scanner
+run-name: Run OSV (open-source vulnerabilities) scanner ${{inputs.reason}}
 
 on:
   pull_request:
@@ -45,20 +45,36 @@ on:
     types:
       - checks_requested
 
-  # Allow manual invocation.
-  workflow_dispatch:
-
-  # Allow calling from nightly.yaml.
+  # Allow calling from other workflows.
   workflow_call:
     inputs:
       reason:
+        description: 'Append text to workflow run name:'
         type: string
+      debug:
+        description: 'Run with debugging options'
+        type: boolean
+        default: false
 
-# Declare default permissions as read only.
+  # Allow manual invocation.
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Run with debugging options'
+        type: boolean
+        default: true
+
+# Declare default workflow permissions as read only.
 permissions: read-all
+
+concurrency:
+  # Cancel any previously-started but still active runs on the same branch.
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
 jobs:
   osv-scan:
+    if: github.repository_owner == 'quantumlib'
     name: Run OSV scanner
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -69,9 +85,12 @@ jobs:
       security-events: write
       # Needed to upload SARIF file to CodeQL.
       contents: read
+    env:
+      # Setting Bash SHELLOPTS here takes effect for all shell commands below.
+      SHELLOPTS: ${{inputs.debug && 'xtrace' || '' }}
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
 
@@ -82,10 +101,11 @@ jobs:
 
       - name: Run OSV scanner on existing code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@456ceb78310755116e0a3738121351006286b797 # v2.2.1
+        uses: google/osv-scanner-action/osv-scanner-action@b00f71e051ddddc6e46a193c31c8c0bf283bf9e6 # v2.1.0
         continue-on-error: true
         with:
           scan-args: |-
+            --include-git-root
             --format=json
             --output=old-results.json
             --recursive
@@ -99,10 +119,11 @@ jobs:
 
       - name: Run OSV scanner on new code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@456ceb78310755116e0a3738121351006286b797 # v2.2.1
+        uses: google/osv-scanner-action/osv-scanner-action@b00f71e051ddddc6e46a193c31c8c0bf283bf9e6 # v2.1.0
         continue-on-error: true
         with:
           scan-args: |-
+            --include-git-root
             --format=json
             --output=new-results.json
             --recursive
@@ -110,7 +131,7 @@ jobs:
 
       - name: Run the OSV scanner reporter
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-reporter-action@456ceb78310755116e0a3738121351006286b797 # v2.2.1
+        uses: google/osv-scanner-action/osv-reporter-action@b00f71e051ddddc6e46a193c31c8c0bf283bf9e6 # v2.1.0
         with:
           scan-args: |-
             --output=osv-results.sarif
@@ -122,9 +143,17 @@ jobs:
       - name: Upload results to the repository's code-scanning results dashboard
         id: upload_artifact
         # yamllint disable rule:line-length
-        uses: github/codeql-action/upload-sarif@96f518a34f7a870018057716cc4d7a5c014bd61c # v3.29.10
+        uses: github/codeql-action/upload-sarif@51f77329afa6477de8c49fc9c7046c15b9a4e79d # v3.29.5
         with:
           sarif_file: osv-results.sarif
+
+      - if: github.event.inputs.debug == true
+        name: Upload results as artifacts to the workflow Summary page
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
 
       - name: Error troubleshooter
         if: ${{always() && steps.upload_artifact.outcome == 'failure'}}
