@@ -433,7 +433,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """
         if isinstance(addend, type(self)):
             for term in addend.terms:
-                self.terms[term] = self.terms.get(term, 0.0) + addend.terms[term]
+                self.terms[term] = self.terms.get(term, 0) + addend.terms[term]
                 if self._issmall(self.terms[term]):
                     del self.terms[term]
         elif isinstance(addend, COEFFICIENT_TYPES):
@@ -480,7 +480,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """
         if isinstance(subtrahend, type(self)):
             for term in subtrahend.terms:
-                self.terms[term] = self.terms.get(term, 0.0) - subtrahend.terms[term]
+                self.terms[term] = self.terms.get(term, 0) - subtrahend.terms[term]
                 if self._issmall(self.terms[term]):
                     del self.terms[term]
         elif isinstance(subtrahend, COEFFICIENT_TYPES):
