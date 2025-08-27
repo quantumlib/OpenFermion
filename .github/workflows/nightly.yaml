@@ -34,14 +34,31 @@ permissions: read-all
 jobs:
   cirq-stable:
     name: Nightly Pytest Cirq stable
-    uses: ./.github/workflows/nightly-pytest.yaml
+    uses: ./.github/workflows/_nightly-cirq-test.yaml
     with:
       args: ''
       reason: '(nightly)'
+      cirq-release: 'stable'
 
   cirq-pre:
     name: Nightly Pytest Cirq pre-release
-    uses: ./.github/workflows/nightly-pytest.yaml
+    uses: ./.github/workflows/_nightly-cirq-test.yaml
     with:
       args: '--pre'
+      reason: '(nightly)'
+      cirq-release: 'pre-release'
+
+  osv:
+    name: Nightly OSV code scan
+    uses: ./.github/workflows/osv-scanner.yaml
+    permissions: write-all
+    with:
+      reason: '(nightly)'
+
+  scorecard:
+    name: Nightly Scorecard analysis
+    uses: ./.github/workflows/scorecard-scanner.yaml
+    permissions: write-all
+    secrets: inherit
+    with:
       reason: '(nightly)'
