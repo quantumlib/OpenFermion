@@ -605,7 +605,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
     def __eq__(self, other):
         """Approximate numerical equality (not true equality)."""
-        return self.isclose(other)
+        return self.isclose(other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE)
 
     def __ne__(self, other):
         return not (self == other)
@@ -618,15 +618,17 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         term, coefficient = next(self._iter)
         return self.__class__(term=term, coefficient=coefficient)
 
-    def isclose(self, other, tol=EQ_TOLERANCE):
+    def isclose(self, other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE):
         """Check if other (SymbolicOperator) is close to self.
 
         Comparison is done for each term individually. Return True
         if the difference between each term in self and other is
-        less than EQ_TOLERANCE
+        less than the specified tolerance.
 
         Args:
             other(SymbolicOperator): SymbolicOperator to compare against.
+            rel_tol(float): Relative tolerance.
+            abs_tol(float): Absolute tolerance.
         """
         if not isinstance(self, type(other)):
             return NotImplemented
@@ -635,17 +637,26 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         for term in set(self.terms).intersection(set(other.terms)):
             a = self.terms[term]
             b = other.terms[term]
-            if not (isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr)):
-                tol *= max(1, abs(a), abs(b))
-            if self._issmall(a - b, tol) is False:
+            if isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr):
+                if self._issmall(a - b, abs_tol) is False:
+                    return False
+            elif not abs(a - b) <= abs_tol + rel_tol * max(abs(a), abs(b)):
                 return False
         # terms only in one (compare to 0.0 so only abs_tol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if self._issmall(self.terms[term], tol) is False:
+                coeff = self.terms[term]
+                if isinstance(coeff, sympy.Expr):
+                    if self._issmall(coeff, abs_tol) is False:
+                        return False
+                elif not abs(coeff) <= abs_tol:
                     return False
             else:
-                if self._issmall(other.terms[term], tol) is False:
+                coeff = other.terms[term]
+                if isinstance(coeff, sympy.Expr):
+                    if self._issmall(coeff, abs_tol) is False:
+                        return False
+                elif not abs(coeff) <= abs_tol:
                     return False
         return True
 
