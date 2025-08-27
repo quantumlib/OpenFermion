@@ -48,13 +48,6 @@ jobs:
       reason: '(nightly)'
       cirq-release: 'pre-release'
 
-  codeql:
-    name: Nightly CodeQL code scan
-    uses: ./.github/workflows/codeql.yaml
-    permissions: write-all
-    with:
-      reason: '(nightly)'
-
   osv:
     name: Nightly OSV code scan
     uses: ./.github/workflows/osv-scanner.yaml
@@ -64,7 +57,7 @@ jobs:
 
   scorecard:
     name: Nightly Scorecard analysis
-    uses: ./.github/workflows/scorecard.yaml
+    uses: ./.github/workflows/scorecard-scanner.yaml
     permissions: write-all
     secrets: inherit
     with:
