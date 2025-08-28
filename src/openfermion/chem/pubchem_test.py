@@ -21,13 +21,15 @@
 #   limitations under the License.
 """Tests for pubchem.py."""
 
+import json
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 import numpy
 import pytest
-import json
+from pubchempy import ServerError
 
-from openfermion.chem.pubchem import geometry_from_pubchem, _get_compounds_with_retry
+from openfermion.chem.pubchem import _get_compounds_with_retry, geometry_from_pubchem
 from openfermion.testing.testing_utils import module_importable
 
 using_pubchempy = pytest.mark.skipif(
@@ -131,9 +133,14 @@ class OpenFermionPubChemTest(unittest.TestCase):
 
     @patch('openfermion.chem.pubchem.get_compounds')
     def test_retry_logic(self, mock_get_compounds):
-        from pubchempy import ServerError
-
         mock_get_compounds.side_effect = [ServerError('Error'), 'Success']
         result = _get_compounds_with_retry('water', '3d')
         self.assertEqual(result, 'Success')
         self.assertEqual(mock_get_compounds.call_count, 2)
+
+    @patch('openfermion.chem.pubchem.get_compounds')
+    def test_retry_logic_exception(self, mock_get_compounds):
+        mock_get_compounds.side_effect = ServerError('Error')
+        with pytest.raises(ServerError):
+            _get_compounds_with_retry('water', '3d')
+        self.assertEqual(mock_get_compounds.call_count, 3)
