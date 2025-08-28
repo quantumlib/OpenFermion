@@ -9,6 +9,22 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+import time
+from pubchempy import get_compounds, PubChemHTTPError, ServerError
+
+
+def _get_compounds_with_retry(name: str, record_type: str):
+    """Get compounds from PubChem with retry logic."""
+    max_retries = 3
+    retry_delay = 5  # seconds
+    for i in range(max_retries):
+        try:
+            return get_compounds(name, 'name', record_type=record_type)
+        except (PubChemHTTPError, ConnectionError, ServerError) as e:
+            if i < max_retries - 1:
+                time.sleep(retry_delay)
+            else:
+                raise e
 
 
 def geometry_from_pubchem(name: str, structure: str = None):
@@ -30,17 +46,15 @@ def geometry_from_pubchem(name: str, structure: str = None):
         geometry: a list of tuples giving the coordinates of each atom with
         distances in Angstrom.
     """
-    import pubchempy
-
     if structure in ['2d', '3d']:
-        pubchempy_molecule = pubchempy.get_compounds(name, 'name', record_type=structure)
+        pubchempy_molecule = _get_compounds_with_retry(name, record_type=structure)
     elif structure is None:
         # Ideally get the 3-D geometry if available.
-        pubchempy_molecule = pubchempy.get_compounds(name, 'name', record_type='3d')
+        pubchempy_molecule = _get_compounds_with_retry(name, record_type='3d')
 
         # If the 3-D geometry isn't available, get the 2-D geometry instead.
         if not pubchempy_molecule:
-            pubchempy_molecule = pubchempy.get_compounds(name, 'name', record_type='2d')
+            pubchempy_molecule = _get_compounds_with_retry(name, record_type='2d')
     else:
         raise ValueError('Incorrect value for the argument structure=%s' % structure)
 
