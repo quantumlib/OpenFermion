@@ -12,19 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Zero-configuration modular workflow to run the OSSF Scorecard scanner.
+# Summary: run the OSSF Scorecard scanner on PRs and every night.
 #
 # Scorecard (https://github.com/ossf/scorecard) is a repository-scanning tool
 # that evaluates a project's security practices. Its use is suggested by
 # Google's GitHub team. Scorecard's findings are reported in a repo's scanning
 # results page, https://github.com/quantumlib/REPO/security/code-scanning/.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: Scorecard analysis
-run-name: Run Scorecard best-practices analyzer ${{inputs.reason}}
+run-name: Run Scorecard best-practices analyzer
 
 on:
+  schedule:
+    - cron: '15 4 * * *'
+
   pull_request:
     types: [opened, synchronize]
     branches:
@@ -36,17 +37,6 @@ on:
     types:
       - checks_requested
 
-  # Allow calling from nightly.yaml.
-  workflow_call:
-    inputs:
-      reason:
-        description: 'Append text to workflow run name:'
-        type: string
-      debug:
-        description: 'Run with debugging options'
-        type: boolean
-        default: false
-
   # Allow manual invocation.
   workflow_dispatch:
     inputs:
@@ -57,6 +47,11 @@ on:
 
 # Declare default workflow permissions as read only.
 permissions: read-all
+
+concurrency:
+  # Cancel any previously-started but still active runs on the same branch.
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
 jobs:
   scorecard:
