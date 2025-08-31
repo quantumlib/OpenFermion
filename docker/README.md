@@ -16,7 +16,7 @@ OpenFermion (or any of its plugins) using the standard procedure.
 
 - Git
 - Python 3.12
-- [Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main)
+- [Miniforge](https://github.com/conda-forge/miniforge)
 - [OpenFermion](https://github.com/quantumlib/OpenFermion)
 - [Cirq](https://github.com/quantumlib/Cirq)
 - [Psi4](http://www.psicode.org)
@@ -29,27 +29,27 @@ OpenFermion (or any of its plugins) using the standard procedure.
 ## Setting up Docker for the first time
 
 The Dockerfile is based on the [Ubuntu image](https://hub.docker.com/_/ubuntu) (ver. 22.04).
-It creates a Python (ver. 3.12) virtual environemnt (named `fermion`) using Miniconda and installs all dependencies within it. Psi4 is installed with a conda [command](https://psicode.org/installs/v191/).
-The default configuration uses the Miniconda installer (ver. 25.5.1-1) for Python 3.12 on Linux `aarch64` architecture.
+It creates a Python (ver. 3.12) virtual environemnt (named `fermion`) using Miniforge and installs all dependencies within it. Psi4 is installed with a conda [command](https://psicode.org/installs/v191/).
+The default configuration uses the latest Miniforge installer on Linux `aarch64` architecture.
 
 ### Customizing the Environment
-You can manually edit the Dockerfile if you need to set up a different development environment (e.g., change the Ubuntu, Python, Miniconda, or Psi4 version).
+You can manually edit the Dockerfile if you need to set up a different development environment (e.g., changing the Ubuntu, Python, Miniforge, or Psi4 version).
 
 If your local machine builds Linux `x86_64` architecture with the Dockerfile, the `wget` command 
-for the Miniconda installer (Line 40 in the Dockerfile)
+for the Miniforge installer (Line 40 in the Dockerfile)
 ```
-wget https://repo.anaconda.com/miniconda/Miniconda3-py312_25.5.1-1-Linux-aarch64.sh -O ~/miniconda3/miniconda.sh && \
+wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh"
 ```
 must be changed to 
 ```
-wget https://repo.anaconda.com/miniconda/Miniconda3-py312_25.5.1-1-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh && \
+wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh"
 ```
-You can check other Miniconda installers [here](https://repo.anaconda.com/miniconda/).
+You can check other Miniforge installers [here](https://github.com/conda-forge/miniforge?tab=readme-ov-file#requirements-and-installers).
 
 ### Building Docker Image
 You first need to install [Docker](https://www.docker.com/).
 Once Docker is setup, one can navigate to the folder containing the
-Dockerfile for building the OpenFermion image (docker/dockerfile) and run
+Dockerfile for building the OpenFermion image (/docker/dockerfile) and run
 
 ```
 docker build -t openfermion_docker .
@@ -59,15 +59,21 @@ where "openfermion_docker" is just an arbitrary name for our docker image.
 Building the Dockerfile starts from a base image of Ubuntu and then installs
 OpenFermion, its plugins, and the necessary applications needed for running these
 programs. This is a fairly involved setup and will take some time
-(perhaps up to thirty minutes depending on the computer) and disk space (several gigabytes). Once installation has completed, run the image with
+(perhaps up to thirty minutes depending on the computer) and disk space (several gigabytes). 
 
+### Running the Container
+Once the image has been built, run the image with
 ```
 docker run -it --name openfermion_container -v $(pwd):/root/workspace openfermion_docker
 ```
-where "openfermion_container" is an arbitrary choice for the name of our docker container. This command will mount your current local directory to `/root/workspace` inside the running container. You can activate the virtual environment `fermion` in the container with
+where "openfermion_container" is an arbitrary choice for the name of our docker container. This command will mount your current local directory to `/root/workspace` inside the running container.
+By default, the virtual environment `fermion` is automatically activated in the running container.
+After installing the `Dev Containers` extension in Visual Studio Code, 
+you can open the container with the following option:
 ```
-source activate fermion
+Command Palette -> Dev Containers: Attach to Running Container..
 ```
+and select `openfermion_container` for this example.
 
 An alternative way of loading files onto the Docker container is through
 remote repos such as GitHub. Git is installed in the Docker image.
