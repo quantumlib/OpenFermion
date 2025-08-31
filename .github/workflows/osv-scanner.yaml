@@ -28,7 +28,7 @@
 # For more OSV scanner examples and options, including how to ignore specific
 # vulnerabilities, see https://google.github.io/osv-scanner/github-action/.
 
-name: OSV vulnerabilities scanner
+name: OSV vulnerabilities scan
 run-name: Run OSV (open-source vulnerabilities) scanner
 
 on:
