@@ -89,7 +89,7 @@ jobs:
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
 
       - name: Install ${{matrix.cirq}}
-        run: pip install ${{matrix.cirq}}
+        run: pip install -U ${{matrix.cirq}}
 
       - name: Set up Pytest output problem matcher
         run: echo '::add-matcher::.github/problem-matchers/pytest.json'
