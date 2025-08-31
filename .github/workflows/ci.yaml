@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# OpenFermion continuous integration status checks.
+# Summary: OpenFermion continuous integration checks.
 #
 # This workflow runs various tests to verify that changes to the OpenFermion
-# codebase pass validation and conform to project format and style standards.
+# code base pass validation and conform to project format and style standards.
 # It triggers on certain events such as pull requests and merge-queue merges,
 # and can also be invoked manually via the "Run workflow" button at
 # https://github.com/quantumlib/OpenFermion/actions/workflows/ci.yaml
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 name: Continuous integration checks
 run-name: CI checks for ${{github.event_name}} by ${{github.actor}}
@@ -585,43 +583,3 @@ jobs:
 
       - name: Run shellcheck on shell scripts that have been changed
         run: shellcheck ${{env.changed_files}}
-
-  print-debugging-info:
-    if: failure()
-    name: Print debugging info upon job failure
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - name: Check out a copy of the git repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
-
-      - name: Set up Python with caching of pip dependencies
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: 'x64'
-          cache: pip
-          cache-dependency-path: ${{env.python_dep_files}}
-
-      - name: Print debugging info upon job failure
-        shell: bash
-        env:
-          GITHUB_CONTEXT: ${{toJson(github)}}
-          RUNNER_CONTEXT: ${{toJson(runner)}}
-        run: |
-          echo '::group:: Shell environment'
-          env
-          echo '::endgroup::'
-          echo '::group:: Installed Python packages'
-          pip list
-          echo '::endgroup::'
-          echo '::group:: GitHub context'
-          echo "The job_id is: $GITHUB_JOB"
-          echo "The id of this action is: $GITHUB_ACTION"
-          echo "The run id is: $GITHUB_RUN_ID"
-          echo "GitHub SHA: $GITHUB_SHA"
-          echo "$GITHUB_CONTEXT"
-          echo '::endgroup::'
-          echo '::group:: GitHub runner context'
-          echo "$RUNNER_CONTEXT"
-          echo '::endgroup::'
