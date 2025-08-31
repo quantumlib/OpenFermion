@@ -12,37 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Reusable workflow called by nightly.yaml.
-# This workflow expects input values passed by nightly.yml.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Summary: run Pytest suite against stable & dev releases of Cirq.
 
-# The tilde is only to make our sub-workflows be listed last in the GitHub UI.
-name: '~ Cirq version tests'
-run-name: >-
-  Run tests using the ${{inputs.cirq-release}} version of Cirq ${{inputs.reason}}
+name: Test with Cirq releases
+run-name: 'Run OpenFermion Pytest suite with stable & dev releases of Cirq'
 
 on:
-  workflow_call:
-    inputs:
-      # CLI argument string to pass to pytest.
-      args:
-        type: string
-        required: false
-      # (For the job name) Why is this workflow being called?
-      reason:
-        type: string
-        required: false
-      # (For the job name) What version of Cirq will be used?
-      cirq-release:
-        type: string
-        required: false
+  schedule:
+    - cron: '15 2 * * *'
 
   # Allow manual invocation.
   workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Run with debugging options'
+        type: boolean
+        default: true
 
 # Declare default workflow permissions as read only.
 permissions: read-all
+
+# In case of manual invocation, cancel any previously-started runs.
+concurrency:
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
 jobs:
   Pytest:
@@ -58,6 +51,7 @@ jobs:
         # making all necessary Python dependencies available on those combos.
         python-version: ['3.11.9', '3.12.7', '3.13.1']
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-14, windows-2025]
+        cirq: ['cirq-core', 'cirq-core~=1.0.dev0']
         arch: [x64, arm64]
         exclude:
           - os: ubuntu-24.04
@@ -94,17 +88,17 @@ jobs:
       - name: Install OpenFermion Python requirements
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
 
-      - name: Install cirq-core (current stable version)
-        run: pip install -U cirq-core ${{inputs.args}}
+      - name: Install ${{matrix.cirq}}
+        run: pip install ${{matrix.cirq}}
 
       - name: Set up Pytest output problem matcher
         run: echo '::add-matcher::.github/problem-matchers/pytest.json'
 
       - name: Run Pytest
-        run: check/pytest
+        run: check/pytest ${{inputs.debug && '-v' || '' }}
 
       - name: Print debugging info upon job failure
-        if: failure()
+        if: ${{failure() || inputs.debug == true}}
         shell: bash
         env:
           GITHUB_CONTEXT: ${{toJson(github)}}
