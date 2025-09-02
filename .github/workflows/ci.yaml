@@ -100,8 +100,9 @@ jobs:
       gha: ${{steps.filter.outputs.gha}}
       gha_files: ${{steps.filter.outputs.gha_files}}
 
-      # The following all test both the relevant file condition & the CI config
-      # because a change in the CI workflows can affect the CI check results.
+      # The rest all test both the relevant files and ALSO tools & scripts b/c
+      # a change in the CI workflows or scripts can affect the check results.
+
       python: ${{steps.filter.outputs.python || steps.filter.outputs.ci}}
       python_files: ${{steps.filter.outputs.python_files}}
 
@@ -159,9 +160,10 @@ jobs:
           # The outputs will be variables named "foo_files" for a filter "foo".
           filters: |
             ci:
-              - './.github/workflows/ci.yml'
-              - './.github/workflows/codeql.yaml'
-              - './.github/workflows/osv-scanner.yaml'
+              - './.github/workflows/**'
+              - './.github/problem-matchers/**'
+              - './check/**'
+              - './dev_tools/**'
             cff:
               - added|modified:
                   - '**/CITATION.cff'
