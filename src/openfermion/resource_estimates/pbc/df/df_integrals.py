@@ -86,7 +86,6 @@ class DFABKpointIntegrals:
                 self.reverse_k_transfer_map[kidx, kmq_idx] = qidx
 
         # set up for later when we construct DF
-        self.df_factors = None
         self.a_mats = None
         self.b_mats = None
 
