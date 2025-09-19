@@ -605,7 +605,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
     def __eq__(self, other):
         """Approximate numerical equality (not true equality)."""
-        return self.isclose(other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE)
+        return self.isclose(other)
 
     def __ne__(self, other):
         return not (self == other)
@@ -618,7 +618,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         term, coefficient = next(self._iter)
         return self.__class__(term=term, coefficient=coefficient)
 
-    def isclose(self, other, rel_tol=EQ_TOLERANCE, abs_tol=EQ_TOLERANCE):
+    def isclose(self, other, tol=None, rtol=EQ_TOLERANCE, atol=EQ_TOLERANCE):
         """Check if other (SymbolicOperator) is close to self.
 
         Comparison is done for each term individually. Return True
@@ -627,36 +627,55 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
         Args:
             other(SymbolicOperator): SymbolicOperator to compare against.
-            rel_tol(float): Relative tolerance.
-            abs_tol(float): Absolute tolerance.
+            tol(float): This parameter is deprecated since version 1.8.0.
+                Use `rtol` and/or `atol` instead. If `tol` is provided, it
+                is used as the value of `atol`.
+            rtol(float): Relative tolerance used in comparing each term in
+                self and other.
+            atol(float): Absolute tolerance used in comparing each term in
+                self and other.
         """
         if not isinstance(self, type(other)):
             return NotImplemented
+
+        if tol is not None:
+            if rtol != EQ_TOLERANCE or atol != EQ_TOLERANCE:
+                raise ValueError(
+                    'Parameters rtol and atol are mutually exclusive with the'
+                    ' deprecated parameter tol; use either tol or the other two,'
+                    ' not in combination.'
+                )
+            warnings.warn(
+                'Parameter tol is deprecated. Use rtol and/or atol instead.',
+                DeprecationWarning,
+                stacklevel=2,  # Identify the location of the warning.
+            )
+            atol = tol
 
         # terms which are in both:
         for term in set(self.terms).intersection(set(other.terms)):
             a = self.terms[term]
             b = other.terms[term]
             if isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr):
-                if self._issmall(a - b, abs_tol) is False:
+                if self._issmall(a - b, atol) is False:
                     return False
-            elif not abs(a - b) <= abs_tol + rel_tol * max(abs(a), abs(b)):
+            elif not abs(a - b) <= atol + rtol * max(abs(a), abs(b)):
                 return False
-        # terms only in one (compare to 0.0 so only abs_tol)
+        # terms only in one (compare to 0.0 so only atol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
                 coeff = self.terms[term]
                 if isinstance(coeff, sympy.Expr):
-                    if self._issmall(coeff, abs_tol) is False:
+                    if self._issmall(coeff, atol) is False:
                         return False
-                elif not abs(coeff) <= abs_tol:
+                elif not abs(coeff) <= atol:
                     return False
             else:
                 coeff = other.terms[term]
                 if isinstance(coeff, sympy.Expr):
-                    if self._issmall(coeff, abs_tol) is False:
+                    if self._issmall(coeff, atol) is False:
                         return False
-                elif not abs(coeff) <= abs_tol:
+                elif not abs(coeff) <= atol:
                     return False
         return True
 
