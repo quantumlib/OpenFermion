@@ -66,7 +66,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
     @staticmethod
     def _issmall(val, tol=EQ_TOLERANCE):
-        '''Checks whether a value is near-zero
+        '''Checks whether a value is near zero.
 
         Parses the allowed coefficients above for near-zero tests.
 
@@ -657,7 +657,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             a = self.terms[term]
             b = other.terms[term]
             if isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr):
-                if self._issmall(a - b, atol) is False:
+                if not self._issmall(a - b, atol):
                     return False
             elif not abs(a - b) <= atol + rtol * max(abs(a), abs(b)):
                 return False
@@ -666,14 +666,14 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             if term in self.terms:
                 coeff = self.terms[term]
                 if isinstance(coeff, sympy.Expr):
-                    if self._issmall(coeff, atol) is False:
+                    if not self._issmall(coeff, atol):
                         return False
                 elif not abs(coeff) <= atol:
                     return False
             else:
                 coeff = other.terms[term]
                 if isinstance(coeff, sympy.Expr):
-                    if self._issmall(coeff, atol) is False:
+                    if not self._issmall(coeff, atol):
                         return False
                 elif not abs(coeff) <= atol:
                     return False
