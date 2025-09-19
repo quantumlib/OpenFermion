@@ -86,7 +86,6 @@ class DFABKpointIntegrals:
                 self.reverse_k_transfer_map[kidx, kmq_idx] = qidx
 
         # set up for later when we construct DF
-        self.df_factors = None
         self.a_mats = None
         self.b_mats = None
 
@@ -168,8 +167,6 @@ class DFABKpointIntegrals:
         """
         if thresh is None:
             thresh = 1.0e-13
-        if self.df_factors is not None:
-            return self.df_factors
 
         nkpts = self.nk
         nmo = self.nao
