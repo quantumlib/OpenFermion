@@ -8,14 +8,28 @@
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY, either express or implied.
+#   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for pubchem.py."""
 
+import json
 import unittest
+from unittest.mock import Mock, patch
+
 import numpy
 import pytest
+from pubchempy import ServerError
 
-from openfermion.chem.pubchem import geometry_from_pubchem
+from openfermion.chem.pubchem import _get_compounds_with_retry, geometry_from_pubchem
 from openfermion.testing.testing_utils import module_importable
 
 using_pubchempy = pytest.mark.skipif(
@@ -25,7 +39,22 @@ using_pubchempy = pytest.mark.skipif(
 
 @using_pubchempy
 class OpenFermionPubChemTest(unittest.TestCase):
-    def test_water(self):
+    @patch('openfermion.chem.pubchem._get_compounds_with_retry')
+    def test_water(self, mock_get_compounds):
+        mock_compound = Mock()
+        mock_compound.to_dict.return_value = {
+            'atoms': [
+                {'element': 'O', 'x': 0.0, 'y': 0.0, 'z': 0.0},
+                {'element': 'H', 'x': 0.95, 'y': 0.0, 'z': 0.0},
+                {
+                    'element': 'H',
+                    'x': 0.95 * numpy.cos(104.5 * numpy.pi / 180.0),
+                    'y': 0.95 * numpy.sin(104.5 * numpy.pi / 180.0),
+                    'z': 0.0,
+                },
+            ]
+        }
+        mock_get_compounds.return_value = [mock_compound]
         water_geometry = geometry_from_pubchem('water')
         self.water_natoms = len(water_geometry)
         self.water_atoms = [water_atom[0] for water_atom in water_geometry]
@@ -40,14 +69,8 @@ class OpenFermionPubChemTest(unittest.TestCase):
         self.water_bond_length_1 = numpy.linalg.norm(water_oxygen_hydrogen1)
         self.water_bond_length_2 = numpy.linalg.norm(water_oxygen_hydrogen2)
         self.water_bond_angle = numpy.arccos(
-            numpy.dot(
-                water_oxygen_hydrogen1,
-                water_oxygen_hydrogen2
-                / (
-                    numpy.linalg.norm(water_oxygen_hydrogen1)
-                    * numpy.linalg.norm(water_oxygen_hydrogen2)
-                ),
-            )
+            numpy.dot(water_oxygen_hydrogen1, water_oxygen_hydrogen2)
+            / (self.water_bond_length_1 * self.water_bond_length_2)
         )
 
         water_natoms = 3
@@ -64,19 +87,35 @@ class OpenFermionPubChemTest(unittest.TestCase):
         self.assertTrue(water_bond_angle_low <= self.water_bond_angle)
         self.assertTrue(water_bond_angle_high >= self.water_bond_angle)
 
-    def test_helium(self):
+    @patch('openfermion.chem.pubchem._get_compounds_with_retry')
+    def test_helium(self, mock_get_compounds):
+        mock_compound = Mock()
+        mock_compound.to_dict.return_value = {'atoms': [{'element': 'He', 'x': 0, 'y': 0, 'z': 0}]}
+        mock_get_compounds.return_value = [mock_compound]
         helium_geometry = geometry_from_pubchem('helium')
         self.helium_natoms = len(helium_geometry)
 
         helium_natoms = 1
         self.assertEqual(helium_natoms, self.helium_natoms)
 
-    def test_none(self):
+    @patch('openfermion.chem.pubchem._get_compounds_with_retry')
+    def test_none(self, mock_get_compounds):
+        mock_get_compounds.return_value = None
         none_geometry = geometry_from_pubchem('none')
 
         self.assertIsNone(none_geometry)
 
-    def test_water_2d(self):
+    @patch('openfermion.chem.pubchem._get_compounds_with_retry')
+    def test_water_2d(self, mock_get_compounds):
+        mock_compound = Mock()
+        mock_compound.to_dict.return_value = {
+            'atoms': [
+                {'element': 'O', 'x': 0, 'y': 0, 'z': 0},
+                {'element': 'H', 'x': 1, 'y': 0, 'z': 0},
+                {'element': 'H', 'x': 0, 'y': 1, 'z': 0},
+            ]
+        }
+        mock_get_compounds.return_value = [mock_compound]
         water_geometry = geometry_from_pubchem('water', structure='2d')
         self.water_natoms = len(water_geometry)
 
@@ -91,3 +130,17 @@ class OpenFermionPubChemTest(unittest.TestCase):
 
         with pytest.raises(ValueError, match='Incorrect value for the argument structure'):
             _ = geometry_from_pubchem('water', structure='foo')
+
+    @patch('openfermion.chem.pubchem.get_compounds')
+    def test_retry_logic(self, mock_get_compounds):
+        mock_get_compounds.side_effect = [ServerError('Error'), 'Success']
+        result = _get_compounds_with_retry('water', '3d')
+        self.assertEqual(result, 'Success')
+        self.assertEqual(mock_get_compounds.call_count, 2)
+
+    @patch('openfermion.chem.pubchem.get_compounds')
+    def test_retry_logic_exception(self, mock_get_compounds):
+        mock_get_compounds.side_effect = ServerError('Error')
+        with pytest.raises(ServerError):
+            _get_compounds_with_retry('water', '3d')
+        self.assertEqual(mock_get_compounds.call_count, 3)
