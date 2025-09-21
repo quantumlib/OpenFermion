@@ -1268,7 +1268,6 @@ def get_sparse_operator(operator, n_qubits=None, trunc=None, hbar=1.0):
     elif isinstance(operator, FermionOperator):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
-        operator.simplify()
         return qubit_operator_sparse(operator, n_qubits)
     elif isinstance(operator, (BosonOperator, QuadOperator)):
         return boson_operator_sparse(operator, trunc, hbar)
