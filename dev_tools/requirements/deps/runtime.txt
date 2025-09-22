@@ -6,6 +6,6 @@ numpy>=1.26
 pubchempy
 requests~=2.32.2
 
-scipy~=1.15
+scipy~=1.13
 
 sympy
