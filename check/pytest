@@ -47,7 +47,7 @@ if [ -z "${ACTUALLY_QUIET}" ]; then
 else
     # Filter out lines like "...F....x...      [ 42%]", with coloring.
     pytest -c dev_tools/conf/pytest.ini \
-           --rootdir="$rootdir" -q --color=yes "${PYTEST_ARGS[@]}" |
-        grep -Pv '^(.\[0m)?[\.FEsx]+(.\[36m)?\s+\[\s*\d+%\](.\[0m)?$'
+           --rootdir="$rootdir" -q --color=yes "${PYTEST_ARGS[@]}" | \
+        grep -Ev '^(\x1B\[0m)?[\.FEsx]+(\x1B\[36m)?[[:space:]]+\[[[:space:]]*[0-9]+%\](\x1B\[0m)?$'
     exit "${PIPESTATUS[0]}"
 fi
