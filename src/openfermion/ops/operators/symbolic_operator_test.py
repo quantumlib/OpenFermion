@@ -13,16 +13,16 @@
 """Tests  symbolic_operator.py."""
 
 import copy
+import numpy
+import sympy
 import unittest
 import warnings
 
-import numpy
-import sympy
-
 from openfermion.config import EQ_TOLERANCE
+from openfermion.testing.testing_utils import EqualsTester
+
 from openfermion.ops.operators.fermion_operator import FermionOperator
 from openfermion.ops.operators.symbolic_operator import SymbolicOperator
-from openfermion.testing.testing_utils import EqualsTester
 
 
 class DummyOperator1(SymbolicOperator):
@@ -868,7 +868,76 @@ class SymbolicOperatorTest1(unittest.TestCase):
         term = DummyOperator1(ops, coeff)
         high = term**10
         expected = DummyOperator1(ops * 10, coeff**10)
-        self.assertTrue(expected == high)
+        self.assertTrue(high.isclose(expected, rtol=1e-12, atol=1e-12))
+
+    def test_isclose_parameter_deprecation(self):
+        op1 = DummyOperator1('0^ 1', 1.0)
+        op2 = DummyOperator1('0^ 1', 1.001)
+
+        with self.assertWarns(DeprecationWarning):
+            op1.isclose(op2, tol=0.01)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=DeprecationWarning)
+            self.assertTrue(op1.isclose(op2, tol=0.001))
+            self.assertFalse(op1.isclose(op2, tol=0.0001))
+
+    def test_isclose_parameter_combos(self):
+        op1 = DummyOperator1('0^ 1', 1.0)
+        op2 = DummyOperator1('0^ 1', 1.001)
+
+        with self.assertRaises(ValueError):
+            op1.isclose(op2, tol=0.01, rtol=1e-5)
+
+        with self.assertRaises(ValueError):
+            op1.isclose(op2, tol=0.01, atol=1e-5)
+
+    def test_isclose_atol_rtol(self):
+        op1 = DummyOperator1('0^ 1', 1.0)
+        op2 = DummyOperator1('0^ 1', 1.001)
+
+        op_a = DummyOperator1('0^ 1', 1.0)
+        op_b = DummyOperator1('0^ 1', 1.001)
+        self.assertTrue(op_a.isclose(op_b, atol=0.001))
+        self.assertFalse(op_a.isclose(op_b, atol=0.0001))
+
+        op_c = DummyOperator1('0^ 1', 1000)
+        op_d = DummyOperator1('0^ 1', 1001)
+        self.assertTrue(op_c.isclose(op_d, rtol=0.001))
+        self.assertFalse(op_c.isclose(op_d, rtol=0.0001))
+
+        op_e = DummyOperator1('0^ 1', 1.0)
+        op_f = DummyOperator1('0^ 1', 1.001)
+        self.assertTrue(op_e.isclose(op_f, rtol=1e-4, atol=1e-3))
+        self.assertFalse(op_e.isclose(op_f, rtol=1e-4, atol=1e-5))
+
+    def test_isclose(self):
+        op1 = DummyOperator1()
+        op2 = DummyOperator1()
+        op1 += DummyOperator1('0^ 1', 1000000)
+        op1 += DummyOperator1('2^ 3', 1)
+        op2 += DummyOperator1('0^ 1', 1000000)
+        op2 += DummyOperator1('2^ 3', 1.001)
+        self.assertFalse(op1.isclose(op2, atol=1e-4))
+        self.assertTrue(op1.isclose(op2, atol=1e-2))
+
+        # Case from https://github.com/quantumlib/OpenFermion/issues/764
+        x = FermionOperator("0^ 0")
+        y = FermionOperator("0^ 0")
+
+        # construct two identical operators up to some number of terms
+        num_terms_before_ineq = 30
+        for i in range(num_terms_before_ineq):
+            x += FermionOperator(f" (10+0j) [0^ {i}]")
+            y += FermionOperator(f" (10+0j) [0^ {i}]")
+
+        xfinal = FermionOperator(f" (1+0j) [0^ {num_terms_before_ineq + 1}]")
+        yfinal = FermionOperator(f" (2+0j) [0^ {num_terms_before_ineq + 1}]")
+        assert xfinal != yfinal
+
+        x += xfinal
+        y += yfinal
+        assert x != y
 
     def test_pow_neg_error(self):
         with self.assertRaises(ValueError):
