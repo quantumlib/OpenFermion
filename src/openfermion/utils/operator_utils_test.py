@@ -12,6 +12,7 @@
 """Tests for operator_utils."""
 
 import os
+import json
 
 import itertools
 
@@ -593,6 +594,46 @@ class SaveLoadOperatorTest(unittest.TestCase):
     def test_save_bad_type(self):
         with self.assertRaises(TypeError):
             save_operator('ping', 'somewhere')
+
+    def test_save_and_load_complex_json(self):
+        fermion_op = FermionOperator('1^ 2', 1 + 2j)
+        boson_op = BosonOperator('1^ 2', 1 + 2j)
+        qubit_op = QubitOperator('X1 Y2', 1 + 2j)
+        quad_op = QuadOperator('q1 p2', 1 + 2j)
+
+        save_operator(fermion_op, self.file_name)
+        loaded_op = load_operator(self.file_name)
+        self.assertEqual(fermion_op, loaded_op)
+
+        save_operator(boson_op, self.file_name, allow_overwrite=True)
+        loaded_op = load_operator(self.file_name)
+        self.assertEqual(boson_op, loaded_op)
+
+        save_operator(qubit_op, self.file_name, allow_overwrite=True)
+        loaded_op = load_operator(self.file_name)
+        self.assertEqual(qubit_op, loaded_op)
+
+        save_operator(quad_op, self.file_name, allow_overwrite=True)
+        loaded_op = load_operator(self.file_name)
+        self.assertEqual(quad_op, loaded_op)
+
+    def test_saved_json_content(self):
+        import json
+
+        qubit_op = QubitOperator('X1 Y2', 1 + 2j)
+        save_operator(qubit_op, self.file_name)
+
+        file_path = get_file_path(self.file_name, None)
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0], 'QubitOperator')
+
+        # The key is stringified tuple
+        # The value is a list [real, imag]
+        expected_terms = {"((1, 'X'), (2, 'Y'))": [1.0, 2.0]}
+        self.assertEqual(data[1], expected_terms)
 
 
 class GetFileDirTest(unittest.TestCase):

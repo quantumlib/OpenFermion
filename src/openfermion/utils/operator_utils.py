@@ -11,8 +11,9 @@
 #   limitations under the License.
 """This module provides generic tools for classes in ops/"""
 from builtins import map, zip
-import marshal
+import json
 import os
+from ast import literal_eval
 
 import numpy
 import sympy
@@ -279,10 +280,13 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
         else:
             raise TypeError('Operator of invalid type.')
     else:
-        with open(file_path, 'rb') as f:
-            data = marshal.load(f)
-            operator_type = data[0]
-            operator_terms = data[1]
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+        operator_type, serializable_terms = data
+        operator_terms = {
+            literal_eval(key): complex(value[0], value[1])
+            for key, value in serializable_terms.items()
+        }
 
         if operator_type == 'FermionOperator':
             operator = FermionOperator()
@@ -356,5 +360,6 @@ def save_operator(
             f.write(operator_type + ":\n" + str(operator))
     else:
         tm = operator.terms
-        with open(file_path, 'wb') as f:
-            marshal.dump((operator_type, dict(zip(tm.keys(), map(complex, tm.values())))), f)
+        serializable_terms = {str(key): (value.real, value.imag) for key, value in tm.items()}
+        with open(file_path, 'w') as f:
+            json.dump((operator_type, serializable_terms), f)
