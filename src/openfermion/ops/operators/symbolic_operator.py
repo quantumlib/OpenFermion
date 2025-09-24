@@ -161,7 +161,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             '1.5 [2^ 3] + 1.4 [3^ 0]'
         """
 
-        pattern = r'(.*?)\[(.*?)\]'  # regex for a term
+        pattern = r'([^[\]]*)\[([^\]]*)\]'  # regex for a term
         for match in re.findall(pattern, long_string, flags=re.DOTALL):
             # Determine the coefficient for this term
             coef_string = re.sub(r"\s+", "", match[0])
