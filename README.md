@@ -12,8 +12,8 @@ Electronic structure package for quantum computers.
 [Features](#features) &ndash;
 [Installation](#installation) &ndash;
 [Plugins](#plugins) &ndash;
-[Documentation](#cirq-documentation) &ndash;
-[Contributing](#how-to-contribute) &ndash;
+[Documentation](#documentation) &ndash;
+[Contributing](#contributing-to-openfermion) &ndash;
 [Citing](#citing-openfermion) &ndash;
 [Authors](#authors) &ndash;
 [Contact](#contact)
@@ -66,20 +66,20 @@ OpenFermion relies on modular plugin packages for significant functionality. Spe
 are used to simulate and compile quantum circuits and to perform classical electronic structure
 calculations. Follow the links below to learn more!
 
-#### High-performance simulators
+### High-performance simulators
 
 *   [OpenFermion-FQE](https://github.com/quantumlib/OpenFermion-FQE) is a high-performance emulator
     of fermionic quantum evolutions specified by a sequence of fermion operators, which can exploit
     fermionic symmetries such as spin and particle number.
 
-#### Circuit compilation plugins
+### Circuit compilation plugins
 
 *   [Forest-OpenFermion](https://github.com/rigetticomputing/forestopenfermion) to support
     integration with [Forest](https://www.rigetti.com/forest).
 *   [SFOpenBoson](https://github.com/XanaduAI/SFOpenBoson) to support integration with [Strawberry
     Fields](https://github.com/XanaduAI/strawberryfields).
 
-#### Electronic structure package plugins
+### Electronic structure package plugins
 
 *   [OpenFermion-Psi4](http://github.com/quantumlib/OpenFermion-Psi4) to support integration with
     [Psi4](http://psicode.org).
