@@ -43,8 +43,8 @@ installation should run on any operating system where Docker can be used.
 
 ### User installation
 
-To install the latest PyPI release of OpenFermion as a Python package in user mode, run the
-following commands:
+To install the latest PyPI release of OpenFermion as a Python package for the current user (which
+avoids modifying system Python packages), run the following command:
 
 ```shell
 python -m pip install --user openfermion
@@ -99,9 +99,10 @@ Documentation for OpenFermion can be found at
 *   [API Docs](https://quantumai.google/reference/python/openfermion/all_symbols)
 *   [Tutorials](https://quantumai.google/openfermion/tutorials/intro_to_openfermion)
 
-You can run OpenFermion's interactive Jupyter Notebooks in
-[Colab](https://colab.research.google.com/github/quantumlib/OpenFermion) or
-[MyBinder](https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples).
+You can run OpenFermion's interactive Jupyter Notebooks, such as the introductory tutorial, in
+[Colab](https://colab.research.google.com/github/quantumlib/OpenFermion/blob/master/examples/intro_to_openfermion.ipynb)
+or
+[MyBinder](https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples%2Fintro_to_openfermion.ipynb).
 
 ## Contributing to OpenFermion
 
@@ -123,10 +124,10 @@ you need to follow.
     [linter](https://pypi.python.org/pypi/pep8) to check for it.
 *   Code should always be accompanied by documentation. Formatted OpenFermion documentation is
     generated automatically and can be found [on the Quantum AI web
-    site](http://openfermion.readthedocs.io/en/latest/openfermion.html).
+    site](https://quantumai.google/openfermion).
 *   We use [GitHub issues](https://github.com/quantumlib/OpenFermion/issues) for tracking requests
     and bugs. Please post questions to the [Quantum Computing Stack
-    Exchange](https://quantumcomputing.stackexchange.com/) with an 'openfermion' tag.
+    Exchange](https://quantumcomputing.stackexchange.com/) with an `openfermion` tag.
 
 ## Citing OpenFermion<a name="how-to-cite-openfermion"></a><a name="how-to-cite"></a>
 
