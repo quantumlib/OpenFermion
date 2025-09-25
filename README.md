@@ -124,7 +124,7 @@ you need to follow.
 *   Code should always be accompanied by documentation. Formatted OpenFermion documentation is
     generated automatically and can be found [on the Quantum AI web
     site](http://openfermion.readthedocs.io/en/latest/openfermion.html).
-*   We use [Github issues](https://github.com/quantumlib/OpenFermion/issues) for tracking requests
+*   We use [GitHub issues](https://github.com/quantumlib/OpenFermion/issues) for tracking requests
     and bugs. Please post questions to the [Quantum Computing Stack
     Exchange](https://quantumcomputing.stackexchange.com/) with an 'openfermion' tag.
 
