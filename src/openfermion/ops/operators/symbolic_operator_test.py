@@ -332,6 +332,98 @@ class SymbolicOperatorTest1(unittest.TestCase):
         correct = DummyOperator1('3^ 2', complex(-2.3, -1.7))
         self.assertEqual(len((fermion_op - correct).terms), 0)
 
+    def test_init_long_str_regex(self):
+        """Test the regex for parsing long string initializations."""
+        # Test coefficient variations
+        op = DummyOperator1('1.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1('-1.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1.5))
+
+        op = DummyOperator1('2 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 2.0))
+
+        op = DummyOperator1('-2 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -2.0))
+
+        op = DummyOperator1('.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 0.5))
+
+        op = DummyOperator1('(1+2j) [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1 + 2j))
+
+        op = DummyOperator1('( 1 + 2j ) [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1 + 2j))
+
+        op = DummyOperator1('-(1+2j) [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1 - 2j))
+
+        op = DummyOperator1('3j [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 3j))
+
+        op = DummyOperator1('-3j [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -3j))
+
+        op = DummyOperator1('+1.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1('- 1.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1.5))
+
+        op = DummyOperator1('[0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.0))
+
+        op = DummyOperator1('-[0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1.0))
+
+        op = DummyOperator1('+[0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.0))
+
+        # Test spacing variations
+        op = DummyOperator1('1.5[0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1('1.5  [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1('1.5 [ 0^ 1 ]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1(' 1.5 [0^ 1] ')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        # Test multiple terms
+        op = DummyOperator1('1.5 [0^ 1] + 2.0 [2^ 3]')
+        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', 2.0)
+        self.assertTrue(op == correct)
+
+        op = DummyOperator1('1.5 [0^ 1] - 2.0 [2^ 3]')
+        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', -2.0)
+        self.assertTrue(op == correct)
+
+        op = DummyOperator1('1.5[0^ 1] - 2.0 [ 2^ 3 ]')
+        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', -2.0)
+        self.assertTrue(op == correct)
+
+        # Test multiline strings
+        op = DummyOperator1('1.5 [0^ 1]\n+\n2.0 [2^ 3]')
+        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', 2.0)
+        self.assertTrue(op == correct)
+
+        # Test edge cases
+        op = DummyOperator1('1.5 []')
+        self.assertTrue(op == DummyOperator1((), 1.5))
+
+        op = DummyOperator1('1.5 [] - 0.5 []')
+        self.assertTrue(op == DummyOperator1((), 1.0))
+
+        op = DummyOperator1('+ [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.0))
+
+        op = DummyOperator1('- [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1.0))
+
     def test_merges_multiple_whitespace(self):
         fermion_op = DummyOperator1('        \n ')
         self.assertEqual(fermion_op.terms, {(): 1})
