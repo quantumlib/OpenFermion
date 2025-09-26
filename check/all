@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+#
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Summary: run multiple checks on the OpenFermion code base.
+# This is modeled in part on Cirq's check/all script.
+
+declare -r usage="\
+Usage: ${0##*/} [--help] [--only-changed-files] [--apply-format-changes] [BASE_REV]
+
+If the first argument given on the command line is the option --help or -h,
+this program prints usage information and then exits.
+
+With no arguments, this runs multiple checks on the code base. These tests
+are based on the programs in the checks/ subdirectory.
+
+If the option --no-coverage is specified, check/pytest will be run instead of
+check/pytest-and-incremental-coverage.
+
+If --apply-format-changes is specified, the flag --apply will be passed to
+check/format-incremental to apply the format changes suggested by the
+formatter.
+
+You can specify a base git revision to compare against (i.e., to use when
+determining whether or not a file is considered to have changed). If given,
+the argument BASE_REV is passed on to tests that can use it, such as
+check/pytest-and-incremental-coverage."
+
+set -eo pipefail -o errtrace
+shopt -s inherit_errexit
+
+# Get the working directory to the repo root.
+thisdir=$(dirname "${BASH_SOURCE[0]:?}") || exit $?
+repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel) || exit $?
+cd "${repo_dir}" || exit $?
+
+function error() {
+    echo >&2 "ERROR: ${*}"
+}
+
+# ~~~~ Parse the CLI arguments and gather some data ~~~~
+
+declare rev
+declare apply_arg
+declare only_changed
+for arg in "$@"; do
+    case "${arg}" in
+        -h | --help)
+            echo "${usage}"
+            exit 0
+            ;;
+        --apply-format-changes)
+            apply_arg="--apply"
+            shift
+            ;;
+        --only-changed-files)
+            only_changed="true"
+            shift
+            ;;
+        -*)
+            if [[ -n "${rev}" ]]; then
+                error "Invalid arguments."
+                echo "${usage}"
+                exit 1
+            fi
+            ;;
+        *)
+            if [ "$(git cat-file -t "${arg}" 2> /dev/null)" != "commit" ]; then
+                error "No revision '${arg}'"
+                exit 1
+            fi
+            rev="${arg}"
+            ;;
+    esac
+done
+
+# ~~~~ Run the tests ~~~~
+
+declare -a errors
+declare program
+
+function run() {
+    local -r program="$1"
+    echo "Running $program ..."
+    $program || errors+=( "${program} failed" )
+    echo
+}
+
+if [[ -n "${only_changed}" ]]; then
+    run "check/format-incremental ${rev} ${apply_arg}"
+    run "check/pylint-changed-files ${rev}"
+else
+    run "check/format-incremental ${rev} ${apply_arg} --all"
+    run "check/pylint"
+fi
+run "check/mypy"
+run "check/pytest-and-incremental-coverage ${rev}"
+run "check/shellcheck"
+
+# ~~~~ Summarize the results and exit with a status code ~~~~
+
+declare exit_code=0
+echo
+echo "Done."
+if [[ "${#errors[@]}" == 0 ]]; then
+    echo "All checks passed."
+else
+    error "Some checks failed."
+    printf "  %s\n" "${errors[@]}"
+    exit_code=1
+fi
+
+exit "${exit_code}"
