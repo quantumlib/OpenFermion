@@ -22,12 +22,12 @@
 # Use the '--dry-run' option to print out the shellcheck command line without
 # running it.  This displays all shell script files found in the repository.
 
-set -uo pipefail
+set -euo pipefail
 
 # Change working directory to the repository root.
 thisdir=$(dirname "${BASH_SOURCE[0]:?}")
 repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel)
-cd "${repo_dir}" || exit $?
+cd "${repo_dir}"
 
 # Process command line arguments
 opt_dry_run=0
