@@ -1,25 +1,38 @@
 #!/usr/bin/env bash
 
-###############################################################################
-# Execute shellcheck for all shell scripts in this repository
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Summary: execute shellcheck for all shell scripts in this repository
 #
 # Usage:
 #     check/shellcheck [--dry-run] [shellcheck-arguments]
 #
 # Use the '--dry-run' option to print out the shellcheck command line without
 # running it.  This displays all shell script files found in the repository.
-#
-################################################################################
+
+set -uo pipefail
 
 # Change working directory to the repository root.
-thisdir=$(dirname "${BASH_SOURCE[0]:?}") || exit $?
-repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel) || exit $?
+thisdir=$(dirname "${BASH_SOURCE[0]:?}")
+repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel)
 cd "${repo_dir}" || exit $?
 
 # Process command line arguments
 opt_dry_run=0
-typeset -a shellcheck_options
-typeset -a our_shell_scripts
+declare -a shellcheck_options
+declare -a our_shell_scripts
 
 for arg in "$@"; do
     if [[ "${arg}" == "--dry-run" ]]; then
@@ -33,11 +46,11 @@ done
 IFS=$'\n' read -r -d '' -a our_shell_scripts <<< "$(
     git ls-files -z -- \
         ':(exclude)*.'{hdf5,ipynb,json,md,py,rst,toml,ts,txt,yaml} | \
-    xargs -0 file | grep -i 'shell script' | cut -d: -f1 \
+    xargs -0 file | grep -i 'shell script' | cut -d: -f1
 )"
 
 # Verify our_shell_scripts array - require it must contain files below.
-typeset -a required_shell_scripts
+declare -a required_shell_scripts
 required_shell_scripts=(
     # items below must be sorted
     check/format-incremental
