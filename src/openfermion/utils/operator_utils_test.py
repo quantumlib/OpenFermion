@@ -23,26 +23,26 @@ from scipy.sparse import csc_matrix
 from openfermion.config import DATA_DIRECTORY
 from openfermion.hamiltonians import fermi_hubbard
 from openfermion.ops.operators import (
-    FermionOperator,
-    MajoranaOperator,
     BosonOperator,
-    QubitOperator,
-    QuadOperator,
+    FermionOperator,
     IsingOperator,
+    MajoranaOperator,
+    QuadOperator,
+    QubitOperator,
 )
 from openfermion.ops.representations import InteractionOperator
-from openfermion.transforms.opconversions import jordan_wigner, bravyi_kitaev
-from openfermion.transforms.repconversions import get_interaction_operator
 from openfermion.testing.testing_utils import random_interaction_operator
+from openfermion.transforms.opconversions import bravyi_kitaev, jordan_wigner
+from openfermion.transforms.repconversions import get_interaction_operator
 from openfermion.utils.operator_utils import (
-    count_qubits,
-    hermitian_conjugated,
-    is_identity,
-    save_operator,
     OperatorUtilsError,
-    is_hermitian,
-    load_operator,
+    count_qubits,
     get_file_path,
+    hermitian_conjugated,
+    is_hermitian,
+    is_identity,
+    load_operator,
+    save_operator,
 )
 
 

@@ -22,19 +22,18 @@ from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 from openfermion.ops.operators import (
     BosonOperator,
     FermionOperator,
+    IsingOperator,
     MajoranaOperator,
     QuadOperator,
     QubitOperator,
-    IsingOperator,
 )
 from openfermion.ops.representations import (
-    PolynomialTensor,
     DiagonalCoulombHamiltonian,
     InteractionOperator,
     InteractionRDM,
+    PolynomialTensor,
 )
 from openfermion.transforms.opconversions.term_reordering import normal_ordered
-
 
 # Maximum size allowed for data files read by load_operator(). This is a (weak) safety
 # measure against corrupted or insecure files.
