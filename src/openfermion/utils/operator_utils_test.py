@@ -11,16 +11,13 @@
 #   limitations under the License.
 """Tests for operator_utils."""
 
-import os
-
 import itertools
-
+import marshal
+import os
 import unittest
 
 import numpy
-
 import sympy
-
 from scipy.sparse import csc_matrix
 
 from openfermion.config import DATA_DIRECTORY
@@ -619,6 +616,7 @@ class LoadOperatorTest(unittest.TestCase):
 
         def mock_getsize(path):
             from openfermion.utils.operator_utils import _MAX_BINARY_OPERATOR_DATA
+
             if path == self.file_path:
                 return _MAX_BINARY_OPERATOR_DATA + 1
             return original_getsize(path)
@@ -639,7 +637,6 @@ class LoadOperatorTest(unittest.TestCase):
         self.assertIn("Failed to load marshaled data", str(cm.exception))
 
     def test_load_binary_invalid_structure_not_tuple_raises_type_error(self):
-        import marshal
         with open(self.file_path, 'wb') as f:
             marshal.dump("this is not a tuple", f)
         with self.assertRaises(TypeError) as cm:
@@ -647,7 +644,6 @@ class LoadOperatorTest(unittest.TestCase):
         self.assertIn("Expected a tuple", str(cm.exception))
 
     def test_load_binary_invalid_structure_wrong_len_tuple_raises_type_error(self):
-        import marshal
         with open(self.file_path, 'wb') as f:
             marshal.dump(("one", "two", "three"), f)
         with self.assertRaises(TypeError) as cm:
@@ -655,7 +651,6 @@ class LoadOperatorTest(unittest.TestCase):
         self.assertIn("Expected a tuple of length 2", str(cm.exception))
 
     def test_load_binary_invalid_operator_type_not_string_raises_type_error(self):
-        import marshal
         with open(self.file_path, 'wb') as f:
             marshal.dump((123, {}), f)
         with self.assertRaises(TypeError) as cm:
@@ -663,7 +658,6 @@ class LoadOperatorTest(unittest.TestCase):
         self.assertIn("Expected str but got type", str(cm.exception))
 
     def test_load_binary_invalid_terms_type_not_dict_raises_type_error(self):
-        import marshal
         with open(self.file_path, 'wb') as f:
             marshal.dump(("FermionOperator", ["a", "list"]), f)
         with self.assertRaises(TypeError) as cm:
@@ -671,7 +665,6 @@ class LoadOperatorTest(unittest.TestCase):
         self.assertIn("Expected dict but got type", str(cm.exception))
 
     def test_load_binary_unsupported_operator_type_raises_type_error(self):
-        import marshal
         with open(self.file_path, 'wb') as f:
             marshal.dump(("UnsupportedOperator", {}), f)
         with self.assertRaises(TypeError) as cm:
