@@ -32,8 +32,7 @@ done
 # Find all shell scripts in this repository.
 IFS=$'\n' read -r -d '' -a our_shell_scripts <<< "$(
     git ls-files -z -- \
-        ':(exclude)*.'{py,json,json_inward,repr,repr_inward,ipynb,txt,md} \
-        ':(exclude)*.'{yaml,ts,tst,rst,pyi,cfg} | \
+        ':(exclude)*.'{hdf5,ipynb,json,md,py,rst,toml,ts,txt,yaml} | \
     xargs -0 file | grep -i 'shell script' | cut -d: -f1 \
 )"
 
