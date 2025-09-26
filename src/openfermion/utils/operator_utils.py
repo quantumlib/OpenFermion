@@ -11,9 +11,8 @@
 #   limitations under the License.
 """This module provides generic tools for classes in ops/"""
 from builtins import map, zip
-import json
+import marshal
 import os
-from ast import literal_eval
 
 import numpy
 import sympy
@@ -35,6 +34,12 @@ from openfermion.ops.representations import (
     InteractionRDM,
 )
 from openfermion.transforms.opconversions.term_reordering import normal_ordered
+
+
+# Maximum size allowed for data files read by load_operator(). This is a (weak) safety
+# measure against corrupted or insecure files.
+_MAX_TEXT_OPERATOR_DATA = 5 * 1024 * 1024
+_MAX_BINARY_OPERATOR_DATA = 1024 * 1024
 
 
 class OperatorUtilsError(Exception):
@@ -247,27 +252,45 @@ def get_file_path(file_name, data_directory):
 
 
 def load_operator(file_name=None, data_directory=None, plain_text=False):
-    """Load FermionOperator or QubitOperator from file.
+    """Load an operator (such as a FermionOperator) from a file.
 
     Args:
-        file_name: The name of the saved file.
+        file_name: The name of the data file to read.
         data_directory: Optional data directory to change from default data
-                        directory specified in config file.
+            directory specified in config file.
         plain_text: Whether the input file is plain text
 
     Returns:
         operator: The stored FermionOperator, BosonOperator,
-            QuadOperator, or QubitOperator
+            QuadOperator, or QubitOperator.
 
     Raises:
         TypeError: Operator of invalid type.
+        ValueError: If the file is larger than the maximum allowed.
+        ValueError: If the file content is not as expected or loading fails.
+        IOError: If the file cannot be opened.
+
+    Warning:
+        Loading from binary files (plain_text=False) uses the Python 'marshal'
+        module, which is not secure against untrusted or maliciously crafted
+        data. Only load binary operator files from sources that you trust.
+        Prefer using the plain_text format for data from untrusted sources.
     """
+
     file_path = get_file_path(file_name, data_directory)
+
+    operator_type = None
+    operator_terms = None
 
     if plain_text:
         with open(file_path, 'r') as f:
-            data = f.read()
-            operator_type, operator_terms = data.split(":\n")
+            data = f.read(_MAX_TEXT_OPERATOR_DATA)
+        try:
+            operator_type, operator_terms = data.split(":\n", 1)
+        except ValueError:
+            raise ValueError(
+                "Invalid format in plain-text data file {file_path}: " "expected 'TYPE:\\nTERMS'"
+            )
 
         if operator_type == 'FermionOperator':
             operator = FermionOperator(operator_terms)
@@ -278,15 +301,24 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
         elif operator_type == 'QuadOperator':
             operator = QuadOperator(operator_terms)
         else:
-            raise TypeError('Operator of invalid type.')
+            raise TypeError(
+                f"Invalid operator type '{operator_type}' encountered "
+                f"found in plain-text data file '{file_path}'."
+            )
     else:
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-        operator_type, serializable_terms = data
-        operator_terms = {
-            literal_eval(key): complex(value[0], value[1])
-            for key, value in serializable_terms.items()
-        }
+        # marshal.load() doesn't have a size parameter, so we test it ourselves.
+        if os.path.getsize(file_path) > _MAX_BINARY_OPERATOR_DATA:
+            raise ValueError(
+                f"Size of {file_path} exceeds maximum allowed "
+                f"({_MAX_BINARY_OPERATOR_DATA} bytes)."
+            )
+        try:
+            with open(file_path, 'rb') as f:
+                raw_data = marshal.load(f)
+        except Exception as e:
+            raise ValueError(f"Failed to load marshaled data from {file_path}: {e}")
+
+        operator_type, operator_terms = _validate_operator_data(raw_data)
 
         if operator_type == 'FermionOperator':
             operator = FermionOperator()
@@ -313,17 +345,17 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
 def save_operator(
     operator, file_name=None, data_directory=None, allow_overwrite=False, plain_text=False
 ):
-    """Save FermionOperator or QubitOperator to file.
+    """Save an operator (such as a FermionOperator) to a file.
 
     Args:
         operator: An instance of FermionOperator, BosonOperator,
             or QubitOperator.
         file_name: The name of the saved file.
         data_directory: Optional data directory to change from default data
-                        directory specified in config file.
+            directory specified in config file.
         allow_overwrite: Whether to allow files to be overwritten.
         plain_text: Whether the operator should be saved to a
-                        plain-text format for manual analysis
+            plain-text format for manual analysis.
 
     Raises:
         OperatorUtilsError: Not saved, file already exists.
@@ -360,6 +392,55 @@ def save_operator(
             f.write(operator_type + ":\n" + str(operator))
     else:
         tm = operator.terms
-        serializable_terms = {str(key): (value.real, value.imag) for key, value in tm.items()}
-        with open(file_path, 'w') as f:
-            json.dump((operator_type, serializable_terms), f)
+        with open(file_path, 'wb') as f:
+            marshal.dump((operator_type, dict(zip(tm.keys(), map(complex, tm.values())))), f)
+
+
+def _validate_operator_data(raw_data):
+    """Validates the structure and types of data loaded using marshal.
+
+    The file is expected to contain a tuple of (type, data), where the
+    "type" is one of the currently-supported operators, and "data" is a dict.
+
+    Args:
+        raw_data: text or binary data.
+
+    Returns:
+        tuple(str, dict) where the 0th element is the name of the operator
+            type (e.g., 'FermionOperator') and the dict is the operator data.
+
+    Raises:
+        TypeError: raw_data did not contain a tuple of length 2.
+        TypeError: the first element of the tuple is not a string.
+        TypeError: the second element of the tuple is not a dict.
+        TypeError: the given operator type is not supported.
+    """
+
+    if not isinstance(raw_data, tuple) or len(raw_data) != 2:
+        raise TypeError(
+            f"Invalid marshaled structure: Expected a tuple "
+            "of length 2, but got {type(raw_data)} instead."
+        )
+
+    operator_type, operator_terms = raw_data
+
+    if not isinstance(operator_type, str):
+        raise TypeError(
+            f"Invalid type for operator_type: Expected str but "
+            "got type {type(operator_type)} instead."
+        )
+
+    allowed = {'FermionOperator', 'BosonOperator', 'QubitOperator', 'QuadOperator'}
+    if operator_type not in allowed:
+        raise TypeError(
+            f"Operator type '{operator_type}' is not supported. "
+            "The operator must be one of {allowed}."
+        )
+
+    if not isinstance(operator_terms, dict):
+        raise TypeError(
+            f"Invalid type for operator_terms: Expected dict "
+            "but got type {type(operator_terms)} instead."
+        )
+
+    return operator_type, operator_terms
