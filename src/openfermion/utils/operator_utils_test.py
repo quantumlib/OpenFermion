@@ -619,7 +619,7 @@ class LoadOperatorTest(unittest.TestCase):
 
             if path == self.file_path:
                 return _MAX_BINARY_OPERATOR_DATA + 1
-            return original_getsize(path)
+            return original_getsize(path)  # pragma: no cover
 
         os.path.getsize = mock_getsize
         try:
