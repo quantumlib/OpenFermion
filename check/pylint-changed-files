@@ -53,11 +53,11 @@ if [ -n "$1" ] && [[ $1 != -* ]]; then
         exit 1
     fi
     rev=$1
-elif [ "$(git cat-file -t upstream/${default} 2> /dev/null)" == "commit" ]; then
+elif [ "$(git cat-file -t "upstream/${default}" 2> /dev/null)" == "commit" ]; then
     rev=upstream/${default}
-elif [ "$(git cat-file -t origin/${default} 2> /dev/null)" == "commit" ]; then
+elif [ "$(git cat-file -t "origin/${default}" 2> /dev/null)" == "commit" ]; then
     rev=origin/${default}
-elif [ "$(git cat-file -t ${default} 2> /dev/null)" == "commit" ]; then
+elif [ "$(git cat-file -t "${default}" 2> /dev/null)" == "commit" ]; then
     rev=${default}
 else
     echo -e "\033[31mNo default revision found to compare against. Argument #1 must be what to diff against (e.g. 'origin/main' or 'HEAD~1').\033[0m" >&2
