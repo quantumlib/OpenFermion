@@ -1,3 +1,5 @@
+# Summary: configure the Dockerfile linter program "hadolint" for this project.
+#
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Hadolint (Dockerfile linter) used in this project's CI checks.
 # Info about options can be found at https://github.com/hadolint/hadolint/.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 format: tty
 no-color: false
 no-fail: false
 failure-threshold: error
+
+# Rule/error numbers are described at https://github.com/hadolint/hadolint/wiki
 ignored:
+  # Don't complain about not deleting the apt lists after every apt-get install.
+  - DL3009
   - DL3025
-  - DL3047
+  # Multiple consecutive RUN stmts are usually deliberate. Don't flag that.
   - DL3059
