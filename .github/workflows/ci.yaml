@@ -29,7 +29,6 @@ on:
   pull_request:
     types: [opened, synchronize]
     branches:
-      - master
 
   merge_group:
     types:
