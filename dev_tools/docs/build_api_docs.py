@@ -28,7 +28,7 @@ flags.DEFINE_string("output_dir", "/tmp/openfermion_api",
                     "Where to output the docs")
 
 flags.DEFINE_string("code_url_prefix",
-                    ("https://github.com/quantumlib/OpenFermion/tree/master/src"
+                    ("https://github.com/quantumlib/OpenFermion/tree/main/src"
                      "openfermion"), "The url prefix for links to code.")
 
 flags.DEFINE_bool("search_hints", True,

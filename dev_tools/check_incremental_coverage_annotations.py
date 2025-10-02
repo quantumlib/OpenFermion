@@ -27,7 +27,7 @@ def main():
         print(
             shell_tools.highlight(
                 'Must specify a comparison branch '
-                '(e.g. "origin/master" or "HEAD~1").', shell_tools.RED))
+                '(e.g. "origin/main" or "HEAD~1").', shell_tools.RED))
         sys.exit(1)
     comparison_branch = sys.argv[1]
 
