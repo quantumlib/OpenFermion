@@ -43,11 +43,12 @@ for arg in "$@"; do
 done
 
 # Find all shell scripts in this repository.
-IFS=$'\n' read -r -d '' -a our_shell_scripts <<< "$(
+IFS=$'\n' read -r -d "" -a our_shell_scripts < <(
     git ls-files -z -- \
-        ':(exclude)*.'{hdf5,ipynb,json,md,py,rst,toml,ts,txt,yaml} | \
-    xargs -0 file | grep -i 'shell script' | cut -d: -f1
-)"
+        ':(exclude)*.'{hdf5,ipynb,json,md,py,rst,toml,ts,txt,yaml} |
+        xargs -0 file | grep -i 'shell script' | cut -d: -f1;
+    printf "\0"
+)
 
 # Verify our_shell_scripts array - require it must contain files below.
 declare -a required_shell_scripts
