@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/quantumlib/OpenFermion/refs/heads/master/docs/images/logo_horizontal.svg
+.. image:: https://raw.githubusercontent.com/quantumlib/OpenFermion/refs/heads/main/docs/images/logo_horizontal.svg
    :alt: OpenFermion logo
    :width: 75%
    :align: center
@@ -42,7 +42,7 @@ You can run the interactive Jupyter Notebooks in |Colab|_ or |MyBinder|_.
 .. _Colab: https://colab.research.google.com/github/quantumlib/OpenFermion
 
 .. |MyBinder| replace:: MyBinder
-.. _MyBinder:  https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples
+.. _MyBinder:  https://mybinder.org/v2/gh/quantumlib/OpenFermion/main?filepath=examples
 
 Installation and Documentation
 ==============================
@@ -64,7 +64,7 @@ the electronic structure plugins are only compatible on these platforms. However
 for those who would like to use Windows, or for anyone having other difficulties
 with installing OpenFermion or its plugins, we provide a Docker image
 and usage instructions in the
-`docker folder <https://github.com/quantumlib/OpenFermion/tree/master/docker>`__.
+`docker folder <https://github.com/quantumlib/OpenFermion/tree/main/docker>`__.
 The Docker image provides a virtual environment with OpenFermion and select plugins pre-installed.
 The Docker installation should run on any operating system where Docker can be used.
 
