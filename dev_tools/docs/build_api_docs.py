@@ -24,18 +24,19 @@ from tensorflow_docs.api_generator import public_api
 
 import openfermion
 
-flags.DEFINE_string("output_dir", "/tmp/openfermion_api",
-                    "Where to output the docs")
+flags.DEFINE_string("output_dir", "/tmp/openfermion_api", "Where to output the docs")
 
-flags.DEFINE_string("code_url_prefix",
-                    ("https://github.com/quantumlib/OpenFermion/tree/main/src"
-                     "openfermion"), "The url prefix for links to code.")
+flags.DEFINE_string(
+    "code_url_prefix",
+    ("https://github.com/quantumlib/OpenFermion/tree/main/src" "openfermion"),
+    "The url prefix for links to code.",
+)
 
-flags.DEFINE_bool("search_hints", True,
-                  "Include metadata search hints in the generated files")
+flags.DEFINE_bool("search_hints", True, "Include metadata search hints in the generated files")
 
-flags.DEFINE_string("site_path", "quark/openfermion/api_docs/python",
-                    "Path prefix in the _toc.yaml")
+flags.DEFINE_string(
+    "site_path", "quark/openfermion/api_docs/python", "Path prefix in the _toc.yaml"
+)
 
 FLAGS = flags.FLAGS
 
@@ -55,7 +56,8 @@ def main(unused_argv):
             # Example:
             # "cirq.google.engine.client.quantum.QuantumEngineServiceClient":
             # ["enums"]
-        })
+        },
+    )
 
     doc_generator.build(output_dir=FLAGS.output_dir)
 
