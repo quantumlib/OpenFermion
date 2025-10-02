@@ -9,16 +9,19 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 """Tests  symbolic_operator.py."""
+
 import copy
+import numpy
+import sympy
 import unittest
 import warnings
 
-import numpy
-import sympy
 from openfermion.config import EQ_TOLERANCE
 from openfermion.testing.testing_utils import EqualsTester
 
+from openfermion.ops.operators.fermion_operator import FermionOperator
 from openfermion.ops.operators.symbolic_operator import SymbolicOperator
 
 
@@ -328,6 +331,98 @@ class SymbolicOperatorTest1(unittest.TestCase):
         fermion_op = DummyOperator1('-(2.3 + 1.7j) [3^ 2]')
         correct = DummyOperator1('3^ 2', complex(-2.3, -1.7))
         self.assertEqual(len((fermion_op - correct).terms), 0)
+
+    def test_init_long_str_regex(self):
+        """Test the regex for parsing long string initializations."""
+        # Test coefficient variations
+        op = DummyOperator1('1.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1('-1.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1.5))
+
+        op = DummyOperator1('2 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 2.0))
+
+        op = DummyOperator1('-2 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -2.0))
+
+        op = DummyOperator1('.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 0.5))
+
+        op = DummyOperator1('(1+2j) [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1 + 2j))
+
+        op = DummyOperator1('( 1 + 2j ) [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1 + 2j))
+
+        op = DummyOperator1('-(1+2j) [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1 - 2j))
+
+        op = DummyOperator1('3j [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 3j))
+
+        op = DummyOperator1('-3j [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -3j))
+
+        op = DummyOperator1('+1.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1('- 1.5 [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1.5))
+
+        op = DummyOperator1('[0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.0))
+
+        op = DummyOperator1('-[0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1.0))
+
+        op = DummyOperator1('+[0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.0))
+
+        # Test spacing variations
+        op = DummyOperator1('1.5[0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1('1.5  [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1('1.5 [ 0^ 1 ]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        op = DummyOperator1(' 1.5 [0^ 1] ')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+
+        # Test multiple terms
+        op = DummyOperator1('1.5 [0^ 1] + 2.0 [2^ 3]')
+        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', 2.0)
+        self.assertTrue(op == correct)
+
+        op = DummyOperator1('1.5 [0^ 1] - 2.0 [2^ 3]')
+        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', -2.0)
+        self.assertTrue(op == correct)
+
+        op = DummyOperator1('1.5[0^ 1] - 2.0 [ 2^ 3 ]')
+        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', -2.0)
+        self.assertTrue(op == correct)
+
+        # Test multiline strings
+        op = DummyOperator1('1.5 [0^ 1]\n+\n2.0 [2^ 3]')
+        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', 2.0)
+        self.assertTrue(op == correct)
+
+        # Test edge cases
+        op = DummyOperator1('1.5 []')
+        self.assertTrue(op == DummyOperator1((), 1.5))
+
+        op = DummyOperator1('1.5 [] - 0.5 []')
+        self.assertTrue(op == DummyOperator1((), 1.0))
+
+        op = DummyOperator1('+ [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', 1.0))
+
+        op = DummyOperator1('- [0^ 1]')
+        self.assertTrue(op == DummyOperator1('0^ 1', -1.0))
 
     def test_merges_multiple_whitespace(self):
         fermion_op = DummyOperator1('        \n ')
@@ -687,6 +782,14 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] - coeff_b - 0.5 == 0)
 
+    def test_add_sympy_new_term(self):
+        """Test adding a new term with a sympy coefficient."""
+        x = sympy.Symbol('x')
+        op = FermionOperator('1^', x)
+        op += FermionOperator('2', 2 * x)
+        self.assertEqual(op.terms[((1, 1),)], x)
+        self.assertEqual(op.terms[((2, 0),)], 2 * x)
+
     def test_radd(self):
         term_a = ((1, 1), (3, 0), (8, 1))
         coeff_a = 1
@@ -857,7 +960,76 @@ class SymbolicOperatorTest1(unittest.TestCase):
         term = DummyOperator1(ops, coeff)
         high = term**10
         expected = DummyOperator1(ops * 10, coeff**10)
-        self.assertTrue(expected == high)
+        self.assertTrue(high.isclose(expected, rtol=1e-12, atol=1e-12))
+
+    def test_isclose_parameter_deprecation(self):
+        op1 = DummyOperator1('0^ 1', 1.0)
+        op2 = DummyOperator1('0^ 1', 1.001)
+
+        with self.assertWarns(DeprecationWarning):
+            op1.isclose(op2, tol=0.01)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=DeprecationWarning)
+            self.assertTrue(op1.isclose(op2, tol=0.001))
+            self.assertFalse(op1.isclose(op2, tol=0.0001))
+
+    def test_isclose_parameter_combos(self):
+        op1 = DummyOperator1('0^ 1', 1.0)
+        op2 = DummyOperator1('0^ 1', 1.001)
+
+        with self.assertRaises(ValueError):
+            op1.isclose(op2, tol=0.01, rtol=1e-5)
+
+        with self.assertRaises(ValueError):
+            op1.isclose(op2, tol=0.01, atol=1e-5)
+
+    def test_isclose_atol_rtol(self):
+        op1 = DummyOperator1('0^ 1', 1.0)
+        op2 = DummyOperator1('0^ 1', 1.001)
+
+        op_a = DummyOperator1('0^ 1', 1.0)
+        op_b = DummyOperator1('0^ 1', 1.001)
+        self.assertTrue(op_a.isclose(op_b, atol=0.001))
+        self.assertFalse(op_a.isclose(op_b, atol=0.0001))
+
+        op_c = DummyOperator1('0^ 1', 1000)
+        op_d = DummyOperator1('0^ 1', 1001)
+        self.assertTrue(op_c.isclose(op_d, rtol=0.001))
+        self.assertFalse(op_c.isclose(op_d, rtol=0.0001))
+
+        op_e = DummyOperator1('0^ 1', 1.0)
+        op_f = DummyOperator1('0^ 1', 1.001)
+        self.assertTrue(op_e.isclose(op_f, rtol=1e-4, atol=1e-3))
+        self.assertFalse(op_e.isclose(op_f, rtol=1e-4, atol=1e-5))
+
+    def test_isclose(self):
+        op1 = DummyOperator1()
+        op2 = DummyOperator1()
+        op1 += DummyOperator1('0^ 1', 1000000)
+        op1 += DummyOperator1('2^ 3', 1)
+        op2 += DummyOperator1('0^ 1', 1000000)
+        op2 += DummyOperator1('2^ 3', 1.001)
+        self.assertFalse(op1.isclose(op2, atol=1e-4))
+        self.assertTrue(op1.isclose(op2, atol=1e-2))
+
+        # Case from https://github.com/quantumlib/OpenFermion/issues/764
+        x = FermionOperator("0^ 0")
+        y = FermionOperator("0^ 0")
+
+        # construct two identical operators up to some number of terms
+        num_terms_before_ineq = 30
+        for i in range(num_terms_before_ineq):
+            x += FermionOperator(f" (10+0j) [0^ {i}]")
+            y += FermionOperator(f" (10+0j) [0^ {i}]")
+
+        xfinal = FermionOperator(f" (1+0j) [0^ {num_terms_before_ineq + 1}]")
+        yfinal = FermionOperator(f" (2+0j) [0^ {num_terms_before_ineq + 1}]")
+        assert xfinal != yfinal
+
+        x += xfinal
+        y += yfinal
+        assert x != y
 
     def test_pow_neg_error(self):
         with self.assertRaises(ValueError):
