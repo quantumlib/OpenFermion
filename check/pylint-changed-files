@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Summary: run pylint on changed files using a preconfigured .pylintrc file.
+#
+# Usage:
+#     check/pylint-changed-files [BASE_REVISION]
+#
+# You can specify a base git revision to compare against (i.e. to use when
+# determining whether or not a line is considered to have "changed"). To make
+# the tool more consistent, it actually diffs against the most recent common
+# ancestor of the specified id and HEAD. So if you choose 'origin/main' you're
+# actually diffing against the output of 'git merge-base origin/main HEAD'.
+#
+# If you don't specify a base revision, the following defaults will be tried,
+# in order, until one exists:
+#
+#     1. upstream/main or upstream/master
+#     2. origin/main or origin/master
+#     3. main or master
+#
+# If none exists, the script will exit with an error.
+#
+# To lint all files, use check/pylint.
+
+set -o pipefail
+
+# Change working directory to the repository root.
+thisdir=$(dirname "${BASH_SOURCE[0]:?}") || exit $?
+repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel) || exit $?
+cd "${repo_dir}" || exit $?
+
+# Some old repos used "master" instead of main. Find out which one we have here.
+default=$(git branch --format '%(refname:short)' --list master main)
+
+# Figure out which revision to compare against.
+if [ -n "$1" ] && [[ $1 != -* ]]; then
+    if ! git rev-parse --verify --quiet --no-revs "$1^{commit}"; then
+        echo -e "\033[31mNo revision '$1'.\033[0m" >&2
+        exit 1
+    fi
+    rev=$1
+elif [ "$(git cat-file -t "upstream/${default}" 2> /dev/null)" == "commit" ]; then
+    rev=upstream/${default}
+elif [ "$(git cat-file -t "origin/${default}" 2> /dev/null)" == "commit" ]; then
+    rev=origin/${default}
+elif [ "$(git cat-file -t "${default}" 2> /dev/null)" == "commit" ]; then
+    rev=${default}
+else
+    echo -e "\033[31mNo default revision found to compare against. Argument #1 must be what to diff against (e.g. 'origin/main' or 'HEAD~1').\033[0m" >&2
+    exit 1
+fi
+base=$(git merge-base "${rev}" HEAD)
+if [ "$(git rev-parse "${rev}")" == "${base}" ]; then
+    echo -e "Comparing against revision '${rev}'." >&2
+else
+    echo -e "Comparing against revision '${rev}' (merge base ${base})." >&2
+    rev="${base}"
+fi
+
+typeset -a changed
+IFS=$'\n' read -r -d '' -a changed < \
+    <(git diff --name-only --diff-filter=d "${rev}" -- "*.py" \
+    | grep -E "^(src|dev_tools).*.py$"
+)
+
+num_changed=${#changed[@]}
+
+# Run it.
+echo "Found ${num_changed} lintable files associated with changes." >&2
+if [ "${num_changed}" -eq 0 ]; then
+    exit 0
+fi
+env PYTHONPATH=dev_tools pylint --jobs=0 --rcfile=dev_tools/conf/.pylintrc "${changed[@]}"
