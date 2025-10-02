@@ -66,7 +66,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
 
     @staticmethod
     def _issmall(val, tol=EQ_TOLERANCE):
-        '''Checks whether a value is near-zero
+        '''Checks whether a value is near zero.
 
         Parses the allowed coefficients above for near-zero tests.
 
@@ -161,7 +161,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             '1.5 [2^ 3] + 1.4 [3^ 0]'
         """
 
-        pattern = r'(.*?)\[(.*?)\]'  # regex for a term
+        pattern = r'([^[\]]*)\[([^\]]*)\]'  # regex for a term
         for match in re.findall(pattern, long_string, flags=re.DOTALL):
             # Determine the coefficient for this term
             coef_string = re.sub(r"\s+", "", match[0])
@@ -433,7 +433,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """
         if isinstance(addend, type(self)):
             for term in addend.terms:
-                self.terms[term] = self.terms.get(term, 0.0) + addend.terms[term]
+                self.terms[term] = self.terms.get(term, 0) + addend.terms[term]
                 if self._issmall(self.terms[term]):
                     del self.terms[term]
         elif isinstance(addend, COEFFICIENT_TYPES):
@@ -480,7 +480,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """
         if isinstance(subtrahend, type(self)):
             for term in subtrahend.terms:
-                self.terms[term] = self.terms.get(term, 0.0) - subtrahend.terms[term]
+                self.terms[term] = self.terms.get(term, 0) - subtrahend.terms[term]
                 if self._issmall(self.terms[term]):
                     del self.terms[term]
         elif isinstance(subtrahend, COEFFICIENT_TYPES):
@@ -618,34 +618,64 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         term, coefficient = next(self._iter)
         return self.__class__(term=term, coefficient=coefficient)
 
-    def isclose(self, other, tol=EQ_TOLERANCE):
+    def isclose(self, other, tol=None, rtol=EQ_TOLERANCE, atol=EQ_TOLERANCE):
         """Check if other (SymbolicOperator) is close to self.
 
         Comparison is done for each term individually. Return True
         if the difference between each term in self and other is
-        less than EQ_TOLERANCE
+        less than the specified tolerance.
 
         Args:
             other(SymbolicOperator): SymbolicOperator to compare against.
+            tol(float): This parameter is deprecated since version 1.8.0.
+                Use `rtol` and/or `atol` instead. If `tol` is provided, it
+                is used as the value of `atol`.
+            rtol(float): Relative tolerance used in comparing each term in
+                self and other.
+            atol(float): Absolute tolerance used in comparing each term in
+                self and other.
         """
         if not isinstance(self, type(other)):
             return NotImplemented
+
+        if tol is not None:
+            if rtol != EQ_TOLERANCE or atol != EQ_TOLERANCE:
+                raise ValueError(
+                    'Parameters rtol and atol are mutually exclusive with the'
+                    ' deprecated parameter tol; use either tol or the other two,'
+                    ' not in combination.'
+                )
+            warnings.warn(
+                'Parameter tol is deprecated. Use rtol and/or atol instead.',
+                DeprecationWarning,
+                stacklevel=2,  # Identify the location of the warning.
+            )
+            atol = tol
 
         # terms which are in both:
         for term in set(self.terms).intersection(set(other.terms)):
             a = self.terms[term]
             b = other.terms[term]
-            if not (isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr)):
-                tol *= max(1, abs(a), abs(b))
-            if self._issmall(a - b, tol) is False:
+            if isinstance(a, sympy.Expr) or isinstance(b, sympy.Expr):
+                if not self._issmall(a - b, atol):
+                    return False
+            elif not abs(a - b) <= atol + rtol * max(abs(a), abs(b)):
                 return False
-        # terms only in one (compare to 0.0 so only abs_tol)
+        # terms only in one (compare to 0.0 so only atol)
         for term in set(self.terms).symmetric_difference(set(other.terms)):
             if term in self.terms:
-                if self._issmall(self.terms[term], tol) is False:
+                coeff = self.terms[term]
+                if isinstance(coeff, sympy.Expr):
+                    if not self._issmall(coeff, atol):
+                        return False
+                elif not abs(coeff) <= atol:
                     return False
             else:
-                if self._issmall(other.terms[term], tol) is False:
+                coeff = other.terms[term]
+                if isinstance(coeff, sympy.Expr):
+                    if not self._issmall(coeff, atol):
+                        return False
+                elif not abs(coeff) <= atol:
                     return False
         return True
 
