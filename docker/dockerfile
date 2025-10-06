@@ -14,8 +14,6 @@
 
 FROM ubuntu:22.04
 
-USER root
-
 WORKDIR /root/workspace
 COPY . /root/workspace
 
@@ -25,17 +23,18 @@ ENV PATH="/root/conda/bin:${PATH}"
 ENV PYTHONPATH=/root/pyscf
 
 RUN apt-get update && \
-    apt-get install -y build-essential \
-        bzip2 \
-        cmake \
-        git \
-        wget \
-        libblas-dev \
-        liblapack-dev \
-        curl
+    apt-get install -y --no-install-recommends bzip2=1.0.8-5build1 \
+    cmake=3.22.1-1ubuntu1.22.04.2 \
+    git=1:2.34.1-1ubuntu1.15 \
+    wget=1.21.2-2ubuntu1.1 \
+    libblas-dev=3.10.0-2ubuntu1 \
+    liblapack-dev=3.10.0-2ubuntu1 \
+    # in order to verify github's certificate
+    ca-certificates=20240203~22.04.1 \
+    build-essential=12.9ubuntu3
 
 # Install miniforge https://github.com/conda-forge/miniforge?tab=readme-ov-file#as-part-of-a-ci-pipeline
-RUN wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh" && \
+RUN wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/25.3.1-0/Miniforge3-25.3.1-0-$(uname)-$(uname -m).sh" && \
     bash Miniforge3.sh -b -p "${HOME}/conda" && \
     conda init bash && \
     conda update -n base -c conda-forge conda && \
@@ -43,14 +42,13 @@ RUN wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/lat
     conda create -n fermion psi4 python=3.12 -c conda-forge -y && \
     conda install -n fermion pip -y && \
     # Install OpenFermion, Cirq, and plugins
-    conda run -n fermion pip install openfermion \ cirq \ openfermioncirq \ openfermionpsi4 \ openfermionpyscf && \
-    # Install PySCF
-    cd /root && \
-    git clone https://github.com/sunqm/pyscf && \
-    cd /root/pyscf/pyscf/lib && \
-    mkdir build && \
-    cd build && \
-    cmake .. && \
+    conda run -n fermion pip install openfermion \ cirq \ openfermioncirq \ openfermionpsi4 \ openfermionpyscf
+
+# Install PySCF
+WORKDIR /root
+RUN git clone https://github.com/sunqm/pyscf
+WORKDIR /root/pyscf/pyscf/lib/build
+RUN cmake .. && \
     make
 
 # Activate venv (fermion)
