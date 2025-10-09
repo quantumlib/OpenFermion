@@ -131,36 +131,20 @@ you need to follow.
 
 ## Citing OpenFermion<a name="how-to-cite-openfermion"></a><a name="how-to-cite"></a>
 
-When using OpenFermion for research projects, please cite:
+OpenFermion is the work of many people. When using OpenFermion for research projects, please cite
+the [published paper](https://iopscience.iop.org/article/10.1088/2058-9565/ab8ebc/meta):
 
-```bibtex
-@article{McClean_2020,
-  author    = {Jarrod R. McClean and Nicholas C. Rubin and Kevin J. Sung
-              and Ian D. Kivlichan and Xavier Bonet-Monroig and Yudong Cao
-              and Chengyu Dai and E. Schuyler Fried and Craig Gidney
-              and Brendan Gimby and Pranav Gokhale and Thomas Häner
-              and Tarini Hardikar and Vojtěch Havlíček and Oscar Higgott
-              and Cupjin Huang and Josh Izaac and Zhang Jiang
-              and Xinle Liu and Sam McArdle and Matthew Neeley
-              and Thomas O’Brien and Bryan O’Gorman and Isil Ozfidan
-              and Maxwell D. Radin and Jhonathan Romero
-              and Nicolas P. D. Sawaya and Bruno Senjean and Kanav Setia
-              and Sukin Sim and Damian S. Steiger and Mark Steudtner
-              and Qiming Sun and Wei Sun and Daochen Wang and Fang Zhang
-              and Ryan Babbush},
-  year      = 2020,
-  month     = jun,
-  publisher = {IOP Publishing},
-  volume    = 5,
-  number    = 3,
-  pages     = {034014},
-  title     = {{OpenFermion}: The Electronic Structure Package for
-              Quantum Computers},
-  journal   = {Quantum Science and Technology},
-}
-```
+> Jarrod R McClean, Nicholas C Rubin, Kevin J Sung, Ian D Kivlichan, Xavier Bonet-Monroig, Yudong
+> Cao, Chengyu Dai, E Schuyler Fried, Craig Gidney, Brendan Gimby, Pranav Gokhale, Thomas Häner,
+> Tarini Hardikar, Vojtěch Havlíček, Oscar Higgott, Cupjin Huang, Josh Izaac, Zhang Jiang, Xinle
+> Liu, Sam McArdle, Matthew Neeley, Thomas O'Brien, Bryan O'Gorman, Isil Ozfidan, Maxwell D Radin,
+> Jhonathan Romero, Nicolas P D Sawaya, Bruno Senjean, Kanav Setia, Sukin Sim, Damian S Steiger,
+> Mark Steudtner, Qiming Sun, Wei Sun, Daochen Wang, Fang Zhang, and Ryan Babbush. (2020).
+> OpenFermion: The Electronic Structure Package for Quantum Computers. _Quantum Science and
+> Technology_, 5(3), 034014.
 
-We are happy to include future contributors as authors on later releases.
+For formatted citations and records in other formats, as well as records for all releases of OpenFermion
+past and present, please visit the [OpenFermion page on Zenodo](https://zenodo.org/records/15604843).
 
 ## Authors
 
@@ -206,6 +190,8 @@ We are happy to include future contributors as authors on later releases.
 [Chris Winkler](https://github.com/quid256) (University of Chicago),
 [Fang Zhang](https://github.com/fangzh-umich) (University of Michigan),
 and [Emiel Koridon](https://github.com/Emieeel) (Leiden University).
+
+We are happy to include future contributors as authors on later releases.
 
 ## Contact
 
