@@ -37,7 +37,7 @@ Currently, OpenFermion is tested on Mac, Windows, and Linux. We recommend using 
 the electronic structure plugins are only compatible on these platforms. However, for those who
 would like to use Windows, or for anyone having other difficulties with installing OpenFermion or
 its plugins, we provide instructions for creating and using a Docker image – see the
-[`docker/`](https://github.com/quantumlib/OpenFermion/tree/master/docker) subdirectory. The Docker
+[`docker/`](https://github.com/quantumlib/OpenFermion/tree/main/docker) subdirectory. The Docker
 image provides a virtual environment with OpenFermion and select plugins pre-installed. The Docker
 installation should run on any operating system where Docker can be used.
 
@@ -100,9 +100,9 @@ Documentation for OpenFermion can be found at
 *   [Tutorials](https://quantumai.google/openfermion/tutorials/intro_to_openfermion)
 
 You can run OpenFermion's interactive Jupyter Notebooks, such as the introductory tutorial, in
-[Colab](https://colab.research.google.com/github/quantumlib/OpenFermion/blob/master/examples/intro_to_openfermion.ipynb)
+[Colab](https://colab.research.google.com/github/quantumlib/OpenFermion/blob/main/examples/intro_to_openfermion.ipynb)
 or
-[MyBinder](https://mybinder.org/v2/gh/quantumlib/OpenFermion/master?filepath=examples%2Fintro_to_openfermion.ipynb).
+[MyBinder](https://mybinder.org/v2/gh/quantumlib/OpenFermion/main?filepath=examples%2Fintro_to_openfermion.ipynb).
 
 ## Contributing to OpenFermion
 
@@ -208,6 +208,6 @@ Copyright 2017 The OpenFermion Developers.
 <div align="center">
   <a href="https://quantumai.google">
     <img width="15%" alt="Google Quantum AI"
-         src="https://raw.githubusercontent.com/quantumlib/OpenFermion/refs/heads/master/docs/images/quantum-ai-vertical.svg">
+         src="https://raw.githubusercontent.com/quantumlib/OpenFermion/refs/heads/main/docs/images/quantum-ai-vertical.svg">
   </a>
 </div>
