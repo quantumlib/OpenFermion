@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-################################################################################
-# Finds changed uncovered lines.
+# Summary: run pylint on changed files using a preconfigured .pylintrc file.
 #
 # Usage:
-#     check/pytest-and-incremental-coverage [BASE_REVISION]
+#     check/pylint-changed-files [BASE_REVISION]
 #
 # You can specify a base git revision to compare against (i.e. to use when
 # determining whether or not a line is considered to have "changed"). To make
@@ -32,57 +32,53 @@
 #     2. origin/main
 #     3. main
 #
-# If none exists, the script fails.
-################################################################################
+# If none exists, the script will exit with an error.
+#
+# To lint all files, use check/pylint.
 
-# Get the working directory to the repo root.
-cd "$( dirname "${BASH_SOURCE[0]}" )" || exit 1
-cd "$(git rev-parse --show-toplevel)" || exit 1
+set -o pipefail
+
+# Change working directory to the repository root.
+thisdir=$(dirname "${BASH_SOURCE[0]:?}") || exit $?
+repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel) || exit $?
+cd "${repo_dir}" || exit $?
 
 # Figure out which revision to compare against.
-if [[ -n "$1" && $1 != -* ]]; then
-    if [[ "$(git cat-file -t "$1" 2> /dev/null)" != "commit" ]]; then
+if [ -n "$1" ] && [[ $1 != -* ]]; then
+    if ! git rev-parse --verify --quiet --no-revs "$1^{commit}"; then
         echo -e "\033[31mNo revision '$1'.\033[0m" >&2
         exit 1
     fi
     rev=$1
-elif [ "$(git cat-file -t upstream/main 2> /dev/null)" == "commit" ]; then
+elif [ "$(git cat-file -t "upstream/main" 2> /dev/null)" == "commit" ]; then
     rev=upstream/main
-elif [ "$(git cat-file -t origin/main 2> /dev/null)" == "commit" ]; then
+elif [ "$(git cat-file -t "origin/main" 2> /dev/null)" == "commit" ]; then
     rev=origin/main
-elif [ "$(git cat-file -t main 2> /dev/null)" == "commit" ]; then
+elif [ "$(git cat-file -t "main" 2> /dev/null)" == "commit" ]; then
     rev=main
 else
     echo -e "\033[31mNo default revision found to compare against. Argument #1 must be what to diff against (e.g. 'origin/main' or 'HEAD~1').\033[0m" >&2
     exit 1
 fi
-# shellcheck disable=SC2086
-base="$(git merge-base ${rev} HEAD)"
-# shellcheck disable=SC2086
-if [ "$(git rev-parse ${rev})" == "${base}" ]; then
+base=$(git merge-base "${rev}" HEAD)
+if [ "$(git rev-parse "${rev}")" == "${base}" ]; then
     echo -e "Comparing against revision '${rev}'." >&2
 else
     echo -e "Comparing against revision '${rev}' (merge base ${base})." >&2
     rev="${base}"
 fi
 
-# Run tests while producing coverage files.
-check/pytest . \
-    --actually-quiet \
-    --cov \
-    --cov-report=annotate \
-    --cov-config=dev_tools/conf/.coveragerc
-pytest_result=$?
+typeset -a changed
+IFS=$'\n' read -r -d '' -a changed < \
+    <(git diff --name-only --diff-filter=d "${rev}" -- "*.py" \
+    | grep -E "^(src|dev_tools).*.py$"
+)
 
-# Analyze coverage files.
-PYTHONPATH="$(pwd)" python dev_tools/check_incremental_coverage_annotations.py "${rev}"
-cover_result=$?
+num_changed=${#changed[@]}
 
-# Clean up generated coverage files.
-find . | grep "\.py,cover$" | xargs rm -f
-
-# Report result.
-if [ "${pytest_result}" -ne "0" ] || [ "${cover_result}" -ne "0" ]; then
-  exit 1
+# Run it.
+echo "Found ${num_changed} lintable files associated with changes." >&2
+if [ "${num_changed}" -eq 0 ]; then
+    exit 0
 fi
-exit 0
+env PYTHONPATH=dev_tools pylint --jobs=0 --rcfile=dev_tools/conf/.pylintrc "${changed[@]}"
