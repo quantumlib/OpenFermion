@@ -39,9 +39,9 @@ set -eo pipefail -o errtrace
 shopt -s inherit_errexit
 
 # Get the working directory to the repo root.
-thisdir=$(dirname "${BASH_SOURCE[0]:?}") || exit $?
-repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel) || exit $?
-cd "${repo_dir}" || exit $?
+thisdir=$(dirname "${BASH_SOURCE[0]:?}")
+repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel)
+cd "${repo_dir}"
 
 function error() {
     echo >&2 "ERROR: ${*}"
