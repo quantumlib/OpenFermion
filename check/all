@@ -26,9 +26,6 @@ this program prints usage information and then exits.
 With no arguments, this runs multiple checks on the code base. These tests
 are based on the programs in the checks/ subdirectory.
 
-If the option --no-coverage is specified, check/pytest will be run instead of
-check/pytest-and-incremental-coverage.
-
 If --apply-format-changes is specified, the flag --apply will be passed to
 check/format-incremental to apply the format changes suggested by the
 formatter.
