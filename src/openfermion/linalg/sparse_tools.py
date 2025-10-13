@@ -18,6 +18,7 @@ import numpy
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
+import warnings
 
 from openfermion.ops.operators import FermionOperator, QubitOperator, BosonOperator, QuadOperator
 from openfermion.ops.representations import DiagonalCoulombHamiltonian, PolynomialTensor
@@ -1268,7 +1269,13 @@ def get_sparse_operator(operator, n_qubits=None, trunc=None, hbar=1.0):
     elif isinstance(operator, FermionOperator):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
-        operator.simplify()
+        if hasattr(operator, "simplify"):
+            operator.simplify()
+        else:
+            warnings.warn(
+            "QubitOperator.simplify() not found. "
+            "Ensure your operator is simplified to avoid errors."
+        )
         return qubit_operator_sparse(operator, n_qubits)
     elif isinstance(operator, (BosonOperator, QuadOperator)):
         return boson_operator_sparse(operator, trunc, hbar)
