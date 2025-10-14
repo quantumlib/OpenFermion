@@ -67,6 +67,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+*,cover
 .hypothesis/
 
 # Sphinx documentation
