@@ -132,7 +132,7 @@ you need to follow.
 ## Citing OpenFermion<a name="how-to-cite-openfermion"></a><a name="how-to-cite"></a>
 
 OpenFermion is the work of many people. When using OpenFermion for research projects, please cite
-the [published paper](https://iopscience.iop.org/article/10.1088/2058-9565/ab8ebc/meta):
+the [published paper](https://doi.org/10.1088/2058-9565/ab8ebc):
 
 > Jarrod R McClean, Nicholas C Rubin, Kevin J Sung, Ian D Kivlichan, Xavier Bonet-Monroig, Yudong
 > Cao, Chengyu Dai, E Schuyler Fried, Craig Gidney, Brendan Gimby, Pranav Gokhale, Thomas Häner,
