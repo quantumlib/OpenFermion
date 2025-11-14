@@ -16,9 +16,9 @@ import copy
 import itertools
 import re
 import warnings
+import numbers
 
 import sympy
-import numbers
 
 from openfermion.config import EQ_TOLERANCE
 
