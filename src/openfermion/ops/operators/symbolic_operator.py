@@ -18,10 +18,11 @@ import re
 import warnings
 
 import sympy
+import numbers
 
 from openfermion.config import EQ_TOLERANCE
 
-COEFFICIENT_TYPES = (int, float, complex, sympy.Expr)
+COEFFICIENT_TYPES = (int, float, complex, sympy.Expr, numbers.Number)
 
 
 class SymbolicOperator(metaclass=abc.ABCMeta):
