@@ -82,8 +82,7 @@ done
 
 # ~~~~ Run the tests ~~~~
 
-declare -a errors
-declare program
+declare -a errors=()
 
 function run() {
     local -r program="$1"
