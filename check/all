@@ -85,9 +85,8 @@ done
 declare -a errors=()
 
 function run() {
-    local -r program="$1"
-    echo "Running $program ..."
-    $program || errors+=( "${program} failed" )
+    echo "Running $* ..."
+    "$@" || errors+=( "$* failed" )
     echo
 }
 
