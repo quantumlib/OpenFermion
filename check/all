@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Summary: run multiple checks on the OpenFermion code base.
-# This is modeled in part on Cirq's check/all script.
+# This script is modeled in part on Cirq's check/all script.
 
 declare -r usage="\
 Usage: ${0##*/} [--help] [--only-changed-files] [--apply-format-changes] [BASE_REV]
@@ -49,9 +48,9 @@ function error() {
 
 # ~~~~ Parse the CLI arguments and gather some data ~~~~
 
-declare rev
-declare apply_arg
-declare only_changed
+declare -a rev=()
+declare -a apply_arg=()
+declare only_changed=""
 for arg in "$@"; do
     case "${arg}" in
         -h | --help)
@@ -59,7 +58,7 @@ for arg in "$@"; do
             exit 0
             ;;
         --apply-format-changes)
-            apply_arg="--apply"
+            apply_arg=( "--apply" )
             shift
             ;;
         --only-changed-files)
@@ -94,12 +93,12 @@ if [[ -n "${only_changed}" ]]; then
     run check/format-incremental "${rev[@]}" "${apply_arg[@]}"
     run check/pylint-changed-files "${rev[@]}"
 else
-    run "check/format-incremental ${rev} ${apply_arg} --all"
-    run "check/pylint"
+    run check/format-incremental "${rev[@]}" "${apply_arg[@]}" --all
+    run check/pylint "${rev[@]}"
 fi
-run "check/mypy"
-run "check/pytest-and-incremental-coverage ${rev}"
-run "check/shellcheck"
+run check/mypy
+run check/pytest-and-incremental-coverage "${rev[@]}"
+run check/shellcheck
 
 # ~~~~ Summarize the results and exit with a status code ~~~~
 
