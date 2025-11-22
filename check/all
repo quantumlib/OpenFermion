@@ -72,11 +72,10 @@ for arg in "$@"; do
             exit 1
             ;;
         *)
-            if [ "$(git cat-file -t "${arg}" 2> /dev/null)" != "commit" ]; then
+            if ! rev=( "$(git rev-parse --verify --end-of-options "${arg}^{commit}")" ); then
                 error "No revision '${arg}'"
                 exit 1
             fi
-            rev="${arg}"
             ;;
     esac
 done
