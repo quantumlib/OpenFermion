@@ -67,11 +67,9 @@ for arg in "$@"; do
             shift
             ;;
         -*)
-            if [[ -n "${rev}" ]]; then
-                error "Invalid arguments."
-                echo "${usage}"
-                exit 1
-            fi
+            error "Invalid option '${arg}'"
+            error "See '$0 --help' for the list of supported options."
+            exit 1
             ;;
         *)
             if [ "$(git cat-file -t "${arg}" 2> /dev/null)" != "commit" ]; then
