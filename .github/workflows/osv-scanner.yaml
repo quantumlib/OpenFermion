@@ -12,48 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Zero-config modular workflow to run Open Source Vulnerabilities code scans.
-#
+name: OSV scan
+run-name: Run open-source vulnerabilities (OSV) scanner
+
 # The OSV scanner is a dependency vulnerability scanner that identifies known
 # vulnerabilities in a project's dependencies. It supports C/C++, Python, Java,
 # JavaScript, and others. The findings are reported in the repo's code-scanning
 # results page, https://github.com/quantumlib/REPO/security/code-scanning/.
-#
-# Note: the OSV project provides a workflow you can reference as a step with
-# uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml.
-# Unfortunately, that workflow hardcodes some behaviors (such as uploading the
-# SARIF file to the workflow Actions tab, which we have never needed). The
-# workflow in this file is basically a heavily modified version of theirs.
-#
 # For more OSV scanner examples and options, including how to ignore specific
 # vulnerabilities, see https://google.github.io/osv-scanner/github-action/.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-name: OSV known vulnerabilities scanner
-run-name: Run OSV (open-source vulnerabilities) scanner ${{inputs.reason}}
 
 on:
+  schedule:
+    # Run weekly on Saturdays.
+    - cron: '30 10 * * 6'
+
   pull_request:
     types: [opened, synchronize]
     branches:
       - main
-
-  # Support merge queues.
-  merge_group:
-    types:
-      - checks_requested
-
-  # Allow calling from other workflows.
-  workflow_call:
-    inputs:
-      reason:
-        description: 'Append text to workflow run name:'
-        type: string
-      debug:
-        description: 'Run with debugging options'
-        type: boolean
-        default: false
 
   # Allow manual invocation.
   workflow_dispatch:
@@ -63,33 +40,29 @@ on:
         type: boolean
         default: true
 
-# Declare default workflow permissions as read only.
-permissions: read-all
-
 concurrency:
   # Cancel any previously-started but still active runs on the same branch.
   cancel-in-progress: true
   group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
+# Declare default workflow permissions as read only.
+permissions: read-all
+
 jobs:
   osv-scan:
     if: github.repository_owner == 'quantumlib'
-    name: Run OSV scanner
+    name: OSV scanner
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
-      # Needed to read commit contents:
-      actions: read
       # Needed to upload the results to code-scanning dashboard:
       security-events: write
-      # Needed to upload SARIF file to CodeQL.
-      contents: read
     env:
       # Setting Bash SHELLOPTS here takes effect for all shell commands below.
       SHELLOPTS: ${{inputs.debug && 'xtrace' || '' }}
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           fetch-depth: 0
 
@@ -100,7 +73,7 @@ jobs:
 
       - name: Run OSV scanner on existing code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@9bb69575e74019c2ad085a1860787043adf47ccb # v2.2.4
+        uses: google/osv-scanner-action/osv-scanner-action@b77c075a1235514558f0eb88dbd31e22c45e0cd2 # v2.3.0
         continue-on-error: true
         with:
           scan-args: |-
@@ -118,7 +91,7 @@ jobs:
 
       - name: Run OSV scanner on new code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@9bb69575e74019c2ad085a1860787043adf47ccb # v2.2.4
+        uses: google/osv-scanner-action/osv-scanner-action@b77c075a1235514558f0eb88dbd31e22c45e0cd2 # v2.3.0
         continue-on-error: true
         with:
           scan-args: |-
@@ -128,9 +101,22 @@ jobs:
             --recursive
             ./
 
-      - name: Run the OSV scanner reporter
+      - name: Run the OSV scanner reporter for the job summary page
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-reporter-action@9bb69575e74019c2ad085a1860787043adf47ccb # v2.2.4
+        uses: google/osv-scanner-action/osv-reporter-action@b77c075a1235514558f0eb88dbd31e22c45e0cd2 # v2.3.0
+        with:
+          scan-args: |-
+            --output=markdown:output.md
+            --old=old-results.json
+            --new=new-results.json
+            --fail-on-vuln=false
+
+      - name: Write the results to the job summary page
+        run: cat output.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run the OSV scanner reporter for the code-scanning dashboard
+        # yamllint disable rule:line-length
+        uses: google/osv-scanner-action/osv-reporter-action@b77c075a1235514558f0eb88dbd31e22c45e0cd2 # v2.3.0
         with:
           scan-args: |-
             --output=osv-results.sarif
@@ -139,21 +125,21 @@ jobs:
             --gh-annotations=true
             --fail-on-vuln=true
 
-      - name: Upload results to the repository's code-scanning results dashboard
+      - name: Upload results to the code-scanning results dashboard
         id: upload_artifact
         # yamllint disable rule:line-length
-        uses: github/codeql-action/upload-sarif@014f16e7ab1402f30e7c3329d33797e7948572db # v3.29.5
+        uses: github/codeql-action/upload-sarif@ba454b8ab46733eb6145342877cd148270bb77ab # codeql-bundle-v2.23.5
         with:
           sarif_file: osv-results.sarif
 
-      - if: github.event.inputs.debug == true
+      - if: github.event.inputs.debug == true || runner.debug == true
         name: Upload results as artifacts to the workflow Summary page
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: SARIF file
-          path: results.sarif
+          path: osv-results.sarif
           retention-days: 5
 
-      - name: Error troubleshooter
+      - name: Print an alert message if an error occurred
         if: ${{always() && steps.upload_artifact.outcome == 'failure'}}
         run: echo '::error::Artifact upload failed. Check the workflow logs.'
