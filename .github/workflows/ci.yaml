@@ -149,7 +149,7 @@ jobs:
           echo base=${{github.ref_name}} >> "$GITHUB_ENV"
 
       - name: Check out a copy of the OpenFermion git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Determine files changed by this ${{github.event_name}} event
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
@@ -199,7 +199,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Set up Python with caching of pip dependencies
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
@@ -228,7 +228,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
         with:
           fetch-depth: 0
 
@@ -257,7 +257,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Set up Python and restore cache
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
@@ -284,7 +284,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Set up Python and restore cache
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
@@ -324,7 +324,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Set up Python and restore cache
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
@@ -371,7 +371,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Set up Python and restore cache
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
@@ -413,7 +413,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
         # Note: deliberately not using our Python cache here b/c this runs
         # a different version of Python.
@@ -439,7 +439,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
         with:
           fetch-depth: 0
 
@@ -469,7 +469,7 @@ jobs:
       changed_files: ${{needs.changes.outputs.yaml_files}}
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Set up yamllint output problem matcher
         run: echo "::add-matcher::.github/problem-matchers/yamllint.json"
@@ -490,7 +490,7 @@ jobs:
       changed_files: ${{needs.changes.outputs.json_files}}
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Install jsonlint
         run: npm install -g @prantlf/jsonlint
@@ -511,7 +511,7 @@ jobs:
       changed_files: ${{needs.changes.outputs.cff_files}}
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Install cffconvert
         run: pip install cffconvert
@@ -530,7 +530,7 @@ jobs:
       changed_files: ${{needs.changes.outputs.docker_files}}
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       # Note: there is a hadolint GitHub Actions available, but it only accepts
       # one Dockerfile to check. We have > 1 file to check, so we need the CLI.
@@ -554,7 +554,7 @@ jobs:
       changed_files: ${{needs.changes.outputs.gha_files}}
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       # The next action simply fails if there are any unpinned actions.
       - name: Verify that all workflow actions have pinned versions
@@ -580,7 +580,7 @@ jobs:
       changed_files: ${{needs.changes.outputs.shell_files}}
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Set up shellcheck output problem matcher
         run: echo "::add-matcher::.github/problem-matchers/shellcheck.json"
@@ -604,7 +604,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v4
 
       - name: Set up Python with caching of pip dependencies
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
