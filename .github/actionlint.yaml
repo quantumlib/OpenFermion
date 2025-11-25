@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Summary: configure actionlint (https://github.com/rhysd/actionlint).
+
 self-hosted-runner:
-  # We don't have self-hosted runners, but we do use some of the "partner"
-  # runner images at https://github.com/actions/partner-runner-images
+  # We use some custom runners and also some GitHub runners from
+  # https://github.com/actions/partner-runner-images
   labels:
     - ubuntu-24.04-arm
+    - ubuntu-slim
+    - ubuntu-24.04-x64-8-core
