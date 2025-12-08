@@ -12,39 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Zero-configuration modular workflow to run the OSSF Scorecard scanner.
-#
+name: Scorecard analysis
+run-name: Run Scorecard scanner for security best practices
+
 # Scorecard (https://github.com/ossf/scorecard) is a repository-scanning tool
 # that evaluates a project's security practices. Its use is suggested by
 # Google's GitHub team. Scorecard's findings are reported in a repo's scanning
 # results page, https://github.com/quantumlib/REPO/security/code-scanning/.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-name: Scorecard analysis
-run-name: Run Scorecard best-practices analyzer ${{inputs.reason}}
 
 on:
+  schedule:
+    # Run weekly on Saturdays.
+    - cron:  '30 9 * * 6'
+
   pull_request:
     types: [opened, synchronize]
     branches:
       - main
-
-  # Support merge queues.
-  merge_group:
-    types:
-      - checks_requested
-
-  # Allow calling from nightly.yaml.
-  workflow_call:
-    inputs:
-      reason:
-        description: 'Append text to workflow run name:'
-        type: string
-      debug:
-        description: 'Run with debugging options'
-        type: boolean
-        default: false
 
   # Allow manual invocation.
   workflow_dispatch:
@@ -54,45 +38,67 @@ on:
         type: boolean
         default: true
 
+concurrency:
+  # Cancel any previously-started but still active runs on the same branch.
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
+
 # Declare default workflow permissions as read only.
 permissions: read-all
 
 jobs:
-  scorecard:
+  run-scorecard:
     if: github.repository_owner == 'quantumlib'
-    name: Run Scorecard analyzer
+    name: Scorecard analyzer
     runs-on: ubuntu-24.04
     permissions:
-      actions: read
-      contents: read
       security-events: write
+      id-token: write
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
 
       - name: Run Scorecard analysis
+        # yamllint disable rule:line-length
         uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
         with:
           # Save the results
           results_file: scorecard-results.sarif
           results_format: sarif
-
-          # Publish results to OpenSSF REST API.
           # See https://github.com/ossf/scorecard-action#publishing-results.
           publish_results: true
 
       - name: Upload results to code-scanning dashboard
-        uses: github/codeql-action/upload-sarif@4e94bd11f71e507f7f87df81788dff88d1dacbfb # v3.29.5
+        # yamllint disable rule:line-length
+        uses: github/codeql-action/upload-sarif@ba454b8ab46733eb6145342877cd148270bb77ab # codeql-bundle-v2.23.5
         with:
           sarif_file: scorecard-results.sarif
 
-      - if: github.event.inputs.debug == true
+      - if: github.event.inputs.debug == true || runner.debug == true
         name: Upload results as artifacts to the workflow Summary page
+        # yamllint disable rule:line-length
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
-          name: SARIF file
-          path: results.sarif
+          name: Scorecard SARIF file
+          path: scorecard-results.sarif
           retention-days: 5
+
+  # Scorecard currently (ver. 2.4.x) doesn't allow submissions from jobs having
+  # steps that use "run:". To print to the summary, we need to use another job.
+  write-summary:
+    name: Scorecard results
+    needs: run-scorecard
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Write the Scorecard report page link to the workflow summary
+        run: |
+          repo="${{github.repository}}"
+          url="https://scorecard.dev/viewer/?uri=github.com/${repo}"
+          {
+          echo -n "The results are available on the OpenSSF Scorecard "
+          echo "[report page for ${{github.repository}}]($url)."
+          } >> "$GITHUB_STEP_SUMMARY"
