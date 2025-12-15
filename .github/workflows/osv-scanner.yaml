@@ -73,7 +73,7 @@ jobs:
 
       - name: Run OSV scanner on existing code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@b77c075a1235514558f0eb88dbd31e22c45e0cd2 # v2.3.0
+        uses: google/osv-scanner-action/osv-scanner-action@375a0e8ebdc98e99b02ac4338a724f5750f21213 # v2.3.1
         continue-on-error: true
         with:
           scan-args: |-
@@ -91,7 +91,7 @@ jobs:
 
       - name: Run OSV scanner on new code
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-scanner-action@b77c075a1235514558f0eb88dbd31e22c45e0cd2 # v2.3.0
+        uses: google/osv-scanner-action/osv-scanner-action@375a0e8ebdc98e99b02ac4338a724f5750f21213 # v2.3.1
         continue-on-error: true
         with:
           scan-args: |-
@@ -103,7 +103,7 @@ jobs:
 
       - name: Run the OSV scanner reporter for the job summary page
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-reporter-action@b77c075a1235514558f0eb88dbd31e22c45e0cd2 # v2.3.0
+        uses: google/osv-scanner-action/osv-reporter-action@375a0e8ebdc98e99b02ac4338a724f5750f21213 # v2.3.1
         with:
           scan-args: |-
             --output=markdown:output.md
@@ -116,7 +116,7 @@ jobs:
 
       - name: Run the OSV scanner reporter for the code-scanning dashboard
         # yamllint disable rule:line-length
-        uses: google/osv-scanner-action/osv-reporter-action@b77c075a1235514558f0eb88dbd31e22c45e0cd2 # v2.3.0
+        uses: google/osv-scanner-action/osv-reporter-action@375a0e8ebdc98e99b02ac4338a724f5750f21213 # v2.3.1
         with:
           scan-args: |-
             --output=osv-results.sarif
