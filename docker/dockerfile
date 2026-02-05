@@ -19,37 +19,28 @@ COPY . /root/workspace
 
 # Set PATH for miniforge
 ENV PATH="/root/conda/bin:${PATH}"
-# Set PATH for pyscf
-ENV PYTHONPATH=/root/pyscf
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends bzip2=1.0.8-5build1 \
-    cmake=3.22.1-1ubuntu1.22.04.2 \
-    git=1:2.34.1-1ubuntu1.15 \
+    apt-get install -y --no-install-recommends git=1:2.34.1-1ubuntu1.15 \
     wget=1.21.2-2ubuntu1.1 \
     libblas-dev=3.10.0-2ubuntu1 \
     liblapack-dev=3.10.0-2ubuntu1 \
     # in order to verify github's certificate
     ca-certificates=20240203~22.04.1 \
-    build-essential=12.9ubuntu3
+    build-essential=12.9ubuntu3 && \
+    # delete the apt-get lists after the installation
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install miniforge https://github.com/conda-forge/miniforge?tab=readme-ov-file#as-part-of-a-ci-pipeline
 RUN wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/25.3.1-0/Miniforge3-25.3.1-0-$(uname)-$(uname -m).sh" && \
     bash Miniforge3.sh -b -p "${HOME}/conda" && \
+    rm Miniforge3.sh && \
     conda init bash && \
-    conda update -n base -c conda-forge conda && \
     # Create virtual env (fermion) with installing Psi4
-    conda create -n fermion psi4 python=3.12 -c conda-forge -y && \
-    conda install -n fermion pip -y && \
-    # Install OpenFermion, Cirq, and plugins
-    conda run -n fermion pip install openfermion \ cirq \ openfermioncirq \ openfermionpsi4 \ openfermionpyscf
-
-# Install PySCF
-WORKDIR /root
-RUN git clone https://github.com/sunqm/pyscf
-WORKDIR /root/pyscf/pyscf/lib/build
-RUN cmake .. && \
-    make
+    conda create -n fermion psi4==1.10 python=3.12 -c conda-forge -y && \
+    # Install OpenFermion and plugins
+    conda install -n fermion -c conda-forge openfermion==1.7.1 openfermionpsi4==0.5 openfermionpyscf==0.5 -y
 
 # Activate venv (fermion)
 RUN echo "conda activate fermion" >> ~/.bashrc
