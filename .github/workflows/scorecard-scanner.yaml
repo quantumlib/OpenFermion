@@ -38,17 +38,6 @@ on:
         type: boolean
         default: true
 
-  # Allow calling from nightly.yaml.
-  workflow_call:
-    inputs:
-      reason:
-        description: 'Append text to workflow run name:'
-        type: string
-      debug:
-        description: 'Run with debugging options'
-        type: boolean
-        default: false
-
 concurrency:
   # Cancel any previously-started but still active runs on the same branch.
   cancel-in-progress: true
