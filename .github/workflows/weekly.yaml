@@ -45,18 +45,6 @@ concurrency:
   group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
 jobs:
-  osv-code-scan:
-    if: github.repository_owner == 'quantumlib'
-    name: Run periodic open-source vulnerabilities scanner
-    uses: ./.github/workflows/osv-scanner.yaml
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    with:
-      reason: '(weekly)'
-      debug: ${{github.event.inputs.debug || false}}
-
   scorecard-repo-scan:
     if: github.repository_owner == 'quantumlib'
     name: Run periodic Scorecard analysis
