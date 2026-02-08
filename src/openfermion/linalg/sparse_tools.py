@@ -12,6 +12,7 @@
 """This module provides functions to interface with scipy.sparse."""
 import itertools
 from functools import reduce
+import warnings
 import numpy.linalg
 import numpy
 
@@ -1268,6 +1269,13 @@ def get_sparse_operator(operator, n_qubits=None, trunc=None, hbar=1.0):
     elif isinstance(operator, FermionOperator):
         return jordan_wigner_sparse(operator, n_qubits)
     elif isinstance(operator, QubitOperator):
+        if hasattr(operator, "simplify"):
+            operator.simplify()
+        else:
+            warnings.warn(
+                "QubitOperator.simplify() not found. "
+                "Ensure your operator is simplified to avoid errors."
+            )
         return qubit_operator_sparse(operator, n_qubits)
     elif isinstance(operator, (BosonOperator, QuadOperator)):
         return boson_operator_sparse(operator, trunc, hbar)
