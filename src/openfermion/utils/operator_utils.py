@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This module provides generic tools for classes in ops/"""
+
 from builtins import map, zip
 import marshal
 import os
@@ -280,9 +281,22 @@ def load_operator(file_name=None, data_directory=None, plain_text=False):
             raise TypeError('Operator of invalid type.')
     else:
         with open(file_path, 'rb') as f:
-            data = marshal.load(f)
+            try:
+                data = marshal.load(f)
+            except Exception as e:
+                raise TypeError('The file content is not a valid marshal format.') from e
+
+            if not isinstance(data, (tuple, list)) or len(data) != 2:
+                raise TypeError('Invalid data format in file: expected a sequence of length 2.')
+
             operator_type = data[0]
             operator_terms = data[1]
+
+            if not isinstance(operator_type, str):
+                raise TypeError('Invalid operator type: expected a string.')
+
+            if not isinstance(operator_terms, dict):
+                raise TypeError('Invalid operator terms: expected a dictionary.')
 
         if operator_type == 'FermionOperator':
             operator = FermionOperator()
