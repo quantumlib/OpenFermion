@@ -166,6 +166,7 @@ jobs:
                   - '**/CITATION.cff'
             python:
               - '**/*.py'
+              - 'dev_tools/conf/**'
               - 'dev_tools/requirements/deps/*.txt'
               - 'dev_tools/requirements/env/*.txt'
               - 'dev_tools/requirements/max_compat/*.txt'
