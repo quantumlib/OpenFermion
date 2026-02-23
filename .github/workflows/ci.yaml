@@ -118,9 +118,6 @@ jobs:
       docker: ${{steps.filter.outputs.docker || steps.filter.outputs.ci}}
       docker_files: ${{steps.filter.outputs.docker_files}}
 
-      requirements: ${{steps.filter.outputs.requirements || steps.filter.outputs.ci}}
-      requirements_files: ${{steps.filter.outputs.requirements_files}}
-
       shell: ${{steps.filter.outputs.shell || steps.filter.outputs.ci}}
       shell_files: ${{steps.filter.outputs.shell_files}}
     steps:
@@ -169,6 +166,11 @@ jobs:
                   - '**/CITATION.cff'
             python:
               - '**/*.py'
+              - 'dev_tools/requirements/deps/*.txt'
+              - 'dev_tools/requirements/env/*.txt'
+              - 'dev_tools/requirements/max_compat/*.txt'
+              - 'docs/**/*-requirements.txt'
+              - 'docs/**/requirements.txt'
             gha:
               - added|modified:
                   - './.github/workflows/*.yaml'
@@ -183,10 +185,6 @@ jobs:
             docker:
               - '**/dockerfile'
               - '**/Dockerfile'
-            requirements:
-              - 'dev_tools/requirements/deps/*.txt'
-              - 'docs/**/*-requirements.txt'
-              - 'docs/**/requirements.txt'
             shell:
               - '**/*.sh'
               - 'check/*'
