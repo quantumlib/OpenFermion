@@ -1,4 +1,4 @@
-cirq-core>=1.4.1
+cirq-core>=1.4.1,<1.6.0
 deprecation
 h5py>=3.10.0
 networkx
