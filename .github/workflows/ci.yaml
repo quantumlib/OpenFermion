@@ -126,16 +126,17 @@ jobs:
         name: Use the user-provided SHA as the basis for comparison
         env:
           GH_TOKEN: ${{github.token}}
+          INPUTS_SHA: ${{inputs.sha}}
         run: |
           set -x +e
-          url="repos/${{github.repository}}/commits/${{inputs.sha}}"
-          if full_sha="$(gh api $url -q '.sha')"; then
+          url="repos/${{github.repository}}/commits/${INPUTS_SHA}"
+          if full_sha="$(gh api "$url" -q '.sha')"; then
             echo "base=$full_sha" >> "$GITHUB_ENV"
           else
             {
             echo "### :x: Workflow error"
             echo "The SHA provided to _Run Workflow_ does not exist:"
-            echo "<code>${{inputs.sha}}</code>"
+            echo "<code>${INPUTS_SHA}</code>"
             } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
@@ -143,7 +144,7 @@ jobs:
       - if: github.event_name != 'workflow_dispatch'
         name: Use ref ${{github.ref_name}} as the basis for comparison
         run: |
-          echo base=${{github.ref_name}} >> "$GITHUB_ENV"
+          echo base="${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
 
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -350,12 +351,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - run: |
-          result="${{needs.pytest-matrix.result}}"
+          result="${NEEDS_PYTEST_MATRIX_RESULT}"
           if [[ $result == "success" || $result == "skipped" ]]; then
             exit 0
           else
             exit 1
           fi
+        env:
+          NEEDS_PYTEST_MATRIX_RESULT: ${{needs.pytest-matrix.result}}
 
   pytest-extra-matrix:
     if: needs.changes.outputs.python == 'true'
@@ -397,12 +400,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - run: |
-          result="${{needs.pytest-extra-matrix.result}}"
+          result="${NEEDS_PYTEST_EXTRA_MATRIX_RESULT}"
           if [[ $result == "success" || $result == "skipped" ]]; then
             exit 0
           else
             exit 1
           fi
+        env:
+          NEEDS_PYTEST_EXTRA_MATRIX_RESULT: ${{needs.pytest-extra-matrix.result}}
 
   python-compat:
     if: needs.changes.outputs.python == 'true'
@@ -465,7 +470,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
-      changed_files: ${{needs.changes.outputs.yaml_files}}
+      CHANGED_FILES: ${{needs.changes.outputs.yaml_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -477,7 +482,7 @@ jobs:
         run: |
           set -x
           # shellcheck disable=SC2086
-          yamllint $changed_files
+          yamllint ${CHANGED_FILES}
 
   json-lint:
     if: needs.changes.outputs.json == 'true'
@@ -486,7 +491,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
-      changed_files: ${{needs.changes.outputs.json_files}}
+      CHANGED_FILES: ${{needs.changes.outputs.json_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -498,7 +503,9 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/jsonlint.json'
 
       - name: Run jsonlint on JSON files
-        run: jsonlint --continue ${{env.changed_files}}
+        run: |
+          # shellcheck disable=SC2086
+          jsonlint --continue ${CHANGED_FILES}
 
   cff-validation:
     if: needs.changes.outputs.cff == 'true'
@@ -506,8 +513,6 @@ jobs:
     needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    env:
-      changed_files: ${{needs.changes.outputs.cff_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -526,7 +531,7 @@ jobs:
     runs-on: macos-14
     timeout-minutes: 5
     env:
-      changed_files: ${{needs.changes.outputs.docker_files}}
+      CHANGED_FILES: ${{needs.changes.outputs.docker_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -540,7 +545,9 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/hadolint.json'
 
       - name: Run hadolint on Dockerfiles that have been changed
-        run: hadolint ${{env.changed_files}}
+        run: |
+          # shellcheck disable=SC2086
+          hadolint ${CHANGED_FILES}
 
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
@@ -549,8 +556,6 @@ jobs:
     # This uses a Mac runner because actionlint isn't available via Linux apt.
     runs-on: macos-14
     timeout-minutes: 5
-    env:
-      changed_files: ${{needs.changes.outputs.gha_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -577,7 +582,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
-      changed_files: ${{needs.changes.outputs.shell_files}}
+      CHANGED_FILES: ${{needs.changes.outputs.shell_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -586,7 +591,9 @@ jobs:
         run: echo "::add-matcher::.github/problem-matchers/shellcheck.json"
 
       - name: Run shellcheck on shell scripts that have been changed
-        run: shellcheck ${{env.changed_files}}
+        run: |
+          # shellcheck disable=SC2086
+          shellcheck ${CHANGED_FILES}
 
   print-debugging-info:
     if: failure()
