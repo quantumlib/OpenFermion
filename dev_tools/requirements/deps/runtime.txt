@@ -1,4 +1,4 @@
-cirq-core>=1.4.1
+cirq-core>=1.4.1,<1.6.0
 deprecation
 h5py>=3.10.0
 networkx
@@ -9,3 +9,7 @@ requests~=2.32.2
 scipy~=1.15
 
 sympy
+
+# Transitive dependency. Versions 1.3.3+ require Python 11. Constraining it
+# lets us produce a single set of requirements files for Python 3.10 - 3.12.
+contourpy<1.3.3
