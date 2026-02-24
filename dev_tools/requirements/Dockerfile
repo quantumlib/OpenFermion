@@ -19,7 +19,8 @@ WORKDIR /pip-compile
 
 # Step 0: install pip-tools
 COPY envs/pip-tools.env.txt ./
-RUN pip install -r pip-tools.env.txt
+
+RUN pip install -r pip-tools.env.txt --root-user-action ignore
 
 # Step 1: compile a complete & consistent environment with all dependencies
 COPY deps/ ./deps/
