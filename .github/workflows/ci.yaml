@@ -407,7 +407,7 @@ jobs:
             exit 1
           fi
         env:
-          NEEDS_PYTEST_MATRIX_RESULT: ${{needs.pytest-extra-matrix.result}}
+          NEEDS_PYTEST_EXTRA_MATRIX_RESULT: ${{needs.pytest-extra-matrix.result}}
 
   python-compat:
     if: needs.changes.outputs.python == 'true'
