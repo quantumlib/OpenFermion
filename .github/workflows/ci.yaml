@@ -118,9 +118,6 @@ jobs:
       docker: ${{steps.filter.outputs.docker || steps.filter.outputs.ci}}
       docker_files: ${{steps.filter.outputs.docker_files}}
 
-      requirements: ${{steps.filter.outputs.requirements || steps.filter.outputs.ci}}
-      requirements_files: ${{steps.filter.outputs.requirements_files}}
-
       shell: ${{steps.filter.outputs.shell || steps.filter.outputs.ci}}
       shell_files: ${{steps.filter.outputs.shell_files}}
     steps:
@@ -133,7 +130,7 @@ jobs:
         run: |
           set -x +e
           url="repos/${{github.repository}}/commits/${INPUTS_SHA}"
-          if full_sha="$(gh api $url -q '.sha')"; then
+          if full_sha="$(gh api "$url" -q '.sha')"; then
             echo "base=$full_sha" >> "$GITHUB_ENV"
           else
             {
@@ -147,7 +144,7 @@ jobs:
       - if: github.event_name != 'workflow_dispatch'
         name: Use ref ${{github.ref_name}} as the basis for comparison
         run: |
-          echo base=${GITHUB_REF_NAME} >> "$GITHUB_ENV"
+          echo base="${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
 
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -170,6 +167,12 @@ jobs:
                   - '**/CITATION.cff'
             python:
               - '**/*.py'
+              - 'dev_tools/conf/**'
+              - 'dev_tools/requirements/deps/*.txt'
+              - 'dev_tools/requirements/env/*.txt'
+              - 'dev_tools/requirements/max_compat/*.txt'
+              - 'docs/**/*-requirements.txt'
+              - 'docs/**/requirements.txt'
             gha:
               - added|modified:
                   - './.github/workflows/*.yaml'
@@ -184,10 +187,6 @@ jobs:
             docker:
               - '**/dockerfile'
               - '**/Dockerfile'
-            requirements:
-              - 'dev_tools/requirements/deps/*.txt'
-              - 'docs/**/*-requirements.txt'
-              - 'docs/**/requirements.txt'
             shell:
               - '**/*.sh'
               - 'check/*'
@@ -203,7 +202,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Python with caching of pip dependencies
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -234,7 +233,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -261,7 +260,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -288,7 +287,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
@@ -328,7 +327,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -357,7 +356,8 @@ jobs:
             exit 0
           else
             exit 1
-          fi        env:
+          fi
+        env:
           NEEDS_PYTEST_MATRIX_RESULT: ${{needs.pytest-matrix.result}}
 
   pytest-extra-matrix:
@@ -376,7 +376,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -405,8 +405,9 @@ jobs:
             exit 0
           else
             exit 1
-          fi        env:
-          NEEDS_PYTEST_EXTRA_MATRIX_RESULT: ${{needs.pytest-extra-matrix.result}}
+          fi
+        env:
+          NEEDS_PYTEST_MATRIX_RESULT: ${{needs.pytest-extra-matrix.result}}
 
   python-compat:
     if: needs.changes.outputs.python == 'true'
@@ -421,7 +422,7 @@ jobs:
         # Note: deliberately not using our Python cache here b/c this runs
         # a different version of Python.
       - name: Set up Python and restore cache
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{env.python_compat_ver}}
 
@@ -447,7 +448,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python and restore cache
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
@@ -469,7 +470,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
-      changed_files: ${{needs.changes.outputs.yaml_files}}
+      CHANGED_FILES: ${{needs.changes.outputs.yaml_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -480,8 +481,7 @@ jobs:
       - name: Run yamllint
         run: |
           set -x
-          # shellcheck disable=SC2086
-          yamllint $changed_files
+          yamllint "${CHANGED_FILES}"
 
   json-lint:
     if: needs.changes.outputs.json == 'true'
@@ -490,7 +490,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
-      changed_files: ${{needs.changes.outputs.json_files}}
+      CHANGED_FILES: ${{needs.changes.outputs.json_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -502,7 +502,7 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/jsonlint.json'
 
       - name: Run jsonlint on JSON files
-        run: jsonlint --continue ${CHANGED_FILES}
+        run: jsonlint --continue "${CHANGED_FILES}"
 
   cff-validation:
     if: needs.changes.outputs.cff == 'true'
@@ -510,8 +510,6 @@ jobs:
     needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    env:
-      changed_files: ${{needs.changes.outputs.cff_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -530,7 +528,7 @@ jobs:
     runs-on: macos-14
     timeout-minutes: 5
     env:
-      changed_files: ${{needs.changes.outputs.docker_files}}
+      CHANGED_FILES: ${{needs.changes.outputs.docker_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -544,7 +542,9 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/hadolint.json'
 
       - name: Run hadolint on Dockerfiles that have been changed
-        run: hadolint ${CHANGED_FILES}
+        run: |
+          # shellcheck disable=SC2086
+          hadolint ${CHANGED_FILES}
 
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
@@ -553,15 +553,14 @@ jobs:
     # This uses a Mac runner because actionlint isn't available via Linux apt.
     runs-on: macos-14
     timeout-minutes: 5
-    env:
-      changed_files: ${{needs.changes.outputs.gha_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       # The next action simply fails if there are any unpinned actions.
       - name: Verify that all workflow actions have pinned versions
-        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@9e9574ef04ea69da568d6249bd69539ccc704e74
+        # yamllint disable-line rule:line-length
+        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@d5d20e15f2736816ee0e001ba8b24b54d9ffcff4 # v5.0.0
 
       # If we didn't fail the previous check, go on to more time-consuming ones.
       - name: Install actionlint
@@ -580,7 +579,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
-      changed_files: ${{needs.changes.outputs.shell_files}}
+      CHANGED_FILES: ${{needs.changes.outputs.shell_files}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -589,7 +588,9 @@ jobs:
         run: echo "::add-matcher::.github/problem-matchers/shellcheck.json"
 
       - name: Run shellcheck on shell scripts that have been changed
-        run: shellcheck ${CHANGED_FILES}
+        run: |
+          # shellcheck disable=SC2086
+          shellcheck ${CHANGED_FILES}
 
   print-debugging-info:
     if: failure()
@@ -601,7 +602,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Python with caching of pip dependencies
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
           architecture: 'x64'
