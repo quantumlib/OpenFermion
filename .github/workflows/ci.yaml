@@ -481,7 +481,8 @@ jobs:
       - name: Run yamllint
         run: |
           set -x
-          yamllint "${CHANGED_FILES}"
+          # shellcheck disable=SC2086
+          yamllint ${CHANGED_FILES}
 
   json-lint:
     if: needs.changes.outputs.json == 'true'
@@ -502,7 +503,9 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/jsonlint.json'
 
       - name: Run jsonlint on JSON files
-        run: jsonlint --continue "${CHANGED_FILES}"
+        run: |
+          # shellcheck disable=SC2086
+          jsonlint --continue ${CHANGED_FILES}
 
   cff-validation:
     if: needs.changes.outputs.cff == 'true'
