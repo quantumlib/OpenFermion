@@ -289,6 +289,7 @@ def generate_hamiltonian(
                         two_body_integrals[p, q, r, s] / 2.0
                     )
 
+                if not (p == q or r == s):
                     # Same spin
                     two_body_coefficients[2 * p, 2 * q, 2 * r, 2 * s] = (
                         two_body_integrals[p, q, r, s] / 2.0
