@@ -100,17 +100,6 @@ def pip_compile(env_name: str, env_recipe: EnvRecipe, env_out_dir: str, constrai
             "pip-compile",
             f"--output-file={env_out_dir}/{env_name}.env.txt",
             "--resolver=backtracking",
-            # The following is a transitive dependency that should only be
-            # installed for Python < 3.11. It doesn't need to be in the
-            # requirements files we produce, so tell pip-compile to omit it.
-            "--unsafe-package",
-            "backports.asyncio.runner",
-            # The next two are needed due to pip-compile's current behavior: it
-            # includes these by default if --unsafe-package is used.
-            "--unsafe-package",
-            "setuptools",
-            "--unsafe-package",
-            "pip",
         ]
         + dep_args
     )
