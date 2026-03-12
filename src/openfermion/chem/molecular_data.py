@@ -1010,7 +1010,7 @@ class MolecularData(object):
                 which orbitals should be considered active.
 
         Returns:
-            molecular_hamiltonian: An instance of the MolecularOperator class.
+            molecular_hamiltonian: An instance of the InteractionOperator class.
 
         Note:
             The indexing convention used is that even indices correspond to
