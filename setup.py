@@ -21,7 +21,7 @@ assert __version__, 'Version string cannot be empty'
 
 # The readme file is used as the long_description:
 long_description = '===========\n' + 'OpenFermion\n' + '===========\n\n'
-with open('README.rst', 'r', encoding='utf-8') as readme:
+with open('README.md', 'r', encoding='utf-8') as readme:
     long_description += readme.read()
 
 # Read in package requirements.txt.
