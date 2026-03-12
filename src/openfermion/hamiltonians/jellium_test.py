@@ -56,9 +56,7 @@ class WignerSeitzRadiusTest(unittest.TestCase):
         wigner_seitz_radius = 5.0
         n_particles = 42
         six_d_test = wigner_seitz_length_scale(wigner_seitz_radius, n_particles, 6) ** 6
-        self.assertAlmostEqual(
-            six_d_test, n_particles * (numpy.pi**3 / 6 * wigner_seitz_radius**6)
-        )
+        self.assertAlmostEqual(six_d_test, n_particles * (numpy.pi**3 / 6 * wigner_seitz_radius**6))
 
     def test_wigner_seitz_radius_bad_dimension_not_integer(self):
         with self.assertRaises(ValueError):

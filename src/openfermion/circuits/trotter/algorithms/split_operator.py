@@ -65,11 +65,9 @@ class SplitOperatorTrotterStep(TrotterStep):
         quad_ham = ops.QuadraticHamiltonian(hamiltonian.one_body)
         # Get the basis change matrix that diagonalizes the one-body term
         # and associated orbital energies
-        (
-            self.orbital_energies,
-            self.basis_change_matrix,
-            _,
-        ) = quad_ham.diagonalizing_bogoliubov_transform()
+        (self.orbital_energies, self.basis_change_matrix, _) = (
+            quad_ham.diagonalizing_bogoliubov_transform()
+        )
         super().__init__(hamiltonian)
 
 

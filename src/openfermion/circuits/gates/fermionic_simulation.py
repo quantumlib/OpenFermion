@@ -124,10 +124,10 @@ def fermionic_simulation_gates_from_interaction_operator(
         if coeff:
             gates[(p,)] = cirq.Z ** (coeff / np.pi)
     for modes in itertools.combinations(range(n_qubits), 2):
-        gate: Optional[
-            InteractionOperatorFermionicGate
-        ] = QuadraticFermionicSimulationGate.from_interaction_operator(
-            operator=operator, modes=modes
+        gate: Optional[InteractionOperatorFermionicGate] = (
+            QuadraticFermionicSimulationGate.from_interaction_operator(
+                operator=operator, modes=modes
+            )
         )
         if gate:
             gates[modes] = gate

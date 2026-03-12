@@ -308,12 +308,9 @@ class FermionicGaussianDecompositionTest(unittest.TestCase):
             lower_unitary[:, n:] = numpy.conjugate(left_block)
 
             # Get fermionic Gaussian decomposition of lower_unitary
-            (
-                decomposition,
-                left_decomposition,
-                diagonal,
-                left_diagonal,
-            ) = fermionic_gaussian_decomposition(lower_unitary)
+            (decomposition, left_decomposition, diagonal, left_diagonal) = (
+                fermionic_gaussian_decomposition(lower_unitary)
+            )
 
             # Compute left_unitary
             left_unitary = numpy.eye(n, dtype=complex)

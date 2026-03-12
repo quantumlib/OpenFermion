@@ -165,14 +165,9 @@ class Davidson(object):
         guess_mv = None
         max_iterations = max_iterations or self.options.max_iterations
         while num_iterations < max_iterations and not success:
-            (
-                eigen_values,
-                eigen_vectors,
-                mat_eigen_vectors,
-                max_trial_error,
-                guess_v,
-                guess_mv,
-            ) = self._iterate(n_lowest, guess_v, guess_mv)
+            (eigen_values, eigen_vectors, mat_eigen_vectors, max_trial_error, guess_v, guess_mv) = (
+                self._iterate(n_lowest, guess_v, guess_mv)
+            )
             logging.info(
                 "Eigenvalues for iteration %d: %s, error is %f.",
                 num_iterations,

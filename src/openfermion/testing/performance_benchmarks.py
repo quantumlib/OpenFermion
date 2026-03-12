@@ -276,10 +276,9 @@ def run_diagonal_commutator(side_length=4):
     logging.info(
         'Starting test on ' 'commutator_ordered_diagonal_coulomb_with_two_body_operator().'
     )
-    (
-        runtime_commutator,
-        runtime_diagonal_commutator,
-    ) = benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(side_length=side_length)
+    (runtime_commutator, runtime_diagonal_commutator) = (
+        benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(side_length=side_length)
+    )
     logging.info(
         'Regular commutator computation took %f seconds, while '
         'commutator_ordered_diagonal_coulomb_with_two_body_operator'

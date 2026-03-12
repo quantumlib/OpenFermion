@@ -1,5 +1,5 @@
 # coverage:ignore
-""" Utilities for FT costing calculations """
+"""Utilities for FT costing calculations"""
 from typing import Tuple, Optional
 import sys
 import os

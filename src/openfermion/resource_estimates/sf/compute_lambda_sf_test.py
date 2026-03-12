@@ -1,6 +1,5 @@
 # coverage:ignore
-"""Test cases for compute_lambda_sf.py
-"""
+"""Test cases for compute_lambda_sf.py"""
 from os import path
 
 import numpy as np

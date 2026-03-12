@@ -1,6 +1,7 @@
-""" Determine costs for sparse decomposition in QC
-    Note this is WIP
+"""Determine costs for sparse decomposition in QC
+Note this is WIP
 """
+
 from typing import Tuple
 import numpy as np
 from numpy.lib.scimath import arccos, arcsin  # has analytc continuation to cplx

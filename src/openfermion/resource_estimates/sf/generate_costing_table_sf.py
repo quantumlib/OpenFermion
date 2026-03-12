@@ -1,5 +1,5 @@
 # coverage:ignore
-""" Pretty-print a table comparing number of SF vectors versus acc and cost """
+"""Pretty-print a table comparing number of SF vectors versus acc and cost"""
 import numpy as np
 import pytest
 

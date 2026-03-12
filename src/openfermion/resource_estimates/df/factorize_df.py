@@ -1,5 +1,5 @@
 # coverage:ignore
-""" Double factorization rank reduction of ERIs """
+"""Double factorization rank reduction of ERIs"""
 import numpy as np
 from openfermion.resource_estimates.utils import eigendecomp
 

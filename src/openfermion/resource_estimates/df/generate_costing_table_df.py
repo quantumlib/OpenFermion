@@ -1,5 +1,5 @@
 # coverage:ignore
-""" Pretty-print a table comparing DF vector thresh vs accuracy and cost """
+"""Pretty-print a table comparing DF vector thresh vs accuracy and cost"""
 import numpy as np
 from pyscf import scf
 from openfermion.resource_estimates import df

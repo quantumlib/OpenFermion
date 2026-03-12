@@ -9,8 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""This module constructs Hamiltonians for the Fermi- and Bose-Hubbard models.
-"""
+"""This module constructs Hamiltonians for the Fermi- and Bose-Hubbard models."""
 
 from openfermion.ops.operators import BosonOperator, FermionOperator
 from openfermion.utils.indexing import down_index, up_index

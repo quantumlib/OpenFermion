@@ -1,5 +1,5 @@
 # coverage:ignore
-""" Determine costs for SF decomposition in QC """
+"""Determine costs for SF decomposition in QC"""
 from typing import Tuple
 import numpy as np
 from numpy.lib.scimath import arccos, arcsin  # has analytic continutn to cplx

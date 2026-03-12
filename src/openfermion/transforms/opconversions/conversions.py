@@ -159,7 +159,7 @@ def _majorana_term_to_fermion_operator(term):
 
 
 def get_majorana_operator(
-    operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian, FermionOperator]
+    operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian, FermionOperator],
 ) -> MajoranaOperator:
     """
     Convert to MajoranaOperator.

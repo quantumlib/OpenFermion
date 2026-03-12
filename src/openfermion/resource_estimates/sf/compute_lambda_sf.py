@@ -1,5 +1,5 @@
 # coverage:ignore
-""" Compute lambda for single low rank factorization method of Berry, et al """
+"""Compute lambda for single low rank factorization method of Berry, et al"""
 
 import numpy as np
 from openfermion.resource_estimates.molecule import pyscf_to_cas

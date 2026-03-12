@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tools to reduce the number of terms and taper off qubits
-using stabilizer conditions. Based on ideas of arXiv:1701.08213. """
+using stabilizer conditions. Based on ideas of arXiv:1701.08213."""
 
 import numpy
 from openfermion.ops.operators import QubitOperator
