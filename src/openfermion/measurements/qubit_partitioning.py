@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Code to generate Pauli strings for measurement of local operators"""
+
 from itertools import chain, zip_longest
 import numpy
 

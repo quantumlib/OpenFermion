@@ -1,5 +1,6 @@
 # coverage:ignore
 """THC rank reduction of ERIs"""
+
 import time
 
 import h5py

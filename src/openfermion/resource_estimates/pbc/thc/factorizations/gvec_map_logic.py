@@ -26,6 +26,7 @@ than vectors given by the literal sum in (*).
 This module tests out various mappings between k-points and reciprocal lattice
 vectors in terms of these integer values.
 """
+
 import itertools
 import numpy as np
 from pyscf.lib.numpy_helper import cartesian_prod

@@ -23,28 +23,10 @@ from openfermion.linalg import get_sparse_operator
 from openfermion import get_fermion_operator, InteractionOperator, normal_ordered
 
 
-@pytest.mark.parametrize(
-    'g, n_qubits, expected',
-    [
-        (
-            0.3,
-            2,
-            QubitOperator(
-                '3.0 [] + 0.15 [X0 X1] + \
-0.15 [Y0 Y1] - 1.0 [Z0] - 2.0 [Z1]'
-            ),
-        ),
-        (
-            -0.1,
-            3,
-            QubitOperator(
-                '6.0 [] - 0.05 [X0 X1] - 0.05 [X0 X2] - \
+@pytest.mark.parametrize('g, n_qubits, expected', [(0.3, 2, QubitOperator('3.0 [] + 0.15 [X0 X1] + \
+0.15 [Y0 Y1] - 1.0 [Z0] - 2.0 [Z1]')), (-0.1, 3, QubitOperator('6.0 [] - 0.05 [X0 X1] - 0.05 [X0 X2] - \
 0.05 [Y0 Y1] - 0.05 [Y0 Y2] - 1.0 [Z0] - 0.05 [X1 X2] - \
-0.05 [Y1 Y2] - 2.0 [Z1] - 3.0 [Z2]'
-            ),
-        ),
-    ],
-)
+0.05 [Y1 Y2] - 2.0 [Z1] - 3.0 [Z2]'))])
 def test_richardson_gaudin_hamiltonian(g, n_qubits, expected):
     rg = RichardsonGaudin(g, n_qubits)
     rg_qubit = rg.qubit_operator
@@ -95,15 +77,11 @@ def test_fermionic_hamiltonian_from_integrals(g, n_qubits):
     fermion_eigvals2 = np.linalg.eigh(fermion_mat2)[0]
 
     for eigval in doci_eigvals:
-        assert any(
-            abs(fermion_eigvals - eigval) < 1e-6
-        ), "The DOCI spectrum should have \
+        assert any(abs(fermion_eigvals - eigval) < 1e-6), "The DOCI spectrum should have \
         been contained in the spectrum of the fermionic operator constructed via the \
         DOCIHamiltonian class"
 
     for eigval in doci_eigvals:
-        assert any(
-            abs(fermion_eigvals2 - eigval) < 1e-6
-        ), "The DOCI spectrum should have \
+        assert any(abs(fermion_eigvals2 - eigval) < 1e-6), "The DOCI spectrum should have \
        been contained in the spectrum of the fermionic operators constructed via the anti \
        symmetrized tensors"

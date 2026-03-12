@@ -15,6 +15,7 @@ Estimate the physical, logical, and Toffoli gate requirements for
 single-factorization qubitization.  Single-Factorization uses
 an LCU formed from a symmeterized Cholesky decomposition of the integrals
 """
+
 from typing import Tuple
 
 import numpy as np

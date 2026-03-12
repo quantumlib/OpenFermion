@@ -3,6 +3,7 @@
 Compute lambdas for THC according to
 PRX QUANTUM 2, 030305 (2021) Section II. D.
 """
+
 import numpy as np
 from openfermion.resource_estimates.molecule import pyscf_to_cas
 

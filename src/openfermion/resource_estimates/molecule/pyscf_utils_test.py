@@ -1,5 +1,6 @@
 # coverage:ignore
 """Test cases for pyscf_utils.py"""
+
 import unittest
 from os import path
 

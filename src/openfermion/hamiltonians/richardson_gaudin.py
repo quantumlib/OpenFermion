@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This module constructs Hamiltonians of the Richardson Gaudin type."""
+
 from itertools import chain, product
 import numpy
 from openfermion.ops.representations import PolynomialTensor, get_tensors_from_integrals

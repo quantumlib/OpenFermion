@@ -383,11 +383,11 @@ def reduce_number_of_terms(
             raise StabilizerError('All qubit positions must be different.')
 
     if maintain_length:
-        (reduced_operator, fixed_positions) = _reduce_terms_keep_length(
+        reduced_operator, fixed_positions = _reduce_terms_keep_length(
             operator, stabilizer_list, manual_input, fixed_positions
         )
     else:
-        (reduced_operator, fixed_positions) = _reduce_terms(
+        reduced_operator, fixed_positions = _reduce_terms(
             operator, stabilizer_list, manual_input, fixed_positions
         )
 
@@ -450,7 +450,7 @@ def taper_off_qubits(
 
     n_qbits = max(op_utils.count_qubits(operator), n_qbits_stabs)
 
-    (ham_to_update, qbts_to_rm) = reduce_number_of_terms(
+    ham_to_update, qbts_to_rm = reduce_number_of_terms(
         operator,
         stabilizers,
         maintain_length=False,

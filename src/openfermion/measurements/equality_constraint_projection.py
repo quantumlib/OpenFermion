@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Module to reduce operator variance using equality RDM constraints."""
+
 import numpy
 import scipy.optimize
 import scipy.sparse

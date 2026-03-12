@@ -1,5 +1,6 @@
 # coverage:ignore
 """Test cases for costing_thc.py"""
+
 import unittest
 
 import pytest

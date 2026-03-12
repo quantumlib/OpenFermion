@@ -182,7 +182,7 @@ def test_G_vector_mapping_double_translation():
     kpts = cell.make_kpts(kmesh)
 
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
-    (G_vecs, G_map, G_unique, _) = build_g_vector_mappings_double_translation(
+    G_vecs, G_map, G_unique, _ = build_g_vector_mappings_double_translation(
         cell, kpts, momentum_map
     )
     num_kpts = len(kpts)
@@ -232,7 +232,7 @@ def test_G_vector_mapping_single_translation():
     transfers = kpts_pq[:, 0] - kpts_pq[:, 1]
     assert len(transfers) == (nk**3) ** 2
     _, unique_indx, _ = unique(transfers)
-    (_, _, G_unique, delta_Gs) = build_g_vector_mappings_single_translation(
+    _, _, G_unique, delta_Gs = build_g_vector_mappings_single_translation(
         cell, kpts, kpts_pq_indx[unique_indx]
     )
     kconserv = get_kconserv(cell, kpts)
@@ -383,9 +383,7 @@ def test_kpoint_isdf_symmetries():
         mf, num_thc, use_density_guess=True, verbose=False, single_translation=False
     )
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
-    (_, _, G_unique, delta_Gs) = build_g_vector_mappings_double_translation(
-        cell, kpts, momentum_map
-    )
+    _, _, G_unique, delta_Gs = build_g_vector_mappings_double_translation(cell, kpts, momentum_map)
     _, minus_Q_G_map_unique = build_minus_q_g_mapping(cell, kpts, momentum_map)
     num_kpts = len(kpts)
     # Test symmetries from Appendix D of https://arxiv.org/pdf/2302.05531.pdf
@@ -473,7 +471,7 @@ def test_symmetry_of_G_maps():
     kmesh = [3, 3, 3]
     kpts = cell.make_kpts(kmesh)
     momentum_map = build_momentum_transfer_mapping(cell, kpts)
-    (G_vecs, G_map, _, delta_Gs) = build_g_vector_mappings_double_translation(
+    G_vecs, G_map, _, delta_Gs = build_g_vector_mappings_double_translation(
         cell, kpts, momentum_map
     )
     G_dict, _ = build_g_vectors(cell)

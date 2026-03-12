@@ -1,5 +1,6 @@
 # coverage:ignore
 """Test cases for util.py"""
+
 from openfermion.resource_estimates.utils import QR, QI, QR2, QI2, power_two
 
 

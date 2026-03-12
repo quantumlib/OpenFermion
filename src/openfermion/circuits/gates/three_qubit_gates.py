@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Common gates that target three qubits."""
+
 import numpy as np
 import cirq
 

@@ -1,5 +1,6 @@
 # coverage:ignore
 """Tests for computing qubit vs toffoli for THC LCU"""
+
 import numpy as np
 from openfermion.resource_estimates.thc import qubit_vs_toffoli
 

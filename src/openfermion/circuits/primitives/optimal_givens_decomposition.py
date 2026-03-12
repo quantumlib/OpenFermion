@@ -16,6 +16,7 @@ of this circuit can be found in Optica Vol. 3, Issue 12, pp. 1460-1465 (2016).
 This Givens network improves upon the parallel Givens network for implementing
 basis rotations in Phys. Rev. Lett. 120, 110501 (2018).
 """
+
 from typing import cast, Iterable, Sequence, Tuple
 
 import numpy

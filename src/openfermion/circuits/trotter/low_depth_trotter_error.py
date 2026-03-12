@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Module to compute Trotter errors in the plane-wave dual basis."""
+
 import numpy
 
 from openfermion.ops.operators import FermionOperator

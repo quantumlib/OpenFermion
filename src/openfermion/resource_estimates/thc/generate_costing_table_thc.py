@@ -1,5 +1,6 @@
 # coverage:ignore
 """Pretty-print a table comparing number of THC vectors vs accy and cost"""
+
 import numpy as np
 
 from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES, thc
