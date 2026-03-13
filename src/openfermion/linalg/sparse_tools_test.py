@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for sparse_tools.py."""
+
 import os
 
 import unittest
@@ -1828,6 +1829,11 @@ class GetSparseOperatorQubitTest(unittest.TestCase):
         self.assertEqual(list(sparse1.indices), [0, 3, 5, 6, 9, 10, 12, 15])
         self.assertEqual(list(sparse2.data), [2] * 8)
         self.assertEqual(list(sparse2.indices), [0, 3, 5, 6, 9, 10, 12, 15])
+
+    def test_get_sparse_operator_simplifies_qubit_operator(self):
+        op = QubitOperator('X0') + QubitOperator('X0')
+        sparse = get_sparse_operator(op)
+        self.assertIsNotNone(sparse)
 
 
 class GetSparseOperatorFermionTest(unittest.TestCase):
