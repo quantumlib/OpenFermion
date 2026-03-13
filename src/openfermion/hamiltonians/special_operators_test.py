@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """testing angular momentum generators. _fermion_spin_operators.py"""
+
 import unittest
 from openfermion.ops.operators import FermionOperator, BosonOperator
 from openfermion.utils import commutator

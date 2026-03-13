@@ -16,9 +16,7 @@ from openfermion.hamiltonians import bose_hubbard, fermi_hubbard
 
 def test_fermi_hubbard_1x3_spinless():
     hubbard_model = fermi_hubbard(1, 3, 1.0, 4.0, chemical_potential=0.5, spinless=True)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -0.5 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
 -1.0 [0^ 1] +
@@ -32,14 +30,11 @@ def test_fermi_hubbard_1x3_spinless():
 -0.5 [2^ 2] +
 4.0 [2^ 2 0^ 0]
 """.strip()
-    )
 
 
 def test_fermi_hubbard_3x1_spinless():
     hubbard_model = fermi_hubbard(3, 1, 1.0, 4.0, chemical_potential=0.5, spinless=True)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -0.5 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
 -1.0 [0^ 1] +
@@ -53,14 +48,11 @@ def test_fermi_hubbard_3x1_spinless():
 -0.5 [2^ 2] +
 4.0 [2^ 2 0^ 0]
 """.strip()
-    )
 
 
 def test_fermi_hubbard_2x2_spinless():
     hubbard_model = fermi_hubbard(2, 2, 1.0, 4.0, chemical_potential=0.5, spinless=True)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -0.5 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
 4.0 [0^ 0 2^ 2] +
@@ -78,14 +70,11 @@ def test_fermi_hubbard_2x2_spinless():
 -1.0 [3^ 2] +
 -0.5 [3^ 3]
 """.strip()
-    )
 
 
 def test_fermi_hubbard_2x3_spinless():
     hubbard_model = fermi_hubbard(2, 3, 1.0, 4.0, chemical_potential=0.5, spinless=True)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -0.5 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
 4.0 [0^ 0 2^ 2] +
@@ -120,14 +109,11 @@ def test_fermi_hubbard_2x3_spinless():
 -0.5 [5^ 5] +
 4.0 [5^ 5 1^ 1]
 """.strip()
-    )
 
 
 def test_fermi_hubbard_3x2_spinless():
     hubbard_model = fermi_hubbard(3, 2, 1.0, 4.0, chemical_potential=0.5, spinless=True)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -0.5 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
 4.0 [0^ 0 3^ 3] +
@@ -162,14 +148,11 @@ def test_fermi_hubbard_3x2_spinless():
 -0.5 [5^ 5] +
 4.0 [5^ 5 3^ 3]
 """.strip()
-    )
 
 
 def test_fermi_hubbard_3x3_spinless():
     hubbard_model = fermi_hubbard(3, 3, 1.0, 4.0, chemical_potential=0.5, spinless=True)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -0.5 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
 4.0 [0^ 0 3^ 3] +
@@ -234,16 +217,13 @@ def test_fermi_hubbard_3x3_spinless():
 4.0 [8^ 8 2^ 2] +
 4.0 [8^ 8 6^ 6]
 """.strip()
-    )
 
 
 def test_fermi_hubbard_2x2_spinful():
     hubbard_model = fermi_hubbard(
         2, 2, 1.0, 4.0, chemical_potential=0.5, magnetic_field=0.3, spinless=False
     )
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -0.8 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
 -1.0 [0^ 2] +
@@ -273,16 +253,13 @@ def test_fermi_hubbard_2x2_spinful():
 -1.0 [7^ 5] +
 -0.2 [7^ 7]
 """.strip()
-    )
 
 
 def test_fermi_hubbard_2x3_spinful():
     hubbard_model = fermi_hubbard(
         2, 3, 1.0, 4.0, chemical_potential=0.5, magnetic_field=0.3, spinless=False
     )
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -0.8 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
 -1.0 [0^ 2] +
@@ -338,7 +315,6 @@ def test_fermi_hubbard_2x3_spinful():
 -1.0 [11^ 9] +
 -0.2 [11^ 11]
 """.strip()
-    )
 
 
 def test_fermi_hubbard_2x2_spinful_phs():
@@ -352,9 +328,7 @@ def test_fermi_hubbard_2x2_spinful_phs():
         spinless=False,
         particle_hole_symmetry=True,
     )
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 4.0 [] +
 -2.8 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
@@ -385,16 +359,13 @@ def test_fermi_hubbard_2x2_spinful_phs():
 -1.0 [7^ 5] +
 -2.2 [7^ 7]
 """.strip()
-    )
 
 
 def test_fermi_hubbard_2x2_spinful_aperiodic():
     hubbard_model = fermi_hubbard(
         2, 2, 1.0, 4.0, chemical_potential=0.5, magnetic_field=0.3, spinless=False, periodic=False
     )
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -0.8 [0^ 0] +
 4.0 [0^ 0 1^ 1] +
 -1.0 [0^ 2] +
@@ -424,14 +395,11 @@ def test_fermi_hubbard_2x2_spinful_aperiodic():
 -1.0 [7^ 5] +
 -0.2 [7^ 7]
 """.strip()
-    )
 
 
 def test_bose_hubbard_2x2():
     hubbard_model = bose_hubbard(2, 2, 1.0, 4.0, chemical_potential=0.5, dipole=0.3)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -1.0 [0 1^] +
 -1.0 [0 2^] +
 -2.5 [0^ 0] +
@@ -453,14 +421,11 @@ def test_bose_hubbard_2x2():
 -2.5 [3^ 3] +
 2.0 [3^ 3 3^ 3]
 """.strip()
-    )
 
 
 def test_bose_hubbard_2x3():
     hubbard_model = bose_hubbard(2, 3, 1.0, 4.0, chemical_potential=0.5, dipole=0.3)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -1.0 [0 1^] +
 -1.0 [0 2^] +
 -1.0 [0 4^] +
@@ -501,14 +466,11 @@ def test_bose_hubbard_2x3():
 -2.5 [5^ 5] +
 2.0 [5^ 5 5^ 5]
 """.strip()
-    )
 
 
 def test_bose_hubbard_3x2():
     hubbard_model = bose_hubbard(3, 2, 1.0, 4.0, chemical_potential=0.5, dipole=0.3)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -1.0 [0 1^] +
 -1.0 [0 2^] +
 -1.0 [0 3^] +
@@ -549,14 +511,11 @@ def test_bose_hubbard_3x2():
 -2.5 [5^ 5] +
 2.0 [5^ 5 5^ 5]
 """.strip()
-    )
 
 
 def test_bose_hubbard_2x2_aperiodic():
     hubbard_model = bose_hubbard(2, 2, 1.0, 4.0, chemical_potential=0.5, dipole=0.3, periodic=False)
-    assert (
-        str(hubbard_model).strip()
-        == """
+    assert str(hubbard_model).strip() == """
 -1.0 [0 1^] +
 -1.0 [0 2^] +
 -2.5 [0^ 0] +
@@ -578,4 +537,3 @@ def test_bose_hubbard_2x2_aperiodic():
 -2.5 [3^ 3] +
 2.0 [3^ 3 3^ 3]
 """.strip()
-    )

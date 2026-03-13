@@ -355,7 +355,7 @@ def build_minus_q_g_mapping(
             minus_q_mapping_unique[indx_minus_q, k], and deltags is built by
             build_g_vector_mappings_double_translation.
     """
-    (g_vecs, g_map, _, delta_gs) = build_g_vector_mappings_double_translation(
+    g_vecs, g_map, _, delta_gs = build_g_vector_mappings_double_translation(
         cell, kpts, momentum_map
     )
     g_dict, _ = build_g_vectors(cell)
@@ -575,7 +575,7 @@ def kpoint_isdf_double_translation(
     num_kpts = len(kpts)
     num_interp_points = xi.shape[1]
     assert xi.shape == (num_grid_points, num_interp_points)
-    (g_vectors, g_mapping, g_mapping_unique, delta_gs_unique) = (
+    g_vectors, g_mapping, g_mapping_unique, delta_gs_unique = (
         build_g_vector_mappings_double_translation(df_inst.cell, kpts, momentum_map)
     )
     if only_unique_g:

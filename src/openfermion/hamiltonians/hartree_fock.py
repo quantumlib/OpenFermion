@@ -3,6 +3,7 @@ Module performs gradient based RHF, [WIP] UHF, [WIP] GHF
 
 Module needs AO integrals
 """
+
 # pylint: disable=C
 from typing import Callable, Dict, List, Optional, Tuple, Union
 from itertools import product

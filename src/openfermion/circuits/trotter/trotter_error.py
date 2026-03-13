@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Module to compute the second order Trotter error."""
+
 from math import sqrt, ceil
 
 from openfermion.ops.operators import QubitOperator

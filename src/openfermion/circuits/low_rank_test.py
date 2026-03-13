@@ -127,12 +127,9 @@ class LowRankTest(unittest.TestCase):
         two_body_coefficients = molecule_interaction.two_body_tensor
 
         # Perform decomposition.
-        (
-            eigenvalues,
-            one_body_squares,
-            one_body_corrections,
-            trunc_error,
-        ) = low_rank_two_body_decomposition(two_body_coefficients)
+        eigenvalues, one_body_squares, one_body_corrections, trunc_error = (
+            low_rank_two_body_decomposition(two_body_coefficients)
+        )
         self.assertAlmostEqual(trunc_error, 0.0)
 
         # Build back operator constant and one-body components.
@@ -161,12 +158,9 @@ class LowRankTest(unittest.TestCase):
         molecule = MolecularData(filename=filename)
         molecule.two_body_integrals[0, 0, 0, 0] -= 1
 
-        (
-            eigenvalues,
-            one_body_squares,
-            one_body_corrections,
-            trunc_error,
-        ) = low_rank_two_body_decomposition(two_body_coefficients)
+        eigenvalues, one_body_squares, one_body_corrections, trunc_error = (
+            low_rank_two_body_decomposition(two_body_coefficients)
+        )
         self.assertAlmostEqual(trunc_error, 0.0)
 
         # Check for property errors
@@ -191,13 +185,10 @@ class LowRankTest(unittest.TestCase):
         errors = []
         for truncation_threshold in [1.0, 0.1, 0.01, 0.001]:
             # Decompose with threshold.
-            (
-                test_eigenvalues,
-                one_body_squares,
-                one_body_correction,
-                trunc_error,
-            ) = low_rank_two_body_decomposition(
-                two_body_coefficients, truncation_threshold=truncation_threshold
+            test_eigenvalues, one_body_squares, one_body_correction, trunc_error = (
+                low_rank_two_body_decomposition(
+                    two_body_coefficients, truncation_threshold=truncation_threshold
+                )
             )
 
             # Make sure error is below truncation specification.
@@ -233,12 +224,9 @@ class LowRankTest(unittest.TestCase):
         errors = []
         for final_rank in [1, 2, 3, 4]:
             # Decompose with threshold.
-            (
-                test_eigenvalues,
-                one_body_squares,
-                one_body_correction,
-                trunc_error,
-            ) = low_rank_two_body_decomposition(two_body_coefficients, final_rank=final_rank)
+            test_eigenvalues, one_body_squares, one_body_correction, trunc_error = (
+                low_rank_two_body_decomposition(two_body_coefficients, final_rank=final_rank)
+            )
 
             # Make sure error is below truncation specification.
             self.assertTrue(len(test_eigenvalues) == final_rank)
@@ -294,10 +282,9 @@ class LowRankTest(unittest.TestCase):
                     prepare_one_body_squared_evolution(one_body_squares[l])
                 continue
             else:
-                (
-                    density_density_matrix,
-                    basis_transformation_matrix,
-                ) = prepare_one_body_squared_evolution(one_body_squares[l])
+                density_density_matrix, basis_transformation_matrix = (
+                    prepare_one_body_squared_evolution(one_body_squares[l])
+                )
             two_body_operator = FermionOperator()
             for p, q in itertools.product(range(n_qubits), repeat=2):
                 term = ((p, 1), (p, 0), (q, 1), (q, 0))

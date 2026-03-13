@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for rdm_equality_constraints.py"""
+
 import unittest
 import os
 

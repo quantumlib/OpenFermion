@@ -231,11 +231,8 @@ def test_majorana_operator_str():
     assert str(still_zero) == '0'
     assert str(a) == '1.5 (0, 1, 5)'
     assert str(b) == '-0.5 (1, 2, 7)'
-    assert (
-        str(a + b)
-        == """1.5 (0, 1, 5) +
+    assert str(a + b) == """1.5 (0, 1, 5) +
 -0.5 (1, 2, 7)"""
-    )
 
 
 def test_majorana_operator_repr():
