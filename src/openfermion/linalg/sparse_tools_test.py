@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for sparse_tools.py."""
+
 import os
 
 import unittest
@@ -726,6 +727,17 @@ class ExpectationComputationalBasisStateTest(unittest.TestCase):
             expectation_computational_basis_state(
                 QubitOperator(), csc_matrix(([1], ([6], [0])), shape=(16, 1))
             )
+
+    def test_expectation_bad_operator_order(self):
+        operator = (
+            FermionOperator('2^ 2', 1.9)
+            + FermionOperator('2^ 1')
+            + FermionOperator('2^ 1 2 1^', -1.7)
+        )
+        state = [0, 1, 1]
+
+        with self.assertRaises(ValueError):
+            expectation_computational_basis_state(operator, state)
 
 
 class ExpectationDualBasisOperatorWithPlaneWaveBasisState(unittest.TestCase):

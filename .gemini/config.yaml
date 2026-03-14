@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[tool.black]
-line-length = 100
-target_version = ['py310', 'py311', 'py312', 'py313']
-skip-string-normalization = true
-skip-magic-trailing-comma = true
+# Summary: configure Gemini Code Assist (https://codeassist.google/).
+# See https://github.com/marketplace/gemini-code-assist for more info.
 
-[tool.coverage.run]
-# Speed up pytest-cov on Python 3.12+ by enabling sys.monitoring if possible.
-core = "sysmon"
-disable_warnings = ["no-sysmon"]
+have_fun: false
+code_review:
+  disable: false
+  comment_severity_threshold: HIGH
+  max_review_comments: -1
+  pull_request_opened:
+    help: false
+    summary: false
+    code_review: true
+    include_drafts: false
+ignore_patterns: []

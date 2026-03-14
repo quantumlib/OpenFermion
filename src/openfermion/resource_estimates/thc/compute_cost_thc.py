@@ -1,5 +1,6 @@
 # coverage:ignore
-""" Determine costs for THC decomposition in QC """
+"""Determine costs for THC decomposition in QC"""
+
 from typing import Tuple
 import numpy as np
 from numpy.lib.scimath import arccos, arcsin  # has analytc continuatn to cplx

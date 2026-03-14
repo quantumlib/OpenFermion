@@ -11,6 +11,7 @@
 #   limitations under the License.
 """This module contains methods to lift tensors to higher spaces
 through the Grassmann wedge product."""
+
 from itertools import product
 from math import factorial
 import copy

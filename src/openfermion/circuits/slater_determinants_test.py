@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for slater_determinants.py."""
+
 import unittest
 
 import pytest

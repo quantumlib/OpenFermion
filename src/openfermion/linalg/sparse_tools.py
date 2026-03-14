@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This module provides functions to interface with scipy.sparse."""
+
 import itertools
 from functools import reduce
 import numpy.linalg
@@ -118,7 +119,7 @@ def jordan_wigner_sparse(fermion_operator, n_qubits=None):
             # Extract triplets from sparse_term.
             sparse_matrix = sparse_matrix.tocoo(copy=False)
             values_list.append(sparse_matrix.data)
-            (row, column) = sparse_matrix.nonzero()
+            row, column = sparse_matrix.nonzero()
             row_list.append(row)
             column_list.append(column)
 
@@ -178,7 +179,7 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
         # Extract triplets from sparse_term.
         sparse_matrix = kronecker_operators(sparse_operators)
         values_list.append(sparse_matrix.tocoo(copy=False).data)
-        (column, row) = sparse_matrix.nonzero()
+        column, row = sparse_matrix.nonzero()
         column_list.append(column)
         row_list.append(row)
 
@@ -700,7 +701,7 @@ def expectation_computational_basis_state(operator, computational_basis_state):
                   If operator is a FermionOperator, it must be normal-ordered.
         computational_basis_state (scipy.sparse vector / list): normalized
             computational basis state (if scipy.sparse vector), or list of
-            occupied orbitals.
+            zeros and ones for occupied and unoccupied orbitals, respectively.
 
     Returns:
         A real float giving expectation value.
@@ -713,6 +714,9 @@ def expectation_computational_basis_state(operator, computational_basis_state):
 
     if not isinstance(operator, FermionOperator):
         raise TypeError('operator must be a FermionOperator.')
+
+    if not operator.is_normal_ordered():
+        raise ValueError('operator must be a normal ordered.')
 
     occupied_orbitals = computational_basis_state
 
@@ -730,7 +734,8 @@ def expectation_computational_basis_state(operator, computational_basis_state):
             expectation_value += operator.terms.get(((i, 1), (i, 0)), 0.0)
 
             for j in range(i + 1, len(occupied_orbitals)):
-                expectation_value -= operator.terms.get(((j, 1), (i, 1), (j, 0), (i, 0)), 0.0)
+                if occupied_orbitals[j]:
+                    expectation_value -= operator.terms.get(((j, 1), (i, 1), (j, 0), (i, 0)), 0.0)
 
     return expectation_value
 
@@ -1229,7 +1234,7 @@ def boson_operator_sparse(operator, trunc, hbar=1.0):
 
         # Extract triplets from sparse_term.
         values_list.append(term_operator.tocoo(copy=False).data)
-        (row, column) = term_operator.nonzero()
+        row, column = term_operator.nonzero()
         column_list.append(column)
         row_list.append(row)
 

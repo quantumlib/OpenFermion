@@ -267,7 +267,7 @@ class QuadraticHamiltonianTest(unittest.TestCase):
         quad_ham = get_quadratic_hamiltonian(reorder(get_fermion_operator(quad_ham), up_then_down))
 
         for spin_sector in range(2):
-            (orbital_energies, transformation_matrix, _) = (
+            orbital_energies, transformation_matrix, _ = (
                 quad_ham.diagonalizing_bogoliubov_transform(spin_sector=spin_sector)
             )
 

@@ -1,5 +1,6 @@
 # coverage:ignore
 """Compute qubit vs toffoli for THC LCU"""
+
 from math import pi
 import itertools
 import numpy as np

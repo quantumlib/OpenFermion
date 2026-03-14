@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for doci_hamiltonian.py."""
+
 import sys
 import os
 import unittest
@@ -89,9 +90,7 @@ class IntegralTransformsTest(unittest.TestCase):
         fermion_eigvals, _ = numpy.linalg.eigh(get_sparse_operator(fermion_op_jw).toarray())
 
         for eigval in doci_eigvals:
-            assert any(
-                abs(fermion_eigvals - eigval) < 1e-6
-            ), "The DOCI spectrum should \
+            assert any(abs(fermion_eigvals - eigval) < 1e-6), "The DOCI spectrum should \
             have been contained in the spectrum of the fermionic operators"
 
         fermion_diagonal = get_sparse_operator(fermion_op_jw).toarray().diagonal()

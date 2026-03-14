@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """tests for whether operators are contextual contextuality"""
+
 from typing import List
 
 from openfermion.ops.operators import QubitOperator
