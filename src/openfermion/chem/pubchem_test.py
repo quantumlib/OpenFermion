@@ -159,21 +159,13 @@ class OpenFermionPubChemTest(unittest.TestCase):
 
     @pytest.mark.integration
     def test_geometry_from_pubchem_live_api(self):
-        try:
-            import pubchempy
-        except ImportError:  # pragma: no cover
-            return
-
         water_geometry = self._get_geometry_with_retries('water')
         self.assertEqual(len(water_geometry), 3)
 
     @patch('time.sleep', return_value=None)
     @patch('pubchempy.get_compounds')
     def test_geometry_from_pubchem_retry_success(self, mock_get_compounds, mock_sleep):
-        try:
-            import pubchempy
-        except ImportError:  # pragma: no cover
-            return
+        import pubchempy
 
         mock_get_compounds.side_effect = [
             pubchempy.PubChemHTTPError(503, 'Server Busy', 'Testing'),
@@ -212,10 +204,7 @@ class OpenFermionPubChemTest(unittest.TestCase):
     @patch('time.sleep', return_value=None)
     @patch('pubchempy.get_compounds')
     def test_geometry_from_pubchem_retry_failure(self, mock_get_compounds, mock_sleep):
-        try:
-            import pubchempy
-        except ImportError:  # pragma: no cover
-            return
+        import pubchempy
 
         mock_get_compounds.side_effect = pubchempy.PubChemHTTPError(503, 'Server Busy', 'Testing')
 
