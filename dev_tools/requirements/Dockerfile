@@ -19,7 +19,10 @@ WORKDIR /pip-compile
 
 # Step 0: install pip-tools
 COPY envs/pip-tools.env.txt ./
-RUN pip install -r pip-tools.env.txt
+
+# hadolint global ignore=DL3013
+RUN pip install -U pip --no-cache-dir --root-user-action ignore && \
+    pip install -r pip-tools.env.txt --no-cache-dir --root-user-action ignore
 
 # Step 1: compile a complete & consistent environment with all dependencies
 COPY deps/ ./deps/

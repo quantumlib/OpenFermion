@@ -1,7 +1,7 @@
 include LICENSE
 include MANIFEST.in
 include NOTICE
-include README.rst
+include README.md
 include dev_tools/requirements/deps/runtime.txt
 include dev_tools/requirements/deps/resource_estimates_runtime.txt
 include setup.py
