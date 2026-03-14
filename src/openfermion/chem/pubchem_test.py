@@ -159,8 +159,8 @@ class OpenFermionPubChemTest(unittest.TestCase):
 
     @pytest.mark.integration
     def test_geometry_from_pubchem_live_api(self):
-        water_geometry = self._get_geometry_with_retries('water')
-        self.assertEqual(len(water_geometry), 3)
+        water_geometry = self._get_geometry_with_retries('water')  # pragma: no cover
+        self.assertEqual(len(water_geometry), 3)  # pragma: no cover
 
     @patch('time.sleep', return_value=None)
     @patch('pubchempy.get_compounds')
