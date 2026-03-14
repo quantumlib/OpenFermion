@@ -9,6 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 """Tests for pubchem.py."""
 
 import time
@@ -71,8 +72,9 @@ using_pubchempy = pytest.mark.skipif(
 @using_pubchempy
 class OpenFermionPubChemTest(unittest.TestCase):
     def _get_geometry_with_retries(self, name):
-        import pubchempy
         import urllib.error
+
+        import pubchempy
 
         max_retries = 3
         delay = 2
@@ -155,6 +157,7 @@ class OpenFermionPubChemTest(unittest.TestCase):
         with pytest.raises(ValueError, match='Incorrect value for the argument structure'):
             _ = geometry_from_pubchem('water', structure='foo')
 
+    @pytest.mark.integration
     def test_geometry_from_pubchem_live_api(self):
         try:
             import pubchempy
@@ -172,18 +175,9 @@ class OpenFermionPubChemTest(unittest.TestCase):
         except ImportError:  # pragma: no cover
             return
 
-        # Simulate HTTP error with proper code attribute for the first 2 calls, then succeed
-        class FakeHTTPError(Exception):
-            def __init__(self, code, msg):
-                self.code = code
-                self.reason = msg
-
-            def read(self):
-                return b'{"Fault": {"Details": ["busy"]}}'
-
         mock_get_compounds.side_effect = [
-            pubchempy.PubChemHTTPError(FakeHTTPError(503, 'Server Busy')),
-            pubchempy.PubChemHTTPError(FakeHTTPError(503, 'Server Busy')),
+            pubchempy.PubChemHTTPError(503, 'Server Busy', 'Testing'),
+            pubchempy.PubChemHTTPError(503, 'Server Busy', 'Testing'),
             [
                 MockCompound(
                     [
@@ -223,17 +217,7 @@ class OpenFermionPubChemTest(unittest.TestCase):
         except ImportError:  # pragma: no cover
             return
 
-        class FakeHTTPError(Exception):
-            def __init__(self, code, msg):
-                self.code = code
-                self.reason = msg
-
-            def read(self):
-                return b'{"Fault": {"Details": ["busy"]}}'
-
-        mock_get_compounds.side_effect = pubchempy.PubChemHTTPError(
-            FakeHTTPError(503, 'Server Busy')
-        )
+        mock_get_compounds.side_effect = pubchempy.PubChemHTTPError(503, 'Server Busy', 'Testing')
 
         with self.assertRaises(pubchempy.PubChemHTTPError):
             self._get_geometry_with_retries('water')
