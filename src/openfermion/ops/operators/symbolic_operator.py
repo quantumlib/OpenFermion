@@ -16,12 +16,13 @@ import copy
 import itertools
 import re
 import warnings
+import numbers
 
 import sympy
 
 from openfermion.config import EQ_TOLERANCE
 
-COEFFICIENT_TYPES = (int, float, complex, sympy.Expr)
+COEFFICIENT_TYPES = (int, float, complex, sympy.Expr, numbers.Number)
 
 
 class SymbolicOperator(metaclass=abc.ABCMeta):
