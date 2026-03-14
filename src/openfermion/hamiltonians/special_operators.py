@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Commonly used operators (mainly instances of SymbolicOperator)."""
+
 from typing import Optional, Union, Tuple
 
 from openfermion.ops.operators import BosonOperator, FermionOperator

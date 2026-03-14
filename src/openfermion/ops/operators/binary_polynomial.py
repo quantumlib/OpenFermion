@@ -9,7 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""symbolic binary class for decoder definitions (arxiv 1712.07067) """
+"""symbolic binary class for decoder definitions (arxiv 1712.07067)"""
 
 import copy
 

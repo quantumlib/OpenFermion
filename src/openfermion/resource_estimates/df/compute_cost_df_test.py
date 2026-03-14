@@ -1,6 +1,6 @@
 # coverage:ignore
-"""Test cases for costing_df.py
-"""
+"""Test cases for costing_df.py"""
+
 import pytest
 
 from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES

@@ -32,6 +32,7 @@ This module contains methods to find the closest positive semidefinite matrix
 with fixed trace by the method in arXiv 1707.01022v1 and
  N.J. Higham, Linear Algebra and Its Applications 103, 103 (1998)
 """
+
 from itertools import product
 import numpy as np
 

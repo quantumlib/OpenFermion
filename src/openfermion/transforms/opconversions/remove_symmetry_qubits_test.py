@@ -9,9 +9,9 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-""" Unit tests of remove_symmetry_qubits(). Test that it preserves the
-    correct ground state energy, and reduces the number of qubits required
-    by two.
+"""Unit tests of remove_symmetry_qubits(). Test that it preserves the
+correct ground state energy, and reduces the number of qubits required
+by two.
 """
 
 import unittest

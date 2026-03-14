@@ -103,7 +103,7 @@ def gaussian_state_preparation_circuit(
     if not isinstance(quadratic_hamiltonian, QuadraticHamiltonian):
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
 
-    (orbital_energies, transformation_matrix, _) = (
+    orbital_energies, transformation_matrix, _ = (
         quadratic_hamiltonian.diagonalizing_bogoliubov_transform(spin_sector=spin_sector)
     )
 

@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for hubbard_trotter_error.py."""
+
 import unittest
 
 from openfermion.ops.operators import FermionOperator

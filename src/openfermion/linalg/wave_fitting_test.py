@@ -9,7 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-""" Tests for wave_fitting.py"""
+"""Tests for wave_fitting.py"""
 
 import numpy
 from .wave_fitting import prony, fit_known_frequencies

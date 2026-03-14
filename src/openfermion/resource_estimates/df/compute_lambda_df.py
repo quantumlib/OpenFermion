@@ -1,5 +1,6 @@
 # coverage:ignore
-""" Compute lambda for double low rank factoriz. method of von Burg, et al """
+"""Compute lambda for double low rank factoriz. method of von Burg, et al"""
+
 import numpy as np
 from openfermion.resource_estimates.molecule import pyscf_to_cas
 

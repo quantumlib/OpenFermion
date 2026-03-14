@@ -1022,7 +1022,7 @@ class MolecularData(object):
             one_body_integrals, two_body_integrals = self.get_integrals()
             constant = self.nuclear_repulsion
         else:
-            (core_adjustment, one_body_integrals, two_body_integrals) = (
+            core_adjustment, one_body_integrals, two_body_integrals = (
                 self.get_active_space_integrals(occupied_indices, active_indices)
             )
             constant = self.nuclear_repulsion + core_adjustment

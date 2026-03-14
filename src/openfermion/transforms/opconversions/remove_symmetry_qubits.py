@@ -9,9 +9,9 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-""" Module to remove two qubits from the problem space using conservation
-    of electron number and conservation of electron spin. As described in
-    arXiv:1701.08213 and Phys. Rev. X 6, 031007.
+"""Module to remove two qubits from the problem space using conservation
+of electron number and conservation of electron spin. As described in
+arXiv:1701.08213 and Phys. Rev. X 6, 031007.
 """
 
 import copy

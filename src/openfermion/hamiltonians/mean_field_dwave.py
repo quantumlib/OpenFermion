@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This module constructs Hamiltonians for the BCS mean-field d-wave model."""
+
 from typing import Optional
 
 from openfermion.ops.operators import FermionOperator

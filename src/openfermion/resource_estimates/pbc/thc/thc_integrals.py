@@ -140,7 +140,7 @@ class KPTHCSingleTranslation(KPTHCDoubleTranslation):
         )
         transfers = kpts_pq[:, 0] - kpts_pq[:, 1]
         _, unique_indx, _ = unique(transfers)
-        (_, _, g_map_unique, _) = build_g_vector_mappings_single_translation(
+        _, _, g_map_unique, _ = build_g_vector_mappings_single_translation(
             kmf.cell, kpts, kpts_pq_indx[unique_indx]
         )
         self.g_mapping = g_map_unique

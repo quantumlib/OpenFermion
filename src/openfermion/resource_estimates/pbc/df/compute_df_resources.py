@@ -11,6 +11,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Determine costs for DF decomposition"""
+
 from typing import Tuple, Union, List
 import numpy as np
 from numpy.lib.scimath import arccos, arcsin

@@ -17,6 +17,7 @@ For more information, examples, or tutorials visit our website:
 
 www.openfermion.org
 """
+
 from openfermion.chem import (
     make_atom,
     make_atomic_lattice,

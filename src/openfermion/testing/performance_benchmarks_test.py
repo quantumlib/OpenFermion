@@ -1,6 +1,7 @@
 """
 test coverage for performance benchmarks. Check type returns.
 """
+
 from .performance_benchmarks import (
     benchmark_molecular_operator_jordan_wigner,
     benchmark_fermion_math_and_normal_order,

@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for plane_wave_hamiltonian.py"""
+
 import unittest
 
 import numpy as np
