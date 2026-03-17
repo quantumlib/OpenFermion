@@ -69,6 +69,18 @@ we use.
 
     where `YOUR_BRANCH_NAME` is the name of your new branch.
 
+### git configuration
+
+The following command will set up large refactoring revisions to be ignored,
+when using `git blame`:
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+Note that if you are using PyCharm, you might have to use the command _Restart
+& Invalidate Caches) to have the change be picked up.
+
 ### Development environment installation
 
 Please refer to the section _Developer install_ of the [installation
