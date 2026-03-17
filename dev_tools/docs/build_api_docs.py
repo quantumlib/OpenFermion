@@ -34,9 +34,7 @@ flags.DEFINE_string(
 
 flags.DEFINE_bool("search_hints", True, "Include metadata search hints in the generated files")
 
-flags.DEFINE_string(
-    "site_path", "/reference/python/openfermion", "Path prefix in the _toc.yaml"
-)
+flags.DEFINE_string("site_path", "/reference/python/openfermion", "Path prefix in the _toc.yaml")
 
 FLAGS = flags.FLAGS
 
