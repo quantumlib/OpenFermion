@@ -69,7 +69,7 @@ class FermiHubbardModel:
                       a^\dagger_{i, b, \sigma} a_{i, a, \sigma})
             \\
             &- \sum_{a} t_{a, a}^{(\mathrm{nghbr})}
-               \sum_{\{i, j\}} \sum_{\sigma}
+               \sum_{ \{i, j\} } \sum_{\sigma}
                      (a^\dagger_{i, a, \sigma} a_{j, a, \sigma} +
                       a^\dagger_{j, a, \sigma} a_{i, a, \sigma})
              - \sum_{a < b} t_{a, b}^{(\mathrm{nghbr})}
@@ -82,7 +82,7 @@ class FermiHubbardModel:
                      n_{i, a, \sigma} n_{i, b, \sigma}
             \\
             &+ \sum_{a} U_{a, a}^{(\mathrm{nghbr}, +)}
-               \sum_{\{i, j\}} \sum_{\sigma}
+               \sum_{ \{i, j\} } \sum_{\sigma}
                      n_{i, a, \sigma} n_{j, a, \sigma}
              + \sum_{a < b} U_{a, b}^{(\mathrm{nghbr}, +)}
                \sum_{(i, j)} \sum_{\sigma}
@@ -93,7 +93,7 @@ class FermiHubbardModel:
                      n_{i, a, \sigma} n_{i, b, -\sigma}
             \\
             &+ \sum_{a} U_{a, a}^{(\mathrm{nghbr}, -)}
-               \sum_{\{ i, j \}} \sum_{\sigma}
+               \sum_{ \{ i, j \}} \sum_{\sigma}
                      n_{i, a, \sigma} n_{j, a, -\sigma}
              + \sum_{a < b} U_{a, b}^{(\mathrm{nghbr}, -)}
                \sum_{( i, j )} \sum_{\sigma}
@@ -138,7 +138,7 @@ class FermiHubbardModel:
                       a^\dagger_{i, b} a_{i, a})
             \\
             &- \sum_{a} t_{a, a}^{(\mathrm{nghbr})}
-               \sum_{\{i, j\}}
+               \sum_{ \{i, j\} }
                      (a^\dagger_{i, a} a_{j, a} +
                       a^\dagger_{j, a} a_{i, a})
              - \sum_{a < b} t_{a, b}^{(\mathrm{nghbr})}
@@ -151,7 +151,7 @@ class FermiHubbardModel:
                      n_{i, a} n_{i, b}
             \\
             &+ \sum_{a} U_{a, a}^{(\mathrm{nghbr})}
-               \sum_{\{i, j\}}
+               \sum_{ \{i, j\} }
                      n_{i, a} n_{j, a}
              + \sum_{a < b} U_{a, b}^{(\mathrm{nghbr})}
                \sum_{(i, j)}
