@@ -87,7 +87,8 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
     def actions(self):
         """The allowed actions.
 
-        Returns a tuple of objects representing the possible actions.
+        Returns:
+            A tuple of objects representing the possible actions.
         """
         pass
 
@@ -95,8 +96,9 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
     def action_strings(self):
         """The string representations of the allowed actions.
 
-        Returns a tuple containing string representations of the possible
-        actions, in the same order as the `actions` property.
+        Returns:
+            A tuple containing string representations of the possible
+            actions, in the same order as the `actions` property.
         """
         pass
 

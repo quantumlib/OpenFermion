@@ -53,7 +53,7 @@ def generate_costing_table(
 ) -> pd.DataFrame:
     """Generate resource estimate costing table for THC Hamiltonian.
 
-    Arguments:
+    Args:
         pyscf_mf: k-point pyscf mean-field object
         thc_rank_params: Array of (integer) auxiliary index cutoff values
         name: Optional descriptive name for simulation.
@@ -66,8 +66,9 @@ def generate_costing_table(
         adagrad_maxiter: Max number of AdaGrad steps.
         fft_df_mesh: FFTDF mesh for ISDF.
         energy_method: Method to determine energy with (CCSD or MP2.)
-    Returns
-        resources: Table of resource estimates.
+
+    Returns:
+        A table of resource estimates.
     """
     kmesh = kpts_to_kmesh(pyscf_mf.cell, pyscf_mf.kpts)
     cc_inst = build_cc_inst(pyscf_mf)

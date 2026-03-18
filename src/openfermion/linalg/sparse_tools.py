@@ -571,12 +571,9 @@ def get_ground_state(sparse_operator, initial_guess=None):
         initial_guess (ndarray): Initial guess for ground state.  A good
             guess dramatically reduces the cost required to converge.
 
-    Returns
-    -------
-        eigenvalue:
-            The lowest eigenvalue, a float.
-        eigenstate:
-            The lowest eigenstate in scipy.sparse csc format.
+    Returns:
+        eigenvalue: The lowest eigenvalue, a float.
+        eigenstate: The lowest eigenstate in scipy.sparse csc format.
     """
     values, vectors = scipy.sparse.linalg.eigsh(
         sparse_operator, k=1, v0=initial_guess, which='SA', maxiter=1e7
