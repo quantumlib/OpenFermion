@@ -62,104 +62,60 @@ class FermiHubbardModel:
     form
 
     $$
-        \begin{align}
-        H = &- \sum_{a < b} t_{a, b}^{(\mathrm{onsite})}
-               \sum_{i} \sum_{\sigma}
-                     (a^\dagger_{i, a, \sigma} a_{i, b, \sigma} +
-                      a^\dagger_{i, b, \sigma} a_{i, a, \sigma})
-            \\
-            &- \sum_{a} t_{a, a}^{(\mathrm{nghbr})}
-               \sum_{(i, j)} \sum_{\sigma}
-                     (a^\dagger_{i, a, \sigma} a_{j, a, \sigma} +
-                      a^\dagger_{j, a, \sigma} a_{i, a, \sigma})
-             - \sum_{a < b} t_{a, b}^{(\mathrm{nghbr})}
-               \sum_{(i, j)} \sum_{\sigma}
-                     (a^\dagger_{i, a, \sigma} a_{j, b, \sigma} +
-                      a^\dagger_{j, b, \sigma} a_{i, a, \sigma})
-            \\
-            &+ \sum_{a < b} U_{a, b}^{(\mathrm{onsite}, +)}
-               \sum_{i} \sum_{\sigma}
-                     n_{i, a, \sigma} n_{i, b, \sigma}
-            \\
-            &+ \sum_{a} U_{a, a}^{(\mathrm{nghbr}, +)}
-               \sum_{(i, j)} \sum_{\sigma}
-                     n_{i, a, \sigma} n_{j, a, \sigma}
-             + \sum_{a < b} U_{a, b}^{(\mathrm{nghbr}, +)}
-               \sum_{(i, j)} \sum_{\sigma}
-                     n_{i, a, \sigma} n_{j, b, \sigma}
-            \\
-            &+ \sum_{a \leq b} U_{a, b}^{(\mathrm{onsite}, -)}
-               \sum_{i} \sum_{\sigma}
-                     n_{i, a, \sigma} n_{i, b, -\sigma}
-            \\
-            &+ \sum_{a} U_{a, a}^{(\mathrm{nghbr}, -)}
-               \sum_{ \{ i, j \}} \sum_{\sigma}
-                     n_{i, a, \sigma} n_{j, a, -\sigma}
-             + \sum_{a < b} U_{a, b}^{(\mathrm{nghbr}, -)}
-               \sum_{( i, j )} \sum_{\sigma}
-                     n_{i, a, \sigma} n_{j, b, -\sigma}
-            \\
-            &- \sum_{a} \mu_a
-               \sum_i \sum_{\sigma} n_{i, a, \sigma}
-            \\
-            &- h \sum_{i} \sum_{a}
-                \left(n_{i, a, \uparrow} - n_{i, a, \downarrow}\right)
-        \end{align}
+    \begin{aligned}
+    H = &- \sum_{a < b} t_{a, b}^{(\mathrm{onsite})} \sum_{i} \sum_{\sigma} (a^\dagger_{i, a, \sigma} a_{i, b, \sigma} + a^\dagger_{i, b, \sigma} a_{i, a, \sigma})
+        \\
+        &- \sum_{a} t_{a, a}^{(\mathrm{nghbr})} \sum_{ \{i, j\} } \sum_{\sigma} (a^\dagger_{i, a, \sigma} a_{j, a, \sigma} + a^\dagger_{j, a, \sigma} a_{i, a, \sigma}) - \sum_{a < b} t_{a, b}^{(\mathrm{nghbr})} \sum_{(i, j)} \sum_{\sigma} (a^\dagger_{i, a, \sigma} a_{j, b, \sigma} + a^\dagger_{j, b, \sigma} a_{i, a, \sigma})
+        \\
+        &+ \sum_{a < b} U_{a, b}^{(\mathrm{onsite}, +)} \sum_{i} \sum_{\sigma} n_{i, a, \sigma} n_{i, b, \sigma}
+        \\
+        &+ \sum_{a} U_{a, a}^{(\mathrm{nghbr}, +)} \sum_{ \{i, j\} } \sum_{\sigma} n_{i, a, \sigma} n_{j, a, \sigma} + \sum_{a < b} U_{a, b}^{(\mathrm{nghbr}, +)} \sum_{(i, j)} \sum_{\sigma} n_{i, a, \sigma} n_{j, b, \sigma}
+        \\
+        &+ \sum_{a \leq b} U_{a, b}^{(\mathrm{onsite}, -)} \sum_{i} \sum_{\sigma} n_{i, a, \sigma} n_{i, b, -\sigma}
+        \\
+        &+ \sum_{a} U_{a, a}^{(\mathrm{nghbr}, -)} \sum_{ \{ i, j \}} \sum_{\sigma} n_{i, a, \sigma} n_{j, a, -\sigma} + \sum_{a < b} U_{a, b}^{(\mathrm{nghbr}, -)} \sum_{( i, j )} \sum_{\sigma} n_{i, a, \sigma} n_{j, b, -\sigma}
+        \\
+        &- \sum_{a} \mu_a \sum_i \sum_{\sigma} n_{i, a, \sigma}
+        \\
+        &- h \sum_{i} \sum_{a} \left(n_{i, a, \uparrow} - n_{i, a, \downarrow}\right)
+    \end{aligned}
     $$
 
     where
 
-        - The indices $(i, j)$ and $\{i, j\}$ run over ordered and
-          unordered pairs, respectively of sites $i$ and $j$ of
-          neighboring sites in the lattice,
-        - $a$ and $b$ index degrees of freedom on each site,
-        - $\sigma \in \{\uparrow, \downarrow\}$ is the spin,
-        - $t_{a, b}^{(\mathrm{onsite})}$ is the tunneling amplitude
-          between spin orbitals on the same site,
-        - $t_{a, b}^{(\mathrm{nghbr})}$ is the tunneling amplitude
-          between spin orbitals on neighboring sites,
-        - $U_{a, b}^{(\mathrm{onsite, \pm})}$ is the Coulomb potential
-          between spin orbitals on the same site with the same (+) or different
-          (-) spins,
-        - $U_{a, b}^{(\mathrm{nghbr, \pm})}$ is the Coulomb potential
-          between spin orbitals on neighboring sites with the same (+) or
-          different (-) spins,
-        - $\mu_{a}$ is the chemical potential, and
-        - $h$ is the magnetic field.
+    - The indices $(i, j)$ and $\{i, j\}$ run over ordered and
+      unordered pairs, respectively of sites $i$ and $j$ of
+      neighboring sites in the lattice,
+    - $a$ and $b$ index degrees of freedom on each site,
+    - $\sigma \in \{\uparrow, \downarrow\}$ is the spin,
+    - $t_{a, b}^{(\mathrm{onsite})}$ is the tunneling amplitude
+      between spin orbitals on the same site,
+    - $t_{a, b}^{(\mathrm{nghbr})}$ is the tunneling amplitude
+      between spin orbitals on neighboring sites,
+    - $U_{a, b}^{(\mathrm{onsite, \pm})}$ is the Coulomb potential
+      between spin orbitals on the same site with the same (+) or different
+      (-) spins,
+    - $U_{a, b}^{(\mathrm{nghbr, \pm})}$ is the Coulomb potential
+      between spin orbitals on neighboring sites with the same (+) or
+      different (-) spins,
+    - $\mu_{a}$ is the chemical potential, and
+    - $h$ is the magnetic field.
 
     One can also construct the Hamiltonian for the spinless model, which
     has the form
 
     $$
-        \begin{align}
-        H = &- \sum_{a < b} t_{a, b}^{(\mathrm{onsite})}
-               \sum_{i}
-                     (a^\dagger_{i, a} a_{i, b} +
-                      a^\dagger_{i, b} a_{i, a})
-            \\
-            &- \sum_{a} t_{a, a}^{(\mathrm{nghbr})}
-               \sum_{(i, j)}
-                     (a^\dagger_{i, a} a_{j, a} +
-                      a^\dagger_{j, a} a_{i, a})
-             - \sum_{a < b} t_{a, b}^{(\mathrm{nghbr})}
-               \sum_{(i, j)}
-                     (a^\dagger_{i, a} a_{j, b} +
-                      a^\dagger_{j, b} a_{i, a})
-            \\
-            &+ \sum_{a < b} U_{a, b}^{(\mathrm{onsite})}
-               \sum_{i}
-                     n_{i, a} n_{i, b}
-            \\
-            &+ \sum_{a} U_{a, a}^{(\mathrm{nghbr})}
-               \sum_{(i, j)}
-                     n_{i, a} n_{j, a}
-             + \sum_{a < b} U_{a, b}^{(\mathrm{nghbr})}
-               \sum_{(i, j)}
-                     n_{i, a} n_{j, b}
-            \\
-            &- \sum_{a} \mu_a
-               \sum_i n_{i, a}
-        \end{align}
+    \begin{aligned}
+    H = &- \sum_{a < b} t_{a, b}^{(\mathrm{onsite})} \sum_{i} (a^\dagger_{i, a} a_{i, b} + a^\dagger_{i, b} a_{i, a})
+        \\
+        &- \sum_{a} t_{a, a}^{(\mathrm{nghbr})} \sum_{ \{i, j\} } (a^\dagger_{i, a} a_{j, a} + a^\dagger_{j, a} a_{i, a}) - \sum_{a < b} t_{a, b}^{(\mathrm{nghbr})} \sum_{(i, j)} (a^\dagger_{i, a} a_{j, b} + a^\dagger_{j, b} a_{i, a})
+        \\
+        &+ \sum_{a < b} U_{a, b}^{(\mathrm{onsite})} \sum_{i} n_{i, a} n_{i, b}
+        \\
+        &+ \sum_{a} U_{a, a}^{(\mathrm{nghbr})} \sum_{ \{i, j\} } n_{i, a} n_{j, a} + \sum_{a < b} U_{a, b}^{(\mathrm{nghbr})} \sum_{(i, j)} n_{i, a} n_{j, b}
+        \\
+        &- \sum_{a} \mu_a \sum_i n_{i, a}
+    \end{aligned}
     $$
     """
 
@@ -184,7 +140,7 @@ class FermiHubbardModel:
                 potential parameters.
             magnetic_field (float, optional): The magnetic field. Default is 0.
             particle_hole_symmetry: If true, each number operator $n$ is
-                replaced with $n - 1/2$.
+                replaced with $n - \frac{1}{2}$.
 
         Each group of parameters is specified as an iterable of tuples.
 
@@ -193,28 +149,28 @@ class FermiHubbardModel:
         In the spinful, model, the tunneling parameter corresponds to the terms
 
         $$
-            t \sum_{(i, j) \in E^{(\mathrm{edge type})}}
-            \sum_{\sigma}
-            \left(a_{i, a, \sigma}^{\dagger} a_{j, b, \sigma}
-            + a_{j, b, \sigma}^{\dagger} a_{i, a, \sigma}\right)
+        t \sum_{(i, j) \in E^{(\mathrm{edge type})}}
+        \sum_{\sigma}
+        \left(a_{i, a, \sigma}^{\dagger} a_{j, b, \sigma}
+        + a_{j, b, \sigma}^{\dagger} a_{i, a, \sigma}\right)
         $$
 
         and in the spinless model to
 
         $$
-            -t \sum_{(i, j) \in E^{(\mathrm{edge type})}}
-            \left(a_{i, a}^{\dagger} a_{j, b}
-            + a_{j, b}^{\dagger} a_{i, a}\right),
+        -t \sum_{(i, j) \in E^{(\mathrm{edge type})}}
+        \left(a_{i, a}^{\dagger} a_{j, b}
+        + a_{j, b}^{\dagger} a_{i, a}\right),
         $$
 
         where
 
-            - $(a, b)$ is the pair of degrees
-            of freedom given by ``dofs``;
-            - $E^{(\mathrm{edge type})}$ is the set of ordered pairs of
-              site indices returned by ``lattice.site_pairs_iter(edge_type, a !=
-              b)``; and
-            - $t$ is the ``coefficient``.
+        - $(a, b)$ is the pair of degrees
+          of freedom given by ``dofs``;
+        - $E^{(\mathrm{edge type})}$ is the set of ordered pairs of
+          site indices returned by ``lattice.site_pairs_iter(edge_type, a !=
+          b)``; and
+        - $t$ is the ``coefficient``.
 
         Each interaction parameter is a tuple ``(edge_type, dofs,
         coefficient, spin_pairs)``. The final ``spin_pairs`` element is
@@ -232,31 +188,31 @@ class FermiHubbardModel:
 
         where
 
-            - $(a, b)$ is the pair of degrees of
-            freedom given by ``dofs``;
-            - $E^{(\mathrm{edge type})}$ is the set of ordered pairs of
-              site indices returned by ``lattice.site_pairs_iter(edge_type)``;
-            - $U$ is the ``coefficient``; and
-            - $(\sigma, \sigma')$ runs over
-                - all four possible pairs of spins
-                if `spin_pairs == SpinPairs.ALL`,
-                - $\{(\uparrow, \downarrow), (\downarrow, \uparrow)\}$
-                if `spin_pairs == SpinPairs.DIFF`, and
-                - $\{(\uparrow, \uparrow), (\downarrow, \downarrow)\}$
-                if 'spin_pairs == SpinPairs.SAME`.
+        - $(a, b)$ is the pair of degrees of
+          freedom given by ``dofs``;
+        - $E^{(\mathrm{edge type})}$ is the set of ordered pairs of
+          site indices returned by ``lattice.site_pairs_iter(edge_type)``;
+        - $U$ is the ``coefficient``; and
+        - $(\sigma, \sigma')$ runs over
+            - all four possible pairs of spins
+            if `spin_pairs == SpinPairs.ALL`,
+            - $\{(\uparrow, \downarrow), (\downarrow, \uparrow)\}$
+            if `spin_pairs == SpinPairs.DIFF`, and
+            - $\{(\uparrow, \uparrow), (\downarrow, \downarrow)\}$
+            if 'spin_pairs == SpinPairs.SAME`.
 
         Each potential parameter is a tuple ``(dof, coefficient)``.
         For example, in the spinful model, it corresponds to the terms
 
         $$
-            -\mu \sum_{i} \sum_{\sigma} n_{i, a, \sigma},
+        -\mu \sum_{i} \sum_{\sigma} n_{i, a, \sigma},
         $$
 
         where
 
-            - $i$ runs over the sites of the lattice;
-            - $a$ is the degree of freedom ``dof``; and
-            - $\mu$ is the ``coefficient``.
+        - $i$ runs over the sites of the lattice;
+        - $a$ is the degree of freedom ``dof``; and
+        - $\mu$ is the ``coefficient``.
 
         In the spinless model, the magnetic field is ignored.
         """

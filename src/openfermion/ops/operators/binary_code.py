@@ -29,7 +29,8 @@ def shift_decoder(decoder, shift_constant):
         decoder (iterable): list of BinaryPolynomial; the decoder
         shift_constant (int): the qubit index that corresponds to the offset.
 
-    Returns (list): list of BinaryPolynomial shifted decoder
+    Returns:
+        A list of BinaryPolynomial shifted decoder
     """
     decode_shifted = []
     if not isinstance(shift_constant, (numpy.int64, numpy.int32, int)):
@@ -53,7 +54,8 @@ def double_decoding(decoder_1, decoder_2):
         decoder_2 (iterable): list of BinaryPolynomial
             decoding of the inner code layer
 
-    Returns (list): list of BinaryPolynomial the decoding defined by
+    Returns:
+        A list of BinaryPolynomial the decoding defined by
         w -> decoder_1( decoder_2(w) )
     """
     doubled_decoder = []
@@ -185,8 +187,8 @@ class BinaryCode(object):
         Args:
             appendix (BinaryCode): The code to append to the present one.
 
-        Returns (BinaryCode): A global binary code with size
-            (n_modes1 + n_modes2), (n_qubits1,n_qubits2)
+        Returns:
+            A global binary code with size (n_modes1 + n_modes2), (n_qubits1,n_qubits2)
 
         Raises:
             TypeError: Appendix must be a BinaryCode.
@@ -207,7 +209,8 @@ class BinaryCode(object):
         Args:
             appendix (BinaryCode): The code to append to the present one.
 
-        Returns (BinaryCode): global binary code
+        Returns:
+            A global binary code
         """
         twin = copy.deepcopy(self)
         twin += appendix
@@ -223,7 +226,8 @@ class BinaryCode(object):
             factor (int or BinaryCode): the BinaryCode to concatenate. In case
                 of int, it will append the code to itself factor times.
 
-        Returns (BinaryCode): segmented or concatenated code
+        Returns:
+            A segmented or concatenated code
 
         Raises:
             TypeError: factor must be an integer or a BinaryCode
@@ -267,7 +271,8 @@ class BinaryCode(object):
             factor (int or BinaryCode): the BinaryCode to concatenate. In case
                 of int, it will append the code to itself factor times.
 
-        Returns (BinaryCode): segmented or concatenated code
+        Returns:
+            A segmented or concatenated code
         """
         twin = copy.deepcopy(self)
         twin *= factor
@@ -279,7 +284,8 @@ class BinaryCode(object):
         Args:
             factor (int): integer defining number of appendages.
 
-        Returns (BinaryCode): Segmented code.
+        Returns:
+            A segmented code.
 
         Raises:
             TypeError: factor must be an integer

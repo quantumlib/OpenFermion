@@ -53,7 +53,8 @@ def up_then_down(mode_idx, num_modes):
         mode_idx (int): the mode index that is being reordered
         num_modes (int): the total number of modes of the operator.
 
-    Returns (int): reordered index of the mode.
+    Returns:
+        A reordered index of the mode.
     """
     halfway = int(numpy.ceil(num_modes / 2.0))
 
