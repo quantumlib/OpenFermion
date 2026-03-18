@@ -100,7 +100,7 @@ def fermi_hubbard(
 
     Returns:
         hubbard_model: An instance of the FermionOperator class.
-    """
+    """  # pylint: disable=line-too-long
     if spinless:
         return _spinless_fermi_hubbard_model(
             x_dimension,
@@ -276,7 +276,7 @@ def bose_hubbard(
 
     Returns:
         bose_hubbard_model: An instance of the BosonOperator class.
-    """
+    """  # pylint: disable=line-too-long
 
     # Initialize operator.
     n_sites = x_dimension * y_dimension

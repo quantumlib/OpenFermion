@@ -117,7 +117,7 @@ class FermiHubbardModel:
         &- \sum_{a} \mu_a \sum_i n_{i, a}
     \end{aligned}
     $$
-    """
+    """  # pylint: disable=line-too-long
 
     def __init__(
         self,
@@ -215,7 +215,7 @@ class FermiHubbardModel:
         - $\mu$ is the ``coefficient``.
 
         In the spinless model, the magnetic field is ignored.
-        """
+        """  # pylint: disable=line-too-long
 
         self.lattice = lattice
 
