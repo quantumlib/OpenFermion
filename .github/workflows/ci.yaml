@@ -150,7 +150,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Determine files changed by this ${{github.event_name}} event
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: filter
         with:
           base: ${{env.base}}
@@ -563,7 +563,7 @@ jobs:
       # The next action simply fails if there are any unpinned actions.
       - name: Verify that all workflow actions have pinned versions
         # yamllint disable-line rule:line-length
-        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@70c4af2ed5282c51ba40566d026d6647852ffa3e # v5.0.1
+        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@cc9ffdc62fadb9f83b46dd0979d9ad50408cc6a6 # v5.0.2
 
       # If we didn't fail the previous check, go on to more time-consuming ones.
       - name: Install actionlint
