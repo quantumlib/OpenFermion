@@ -1,2 +1,14 @@
-# migrating to the black formatter
+# Usage: run the following command to configure git to use this file:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# This instructs `git-blame` to ignore certain commits, such as those that only
+# involve large refactoring or reformatting operations. The format of this file
+# is one full 40-character commit hash (SHA-1) per line. Blank lines and
+# comments (such as this) are allowed.
+
+# Migrating to the black formatter.
 5cd8b96e605039af1496b6ad97ea490ef2fa7b82
+
+# Run check/format-incremental --all --apply.
+7f262ff9cc9eeb9b1b2d6a26c4acbfb7ab17063e

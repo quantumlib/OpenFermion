@@ -26,7 +26,8 @@ def linearize_decoder(matrix: Union[numpy.ndarray, list]) -> List[BinaryPolynomi
         matrix (np.ndarray or list): list of lists or 2D numpy array
             to derive the decoding function from
 
-    Returns (list): list of BinaryPolynomial
+    Returns:
+        a list of BinaryPolynomial
     """
     matrix = numpy.array(list(map(numpy.array, matrix)))
     system_dim, code_dim = numpy.shape(matrix)
@@ -49,7 +50,8 @@ def _encoder_bk(n_modes: int) -> numpy.ndarray:
     Args:
         n_modes (int): length of the matrix, the dimension x dimension
 
-    Returns (numpy.ndarray): encoder matrix
+    Returns:
+        An encoder matrix (as type numpy.ndarray)
     """
     reps = int(numpy.ceil(numpy.log2(n_modes)))
     mtx = numpy.array([[1, 0], [1, 1]])
@@ -67,7 +69,8 @@ def _decoder_bk(n_modes: int) -> numpy.ndarray:
     Args:
         n_modes (int): size of the matrix is modes x modes
 
-    Returns (numpy.ndarray): decoder matrix
+    Returns:
+        A decoder matrix (as type numpy.ndarray)
     """
     reps = int(numpy.ceil(numpy.log2(n_modes)))
     mtx = numpy.array([[1, 0], [1, 1]])
@@ -83,7 +86,8 @@ def _encoder_checksum(modes: int) -> numpy.ndarray:
     Args:
         modes (int):  matrix size is (modes - 1) x modes
 
-    Returns (numpy.ndarray): encoder matrix
+    Returns:
+        A encoder matrix (of type numpy.ndarray)
     """
     enc = numpy.zeros(shape=(modes - 1, modes), dtype=int)
     for i in range(modes - 1):
@@ -99,7 +103,8 @@ def _decoder_checksum(modes: int, odd: Union[int, bool]) -> List[BinaryPolynomia
         odd (int or bool): 1 (True) or 0 (False), if odd,
             we encode all states with odd Hamming weight
 
-    Returns (list): list of BinaryPolynomial
+    Returns:
+        A list of BinaryPolynomial
     """
     if odd:
         # coverage: ignore
@@ -123,7 +128,8 @@ def _binary_address(digits: int, address: int) -> Tuple[List[int], BinaryPolynom
         digits (int): number of digits, which is the qubit number
         address (int): column index, decoder component
 
-    Returns (tuple): encoder column, decoder component
+    Returns:
+        An encoder column, decoder component
     """
     binary_expression = BinaryPolynomial('1')
 
@@ -147,7 +153,8 @@ def checksum_code(n_modes: int, odd: Union[int, bool]) -> BinaryCode:
         odd (int or bool): 1 (True) or 0 (False), if odd,
             we encode all states with odd Hamming weight
 
-    Returns (BinaryCode): The checksum BinaryCode
+    Returns:
+        The checksum BinaryCode
     """
     return BinaryCode(_encoder_checksum(n_modes), _decoder_checksum(n_modes, odd))
 
@@ -158,7 +165,8 @@ def jordan_wigner_code(n_modes: int) -> BinaryCode:
     Args:
         n_modes (int): number of modes
 
-    Returns (BinaryCode): The Jordan-Wigner BinaryCode
+    Returns:
+        The Jordan-Wigner BinaryCode
     """
     return BinaryCode(
         numpy.identity(n_modes, dtype=int), linearize_decoder(numpy.identity(n_modes, dtype=int))
@@ -172,7 +180,8 @@ def bravyi_kitaev_code(n_modes: int) -> BinaryCode:
     Args:
         n_modes (int): number of modes
 
-    Returns (BinaryCode): The Bravyi-Kitaev BinaryCode
+    Returns:
+        The Bravyi-Kitaev BinaryCode
     """
     return BinaryCode(_encoder_bk(n_modes), linearize_decoder(_decoder_bk(n_modes)))
 
@@ -185,7 +194,8 @@ def parity_code(n_modes: int) -> BinaryCode:
     Args:
         n_modes (int): number of modes
 
-    Returns (BinaryCode): The parity transform BinaryCode
+    Returns:
+        The parity transform BinaryCode
     """
     dec_mtx = numpy.reshape(
         ([1] + [0] * (n_modes - 1)) + ([1, 1] + (n_modes - 1) * [0]) * (n_modes - 2) + [1, 1],
@@ -210,7 +220,8 @@ def weight_one_binary_addressing_code(exponent: int) -> BinaryCode:
     Args:
         exponent (int): exponent for the number of modes n_modes = 2 ^ exponent
 
-    Returns (BinaryCode): the weight one binary addressing BinaryCode
+    Returns:
+        The weight one binary addressing BinaryCode
     """
     encoder = numpy.zeros((exponent, 2**exponent), dtype=int)
     decoder = [0] * (2**exponent)
@@ -229,7 +240,8 @@ def weight_one_segment_code() -> BinaryCode:
     Note:
         This code is highly non-linear and might produce a lot of terms.
 
-    Returns (BinaryCode): weight one segment code
+    Returns:
+        Weight one segment code
     """
     return BinaryCode([[1, 0, 1], [0, 1, 1]], ['w0 w1 + w0', 'w0 w1 + w1', ' w0 w1'])
 
@@ -244,7 +256,8 @@ def weight_two_segment_code() -> BinaryCode:
     Note:
         This code is highly non-linear and might produce a lot of terms.
 
-    Returns (BinaryCode): weight-2 segment code
+    Returns:
+        Weight-2 segment code
     """
     switch = 'w0 w1 w2 + w0 w1 w3 + w0 w2 w3 + w1 w2 w3 + w0 w1 w2 +' ' w0 w1 w2 w3'
 
@@ -267,7 +280,8 @@ def interleaved_code(modes: int) -> BinaryCode:
 
     Args: modes (int): number of modes, must be even
 
-    Returns (BinaryCode): code that interleaves orbitals
+    Returns:
+        Code that interleaves orbitals
     """
     if modes % 2 == 1:
         raise ValueError('number of modes must be even')

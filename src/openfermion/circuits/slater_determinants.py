@@ -47,11 +47,10 @@ def gaussian_state_preparation_circuit(
       such that
 
       $$
-          \begin{align}
-              \mathcal{B} a_N \mathcal{B}^\dagger &= a_N^\dagger,\\
-              \mathcal{B} a_j \mathcal{B}^\dagger &= a_j, \quad
-                  j = 1, \ldots, N-1,
-          \end{align}
+      \begin{aligned}
+          \mathcal{B} a_N \mathcal{B}^\dagger &= a_N^\dagger,\\
+          \mathcal{B} a_j \mathcal{B}^\dagger &= a_j, \quad j = 1, \ldots, N-1,
+      \end{aligned}
       $$
 
       or
@@ -82,10 +81,9 @@ def gaussian_state_preparation_circuit(
             includes a spin degree of freedom and spin-up modes
             do not interact with spin-down modes.
 
-    Returns
-    -------
-        circuit_description (list[tuple]):
-            A list of operations describing the circuit. Each operation
+    Returns:
+        circuit_description (list[tuple]): A list of operations describing
+            the circuit. Each operation
             is a tuple of objects describing elementary operations that
             can be performed in parallel. Each elementary operation
             is either the string 'pht', indicating a particle-hole
@@ -206,8 +204,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
             (the default), then it is assumed that the ground state is
             desired, i.e., the orbitals with negative energies are filled.
 
-    Returns
-    -------
+    Returns:
         energy (float):
             The eigenvalue.
         state (sparse):
