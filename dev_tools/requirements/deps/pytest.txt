@@ -1,6 +1,7 @@
 pytest
 pytest-asyncio
 pytest-cov
+pytest-retry
 pytest-xdist
 
 nbformat
