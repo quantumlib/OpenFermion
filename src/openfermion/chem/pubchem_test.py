@@ -80,20 +80,6 @@ using_pubchempy = pytest.mark.skipif(
 
 @using_pubchempy
 class OpenFermionPubChemTest(unittest.TestCase):
-    def _get_geometry_with_retries(self, name):
-        import urllib.error
-
-        import pubchempy
-
-        max_retries = 3
-        delay = 2
-        for attempt in range(max_retries):
-            try:
-                return geometry_from_pubchem(name)
-            except (pubchempy.PubChemHTTPError, urllib.error.URLError):
-                if attempt == max_retries - 1:
-                    raise
-                time.sleep(delay)
 
     @patch('pubchempy.get_compounds', mock_get_compounds)
     def test_water(self):
@@ -166,59 +152,7 @@ class OpenFermionPubChemTest(unittest.TestCase):
         with pytest.raises(ValueError, match='Incorrect value for the argument structure'):
             _ = geometry_from_pubchem('water', structure='foo')
 
-    @pytest.mark.integration
+    @pytest.mark.flaky(retries=3, delay=2)
     def test_geometry_from_pubchem_live_api(self):
-        water_geometry = self._get_geometry_with_retries('water')  # pragma: no cover
+        water_geometry = geometry_from_pubchem('water')  # pragma: no cover
         self.assertEqual(len(water_geometry), 3)  # pragma: no cover
-
-    @patch('time.sleep', return_value=None)
-    @patch('pubchempy.get_compounds')
-    def test_geometry_from_pubchem_retry_success(self, mock_get_compounds, mock_sleep):
-        import pubchempy
-
-        mock_get_compounds.side_effect = [
-            pubchempy.PubChemHTTPError(503, 'Server Busy', 'Testing'),
-            pubchempy.PubChemHTTPError(503, 'Server Busy', 'Testing'),
-            [
-                MockCompound(
-                    [
-                        {'aid': 1, 'number': 8, 'element': 'O', 'y': 0, 'z': 0, 'x': 0},
-                        {
-                            'aid': 2,
-                            'number': 1,
-                            'element': 'H',
-                            'y': 0.8929,
-                            'z': 0.2544,
-                            'x': 0.2774,
-                        },
-                        {
-                            'aid': 3,
-                            'number': 1,
-                            'element': 'H',
-                            'y': -0.2383,
-                            'z': -0.7169,
-                            'x': 0.6068,
-                        },
-                    ]
-                )
-            ],
-        ]
-
-        water_geometry = self._get_geometry_with_retries('water')
-
-        self.assertEqual(len(water_geometry), 3)
-        self.assertEqual(mock_get_compounds.call_count, 3)
-        self.assertEqual(mock_sleep.call_count, 2)
-
-    @patch('time.sleep', return_value=None)
-    @patch('pubchempy.get_compounds')
-    def test_geometry_from_pubchem_retry_failure(self, mock_get_compounds, mock_sleep):
-        import pubchempy
-
-        mock_get_compounds.side_effect = pubchempy.PubChemHTTPError(503, 'Server Busy', 'Testing')
-
-        with self.assertRaises(pubchempy.PubChemHTTPError):
-            self._get_geometry_with_retries('water')
-
-        self.assertEqual(mock_get_compounds.call_count, 3)
-        self.assertEqual(mock_sleep.call_count, 2)
