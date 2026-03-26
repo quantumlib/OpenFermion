@@ -359,8 +359,7 @@ class QuadraticHamiltonian(PolynomialTensor):
             \sum_{j} \varepsilon_j b^\dagger_j b_j + \text{constant}.
         $$
 
-        Returns
-        -------
+        Returns:
             circuit_description (list[tuple]):
                 A list of operations describing the circuit. Each operation
                 is a tuple of objects describing elementary operations that
@@ -434,12 +433,11 @@ class QuadraticHamiltonian(PolynomialTensor):
                 the Hamiltonian does not conserve particle number, in which
                 case the returned orbital energies are always non-negative.
 
-        Returns
-        -------
-        orbital_energies(ndarray)
-            A one-dimensional array containing the $\varepsilon_j$
-        constant(float)
-            The constant
+        Returns:
+            orbital_energies(ndarray):
+                A one-dimensional array containing the $\varepsilon_j$
+            constant(float):
+                The constant
         """
         warnings.warn(
             'The method `orbital_energies` is deprecated. '

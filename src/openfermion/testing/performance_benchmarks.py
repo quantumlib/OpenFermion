@@ -59,7 +59,7 @@ def benchmark_fermion_math_and_normal_order(n_qubits, term_length, power):
 
     The idea is we generate two random FermionTerms, A and B, each acting
     on n_qubits with term_length operators. We then compute
-    (A + B) ** power. This is costly that is the first benchmark. The second
+    $(A + B)^power$. This is costly that is the first benchmark. The second
     benchmark is in normal ordering whatever comes out.
 
     Args:
