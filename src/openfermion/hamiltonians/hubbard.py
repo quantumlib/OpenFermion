@@ -44,37 +44,29 @@ def fermi_hubbard(
     The Hamiltonian for the spinful model has the form
 
     $$
-        \begin{align}
-        H = &- t \sum_{\langle i,j \rangle} \sum_{\sigma}
-                     (a^\dagger_{i, \sigma} a_{j, \sigma} +
-                      a^\dagger_{j, \sigma} a_{i, \sigma})
-             + U \sum_{i} a^\dagger_{i, \uparrow} a_{i, \uparrow}
-                         a^\dagger_{i, \downarrow} a_{i, \downarrow}
-            \\
-            &- \mu \sum_i \sum_{\sigma} a^\dagger_{i, \sigma} a_{i, \sigma}
-             - h \sum_i (a^\dagger_{i, \uparrow} a_{i, \uparrow} -
-                       a^\dagger_{i, \downarrow} a_{i, \downarrow})
-        \end{align}
+    \begin{aligned}
+    H = &- t \sum_{\langle i,j \rangle} \sum_{\sigma} (a^\dagger_{i, \sigma} a_{j, \sigma} + a^\dagger_{j, \sigma} a_{i, \sigma}) + U \sum_{i} a^\dagger_{i, \uparrow} a_{i, \uparrow} a^\dagger_{i, \downarrow} a_{i, \downarrow}
+        \\
+        &- \mu \sum_i \sum_{\sigma} a^\dagger_{i, \sigma} a_{i, \sigma} - h \sum_i (a^\dagger_{i, \uparrow} a_{i, \uparrow} - a^\dagger_{i, \downarrow} a_{i, \downarrow})
+    \end{aligned}
     $$
 
     where
 
-        - The indices $\langle i, j \rangle$ run over pairs
-          $i$ and $j$ of sites that are connected to each other
-          in the grid
-        - $\sigma \in \{\uparrow, \downarrow\}$ is the spin
-        - $t$ is the tunneling amplitude
-        - $U$ is the Coulomb potential
-        - $\mu$ is the chemical potential
-        - $h$ is the magnetic field
+    - The indices $\langle i, j \rangle$ run over pairs
+      $i$ and $j$ of sites that are connected to each other
+      in the grid
+    - $\sigma \in \{\uparrow, \downarrow\}$ is the spin
+    - $t$ is the tunneling amplitude
+    - $U$ is the Coulomb potential
+    - $\mu$ is the chemical potential
+    - $h$ is the magnetic field
 
     One can also construct the Hamiltonian for the spinless model, which
     has the form
 
     $$
-        H = - t \sum_{\langle i, j \rangle} (a^\dagger_i a_j + a^\dagger_j a_i)
-            + U \sum_{\langle i, j \rangle} a^\dagger_i a_i a^\dagger_j a_j
-            - \mu \sum_i a_i^\dagger a_i.
+    H = - t \sum_{\langle i, j \rangle} (a^\dagger_i a_j + a^\dagger_j a_i) + U \sum_{\langle i, j \rangle} a^\dagger_i a_i a^\dagger_j a_j - \mu \sum_i a_i^\dagger a_i.
     $$
 
     Args:
@@ -94,14 +86,13 @@ def fermi_hubbard(
             term corresponds to:
 
             $$
-                U \sum_{k=1}^{N-1} a_k^\dagger a_k a_{k+1}^\dagger a_{k+1}
+            U \sum_{k=1}^{N-1} a_k^\dagger a_k a_{k+1}^\dagger a_{k+1}
             $$
 
             If True, the repulsion term is replaced by:
 
             $$
-                U \sum_{k=1}^{N-1} (a_k^\dagger a_k - \frac12)
-                                   (a_{k+1}^\dagger a_{k+1} - \frac12)
+            U \sum_{k=1}^{N-1} (a_k^\dagger a_k - \frac12) (a_{k+1}^\dagger a_{k+1} - \frac12)
             $$
 
             which is unchanged under a particle-hole transformation.
@@ -109,7 +100,7 @@ def fermi_hubbard(
 
     Returns:
         hubbard_model: An instance of the FermionOperator class.
-    """
+    """  # pylint: disable=line-too-long
     if spinless:
         return _spinless_fermi_hubbard_model(
             x_dimension,
@@ -258,21 +249,18 @@ def bose_hubbard(
     The Hamiltonian for the Bose-Hubbard model has the form
 
     $$
-        H = - t \sum_{\langle i, j \rangle} (b_i^\dagger b_j + b_j^\dagger b_i)
-         + V \sum_{\langle i, j \rangle} b_i^\dagger b_i b_j^\dagger b_j
-         + \frac{U}{2} \sum_i b_i^\dagger b_i (b_i^\dagger b_i - 1)
-         - \mu \sum_i b_i^\dagger b_i.
+    H = - t \sum_{\langle i, j \rangle} (b_i^\dagger b_j + b_j^\dagger b_i) + V \sum_{\langle i, j \rangle} b_i^\dagger b_i b_j^\dagger b_j + \frac{U}{2} \sum_i b_i^\dagger b_i (b_i^\dagger b_i - 1) - \mu \sum_i b_i^\dagger b_i.
     $$
 
     where
 
-        - The indices $\langle i, j \rangle$ run over pairs
-          $i$ and $j$ of nodes that are connected to each other
-          in the grid
-        - $t$ is the tunneling amplitude
-        - $U$ is the on-site interaction potential
-        - $\mu$ is the chemical potential
-        - $V$ is the dipole or nearest-neighbour interaction potential
+    - The indices $\langle i, j \rangle$ run over pairs
+      $i$ and $j$ of nodes that are connected to each other
+      in the grid
+    - $t$ is the tunneling amplitude
+    - $U$ is the on-site interaction potential
+    - $\mu$ is the chemical potential
+    - $V$ is the dipole or nearest-neighbour interaction potential
 
     Args:
         x_dimension (int): The width of the grid.
@@ -288,7 +276,7 @@ def bose_hubbard(
 
     Returns:
         bose_hubbard_model: An instance of the BosonOperator class.
-    """
+    """  # pylint: disable=line-too-long
 
     # Initialize operator.
     n_sites = x_dimension * y_dimension

@@ -47,8 +47,8 @@ def generate_costing_table(
         thresholds: Array of sparse thresholds to generate the table for.
         dE_for_qpe: Phase estimation epsilon.
 
-    Returns
-        resources: Table of resource estimates.
+    Returns:
+        A table of resource estimates.
     """
     kmesh = kpts_to_kmesh(pyscf_mf.cell, pyscf_mf.kpts)
     cc_inst = build_cc_inst(pyscf_mf)
