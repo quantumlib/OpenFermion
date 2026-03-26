@@ -32,36 +32,45 @@ class MockCompound:
 
 
 def mock_get_compounds(name, searchtype, record_type='2d'):
-    if name == 'water' and record_type == '3d':
-        return [
-            MockCompound(
-                [
-                    {'aid': 1, 'number': 8, 'element': 'O', 'y': 0, 'z': 0, 'x': 0},
-                    {'aid': 2, 'number': 1, 'element': 'H', 'y': 0.8929, 'z': 0.2544, 'x': 0.2774},
-                    {
-                        'aid': 3,
-                        'number': 1,
-                        'element': 'H',
-                        'y': -0.2383,
-                        'z': -0.7169,
-                        'x': 0.6068,
-                    },
-                ]
-            )
-        ]
-    if name == 'water' and record_type == '2d':
-        return [
-            MockCompound(
-                [
-                    {'aid': 1, 'number': 8, 'element': 'O', 'y': -0.155, 'x': 2.5369},
-                    {'aid': 2, 'number': 1, 'element': 'H', 'y': 0.155, 'x': 3.0739},
-                    {'aid': 3, 'number': 1, 'element': 'H', 'y': 0.155, 'x': 2},
-                ]
-            )
-        ]
-    if name == 'helium' and record_type == '2d':
-        return [MockCompound([{'aid': 1, 'number': 2, 'element': 'He', 'y': 0, 'x': 2}])]
-    return []
+    match (name, record_type):
+        case ('water', '3d'):
+            return [
+                MockCompound(
+                    [
+                        {'aid': 1, 'number': 8, 'element': 'O', 'y': 0, 'z': 0, 'x': 0},
+                        {
+                            'aid': 2,
+                            'number': 1,
+                            'element': 'H',
+                            'y': 0.8929,
+                            'z': 0.2544,
+                            'x': 0.2774,
+                        },
+                        {
+                            'aid': 3,
+                            'number': 1,
+                            'element': 'H',
+                            'y': -0.2383,
+                            'z': -0.7169,
+                            'x': 0.6068,
+                        },
+                    ]
+                )
+            ]
+        case ('water', '2d'):
+            return [
+                MockCompound(
+                    [
+                        {'aid': 1, 'number': 8, 'element': 'O', 'y': -0.155, 'x': 2.5369},
+                        {'aid': 2, 'number': 1, 'element': 'H', 'y': 0.155, 'x': 3.0739},
+                        {'aid': 3, 'number': 1, 'element': 'H', 'y': 0.155, 'x': 2},
+                    ]
+                )
+            ]
+        case ('helium', '2d'):
+            return [MockCompound([{'aid': 1, 'number': 2, 'element': 'He', 'y': 0, 'x': 2}])]
+        case _:
+            return []
 
 
 using_pubchempy = pytest.mark.skipif(
