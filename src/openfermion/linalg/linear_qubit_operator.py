@@ -63,8 +63,8 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
     """A LinearOperator implied from a QubitOperator.
 
     The idea is that a single i_th qubit operator, O_i, is a 2-by-2 matrix, to
-    be applied on a vector of length n_hilbert / 2^i, performs permutations and/
-    or adds an extra factor for its first half and the second half, e.g. a `Z`
+    be applied on a vector of length n_hilbert / 2^i, performs permutations
+    and/or adds an extra factor for its first half and the second half, e.g. a `Z`
     operator keeps the first half unchanged, while adds a factor of -1 to the
     second half, while an `I` keeps it both components unchanged.
 
