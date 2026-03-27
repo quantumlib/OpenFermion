@@ -171,6 +171,14 @@ class RDMMappingTest(unittest.TestCase):
         test_tpdm = map_particle_hole_dm_to_two_pdm(true_phdm, molecule.fci_one_rdm)
         assert numpy.allclose(test_tpdm, molecule.fci_two_rdm)
 
+    def test_map_particle_hole_dm_to_one_pdm_edge_cases(self):
+        # Trigger division by zero
+        phdm = numpy.zeros((2, 2, 2, 2))
+        num_particles = 3
+        num_basis_functions = 2
+        with self.assertRaises(ValueError):
+            map_particle_hole_dm_to_one_pdm(phdm, num_particles, num_basis_functions)
+
     def test_phdm_conversions_h2_sto3g(self):
         filename = "H2_sto-3g_singlet_1.4.hdf5"
         molecule = MolecularData(filename=os.path.join(DATA_DIRECTORY, filename))
