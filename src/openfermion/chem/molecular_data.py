@@ -12,7 +12,7 @@
 """Class and functions to store quantum chemistry data."""
 
 import os
-import uuid
+import tempfile
 import shutil
 import numpy
 import h5py
@@ -703,8 +703,14 @@ class MolecularData(object):
         """Method to save the class under a systematic name."""
         # Create a temporary file and swap it to the original name in case
         # data needs to be loaded while saving
-        tmp_name = uuid.uuid4()
-        with h5py.File("{}.hdf5".format(tmp_name), "w") as f:
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix='.hdf5',
+            dir=os.path.dirname(os.path.abspath(self.filename)),
+        ) as tmp_file:
+            tmp_name = tmp_file.name
+
+        with h5py.File(tmp_name, "w") as f:
             # Save geometry (atoms and positions need to be separate):
             d_geom = f.create_group("geometry")
             if not isinstance(self.geometry, basestring):
@@ -844,7 +850,7 @@ class MolecularData(object):
             # Nothing to do but carry on.
             pass
 
-        shutil.move("{}.hdf5".format(tmp_name), "{}.hdf5".format(self.filename))
+        shutil.move(tmp_name, "{}.hdf5".format(self.filename))
 
     def load(self):
         geometry = []
