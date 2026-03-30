@@ -74,7 +74,7 @@ def generate_costing_table(
         energy_method: Which model chemistry to use to estimate convergence of
             factorization with respect to threshold. values are MP2 or CCSD.
 
-    Returns
+    Returns:
         resources: Table of resource estimates.
 
     Raises:

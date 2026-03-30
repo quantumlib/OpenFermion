@@ -40,15 +40,15 @@ def generate_costing_table(
     """Generate resource estimate costing table given a set of cutoffs for
         single-factorized Hamiltonian.
 
-    Arguments:
+    Args:
         pyscf_mf: k-point pyscf mean-field object
         naux_cutoffs: Array of (integer) auxiliary index cutoff values
         name: Optional descriptive name for simulation.
         chi: the number of bits for the representation of the coefficients
         dE_for_qpe: Phase estimation epsilon.
 
-    Returns
-        resources: Table of resource estimates.
+    Returns:
+        A table of resource estimates.
     """
     kmesh = kpts_to_kmesh(pyscf_mf.cell, pyscf_mf.kpts)
     cc_inst = build_cc_inst(pyscf_mf)
