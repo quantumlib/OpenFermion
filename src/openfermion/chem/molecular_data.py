@@ -704,9 +704,7 @@ class MolecularData(object):
         # Create a temporary file and swap it to the original name in case
         # data needs to be loaded while saving
         with tempfile.NamedTemporaryFile(
-            delete=False,
-            suffix='.hdf5',
-            dir=os.path.dirname(os.path.abspath(self.filename)),
+            delete=False, suffix='.hdf5', dir=os.path.dirname(os.path.abspath(self.filename))
         ) as tmp_file:
             tmp_name = tmp_file.name
 
