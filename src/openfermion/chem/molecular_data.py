@@ -699,156 +699,160 @@ class MolecularData(object):
     def ccsd_double_amps(self, value):
         self._ccsd_double_amps = value
 
+    def _write_hdf5_data(self, hdf5_file):
+        """Method to write the class data to an HDF5 file."""
+        # Save geometry (atoms and positions need to be separate):
+        d_geom = hdf5_file.create_group("geometry")
+        if not isinstance(self.geometry, basestring):
+            atoms = [numpy.bytes_(item[0]) for item in self.geometry]
+            positions = numpy.array([list(item[1]) for item in self.geometry])
+        else:
+            atoms = numpy.bytes_(self.geometry)
+            positions = None
+        d_geom.create_dataset("atoms", data=(atoms if atoms is not None else False))
+        d_geom.create_dataset("positions", data=(positions if positions is not None else False))
+        # Save basis:
+        hdf5_file.create_dataset("basis", data=numpy.bytes_(self.basis))
+        # Save multiplicity:
+        hdf5_file.create_dataset("multiplicity", data=self.multiplicity)
+        # Save charge:
+        hdf5_file.create_dataset("charge", data=self.charge)
+        # Save description:
+        hdf5_file.create_dataset("description", data=numpy.bytes_(self.description))
+        # Save name:
+        hdf5_file.create_dataset("name", data=numpy.bytes_(self.name))
+        # Save n_atoms:
+        hdf5_file.create_dataset("n_atoms", data=self.n_atoms)
+        # Save atoms:
+        hdf5_file.create_dataset("atoms", data=numpy.bytes_(self.atoms))
+        # Save protons:
+        hdf5_file.create_dataset("protons", data=self.protons)
+        # Save n_electrons:
+        hdf5_file.create_dataset("n_electrons", data=self.n_electrons)
+        # Save generic attributes from calculations:
+        hdf5_file.create_dataset(
+            "n_orbitals", data=(self.n_orbitals if self.n_orbitals is not None else False)
+        )
+        hdf5_file.create_dataset(
+            "n_qubits", data=(self.n_qubits if self.n_qubits is not None else False)
+        )
+        hdf5_file.create_dataset(
+            "nuclear_repulsion",
+            data=(self.nuclear_repulsion if self.nuclear_repulsion is not None else False),
+        )
+        # Save attributes generated from SCF calculation.
+        hdf5_file.create_dataset(
+            "hf_energy", data=(self.hf_energy if self.hf_energy is not None else False)
+        )
+        hdf5_file.create_dataset(
+            "canonical_orbitals",
+            data=(self.canonical_orbitals if self.canonical_orbitals is not None else False),
+            compression=("gzip" if self.canonical_orbitals is not None else None),
+        )
+        hdf5_file.create_dataset(
+            "overlap_integrals",
+            data=(self.overlap_integrals if self.overlap_integrals is not None else False),
+            compression=("gzip" if self.overlap_integrals is not None else None),
+        )
+        hdf5_file.create_dataset(
+            "orbital_energies",
+            data=(self.orbital_energies if self.orbital_energies is not None else False),
+        )
+        # Save attributes generated from integrals.
+        hdf5_file.create_dataset(
+            "one_body_integrals",
+            data=(self.one_body_integrals if self.one_body_integrals is not None else False),
+            compression=("gzip" if self.one_body_integrals is not None else None),
+        )
+        hdf5_file.create_dataset(
+            "two_body_integrals",
+            data=(self.two_body_integrals if self.two_body_integrals is not None else False),
+            compression=("gzip" if self.two_body_integrals is not None else None),
+        )
+        # Save attributes generated from MP2 calculation.
+        hdf5_file.create_dataset(
+            "mp2_energy", data=(self.mp2_energy if self.mp2_energy is not None else False)
+        )
+        # Save attributes generated from CISD calculation.
+        hdf5_file.create_dataset(
+            "cisd_energy", data=(self.cisd_energy if self.cisd_energy is not None else False)
+        )
+        hdf5_file.create_dataset(
+            "cisd_one_rdm",
+            data=(self.cisd_one_rdm if self.cisd_one_rdm is not None else False),
+            compression=("gzip" if self.cisd_one_rdm is not None else None),
+        )
+        hdf5_file.create_dataset(
+            "cisd_two_rdm",
+            data=(self.cisd_two_rdm if self.cisd_two_rdm is not None else False),
+            compression=("gzip" if self.cisd_two_rdm is not None else None),
+        )
+        # Save attributes generated from exact diagonalization.
+        hdf5_file.create_dataset(
+            "fci_energy", data=(self.fci_energy if self.fci_energy is not None else False)
+        )
+        hdf5_file.create_dataset(
+            "fci_one_rdm",
+            data=(self.fci_one_rdm if self.fci_one_rdm is not None else False),
+            compression=("gzip" if self.fci_one_rdm is not None else None),
+        )
+        hdf5_file.create_dataset(
+            "fci_two_rdm",
+            data=(self.fci_two_rdm if self.fci_two_rdm is not None else False),
+            compression=("gzip" if self.fci_two_rdm is not None else None),
+        )
+        # Save attributes generated from CCSD calculation.
+        hdf5_file.create_dataset(
+            "ccsd_energy", data=(self.ccsd_energy if self.ccsd_energy is not None else False)
+        )
+        hdf5_file.create_dataset(
+            "ccsd_single_amps",
+            data=(self.ccsd_single_amps if self.ccsd_single_amps is not None else False),
+            compression=("gzip" if self.ccsd_single_amps is not None else None),
+        )
+        hdf5_file.create_dataset(
+            "ccsd_double_amps",
+            data=(self.ccsd_double_amps if self.ccsd_double_amps is not None else False),
+            compression=("gzip" if self.ccsd_double_amps is not None else None),
+        )
+
+        # Save general calculation data
+        key_list = list(self.general_calculations.keys())
+        hdf5_file.create_dataset(
+            "general_calculations_keys",
+            data=([numpy.bytes_(key) for key in key_list] if len(key_list) > 0 else False),
+        )
+        hdf5_file.create_dataset(
+            "general_calculations_values",
+            data=(
+                [self.general_calculations[key] for key in key_list] if len(key_list) > 0 else False
+            ),
+        )
+
     def save(self):
         """Method to save the class under a systematic name."""
-        # Create a temporary file and swap it to the original name in case
-        # data needs to be loaded while saving
+        # Create a temporary file and swap it to the original name in case data needs to be loaded
+        # while saving. Use delete=False because we will delete it manually.
         with tempfile.NamedTemporaryFile(
             delete=False, suffix='.hdf5', dir=os.path.dirname(os.path.abspath(self.filename))
         ) as tmp_file:
             tmp_name = tmp_file.name
+            tmp_file.close()
+            try:
+                with h5py.File(tmp_name, "w") as hdf5_file:
+                    self._write_hdf5_data(hdf5_file)
 
-        with h5py.File(tmp_name, "w") as f:
-            # Save geometry (atoms and positions need to be separate):
-            d_geom = f.create_group("geometry")
-            if not isinstance(self.geometry, basestring):
-                atoms = [numpy.bytes_(item[0]) for item in self.geometry]
-                positions = numpy.array([list(item[1]) for item in self.geometry])
-            else:
-                atoms = numpy.bytes_(self.geometry)
-                positions = None
-            d_geom.create_dataset("atoms", data=(atoms if atoms is not None else False))
-            d_geom.create_dataset("positions", data=(positions if positions is not None else False))
-            # Save basis:
-            f.create_dataset("basis", data=numpy.bytes_(self.basis))
-            # Save multiplicity:
-            f.create_dataset("multiplicity", data=self.multiplicity)
-            # Save charge:
-            f.create_dataset("charge", data=self.charge)
-            # Save description:
-            f.create_dataset("description", data=numpy.bytes_(self.description))
-            # Save name:
-            f.create_dataset("name", data=numpy.bytes_(self.name))
-            # Save n_atoms:
-            f.create_dataset("n_atoms", data=self.n_atoms)
-            # Save atoms:
-            f.create_dataset("atoms", data=numpy.bytes_(self.atoms))
-            # Save protons:
-            f.create_dataset("protons", data=self.protons)
-            # Save n_electrons:
-            f.create_dataset("n_electrons", data=self.n_electrons)
-            # Save generic attributes from calculations:
-            f.create_dataset(
-                "n_orbitals", data=(self.n_orbitals if self.n_orbitals is not None else False)
-            )
-            f.create_dataset(
-                "n_qubits", data=(self.n_qubits if self.n_qubits is not None else False)
-            )
-            f.create_dataset(
-                "nuclear_repulsion",
-                data=(self.nuclear_repulsion if self.nuclear_repulsion is not None else False),
-            )
-            # Save attributes generated from SCF calculation.
-            f.create_dataset(
-                "hf_energy", data=(self.hf_energy if self.hf_energy is not None else False)
-            )
-            f.create_dataset(
-                "canonical_orbitals",
-                data=(self.canonical_orbitals if self.canonical_orbitals is not None else False),
-                compression=("gzip" if self.canonical_orbitals is not None else None),
-            )
-            f.create_dataset(
-                "overlap_integrals",
-                data=(self.overlap_integrals if self.overlap_integrals is not None else False),
-                compression=("gzip" if self.overlap_integrals is not None else None),
-            )
-            f.create_dataset(
-                "orbital_energies",
-                data=(self.orbital_energies if self.orbital_energies is not None else False),
-            )
-            # Save attributes generated from integrals.
-            f.create_dataset(
-                "one_body_integrals",
-                data=(self.one_body_integrals if self.one_body_integrals is not None else False),
-                compression=("gzip" if self.one_body_integrals is not None else None),
-            )
-            f.create_dataset(
-                "two_body_integrals",
-                data=(self.two_body_integrals if self.two_body_integrals is not None else False),
-                compression=("gzip" if self.two_body_integrals is not None else None),
-            )
-            # Save attributes generated from MP2 calculation.
-            f.create_dataset(
-                "mp2_energy", data=(self.mp2_energy if self.mp2_energy is not None else False)
-            )
-            # Save attributes generated from CISD calculation.
-            f.create_dataset(
-                "cisd_energy", data=(self.cisd_energy if self.cisd_energy is not None else False)
-            )
-            f.create_dataset(
-                "cisd_one_rdm",
-                data=(self.cisd_one_rdm if self.cisd_one_rdm is not None else False),
-                compression=("gzip" if self.cisd_one_rdm is not None else None),
-            )
-            f.create_dataset(
-                "cisd_two_rdm",
-                data=(self.cisd_two_rdm if self.cisd_two_rdm is not None else False),
-                compression=("gzip" if self.cisd_two_rdm is not None else None),
-            )
-            # Save attributes generated from exact diagonalization.
-            f.create_dataset(
-                "fci_energy", data=(self.fci_energy if self.fci_energy is not None else False)
-            )
-            f.create_dataset(
-                "fci_one_rdm",
-                data=(self.fci_one_rdm if self.fci_one_rdm is not None else False),
-                compression=("gzip" if self.fci_one_rdm is not None else None),
-            )
-            f.create_dataset(
-                "fci_two_rdm",
-                data=(self.fci_two_rdm if self.fci_two_rdm is not None else False),
-                compression=("gzip" if self.fci_two_rdm is not None else None),
-            )
-            # Save attributes generated from CCSD calculation.
-            f.create_dataset(
-                "ccsd_energy", data=(self.ccsd_energy if self.ccsd_energy is not None else False)
-            )
-            f.create_dataset(
-                "ccsd_single_amps",
-                data=(self.ccsd_single_amps if self.ccsd_single_amps is not None else False),
-                compression=("gzip" if self.ccsd_single_amps is not None else None),
-            )
-            f.create_dataset(
-                "ccsd_double_amps",
-                data=(self.ccsd_double_amps if self.ccsd_double_amps is not None else False),
-                compression=("gzip" if self.ccsd_double_amps is not None else None),
-            )
+                # Remove old file first for compatibility with systems that don't allow rename
+                # replacement. Catch OSError for when file does not exist yet.
+                try:
+                    os.remove("{}.hdf5".format(self.filename))
+                except OSError:
+                    pass
 
-            # Save general calculation data
-            key_list = list(self.general_calculations.keys())
-            f.create_dataset(
-                "general_calculations_keys",
-                data=([numpy.bytes_(key) for key in key_list] if len(key_list) > 0 else False),
-            )
-            f.create_dataset(
-                "general_calculations_values",
-                data=(
-                    [self.general_calculations[key] for key in key_list]
-                    if len(key_list) > 0
-                    else False
-                ),
-            )
-
-        # Remove old file first for compatibility with systems that don't allow
-        # rename replacement.  Catching OSError for when file does not exist
-        # yet
-        try:
-            os.remove("{}.hdf5".format(self.filename))
-        except OSError:
-            # Nothing to do but carry on.
-            pass
-
-        shutil.move(tmp_name, "{}.hdf5".format(self.filename))
+                shutil.move(tmp_name, "{}.hdf5".format(self.filename))
+            finally:
+                if os.path.exists(tmp_name):
+                    os.remove(tmp_name)
 
     def load(self):
         geometry = []
