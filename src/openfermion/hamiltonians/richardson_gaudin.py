@@ -11,11 +11,9 @@
 #   limitations under the License.
 """This module constructs Hamiltonians of the Richardson Gaudin type."""
 
-from itertools import chain, product
+from itertools import product
 import numpy
-from openfermion.ops.representations import PolynomialTensor, get_tensors_from_integrals
 from openfermion.ops.representations import DOCIHamiltonian
-from openfermion.ops import QubitOperator
 
 
 class RichardsonGaudin(DOCIHamiltonian):
