@@ -840,7 +840,9 @@ class MolecularData(object):
         final_filename = f"{self.filename}.hdf5"
         tmp_name = ''
         try:
-            with tempfile.NamedTemporaryFile(delete=True, suffix='.hdf5', dir=output_dir) as tmp_file:
+            with tempfile.NamedTemporaryFile(
+                delete=True, suffix='.hdf5', dir=output_dir
+            ) as tmp_file:
                 tmp_name = tmp_file.name
                 with h5py.File(tmp_name, "w") as hdf5_file:
                     self._write_hdf5_data(hdf5_file)
