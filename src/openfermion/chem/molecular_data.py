@@ -910,7 +910,7 @@ class MolecularData(object):
                         for key, value in zip(keys[...], values[...])
                     }
             else:
-                self.general_calculations = None
+                self.general_calculations = {}
 
     def get_from_file(self, property_name):
         """Helper routine to re-open HDF5 file and pull out single property.
