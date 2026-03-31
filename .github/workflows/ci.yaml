@@ -563,7 +563,7 @@ jobs:
       # The next action simply fails if there are any unpinned actions.
       - name: Verify that all workflow actions have pinned versions
         # yamllint disable-line rule:line-length
-        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@471d5ace1f08e3c4df1c4c2f7e6341aa75da434a # v5.0.3
+        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@ca46236c6ce584ae24bc6283ba8dcf4b3ec8a066 # v5.0.4
 
       # If we didn't fail the previous check, go on to more time-consuming ones.
       - name: Install actionlint
