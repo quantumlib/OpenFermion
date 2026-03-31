@@ -838,20 +838,23 @@ class MolecularData(object):
         # finally replace self.filename with the temp file.
         output_dir = os.path.dirname(os.path.abspath(self.filename))
         final_filename = f"{self.filename}.hdf5"
-        tmp_name = ''
+        tmp_name = None
         try:
+            # Use delete=False for Windows compatibility (allows h5py to open the path).
             with tempfile.NamedTemporaryFile(
-                delete=True, suffix='.hdf5', dir=output_dir
+                delete=False, suffix='.hdf5', dir=output_dir
             ) as tmp_file:
                 tmp_name = tmp_file.name
-                with h5py.File(tmp_name, "w") as hdf5_file:
-                    self._write_hdf5_data(hdf5_file)
-                # The copy will overwrite the destination if it exists.
-                shutil.copy(tmp_name, final_filename)
+
+            with h5py.File(tmp_name, "w") as hdf5_file:
+                self._write_hdf5_data(hdf5_file)
+
+            # os.replace is atomic and works across platforms.
+            os.replace(tmp_name, final_filename)
+            tmp_name = None
         finally:
-            # This 'finally' block handles cases where an error might occur during the process.
-            if os.path.exists(tmp_name):
-                os.remove(tmp_name)  # pragma: no cover
+            if tmp_name and os.path.exists(tmp_name):
+                os.remove(tmp_name)
 
     def load(self):
         geometry = []
