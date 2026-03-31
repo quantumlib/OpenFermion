@@ -851,7 +851,7 @@ class MolecularData(object):
         finally:
             # This 'finally' block handles cases where an error might occur during the process.
             if os.path.exists(tmp_name):
-                os.remove(tmp_name)
+                os.remove(tmp_name)  # pragma: no cover
 
     def load(self):
         geometry = []
