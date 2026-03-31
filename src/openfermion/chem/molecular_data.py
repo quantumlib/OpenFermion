@@ -854,7 +854,7 @@ class MolecularData(object):
             tmp_name = None
         finally:
             if tmp_name and os.path.exists(tmp_name):
-                os.remove(tmp_name)
+                os.remove(tmp_name)  # pragma: no cover
 
     def load(self):
         geometry = []
