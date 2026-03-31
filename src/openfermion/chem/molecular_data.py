@@ -702,7 +702,7 @@ class MolecularData(object):
     def _write_hdf5_data(self, hdf5_file):
         """Method to write the class data to an HDF5 file.
 
-        The file parameter is expected to be an already-open h5py.File handle.
+        The hdf5_file parameter is expected to be an already-open h5py.File handle.
         """
         # Save geometry (atoms and positions need to be separate):
         d_geom = hdf5_file.create_group("geometry")
