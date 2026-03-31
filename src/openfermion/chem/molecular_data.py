@@ -910,10 +910,7 @@ class MolecularData(object):
                         for key, value in zip(keys[...], values[...])
                     }
             else:
-                # TODO: test the no cover
-                # no coverage here because pathway is check on
-                # bad user generated file
-                self.general_calculations = None  # pragma: nocover
+                self.general_calculations = None
 
     def get_from_file(self, property_name):
         """Helper routine to re-open HDF5 file and pull out single property.

@@ -13,6 +13,7 @@
 
 import os
 import unittest
+import h5py
 import numpy.random
 import scipy.linalg
 import numpy as np
@@ -347,3 +348,24 @@ class MolecularDataTest(unittest.TestCase):
             molecule.get_k()
         with self.assertRaises(MissingCalculationError):
             molecule.get_antisym()
+
+    def test_load_no_general_calculations(self):
+        # Make fake molecule.
+        filename = os.path.join(DATA_DIRECTORY, 'dummy_molecule_no_gen_calc')
+        geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
+        basis = '6-31g*'
+        multiplicity = 1
+        molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
+        molecule.save()
+
+        # Manually remove the general_calculations_keys dataset.
+        with h5py.File(filename + '.hdf5', 'r+') as f:
+            del f['general_calculations_keys']
+
+        try:
+            # Load the molecule and check that general_calculations is None.
+            new_molecule = MolecularData(filename=filename)
+            new_molecule.load()
+            self.assertIsNone(new_molecule.general_calculations)
+        finally:
+            os.remove(filename + '.hdf5')
