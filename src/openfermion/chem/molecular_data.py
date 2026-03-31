@@ -700,7 +700,10 @@ class MolecularData(object):
         self._ccsd_double_amps = value
 
     def _write_hdf5_data(self, hdf5_file):
-        """Method to write the class data to an HDF5 file."""
+        """Method to write the class data to an HDF5 file.
+
+        The file parameter is expected to be an already-open h5py.File handle.
+        """
         # Save geometry (atoms and positions need to be separate):
         d_geom = hdf5_file.create_group("geometry")
         if not isinstance(self.geometry, basestring):
@@ -831,33 +834,27 @@ class MolecularData(object):
 
     def save(self):
         """Method to save the class under a systematic name."""
-        # Create a temporary file and swap it to the original name in case data needs to be loaded
-        # while saving. Use delete=False because we will delete it manually.
-        with tempfile.NamedTemporaryFile(
-            delete=False, suffix='.hdf5', dir=os.path.dirname(os.path.abspath(self.filename))
-        ) as tmp_file:
-            tmp_name = tmp_file.name
-            tmp_file.close()
-            try:
+        # Create a temporary file in the same directory as self.filename, write data to it, then
+        # finally replace self.filename with the temp file.
+        output_dir = os.path.dirname(os.path.abspath(self.filename))
+        final_filename = f"{self.filename}.hdf5"
+        tmp_name = ''
+        try:
+            with tempfile.NamedTemporaryFile(delete=True, suffix='.hdf5', dir=output_dir) as tmp_file:
+                tmp_name = tmp_file.name
                 with h5py.File(tmp_name, "w") as hdf5_file:
                     self._write_hdf5_data(hdf5_file)
-
-                # Remove old file first for compatibility with systems that don't allow rename
-                # replacement. Catch OSError for when file does not exist yet.
-                try:
-                    os.remove("{}.hdf5".format(self.filename))
-                except OSError:
-                    pass
-
-                shutil.move(tmp_name, "{}.hdf5".format(self.filename))
-            finally:
-                if os.path.exists(tmp_name):
-                    os.remove(tmp_name)
+                # The copy will overwrite the destination if it exists.
+                shutil.copy(tmp_name, final_filename)
+        finally:
+            # This 'finally' block handles cases where an error might occur during the process.
+            if os.path.exists(tmp_name):
+                os.remove(tmp_name)
 
     def load(self):
         geometry = []
 
-        with h5py.File("{}.hdf5".format(self.filename), "r") as f:
+        with h5py.File(f"{self.filename}.hdf5", "r") as f:
             # Load geometry:
             data = f["geometry/atoms"]
             if data.shape != (()):
