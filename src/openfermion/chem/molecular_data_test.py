@@ -356,16 +356,15 @@ class MolecularDataTest(unittest.TestCase):
         basis = '6-31g*'
         multiplicity = 1
         molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
-        molecule.save()
-
-        # Manually remove the general_calculations_keys dataset.
-        with h5py.File(filename + '.hdf5', 'r+') as f:
-            del f['general_calculations_keys']
-
         try:
-            # Load the molecule and check that general_calculations is None.
+            molecule.save()
+
+            # Manually remove the general_calculations_keys dataset.
+            with h5py.File(filename + '.hdf5', 'r+') as f:
+                del f['general_calculations_keys']
+
+            # Load the molecule and check that general_calculations is empty.
             new_molecule = MolecularData(filename=filename)
-            new_molecule.load()
-            self.assertIsNone(new_molecule.general_calculations)
+            self.assertEqual(new_molecule.general_calculations, {})
         finally:
             os.remove(filename + '.hdf5')
