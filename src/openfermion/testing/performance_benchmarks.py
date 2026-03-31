@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This file contains tests of code performance to reveal bottlenecks."""
+
 import time
 import logging
 
@@ -58,7 +59,7 @@ def benchmark_fermion_math_and_normal_order(n_qubits, term_length, power):
 
     The idea is we generate two random FermionTerms, A and B, each acting
     on n_qubits with term_length operators. We then compute
-    (A + B) ** power. This is costly that is the first benchmark. The second
+    $(A + B)^power$. This is costly that is the first benchmark. The second
     benchmark is in normal ordering whatever comes out.
 
     Args:
@@ -276,10 +277,9 @@ def run_diagonal_commutator(side_length=4):
     logging.info(
         'Starting test on ' 'commutator_ordered_diagonal_coulomb_with_two_body_operator().'
     )
-    (
-        runtime_commutator,
-        runtime_diagonal_commutator,
-    ) = benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(side_length=side_length)
+    runtime_commutator, runtime_diagonal_commutator = (
+        benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(side_length=side_length)
+    )
     logging.info(
         'Regular commutator computation took %f seconds, while '
         'commutator_ordered_diagonal_coulomb_with_two_body_operator'

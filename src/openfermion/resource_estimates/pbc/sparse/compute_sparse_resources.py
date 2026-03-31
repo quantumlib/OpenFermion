@@ -13,6 +13,7 @@
 """
 Compute resource estimates for sparse LCU of k-point Hamiltonian
 """
+
 from typing import Tuple
 import numpy as np
 from numpy.lib.scimath import arccos, arcsin  # has analytc continuation to cplx

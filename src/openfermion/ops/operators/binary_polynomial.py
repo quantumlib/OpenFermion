@@ -9,7 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""symbolic binary class for decoder definitions (arxiv 1712.07067) """
+"""symbolic binary class for decoder definitions (arxiv 1712.07067)"""
 
 import copy
 
@@ -142,7 +142,8 @@ class BinaryPolynomial(object):
             term (list): a single term for BinaryPolynomial
             factor (int or str): a factor in term
 
-        Returns (list): updated term
+        Returns:
+            An updated term
 
         Raises:
             ValueError: invalid action/negative or non-integer qubit index
@@ -192,7 +193,8 @@ class BinaryPolynomial(object):
         Args:
             term (str): string representation of BinaryPolynomial term.
 
-        Returns (tuple): parsed string term
+        Returns:
+            A parsed string term
 
         Raises:
           ValueError: Incorrect terms
@@ -229,7 +231,8 @@ class BinaryPolynomial(object):
     def enumerate_qubits(self):
         """Enumerates all qubits indexed in a given BinaryPolynomial.
 
-        Returns (list): a list of qubits
+        Returns:
+            A list of qubits
         """
         qubits = [factor for summand in self.terms for factor in summand if factor != _SYMBOLIC_ONE]
 
@@ -268,7 +271,8 @@ class BinaryPolynomial(object):
                 corresponding  each binary variable
                 (in order of their indices) in the expression
 
-        Returns (int, 0 or 1): result of the evaluation
+        Returns
+            The result of the evaluation
 
         Raises:
           BinaryPolynomialError: Length of list provided must match the number

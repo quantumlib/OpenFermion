@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """This module constructs Hamiltonians for the BCS mean-field d-wave model."""
+
 from typing import Optional
 
 from openfermion.ops.operators import FermionOperator
@@ -40,31 +41,24 @@ def mean_field_dwave(
     The Hamiltonian for this model has the form
 
     $$
-        \begin{align}
-        H = &- t \sum_{\langle i,j \rangle} \sum_\sigma
-                (a^\dagger_{i, \sigma} a_{j, \sigma} +
-                 a^\dagger_{j, \sigma} a_{i, \sigma})
-            - \mu \sum_i \sum_{\sigma} a^\dagger_{i, \sigma} a_{i, \sigma}
+        \begin{aligned}
+        H = &- t \sum_{\langle i,j \rangle} \sum_\sigma (a^\dagger_{i, \sigma} a_{j, \sigma} + a^\dagger_{j, \sigma} a_{i, \sigma}) - \mu \sum_i \sum_{\sigma} a^\dagger_{i, \sigma} a_{i, \sigma}
             \\
-            &- \sum_{\langle i,j \rangle} \Delta_{ij}
-              (a^\dagger_{i, \uparrow} a^\dagger_{j, \downarrow} -
-               a^\dagger_{i, \downarrow} a^\dagger_{j, \uparrow} +
-               a_{j, \downarrow} a_{i, \uparrow} -
-               a_{j, \uparrow} a_{i, \downarrow})
-        \end{align}
+            &- \sum_{\langle i,j \rangle} \Delta_{ij} (a^\dagger_{i, \uparrow} a^\dagger_{j, \downarrow} - a^\dagger_{i, \downarrow} a^\dagger_{j, \uparrow} + a_{j, \downarrow} a_{i, \uparrow} - a_{j, \uparrow} a_{i, \downarrow})
+        \end{aligned}
     $$
 
     where
 
-        - The indices $\langle i, j \rangle$ run over pairs
-          $i$ and $j$ of sites that are connected to each other
-          in the grid
-        - $\sigma \in \{\uparrow, \downarrow\}$ is the spin
-        - $t$ is the tunneling amplitude
-        - $\Delta_{ij}$ is equal to $+\Delta/2$ for
-          horizontal edges and $-\Delta/2$ for vertical edges,
-          where $\Delta$ is the superconducting gap.
-        - $\mu$ is the chemical potential
+    - The indices $\langle i, j \rangle$ run over pairs
+      $i$ and $j$ of sites that are connected to each other
+      in the grid
+    - $\sigma \in \{\uparrow, \downarrow\}$ is the spin
+    - $t$ is the tunneling amplitude
+    - $\Delta_{ij}$ is equal to $+\Delta/2$ for
+      horizontal edges and $-\Delta/2$ for vertical edges,
+      where $\Delta$ is the superconducting gap.
+    - $\mu$ is the chemical potential
 
     Args:
         x_dimension (int): The width of the grid.
@@ -78,7 +72,7 @@ def mean_field_dwave(
 
     Returns:
         mean_field_dwave_model: An instance of the FermionOperator class.
-    """
+    """  # pylint: disable=line-too-long
     # Initialize fermion operator class.
     n_sites = x_dimension * y_dimension
     n_spin_orbitals = 2 * n_sites

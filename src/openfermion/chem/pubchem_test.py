@@ -9,14 +9,69 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 """Tests for pubchem.py."""
 
+import time
 import unittest
+from unittest.mock import patch
+
 import numpy
 import pytest
 
 from openfermion.chem.pubchem import geometry_from_pubchem
 from openfermion.testing.testing_utils import module_importable
+
+
+class MockCompound:
+    def __init__(self, atoms):
+        self._atoms = atoms
+
+    def to_dict(self, properties):
+        return {'atoms': self._atoms}
+
+
+def mock_get_compounds(name, searchtype, record_type='2d'):
+    match (name, record_type):
+        case ('water', '3d'):
+            return [
+                MockCompound(
+                    [
+                        {'aid': 1, 'number': 8, 'element': 'O', 'y': 0, 'z': 0, 'x': 0},
+                        {
+                            'aid': 2,
+                            'number': 1,
+                            'element': 'H',
+                            'y': 0.8929,
+                            'z': 0.2544,
+                            'x': 0.2774,
+                        },
+                        {
+                            'aid': 3,
+                            'number': 1,
+                            'element': 'H',
+                            'y': -0.2383,
+                            'z': -0.7169,
+                            'x': 0.6068,
+                        },
+                    ]
+                )
+            ]
+        case ('water', '2d'):
+            return [
+                MockCompound(
+                    [
+                        {'aid': 1, 'number': 8, 'element': 'O', 'y': -0.155, 'x': 2.5369},
+                        {'aid': 2, 'number': 1, 'element': 'H', 'y': 0.155, 'x': 3.0739},
+                        {'aid': 3, 'number': 1, 'element': 'H', 'y': 0.155, 'x': 2},
+                    ]
+                )
+            ]
+        case ('helium', '2d'):
+            return [MockCompound([{'aid': 1, 'number': 2, 'element': 'He', 'y': 0, 'x': 2}])]
+        case _:
+            return []
+
 
 using_pubchempy = pytest.mark.skipif(
     module_importable('pubchempy') is False, reason='Not detecting `pubchempy`.'
@@ -25,6 +80,8 @@ using_pubchempy = pytest.mark.skipif(
 
 @using_pubchempy
 class OpenFermionPubChemTest(unittest.TestCase):
+
+    @patch('pubchempy.get_compounds', mock_get_compounds)
     def test_water(self):
         water_geometry = geometry_from_pubchem('water')
         self.water_natoms = len(water_geometry)
@@ -64,6 +121,7 @@ class OpenFermionPubChemTest(unittest.TestCase):
         self.assertTrue(water_bond_angle_low <= self.water_bond_angle)
         self.assertTrue(water_bond_angle_high >= self.water_bond_angle)
 
+    @patch('pubchempy.get_compounds', mock_get_compounds)
     def test_helium(self):
         helium_geometry = geometry_from_pubchem('helium')
         self.helium_natoms = len(helium_geometry)
@@ -71,11 +129,13 @@ class OpenFermionPubChemTest(unittest.TestCase):
         helium_natoms = 1
         self.assertEqual(helium_natoms, self.helium_natoms)
 
+    @patch('pubchempy.get_compounds', mock_get_compounds)
     def test_none(self):
         none_geometry = geometry_from_pubchem('none')
 
         self.assertIsNone(none_geometry)
 
+    @patch('pubchempy.get_compounds', mock_get_compounds)
     def test_water_2d(self):
         water_geometry = geometry_from_pubchem('water', structure='2d')
         self.water_natoms = len(water_geometry)
@@ -91,3 +151,8 @@ class OpenFermionPubChemTest(unittest.TestCase):
 
         with pytest.raises(ValueError, match='Incorrect value for the argument structure'):
             _ = geometry_from_pubchem('water', structure='foo')
+
+    @pytest.mark.flaky(retries=3, delay=2)
+    def test_geometry_from_pubchem_live_api(self):
+        water_geometry = geometry_from_pubchem('water')  # pragma: no cover
+        self.assertEqual(len(water_geometry), 3)  # pragma: no cover

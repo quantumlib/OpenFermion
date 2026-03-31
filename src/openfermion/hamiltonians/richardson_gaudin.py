@@ -9,8 +9,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""This module constructs Hamiltonians of the Richardson Gaudin type.
-"""
+"""This module constructs Hamiltonians of the Richardson Gaudin type."""
+
 from itertools import chain, product
 import numpy
 from openfermion.ops.representations import PolynomialTensor, get_tensors_from_integrals
@@ -36,11 +36,11 @@ class RichardsonGaudin(DOCIHamiltonian):
     where
 
     $$
-        \begin{align}
+        \begin{aligned}
         N_p &= (1 - \sigma^Z_p)/2, \\
         P_p &= a_{p,\beta} a_{p,\alpha} = S^{-} = \sigma^X + i \sigma^Y, \\
         g &= constant coupling term
-        \end{align}
+        \end{aligned}
     $$
 
     Note;

@@ -113,16 +113,13 @@ class LowRankTrotterStep(TrotterStep):
         self.final_rank = final_rank
 
         # Perform the low rank decomposition of two-body operator.
-        (
-            self.eigenvalues,
-            self.one_body_squares,
-            one_body_correction,
-            _,
-        ) = low_rank_two_body_decomposition(
-            hamiltonian.two_body_tensor,
-            truncation_threshold=self.truncation_threshold,
-            final_rank=self.final_rank,
-            spin_basis=spin_basis,
+        self.eigenvalues, self.one_body_squares, one_body_correction, _ = (
+            low_rank_two_body_decomposition(
+                hamiltonian.two_body_tensor,
+                truncation_threshold=self.truncation_threshold,
+                final_rank=self.final_rank,
+                spin_basis=spin_basis,
+            )
         )
 
         # Get scaled density-density terms and basis transformation matrices.
@@ -140,11 +137,9 @@ class LowRankTrotterStep(TrotterStep):
         # Get transformation matrix and orbital energies for one-body terms
         one_body_coefficients = hamiltonian.one_body_tensor + one_body_correction
         quad_ham = ops.QuadraticHamiltonian(one_body_coefficients)
-        (
-            self.one_body_energies,
-            self.one_body_basis_change_matrix,
-            _,
-        ) = quad_ham.diagonalizing_bogoliubov_transform()
+        self.one_body_energies, self.one_body_basis_change_matrix, _ = (
+            quad_ham.diagonalizing_bogoliubov_transform()
+        )
 
         super().__init__(hamiltonian)
 

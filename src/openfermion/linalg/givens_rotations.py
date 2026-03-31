@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Givens rotations routines."""
+
 import numpy
 
 from openfermion.config import EQ_TOLERANCE
@@ -166,8 +167,7 @@ def givens_decomposition_square(unitary_matrix, always_insert=False):
         unitary_matrix: A numpy array with orthonormal rows,
             representing the matrix Q.
 
-    Returns
-    -------
+    Returns:
         decomposition (list[tuple]):
             A list of tuples of objects describing Givens
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
@@ -265,8 +265,7 @@ def givens_decomposition(unitary_rows, always_insert=False):
         unitary_rows: A numpy array or matrix with orthonormal rows,
             representing the matrix Q.
 
-    Returns
-    -------
+    Returns:
         givens_rotations (list[tuple]):
             A list of tuples of objects describing Givens
             rotations. The list looks like [(G_1, ), (G_2, G_3), ... ].
@@ -432,8 +431,7 @@ def fermionic_gaussian_decomposition(unitary_rows):
         unitary_rows(ndarray): A matrix with orthonormal rows and
             additional structure described above.
 
-    Returns
-    -------
+    Returns:
         decomposition (list[tuple]):
             The decomposition of $U$.
         left_decomposition (list[tuple]):

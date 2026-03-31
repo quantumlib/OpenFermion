@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[tool.black]
-line-length = 100
-target_version = ['py310', 'py311', 'py312', 'py313']
-skip-string-normalization = true
-skip-magic-trailing-comma = true
+# Summary: tell Gemini CLI what it should or should not ignore. Takes precedence
+# over .gitignore (which Gemini CLI also reads), thus can be used to un-ignore
+# files that shouldn't be committed to git yet should be visible to Gemini. Also
+# used to ignore things usually in people's global .gitignore files.
 
-[tool.coverage.run]
-# Speed up pytest-cov on Python 3.12+ by enabling sys.monitoring if possible.
-core = "sysmon"
-disable_warnings = ["no-sysmon"]
+# The next one (for Emacs versioned backups) _should_ be covered by *~ in our
+# .gitignore, but Gemini currently doesn't seem to interpret *~ that way.
+*.~*~

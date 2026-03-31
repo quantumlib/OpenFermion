@@ -54,10 +54,13 @@ IFS=$'\n' read -r -d "" -a our_shell_scripts < <(
 declare -a required_shell_scripts
 required_shell_scripts=(
     # items below must be sorted
+    check/all
     check/format-incremental
     check/mypy
     check/pylint
+    check/pylint-changed-files
     check/pytest
+    check/pytest-and-incremental-coverage
 )
 
 scripts_not_found=$(comm -13 \

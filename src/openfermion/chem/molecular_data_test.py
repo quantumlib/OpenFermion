@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Tests for molecular_data."""
+
 import os
 import unittest
 import numpy.random
@@ -220,7 +221,7 @@ class MolecularDataTest(unittest.TestCase):
         """Test simple active space truncation features"""
 
         # Start w/ no truncation
-        (core_const, one_body_integrals, two_body_integrals) = (
+        core_const, one_body_integrals, two_body_integrals = (
             self.molecule.get_active_space_integrals(active_indices=[0, 1])
         )
 

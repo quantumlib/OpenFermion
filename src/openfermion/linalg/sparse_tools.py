@@ -572,12 +572,9 @@ def get_ground_state(sparse_operator, initial_guess=None):
         initial_guess (ndarray): Initial guess for ground state.  A good
             guess dramatically reduces the cost required to converge.
 
-    Returns
-    -------
-        eigenvalue:
-            The lowest eigenvalue, a float.
-        eigenstate:
-            The lowest eigenstate in scipy.sparse csc format.
+    Returns:
+        eigenvalue: The lowest eigenvalue, a float.
+        eigenstate: The lowest eigenstate in scipy.sparse csc format.
     """
     values, vectors = scipy.sparse.linalg.eigsh(
         sparse_operator, k=1, v0=initial_guess, which='SA', maxiter=1e7
@@ -702,7 +699,7 @@ def expectation_computational_basis_state(operator, computational_basis_state):
                   If operator is a FermionOperator, it must be normal-ordered.
         computational_basis_state (scipy.sparse vector / list): normalized
             computational basis state (if scipy.sparse vector), or list of
-            occupied orbitals.
+            zeros and ones for occupied and unoccupied orbitals, respectively.
 
     Returns:
         A real float giving expectation value.
@@ -715,6 +712,9 @@ def expectation_computational_basis_state(operator, computational_basis_state):
 
     if not isinstance(operator, FermionOperator):
         raise TypeError('operator must be a FermionOperator.')
+
+    if not operator.is_normal_ordered():
+        raise ValueError('operator must be a normal ordered.')
 
     occupied_orbitals = computational_basis_state
 
@@ -732,7 +732,8 @@ def expectation_computational_basis_state(operator, computational_basis_state):
             expectation_value += operator.terms.get(((i, 1), (i, 0)), 0.0)
 
             for j in range(i + 1, len(occupied_orbitals)):
-                expectation_value -= operator.terms.get(((j, 1), (i, 1), (j, 0), (i, 0)), 0.0)
+                if occupied_orbitals[j]:
+                    expectation_value -= operator.terms.get(((j, 1), (i, 1), (j, 0), (i, 0)), 0.0)
 
     return expectation_value
 

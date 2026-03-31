@@ -159,28 +159,22 @@ def test_F0Gate_text_unicode_diagram():
     qubits = LineQubit.range(2)
     circuit = cirq.Circuit(_F0Gate().on(*qubits))
 
-    assert (
-        circuit.to_text_diagram().strip()
-        == """
+    assert circuit.to_text_diagram().strip() == """
 0: ───F₀───
       │
 1: ───F₀───
     """.strip()
-    )
 
 
 def test_F0Gate_text_diagram():
     qubits = LineQubit.range(2)
     circuit = cirq.Circuit(_F0Gate().on(*qubits))
 
-    assert (
-        circuit.to_text_diagram(use_unicode_characters=False).strip()
-        == """
+    assert circuit.to_text_diagram(use_unicode_characters=False).strip() == """
 0: ---F0---
       |
 1: ---F0---
     """.strip()
-    )
 
 
 @pytest.mark.parametrize(
@@ -210,24 +204,18 @@ def test_TwiddleGate_text_unicode_diagram():
     qubit = LineQubit.range(1)
     circuit = cirq.Circuit(_TwiddleGate(2, 8).on(*qubit))
 
-    assert (
-        circuit.to_text_diagram().strip()
-        == """
+    assert circuit.to_text_diagram().strip() == """
 0: ───ω^2_8───
     """.strip()
-    )
 
 
 def test_TwiddleGate_text_diagram():
     qubit = LineQubit.range(1)
     circuit = cirq.Circuit(_TwiddleGate(2, 8).on(*qubit))
 
-    assert (
-        circuit.to_text_diagram(use_unicode_characters=False).strip()
-        == """
+    assert circuit.to_text_diagram(use_unicode_characters=False).strip() == """
 0: ---w^2_8---
     """.strip()
-    )
 
 
 @pytest.mark.parametrize(
@@ -364,9 +352,7 @@ def test_ffft_text_diagram():
 
     circuit = cirq.Circuit(ffft(qubits), strategy=cirq.InsertStrategy.EARLIEST)
 
-    assert (
-        circuit.to_text_diagram(transpose=True)
-        == """
+    assert circuit.to_text_diagram(transpose=True) == """
 0   1     2   3     4   5     6   7
 │   │     │   │     │   │     │   │
 0↦0─1↦4───2↦1─3↦5───4↦2─5↦6───6↦3─7↦7
@@ -392,7 +378,6 @@ F₀──F₀    F₀──F₀    F₀──F₀    F₀──F₀
 0↦0─1↦4───2↦1─3↦5───4↦2─5↦6───6↦3─7↦7
 │   │     │   │     │   │     │   │
     """.strip()
-    )
 
 
 def test_ffft_fails_without_qubits():

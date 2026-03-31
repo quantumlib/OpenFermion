@@ -1,5 +1,5 @@
-"""Test cases for costing_sparse.py
-"""
+"""Test cases for costing_sparse.py"""
+
 from openfermion.resource_estimates.sparse.costing_sparse import cost_sparse
 
 

@@ -9,8 +9,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-""" The transform function that does Fermion-qubit mappings
-    based on a BinaryCode (arXiv:1712.07067) """
+"""The transform function that does Fermion-qubit mappings
+based on a BinaryCode (arXiv:1712.07067)"""
 
 from typing import Any, List, Tuple, Union
 
@@ -26,8 +26,8 @@ def extractor(binary_op: BinaryPolynomial) -> QubitOperator:
     Args:
         binary_op (BinaryPolynomial): the binary term
 
-    Returns (QubitOperator): the qubit operator corresponding to the
-        binary terms
+    Returns:
+        The qubit operator corresponding to the binary terms
     """
     return_fn = 1
     for term in binary_op.terms:
@@ -53,7 +53,8 @@ def dissolve(term: Tuple[Any, Any]) -> QubitOperator:
     Args:
         term (tuple): product of binary variables, i.e.: 'w0 w2 w3'
 
-    Returns (QubitOperator): superposition of Pauli-strings
+    Returns:
+        A QubitOperator, the superposition of Pauli-strings
 
     Raises:
         ValueError: if the variable in term is not integer
@@ -73,7 +74,8 @@ def make_parity_list(code: BinaryCode) -> List[BinaryPolynomial]:
     Args:
         code (BinaryCode): the code to extract the parity list from.
 
-    Returns (list): list of BinaryPolynomial, the parity list
+    Returns:
+        a list of BinaryPolynomial, the parity list
 
     Raises:
         TypeError: argument is not BinaryCode
@@ -109,7 +111,8 @@ def binary_code_transform(hamiltonian: FermionOperator, code: BinaryCode) -> Qub
         hamiltonian (FermionOperator): the fermionic Hamiltonian
         code (BinaryCode): the binary code to transform the Hamiltonian
 
-    Returns (QubitOperator): the transformed Hamiltonian
+    Returns:
+        A  QubitOperator, the transformed Hamiltonian
 
     Raises:
         TypeError: if the hamiltonian is not a FermionOperator or code is not
