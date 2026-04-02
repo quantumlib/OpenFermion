@@ -202,4 +202,6 @@ def map_particle_hole_dm_to_one_pdm(phdm, num_particles, num_basis_functions):
     Returns:
         opdm (numpy.ndarray): the 1-RDM transformed from a 1-RDM.
     """
+    if num_particles > num_basis_functions:
+        raise ValueError('Number of particles cannot exceed number of basis functions.')
     return numpy.einsum('prrq', phdm) / (num_basis_functions - num_particles + 1)

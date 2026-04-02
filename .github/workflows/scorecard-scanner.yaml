@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# yamllint disable rule:line-length
+
 name: Scorecard analysis
 run-name: Run Scorecard scanner for security best practices
 
@@ -62,24 +64,25 @@ jobs:
           persist-credentials: false
 
       - name: Run Scorecard analysis
-        # yamllint disable rule:line-length
         uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
         with:
           # Save the results
           results_file: scorecard-results.sarif
           results_format: sarif
-          # See https://github.com/ossf/scorecard-action#publishing-results.
-          publish_results: true
+          # Only publish results for non-fork PRs or scheduled runs.
+          publish_results: >-
+            ${{github.event_name != 'pull_request'
+              || github.event.pull_request.head.repo.fork == false}}
 
       - name: Upload results to code-scanning dashboard
-        # yamllint disable rule:line-length
+        # Skip upload for fork PRs to avoid "Analysis configuration not found" / 404 errors.
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
         uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
         with:
           sarif_file: scorecard-results.sarif
 
       - if: github.event.inputs.debug == true || runner.debug == true
         name: Upload results as artifacts to the workflow Summary page
-        # yamllint disable rule:line-length
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: Scorecard SARIF file
