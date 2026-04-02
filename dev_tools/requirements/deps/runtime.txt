@@ -4,7 +4,7 @@ h5py>=3.10.0
 networkx
 numpy>=1.26
 pubchempy
-requests~=2.33.0
+requests~=2.33.1
 
 scipy~=1.15
 
