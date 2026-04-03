@@ -110,8 +110,6 @@ function api_call() {
 
 function compute_changes() {
     local -r pr="$1"
-    local -r keys_filter='with_entries(select([.key] | inside(["changes", "filename"])))'
-
     local page=1
     local total_changes=0
     while true; do
