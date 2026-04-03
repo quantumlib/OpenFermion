@@ -122,14 +122,8 @@ function compute_changes() {
             break
         fi
 
-        local change_info
-        change_info="$(jq_stdin "map(${keys_filter})" <<<"${response}")"
-
-        local files
-        readarray -t files < <(jq_stdin -c '.[]' <<<"${change_info}")
-        for file in "${files[@]}"; do
-            local name changes
-            name="$(jq_stdin -r '.filename' <<<"${file}")"
+        local name changes
+        while IFS= read -r name && IFS= read -r changes; do
             for pattern in "${IGNORED[@]}"; do
                 # shellcheck disable=SC2053  # Need leave the pattern unquoted.
                 if [[ "${name}" == ${pattern} ]]; then
@@ -137,10 +131,9 @@ function compute_changes() {
                     continue 2
                 fi
             done
-            changes="$(jq_stdin -r '.changes' <<<"${file}")"
             info "File ${name} +-${changes}"
             total_changes="$((total_changes + changes))"
-        done
+        done < <(jq_stdin -r '.[] | .filename, .changes' <<<"${response}")
         ((page++))
     done
     echo "${total_changes}"
