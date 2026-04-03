@@ -1,0 +1,73 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Pull request labeler
+run-name: >-
+  Label pull request ${{github.event.pull_request.number}} by ${{github.actor}}
+
+# This workflow is designed NOT to fail if labeling actions encounter errors;
+# instead, it notes errors as annotations on the workflow's run summary page. If
+# labels don't seem to be getting applied, check there for errors.
+
+on:
+  # Note: do not copy-paste this workflow with `pull_request_target` left as-is.
+  # Its use here is a special case where security implications are understood.
+  # Workflows should normally use `pull_request` instead.
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+
+  # Allow manual invocation.
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: 'The PR number of the PR to label:'
+        type: string
+        required: true
+      debug:
+        description: 'Run with debugging options'
+        type: boolean
+        default: true
+
+# Declare default workflow permissions as read only.
+permissions: read-all
+
+jobs:
+  label-pr-size:
+    if: github.repository_owner == 'quantumlib'
+    name: Update PR size labels
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    env:
+      # Environment variable PR_NUMBER is needed by size-labeler.sh.
+      PR_NUMBER: ${{inputs.pr-number || github.event.pull_request.number}}
+      # Add xtrace to SHELLOPTS for all Bash scripts when doing debug runs.
+      SHELLOPTS: ${{inputs.debug && 'xtrace' || '' }}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          sparse-checkout: |
+            ./dev_tools/ci/size-labeler.sh
+
+      - name: Label the PR with a size label
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: ./dev_tools/ci/size-labeler.sh
