@@ -24,7 +24,7 @@ PR_NUMBER, GITHUB_REPOSITORY, GITHUB_TOKEN.  The script is intended
 for automated execution from GitHub Actions workflow."
 
 declare -ar LABELS=(
-    "Size: XS"
+    "size: XS"
     "size: S"
     "size: M"
     "size: L"
