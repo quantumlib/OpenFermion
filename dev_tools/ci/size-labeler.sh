@@ -24,7 +24,7 @@ PR_NUMBER, GITHUB_REPOSITORY, GITHUB_TOKEN.  The script is intended
 for automated execution from GitHub Actions workflow."
 
 declare -ar LABELS=(
-    "size: XS"
+    "Size: XS"
     "size: S"
     "size: M"
     "size: L"
@@ -39,7 +39,6 @@ declare -A LIMITS=(
     ["${LABELS[4]}"]="$((2 ** 63 - 1))"
 )
 
-# Note: these are Bash glob patterns and not regexes.
 declare -ar IGNORED=(
     "*_pb2.py"
     "*_pb2.pyi"
@@ -111,31 +110,40 @@ function api_call() {
 
 function compute_changes() {
     local -r pr="$1"
-
-    local response
-    local change_info
     local -r keys_filter='with_entries(select([.key] | inside(["changes", "filename"])))'
-    response="$(api_call "pulls/${pr}/files?per_page=100")"
-    change_info="$(jq_stdin "map(${keys_filter})" <<<"${response}")"
 
-    local files total_changes
-    readarray -t files < <(jq_stdin -c '.[]' <<<"${change_info}")
-    total_changes=0
-    for file in "${files[@]}"; do
-        local name changes
-        name="$(jq_stdin -r '.filename' <<<"${file}")"
-        for pattern in "${IGNORED[@]}"; do
-            # shellcheck disable=SC2053  # Pattern must be left unquoted here.
-            if [[ "$name" == ${pattern} ]]; then
-                info "File $name ignored"
-                continue 2
-            fi
+    local page=1
+    local total_changes=0
+    while true; do
+        local response
+        response="$(api_call "pulls/${pr}/files?per_page=100&page=${page}")"
+
+        if [[ "$(jq_stdin '. | length' <<<"${response}")" -eq 0 ]]; then
+            break
+        fi
+
+        local change_info
+        change_info="$(jq_stdin "map(${keys_filter})" <<<"${response}")"
+
+        local files
+        readarray -t files < <(jq_stdin -c '.[]' <<<"${change_info}")
+        for file in "${files[@]}"; do
+            local name changes
+            name="$(jq_stdin -r '.filename' <<<"${file}")"
+            for pattern in "${IGNORED[@]}"; do
+                # shellcheck disable=SC2053  # Need leave the pattern unquoted.
+                if [[ "${name}" == ${pattern} ]]; then
+                    info "File ${name} ignored"
+                    continue 2
+                fi
+            done
+            changes="$(jq_stdin -r '.changes' <<<"${file}")"
+            info "File ${name} +-${changes}"
+            total_changes="$((total_changes + changes))"
         done
-        changes="$(jq_stdin -r '.changes' <<<"${file}")"
-        info "File $name +-$changes"
-        total_changes="$((total_changes + changes))"
+        ((page++))
     done
-    echo "$total_changes"
+    echo "${total_changes}"
 }
 
 function get_size_label() {
