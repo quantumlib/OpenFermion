@@ -909,6 +909,8 @@ class MolecularData(object):
                         key.tobytes().decode('utf-8'): value
                         for key, value in zip(keys[...], values[...])
                     }
+                else:
+                    self.general_calculations = {}
             else:
                 self.general_calculations = {}
 
