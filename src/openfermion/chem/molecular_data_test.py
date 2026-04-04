@@ -367,5 +367,3 @@ class MolecularDataTest(unittest.TestCase):
             # Load the molecule and check that general_calculations is empty.
             new_molecule = MolecularData(filename=filename)
             self.assertEqual(new_molecule.general_calculations, {})
-
-
