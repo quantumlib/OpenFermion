@@ -368,3 +368,4 @@ class MolecularDataTest(unittest.TestCase):
             new_molecule = MolecularData(filename=filename)
             self.assertEqual(new_molecule.general_calculations, {})
 
+
