@@ -12,6 +12,7 @@
 """Tests for molecular_data."""
 
 import os
+import tempfile
 import unittest
 import h5py
 import numpy.random
@@ -351,20 +352,19 @@ class MolecularDataTest(unittest.TestCase):
 
     def test_load_no_general_calculations(self):
         # Make fake molecule.
-        filename = os.path.join(DATA_DIRECTORY, 'dummy_molecule_no_gen_calc')
-        geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
-        basis = '6-31g*'
-        multiplicity = 1
-        molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
-        try:
+        with tempfile.NamedTemporaryFile(suffix='.hdf5') as tmp:
+            filename = tmp.name
+            geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
+            basis = '6-31g*'
+            multiplicity = 1
+            molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
             molecule.save()
 
             # Manually remove the general_calculations_keys dataset.
-            with h5py.File(filename + '.hdf5', 'r+') as f:
+            with h5py.File(filename, 'r+') as f:
                 del f['general_calculations_keys']
 
             # Load the molecule and check that general_calculations is empty.
             new_molecule = MolecularData(filename=filename)
             self.assertEqual(new_molecule.general_calculations, {})
-        finally:
-            os.remove(filename + '.hdf5')
+
