@@ -352,8 +352,8 @@ class MolecularDataTest(unittest.TestCase):
 
     def test_load_no_general_calculations(self):
         # Make fake molecule.
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            filename = os.path.join(tmp_dir, 'test_molecule.hdf5')
+        with tempfile.NamedTemporaryFile(suffix='.hdf5') as tmp_file:
+            filename = tmp_file.name
             geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
             basis = '6-31g*'
             multiplicity = 1
