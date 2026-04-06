@@ -162,11 +162,13 @@ class ReverseJWTest(unittest.TestCase):
             reverse_jordan_wigner(3)
 
     def test_reverse_jw_multi_term_error(self):
-        with patch('openfermion.transforms.opconversions.reverse_jordan_wigner.'
-                   'QubitOperator.__mul__') as mock_mul:
+        with patch(
+            'openfermion.transforms.opconversions.reverse_jordan_wigner.' 'QubitOperator.__mul__'
+        ) as mock_mul:
             mock_mul.return_value = QubitOperator('X0') + QubitOperator('Y0')
             with self.assertRaisesRegex(
-                    ValueError, 'Qubit operator term needs to be a single term'):
+                ValueError, 'Qubit operator term needs to be a single term'
+            ):
                 reverse_jordan_wigner(QubitOperator('X1'))
 
     def test_jw_convention(self):
