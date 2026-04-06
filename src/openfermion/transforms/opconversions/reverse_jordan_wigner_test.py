@@ -167,7 +167,7 @@ class ReverseJWTest(unittest.TestCase):
         ) as mock_mul:
             mock_mul.return_value = QubitOperator('X0') + QubitOperator('Y0')
             with self.assertRaisesRegex(
-                ValueError, 'Qubit operator term needs to be a single term'
+                ValueError, 'QubitOperator must contain exactly one term'
             ):
                 reverse_jordan_wigner(QubitOperator('X1'))
 
