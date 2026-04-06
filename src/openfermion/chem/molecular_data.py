@@ -845,14 +845,21 @@ class MolecularData(object):
                 delete=False, suffix='.hdf5', dir=output_dir
             ) as tmp_file:
                 tmp_name = tmp_file.name
+                with h5py.File(tmp_file, "w") as hdf5_file:
+                    self._write_hdf5_data(hdf5_file)
 
-            with h5py.File(tmp_name, "w") as hdf5_file:
-                self._write_hdf5_data(hdf5_file)
+            # Determine the umask by setting it to an arbitrary value & immediately restoring it.
+            # Note: trying to set umask(0) can be problematic, so we use something else.
+            current_umask = os.umask(0o600)
+            os.umask(current_umask)
+            # Now apply the umask to the file and move it.
+            os.chmod(tmp_name, 0o666 & ~current_umask)
 
             # os.replace is atomic and works across platforms.
             os.replace(tmp_name, final_filename)
             tmp_name = None
         finally:
+            # Clean up if something went wrong.
             if tmp_name and os.path.exists(tmp_name):
                 os.remove(tmp_name)  # pragma: no cover
 
