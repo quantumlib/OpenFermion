@@ -12,6 +12,7 @@
 """Tests  reverse_jordan_wigner.py."""
 
 import unittest
+from unittest.mock import patch
 
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.transforms.opconversions import jordan_wigner, normal_ordered
@@ -159,6 +160,14 @@ class ReverseJWTest(unittest.TestCase):
     def test_bad_type(self):
         with self.assertRaises(TypeError):
             reverse_jordan_wigner(3)
+
+    def test_reverse_jw_multi_term_error(self):
+        with patch('openfermion.transforms.opconversions.reverse_jordan_wigner.'
+                   'QubitOperator.__mul__') as mock_mul:
+            mock_mul.return_value = QubitOperator('X0') + QubitOperator('Y0')
+            with self.assertRaisesRegex(
+                    ValueError, 'Qubit operator term needs to be a single term'):
+                reverse_jordan_wigner(QubitOperator('X1'))
 
     def test_jw_convention(self):
         """Test that the Jordan-Wigner convention places the Z-string on
