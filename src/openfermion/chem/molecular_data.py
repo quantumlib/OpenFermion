@@ -31,12 +31,6 @@ r"""NOTE ON PQRS CONVENTION:
     + 0.5 * \sum_{p,q,r,s} h[p,q,r,s] a_p^\dagger a_q^\dagger a_r a_s
 """
 
-# Define a compatible basestring for checking between Python 2 and 3
-try:
-    basestring
-except NameError:  # pragma: no cover
-    basestring = str
-
 
 # Define error objects which inherit from Exception.
 class MoleculeNameError(Exception):
@@ -248,7 +242,7 @@ def name_molecule(geometry, basis, multiplicity, charge, description):
     Raises:
         MoleculeNameError: If spin multiplicity is not valid.
     """
-    if not isinstance(geometry, basestring):
+    if not isinstance(geometry, str):
         # Get sorted atom vector.
         atoms = [item[0] for item in geometry]
         atom_charge_info = [(atom, atoms.count(atom)) for atom in set(atoms)]
@@ -501,7 +495,7 @@ class MolecularData(object):
 
         # Metadata fields with default values.
         self.charge = charge
-        if not isinstance(description, basestring):
+        if not isinstance(description, str):
             raise TypeError("description must be a string.")
         self.description = description
 
@@ -518,7 +512,7 @@ class MolecularData(object):
                 self.filename = data_directory + '/' + self.name
 
         # Attributes generated automatically by class.
-        if not isinstance(geometry, basestring):
+        if not isinstance(geometry, str):
             self.n_atoms = len(geometry)
             self.atoms = sorted(
                 [row[0] for row in geometry], key=lambda atom: periodic_hash_table[atom]
@@ -707,7 +701,7 @@ class MolecularData(object):
         with h5py.File("{}.hdf5".format(tmp_name), "w") as f:
             # Save geometry (atoms and positions need to be separate):
             d_geom = f.create_group("geometry")
-            if not isinstance(self.geometry, basestring):
+            if not isinstance(self.geometry, str):
                 atoms = [numpy.bytes_(item[0]) for item in self.geometry]
                 positions = numpy.array([list(item[1]) for item in self.geometry])
             else:
