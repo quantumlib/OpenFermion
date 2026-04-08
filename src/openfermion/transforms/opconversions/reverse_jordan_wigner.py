@@ -82,7 +82,10 @@ def reverse_jordan_wigner(qubit_operator, n_qubits=None):
 
                 # Get next non-identity operator acting below 'working_qubit'.
                 if len(working_term.terms) != 1:
-                    raise ValueError('QubitOperator must contain exactly one term')
+                    raise ValueError(
+                        'QubitOperator must contain exactly one term. '
+                        f'Found {len(working_term.terms)} terms: {working_term!r}'
+                    )
                 working_qubit = pauli_operator[0] - 1
                 for working_operator in reversed(list(working_term.terms)[0]):
                     if working_operator[0] <= working_qubit:
