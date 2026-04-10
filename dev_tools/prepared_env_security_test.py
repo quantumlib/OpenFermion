@@ -1,8 +1,8 @@
-
 import unittest
 from unittest.mock import patch, MagicMock
 from dev_tools.prepared_env import PreparedEnv
 from dev_tools.github_repository import GithubRepository
+
 
 class TestPreparedEnvSecurity(unittest.TestCase):
     @patch('requests.post')
@@ -27,7 +27,12 @@ class TestPreparedEnvSecurity(unittest.TestCase):
         self.assertNotIn('access_token=my-token', url, "Token should not be passed in the URL")
 
         # Security check: Token should be in the Authorization header
-        self.assertEqual(headers.get('Authorization'), 'token my-token', "Token should be passed in the Authorization header")
+        self.assertEqual(
+            headers.get('Authorization'),
+            'token my-token',
+            "Token should be passed in the Authorization header",
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
