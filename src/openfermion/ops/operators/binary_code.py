@@ -19,8 +19,6 @@ import scipy.sparse
 
 from openfermion.ops.operators import BinaryPolynomial
 
-# import openfermion.ops.operators._binary_polynomial as bp
-
 
 def shift_decoder(decoder, shift_constant):
     """Shifts the indices of a decoder by a constant.
