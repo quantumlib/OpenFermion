@@ -203,7 +203,7 @@ class DoubleCommutatorTest(unittest.TestCase):
         )
         self.assertEqual(com, (FermionOperator('4^ 2^ 4 2') - FermionOperator('4^ 3^ 4 3')))
 
-    def test_double_commtator_more_info_both_hopping(self):
+    def test_double_commutator_more_info_both_hopping(self):
         com = double_commutator(
             FermionOperator('4^ 3^ 4 3'),
             FermionOperator('1^ 2', 2.1) + FermionOperator('2^ 1', 2.1),
