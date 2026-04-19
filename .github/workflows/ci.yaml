@@ -12,16 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# OpenFermion continuous integration status checks.
-#
-# This workflow runs various tests to verify that changes to the OpenFermion
-# codebase pass validation and conform to project format and style standards.
-# It triggers on certain events such as pull requests and merge-queue merges,
-# and can also be invoked manually via the "Run workflow" button at
-# https://github.com/quantumlib/OpenFermion/actions/workflows/ci.yaml
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 name: Continuous integration checks
 run-name: CI checks for ${{github.event_name}} by ${{github.actor}}
 
@@ -35,7 +25,6 @@ on:
     types:
       - checks_requested
 
-  # Allow manual invocation.
   workflow_dispatch:
     inputs:
       python_ver:
@@ -46,11 +35,9 @@ on:
         description: Max compat version of Python
         type: string
 
-# Declare default permissions as read only.
 permissions: read-all
 
 concurrency:
-  # Cancel any previously-started but still active runs on the same branch.
   cancel-in-progress: true
   group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
@@ -86,7 +73,6 @@ jobs:
   # trigger condition, and instead, do our own filtering using a combination
   # of testing specific file patterns (in the changes job below) and "if:"
   # conditions on individual jobs in the rest of this workflow.
-
   changes:
     name: (Find changed files)
     runs-on: ubuntu-24.04
