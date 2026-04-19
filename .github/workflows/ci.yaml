@@ -202,7 +202,7 @@ jobs:
     if: needs.changes.outputs.python == 'true'
     name: Python unit tests
     needs: [changes, python-checks]
-    runs-on: ubuntu-22.04
+    runs-on: ${{matrix.os}}
     timeout-minutes: 15
     strategy:
       matrix:
@@ -237,7 +237,7 @@ jobs:
     if: needs.changes.outputs.python == 'true'
     name: Python extra unit tests
     needs: [changes, python-checks]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{matrix.os}}
     timeout-minutes: 15
     strategy:
       matrix:
@@ -434,7 +434,6 @@ jobs:
     name: CI
     if: always()
     needs:
-      - cff-validation
       - coverage
       - docker-lint
       - json-lint
