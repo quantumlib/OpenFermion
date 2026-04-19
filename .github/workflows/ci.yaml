@@ -127,13 +127,12 @@ jobs:
             gha:
               - added|modified:
                   - './.github/workflows/*.yaml'
-                  - './.github/workflows/*.yml'
             yaml:
               - added|modified:
-                  - '**/*.cff'
-                  - '**/*.yaml'
-                  - '**/*.yml'
-                  - '!./.github/workflows/**'
+                  - '*.cff'
+                  - '.*.yaml'
+                  - '.github/*.yaml'
+                  - 'docs/**/*.yaml'
             json:
               - added|modified:
                   - '**/*.json'
