@@ -469,7 +469,7 @@ jobs:
   workflow-validation:
     if: needs.changes.outputs.gha == 'true'
     name: GitHub Actions workflow checks
-    needs: [changes, yaml-lint]
+    needs: changes
     runs-on: ubuntu-slim
     timeout-minutes: 15
     steps:
