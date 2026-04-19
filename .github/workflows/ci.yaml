@@ -342,7 +342,7 @@ jobs:
 
         # Note: deliberately not using our Python cache here b/c this runs
         # a different version of Python.
-      - name: Set up Python and restore cache
+      - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{env.python_compat_ver}}
