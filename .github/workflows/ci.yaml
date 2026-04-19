@@ -148,7 +148,7 @@ jobs:
 
   python-checks:
     if: needs.changes.outputs.python == 'true'
-    name: 'Python format & lint checks'
+    name: Python checks
     needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 20
