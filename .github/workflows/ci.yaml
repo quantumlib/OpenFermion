@@ -123,6 +123,7 @@ jobs:
               - 'dev_tools/requirements/**/*.txt'
               - 'docs/**/*-requirements.txt'
               - 'docs/**/requirements.txt'
+              - 'pyproject.toml'
             gha:
               - added|modified:
                   - './.github/workflows/*.yaml'
