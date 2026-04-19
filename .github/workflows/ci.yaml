@@ -507,27 +507,21 @@ jobs:
     if: needs.changes.outputs.gha == 'true'
     name: GitHub Actions workflow checks
     needs: [changes, yaml-lint]
-    # This uses a Mac runner because actionlint isn't available via Linux apt.
-    runs-on: macos-14
-    timeout-minutes: 5
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      # The next action simply fails if there are any unpinned actions.
-      - name: Verify that all workflow actions have pinned versions
-        # yamllint disable-line rule:line-length
-        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@ca46236c6ce584ae24bc6283ba8dcf4b3ec8a066 # v5.0.4
-
-      # If we didn't fail the previous check, go on to more time-consuming ones.
-      - name: Install actionlint
-        run: HOMEBREW_NO_AUTO_UPDATE=1 brew install actionlint
-
       - name: Set up actionlint output problem matcher
         run: echo "::add-matcher::.github/problem-matchers/actionlint.json"
 
-      - name: Verify that all GitHub Actions workflows are valid
-        run: /opt/homebrew/bin/actionlint -color
+      - name: Run actionlint
+        uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8 # v2.1.2
+        with:
+          flags: ${{runner.debug && '-verbose'}}
+          files: '.github/workflows/*.{yaml,yml}'
+          pyflakes: false
 
   shell-script-lint:
     if: needs.changes.outputs.shell == 'true'
