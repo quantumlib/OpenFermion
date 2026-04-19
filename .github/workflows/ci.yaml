@@ -138,8 +138,7 @@ jobs:
                   - '**/*.cff'
                   - '**/*.yaml'
                   - '**/*.yml'
-                  - '!./.github/workflows/*.yaml'
-                  - '!./.github/workflows/*.yml'
+                  - '!./.github/workflows/**'
             json:
               - added|modified:
                   - '**/*.json'
