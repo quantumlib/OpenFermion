@@ -118,7 +118,6 @@ jobs:
           filters: |
             ci:
               - './.github/workflows/**'
-              - './.github/problem-matchers/**'
               - './check/**'
               - './dev_tools/**'
             cff:
