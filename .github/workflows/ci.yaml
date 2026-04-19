@@ -74,7 +74,7 @@ jobs:
   # of testing specific file patterns (in the changes job below) and "if:"
   # conditions on individual jobs in the rest of this workflow.
   changes:
-    name: (Find changed files)
+    name: Changed file filtering
     runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
@@ -148,7 +148,7 @@ jobs:
 
   python-checks:
     if: needs.changes.outputs.python == 'true'
-    name: Python checks
+    name: Python file checks
     needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -196,19 +196,11 @@ jobs:
           echo '::add-matcher::.github/problem-matchers/mypy.json'
           check/mypy
 
-  # The next set of matrix tests each consist of 2 job definitions. The job
-  # named "Thing-matrix" define a matrix of runs for different platforms. It's
-  # set with "fail-fast: false" so that a failure in one of matrix jobs doesn't
-  # cause this entire CI workflow to abort. Then, the job named "Thing" is the
-  # one that actually reports the results, and is the one used in the list of
-  # required status checks in the repository branch protection rules. It needs
-  # to be an independent job it has to test the results of all the matrix runs.
-
-  pytest-matrix:
+  pytest:
     if: needs.changes.outputs.python == 'true'
-    name: (Python pytest matrix)
-    needs: changes
-    runs-on: ${{matrix.os}}
+    name: Python unit tests
+    needs: [changes, python-checks]
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     strategy:
       matrix:
@@ -226,6 +218,9 @@ jobs:
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
       - name: Install requirements
         run: |
           pip install -r dev_tools/requirements/envs/pytest.env.txt
@@ -236,26 +231,10 @@ jobs:
           echo '::add-matcher::.github/problem-matchers/pytest.json'
           check/pytest -m "not slow"
 
-  pytest:
-    if: needs.changes.outputs.python == 'true' && (success() || failure())
-    name: Python pytest checks
-    needs: [changes, pytest-matrix]
-    runs-on: ubuntu-24.04
-    steps:
-      - run: |
-          result="${NEEDS_PYTEST_MATRIX_RESULT}"
-          if [[ $result == "success" || $result == "skipped" ]]; then
-            exit 0
-          else
-            exit 1
-          fi
-        env:
-          NEEDS_PYTEST_MATRIX_RESULT: ${{needs.pytest-matrix.result}}
-
-  pytest-extra-matrix:
+  pytest-extra:
     if: needs.changes.outputs.python == 'true'
-    name: (Python extra pytest matrix)
-    needs: changes
+    name: Python extra unit tests
+    needs: [changes, python-checks]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:
@@ -274,6 +253,9 @@ jobs:
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
       - name: Install requirements
         run: |
           pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
@@ -284,26 +266,11 @@ jobs:
           echo '::add-matcher::.github/problem-matchers/pytest.json'
           check/pytest -m "not slow" src/openfermion/resource_estimates
 
-  pytest-extra:
-    if: needs.changes.outputs.python == 'true' && (success() || failure())
-    name: Python extra pytest checks
-    needs: [changes, pytest-extra-matrix]
-    runs-on: ubuntu-24.04
-    steps:
-      - run: |
-          result="${NEEDS_PYTEST_EXTRA_MATRIX_RESULT}"
-          if [[ $result == "success" || $result == "skipped" ]]; then
-            exit 0
-          else
-            exit 1
-          fi
-        env:
-          NEEDS_PYTEST_EXTRA_MATRIX_RESULT: ${{needs.pytest-extra-matrix.result}}
-
-  python-compat:
+  pytest-compat:
     if: needs.changes.outputs.python == 'true'
-    name: Python compatibility checks
-    needs: changes
+    name: Python compatibility tests
+    needs: [changes, python-checks]
+    # Note: this is deliberately Ubuntu 22 because this is a compatibility test.
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
@@ -317,6 +284,9 @@ jobs:
         with:
           python-version: ${{env.python_compat_ver}}
 
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
       - name: Install requirements
         run: pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
 
@@ -327,9 +297,9 @@ jobs:
 
   coverage:
     if: needs.changes.outputs.python == 'true'
-    name: Python code coverage checks
+    name: Python code coverage tests
     needs: changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
@@ -343,6 +313,9 @@ jobs:
           python-version: ${{inputs.python_ver || env.python_ver}}
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
@@ -439,9 +412,9 @@ jobs:
           # shellcheck disable=SC2086
           hadolint ${CHANGED_FILES}
 
-  workflow-validation:
+  workflow-lint:
     if: needs.changes.outputs.gha == 'true'
-    name: GitHub Actions workflow checks
+    name: GitHub workflow lint checks
     needs: changes
     runs-on: ubuntu-slim
     timeout-minutes: 15
@@ -458,7 +431,7 @@ jobs:
 
   shell-script-lint:
     if: needs.changes.outputs.shell == 'true'
-    name: Shell script checks
+    name: Shell script lint checks
     needs: changes
     runs-on: ubuntu-slim
     timeout-minutes: 5
@@ -473,3 +446,30 @@ jobs:
           echo '::add-matcher::.github/problem-matchers/shellcheck.json'
           # shellcheck disable=SC2086
           shellcheck ${CHANGED_FILES}
+
+  report-results:
+    name: CI
+    if: always()
+    needs:
+      - cff-validation
+      - coverage
+      - docker-lint
+      - json-lint
+      - pytest
+      - pytest-compat
+      - pytest-extra
+      - python-checks
+      - shell-script-lint
+      - workflow-lint
+      - yaml-lint
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Report failure (if any occurred)
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          {
+          echo ":x: CI checks failed"
+          echo "One or more CI jobs failed. Please check the logs for details."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
