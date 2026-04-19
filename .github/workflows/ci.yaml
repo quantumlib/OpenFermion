@@ -195,7 +195,7 @@ jobs:
 
   pytest:
     if: needs.changes.outputs.python == 'true'
-    name: Python unit tests
+    name: Unit tests
     needs: [changes, python-checks]
     runs-on: ${{matrix.os}}
     timeout-minutes: 15
@@ -230,7 +230,7 @@ jobs:
 
   pytest-extra:
     if: needs.changes.outputs.python == 'true'
-    name: Python extra unit tests
+    name: Extra unit tests
     needs: [changes, python-checks]
     runs-on: ${{matrix.os}}
     timeout-minutes: 15
