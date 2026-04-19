@@ -75,7 +75,7 @@ jobs:
   # conditions on individual jobs in the rest of this workflow.
   changes:
     name: (Find changed files)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
       gha: ${{steps.filter.outputs.gha}}
@@ -414,7 +414,7 @@ jobs:
     if: needs.changes.outputs.yaml == 'true'
     name: YAML lint checks
     needs: changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     env:
       CHANGED_FILES: ${{needs.changes.outputs.yaml_files}}
@@ -432,7 +432,7 @@ jobs:
     if: needs.changes.outputs.json == 'true'
     name: JSON lint checks
     needs: changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     env:
       CHANGED_FILES: ${{needs.changes.outputs.json_files}}
@@ -453,7 +453,7 @@ jobs:
     if: needs.changes.outputs.cff == 'true'
     name: CITATION.cff checks
     needs: changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
       - name: Check out a copy of the git repository
@@ -510,7 +510,7 @@ jobs:
     if: needs.changes.outputs.shell == 'true'
     name: Shell script checks
     needs: changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     env:
       CHANGED_FILES: ${{needs.changes.outputs.shell_files}}
