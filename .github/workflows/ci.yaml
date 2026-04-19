@@ -165,12 +165,14 @@ jobs:
           cache-dependency-path: ${{env.python_dep_files}}
 
       - name: Install Python requirements
+        env:
+          SHELLOPTS: ${{runner.debug && 'xtrace' || '' }}
         run: |
-          set -x
+          requirements=()
           for file in ${{env.python_dep_files}}; do
-            pip install -r $file
+            requirements+=("-r" "$file")
           done
-          set +x
+          pip install "${requirements[@]}"
 
   python-format:
     if: needs.changes.outputs.python == 'true'
