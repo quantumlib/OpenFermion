@@ -197,11 +197,10 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/format.env.txt
 
-      - name: Set up problem matcher for Black output
-        run: echo '::add-matcher::.github/problem-matchers/black.json'
-
       - name: Run format checks
-        run: check/format-incremental
+        run: |
+          echo '::add-matcher::.github/problem-matchers/black.json'
+          check/format-incremental
 
   python-mypy:
     if: needs.changes.outputs.python == 'true'
@@ -224,11 +223,10 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/mypy.env.txt
 
-      - name: Set up Mypy output problem matcher
-        run: echo '::add-matcher::.github/problem-matchers/mypy.json'
-
       - name: Type check
-        run: check/mypy
+        run: |
+          echo '::add-matcher::.github/problem-matchers/mypy.json'
+          check/mypyq
 
   python-lint:
     if: needs.changes.outputs.python == 'true'
@@ -251,11 +249,10 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pylint.env.txt
 
-      - name: Set up Pylint output problem matcher
-        run: echo '::add-matcher::.github/problem-matchers/pylint.json'
-
       - name: Run pylint
-        run: check/pylint
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pylint.json'
+          check/pylint
 
   # The next set of matrix tests each consist of 2 job definitions. The job
   # named "Thing-matrix" define a matrix of runs for different platforms. It's
@@ -292,11 +289,10 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
-      - name: Set up Pytest output problem matcher
-        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
-
       - name: Run pytest
-        run: check/pytest -m "not slow"
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pytest.json'
+          check/pytest -m "not slow"
 
   pytest:
     if: needs.changes.outputs.python == 'true' && (success() || failure())
@@ -341,11 +337,10 @@ jobs:
           pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
           pip install cirq-core==${{matrix.cirq-version}}
 
-      - name: Set up Pytest output problem matcher
-        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
-
       - name: Run pytest
-        run: check/pytest -m "not slow" src/openfermion/resource_estimates
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pytest.json'
+          check/pytest -m "not slow" src/openfermion/resource_estimates
 
   pytest-extra:
     if: needs.changes.outputs.python == 'true' && (success() || failure())
@@ -383,11 +378,10 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
 
-      - name: Set up Pytest output problem matcher
-        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
-
       - name: Run pytest
-        run: check/pytest -m "not slow"
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pytest.json'
+          check/pytest -m "not slow"
 
   coverage:
     if: needs.changes.outputs.python == 'true'
@@ -411,11 +405,10 @@ jobs:
       - name: Install requirements
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
 
-      - name: Set up Pytest output problem matcher
-        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
-
       - name: Run code coverage tests
-        run: check/pytest-and-incremental-coverage
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pytest.json'
+          check/pytest-and-incremental-coverage
 
   yaml-lint:
     if: needs.changes.outputs.yaml == 'true'
@@ -429,12 +422,9 @@ jobs:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Set up yamllint output problem matcher
-        run: echo "::add-matcher::.github/problem-matchers/yamllint.json"
-
       - name: Run yamllint
         run: |
-          set -x
+          echo '::add-matcher::.github/problem-matchers/yamllint.json'
           # shellcheck disable=SC2086
           yamllint ${CHANGED_FILES}
 
@@ -453,11 +443,9 @@ jobs:
       - name: Install jsonlint
         run: npm install -g @prantlf/jsonlint
 
-      - name: Set up jsonlint output problem matcher
-        run: echo '::add-matcher::.github/problem-matchers/jsonlint.json'
-
       - name: Run jsonlint on JSON files
         run: |
+          echo '::add-matcher::.github/problem-matchers/jsonlint.json'
           # shellcheck disable=SC2086
           jsonlint --continue ${CHANGED_FILES}
 
@@ -495,11 +483,9 @@ jobs:
       - name: Install hadolint
         run: brew install hadolint
 
-      - name: Set up hadolint output problem matcher
-        run: echo '::add-matcher::.github/problem-matchers/hadolint.json'
-
       - name: Run hadolint on Dockerfiles that have been changed
         run: |
+          echo '::add-matcher::.github/problem-matchers/hadolint.json'
           # shellcheck disable=SC2086
           hadolint ${CHANGED_FILES}
 
@@ -512,9 +498,6 @@ jobs:
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Set up actionlint output problem matcher
-        run: echo "::add-matcher::.github/problem-matchers/actionlint.json"
 
       - name: Run actionlint
         uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8 # v2.1.2
@@ -535,10 +518,8 @@ jobs:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Set up shellcheck output problem matcher
-        run: echo "::add-matcher::.github/problem-matchers/shellcheck.json"
-
       - name: Run shellcheck on shell scripts that have been changed
         run: |
+          echo '::add-matcher::.github/problem-matchers/shellcheck.json'
           # shellcheck disable=SC2086
           shellcheck ${CHANGED_FILES}
