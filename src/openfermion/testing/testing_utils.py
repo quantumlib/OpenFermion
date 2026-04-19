@@ -338,17 +338,9 @@ def module_importable(module):
         bool
 
     """
-    import sys
+    from importlib import util
 
-    if sys.version_info >= (3, 4):
-        from importlib import util
-
-        plug_spec = util.find_spec(module)
-    else:
-        # Won't enter unless Python<3.4, so ignore for testing
-        import pkgutil  # pragma: ignore
-
-        plug_spec = pkgutil.find_loader(module)  # pragma: no cover
+    plug_spec = util.find_spec(module)
     if plug_spec is None:
         return False
     else:
