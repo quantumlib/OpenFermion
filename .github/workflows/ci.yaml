@@ -135,6 +135,7 @@ jobs:
                   - './.github/workflows/*.yml'
             yaml:
               - added|modified:
+                  - '**/*.cff'
                   - '**/*.yaml'
                   - '**/*.yml'
             json:
@@ -369,25 +370,6 @@ jobs:
           echo '::add-matcher::.github/problem-matchers/jsonlint.json'
           # shellcheck disable=SC2086
           jsonlint --continue ${CHANGED_FILES}
-
-  cff-validation:
-    if: needs.changes.outputs.cff == 'true'
-    name: CITATION.cff checks
-    needs: changes
-    runs-on: ubuntu-slim
-    timeout-minutes: 5
-    steps:
-      - name: Check out a copy of the git repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-
-      - name: Install cffconvert
-        run: pip install cffconvert
-
-      - name: Run cffconvert in validation mode
-        run: cffconvert --validate
 
   docker-lint:
     if: needs.changes.outputs.docker == 'true'
