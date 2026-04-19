@@ -394,6 +394,11 @@ jobs:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Install yamllint
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y yamllint
+
       - name: Run yamllint
         run: |
           echo '::add-matcher::.github/problem-matchers/yamllint.json'
