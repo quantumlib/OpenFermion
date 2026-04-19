@@ -126,9 +126,7 @@ jobs:
             python:
               - '**/*.py'
               - 'dev_tools/conf/**'
-              - 'dev_tools/requirements/deps/*.txt'
-              - 'dev_tools/requirements/envs/*.txt'
-              - 'dev_tools/requirements/max_compat/*.txt'
+              - 'dev_tools/requirements/**/*.txt'
               - 'docs/**/*-requirements.txt'
               - 'docs/**/requirements.txt'
             gha:
