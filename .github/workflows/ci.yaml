@@ -94,9 +94,6 @@ jobs:
       yaml: ${{steps.filter.outputs.yaml || steps.filter.outputs.ci}}
       yaml_files: ${{steps.filter.outputs.yaml_files}}
 
-      cff: ${{steps.filter.outputs.cff || steps.filter.outputs.ci}}
-      cff_files: ${{steps.filter.outputs.cff_files}}
-
       json: ${{steps.filter.outputs.json || steps.filter.outputs.ci}}
       json_files: ${{steps.filter.outputs.json_files}}
 
@@ -120,9 +117,6 @@ jobs:
               - './.github/workflows/**'
               - './check/**'
               - './dev_tools/**'
-            cff:
-              - added|modified:
-                  - '**/CITATION.cff'
             python:
               - '**/*.py'
               - 'dev_tools/conf/**'
