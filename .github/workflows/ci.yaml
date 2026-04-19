@@ -38,11 +38,6 @@ on:
   # Allow manual invocation.
   workflow_dispatch:
     inputs:
-      sha:
-        description: 'SHA of commit to run against:'
-        type: string
-        required: true
-
       python_ver:
         description: Normal version of Python to use
         type: string
@@ -121,31 +116,6 @@ jobs:
       shell: ${{steps.filter.outputs.shell || steps.filter.outputs.ci}}
       shell_files: ${{steps.filter.outputs.shell_files}}
     steps:
-      # When invoked manually, use the given SHA to figure out the change list.
-      - if: github.event_name == 'workflow_dispatch'
-        name: Use the user-provided SHA as the basis for comparison
-        env:
-          GH_TOKEN: ${{github.token}}
-          INPUTS_SHA: ${{inputs.sha}}
-        run: |
-          set -x +e
-          url="repos/${{github.repository}}/commits/${INPUTS_SHA}"
-          if full_sha="$(gh api "$url" -q '.sha')"; then
-            echo "base=$full_sha" >> "$GITHUB_ENV"
-          else
-            {
-            echo "### :x: Workflow error"
-            echo "The SHA provided to _Run Workflow_ does not exist:"
-            echo "<code>${INPUTS_SHA}</code>"
-            } >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-
-      - if: github.event_name != 'workflow_dispatch'
-        name: Use ref ${{github.ref_name}} as the basis for comparison
-        run: |
-          echo base="${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
-
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -153,7 +123,6 @@ jobs:
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: filter
         with:
-          base: ${{env.base}}
           list-files: 'shell'
           # The outputs will be variables named "foo_files" for a filter "foo".
           filters: |
