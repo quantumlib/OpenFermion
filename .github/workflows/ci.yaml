@@ -146,12 +146,12 @@ jobs:
               - '**/*.sh'
               - 'check/*'
 
-  python-format:
+  python-checks:
     if: needs.changes.outputs.python == 'true'
-    name: Python format checks
+    name: 'Python format & lint checks'
     needs: changes
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -162,69 +162,39 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: 'x64'
           cache: pip
           cache-dependency-path: ${{env.python_dep_files}}
 
-      - name: Install requirements
-        run: pip install -r dev_tools/requirements/envs/format.env.txt
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
-      - name: Run format checks
+      - name: Install requirements
+        env:
+          files: >-
+            dev_tools/requirements/envs/format.env.txt
+            dev_tools/requirements/envs/pylint.env.txt
+            dev_tools/requirements/envs/mypy.env.txt
+        run: |
+          requirements=()
+          for file in $files; do
+            requirements+=("-r" "$file")
+          done
+          pip install "${requirements[@]}"
+
+      - name: Check format
         run: |
           echo '::add-matcher::.github/problem-matchers/black.json'
           check/format-incremental
 
-  python-mypy:
-    if: needs.changes.outputs.python == 'true'
-    name: Python type checks
-    needs: changes
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Check out a copy of the git repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Check lint
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pylint.json'
+          check/pylint -j 0
 
-      - name: Set up Python and restore cache
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: 'x64'
-          cache: pip
-          cache-dependency-path: ${{env.python_dep_files}}
-
-      - name: Install requirements
-        run: pip install -r dev_tools/requirements/envs/mypy.env.txt
-
-      - name: Type check
+      - name: Check type declarations
         run: |
           echo '::add-matcher::.github/problem-matchers/mypy.json'
           check/mypy
-
-  python-lint:
-    if: needs.changes.outputs.python == 'true'
-    name: Python lint checks
-    needs: changes
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Check out a copy of the git repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Set up Python and restore cache
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: ${{inputs.python_ver || env.python_ver}}
-          architecture: 'x64'
-          cache: pip
-          cache-dependency-path: ${{env.python_dep_files}}
-
-      - name: Install requirements
-        run: pip install -r dev_tools/requirements/envs/pylint.env.txt
-
-      - name: Run pylint
-        run: |
-          echo '::add-matcher::.github/problem-matchers/pylint.json'
-          check/pylint
 
   # The next set of matrix tests each consist of 2 job definitions. The job
   # named "Thing-matrix" define a matrix of runs for different platforms. It's
@@ -435,6 +405,9 @@ jobs:
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
       - name: Install cffconvert
         run: pip install cffconvert
