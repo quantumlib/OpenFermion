@@ -124,7 +124,7 @@ jobs:
               - '**/*.py'
               - 'dev_tools/conf/**'
               - 'dev_tools/requirements/deps/*.txt'
-              - 'dev_tools/requirements/env/*.txt'
+              - 'dev_tools/requirements/envs/*.txt'
               - 'dev_tools/requirements/max_compat/*.txt'
               - 'docs/**/*-requirements.txt'
               - 'docs/**/requirements.txt'
