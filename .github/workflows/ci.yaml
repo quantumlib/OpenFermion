@@ -198,7 +198,7 @@ jobs:
       - name: Type check
         run: |
           echo '::add-matcher::.github/problem-matchers/mypy.json'
-          check/mypyq
+          check/mypy
 
   python-lint:
     if: needs.changes.outputs.python == 'true'
