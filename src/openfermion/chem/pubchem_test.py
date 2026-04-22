@@ -12,7 +12,6 @@
 
 """Tests for pubchem.py."""
 
-import time
 import unittest
 from unittest.mock import patch
 
@@ -154,5 +153,10 @@ class OpenFermionPubChemTest(unittest.TestCase):
 
     @pytest.mark.flaky(retries=3, delay=2)
     def test_geometry_from_pubchem_live_api(self):
-        water_geometry = geometry_from_pubchem('water')  # pragma: no cover
-        self.assertEqual(len(water_geometry), 3)  # pragma: no cover
+        try:
+            water_geometry = geometry_from_pubchem('water')  # pragma: no cover
+            self.assertEqual(len(water_geometry), 3)  # pragma: no cover
+        except Exception as e:  # pragma: no cover
+            if 'ServerBusyError' in type(e).__name__:
+                pytest.skip('PubChem API is busy.')
+            raise
