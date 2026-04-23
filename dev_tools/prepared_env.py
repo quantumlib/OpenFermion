@@ -97,14 +97,14 @@ class PreparedEnv:
         if target_url is not None:
             payload['target_url'] = target_url
 
-        url = "https://api.github.com/repos/{}/{}/statuses/{}?access_token={}".format(
-            self.repository.organization,
-            self.repository.name,
-            self.actual_commit_id,
-            self.repository.access_token,
+        if self.actual_commit_id is None:
+            return
+        url = "https://api.github.com/repos/{}/{}/statuses/{}".format(
+            self.repository.organization, self.repository.name, self.actual_commit_id
         )
+        headers = {'Authorization': 'Bearer {}'.format(self.repository.access_token)}
 
-        response = requests.post(url, json=payload)
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
 
         if response.status_code != 201:
             raise IOError(
