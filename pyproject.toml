@@ -22,3 +22,42 @@ skip-magic-trailing-comma = true
 # Speed up pytest-cov on Python 3.12+ by enabling sys.monitoring if possible.
 core = "sysmon"
 disable_warnings = ["no-sysmon"]
+
+[tool.mypy]
+implicit_optional = true
+# TODO: this is temporary for 1.7.0 release. Remove this & fix the errors.
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "__main__"
+follow_imports = "silent"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "apiclient.*",
+    "numpy.*",
+    "pytest.*",
+    "scipy.*",
+    "_pytest.*",
+    "h5py",
+    "pyscf.*",
+    "pubchempy",
+    "pybtas",
+    "absl",
+    "tensorflow_docs"
+]
+follow_imports = "silent"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sympy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tensorflow_docs.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "deprecation"
+follow_untyped_imports = true
