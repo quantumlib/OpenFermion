@@ -217,6 +217,38 @@ class DoubleCommutatorTest(unittest.TestCase):
             com, (FermionOperator('4^ 3^ 4 2', 2.73) + FermionOperator('4^ 2^ 4 3', 2.73))
         )
 
+    def test_double_commutator_hopping_no_intersection(self):
+        # Case where intersection is empty
+        op1 = FermionOperator('0^ 0')
+        op2 = FermionOperator('1^ 2') + FermionOperator('2^ 1')
+        op3 = FermionOperator('3^ 4') + FermionOperator('4^ 3')
+        res = double_commutator(
+            op1,
+            op2,
+            op3,
+            indices2={1, 2},
+            indices3={3, 4},
+            is_hopping_operator2=True,
+            is_hopping_operator3=True,
+        )
+        self.assertEqual(res, FermionOperator.zero())
+
+    def test_double_commutator_hopping_multi_intersection(self):
+        # Case where intersection has more than one element
+        op1 = FermionOperator('0^ 0')
+        op2 = FermionOperator('1^ 2') + FermionOperator('2^ 1')
+        op3 = FermionOperator('1^ 2') + FermionOperator('2^ 1')
+        res = double_commutator(
+            op1,
+            op2,
+            op3,
+            indices2={1, 2},
+            indices3={1, 2},
+            is_hopping_operator2=True,
+            is_hopping_operator3=True,
+        )
+        self.assertEqual(res, FermionOperator.zero())
+
 
 class TriviallyDoubleCommutesDualBasisUsingTermInfoTest(unittest.TestCase):
     def test_number_operators_trivially_commute(self):

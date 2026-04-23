@@ -12,9 +12,6 @@
 
 """Tests for pubchem.py."""
 
-import unittest
-from unittest.mock import patch
-
 import numpy
 import pytest
 import pubchempy
@@ -79,14 +76,14 @@ using_pubchempy = pytest.mark.skipif(
 
 
 @using_pubchempy
-class OpenFermionPubChemTest(unittest.TestCase):
+class TestOpenFermionPubChem:
 
-    @patch('pubchempy.get_compounds', mock_get_compounds)
-    def test_water(self):
+    def test_water(self, monkeypatch):
+        monkeypatch.setattr(pubchempy, 'get_compounds', mock_get_compounds)
         water_geometry = geometry_from_pubchem('water')
-        self.water_natoms = len(water_geometry)
-        self.water_atoms = [water_atom[0] for water_atom in water_geometry]
-        water_oxygen_index = self.water_atoms.index('O')
+        water_natoms_actual = len(water_geometry)
+        water_atoms = [water_atom[0] for water_atom in water_geometry]
+        water_oxygen_index = water_atoms.index('O')
         water_oxygen = water_geometry.pop(water_oxygen_index)
         water_oxygen_coordinate = numpy.array(water_oxygen[1])
         water_hydrogen1_coordinate = numpy.array(water_geometry[0][1])
@@ -94,9 +91,9 @@ class OpenFermionPubChemTest(unittest.TestCase):
         water_oxygen_hydrogen1 = water_hydrogen1_coordinate - water_oxygen_coordinate
         water_oxygen_hydrogen2 = water_hydrogen2_coordinate - water_oxygen_coordinate
 
-        self.water_bond_length_1 = numpy.linalg.norm(water_oxygen_hydrogen1)
-        self.water_bond_length_2 = numpy.linalg.norm(water_oxygen_hydrogen2)
-        self.water_bond_angle = numpy.arccos(
+        water_bond_length_1 = numpy.linalg.norm(water_oxygen_hydrogen1)
+        water_bond_length_2 = numpy.linalg.norm(water_oxygen_hydrogen2)
+        water_bond_angle = numpy.arccos(
             numpy.dot(
                 water_oxygen_hydrogen1,
                 water_oxygen_hydrogen2
@@ -108,46 +105,46 @@ class OpenFermionPubChemTest(unittest.TestCase):
         )
 
         water_natoms = 3
-        self.assertEqual(water_natoms, self.water_natoms)
+        assert water_natoms == water_natoms_actual
 
-        self.assertAlmostEqual(self.water_bond_length_1, self.water_bond_length_2, places=4)
+        assert water_bond_length_1 == pytest.approx(water_bond_length_2, abs=1e-4)
         water_bond_length_low = 0.9
         water_bond_length_high = 1.1
-        self.assertTrue(water_bond_length_low <= self.water_bond_length_1)
-        self.assertTrue(water_bond_length_high >= self.water_bond_length_1)
+        assert water_bond_length_low <= water_bond_length_1
+        assert water_bond_length_high >= water_bond_length_1
 
         water_bond_angle_low = 100.0 / 360 * 2 * numpy.pi
         water_bond_angle_high = 110.0 / 360 * 2 * numpy.pi
-        self.assertTrue(water_bond_angle_low <= self.water_bond_angle)
-        self.assertTrue(water_bond_angle_high >= self.water_bond_angle)
+        assert water_bond_angle_low <= water_bond_angle
+        assert water_bond_angle_high >= water_bond_angle
 
-    @patch('pubchempy.get_compounds', mock_get_compounds)
-    def test_helium(self):
+    def test_helium(self, monkeypatch):
+        monkeypatch.setattr(pubchempy, 'get_compounds', mock_get_compounds)
         helium_geometry = geometry_from_pubchem('helium')
-        self.helium_natoms = len(helium_geometry)
+        helium_natoms_actual = len(helium_geometry)
 
         helium_natoms = 1
-        self.assertEqual(helium_natoms, self.helium_natoms)
+        assert helium_natoms == helium_natoms_actual
 
-    @patch('pubchempy.get_compounds', mock_get_compounds)
-    def test_none(self):
+    def test_none(self, monkeypatch):
+        monkeypatch.setattr(pubchempy, 'get_compounds', mock_get_compounds)
         none_geometry = geometry_from_pubchem('none')
 
-        self.assertIsNone(none_geometry)
+        assert none_geometry is None
 
-    @patch('pubchempy.get_compounds', mock_get_compounds)
-    def test_water_2d(self):
+    def test_water_2d(self, monkeypatch):
+        monkeypatch.setattr(pubchempy, 'get_compounds', mock_get_compounds)
         water_geometry = geometry_from_pubchem('water', structure='2d')
-        self.water_natoms = len(water_geometry)
+        water_natoms_actual = len(water_geometry)
 
         water_natoms = 3
-        self.assertEqual(water_natoms, self.water_natoms)
+        assert water_natoms == water_natoms_actual
 
-        self.oxygen_z_1 = water_geometry[0][1][2]
-        self.oxygen_z_2 = water_geometry[1][1][2]
+        oxygen_z_1 = water_geometry[0][1][2]
+        oxygen_z_2 = water_geometry[1][1][2]
         z = 0
-        self.assertEqual(z, self.oxygen_z_1)
-        self.assertEqual(z, self.oxygen_z_2)
+        assert z == oxygen_z_1
+        assert z == oxygen_z_2
 
         with pytest.raises(ValueError, match='Incorrect value for the argument structure'):
             _ = geometry_from_pubchem('water', structure='foo')
@@ -155,4 +152,4 @@ class OpenFermionPubChemTest(unittest.TestCase):
     @pytest.mark.flaky(retries=3, delay=2, only_on=[pubchempy.ServerBusyError])
     def test_geometry_from_pubchem_live_api(self):
         water_geometry = geometry_from_pubchem('water')
-        self.assertEqual(len(water_geometry), 3)
+        assert len(water_geometry) == 3
