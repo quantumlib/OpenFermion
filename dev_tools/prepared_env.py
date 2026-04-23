@@ -97,6 +97,8 @@ class PreparedEnv:
         if target_url is not None:
             payload['target_url'] = target_url
 
+        if self.actual_commit_id is None:
+            return
         url = "https://api.github.com/repos/{}/{}/statuses/{}".format(
             self.repository.organization, self.repository.name, self.actual_commit_id
         )
