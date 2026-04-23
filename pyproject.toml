@@ -22,3 +22,12 @@ skip-magic-trailing-comma = true
 # Speed up pytest-cov on Python 3.12+ by enabling sys.monitoring if possible.
 core = "sysmon"
 disable_warnings = ["no-sysmon"]
+
+[tool.pytest.ini_options]
+markers = [
+    """slow: marks tests as slow (deselect with '-m "not slow"')""",
+]
+
+filterwarnings = [
+    "ignore:Skipped assert_qasm_is_consistent_with_unitary because qiskit.*:UserWarning",
+]
