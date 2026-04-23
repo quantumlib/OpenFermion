@@ -152,10 +152,7 @@ class OpenFermionPubChemTest(unittest.TestCase):
         with pytest.raises(ValueError, match='Incorrect value for the argument structure'):
             _ = geometry_from_pubchem('water', structure='foo')
 
-    @pytest.mark.flaky(retries=3, delay=2)
+    @pytest.mark.flaky(retries=3, delay=2, only_on=[pubchempy.ServerBusyError])
     def test_geometry_from_pubchem_live_api(self):
-        try:
-            water_geometry = geometry_from_pubchem('water')  # pragma: no cover
-            self.assertEqual(len(water_geometry), 3)  # pragma: no cover
-        except pubchempy.ServerBusyError:  # pragma: no cover
-            pytest.skip('PubChem server is busy.')
+        water_geometry = geometry_from_pubchem('water')
+        self.assertEqual(len(water_geometry), 3)
