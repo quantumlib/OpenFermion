@@ -31,7 +31,7 @@ class DavidsonError(Exception):
     pass
 
 
-class DavidsonOptions(object):
+class DavidsonOptions:
     """Davidson algorithm iteration options."""
 
     def __init__(self, max_subspace=100, max_iterations=300, eps=1e-6, real_only=False):
@@ -68,7 +68,7 @@ class DavidsonOptions(object):
         self.max_subspace = min(self.max_subspace, dimension + 1)
 
 
-class Davidson(object):
+class Davidson:
     """Davidson algorithm to get the n states with smallest eigenvalues."""
 
     def __init__(self, linear_operator, linear_operator_diagonal, options=None):
@@ -350,7 +350,7 @@ class QubitDavidson(Davidson):
             n_qubits(int): Number of qubits.
             options(DavidsonOptions): Iteration options.
         """
-        super(QubitDavidson, self).__init__(
+        super().__init__(
             generate_linear_qubit_operator(qubit_operator, n_qubits, options),
             get_linear_qubit_operator_diagonal(qubit_operator, n_qubits),
             options=options,
@@ -366,7 +366,7 @@ class SparseDavidson(Davidson):
             sparse_matrix(scipy.sparse.spmatrix): A sparse matrix in scipy.
             options(DavidsonOptions): Iteration options.
         """
-        super(SparseDavidson, self).__init__(
+        super().__init__(
             sparse_matrix, sparse_matrix.diagonal(), options=options
         )
 

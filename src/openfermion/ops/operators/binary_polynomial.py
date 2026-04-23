@@ -23,7 +23,7 @@ class BinaryPolynomialError(Exception):
     pass
 
 
-class BinaryPolynomial(object):
+class BinaryPolynomial:
     r"""The BinaryPolynomial class provides an analytic representation
     of non-linear binary functions. An instance of this class describes
     a term of binary variables (variables of the values {0,1}, indexed

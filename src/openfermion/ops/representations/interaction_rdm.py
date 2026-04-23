@@ -39,7 +39,7 @@ class InteractionRDM(PolynomialTensor):
             two_body_tensor: Expectation values
                 <a^\dagger_p a^\dagger_q a_r a_s>.
         """
-        super(InteractionRDM, self).__init__(
+        super().__init__(
             {(1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor}
         )
 

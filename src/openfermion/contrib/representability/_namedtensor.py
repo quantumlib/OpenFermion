@@ -4,7 +4,7 @@ import numpy as np
 from openfermion.contrib.representability._bijections import Bijection, index_index_basis
 
 
-class Tensor(object):
+class Tensor:
     """
     Instantiation of named tensor
     """
