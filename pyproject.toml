@@ -43,7 +43,7 @@ module = [
     "pyscf.*",
     "pytest.*",
     "scipy.*",
-    "tensorflow_docs"
+    "tensorflow_docs",
 ]
 follow_imports = "silent"
 ignore_missing_imports = true
