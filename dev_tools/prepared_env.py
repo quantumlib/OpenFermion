@@ -104,7 +104,7 @@ class PreparedEnv:
         )
         headers = {'Authorization': 'token {}'.format(self.repository.access_token)}
 
-        response = requests.post(url, json=payload, headers=headers)
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
 
         if response.status_code != 201:
             raise IOError(
