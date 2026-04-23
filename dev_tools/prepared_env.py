@@ -102,7 +102,7 @@ class PreparedEnv:
         url = "https://api.github.com/repos/{}/{}/statuses/{}".format(
             self.repository.organization, self.repository.name, self.actual_commit_id
         )
-        headers = {'Authorization': 'token {}'.format(self.repository.access_token)}
+        headers = {'Authorization': 'Bearer {}'.format(self.repository.access_token)}
 
         response = requests.post(url, json=payload, headers=headers, timeout=30)
 
