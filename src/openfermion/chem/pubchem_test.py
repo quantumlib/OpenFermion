@@ -156,7 +156,5 @@ class OpenFermionPubChemTest(unittest.TestCase):
         try:
             water_geometry = geometry_from_pubchem('water')  # pragma: no cover
             self.assertEqual(len(water_geometry), 3)  # pragma: no cover
-        except Exception as e:  # pragma: no cover
-            if 'ServerBusyError' in type(e).__name__:
-                pytest.skip('PubChem API is busy.')
-            raise
+        except pubchempy.ServerBusyError:  # pragma: no cover
+            pytest.skip('PubChem server is busy.')
