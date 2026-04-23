@@ -22,3 +22,12 @@ skip-magic-trailing-comma = true
 # Speed up pytest-cov on Python 3.12+ by enabling sys.monitoring if possible.
 core = "sysmon"
 disable_warnings = ["no-sysmon"]
+
+[tool.coverage.run]
+# Omit files outside the current working directory.
+# Note: this means coverage must be run from the openfermion repo root.
+# Failure to do so will result in false positives.
+omit = [
+    "./profiling/performance_benchmarks.py",
+    "./dev_tools/*",
+]
