@@ -65,9 +65,7 @@ class InteractionOperator(PolynomialTensor):
                 n_qubits numpy array of floats.
         """
         # Make sure nonzero elements are only for normal ordered terms.
-        super().__init__(
-            {(): constant, (1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor}
-        )
+        super().__init__({(): constant, (1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor})
 
     @property
     def one_body_tensor(self):

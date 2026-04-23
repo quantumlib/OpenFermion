@@ -156,9 +156,7 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         """
         n_qubits = n_qubits or count_qubits(qubit_operator)
         n_hilbert = 2**n_qubits
-        super().__init__(
-            shape=(n_hilbert, n_hilbert), dtype=complex
-        )
+        super().__init__(shape=(n_hilbert, n_hilbert), dtype=complex)
 
         self.qubit_operator = qubit_operator
         self.n_qubits = n_qubits

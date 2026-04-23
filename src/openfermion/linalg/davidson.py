@@ -366,9 +366,7 @@ class SparseDavidson(Davidson):
             sparse_matrix(scipy.sparse.spmatrix): A sparse matrix in scipy.
             options(DavidsonOptions): Iteration options.
         """
-        super().__init__(
-            sparse_matrix, sparse_matrix.diagonal(), options=options
-        )
+        super().__init__(sparse_matrix, sparse_matrix.diagonal(), options=options)
 
 
 def generate_random_vectors(row, col, real_only=False):

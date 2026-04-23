@@ -79,9 +79,7 @@ class QuadraticHamiltonian(PolynomialTensor):
 
         # Initialize the PolynomialTensor
         if antisymmetric_part is None:
-            super().__init__(
-                {(): constant, (1, 0): combined_hermitian_part}
-            )
+            super().__init__({(): constant, (1, 0): combined_hermitian_part})
         else:
             super().__init__(
                 {
