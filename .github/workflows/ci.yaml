@@ -114,31 +114,24 @@ jobs:
           # The outputs will be variables named "foo_files" for a filter "foo".
           filters: |
             ci:
-              - './.github/workflows/**'
-              - './check/**'
-              - './dev_tools/**'
+              - '.github/workflows/**'
+              - 'check/**'
+              - 'dev_tools/**'
             python:
               - '**/*.py'
               - 'dev_tools/conf/**'
               - 'dev_tools/requirements/**/*.txt'
               - 'docs/**/*-requirements.txt'
-              - 'docs/**/requirements.txt'
               - 'pyproject.toml'
             gha:
-              - added|modified:
-                  - './.github/workflows/*.yaml'
+              - '.github/workflows/*.yaml'
             yaml:
-              - added|modified:
-                  - '*.cff'
-                  - '.*.yaml'
-                  - '.github/*.yaml'
-                  - 'docs/**/*.yaml'
+              - '*.cff'
+              - '**/*.yaml'
             json:
-              - added|modified:
-                  - '**/*.json'
+              - '**/*.json'
             docker:
-              - '**/dockerfile'
-              - '**/Dockerfile'
+              - '**/[Dd]ockerfile'
             shell:
               - '**/*.sh'
               - 'check/*'
