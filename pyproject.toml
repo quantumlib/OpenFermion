@@ -27,7 +27,6 @@ disable_warnings = ["no-sysmon"]
 markers = [
     """slow: marks tests as slow (deselect with '-m "not slow"')""",
 ]
-
 filterwarnings = [
     "ignore:Skipped assert_qasm_is_consistent_with_unitary because qiskit.*:UserWarning",
 ]
