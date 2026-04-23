@@ -12,7 +12,10 @@
 """Tests for molecular_data."""
 
 import os
+import tempfile
 import unittest
+from unittest.mock import patch
+import h5py
 import numpy.random
 import scipy.linalg
 import numpy as np
@@ -347,3 +350,32 @@ class MolecularDataTest(unittest.TestCase):
             molecule.get_k()
         with self.assertRaises(MissingCalculationError):
             molecule.get_antisym()
+
+    def test_load_no_general_calculations(self):
+        # Make fake molecule.
+        with tempfile.NamedTemporaryFile(suffix='.hdf5') as tmp_file:
+            filename = tmp_file.name
+            geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
+            basis = '6-31g*'
+            multiplicity = 1
+            molecule = MolecularData(geometry, basis, multiplicity, filename=filename)
+            molecule.save()
+
+            # Manually remove the general_calculations_keys dataset.
+            with h5py.File(filename, 'r+') as f:
+                del f['general_calculations_keys']
+
+            # Load the molecule and check that general_calculations is empty.
+            new_molecule = MolecularData(filename=filename)
+            self.assertEqual(new_molecule.general_calculations, {})
+
+    def test_get_from_file_exceptions(self):
+        with patch('h5py.File') as mock_file:
+            mock_file.return_value.__enter__.return_value.__getitem__.side_effect = KeyError
+            data = self.molecule.get_from_file("nonexistent_property")
+            self.assertIsNone(data)
+
+        with patch('h5py.File') as mock_file:
+            mock_file.side_effect = IOError
+            data = self.molecule.get_from_file("any_property")
+            self.assertIsNone(data)

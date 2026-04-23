@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# yamllint disable rule:line-length
-
 name: Scorecard analysis
 run-name: Run Scorecard scanner for security best practices
 
@@ -34,11 +32,6 @@ on:
 
   # Allow manual invocation.
   workflow_dispatch:
-    inputs:
-      debug:
-        description: 'Run with debugging options'
-        type: boolean
-        default: true
 
 concurrency:
   # Cancel any previously-started but still active runs on the same branch.
@@ -50,7 +43,11 @@ permissions: read-all
 
 jobs:
   run-scorecard:
-    if: github.repository_owner == 'quantumlib'
+    # Skip fork PRs to avoid "Analysis configuration not found" errors.
+    if: >-
+      github.repository_owner == 'quantumlib' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.fork == false)
     name: Scorecard analyzer
     runs-on: ubuntu-24.04
     permissions:
@@ -64,33 +61,21 @@ jobs:
           persist-credentials: false
 
       - name: Run Scorecard analysis
+        # yamllint disable rule:line-length
         uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
         with:
-          # Save the results
           results_file: scorecard-results.sarif
           results_format: sarif
-          # Only publish results for non-fork PRs or scheduled runs.
-          publish_results: >-
-            ${{github.event_name != 'pull_request'
-              || github.event.pull_request.head.repo.fork == false}}
+          publish_results: true
 
       - name: Upload results to code-scanning dashboard
-        # Skip upload for fork PRs to avoid "Analysis configuration not found" / 404 errors.
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
-        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        # yamllint disable rule:line-length
+        uses: github/codeql-action/upload-sarif@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
         with:
           sarif_file: scorecard-results.sarif
 
-      - if: github.event.inputs.debug == true || runner.debug == true
-        name: Upload results as artifacts to the workflow Summary page
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: Scorecard SARIF file
-          path: scorecard-results.sarif
-          retention-days: 5
-
-  # Scorecard currently (ver. 2.4.x) doesn't allow submissions from jobs having
-  # steps that use "run:". To print to the summary, we need to use another job.
+  # Scorecard doesn't allow submissions from jobs having steps that use "run:".
+  # Printing a summary needs to use "run:", so we have to use a separate job.
   write-summary:
     name: Scorecard results
     needs: run-scorecard
