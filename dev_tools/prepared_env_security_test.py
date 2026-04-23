@@ -29,7 +29,7 @@ class TestPreparedEnvSecurity(unittest.TestCase):
         # Security check: Token should be in the Authorization header
         self.assertEqual(
             headers.get('Authorization'),
-            'token my-token',
+            'Bearer my-token',
             "Token should be passed in the Authorization header",
         )
 
