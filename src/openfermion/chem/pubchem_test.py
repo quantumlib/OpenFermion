@@ -17,6 +17,7 @@ from unittest.mock import patch
 
 import numpy
 import pytest
+import pubchempy
 
 from openfermion.chem.pubchem import geometry_from_pubchem
 from openfermion.testing.testing_utils import module_importable
