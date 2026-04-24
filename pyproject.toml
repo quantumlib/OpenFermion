@@ -27,7 +27,7 @@ disable_warnings = ["no-sysmon"]
 implicit_optional = true
 
 # TODO: this is temporary for 1.7.0 release. Remove this & fix the errors.
-ignore_errors = True
+ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = "__main__"
