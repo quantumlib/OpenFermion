@@ -23,6 +23,14 @@ skip-magic-trailing-comma = true
 core = "sysmon"
 disable_warnings = ["no-sysmon"]
 
+# Omit files outside the current working directory.
+# Note: this means coverage must be run from the openfermion repo root.
+# Failure to do so will result in false positives.
+omit = [
+    "./profiling/performance_benchmarks.py",
+    "./dev_tools/*",
+]
+
 [tool.pytest.ini_options]
 markers = [
     """slow: marks tests as slow (deselect with '-m "not slow"')""",
@@ -30,3 +38,42 @@ markers = [
 filterwarnings = [
     "ignore:Skipped assert_qasm_is_consistent_with_unitary because qiskit.*:UserWarning",
 ]
+
+[tool.mypy]
+implicit_optional = true
+# TODO: this is temporary for 1.7.0 release. Remove this & fix the errors.
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "__main__"
+follow_imports = "silent"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "_pytest.*",
+    "absl",
+    "apiclient.*",
+    "h5py",
+    "numpy.*",
+    "pubchempy",
+    "pybtas",
+    "pyscf.*",
+    "pytest.*",
+    "scipy.*",
+    "tensorflow_docs",
+]
+follow_imports = "silent"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sympy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tensorflow_docs.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "deprecation"
+follow_untyped_imports = true
