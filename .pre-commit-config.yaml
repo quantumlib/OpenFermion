@@ -42,7 +42,6 @@ exclude: |
 
 fail_fast: true
 
-# yamllint disable rule:line-length
 repos:
 # ~~~~ Pre-commit hooks ~~~~
 
@@ -116,6 +115,7 @@ repos:
         types: [jupyter]
         files: '.*\.ipynb$'
         # Note: pre-commit will download & cache this file automatically.
+        # yamllint disable rule:line-length
         args: ["--schemafile", "https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json"]
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
