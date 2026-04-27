@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Summary: run pylint on changed files using a preconfigured .pylintrc file.
+# Summary: run pylint on changed files from the top level of the project.
 #
 # Usage:
 #     check/pylint-changed-files [BASE_REVISION]
@@ -81,4 +81,4 @@ echo "Found ${num_changed} lintable files associated with changes." >&2
 if [ "${num_changed}" -eq 0 ]; then
     exit 0
 fi
-env PYTHONPATH=dev_tools pylint --jobs=0 --rcfile=dev_tools/conf/.pylintrc "${changed[@]}"
+env PYTHONPATH=dev_tools pylint --jobs=0 "${changed[@]}"
