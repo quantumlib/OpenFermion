@@ -174,17 +174,6 @@ repos:
         stages: [pre-push]
         args:
           - '--notice=$HOME/system/share/templates/apache-copyright.txt'
-        exclude: &formatignore |
-          (?x)(
-          \.pyi|
-          _pb2\.pyi?|
-          _pb2_grpc\.pyi?|
-          _pb2_client\.pyi?|
-          _pb2_server\.pyi?|
-          \.expected\.py|
-          src/pyle/third_party/|
-          tools/bazel/rbe/config/cc/
-          )$
 
   - repo: https://github.com/codespell-project/codespell
     rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
@@ -192,7 +181,6 @@ repos:
       - id: codespell
         name: 'Spell-check code files'
         stages: [pre-push]
-        exclude: *formatignore
         additional_dependencies:
           # Support pyproject.toml
           - tomli
