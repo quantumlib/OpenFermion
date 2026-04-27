@@ -78,7 +78,7 @@ using_pubchempy = pytest.mark.skipif(
 
 # Skip if running in a CI environment.
 skip_in_ci = pytest.mark.skipif(
-    os.environ.get('CI', False) != False,
+    'CI' in os.environ,
     reason='Skipping Pubchem API tests in CI to avoid failures due to busy servers.',
 )
 
