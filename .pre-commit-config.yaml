@@ -119,7 +119,7 @@ repos:
         args: ["--schemafile", "https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json"]
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: '3.0.0'
+    rev: '38980559e3a605691d6579f96222c30778e5a69e'  # frozen: 3.0.0
     hooks:
       - id: shellcheck
         name: 'Check shell scripts'
@@ -157,8 +157,8 @@ repos:
         files: \.(cc|h|cu|py)$
         stages: [pre-push]
 
-  - repo: https://github.com/PyCQA/isort.git
-    rev: dac090ce4d9ee313d086e2e89ab1acb8c2664fa1  # frozen: 9.0.0a3
+  - repo: https://github.com/PyCQA/isort
+    rev: 'dac090ce4d9ee313d086e2e89ab1acb8c2664fa1'  # frozen: 9.0.0a3
     hooks:
       - id: isort
         name: 'Check that Python file imports are sorted'
