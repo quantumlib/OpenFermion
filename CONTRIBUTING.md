@@ -74,8 +74,6 @@ This project follows Google coding conventions, with a few changes that are most
 configuration files at the top level of the source tree and in `dev_tools/conf/`. The following
 files configure various tools to the project conventions:
 
-*   `dev_tools/conf/.pylintrc`: Python code
-
 *   `.editorconfig`: basic code editor configuration
 
 *   `.hadolint.yaml`: Dockerfiles
@@ -83,6 +81,10 @@ files configure various tools to the project conventions:
 *   `.jsonlintrc.yaml`: JSON files
 
 *   `.markdownlintrc`: Markdown files
+
+*   `.pylintrc`: Python file lint
+
+*   `.pyproject.toml`: Python tools other than Pylint
 
 *   `.yamllint.yaml`: YAML files
 
@@ -220,7 +222,8 @@ check/mypy
 ### Linting and formatting
 
 Code should meet common style standards for Python and be free of error-prone constructs. We use
-[Pylint](https://www.pylint.org/) to check for code lint and [Black](https://github.com/psf/black) for formatting code.
+[Pylint](https://www.pylint.org/) to check for code lint and [Black](https://github.com/psf/black)
+for formatting code.
 
 *   To check that code is formatted properly after editing Python files:
 
