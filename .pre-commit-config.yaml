@@ -22,24 +22,22 @@ default_language_version:
 default_stages:
   - pre-commit
 
+# Note: these are Python regular expressions matched with re.search.
 exclude: |
   (?x)^(
-    \.([^/]*cache/.*) |
-    __pycache__/.* |
-    .*\.pytest_cache/ |
+    .*\.egg-info/.* |
     .*\.h5 |
-    \.coverage(\..*)? |
-    .*\.cover |
+    .*\.ipynb_checkpoints(/.*)? |
     .*\.log |
-    \.env |
-    \.venv |
-    env/ |
-    venv/ |
-    ENV/ |
-    \.ipynb_checkpoints |
-    docs/_build/ |
-    .*\.egg-info/ |
-    .*\.out
+    .*\.out |
+    .*\.pytest_cache/.* |
+    .*__pycache__/.* |
+    .env/.* |
+    .venv/.* |
+    \.([^/]*cache/.*) |
+    \.coverage(\..*)? |
+    docs/_build/.* |
+    venv/.*
   )$
 
 fail_fast: true
