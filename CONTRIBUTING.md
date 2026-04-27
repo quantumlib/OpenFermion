@@ -40,15 +40,15 @@ Hamiltonians.
 
 ### Main subdirectories
 
-**check/**: contains scripts for testing
+*   `check/`: contains scripts for testing
 
-**docker/**: contains a Docker configuration
+*   `docker/`: contains a Docker configuration
 
-**docs/**: contains OpenFermion documentation
+*   `docs/`: contains OpenFermion documentation
 
-**src/**: contains the main code
+*   `src/`: contains the main code
 
-**dev_tools/**: contains programs and configuration files used during development
+*   `dev_tools/`: contains programs and configuration files used during development
 
 The legacy subdirectories `cloud_library/` and `rtd_docs/` should be ignored.
 
@@ -188,6 +188,27 @@ The following command will set up large refactoring revisions to be ignored by `
 git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
 
+### Pre-commit git hooks (optional)
+
+The project includes a `.pre-commit-config.yaml` file for [pre-commit](https://pre-commit.com), an
+open-source utility that runs various static analysis tools when triggered by certain git operations
+such as `git commit`. This can help you meet project conventions, at the cost of introducing small
+delays in `git commit` and `git push` operations. If you want to use `pre-commit`, you can install
+and configure it like this:
+
+```shell
+pip install pre-commit
+pre-commit install -t pre-commit -t pre-push -t commit-msg
+```
+
+Next, run it once after installation to initialize it:
+
+```shell
+pre-commit run
+```
+
+After that, `pre-commit` will run automatically when triggered by git operations.
+
 ### Python setup
 
 1.  Create a Python virtual environment. To use Python's built-in `venv` package, run:
@@ -220,7 +241,8 @@ check/mypy
 ### Linting and formatting
 
 Code should meet common style standards for Python and be free of error-prone constructs. We use
-[Pylint](https://www.pylint.org/) to check for code lint and [Black](https://github.com/psf/black) for formatting code.
+[Pylint](https://www.pylint.org/) to check for code lint and [Black](https://github.com/psf/black)
+for formatting code.
 
 *   To check that code is formatted properly after editing Python files:
 
