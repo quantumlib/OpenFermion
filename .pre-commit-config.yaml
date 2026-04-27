@@ -1,0 +1,237 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Summary: optional configuration for using pre-commit with the OpenFermion
+# project. It is not run by default by the check scripts; to use it, you need
+# to install pre-commit (https://pre-commit.com/).
+
+default_language_version:
+  python: 'python3.11'
+
+default_stages:
+  - pre-commit
+
+exclude: |
+  (?x)^(
+    \.([^/]*cache/.*) |
+    __pycache__/.* |
+    .*\.pytest_cache/ |
+    .*\.h5 |
+    \.coverage(\..*)? |
+    .*\.cover |
+    .*\.log |
+    \.env |
+    \.venv |
+    env/ |
+    venv/ |
+    ENV/ |
+    \.ipynb_checkpoints |
+    docs/_build/ |
+    .*\.egg-info/ |
+    .*\.out
+  )$
+
+fail_fast: true
+
+# yamllint disable rule:line-length
+repos:
+# ~~~~ Pre-commit hooks ~~~~
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      # Note: don't use check-yaml bc it doesn't read the yamllint config.
+      # Use separate yamllint hook later in this file.
+
+      - id: no-commit-to-branch
+        name: 'Check that the commit is not made to the main branch'
+        args: [--branch, main, --branch, master]
+
+      - id: check-merge-conflict
+        name: "Check files are free of merge git conflict strings"
+
+      - id: check-added-large-files
+        name: 'Check files are not excessively large'
+
+      - id: check-illegal-windows-names
+        name: "Check file names can be used on Windows"
+
+      - id: check-case-conflict
+        name: "Check file names won't conflict on case-insensitive systems"
+
+      - id: name-tests-test
+        name: 'Verify test files are named correctly'
+
+      - id: destroyed-symlinks
+        name: 'Check symlinks were not turned into regular files'
+
+      - id: detect-private-key
+        name: 'Check there are no private keys'
+
+      - id: check-shebang-scripts-are-executable
+        name: 'Check shell script files are executable'
+
+      - id: debug-statements
+        name: 'Check Python files are free of debug/breakpoint statements'
+
+      - id: check-toml
+        name: 'Check TOML files for valid syntax'
+
+      - id: check-xml
+        name: 'Check XML files for valid syntax'
+
+      - id: mixed-line-ending
+        name: "Check files don't contain mixed line endings"
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
+    hooks:
+      - id: yamllint
+        name: 'Run YAML linter'
+        files: \.(yaml|yml|cff)$
+        args: [--format=colored]
+
+    # Note this is used for YAML files, despite that it's named "jsonschema".
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
+    hooks:
+      - id: check-dependabot
+        name: 'Chek Dependabot config file'
+      - id: check-github-actions
+      - id: check-github-workflows
+      - id: check-github-issue-config
+      - id: check-github-issue-forms
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
+    hooks:
+      - id: check-jsonschema
+        name: 'Check that Jupyter notebooks are valid JSON'
+        types: [jupyter]
+        files: '.*\.ipynb$'
+        # Note: pre-commit will download & cache this file automatically.
+        args: ["--schemafile", "https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json"]
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: '3.0.0'
+    hooks:
+      - id: shellcheck
+        name: 'Check shell scripts'
+        files: '(\.sh$|^check/[^.]+$)'
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: 4b2e70d08cb2ccd26d1fba73588de41c7a5d50b7  # frozen: v0.25
+    hooks:
+      - id: validate-pyproject
+        name: 'Check pyproject.toml file'
+        stages: [pre-push]
+        files: pyproject.toml
+        additional_dependencies: ["validate-pyproject-schema-store[all]"]
+
+# ~~~~ Commit message hooks ~~~~
+
+  - repo: https://github.com/crate-ci/typos
+    rev: c96c46fae465ab9e3607401d9ce93d75e7998023  # frozen: v1
+    hooks:
+      - id: typos
+        name: 'Check commit message for typos'
+        stages: [commit-msg]
+        # Important: add "args: []" to prevent typos from autofixing your files.
+        # C.f. https://github.com/crate-ci/typos/blob/master/docs/pre-commit.md
+        args: []
+
+# ~~~~ Pre-push hooks ~~~~
+
+  - repo: local
+    hooks:
+      - id: format-incremental
+        name: 'Run check/format-incremental'
+        entry: check/format-incremental
+        language: script
+        files: \\.(cc|h|cu|py)$
+        stages: [pre-push]
+
+  - repo: https://github.com/PyCQA/isort.git
+    rev: dac090ce4d9ee313d086e2e89ab1acb8c2664fa1  # frozen: 9.0.0a3
+    hooks:
+      - id: isort
+        name: 'Check that Python file imports are sorted'
+        args: [--check-only, --honor-noqa, --profile=black]
+        stages: [pre-push]
+
+  - repo: https://github.com/Pierre-Sassoulas/copyright_notice_precommit
+    rev: 'd9215b6b2a028d1614c92cf43a9fcff3b1dd889e'  # frozen: 0.1.2
+    hooks:
+      - id: copyright-notice
+        name: 'Check that files have a copyright notice'
+        types: [python]
+        stages: [pre-push]
+        args:
+          - '--notice=$HOME/system/share/templates/apache-copyright.txt'
+          - '--enforce-all'
+        exclude: &formatignore |
+          (?x)(
+          \.pyi|
+          _pb2\.pyi?|
+          _pb2_grpc\.pyi?|
+          _pb2_client\.pyi?|
+          _pb2_server\.pyi?|
+          \.expected\.py|
+          src/pyle/third_party/|
+          tools/bazel/rbe/config/cc/
+          )$
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
+    hooks:
+      - id: codespell
+        name: 'Spell-check code files'
+        stages: [pre-push]
+        exclude: *formatignore
+        additional_dependencies:
+          # Support pyproject.toml
+          - tomli
+
+  - repo: https://github.com/tcort/markdown-link-check
+    rev: ffc61540dea52bad1c41cfeedcf26c53ad9447ba  # frozen: v3.14.2
+    hooks:
+      - id: markdown-link-check
+        name: 'Check Markdown file lint'
+        types: [markdown]
+        stages: [pre-push]
+
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 'bebfac867564fbd992e5b45379b4b0568d5cb85b'  # frozen: 3.6.1
+    hooks:
+      - id: editorconfig-checker
+        name: 'Check that files are consistent with .editorconfig settings'
+        stages: [pre-push]
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: 3a6eb0fadf60b3cccfd80bad9dbb6fae7e47b316  # frozen: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+        stages: [pre-push]
+
+      - id: python-check-blanket-type-ignore
+        stages: [pre-push]
+
+      - id: python-check-mock-methods
+        stages: [pre-push]
+
+      - id: python-no-eval
+        stages: [pre-push]
+
+      - id: python-no-log-warn
+        stages: [pre-push]
