@@ -12,17 +12,14 @@
 
 import os
 import random
-import pytest
 import numpy as np
+
+# Set random seeds at top level to ensure deterministic test collection.
+# This makes it possible to run pytest in parallel (with pytest-xdist).
+random.seed(31)
+np.random.seed(31)
 
 
 def pytest_configure(config):
     # fail tests when using deprecated cirq functionality
     os.environ['CIRQ_TESTING'] = "true"
-
-
-@pytest.fixture(autouse=True)
-def set_random_seed():
-    """Set a fixed random seed when testing."""
-    random.seed(0)
-    np.random.seed(0)
