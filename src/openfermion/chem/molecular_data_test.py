@@ -12,6 +12,7 @@
 """Tests for molecular_data."""
 
 import os
+import shutil
 import tempfile
 import unittest
 import h5py
@@ -39,6 +40,7 @@ from openfermion.utils import count_qubits, Grid
 
 class MolecularDataTest(unittest.TestCase):
     def setUp(self):
+        self.test_dir = tempfile.mkdtemp()
         self.geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
         self.basis = 'sto-3g'
         self.multiplicity = 1
@@ -47,6 +49,9 @@ class MolecularDataTest(unittest.TestCase):
             self.geometry, self.basis, self.multiplicity, filename=self.filename
         )
         self.molecule.load()
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir)
 
     def testUnitConversion(self):
         """Test the unit conversion routines"""
@@ -126,7 +131,7 @@ class MolecularDataTest(unittest.TestCase):
 
     def test_dummy_save(self):
         # Make fake molecule.
-        filename = os.path.join(DATA_DIRECTORY, 'dummy_molecule')
+        filename = os.path.join(self.test_dir, 'dummy_molecule')
         geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
         basis = '6-31g*'
         multiplicity = 7
@@ -194,7 +199,8 @@ class MolecularDataTest(unittest.TestCase):
             self.assertAlmostEqual(new_molecule.ccsd_energy, molecule.ccsd_energy)
             self.assertAlmostEqual(molecule.ccsd_energy, 88.0)
         finally:
-            os.remove(filename + '.hdf5')
+            if os.path.isfile(filename + '.hdf5'):
+                os.remove(filename + '.hdf5')
 
     def test_file_loads(self):
         """Test different filename specs"""
@@ -284,6 +290,7 @@ class MolecularDataTest(unittest.TestCase):
             basis="PlaneWave22",
             multiplicity=1,
             n_electrons=4,
+            data_directory=self.test_dir,
         )
 
         jellium_filename = jellium_molecule.filename
@@ -291,7 +298,8 @@ class MolecularDataTest(unittest.TestCase):
         jellium_molecule.load()
         correct_name = "Jellium_PlaneWave22_singlet"
         self.assertEqual(jellium_molecule.name, correct_name)
-        os.remove("{}.hdf5".format(jellium_filename))
+        if os.path.isfile("{}.hdf5".format(jellium_filename)):
+            os.remove("{}.hdf5".format(jellium_filename))
 
     def test_load_molecular_hamiltonian(self):
         bond_length = 1.45
