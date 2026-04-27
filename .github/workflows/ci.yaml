@@ -342,7 +342,7 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/pytest.json'
 
       - name: Run pytest
-        run: check/pytest -m "not slow"
+        run: check/pytest -n auto -m "not slow"
 
   pytest:
     if: needs.changes.outputs.python == 'true' && (success() || failure())
@@ -391,7 +391,7 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/pytest.json'
 
       - name: Run pytest
-        run: check/pytest -m "not slow" src/openfermion/resource_estimates
+        run: check/pytest -n auto -m "not slow" src/openfermion/resource_estimates
 
   pytest-extra:
     if: needs.changes.outputs.python == 'true' && (success() || failure())
@@ -433,7 +433,7 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/pytest.json'
 
       - name: Run pytest
-        run: check/pytest -m "not slow"
+        run: check/pytest -n auto -m "not slow"
 
   coverage:
     if: needs.changes.outputs.python == 'true'
