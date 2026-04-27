@@ -154,7 +154,7 @@ repos:
         name: 'Run check/format-incremental'
         entry: check/format-incremental
         language: script
-        files: \\.(cc|h|cu|py)$
+        files: \.(cc|h|cu|py)$
         stages: [pre-push]
 
   - repo: https://github.com/PyCQA/isort.git
