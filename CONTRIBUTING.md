@@ -217,6 +217,10 @@ to run it:
 check/mypy
 ```
 
+If your computer has multiple processor cores, you can add the option `-j 0` to the command above to
+make Mypy run in parallel for a substantial speed increase.
+
+
 ### Linting and formatting
 
 Code should meet common style standards for Python and be free of error-prone constructs. We use
@@ -259,7 +263,9 @@ We use [pytest](https://docs.pytest.org) to run our tests and
 *   While developing, periodically check that changes do not break anything. For fast checks, use
     `pytest -c dev_tools/conf/pytest.ini PATH`, where `PATH` is a directory or pytest file to test.
 
-*   After finishing a task, run `check/pytest` to test all of the OpenFermion code.
+*   After finishing a task, run `check/pytest` to test all of the OpenFermion code. If your system
+    has multiple processor cores, you can add the option `-n auto` to make it run in parallel for a
+    substantial speed increase. (Beware, though, that this is resource-intensive.)
 
 We don't require 100% coverage, but coverage should be very high, and any uncovered code must be
 annotated with `# pragma: no cover`. To ignore coverage of a single line, place `# pragma: no cover`
@@ -271,9 +277,9 @@ cover` comment on its own line. Note, however, that these annotations should be 
 After a task is finished, run each of the following to make sure everything passes all the tests:
 
 *   `check/format-incremental`
-*   `check/pylint`
+*   `check/pylint -j 0`
 *   `check/mypy`
-*   `check/pytest`
+*   `check/pytest -n auto`
 *   `check/pytest-and-incremental-coverage`
 
 ### Pull requests and code reviews
