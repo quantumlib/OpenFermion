@@ -18,17 +18,16 @@ import unittest
 import numpy
 import pytest
 
-from openfermion import InteractionOperator, get_fermion_operator, normal_ordered
+from openfermion.config import EQ_TOLERANCE
 from openfermion.chem.molecular_data import MolecularData
-from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
+from openfermion.config import DATA_DIRECTORY
+from openfermion.transforms import jordan_wigner
 from openfermion.linalg import get_sparse_operator
 from openfermion.ops.representations.doci_hamiltonian import (
     DOCIHamiltonian,
     get_doci_from_integrals,
-    get_projected_integrals_from_doci,
-    get_tensors_from_doci,
 )
-from openfermion.transforms import jordan_wigner
+from openfermion import get_fermion_operator, InteractionOperator
 
 numpy.set_printoptions(linewidth=2000, threshold=sys.maxsize)
 
