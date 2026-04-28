@@ -15,6 +15,7 @@ import os
 import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 import h5py
 import numpy.random
 import scipy.linalg
@@ -375,3 +376,14 @@ class MolecularDataTest(unittest.TestCase):
             # Load the molecule and check that general_calculations is empty.
             new_molecule = MolecularData(filename=filename)
             self.assertEqual(new_molecule.general_calculations, {})
+
+    def test_get_from_file_exceptions(self):
+        with patch('h5py.File') as mock_file:
+            mock_file.return_value.__enter__.return_value.__getitem__.side_effect = KeyError
+            data = self.molecule.get_from_file("nonexistent_property")
+            self.assertIsNone(data)
+
+        with patch('h5py.File') as mock_file:
+            mock_file.side_effect = IOError
+            data = self.molecule.get_from_file("any_property")
+            self.assertIsNone(data)
