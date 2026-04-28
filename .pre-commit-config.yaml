@@ -154,6 +154,7 @@ repos:
         name: 'Run check/format-incremental'
         entry: check/format-incremental
         language: script
+        pass_filenames: false
         files: \.(cc|h|cu|py)$
         stages: [pre-push]
 
