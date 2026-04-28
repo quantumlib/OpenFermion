@@ -253,8 +253,8 @@ def test_G_vector_mapping_single_translation():
                 assert np.allclose(delta_G_expected, delta_G)
 
 
-@pytest.mark.slow
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_isdf_double_translation():
     cell = gto.Cell()
     cell.atom = """
@@ -302,6 +302,7 @@ def test_kpoint_isdf_double_translation():
 
 
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_isdf_single_translation():
     cell = gto.Cell()
     cell.atom = """
