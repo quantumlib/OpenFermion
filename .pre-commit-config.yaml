@@ -105,9 +105,8 @@ repos:
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
     hooks:
-      - id: check-dependabot
-        name: 'Check Dependabot config file'
       - id: check-github-workflows
+        name: 'Check GitHub workflow files'
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
