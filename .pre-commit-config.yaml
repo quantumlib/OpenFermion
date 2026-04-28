@@ -21,9 +21,6 @@
 #     pre-commit install -t pre-commit -t commit-msg -t pre-push
 #     pre-commit run
 
-default_language_version:
-  python: 'python3.11'
-
 default_stages:
   - pre-commit
 
