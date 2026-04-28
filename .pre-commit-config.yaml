@@ -95,6 +95,7 @@ repos:
     hooks:
       - id: yamllint
         name: 'Run YAML linter'
+        verbose: true
         files: \.(yaml|yml|cff)$
         args: [--format=colored]
 
