@@ -119,7 +119,7 @@ repos:
         files: '.*\.ipynb$'
         # Note: pre-commit will download & cache this file automatically.
         # yamllint disable rule:line-length
-        args: ["--schemafile", "https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json"]
+        args: [--schemafile, https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json]
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: '38980559e3a605691d6579f96222c30778e5a69e'  # frozen: 3.0.0
@@ -159,8 +159,7 @@ repos:
         name: 'Check that files have a copyright notice'
         types: [python]
         stages: [pre-push]
-        args:
-          - '--notice=dev_tools/apache-license-header.txt'
+        args: [--notice=dev_tools/apache-license-header.txt]
 
   - repo: https://github.com/tcort/markdown-link-check
     rev: ffc61540dea52bad1c41cfeedcf26c53ad9447ba  # frozen: v3.14.2
