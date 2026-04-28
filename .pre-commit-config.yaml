@@ -113,6 +113,14 @@ repos:
         name: 'Check shell scripts'
         files: '(\.sh$|^check/[^.]+$)'
 
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.14.0
+    hooks:
+      - id: hadolint
+        name: 'Check Docker files'
+        files: (?i)dockerfile$
+        args: [--failure-threshold, error]
+
     # Note this is used for YAML files, despite that it's named "jsonschema".
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
