@@ -191,10 +191,10 @@ git config blame.ignoreRevsFile .git-blame-ignore-revs
 ### Pre-commit git hooks (optional)
 
 The project includes a `.pre-commit-config.yaml` file for [pre-commit](https://pre-commit.com), an
-open-source utility that runs various static analysis tools when triggered by certain git operations
-such as `git commit`. This can help you meet project conventions, at the cost of introducing small
-delays in `git commit` and `git push` operations. If you want to use `pre-commit`, you can install
-and configure it like this:
+open-source utility that configures functions to run when triggered by certain git operations such
+as `git commit`. This can help you meet project conventions, at the cost of introducing small delays
+in `git commit` and `git push` operations. If you want to use `pre-commit`, you can install and
+configure it like this:
 
 ```shell
 pip install pre-commit
@@ -207,7 +207,7 @@ Next, run it once after installation to initialize it:
 pre-commit run
 ```
 
-After that, `pre-commit` will run automatically when triggered by git operations.
+After that, `pre-commit` will run automatically when triggered by specific git operations.
 
 ### Python setup
 
