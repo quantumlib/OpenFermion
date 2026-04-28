@@ -107,7 +107,6 @@ repos:
     hooks:
       - id: check-dependabot
         name: 'Check Dependabot config file'
-      - id: check-github-actions
       - id: check-github-workflows
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
