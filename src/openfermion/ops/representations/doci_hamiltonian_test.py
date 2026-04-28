@@ -11,24 +11,24 @@
 #   limitations under the License.
 """Tests for doci_hamiltonian.py."""
 
-import sys
 import os
+import sys
 import unittest
 
 import numpy
+import pytest
 
-from openfermion.config import EQ_TOLERANCE
+from openfermion import InteractionOperator, get_fermion_operator, normal_ordered
 from openfermion.chem.molecular_data import MolecularData
-from openfermion.config import DATA_DIRECTORY
-from openfermion.transforms import jordan_wigner
+from openfermion.config import DATA_DIRECTORY, EQ_TOLERANCE
 from openfermion.linalg import get_sparse_operator
 from openfermion.ops.representations.doci_hamiltonian import (
     DOCIHamiltonian,
-    get_tensors_from_doci,
-    get_projected_integrals_from_doci,
     get_doci_from_integrals,
+    get_projected_integrals_from_doci,
+    get_tensors_from_doci,
 )
-from openfermion import get_fermion_operator, InteractionOperator, normal_ordered
+from openfermion.transforms import jordan_wigner
 
 numpy.set_printoptions(linewidth=2000, threshold=sys.maxsize)
 
@@ -55,6 +55,7 @@ class IntegralTransformsTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(hr1, hr1_test))
         self.assertTrue(numpy.allclose(hr2, hr2_test))
 
+    @pytest.mark.slow
     def test_fermionic_hamiltonian_from_integrals(self):
         constant = self.molecule.nuclear_repulsion
         doci_constant = constant

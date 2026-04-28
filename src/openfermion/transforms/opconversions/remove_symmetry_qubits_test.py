@@ -16,16 +16,17 @@ by two.
 
 import unittest
 
-from openfermion.hamiltonians import fermi_hubbard
+import pytest
+
 from openfermion.chem import MolecularData
-from openfermion.transforms.opconversions import get_fermion_operator
+from openfermion.hamiltonians import fermi_hubbard
+from openfermion.linalg import eigenspectrum
 from openfermion.linalg.sparse_tools import (
     get_sparse_operator,
     jw_get_ground_state_at_particle_number,
 )
-from openfermion.linalg import eigenspectrum
 from openfermion.ops.operators import FermionOperator
-
+from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.transforms.opconversions.remove_symmetry_qubits import (
     symmetry_conserving_bravyi_kitaev,
 )
@@ -83,6 +84,7 @@ def number_of_qubits(qubit_hamiltonian, unreduced_orbitals):
 class ReduceSymmetryQubitsTest(unittest.TestCase):
     # Check whether fermionic and reduced qubit Hamiltonians
     # have the same energy for LiH
+    @pytest.mark.slow
     def test_energy_reduce_symmetry_qubits(self):
         # Generate the fermionic Hamiltonians,
         # number of orbitals and number of electrons.
