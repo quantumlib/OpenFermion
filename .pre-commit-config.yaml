@@ -158,14 +158,6 @@ repos:
         files: \.(cc|h|cu|py)$
         stages: [pre-push]
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 'dac090ce4d9ee313d086e2e89ab1acb8c2664fa1'  # frozen: 9.0.0a3
-    hooks:
-      - id: isort
-        name: 'Check that Python file imports are sorted'
-        args: [--check-only, --honor-noqa, --profile=black]
-        stages: [pre-push]
-
   - repo: https://github.com/Pierre-Sassoulas/copyright_notice_precommit
     rev: 'd9215b6b2a028d1614c92cf43a9fcff3b1dd889e'  # frozen: 0.1.2
     hooks:
