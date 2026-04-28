@@ -72,6 +72,9 @@ repos:
       - id: name-tests-test
         name: 'Verify test files are named correctly'
 
+      - id: check-symlinks
+        name: 'Check for symlinks that do not point to anything'
+
       - id: destroyed-symlinks
         name: 'Check that symlinks are not turned into regular files'
 
