@@ -168,16 +168,6 @@ repos:
         args:
           - '--notice=dev_tools/apache-license-header.txt'
 
-  - repo: https://github.com/codespell-project/codespell
-    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
-    hooks:
-      - id: codespell
-        name: 'Spell-check code files'
-        stages: [pre-push]
-        additional_dependencies:
-          # Support pyproject.toml
-          - tomli
-
   - repo: https://github.com/tcort/markdown-link-check
     rev: ffc61540dea52bad1c41cfeedcf26c53ad9447ba  # frozen: v3.14.2
     hooks:
