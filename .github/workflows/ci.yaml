@@ -217,9 +217,7 @@ jobs:
           pip install cirq-core==${{matrix.cirq-version}}
 
       - name: Run pytest
-        run: |
-          echo '::add-matcher::.github/problem-matchers/pytest.json'
-          check/pytest -m "not slow"
+        run: check/pytest -n auto -m "not slow"
 
   pytest-extra:
     if: needs.changes.outputs.python == 'true'
@@ -252,9 +250,7 @@ jobs:
           pip install cirq-core==${{matrix.cirq-version}}
 
       - name: Run pytest
-        run: |
-          echo '::add-matcher::.github/problem-matchers/pytest.json'
-          check/pytest -m "not slow" src/openfermion/resource_estimates
+        run: check/pytest -n auto -m "not slow" src/openfermion/resource_estimates
 
   pytest-compat:
     if: needs.changes.outputs.python == 'true'
@@ -281,9 +277,7 @@ jobs:
         run: pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
 
       - name: Run pytest
-        run: |
-          echo '::add-matcher::.github/problem-matchers/pytest.json'
-          check/pytest -m "not slow"
+        run: check/pytest -n auto -m "not slow"
 
   coverage:
     if: needs.changes.outputs.python == 'true'

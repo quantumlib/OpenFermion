@@ -25,4 +25,4 @@ def pytest_configure(config):
 def set_random_seed():
     """Set a fixed random seed when testing."""
     random.seed(0)
-    np.random.seed(0)
+    np.random.default_rng(0)

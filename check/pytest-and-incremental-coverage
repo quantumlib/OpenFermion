@@ -68,6 +68,7 @@ fi
 
 # Run tests while producing coverage files.
 check/pytest . \
+    -n auto \
     --actually-quiet \
     --cov \
     --cov-report=annotate
