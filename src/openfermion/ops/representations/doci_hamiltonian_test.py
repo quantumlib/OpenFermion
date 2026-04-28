@@ -11,8 +11,8 @@
 #   limitations under the License.
 """Tests for doci_hamiltonian.py."""
 
-import os
 import sys
+import os
 import unittest
 
 import numpy
