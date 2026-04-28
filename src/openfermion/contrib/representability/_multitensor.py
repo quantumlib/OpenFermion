@@ -95,7 +95,7 @@ class MultiTensor(object):
 
         :returns: sparse matrix
         """
-        # go throught the dual basis list and synthesize each element
+        # go through the dual basis list and synthesize each element
         dual_row_indices = []
         dual_col_indices = []
         dual_data_values = []
