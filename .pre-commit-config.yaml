@@ -128,15 +128,6 @@ repos:
         name: 'Check shell scripts'
         files: '(\.sh$|^check/[^.]+$)'
 
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: 4b2e70d08cb2ccd26d1fba73588de41c7a5d50b7  # frozen: v0.25
-    hooks:
-      - id: validate-pyproject
-        name: 'Check pyproject.toml file'
-        stages: [pre-push]
-        files: pyproject.toml
-        additional_dependencies: ["validate-pyproject-schema-store[all]"]
-
 # ~~~~ Commit message hooks ~~~~
 
   - repo: https://github.com/crate-ci/typos
