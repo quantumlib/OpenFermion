@@ -103,7 +103,7 @@ repos:
     rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
     hooks:
       - id: check-dependabot
-        name: 'Chek Dependabot config file'
+        name: 'Check Dependabot config file'
       - id: check-github-actions
       - id: check-github-workflows
       - id: check-github-issue-config
