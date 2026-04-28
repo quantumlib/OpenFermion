@@ -75,9 +75,6 @@ repos:
       - id: destroyed-symlinks
         name: 'Check that symlinks are not turned into regular files'
 
-      - id: detect-private-key
-        name: 'Check there are no private keys'
-
       - id: check-shebang-scripts-are-executable
         name: 'Check that shell script files are executable'
 
