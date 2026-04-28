@@ -83,7 +83,6 @@ class MultiTensor(object):
         if not isinstance(dual_element, DualBasisElement):
             raise TypeError("dual_element variable needs to be a DualBasisElement type")
 
-        # we should extend TMap to add
         self.dual_basis.elements.append(dual_element)
 
     def synthesize_dual_basis(self):
