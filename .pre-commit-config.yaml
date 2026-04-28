@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Summary: optional configuration for using pre-commit with the OpenFermion
-# project. It is not run by default by the check scripts; to use it, you need
-# to install pre-commit (https://pre-commit.com/).
+# Summary: config for setting up git hooks using the pre-commit framework. This
+# is optional and NOT set up by default nor used by the scripts in check/. Here
+# is a suggested installation approach; after doing this, the pre-commit hooks
+# will be called automatically by git at the appropriate times:
+#
+#     pip install pre-commit
+#     pre-commit install -t pre-commit -t commit-msg -t pre-push
+#     pre-commit run
 
 default_language_version:
   python: 'python3.11'
