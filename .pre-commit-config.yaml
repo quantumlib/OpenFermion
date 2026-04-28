@@ -109,8 +109,6 @@ repos:
         name: 'Check Dependabot config file'
       - id: check-github-actions
       - id: check-github-workflows
-      - id: check-github-issue-config
-      - id: check-github-issue-forms
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
