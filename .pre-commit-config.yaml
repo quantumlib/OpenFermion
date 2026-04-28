@@ -95,13 +95,6 @@ repos:
         files: \.(yaml|yml|cff)$
         args: [--format=colored, --no-warnings]
 
-    # Note this is used for YAML files, despite that it's named "jsonschema".
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
-    hooks:
-      - id: check-github-workflows
-        name: 'Check GitHub workflow files'
-
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
     hooks:
@@ -119,6 +112,13 @@ repos:
       - id: shellcheck
         name: 'Check shell scripts'
         files: '(\.sh$|^check/[^.]+$)'
+
+    # Note this is used for YAML files, despite that it's named "jsonschema".
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
+    hooks:
+      - id: check-github-workflows
+        name: 'Check GitHub workflow files'
 
 # ~~~~ Commit message hooks ~~~~
 
@@ -165,16 +165,17 @@ repos:
     rev: 3a6eb0fadf60b3cccfd80bad9dbb6fae7e47b316  # frozen: v1.10.0
     hooks:
       - id: python-check-blanket-noqa
+        name: 'Check that "# noqa" annotations include error codes'
         stages: [pre-push]
 
       - id: python-check-blanket-type-ignore
+        name: 'Check that "# type: ignore" comments include error codes'
         stages: [pre-push]
 
       - id: python-check-mock-methods
-        stages: [pre-push]
-
-      - id: python-no-eval
+        name: 'Check for common mistakes when using unittest.mock'
         stages: [pre-push]
 
       - id: python-no-log-warn
+        name: 'Check for uses of the deprecated Python logger .warn() method'
         stages: [pre-push]
