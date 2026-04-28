@@ -10,6 +10,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 import numpy as np
 import pytest
 
@@ -253,6 +254,7 @@ def test_G_vector_mapping_single_translation():
 
 
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_isdf_double_translation():
     cell = gto.Cell()
     cell.atom = """
@@ -300,6 +302,7 @@ def test_kpoint_isdf_double_translation():
 
 
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
+@pytest.mark.slow
 def test_kpoint_isdf_single_translation():
     cell = gto.Cell()
     cell.atom = """
