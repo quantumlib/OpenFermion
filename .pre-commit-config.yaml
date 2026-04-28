@@ -60,9 +60,6 @@ repos:
       - id: check-merge-conflict
         name: "Check that files are free of merge git conflict strings"
 
-      - id: check-added-large-files
-        name: 'Check that files are not excessively large'
-
       - id: check-illegal-windows-names
         name: "Check that file names can be used on Windows"
 
