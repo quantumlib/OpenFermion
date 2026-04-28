@@ -257,7 +257,7 @@ We use [pytest](https://docs.pytest.org) to run our tests and
 [pytest-cov](https://pytest-cov.readthedocs.io) to compute coverage.
 
 *   While developing, periodically check that changes do not break anything. For fast checks, use
-    `pytest -c dev_tools/conf/pytest.ini PATH`, where `PATH` is a directory or pytest file to test.
+    `pytest -m "not slow" PATH`, where `PATH` is a directory or pytest file to test.
 
 *   After finishing a task, run `check/pytest` to test all of the OpenFermion code.
 

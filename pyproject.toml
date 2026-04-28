@@ -31,9 +31,16 @@ omit = [
     "./dev_tools/*",
 ]
 
+[tool.pytest.ini_options]
+markers = [
+    """slow: marks tests as slow (deselect with '-m "not slow"')""",
+]
+filterwarnings = [
+    "ignore:Skipped assert_qasm_is_consistent_with_unitary because qiskit.*:UserWarning",
+]
+
 [tool.mypy]
 implicit_optional = true
-
 # TODO: this is temporary for 1.7.0 release. Remove this & fix the errors.
 ignore_errors = true
 
