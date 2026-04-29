@@ -12,9 +12,11 @@
 
 """Tests for pubchem.py."""
 
+import os
+
 import numpy
-import pytest
 import pubchempy
+import pytest
 
 from openfermion.chem.pubchem import geometry_from_pubchem
 from openfermion.testing.testing_utils import module_importable
@@ -149,7 +151,12 @@ class TestOpenFermionPubChem:
         with pytest.raises(ValueError, match='Incorrect value for the argument structure'):
             _ = geometry_from_pubchem('water', structure='foo')
 
-    @pytest.mark.flaky(retries=3, delay=2, only_on=[pubchempy.ServerBusyError])
+    # Skip if running in a CI environment.
+    @pytest.mark.skipif(
+        'CI' in os.environ,
+        reason='Skipping Pubchem API tests in CI to avoid failures due to busy servers.',
+    )
+    @pytest.mark.flaky(retries=8, delay=30, only_on=[pubchempy.ServerBusyError])
     def test_geometry_from_pubchem_live_api(self):
         water_geometry = geometry_from_pubchem('water')
         assert len(water_geometry) == 3
