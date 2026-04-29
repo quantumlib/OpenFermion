@@ -19,9 +19,7 @@
 
 [MAIN]
 
-# Analyse import fallback blocks. This can be used to support both Python 2 and
-# 3 compatible code, which means that the block might have code that exists
-# only in one or another interpreter, leading to false positives when analysed.
+# Analyse import fallback blocks.
 analyse-fallback-blocks=no
 
 # Clear in-memory caches upon conclusion of linting. Useful if running pylint
@@ -1027,4 +1025,4 @@ init-import=yes
 
 # List of qualified module names which can have objects that can redefine
 # builtins.
-redefining-builtins-modules=six.moves,past.builtins,future.builtins,builtins,io
+redefining-builtins-modules=builtins,io

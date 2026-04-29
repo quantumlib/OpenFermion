@@ -86,7 +86,7 @@ class DOCIHamiltonian(PolynomialTensor):
             hr2: The coefficients of ($h^{(r2)}_{p, q}$).
                 This is an n_qubits x n_qubits array of floats.
         """
-        super(DOCIHamiltonian, self).__init__(None)
+        super().__init__(None)
 
         self._n_qubits = hc.shape[0]
         self._constant = constant

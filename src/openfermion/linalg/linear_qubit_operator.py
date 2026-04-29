@@ -23,7 +23,7 @@ import scipy.sparse.linalg
 from openfermion.utils.operator_utils import count_qubits
 
 
-class LinearQubitOperatorOptions(object):
+class LinearQubitOperatorOptions:
     """Options for LinearQubitOperator."""
 
     def __init__(self, processes=10, pool=None):
@@ -94,7 +94,7 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
             )
 
         n_hilbert = 2**n_qubits
-        super(LinearQubitOperator, self).__init__(shape=(n_hilbert, n_hilbert), dtype=complex)
+        super().__init__(shape=(n_hilbert, n_hilbert), dtype=complex)
         self.qubit_operator = qubit_operator
         self.n_qubits = n_qubits
 
@@ -156,9 +156,7 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         """
         n_qubits = n_qubits or count_qubits(qubit_operator)
         n_hilbert = 2**n_qubits
-        super(ParallelLinearQubitOperator, self).__init__(
-            shape=(n_hilbert, n_hilbert), dtype=complex
-        )
+        super().__init__(shape=(n_hilbert, n_hilbert), dtype=complex)
 
         self.qubit_operator = qubit_operator
         self.n_qubits = n_qubits

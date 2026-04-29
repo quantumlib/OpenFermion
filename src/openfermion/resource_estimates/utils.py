@@ -137,7 +137,7 @@ def power_two(m: int) -> int:
     return 0
 
 
-class RunSilent(object):
+class RunSilent:
     """Context manager to prevent function writing to stdout/stderr
     e.g. for noisy_function(), wrap it like so
 

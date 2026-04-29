@@ -3,7 +3,7 @@ from scipy.sparse import csr_matrix
 from openfermion.contrib.representability._dualbasis import DualBasisElement, DualBasis
 
 
-class TMap(object):
+class TMap:
     def __init__(self, tensors):
         """
         provide a map of tensor name to tensors
@@ -22,7 +22,7 @@ class TMap(object):
             yield tt
 
 
-class MultiTensor(object):
+class MultiTensor:
     def __init__(self, tensors, dual_basis=DualBasis()):
         """
         A collection of tensor objects with maps from name to tensor

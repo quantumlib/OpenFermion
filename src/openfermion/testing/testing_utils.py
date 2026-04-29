@@ -219,7 +219,7 @@ def random_quadratic_hamiltonian(
     return QuadraticHamiltonian(hermitian_mat, antisymmetric_mat, constant, chemical_potential)
 
 
-class EqualsTester(object):
+class EqualsTester:
     """Tests equality against user-provided disjoint equivalence groups."""
 
     def __init__(self, test_case):
@@ -315,7 +315,7 @@ class EqualsTester(object):
         self.add_equality_group(factory(), factory())
 
 
-class _ClassUnknownToSubjects(object):
+class _ClassUnknownToSubjects:
     """Equality methods should be able to deal with the unexpected."""
 
     def __eq__(self, other):
