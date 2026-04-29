@@ -180,7 +180,7 @@ ready, create a pull request from your branch to the main project repository.
 
     where `YOUR_BRANCH_NAME` is the name of your new branch.
 
-### `git` configuration
+### Git configuration
 
 The following command will set up large refactoring revisions to be ignored by `git blame`:
 
@@ -188,26 +188,37 @@ The following command will set up large refactoring revisions to be ignored by `
 git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
 
-### Pre-commit git hooks (optional)
+### Git hooks configuration (optional)
 
-The project includes a `.pre-commit-config.yaml` file for [pre-commit](https://pre-commit.com), an
-open-source utility that configures functions to run when triggered by certain git operations such
-as `git commit`. This can help you meet project conventions, at the cost of introducing small delays
-in `git commit` and `git push` operations. If you want to use `pre-commit`, you can install and
-configure it like this:
+This project includes a `.pre-commit-config.yaml` file for [pre-commit](https://pre-commit.com), an
+open-source utility that configures git hook functions to run when triggered by git operations such
+as committing changes, pushing changes, or writing commit messages. These hooks perform various
+checks that can help you meet project conventions automatically, at the cost of introducing small
+delays in those git operations. If you want to use `pre-commit`, you can install and configure it
+like this:
 
 ```shell
 pip install pre-commit
 pre-commit install -t pre-commit -t pre-push -t commit-msg
 ```
 
-Next, run it once after installation to initialize it:
+Next, run it once after installation to download the hook environments and verify your setup:
 
 ```shell
-pre-commit run
+pre-commit run --all-files
 ```
 
-After that, `pre-commit` will run automatically when triggered by specific git operations.
+After that, the hooks will run automatically when triggered by the corresponding git operations.
+
+### Type annotation conventions
+
+Code should have [type annotations](https://www.python.org/dev/peps/pep-0484/). We use
+[mypy](http://mypy-lang.org/) to check that type annotations are correct, and the following script
+to run it:
+
+```shell
+check/mypy
+```
 
 ### Python setup
 
@@ -227,16 +238,6 @@ After that, `pre-commit` will run automatically when triggered by specific git o
 
 Please refer to the section _Developer install_ of the [installation instructions](docs/install.md)
 for information about how to set up a local copy of the software for development.
-
-### Type annotation conventions
-
-Code should have [type annotations](https://www.python.org/dev/peps/pep-0484/). We use
-[mypy](http://mypy-lang.org/) to check that type annotations are correct, and the following script
-to run it:
-
-```shell
-check/mypy
-```
 
 ### Linting and formatting
 
