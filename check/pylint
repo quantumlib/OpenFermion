@@ -14,7 +14,7 @@
 # limitations under the License.
 
 ################################################################################
-# Runs pylint on the repository using a preconfigured .pylintrc file.
+# Runs pylint from the top level of the project.
 #
 # Usage:
 #     check/pylint [--flags]
@@ -24,4 +24,4 @@
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" || exit 1
 cd "$(git rev-parse --show-toplevel)" || exit 1
 
-pylint --rcfile=dev_tools/conf/.pylintrc "$@" src dev_tools
+pylint "$@" src dev_tools
