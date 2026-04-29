@@ -168,7 +168,7 @@ def _reduce_terms(terms, stabilizer_list, manual_input, fixed_positions):
             # Find first position non-fixed position with non-trivial Pauli.
             for qubit_pauli in selected_stab:
                 if qubit_pauli[0] not in fixed_positions:
-                    fixed_positions += [qubit_pauli[0]]
+                    fixed_positions.append(qubit_pauli[0])
                     fixed_op = qubit_pauli[1]
                     break
 
@@ -191,11 +191,11 @@ def _reduce_terms(terms, stabilizer_list, manual_input, fixed_positions):
             )
         updated_stabilizers = []
         for update_stab in stabilizer_list[1:]:
-            updated_stabilizers += [
+            updated_stabilizers.append(
                 fix_single_term(
                     update_stab, fixed_positions[i], fixed_op, other_op, stabilizer_list[0]
                 )
-            ]
+            )
 
         # Update terms and stabilizer list.
         terms = new_terms
@@ -243,7 +243,7 @@ def _reduce_terms_keep_length(terms, stabilizer_list, manual_input, fixed_positi
             # Finds qubit position and its Pauli.
             for qubit_pauli in selected_stab:
                 if qubit_pauli[0] not in fixed_positions:
-                    fixed_positions += [qubit_pauli[0]]
+                    fixed_positions.append(qubit_pauli[0])
                     fixed_op = qubit_pauli[1]
                     break
         else:
@@ -261,15 +261,15 @@ def _reduce_terms_keep_length(terms, stabilizer_list, manual_input, fixed_positi
         new_list = []
         updated_stabilizers = []
         for y in term_list:
-            new_list += [
+            new_list.append(
                 fix_single_term(y, fixed_positions[i], fixed_op, other_op, stabilizer_list[0])
-            ]
+            )
         for update_stab in stabilizer_list[1:]:
-            updated_stabilizers += [
+            updated_stabilizers.append(
                 fix_single_term(
                     update_stab, fixed_positions[i], fixed_op, other_op, stabilizer_list[0]
                 )
-            ]
+            )
         term_list = new_list
         stabilizer_list = updated_stabilizers
 
