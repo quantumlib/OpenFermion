@@ -185,7 +185,3 @@ repos:
       - id: python-check-mock-methods
         name: 'Check for common mistakes when using unittest.mock'
         stages: [pre-push]
-
-      - id: python-no-log-warn
-        name: 'Check for uses of the deprecated Python logger .warn() method'
-        stages: [pre-push]
