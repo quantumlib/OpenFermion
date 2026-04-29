@@ -1,0 +1,187 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Summary: config for setting up git hooks using the pre-commit framework. This
+# is optional and NOT set up by default nor used by the scripts in check/. Here
+# is a suggested installation approach; after doing this, the pre-commit hooks
+# will be called automatically by git at the appropriate times:
+#
+#     pip install pre-commit
+#     pre-commit install -t pre-commit -t commit-msg -t pre-push
+#     pre-commit run
+
+default_stages:
+  - pre-commit
+
+# Note: these are Python regular expressions matched with re.search.
+exclude: |
+  (?x)^(
+    .*\.egg-info/.* |
+    .*\.h5 |
+    .*\.ipynb_checkpoints(/.*)? |
+    .*\.log |
+    .*\.out |
+    .*\.pytest_cache/.* |
+    .*__pycache__/.* |
+    .env/.* |
+    .venv/.* |
+    \.([^/]*cache/.*) |
+    \.coverage(\..*)? |
+    docs/_build/.* |
+    venv/.*
+  )$
+
+fail_fast: true
+
+minimum_pre_commit_version: '4.4.0'
+
+repos:
+# ~~~~ Pre-commit hooks ~~~~
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      # Note: don't use check-yaml bc it doesn't read the yamllint config.
+      # Use separate yamllint hook later in this file.
+
+      - id: no-commit-to-branch
+        name: 'Check that the commit is not made to the main branch'
+        args: [--branch, main, --branch, master]
+
+      - id: check-merge-conflict
+        name: "Check that files are free of merge git conflict strings"
+
+      - id: check-illegal-windows-names
+        name: "Check that file names can be used on Windows"
+
+      - id: check-case-conflict
+        name: "Check that file names won't conflict on case-insensitive systems"
+
+      - id: name-tests-test
+        name: 'Verify test files are named correctly'
+
+      - id: check-symlinks
+        name: 'Check for symlinks that do not point to anything'
+
+      - id: destroyed-symlinks
+        name: 'Check that symlinks are not turned into regular files'
+
+      - id: check-shebang-scripts-are-executable
+        name: 'Check that shell script files are executable'
+
+      - id: debug-statements
+        name: 'Check that Python files are free of debug statements'
+
+      - id: check-toml
+        name: 'Check TOML files for valid syntax'
+
+      - id: check-xml
+        name: 'Check XML files for valid syntax'
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
+    hooks:
+      - id: yamllint
+        name: 'Run YAML linter'
+        files: \.(yaml|yml|cff)$
+        args: [--format=colored, --no-warnings]
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
+    hooks:
+      - id: check-jsonschema
+        name: 'Check that Jupyter notebooks are valid JSON'
+        types: [jupyter]
+        files: '.*\.ipynb$'
+        # Note: pre-commit will download & cache this file automatically.
+        # yamllint disable rule:line-length
+        args: [--schemafile, https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json]
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: '38980559e3a605691d6579f96222c30778e5a69e'  # frozen: 3.0.0
+    hooks:
+      - id: shellcheck
+        name: 'Check shell scripts'
+        files: '(\.sh$|^check/[^.]+$)'
+
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.14.0
+    hooks:
+      - id: hadolint
+        name: 'Check Docker files'
+        files: (?i)dockerfile$
+        args: [--failure-threshold, error]
+
+    # Note this is used for YAML files, despite that it's named "jsonschema".
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
+    hooks:
+      - id: check-github-workflows
+        name: 'Check GitHub workflow files'
+
+# ~~~~ Commit message hooks ~~~~
+
+  - repo: https://github.com/crate-ci/typos
+    rev: c96c46fae465ab9e3607401d9ce93d75e7998023  # frozen: v1
+    hooks:
+      - id: typos
+        name: 'Check commit message for typos'
+        stages: [commit-msg]
+        # Important: add "args: []" to prevent typos from autofixing your files.
+        # C.f. https://github.com/crate-ci/typos/blob/master/docs/pre-commit.md
+        args: []
+
+# ~~~~ Pre-push hooks ~~~~
+
+  - repo: local
+    hooks:
+      - id: format-incremental
+        name: 'Run check/format-incremental'
+        entry: check/format-incremental
+        language: script
+        pass_filenames: false
+        files: \.(cc|h|cu|py)$
+        stages: [pre-push]
+
+  - repo: https://github.com/Pierre-Sassoulas/copyright_notice_precommit
+    rev: 'd9215b6b2a028d1614c92cf43a9fcff3b1dd889e'  # frozen: 0.1.2
+    hooks:
+      - id: copyright-notice
+        name: 'Check that files have a copyright notice'
+        types: [python]
+        stages: [pre-push]
+        args: [--notice=dev_tools/apache-license-header.txt]
+
+  - repo: https://github.com/tcort/markdown-link-check
+    rev: ffc61540dea52bad1c41cfeedcf26c53ad9447ba  # frozen: v3.14.2
+    hooks:
+      - id: markdown-link-check
+        name: 'Check Markdown file lint'
+        types: [markdown]
+        stages: [pre-push]
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: 3a6eb0fadf60b3cccfd80bad9dbb6fae7e47b316  # frozen: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+        name: 'Check that "# noqa" annotations include error codes'
+        stages: [pre-push]
+
+      - id: python-check-blanket-type-ignore
+        name: 'Check that "# type: ignore" comments include error codes'
+        stages: [pre-push]
+
+      - id: python-check-mock-methods
+        name: 'Check for common mistakes when using unittest.mock'
+        stages: [pre-push]

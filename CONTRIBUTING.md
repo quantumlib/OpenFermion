@@ -40,15 +40,15 @@ Hamiltonians.
 
 ### Main subdirectories
 
-**check/**: contains scripts for testing
+*   `check/`: contains scripts for testing
 
-**docker/**: contains a Docker configuration
+*   `docker/`: contains a Docker configuration
 
-**docs/**: contains OpenFermion documentation
+*   `docs/`: contains OpenFermion documentation
 
-**src/**: contains the main code
+*   `src/`: contains the main code
 
-**dev_tools/**: contains programs and configuration files used during development
+*   `dev_tools/`: contains programs and configuration files used during development
 
 The legacy subdirectories `cloud_library/` and `rtd_docs/` should be ignored.
 
@@ -180,12 +180,44 @@ ready, create a pull request from your branch to the main project repository.
 
     where `YOUR_BRANCH_NAME` is the name of your new branch.
 
-### `git` configuration
+### Git configuration
 
 The following command will set up large refactoring revisions to be ignored by `git blame`:
 
 ```bash
 git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+### Git hooks configuration (optional)
+
+This project includes a `.pre-commit-config.yaml` file for [pre-commit](https://pre-commit.com), an
+open-source utility that configures git hook functions to run when triggered by git operations such
+as committing changes, pushing changes, or writing commit messages. These hooks perform various
+checks that can help you meet project conventions automatically, at the cost of introducing small
+delays in those git operations. If you want to use `pre-commit`, you can install and configure it
+like this:
+
+```shell
+pip install pre-commit
+pre-commit install -t pre-commit -t pre-push -t commit-msg
+```
+
+Next, run it once after installation to download the hook environments and verify your setup:
+
+```shell
+pre-commit run --all-files
+```
+
+After that, the hooks will run automatically when triggered by the corresponding git operations.
+
+### Type annotation conventions
+
+Code should have [type annotations](https://www.python.org/dev/peps/pep-0484/). We use
+[mypy](http://mypy-lang.org/) to check that type annotations are correct, and the following script
+to run it:
+
+```shell
+check/mypy
 ```
 
 ### Python setup
@@ -207,20 +239,11 @@ git config blame.ignoreRevsFile .git-blame-ignore-revs
 Please refer to the section _Developer install_ of the [installation instructions](docs/install.md)
 for information about how to set up a local copy of the software for development.
 
-### Type annotation conventions
-
-Code should have [type annotations](https://www.python.org/dev/peps/pep-0484/). We use
-[mypy](http://mypy-lang.org/) to check that type annotations are correct, and the following script
-to run it:
-
-```shell
-check/mypy
-```
-
 ### Linting and formatting
 
 Code should meet common style standards for Python and be free of error-prone constructs. We use
-[Pylint](https://www.pylint.org/) to check for code lint and [Black](https://github.com/psf/black) for formatting code.
+[Pylint](https://www.pylint.org/) to check for code lint and [Black](https://github.com/psf/black)
+for formatting code.
 
 *   To check that code is formatted properly after editing Python files:
 
