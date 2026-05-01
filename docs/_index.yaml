@@ -20,14 +20,12 @@ description: >
 landing_page:
   custom_css_path: /site-assets/css/style.css
   rows:
-  - classname: quantum-hero quantum-hero--openfermion quantum-hero--icon-medium
+  - classname: quantum-hero quantum-hero--openfermion
     options:
     - hero
     - description-50
     - padding-large
     heading: OpenFermion
-    icon:
-      path: /site-assets/images/icons/icon_openfermion.png
     description: >
       The open source chemistry package for quantum computers
     items:
