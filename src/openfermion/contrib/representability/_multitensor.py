@@ -23,7 +23,7 @@ class TMap:
 
 
 class MultiTensor:
-    def __init__(self, tensors, dual_basis=DualBasis()):
+    def __init__(self, tensors, dual_basis=None):
         """
         A collection of tensor objects with maps from name to tensor
 
