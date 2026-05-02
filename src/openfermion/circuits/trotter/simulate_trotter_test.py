@@ -499,3 +499,19 @@ def test_trotter_misspecified_control_raises_error(algorithm_type, hamiltonian):
             next(algorithm.trotter_step(qubits, time))
         with pytest.raises(TypeError):
             next(algorithm.trotter_step(qubits, time, control_qubit=2))
+
+
+def test_simulate_trotter_spin_exchange_raises_value_error():
+    """LOW_RANK raises ValueError for a non-spin-symmetric Hamiltonian."""
+    h_sf = openfermion.FermionOperator('0^ 3^ 1 2', 1.0) + openfermion.FermionOperator(
+        '2^ 1^ 3 0', 1.0
+    )
+    interaction_hamiltonian = openfermion.get_interaction_operator(h_sf, n_qubits=4)
+    qubits = cirq.LineQubit.range(4)
+
+    with pytest.raises(ValueError, match='spin-symmetric'):
+        next(
+            simulate_trotter(
+                qubits=qubits, hamiltonian=interaction_hamiltonian, time=1.0, algorithm=LOW_RANK
+            )
+        )
