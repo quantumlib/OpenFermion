@@ -150,8 +150,8 @@ def low_rank_two_body_decomposition(
     interaction_array = numpy.reshape(chemist_two_body_coefficients, (full_rank, full_rank))
 
     # Make sure interaction array is symmetric and real.
-    asymmetry = numpy.sum(numpy.absolute(interaction_array - interaction_array.transpose()))
-    imaginary_norm = numpy.sum(numpy.absolute(interaction_array.imag))
+    asymmetry = numpy.amax(numpy.absolute(interaction_array - interaction_array.transpose()))
+    imaginary_norm = numpy.amax(numpy.absolute(interaction_array.imag))
     if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
         raise ValueError(
             'The two-body coefficient tensor failed the symmetry or reality '
