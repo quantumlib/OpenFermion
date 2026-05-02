@@ -289,7 +289,7 @@ jobs:
     if: needs.changes.outputs.python == 'true'
     name: Python code coverage tests
     needs: [changes, python-checks]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
