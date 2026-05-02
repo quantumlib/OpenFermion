@@ -76,7 +76,7 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
         # produce an asymmetric matrix here and cannot be handled by this
         # spatial-orbital downfolding approach.
         flat = numpy.reshape(alpha_alpha_beta_beta, (n_orbitals**2, n_orbitals**2))
-        spin_asymmetry = numpy.sum(numpy.absolute(flat - flat.T))
+        spin_asymmetry = numpy.amax(numpy.absolute(flat - flat.T))
         if spin_asymmetry > EQ_TOLERANCE:
             raise ValueError(
                 'The two-body tensor is not spin-symmetric. The LOW_RANK '
