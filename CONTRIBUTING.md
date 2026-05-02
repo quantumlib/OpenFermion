@@ -210,16 +210,6 @@ pre-commit run --all-files
 
 After that, the hooks will run automatically when triggered by the corresponding git operations.
 
-### Type annotation conventions
-
-Code should have [type annotations](https://www.python.org/dev/peps/pep-0484/). We use
-[mypy](http://mypy-lang.org/) to check that type annotations are correct, and the following script
-to run it:
-
-```shell
-check/mypy
-```
-
 ### Python setup
 
 1.  Create a Python virtual environment. To use Python's built-in `venv` package, run:
