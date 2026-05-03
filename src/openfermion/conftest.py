@@ -19,7 +19,6 @@ import numpy as np
 def pytest_configure(config):
     # Set seeds for collection-time parameterization.
     random.seed(0)
-    np.random.default_rng(0)
     np.random.seed(0)
 
     os.environ['CIRQ_TESTING'] = "true"
