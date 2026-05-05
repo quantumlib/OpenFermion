@@ -23,7 +23,7 @@ class TMap(object):
 
 
 class MultiTensor(object):
-    def __init__(self, tensors, dual_basis=DualBasis()):
+    def __init__(self, tensors, dual_basis=None):
         """
         A collection of tensor objects with maps from name to tensor
 
@@ -46,6 +46,8 @@ class MultiTensor(object):
         self.off_set_map = self.make_offset_dict(self.tensors)
 
         # An iterable object that provides access to the dual basis elements
+        if dual_basis is None:
+            dual_basis = DualBasis()
         self.dual_basis = dual_basis
         self.vec_dim = sum([vec.size for vec in self.tensors])
 
@@ -81,8 +83,7 @@ class MultiTensor(object):
         if not isinstance(dual_element, DualBasisElement):
             raise TypeError("dual_element variable needs to be a DualBasisElement type")
 
-        # we should extend TMap to add
-        self.dual_basis.elements.extend(dual_element)
+        self.dual_basis.elements.append(dual_element)
 
     def synthesize_dual_basis(self):
         """
@@ -93,7 +94,7 @@ class MultiTensor(object):
 
         :returns: sparse matrix
         """
-        # go throught the dual basis list and synthesize each element
+        # go through the dual basis list and synthesize each element
         dual_row_indices = []
         dual_col_indices = []
         dual_data_values = []
