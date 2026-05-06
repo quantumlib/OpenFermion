@@ -14,7 +14,8 @@
 import os
 
 import itertools
-
+import shutil
+import tempfile
 import unittest
 
 import numpy
@@ -458,6 +459,7 @@ class IsHermitianTest(unittest.TestCase):
 
 class SaveLoadOperatorTest(unittest.TestCase):
     def setUp(self):
+        self.test_dir = tempfile.mkdtemp()
         self.n_qubits = 5
         self.fermion_term = FermionOperator('1^ 2^ 3 4', -3.17)
         self.fermion_operator = self.fermion_term + hermitian_conjugated(self.fermion_term)
@@ -470,30 +472,27 @@ class SaveLoadOperatorTest(unittest.TestCase):
 
         self.bad_operator_filename = 'bad_file.data'
         bad_op = "A:\nB"
-        with open(os.path.join(DATA_DIRECTORY, self.bad_operator_filename), 'w') as fid:
+        with open(os.path.join(self.test_dir, self.bad_operator_filename), 'w') as fid:
             fid.write(bad_op)
 
+        shutil.copy(os.path.join(DATA_DIRECTORY, 'bad_type_operator.data'), self.test_dir)
+
     def tearDown(self):
-        file_path = os.path.join(DATA_DIRECTORY, self.file_name + '.data')
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-        file_path = os.path.join(DATA_DIRECTORY, self.bad_operator_filename)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
+        shutil.rmtree(self.test_dir)
 
     def test_save_sympy_plaintext(self):
         operator = FermionOperator('1^', sympy.Symbol('x'))
         with self.assertRaises(TypeError):
-            save_operator(operator, self.file_name, plain_text=True)
+            save_operator(operator, self.file_name, data_directory=self.test_dir, plain_text=True)
 
     def test_raises_error_sympy(self):
         operator = FermionOperator('1^', sympy.Symbol('x'))
         with self.assertRaises(TypeError):
-            save_operator(operator, self.file_name, plain_text=False)
+            save_operator(operator, self.file_name, data_directory=self.test_dir, plain_text=False)
 
     def test_save_and_load_fermion_operators(self):
-        save_operator(self.fermion_operator, self.file_name)
-        loaded_fermion_operator = load_operator(self.file_name)
+        save_operator(self.fermion_operator, self.file_name, data_directory=self.test_dir)
+        loaded_fermion_operator = load_operator(self.file_name, data_directory=self.test_dir)
         self.assertEqual(
             self.fermion_operator,
             loaded_fermion_operator,
@@ -501,13 +500,17 @@ class SaveLoadOperatorTest(unittest.TestCase):
         )
 
     def test_save_and_load_fermion_operators_readably(self):
-        save_operator(self.fermion_operator, self.file_name, plain_text=True)
-        loaded_fermion_operator = load_operator(self.file_name, plain_text=True)
+        save_operator(
+            self.fermion_operator, self.file_name, data_directory=self.test_dir, plain_text=True
+        )
+        loaded_fermion_operator = load_operator(
+            self.file_name, data_directory=self.test_dir, plain_text=True
+        )
         self.assertTrue(self.fermion_operator == loaded_fermion_operator)
 
     def test_save_and_load_boson_operators(self):
-        save_operator(self.boson_operator, self.file_name)
-        loaded_boson_operator = load_operator(self.file_name)
+        save_operator(self.boson_operator, self.file_name, data_directory=self.test_dir)
+        loaded_boson_operator = load_operator(self.file_name, data_directory=self.test_dir)
         self.assertEqual(
             self.boson_operator.terms,
             loaded_boson_operator.terms,
@@ -515,37 +518,51 @@ class SaveLoadOperatorTest(unittest.TestCase):
         )
 
     def test_save_and_load_boson_operators_readably(self):
-        save_operator(self.boson_operator, self.file_name, plain_text=True)
-        loaded_boson_operator = load_operator(self.file_name, plain_text=True)
+        save_operator(
+            self.boson_operator, self.file_name, data_directory=self.test_dir, plain_text=True
+        )
+        loaded_boson_operator = load_operator(
+            self.file_name, data_directory=self.test_dir, plain_text=True
+        )
         self.assertTrue(self.boson_operator == loaded_boson_operator)
 
     def test_save_and_load_quad_operators(self):
-        save_operator(self.quad_operator, self.file_name)
-        loaded_quad_operator = load_operator(self.file_name)
+        save_operator(self.quad_operator, self.file_name, data_directory=self.test_dir)
+        loaded_quad_operator = load_operator(self.file_name, data_directory=self.test_dir)
         self.assertEqual(self.quad_operator.terms, loaded_quad_operator.terms)
 
     def test_save_and_load_quad_operators_readably(self):
-        save_operator(self.quad_operator, self.file_name, plain_text=True)
-        loaded_quad_operator = load_operator(self.file_name, plain_text=True)
+        save_operator(
+            self.quad_operator, self.file_name, data_directory=self.test_dir, plain_text=True
+        )
+        loaded_quad_operator = load_operator(
+            self.file_name, data_directory=self.test_dir, plain_text=True
+        )
         self.assertTrue(self.quad_operator == loaded_quad_operator)
 
     def test_save_and_load_qubit_operators(self):
-        save_operator(self.qubit_operator, self.file_name)
-        loaded_qubit_operator = load_operator(self.file_name)
+        save_operator(self.qubit_operator, self.file_name, data_directory=self.test_dir)
+        loaded_qubit_operator = load_operator(self.file_name, data_directory=self.test_dir)
         self.assertTrue(self.qubit_operator == loaded_qubit_operator)
 
     def test_save_and_load_qubit_operators_readably(self):
-        save_operator(self.qubit_operator, self.file_name, plain_text=True)
-        loaded_qubit_operator = load_operator(self.file_name, plain_text=True)
+        save_operator(
+            self.qubit_operator, self.file_name, data_directory=self.test_dir, plain_text=True
+        )
+        loaded_qubit_operator = load_operator(
+            self.file_name, data_directory=self.test_dir, plain_text=True
+        )
         self.assertEqual(self.qubit_operator, loaded_qubit_operator)
 
     def test_load_bad_operator(self):
         with self.assertRaises(TypeError):
-            load_operator(self.bad_operator_filename, plain_text=True)
+            load_operator(self.bad_operator_filename, data_directory=self.test_dir, plain_text=True)
 
     def test_save_readably(self):
-        save_operator(self.fermion_operator, self.file_name, plain_text=True)
-        file_path = os.path.join(DATA_DIRECTORY, self.file_name + '.data')
+        save_operator(
+            self.fermion_operator, self.file_name, data_directory=self.test_dir, plain_text=True
+        )
+        file_path = os.path.join(self.test_dir, self.file_name + '.data')
         with open(file_path, "r") as f:
             self.assertEqual(
                 f.read(),
@@ -557,7 +574,7 @@ class SaveLoadOperatorTest(unittest.TestCase):
             save_operator(self.fermion_operator)
 
     def test_basic_save(self):
-        save_operator(self.fermion_operator, self.file_name)
+        save_operator(self.fermion_operator, self.file_name, data_directory=self.test_dir)
 
     def test_save_interaction_operator_not_implemented(self):
         constant = 100.0
@@ -567,32 +584,42 @@ class SaveLoadOperatorTest(unittest.TestCase):
         two_body[1, 2, 3, 4] = 12.0
         interaction_operator = InteractionOperator(constant, one_body, two_body)
         with self.assertRaises(NotImplementedError):
-            save_operator(interaction_operator, self.file_name)
+            save_operator(interaction_operator, self.file_name, data_directory=self.test_dir)
 
     def test_save_on_top_of_existing_operator_utils_error(self):
-        save_operator(self.fermion_operator, self.file_name)
+        save_operator(self.fermion_operator, self.file_name, data_directory=self.test_dir)
         with self.assertRaises(OperatorUtilsError):
-            save_operator(self.fermion_operator, self.file_name)
+            save_operator(self.fermion_operator, self.file_name, data_directory=self.test_dir)
 
     def test_save_on_top_of_existing_operator_error_with_explicit_flag(self):
-        save_operator(self.fermion_operator, self.file_name)
+        save_operator(self.fermion_operator, self.file_name, data_directory=self.test_dir)
         with self.assertRaises(OperatorUtilsError):
-            save_operator(self.fermion_operator, self.file_name, allow_overwrite=False)
+            save_operator(
+                self.fermion_operator,
+                self.file_name,
+                data_directory=self.test_dir,
+                allow_overwrite=False,
+            )
 
     def test_overwrite_flag_save_on_top_of_existing_operator(self):
-        save_operator(self.fermion_operator, self.file_name)
-        save_operator(self.fermion_operator, self.file_name, allow_overwrite=True)
-        fermion_operator = load_operator(self.file_name)
+        save_operator(self.fermion_operator, self.file_name, data_directory=self.test_dir)
+        save_operator(
+            self.fermion_operator,
+            self.file_name,
+            data_directory=self.test_dir,
+            allow_overwrite=True,
+        )
+        fermion_operator = load_operator(self.file_name, data_directory=self.test_dir)
 
         self.assertEqual(fermion_operator, self.fermion_operator)
 
     def test_load_bad_type(self):
         with self.assertRaises(TypeError):
-            _ = load_operator('bad_type_operator')
+            _ = load_operator('bad_type_operator', data_directory=self.test_dir)
 
     def test_save_bad_type(self):
         with self.assertRaises(TypeError):
-            save_operator('ping', 'somewhere')
+            save_operator('ping', 'somewhere', data_directory=self.test_dir)
 
 
 class GetFileDirTest(unittest.TestCase):
