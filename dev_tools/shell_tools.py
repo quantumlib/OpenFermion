@@ -124,7 +124,7 @@ def run_cmd(
     raise_on_fail: bool = True,
     log_run_to_stderr: bool = True,
     abbreviate_non_option_arguments: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> CommandOutput:
     """Invokes a subprocess and waits for it to finish.
 
@@ -204,7 +204,7 @@ def run_shell(
     err: Optional[Union[TeeCapture, IO[str]]] = sys.stderr,
     raise_on_fail: bool = True,
     log_run_to_stderr: bool = True,
-    **kwargs,
+    **kwargs: Any,
 ) -> CommandOutput:
     """Invokes a shell command and waits for it to finish.
 
@@ -267,7 +267,7 @@ def run_shell(
     return result
 
 
-def output_of(*cmd: Optional[str], **kwargs) -> str:
+def output_of(*cmd: Optional[str], **kwargs: Any) -> str:
     """Invokes a subprocess and returns its output as a string.
 
     Args:
@@ -276,9 +276,7 @@ def output_of(*cmd: Optional[str], **kwargs) -> str:
             a cwd (current working directory) argument.
 
     Returns:
-        A (captured output, captured error output, return code) triplet. The
-        captured outputs will be None if the out or err parameters were not set
-        to an instance of TeeCapture.
+        The output of the command.
 
     Raises:
          subprocess.CalledProcessError: The process returned a non-zero error

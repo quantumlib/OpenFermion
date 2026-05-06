@@ -83,12 +83,12 @@ PLATFORMS = {
 }
 
 
-def run(*args):
+def run(*args: Any) -> subprocess.CompletedProcess:
     """Run a command using `subprocess`."""
     return subprocess.run(*args, check=True)
 
 
-def pip_compile(env_name: str, env_recipe: EnvRecipe, env_out_dir: str, constrain=True):
+def pip_compile(env_name: str, env_recipe: EnvRecipe, env_out_dir: str, constrain: bool = True) -> None:
     """Run `pip-compile` to create the named environment."""
     dep_args = [f"deps/{dep_name}.txt" for dep_name in env_recipe.deps]
     dep_args += [f"--constraint=deps/{cons_name}.txt" for cons_name in env_recipe.addtl_constraints]
@@ -115,7 +115,7 @@ def get_dev_env_recipe(pr: PlatformRecipe) -> EnvRecipe:
     return EnvRecipe(all_deps, all_addtl_constraints)
 
 
-def make_platform_envs(pr: PlatformRecipe):
+def make_platform_envs(pr: PlatformRecipe) -> None:
     os.makedirs(pr.env_out_dir, exist_ok=True)
 
     # Pip compile the full dev environment
@@ -126,7 +126,7 @@ def make_platform_envs(pr: PlatformRecipe):
         pip_compile(env_name, env_recipe, pr.env_out_dir)
 
 
-def parse():
+def parse() -> None:
     """Parse command line arguments."""
     parser = ArgumentParser()
     parser.add_argument("--platform", default="default")
@@ -136,7 +136,7 @@ def parse():
     except KeyError:
         raise ValueError(f"Unknown platform {args.platform}")
 
-    return make_platform_envs(platform)
+    make_platform_envs(platform)
 
 
 if __name__ == "__main__":
