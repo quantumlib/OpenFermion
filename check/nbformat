@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+################################################################################
+# Checks the format of Jupyter notebook (.ipynb) files using the
+# TensorFlow Docs notebook format checker.
+#
+# Usage:
+#     check/nbformat [--help] [--fix]
+#
+# By default, this script checks all .ipynb files tracked by git and exits
+# with a non-zero code if any notebook does not conform to the expected format.
+#
+# With '--fix', the script reformats the notebooks in place instead of just
+# reporting errors.
+################################################################################
+
+set -euo pipefail
+
+declare -r usage="\
+Usage: ${0##*/} [--help] [--fix]
+
+Checks the format of Jupyter notebook (.ipynb) files in this repository using
+the TensorFlow Docs notebook format checker (tensorflow_docs.tools.nbformat).
+
+With no arguments, notebooks are checked but not modified. Exits with a
+non-zero status code if any notebook fails the format check.
+
+With --fix, the notebooks are reformatted in place and the script exits with
+status 0 if all notebooks were successfully processed.
+"
+
+# Get the working directory to the repo root.
+thisdir=$(dirname "${BASH_SOURCE[0]:?}")
+repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel)
+cd "${repo_dir}"
+
+# Parse arguments.
+opt_fix=0
+for arg in "$@"; do
+    case "${arg}" in
+        -h | --help)
+            echo "${usage}"
+            exit 0
+            ;;
+        --fix)
+            opt_fix=1
+            ;;
+        *)
+            echo "Unknown argument: '${arg}'" >&2
+            echo "See '${0} --help' for usage." >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Find all tracked .ipynb files in the repository.
+IFS=$'\n' read -r -d '' -a notebooks < <(
+    git ls-files '*.ipynb'
+    printf "\0"
+)
+
+if [[ "${#notebooks[@]}" -eq 0 ]]; then
+    echo "No .ipynb notebook files found."
+    exit 0
+fi
+
+echo "Found ${#notebooks[@]} notebook(s)."
+
+# Build the tensorflow_docs.tools.nbformat argument list.
+declare -a tf_args=()
+if (( opt_fix )); then
+    echo "Running notebook format fixer..."
+    tf_args=( "--fix" )
+else
+    echo "Running notebook format checker..."
+fi
+
+declare -a errors=()
+for notebook in "${notebooks[@]}"; do
+    echo "  Checking: ${notebook}"
+    if ! python -m tensorflow_docs.tools.nbformat "${tf_args[@]}" "${notebook}"; then
+        errors+=( "${notebook}" )
+    fi
+done
+
+echo
+
+if [[ "${#errors[@]}" -eq 0 ]]; then
+    echo "All notebooks passed the format check."
+    exit 0
+else
+    echo "The following notebooks failed the format check:" >&2
+    printf "  %s\n" "${errors[@]}" >&2
+    if (( ! opt_fix )); then
+        echo "" >&2
+        echo "Run 'check/nbformat --fix' to fix the notebooks automatically." >&2
+    fi
+    exit 1
+fi

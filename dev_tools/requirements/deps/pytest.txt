@@ -6,3 +6,4 @@ pytest-retry
 pytest-xdist
 
 nbformat
+tensorflow-docs

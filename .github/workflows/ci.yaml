@@ -102,6 +102,8 @@ jobs:
 
       shell: ${{steps.filter.outputs.shell || steps.filter.outputs.ci}}
       shell_files: ${{steps.filter.outputs.shell_files}}
+
+      notebooks: ${{steps.filter.outputs.notebooks || steps.filter.outputs.ci}}
     steps:
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -135,6 +137,8 @@ jobs:
             shell:
               - '**/*.sh'
               - 'check/*'
+            notebooks:
+              - '**/*.ipynb'
 
   python-checks:
     if: needs.changes.outputs.python == 'true'
@@ -418,6 +422,32 @@ jobs:
           # shellcheck disable=SC2086
           shellcheck ${CHANGED_FILES}
 
+  notebook-checks:
+    if: needs.changes.outputs.notebooks == 'true'
+    name: Notebook format checks
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install requirements
+        run: pip install -r dev_tools/requirements/envs/pytest.env.txt
+
+      - name: Check notebook format
+        run: check/nbformat
+
   report-results:
     name: CI
     if: always()
@@ -425,6 +455,7 @@ jobs:
       - coverage
       - docker-lint
       - json-lint
+      - notebook-checks
       - pytest
       - pytest-compat
       - pytest-extra
