@@ -17,7 +17,10 @@ import numpy as np
 
 
 def pytest_configure(config):
-    # fail tests when using deprecated cirq functionality
+    # Set seeds for collection-time parameterization.
+    random.seed(0)
+    np.random.seed(0)
+
     os.environ['CIRQ_TESTING'] = "true"
 
 

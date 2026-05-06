@@ -212,16 +212,6 @@ pre-commit run --all-files
 
 After that, the hooks will run automatically when triggered by the corresponding git operations.
 
-### Type annotation conventions
-
-Code should have [type annotations](https://www.python.org/dev/peps/pep-0484/). We use
-[mypy](http://mypy-lang.org/) to check that type annotations are correct, and the following script
-to run it:
-
-```shell
-check/mypy
-```
-
 ### Python setup
 
 1.  Create a Python virtual environment. To use Python's built-in `venv` package, run:
@@ -240,6 +230,20 @@ check/mypy
 
 Please refer to the section _Developer install_ of the [installation instructions](docs/install.md)
 for information about how to set up a local copy of the software for development.
+
+### Type annotation conventions
+
+Code should have [type annotations](https://www.python.org/dev/peps/pep-0484/). We use
+[mypy](http://mypy-lang.org/) to check that type annotations are correct, and the following script
+to run it:
+
+```shell
+check/mypy
+```
+
+If your computer has multiple processor cores, you can add the option `-j 0` to the command above to
+make Mypy run in parallel for a substantial speed increase.
+
 
 ### Linting and formatting
 
@@ -284,7 +288,9 @@ We use [pytest](https://docs.pytest.org) to run our tests and
 *   While developing, periodically check that changes do not break anything. For fast checks, use
     `pytest -m "not slow" PATH`, where `PATH` is a directory or pytest file to test.
 
-*   After finishing a task, run `check/pytest` to test all of the OpenFermion code.
+*   After finishing a task, run `check/pytest` to test all of the OpenFermion code. If your system
+    has multiple processor cores, you can add the option `-n auto` to make it run in parallel for a
+    substantial speed increase. (Beware, though, that this is resource-intensive.)
 
 We don't require 100% coverage, but coverage should be very high, and any uncovered code must be
 annotated with `# pragma: no cover`. To ignore coverage of a single line, place `# pragma: no cover`
@@ -296,9 +302,9 @@ cover` comment on its own line. Note, however, that these annotations should be 
 After a task is finished, run each of the following to make sure everything passes all the tests:
 
 *   `check/format-incremental`
-*   `check/pylint`
+*   `check/pylint -j 0`
 *   `check/mypy`
-*   `check/pytest`
+*   `check/pytest -n auto`
 *   `check/pytest-and-incremental-coverage`
 
 ### Pull requests and code reviews

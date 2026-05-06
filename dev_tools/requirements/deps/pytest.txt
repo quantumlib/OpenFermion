@@ -1,6 +1,7 @@
 pytest
 pytest-asyncio
 pytest-cov
+pytest-randomly
 pytest-retry
 pytest-xdist
 
