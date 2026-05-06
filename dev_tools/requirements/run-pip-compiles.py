@@ -83,7 +83,7 @@ PLATFORMS = {
 }
 
 
-def run(*args: Any) -> subprocess.CompletedProcess[Any]:
+def run(*args: Any) -> subprocess.CompletedProcess:
     """Run a command using `subprocess`."""
     return subprocess.run(*args, check=True)
 
