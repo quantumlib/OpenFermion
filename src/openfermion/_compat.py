@@ -9,12 +9,15 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from typing import Dict, Tuple
+
+from typing import Any, Dict, Tuple
 from types import ModuleType
 import warnings
 
 
-def wrap_module(module: ModuleType, deprecated_attributes: Dict[str, Tuple[str, str]]):
+def wrap_module(
+    module: ModuleType, deprecated_attributes: Dict[str, Tuple[str, str]]
+) -> ModuleType:
     """Wrap a module with deprecated attributes.
 
     Args:
@@ -31,7 +34,7 @@ def wrap_module(module: ModuleType, deprecated_attributes: Dict[str, Tuple[str, 
     class Wrapped(ModuleType):
         __dict__ = module.__dict__
 
-        def __getattr__(self, name):
+        def __getattr__(self, name: str) -> Any:
             if name in deprecated_attributes:
                 version, fix = deprecated_attributes[name]
                 warnings.warn(
