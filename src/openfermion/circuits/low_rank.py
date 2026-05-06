@@ -46,10 +46,10 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
     Raises:
         ValueError: Input two-body tensor is not spin-symmetric. The LOW_RANK
             decomposition requires a spin-symmetric interaction when
-            ``spin_basis=True``. A spin-symmetric interaction satisfies
-            ``h[p,q,r,s] == h[p+1,q+1,r+1,s+1]`` for all even p, q, r, s
+            spin_basis=True. A spin-symmetric interaction satisfies
+            h[p,q,r,s] == h[p+1,q+1,r+1,s+1] for all even p, q, r, s
             (i.e., the same coefficient for alpha and beta spin channels).
-            Consider passing ``spin_basis=False`` if your Hamiltonian is not
+            Consider passing spin_basis=False if your Hamiltonian is not
             spin-symmetric.
     """
     # Initialize.
@@ -136,9 +136,9 @@ def low_rank_two_body_decomposition(
 
     Raises:
         ValueError: The two-body tensor failed symmetry or reality checks
-            required for the low-rank decomposition. When ``spin_basis=True``,
+            required for the low-rank decomposition. When spin_basis=True,
             the tensor must be spin-symmetric (see
-            :func:`get_chemist_two_body_coefficients`). When ``spin_basis=False``,
+            get_chemist_two_body_coefficients()). When spin_basis=False,
             the chemist-ordered tensor must be real and symmetric.
     """
     # Initialize N^2 by N^2 interaction array.

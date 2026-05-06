@@ -66,11 +66,11 @@ class LowRankTrotterAlgorithm(TrotterAlgorithm):
     where x is a truncation threshold specified by user.
 
     Note:
-        When ``spin_basis=True`` (the default), the input
-        :class:`~openfermion.ops.InteractionOperator` must have a
+        When spin_basis=True (the default), the input
+        InteractionOperator must have a
         spin-symmetric two-body tensor, i.e. identical interaction
         coefficients for the alpha and beta spin channels. Hamiltonians
-        that break this symmetry will raise a ``ValueError``.
+        that break this symmetry will raise a ValueError.
     """
 
     supported_types = {ops.InteractionOperator}
