@@ -396,7 +396,7 @@ def spinorb_from_spatial(one_body_integrals, two_body_integrals):
     return one_body_coefficients, two_body_coefficients
 
 
-class MolecularData(object):
+class MolecularData:
     """Class for storing molecule data from a fixed basis set at a fixed
     geometry that is obtained from classical electronic structure
     packages. Not every field is filled in every calculation. All data
@@ -859,7 +859,7 @@ class MolecularData(object):
             # Load charge:
             self.charge = int(f["charge"][...])
             # Load description:
-            self.description = f["description"][...].tobytes().decode('utf-8').rstrip(u'\x00')
+            self.description = f["description"][...].tobytes().decode('utf-8').rstrip('\x00')
             # Load name:
             self.name = f["name"][...].tobytes().decode('utf-8')
             # Load n_atoms:

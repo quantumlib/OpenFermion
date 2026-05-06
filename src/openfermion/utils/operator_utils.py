@@ -11,7 +11,6 @@
 #   limitations under the License.
 """This module provides generic tools for classes in ops/"""
 
-from builtins import map, zip
 import marshal
 import os
 

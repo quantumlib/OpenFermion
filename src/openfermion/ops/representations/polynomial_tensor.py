@@ -92,7 +92,7 @@ def general_basis_change(general_tensor, rotation_matrix, key):
     return transformed_general_tensor
 
 
-class PolynomialTensor(object):
+class PolynomialTensor:
     r"""Class for storing tensor representations of operators that correspond
     with multilinear polynomials in the fermionic ladder operators.
     For instance, in a quadratic Hamiltonian (degree 2 polynomial) which

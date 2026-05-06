@@ -2,7 +2,7 @@ from typing import List, Optional, Union, Tuple
 import copy
 
 
-class DualBasisElement(object):
+class DualBasisElement:
     """
     This object is named after the algebraic dual space or dual vector space
 
@@ -154,7 +154,7 @@ class DualBasisElement(object):
             raise TypeError("DualBasisElement can be added to same type or DualBasis")
 
 
-class DualBasis(object):
+class DualBasis:
     def __init__(self, elements: Optional[Union[None, List[DualBasisElement]]] = None):
         """
         A collection of DualBasisElements
