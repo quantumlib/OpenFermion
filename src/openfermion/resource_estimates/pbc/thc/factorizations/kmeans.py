@@ -20,7 +20,7 @@ weighted by the electron density using a K-Means classification.
 """
 
 
-class KMeansCVT(object):
+class KMeansCVT:
     def __init__(self, grid: npt.NDArray, max_iteration: int = 100, threshold: float = 1e-6):
         """Initialize k-means solver to find interpolating points for ISDF.
 
