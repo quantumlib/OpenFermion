@@ -61,10 +61,10 @@ def test_deprecated_test() -> None:
 
 
 def test_wrap_module() -> None:
-    openfermion.deprecated_attribute = None  # type: ignore
+    openfermion.deprecated_attribute = None  # type: ignore[attr-defined]
     wrapped_openfermion = wrap_module(openfermion, {'deprecated_attribute': ('', '')})
     with pytest.deprecated_call():
-        _ = wrapped_openfermion.deprecated_attribute  # type: ignore
+        _ = wrapped_openfermion.deprecated_attribute  # type: ignore[attr-defined]
 
 
 def test_cirq_deprecations() -> None:
