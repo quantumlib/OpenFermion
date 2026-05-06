@@ -40,7 +40,7 @@ import os
 import subprocess
 from argparse import ArgumentParser
 from dataclasses import dataclass, field
-from typing import *
+from typing import Any, Dict, Set
 
 
 @dataclass
@@ -83,7 +83,7 @@ PLATFORMS = {
 }
 
 
-def run(*args: Any) -> subprocess.CompletedProcess:
+def run(*args: Any) -> subprocess.CompletedProcess[Any]:
     """Run a command using `subprocess`."""
     return subprocess.run(*args, check=True)
 
