@@ -88,7 +88,9 @@ def run(*args: Any) -> subprocess.CompletedProcess:
     return subprocess.run(*args, check=True)
 
 
-def pip_compile(env_name: str, env_recipe: EnvRecipe, env_out_dir: str, constrain: bool = True) -> None:
+def pip_compile(
+    env_name: str, env_recipe: EnvRecipe, env_out_dir: str, constrain: bool = True
+) -> None:
     """Run `pip-compile` to create the named environment."""
     dep_args = [f"deps/{dep_name}.txt" for dep_name in env_recipe.deps]
     dep_args += [f"--constraint=deps/{cons_name}.txt" for cons_name in env_recipe.addtl_constraints]
