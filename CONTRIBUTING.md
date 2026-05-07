@@ -249,12 +249,19 @@ make Mypy run in parallel for a substantial speed increase.
 
 Code should meet common style standards for Python and be free of error-prone constructs. We use
 [Pylint](https://www.pylint.org/) to check for code lint and [Black](https://github.com/psf/black)
-for formatting code.
+for formatting code, and provide scripts to run them.
 
 *   To check that code is formatted properly after editing Python files:
 
     ```shell
     check/format-incremental
+    ```
+
+    If formatting issues are reported, you can fix them automatically by running the script with
+    the `--apply` option:
+
+    ```shell
+    check/format-incremental --apply
     ```
 
 *   To run the linter:
@@ -289,8 +296,8 @@ We use [pytest](https://docs.pytest.org) to run our tests and
     `pytest -m "not slow" PATH`, where `PATH` is a directory or pytest file to test.
 
 *   After finishing a task, run `check/pytest` to test all of the OpenFermion code. If your system
-    has multiple processor cores, you can add the option `-n auto` to make it run in parallel for a
-    substantial speed increase. (Beware, though, that this is resource-intensive.)
+    has multiple processor cores, you can add the option `-n auto` to make pytest use multiple
+    parallel processes for a speed increase. (Beware, though, that this is resource-intensive.)
 
 We don't require 100% coverage, but coverage should be very high, and any uncovered code must be
 annotated with `# pragma: no cover`. To ignore coverage of a single line, place `# pragma: no cover`
@@ -301,7 +308,7 @@ cover` comment on its own line. Note, however, that these annotations should be 
 
 After a task is finished, run each of the following to make sure everything passes all the tests:
 
-*   `check/format-incremental`
+*   `check/format-incremental` (and `check/format-incremental --apply` to auto-fix format problems)
 *   `check/pylint -j 0`
 *   `check/mypy`
 *   `check/pytest -n auto`
