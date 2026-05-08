@@ -65,7 +65,7 @@ class PreparedEnv:
 
     def report_status_to_github(
         self, state: str, description: str, context: str, target_url: Optional[str] = None
-    ):
+    ) -> None:
         """Sets a commit status indicator on github.
 
         If not running from a pull request (i.e. repository is None), then this
