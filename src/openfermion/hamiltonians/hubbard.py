@@ -17,16 +17,16 @@ from openfermion.hamiltonians.special_operators import number_operator
 
 
 def fermi_hubbard(
-    x_dimension,
-    y_dimension,
-    tunneling,
-    coulomb,
-    chemical_potential=0.0,
-    magnetic_field=0.0,
-    periodic=True,
-    spinless=False,
-    particle_hole_symmetry=False,
-):
+    x_dimension: int,
+    y_dimension: int,
+    tunneling: complex,
+    coulomb: complex,
+    chemical_potential: complex = 0.0,
+    magnetic_field: complex = 0.0,
+    periodic: bool = True,
+    spinless: bool = False,
+    particle_hole_symmetry: bool = False,
+) -> FermionOperator:
     r"""Return symbolic representation of a Fermi-Hubbard Hamiltonian.
 
     The idea of this model is that some fermions move around on a grid and the
@@ -229,14 +229,14 @@ def _spinless_fermi_hubbard_model(
 
 
 def bose_hubbard(
-    x_dimension,
-    y_dimension,
-    tunneling,
-    interaction,
-    chemical_potential=0.0,
-    dipole=0.0,
-    periodic=True,
-):
+    x_dimension: int,
+    y_dimension: int,
+    tunneling: complex,
+    interaction: complex,
+    chemical_potential: complex = 0.0,
+    dipole: complex = 0.0,
+    periodic: bool = True,
+) -> BosonOperator:
     r"""Return symbolic representation of a Bose-Hubbard Hamiltonian.
 
     In this model, bosons move around on a lattice, and the
