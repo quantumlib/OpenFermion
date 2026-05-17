@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 from unittest.mock import patch, MagicMock
 from dev_tools.prepared_env import PreparedEnv
 from dev_tools.github_repository import GithubRepository
@@ -6,7 +7,7 @@ from dev_tools.github_repository import GithubRepository
 
 class TestPreparedEnvSecurity(unittest.TestCase):
     @patch('requests.post')
-    def test_report_status_to_github_token_in_header(self, mock_post):
+    def test_report_status_to_github_token_in_header(self, mock_post: Any) -> None:
         # Setup
         mock_response = MagicMock()
         mock_response.status_code = 201

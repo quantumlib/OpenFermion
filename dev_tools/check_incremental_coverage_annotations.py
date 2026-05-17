@@ -22,7 +22,7 @@ from dev_tools import prepared_env, shell_tools
 from dev_tools.incremental_coverage import check_for_uncovered_lines
 
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2:
         print(
             shell_tools.highlight(

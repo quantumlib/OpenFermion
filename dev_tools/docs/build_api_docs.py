@@ -15,6 +15,7 @@
 """Tool to generate external api_docs for OF (Shameless copy from TFQ)."""
 
 import os
+from typing import Any
 
 from absl import app
 from absl import flags
@@ -39,7 +40,7 @@ flags.DEFINE_string("site_path", "/reference/python/openfermion", "Path prefix i
 FLAGS = flags.FLAGS
 
 
-def main(unused_argv):
+def main(unused_argv: Any) -> None:
 
     doc_generator = generate_lib.DocGenerator(
         root_title="OpenFermion",
