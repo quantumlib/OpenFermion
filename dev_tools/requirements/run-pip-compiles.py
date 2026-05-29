@@ -68,6 +68,7 @@ PLATFORMS = {
             "pytest-extra": EnvRecipe({"runtime", "resource_estimates_runtime", "pytest"}),
             "mypy": EnvRecipe({"runtime", "mypy"}),
             "pip-tools": EnvRecipe({"pip-tools"}),
+            "shellcheck": EnvRecipe({"shellcheck"}),
         }
     ),
     # The following is intended to be run on an older version of python and
