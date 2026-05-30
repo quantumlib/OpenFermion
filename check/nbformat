@@ -13,20 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-################################################################################
-# Checks the format of Jupyter notebook (.ipynb) files using the
-# TensorFlow Docs notebook format checker.
-#
-# Usage:
-#     check/nbformat [--help] [--fix]
-#
-# By default, this script checks all .ipynb files tracked by git and exits
-# with a non-zero code if any notebook does not conform to the expected format.
-#
-# With '--fix', the script reformats the notebooks in place instead of just
-# reporting errors.
-################################################################################
-
 set -euo pipefail
 
 declare -r usage="\
