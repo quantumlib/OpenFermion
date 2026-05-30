@@ -16,16 +16,12 @@
 set -euo pipefail
 
 declare -r usage="\
-Usage: ${0##*/} [--help] [--fix]
+Usage: ${0##*/} [--help] [--apply]
 
-Checks the format of Jupyter notebook (.ipynb) files in this repository using
-the TensorFlow Docs notebook format checker (tensorflow_docs.tools.nbformat).
+Checks Jupyter notebook (.ipynb) format using tensorflow_docs.tools.nbfmt.
 
-With no arguments, notebooks are checked but not modified. Exits with a
-non-zero status code if any notebook fails the format check.
-
-With --fix, the notebooks are reformatted in place and the script exits with
-status 0 if all notebooks were successfully processed.
+Without --apply, exits 0 if all notebooks are formatted and 1 otherwise.
+With --apply, reformats notebooks in place.
 "
 
 # Get the working directory to the repo root.
@@ -33,16 +29,15 @@ thisdir=$(dirname "${BASH_SOURCE[0]:?}")
 repo_dir=$(git -C "${thisdir}" rev-parse --show-toplevel)
 cd "${repo_dir}"
 
-# Parse arguments.
-opt_fix=0
+opt_apply=0
 for arg in "$@"; do
     case "${arg}" in
         -h | --help)
             echo "${usage}"
             exit 0
             ;;
-        --fix)
-            opt_fix=1
+        --apply)
+            opt_apply=1
             ;;
         *)
             echo "Unknown argument: '${arg}'" >&2
@@ -52,47 +47,32 @@ for arg in "$@"; do
     esac
 done
 
-# Find all tracked .ipynb files in the repository.
-IFS=$'\n' read -r -d '' -a notebooks < <(
-    git ls-files '*.ipynb'
-    printf "\0"
+if ! python -c "import tensorflow_docs.tools.nbfmt"; then
+    echo "tensorflow-docs is not installed." >&2
+    exit 2
+fi
+
+declare -a notebook_paths=(
+    docs
+    src/openfermion/resource_estimates/pbc/notebooks
 )
 
-if [[ "${#notebooks[@]}" -eq 0 ]]; then
-    echo "No .ipynb notebook files found."
-    exit 0
-fi
+my_nbfmt() {
+    python -m tensorflow_docs.tools.nbfmt --indent=1 "$@"
+}
 
-echo "Found ${#notebooks[@]} notebook(s)."
-
-# Build the tensorflow_docs.tools.nbformat argument list.
-declare -a tf_args=()
-if (( opt_fix )); then
-    echo "Running notebook format fixer..."
-    tf_args=( "--fix" )
+exit_code=0
+if output=$(my_nbfmt --test "${notebook_paths[@]}" 2>&1); then
+    echo "Notebooks are formatted."
+elif (( opt_apply )); then
+    my_nbfmt "${notebook_paths[@]}" &&
+    echo "Reformatted notebooks." ||
+    exit_code=$?
 else
-    echo "Running notebook format checker..."
+    echo "The following notebooks require formatting:" >&2
+    grep '^-' <<<"${output}" >&2 || echo "${output}" >&2
+    echo "Run 'check/nbformat --apply' to fix notebooks." >&2
+    exit_code=1
 fi
 
-declare -a errors=()
-for notebook in "${notebooks[@]}"; do
-    echo "  Checking: ${notebook}"
-    if ! python -m tensorflow_docs.tools.nbformat "${tf_args[@]}" "${notebook}"; then
-        errors+=( "${notebook}" )
-    fi
-done
-
-echo
-
-if [[ "${#errors[@]}" -eq 0 ]]; then
-    echo "All notebooks passed the format check."
-    exit 0
-else
-    echo "The following notebooks failed the format check:" >&2
-    printf "  %s\n" "${errors[@]}" >&2
-    if (( ! opt_fix )); then
-        echo "" >&2
-        echo "Run 'check/nbformat --fix' to fix the notebooks automatically." >&2
-    fi
-    exit 1
-fi
+exit "${exit_code}"
