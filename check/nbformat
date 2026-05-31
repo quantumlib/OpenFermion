@@ -52,20 +52,15 @@ if ! python -c "import tensorflow_docs.tools.nbfmt"; then
     exit 2
 fi
 
-declare -a notebook_paths=(
-    docs
-    src/openfermion/resource_estimates/pbc/notebooks
-)
-
 my_nbfmt() {
     python -m tensorflow_docs.tools.nbfmt --indent=1 "$@"
 }
 
 exit_code=0
-if output=$(my_nbfmt --test "${notebook_paths[@]}" 2>&1); then
+if output=$(my_nbfmt --test . 2>&1); then
     echo "Notebooks are formatted."
 elif (( opt_apply )); then
-    my_nbfmt "${notebook_paths[@]}" &&
+    my_nbfmt . &&
     echo "Reformatted notebooks." ||
     exit_code=$?
 else
