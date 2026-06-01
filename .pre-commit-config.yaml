@@ -115,7 +115,7 @@ repos:
         name: 'Check shell scripts'
         files: '(\.sh$|^check/[^.]+$)'
 
-  - repo: https://github.com/hadolint/hadolint
+  - repo: https://github.com/AleksaC/hadolint-py
     rev: v2.14.0
     hooks:
       - id: hadolint
