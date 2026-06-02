@@ -64,6 +64,13 @@ class LowRankTrotterAlgorithm(TrotterAlgorithm):
     or it is chosen so that
     $\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x$
     where x is a truncation threshold specified by user.
+
+    Note:
+        When spin_basis=True (the default), the input
+        InteractionOperator must have a
+        spin-symmetric two-body tensor, i.e. identical interaction
+        coefficients for the alpha and beta spin channels. Hamiltonians
+        that break this symmetry will raise a ValueError.
     """
 
     supported_types = {ops.InteractionOperator}

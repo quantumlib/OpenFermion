@@ -163,8 +163,8 @@ class LowRankTest(unittest.TestCase):
         )
         self.assertAlmostEqual(trunc_error, 0.0)
 
-        # Check for property errors
-        with self.assertRaises(TypeError):
+        # Check for property errors — imaginary tensor should raise ValueError
+        with self.assertRaises(ValueError):
             eigenvalues, one_body_squares, _, trunc_error = low_rank_two_body_decomposition(
                 two_body_coefficients + 0.01j, truncation_threshold=1.0, final_rank=1
             )
@@ -315,3 +315,39 @@ class LowRankTest(unittest.TestCase):
         one_body_matrix = numpy.array([[0, 1], [0, 0]])
         with self.assertRaises(ValueError):
             prepare_one_body_squared_evolution(one_body_matrix, spin_basis=False)
+
+
+class SpinExchangeTest(unittest.TestCase):
+    """Tests for spin-symmetry validation in the low-rank decomposition."""
+
+    def _make_spin_exchange_tensor(self):
+        """Return the two_body_tensor for H = a^dag_0 a^dag_3 a_1 a_2 + h.c."""
+        from openfermion import get_interaction_operator
+
+        h_sf = FermionOperator('0^ 3^ 1 2', 1.0) + FermionOperator('2^ 1^ 3 0', 1.0)
+        return get_interaction_operator(h_sf, n_qubits=4).two_body_tensor
+
+    def test_get_chemist_two_body_coefficients_raises_for_spin_exchange(self):
+        """Non-spin-symmetric input raises ValueError with informative message."""
+        two_body_tensor = self._make_spin_exchange_tensor()
+        with self.assertRaises(ValueError) as ctx:
+            get_chemist_two_body_coefficients(two_body_tensor, spin_basis=True)
+        self.assertIn('spin-symmetric', str(ctx.exception))
+
+    def test_low_rank_decomposition_raises_for_spin_exchange(self):
+        """Non-spin-symmetric input raises ValueError with informative message."""
+        two_body_tensor = self._make_spin_exchange_tensor()
+        with self.assertRaises(ValueError) as ctx:
+            low_rank_two_body_decomposition(two_body_tensor, spin_basis=True)
+        self.assertIn('spin-symmetric', str(ctx.exception))
+
+    def test_spin_symmetric_hamiltonian_succeeds(self):
+        """Spin-symmetric Hamiltonians decompose without error."""
+        filename = os.path.join(DATA_DIRECTORY, 'H2_sto-3g_singlet_0.7414')
+        molecule = MolecularData(filename=filename)
+        two_body_coefficients = molecule.get_molecular_hamiltonian().two_body_tensor
+        _, _ = get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True)
+        eigenvalues, _, _, _ = low_rank_two_body_decomposition(
+            two_body_coefficients, spin_basis=True
+        )
+        self.assertGreater(len(eigenvalues), 0)

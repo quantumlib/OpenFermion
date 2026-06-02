@@ -29,10 +29,17 @@ class InteractionOperator(PolynomialTensor):
     conserve particle number and spin. The most common examples of data that
     will use this structure are molecular Hamiltonians. In principle,
     everything stored in this class could also be represented using the more
-    general FermionOperator class. However, this class is able to exploit
-    specific properties of how fermions interact to enable more numerically
-    efficient manipulation of the data. Note that the operators stored in this
-    class take the form:
+    general FermionOperator class.
+
+    This representation is intended for Hermitian interaction Hamiltonians,
+    such as molecular electronic-structure Hamiltonians. It is not a
+    general-purpose container for arbitrary non-Hermitian fermionic operators;
+    use FermionOperator for those cases. Transform routines specialized for
+    InteractionOperator may rely on these Hermitian structure assumptions.
+
+    However, this class is able to exploit specific properties of how fermions
+    interact to enable more numerically efficient manipulation of the data. Note
+    that the operators stored in this class take the form:
 
         $$
             \text{constant} + \sum_{p, q} h_{p, q} a^\dagger_p a_q +
