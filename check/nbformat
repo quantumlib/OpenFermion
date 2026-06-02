@@ -47,13 +47,13 @@ for arg in "$@"; do
     esac
 done
 
-if ! python -c "import tensorflow_docs.tools.nbfmt"; then
+if ! python3 -c "import tensorflow_docs.tools.nbfmt"; then
     echo "tensorflow-docs is not installed." >&2
     exit 2
 fi
 
 my_nbfmt() {
-    python -m tensorflow_docs.tools.nbfmt --indent=1 "$@"
+    python3 -m tensorflow_docs.tools.nbfmt --indent=1 "$@"
 }
 
 exit_code=0
