@@ -29,4 +29,4 @@ COPY deps/ ./deps/
 COPY run-pip-compiles.py ./
 
 ARG PLATFORM="default"
-RUN python run-pip-compiles.py --platform $PLATFORM
+RUN python3 run-pip-compiles.py --platform $PLATFORM

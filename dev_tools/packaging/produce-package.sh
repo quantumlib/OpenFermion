@@ -90,6 +90,6 @@ fi
 
 # Python wheel.
 echo -e "${GREEN}Producing Python package files...${RESET}"
-python -m build --outdir "$out_dir"
+python3 -m build --outdir "$out_dir"
 
 echo -e "${GREEN}Finished – output is in $out_dir${RESET}"

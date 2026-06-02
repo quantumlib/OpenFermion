@@ -64,7 +64,7 @@ PYTHON_VERSION=python3
 RUNTIME_DEPS_FILE="${REPO_ROOT}/dev_tools/requirements/envs/pytest.env.txt"
 echo "Working in a fresh virtualenv at ${tmp_dir}/${PYTHON_VERSION}"
 virtualenv --quiet "${tmp_dir}/${PYTHON_VERSION}"
-"${tmp_dir}/${PYTHON_VERSION}/bin/python" -m pip install --quiet --upgrade pip
+"${tmp_dir}/${PYTHON_VERSION}/bin/python3" -m pip install --quiet --upgrade pip
 
 # Install package.
 if [ "${PYPI_REPO_NAME}" == "TEST" ]; then
@@ -76,8 +76,8 @@ echo Installing "${PROJECT_NAME}==${PROJECT_VERSION} from ${PYPI_REPO_NAME} pypi
 
 # Check that code runs without dev deps.
 echo Checking that code executes
-"${tmp_dir}/${PYTHON_VERSION}/bin/python" -c "import openfermion; print(openfermion.FermionOperator((1, 1)))"
-"${tmp_dir}/${PYTHON_VERSION}/bin/python" -c "import openfermion; print(openfermion.QubitOperator((1, 'X')))"
+"${tmp_dir}/${PYTHON_VERSION}/bin/python3" -c "import openfermion; print(openfermion.FermionOperator((1, 1)))"
+"${tmp_dir}/${PYTHON_VERSION}/bin/python3" -c "import openfermion; print(openfermion.QubitOperator((1, 'X')))"
 
 # Run basic tests.
 echo Installing Pytest

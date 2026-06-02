@@ -57,7 +57,7 @@ To install the latest version of OpenFermion in development mode, run the follow
 ```shell
 git clone https://github.com/quantumlib/OpenFermion
 cd OpenFermion
-python -m pip install -e .
+python3 -m pip install -e .
 ```
 
 ## Plugins
