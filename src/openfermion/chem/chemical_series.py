@@ -13,8 +13,11 @@
 
 import numpy
 
-from openfermion.chem.molecular_data import (MolecularData, periodic_hash_table,
-                                             periodic_polarization)
+from openfermion.chem.molecular_data import (
+    MolecularData,
+    periodic_hash_table,
+    periodic_polarization,
+)
 
 
 # Define error objects which inherit from Exception.
@@ -22,12 +25,7 @@ class MolecularLatticeError(Exception):
     pass
 
 
-def make_atomic_ring(n_atoms,
-                     spacing,
-                     basis,
-                     atom_type='H',
-                     charge=0,
-                     filename=''):
+def make_atomic_ring(n_atoms, spacing, basis, atom_type='H', charge=0, filename=''):
     """Function to create atomic rings with n_atoms.
 
     Note that basic geometry suggests that for spacing L between atoms
@@ -47,36 +45,30 @@ def make_atomic_ring(n_atoms,
     """
     # Make geometry.
     geometry = []
-    theta = 2. * numpy.pi / float(n_atoms)
-    radius = spacing / (2. * numpy.cos(numpy.pi / 2. - theta / 2.))
+    theta = 2.0 * numpy.pi / float(n_atoms)
+    radius = spacing / (2.0 * numpy.cos(numpy.pi / 2.0 - theta / 2.0))
     for atom in range(n_atoms):
         x_coord = radius * numpy.cos(atom * theta)
         y_coord = radius * numpy.sin(atom * theta)
-        geometry += [(atom_type, (x_coord, y_coord, 0.))]
+        geometry += [(atom_type, (x_coord, y_coord, 0.0))]
 
     # Set multiplicity.
     n_electrons = n_atoms * periodic_hash_table[atom_type]
     n_electrons -= charge
-    if (n_electrons % 2):
+    if n_electrons % 2:
         multiplicity = 2
     else:
         multiplicity = 1
 
     # Create molecule and return.
     description = 'ring_{}'.format(spacing)
-    molecule = MolecularData(geometry, basis, multiplicity, charge, description,
-                             filename)
+    molecule = MolecularData(geometry, basis, multiplicity, charge, description, filename)
     return molecule
 
 
-def make_atomic_lattice(nx_atoms,
-                        ny_atoms,
-                        nz_atoms,
-                        spacing,
-                        basis,
-                        atom_type='H',
-                        charge=0,
-                        filename=''):
+def make_atomic_lattice(
+    nx_atoms, ny_atoms, nz_atoms, spacing, basis, atom_type='H', charge=0, filename=''
+):
     """Function to create atomic lattice with n_atoms.
 
     Args:
@@ -110,7 +102,7 @@ def make_atomic_lattice(nx_atoms,
     n_atoms = nx_atoms * ny_atoms * nz_atoms
     n_electrons = n_atoms * periodic_hash_table[atom_type]
     n_electrons -= charge
-    if (n_electrons % 2):
+    if n_electrons % 2:
         multiplicity = 2
     else:
         multiplicity = 1
@@ -127,8 +119,7 @@ def make_atomic_lattice(nx_atoms,
         raise MolecularLatticeError('Invalid lattice dimensions.')
 
     # Create molecule and return.
-    molecule = MolecularData(geometry, basis, multiplicity, charge, description,
-                             filename)
+    molecule = MolecularData(geometry, basis, multiplicity, charge, description, filename)
     return molecule
 
 
@@ -142,9 +133,9 @@ def make_atom(atom_type, basis, filename=''):
     Returns:
         atom: An instance of the MolecularData class.
     """
-    geometry = [(atom_type, (0., 0., 0.))]
+    geometry = [(atom_type, (0.0, 0.0, 0.0))]
     atomic_number = periodic_hash_table[atom_type]
-    spin = periodic_polarization[atomic_number] / 2.
+    spin = periodic_polarization[atomic_number] / 2.0
     multiplicity = int(2 * spin + 1)
     atom = MolecularData(geometry, basis, multiplicity, filename=filename)
     return atom

@@ -2,13 +2,10 @@
 
 Code is system tested on Debian GNU/Linux with Python 3.8.5. All the code comes with tests (use `pytest`), but not unit tested with GitHub worflows.
 
-Since the FT costing is closely tied to manipulation of molecular integrals (localization, active space selection, benchmarking against CCSD(T), ...) the code depends on [PySCF](https://pyscf.org/). Since we do not want to burden all OpenFermion users with this dependency, testing is disabled in the GitHub workflow. Moreover, the `resource_estimates` functionality requires the dependencies
+Since the FT costing is closely tied to manipulation of molecular integrals (localization, active space selection, benchmarking against CCSD(T), ...) the code depends on [PySCF](https://pyscf.org/) and is not installed by default. To install it do:
 
 ```
-pyscf
-h5py~=3.3.0
-jax
-jaxlib
+pip install openfermion[resources]
 ```
 
 For THC factorization, it also requires [BTAS](https://github.com/ValeevGroup/BTAS) and the [PyBTAS](https://github.com/ncrubin/pybtas) wrapper, which require their own installation + depends.

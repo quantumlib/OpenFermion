@@ -20,9 +20,9 @@ import openfermion
 from openfermion.config import EQ_TOLERANCE
 
 
-def validate_trotterized_evolution(circuit: cirq.Circuit,
-                                   ops: List['openfermion.QubitOperator'],
-                                   qubits: List['cirq.Qid']):
+def validate_trotterized_evolution(
+    circuit: cirq.Circuit, ops: List['openfermion.QubitOperator'], qubits: List['cirq.Qid']
+):
     r'''Checks whether a circuit implements Trotterized evolution
 
     Takes a circuit that is supposed to implement evolution of the
@@ -53,9 +53,7 @@ def validate_trotterized_evolution(circuit: cirq.Circuit,
         target_unitary = op_unitary.dot(target_unitary)
 
     actual_unitary = circuit.unitary(qubit_order=qubits)
-    overlap = float(
-        numpy.abs(numpy.trace(target_unitary.dot(
-            actual_unitary.conj().T)))) / hs_dim
+    overlap = float(numpy.abs(numpy.trace(target_unitary.dot(actual_unitary.conj().T)))) / hs_dim
     if 1 - overlap > EQ_TOLERANCE:
         return False
     return True

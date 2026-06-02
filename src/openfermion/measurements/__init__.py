@@ -36,12 +36,6 @@ from .fermion_partitioning import (
 
 from .get_interaction_rdm import get_interaction_rdm
 
-from .rdm_equality_constraints import (
-    one_body_fermion_constraints,
-    two_body_fermion_constraints,
-)
+from .rdm_equality_constraints import one_body_fermion_constraints, two_body_fermion_constraints
 
-from .vpe_estimators import (
-    PhaseFitEstimator,
-    get_phase_function,
-)
+from .vpe_estimators import PhaseFitEstimator, get_phase_function

@@ -1,0 +1,130 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Reusable workflow called by nightly.yaml.
+# This workflow expects input values passed by nightly.yml.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+name: 'Nightly tests & scans – Pytest matrix'
+run-name: Run nightly Pytest
+
+on:
+  workflow_call:
+    inputs:
+      # CLI argument string to pass to pytest.
+      args:
+        type: string
+        required: false
+      # Why is this workflow being called?
+      reason:
+        type: string
+        required: false
+
+  # Allow manual invocation.
+  workflow_dispatch:
+
+# Declare default workflow permissions as read only.
+permissions: read-all
+
+jobs:
+  Pytest:
+    # Try to fit as much info as possible into the GHA sidebar at run-time.
+    name: Py ${{matrix.python-version}} + ${{matrix.os}}/${{matrix.arch}}
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # These Python versions were carefully selected by trial and error
+        # to be available on as many os/arch combos as possible, while also
+        # making all necessary Python dependencies available on those combos.
+        python-version: ['3.11.9', '3.12.7', '3.13.1']
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-14, windows-2025]
+        arch: [x64, arm64]
+        exclude:
+          - os: ubuntu-24.04
+            arch: arm64
+
+          - os: ubuntu-24.04-arm
+            arch: x64
+
+          # MacOS 14 is only available for arm64.
+          - os: macos-14
+            arch: x64
+
+          # MacOS 15 is only available for arm64.
+          - os: macos-15
+            arch: x64
+
+          # Windows 2025 is only available for x64.
+          - os: windows-2025
+            arch: arm64
+
+    steps:
+      - name: Check out a copy of the OpenFermion git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python ${{matrix.python-version}}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        id: cache
+        with:
+          python-version: ${{matrix.python-version}}
+          architecture: ${{matrix.arch}}
+          cache: pip
+          cache-dependency-path: dev_tools/requirements/envs/pytest.env.txt
+
+      - name: Install OpenFermion Python requirements
+        run: pip install -r dev_tools/requirements/envs/pytest.env.txt
+
+      - name: Install cirq-core (current stable version)
+        run: pip install -U cirq-core ${{inputs.args}}
+
+      - name: Set up Pytest output problem matcher
+        run: echo '::add-matcher::.github/problem-matchers/pytest.json'
+
+      - name: Run Pytest
+        run: check/pytest
+
+      - name: Print debugging info upon job failure
+        if: failure()
+        shell: bash
+        env:
+          GITHUB_CONTEXT: ${{toJson(github)}}
+          RUNNER_CONTEXT: ${{toJson(runner)}}
+          MATRIX_CONTEXT: ${{toJson(matrix)}}
+          STRATEGY_CONTEXT: ${{toJson(strategy)}}
+        run: |
+          echo '::group:: Shell environment'
+          env
+          echo '::endgroup::'
+          echo '::group:: Installed Python packages'
+          pip list
+          echo '::endgroup::'
+          echo '::group:: GitHub context'
+          echo "The job_id is: $GITHUB_JOB"
+          echo "The id of this action is: $GITHUB_ACTION"
+          echo "The run id is: $GITHUB_RUN_ID"
+          echo "GitHub SHA: $GITHUB_SHA"
+          echo "$GITHUB_CONTEXT"
+          echo '::endgroup::'
+          echo '::group:: GitHub runner context'
+          echo "$RUNNER_CONTEXT"
+          echo '::endgroup::'
+          echo '::group:: Matrix context'
+          echo "$MATRIX_CONTEXT"
+          echo '::endgroup::'
+          echo '::group:: Strategy context'
+          echo "$STRATEGY_CONTEXT"
+          echo '::endgroup::'

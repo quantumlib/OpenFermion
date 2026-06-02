@@ -36,10 +36,12 @@ class DiagonalCoulombHamiltonian:
         constant(float): The constant.
     """
 
-    def __init__(self, one_body, two_body, constant=0.):
+    def __init__(self, one_body, two_body, constant=0.0):
         if two_body.dtype != numpy.float64:
-            raise ValueError('Two-body tensor has invalid dtype. Expected {} '
-                             'but was {}'.format(numpy.float64, two_body.dtype))
+            raise ValueError(
+                'Two-body tensor has invalid dtype. Expected {} '
+                'but was {}'.format(numpy.float64, two_body.dtype)
+            )
         if not numpy.allclose(two_body, two_body.T):
             raise ValueError('Two-body tensor must be symmetric.')
         if not numpy.allclose(one_body, one_body.T.conj()):
@@ -48,7 +50,7 @@ class DiagonalCoulombHamiltonian:
         # Move the diagonal of two_body to one_body
         diag_indices = numpy.diag_indices(one_body.shape[0])
         one_body[diag_indices] += two_body[diag_indices]
-        numpy.fill_diagonal(two_body, 0.)
+        numpy.fill_diagonal(two_body, 0.0)
 
         self.one_body = one_body
         self.two_body = two_body

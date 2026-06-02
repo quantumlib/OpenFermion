@@ -15,10 +15,8 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-from openfermion.resource_estimates.pbc.thc.thc_integrals import (
-    KPTHCDoubleTranslation,)
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    HamiltonianProperties,)
+from openfermion.resource_estimates.pbc.thc.thc_integrals import KPTHCDoubleTranslation
+from openfermion.resource_estimates.pbc.hamiltonian import HamiltonianProperties
 
 
 @dataclass
@@ -33,10 +31,7 @@ class THCHamiltonianProperties(HamiltonianProperties):
 
 
 def compute_lambda_real(
-        h1: npt.NDArray,
-        etaPp: npt.NDArray,
-        MPQ: npt.NDArray,
-        chol: npt.NDArray,
+    h1: npt.NDArray, etaPp: npt.NDArray, MPQ: npt.NDArray, chol: npt.NDArray
 ) -> Tuple[float, float, float]:
     """Compute lambda assuming real THC factors (molecular way)
 
@@ -56,10 +51,8 @@ def compute_lambda_real(
 
     # projecting into the THC basis requires each THC factor mu to be nrmlzd.
     # we roll the normalization constant into the central tensor zeta
-    SPQ = etaPp.dot(
-        etaPp.T)  # (nthc x norb)  x (norb x nthc) -> (nthc  x nthc) metric
-    cP = np.diag(np.diag(
-        SPQ))  # grab diagonal elements. equivalent to np.diag(np.diagonal(SPQ))
+    SPQ = etaPp.dot(etaPp.T)  # (nthc x norb)  x (norb x nthc) -> (nthc  x nthc) metric
+    cP = np.diag(np.diag(SPQ))  # grab diagonal elements. equivalent to np.diag(np.diagonal(SPQ))
     # no sqrts because we have two normalized THC vectors (index by mu and nu)
     # on each side.
     MPQ_normalized = cP.dot(MPQ).dot(cP)  # get normalized zeta in Eq. 11 & 12
@@ -67,20 +60,21 @@ def compute_lambda_real(
     lambda_z = np.sum(np.abs(MPQ_normalized)) * 0.5  # Eq. 13
     # NCR: originally Joonho's code add np.einsum('llij->ij', eri_thc)
     # NCR: I don't know how much this matters.
-    T = (h1 - 0.5 * np.einsum("nil,nlj->ij", chol, chol, optimize=True) +
-         np.einsum("nll,nij->ij", chol, chol, optimize=True))  # Eq. 3 + Eq. 18
+    T = (
+        h1
+        - 0.5 * np.einsum("nil,nlj->ij", chol, chol, optimize=True)
+        + np.einsum("nll,nij->ij", chol, chol, optimize=True)
+    )  # Eq. 3 + Eq. 18
     # e, v = np.linalg.eigh(T)
     e = np.linalg.eigvalsh(T)  # only need eigenvalues
-    lambda_T = np.sum(
-        np.abs(e))  # Eq. 19. NOTE: sum over spin orbitals removes 1/2 factor
+    lambda_T = np.sum(np.abs(e))  # Eq. 19. NOTE: sum over spin orbitals removes 1/2 factor
 
     lambda_tot = lambda_z + lambda_T  # Eq. 20
 
     return lambda_tot, lambda_T, lambda_z
 
 
-def compute_lambda(hcore: npt.NDArray,
-                   thc_obj: KPTHCDoubleTranslation) -> HamiltonianProperties:
+def compute_lambda(hcore: npt.NDArray, thc_obj: KPTHCDoubleTranslation) -> HamiltonianProperties:
     """Compute one-body and two-body lambda for qubitization the THC LCU.
 
     Args:
@@ -103,8 +97,7 @@ def compute_lambda(hcore: npt.NDArray,
         for qidx in range(len(kpts)):
             # - 0.5 * sum_{Q}sum_{r}(pkrQ|rQqk)
             eri_kqqk_pqrs = thc_obj.get_eri_exact([kidx, qidx, qidx, kidx])
-            h1_neg -= (np.einsum("prrq->pq", eri_kqqk_pqrs, optimize=True) /
-                       nkpts)
+            h1_neg -= np.einsum("prrq->pq", eri_kqqk_pqrs, optimize=True) / nkpts
 
         one_body_mat[kidx] = hcore[kidx] + 0.5 * h1_neg  # + h1_pos
         one_eigs, _ = np.linalg.eigh(one_body_mat[kidx])
@@ -114,10 +107,7 @@ def compute_lambda(hcore: npt.NDArray,
     # normalized.  we roll the normalization constant into the central tensor
     # zeta # no sqrts because we have two normalized thc vectors
     # (index by mu and nu) on each side.
-    norm_kP = (np.einsum("kpP,kpP->kP",
-                         thc_obj.chi.conj(),
-                         thc_obj.chi,
-                         optimize=True)**0.5)
+    norm_kP = np.einsum("kpP,kpP->kP", thc_obj.chi.conj(), thc_obj.chi, optimize=True) ** 0.5
     lambda_two_body = 0
     for iq, zeta_Q in enumerate(thc_obj.zeta):
         # xy einsum subscript indexes G index.
@@ -129,13 +119,10 @@ def compute_lambda(hcore: npt.NDArray,
                 gsr = thc_obj.g_mapping[iq, ik_prime]
                 norm_left = norm_kP[ik] * norm_kP[ik_minus_q]
                 norm_right = norm_kP[ik_prime_minus_q] * norm_kP[ik_prime]
-                MPQ_normalized = (np.einsum(
-                    "P,PQ,Q->PQ",
-                    norm_left,
-                    zeta_Q[gpq, gsr],
-                    norm_right,
-                    optimize=True,
-                ) / nkpts)
+                MPQ_normalized = (
+                    np.einsum("P,PQ,Q->PQ", norm_left, zeta_Q[gpq, gsr], norm_right, optimize=True)
+                    / nkpts
+                )
                 lambda_two_body += np.sum(np.abs(MPQ_normalized.real))
                 lambda_two_body += np.sum(np.abs(MPQ_normalized.imag))
     lambda_two_body *= 2

@@ -30,8 +30,7 @@ from .diagonal_coulomb_trotter_error import (
     fermionic_swap_trotter_error_operator_diagonal_two_body,
 )
 
-from .hubbard_trotter_error import \
-    simulation_ordered_grouped_hubbard_terms_with_info
+from .hubbard_trotter_error import simulation_ordered_grouped_hubbard_terms_with_info
 
 from .low_depth_trotter_error import (
     low_depth_second_order_trotter_error_operator,
@@ -44,8 +43,4 @@ from .simulate_trotter import simulate_trotter
 
 from .trotter_algorithm import TrotterAlgorithm, TrotterStep
 
-from .trotter_error import (
-    error_bound,
-    error_operator,
-    trotter_steps_required,
-)
+from .trotter_error import error_bound, error_operator, trotter_steps_required

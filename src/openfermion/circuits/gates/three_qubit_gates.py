@@ -10,13 +10,14 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Common gates that target three qubits."""
+
 import numpy as np
 import cirq
 
 
 def rot111(rads: float) -> cirq.CCZPowGate:
     """Phases the |111> state of three qubits by e^{i rads}."""
-    return cirq.CCZ**(rads / np.pi)
+    return cirq.CCZ ** (rads / np.pi)
 
 
 def CRxxyy(rads: float) -> cirq.ControlledGate:
@@ -26,5 +27,4 @@ def CRxxyy(rads: float) -> cirq.ControlledGate:
 
 def CRyxxy(rads: float) -> cirq.ControlledGate:
     """Controlled version of openfermion.Ryxxy"""
-    return cirq.ControlledGate(
-        cirq.PhasedISwapPowGate(exponent=2 * rads / np.pi))
+    return cirq.ControlledGate(cirq.PhasedISwapPowGate(exponent=2 * rads / np.pi))

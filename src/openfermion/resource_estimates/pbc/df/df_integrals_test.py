@@ -20,16 +20,12 @@ from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf.pbc import mp
 
-    from openfermion.resource_estimates.pbc.testing import (
-        make_diamond_113_szv,)
-    from openfermion.resource_estimates.pbc.df.df_integrals import (
-        DFABKpointIntegrals,)
-    from openfermion.resource_estimates.pbc.hamiltonian import (
-        cholesky_from_df_ints,)
+    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
+    from openfermion.resource_estimates.pbc.df.df_integrals import DFABKpointIntegrals
+    from openfermion.resource_estimates.pbc.hamiltonian import cholesky_from_df_ints
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_df_amat_bmat():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
@@ -81,8 +77,6 @@ def test_df_amat_bmat():
             for qidx in range(nkpts):
                 kmq_idx = dfk_inst.k_transfer_map[qidx, kidx]
                 kpmq_idx = dfk_inst.k_transfer_map[qidx, kpidx]
-                exact_eri_block = dfk_inst.get_eri_exact(
-                    [kidx, kmq_idx, kpmq_idx, kpidx])
-                test_eri_block = dfk_inst.get_eri(
-                    [kidx, kmq_idx, kpmq_idx, kpidx])
+                exact_eri_block = dfk_inst.get_eri_exact([kidx, kmq_idx, kpmq_idx, kpidx])
+                test_eri_block = dfk_inst.get_eri([kidx, kmq_idx, kpmq_idx, kpidx])
                 assert np.allclose(exact_eri_block, test_eri_block)

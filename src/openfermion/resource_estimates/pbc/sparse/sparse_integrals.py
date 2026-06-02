@@ -18,8 +18,7 @@ import numpy.typing as npt
 from pyscf.pbc import scf
 from pyscf.pbc.lib.kpts_helper import KptsHelper, loop_kkk
 
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    build_momentum_transfer_mapping,)
+from openfermion.resource_estimates.pbc.hamiltonian import build_momentum_transfer_mapping
 
 
 def _symmetric_two_body_terms(quad: Tuple[int, ...], complex_valued: bool):
@@ -105,11 +104,7 @@ def unique_iter_pr_qs(nmo):
 
 
 class SparseFactorization:
-
-    def __init__(self,
-                 cholesky_factor: np.ndarray,
-                 kmf: scf.HF,
-                 threshold=1.0e-14):
+    def __init__(self, cholesky_factor: np.ndarray, kmf: scf.HF, threshold=1.0e-14):
         """Initialize a ERI object for CCSD from sparse integrals.
 
         Args:
@@ -126,13 +121,13 @@ class SparseFactorization:
         self.kmf = kmf
         self.nk = len(self.kmf.kpts)
         self.nao = cholesky_factor[0, 0].shape[-1]
-        k_transfer_map = build_momentum_transfer_mapping(
-            self.kmf.cell, self.kmf.kpts)
+        k_transfer_map = build_momentum_transfer_mapping(self.kmf.cell, self.kmf.kpts)
         self.k_transfer_map = k_transfer_map
         self.threshold = threshold
 
-    def get_total_unique_terms_above_thresh(self, return_nk_counter=False
-                                           ) -> Union[int, Tuple[int, int]]:
+    def get_total_unique_terms_above_thresh(
+        self, return_nk_counter=False
+    ) -> Union[int, Tuple[int, int]]:
         """Determine all unique (pkp, qkq|rkr, sks).
 
         Accounts for momentum conservation and four fold symmetry.
@@ -240,23 +235,12 @@ class SparseFactorization:
         if check_eq:
             assert np.allclose(
                 np.einsum(
-                    "npq,nsr->pqrs",
-                    self.chol[ikp, ikq],
-                    self.chol[iks, ikr].conj(),
-                    optimize=True,
+                    "npq,nsr->pqrs", self.chol[ikp, ikq], self.chol[iks, ikr].conj(), optimize=True
                 ),
-                np.einsum(
-                    "npq,nrs->pqrs",
-                    self.chol[ikp, ikq],
-                    self.chol[ikr, iks],
-                    optimize=True,
-                ),
+                np.einsum("npq,nrs->pqrs", self.chol[ikp, ikq], self.chol[ikr, iks], optimize=True),
             )
         eri = np.einsum(
-            "npq,nsr->pqrs",
-            self.chol[ikp, ikq],
-            self.chol[iks, ikr].conj(),
-            optimize=True,
+            "npq,nsr->pqrs", self.chol[ikp, ikq], self.chol[iks, ikr].conj(), optimize=True
         )
         zero_mask = np.abs(eri) < self.threshold
         eri[zero_mask] = 0
@@ -277,8 +261,5 @@ class SparseFactorization:
         """
         ikp, ikq, ikr, iks = kpts
         return np.einsum(
-            "npq,nsr->pqrs",
-            self.chol[ikp, ikq],
-            self.chol[iks, ikr].conj(),
-            optimize=True,
+            "npq,nsr->pqrs", self.chol[ikp, ikq], self.chol[iks, ikr].conj(), optimize=True
         )

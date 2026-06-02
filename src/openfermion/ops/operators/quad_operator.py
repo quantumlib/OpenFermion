@@ -18,8 +18,10 @@ class QuadOperator(SymbolicOperator):
     """QuadOperator stores a sum of products of canonical quadrature operators.
 
     They are defined in terms of the bosonic ladder operators:
-    q = sqrt{hbar/2}(b+b^)
-    p = -isqrt{hbar/2}(b-b^)
+
+        q = sqrt{hbar/2}(b+b^)
+        p = -isqrt{hbar/2}(b-b^)
+
     where hbar is a constant appearing in the commutator of q and p:
     [q, p] = i hbar
 
@@ -98,9 +100,11 @@ class QuadOperator(SymbolicOperator):
                 for j in range(i, 0, -1):
                     right_operator = term[j]
                     left_operator = term[j - 1]
-                    if (right_operator[0] == left_operator[0] and
-                            right_operator[1] == 'q' and
-                            left_operator[1] == 'p'):
+                    if (
+                        right_operator[0] == left_operator[0]
+                        and right_operator[1] == 'q'
+                        and left_operator[1] == 'p'
+                    ):
                         return False
         return True
 

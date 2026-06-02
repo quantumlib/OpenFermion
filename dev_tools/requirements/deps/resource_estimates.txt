@@ -1,4 +1,0 @@
-pyscf
-jax
-jaxlib
-ase

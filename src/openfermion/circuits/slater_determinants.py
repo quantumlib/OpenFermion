@@ -17,15 +17,19 @@ import numpy
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops import QuadraticHamiltonian
 from openfermion.linalg.givens_rotations import (
-    fermionic_gaussian_decomposition, givens_decomposition)
+    fermionic_gaussian_decomposition,
+    givens_decomposition,
+)
 from openfermion.linalg.sparse_tools import (
-    jw_configuration_state, jw_sparse_givens_rotation,
-    jw_sparse_particle_hole_transformation_last_mode)
+    jw_configuration_state,
+    jw_sparse_givens_rotation,
+    jw_sparse_particle_hole_transformation_last_mode,
+)
 
 
-def gaussian_state_preparation_circuit(quadratic_hamiltonian,
-                                       occupied_orbitals=None,
-                                       spin_sector=None):
+def gaussian_state_preparation_circuit(
+    quadratic_hamiltonian, occupied_orbitals=None, spin_sector=None
+):
     r"""Obtain the description of a circuit which prepares a fermionic Gaussian
     state.
 
@@ -43,11 +47,10 @@ def gaussian_state_preparation_circuit(quadratic_hamiltonian,
       such that
 
       $$
-          \begin{align}
-              \mathcal{B} a_N \mathcal{B}^\dagger &= a_N^\dagger,\\
-              \mathcal{B} a_j \mathcal{B}^\dagger &= a_j, \quad
-                  j = 1, \ldots, N-1,
-          \end{align}
+      \begin{aligned}
+          \mathcal{B} a_N \mathcal{B}^\dagger &= a_N^\dagger,\\
+          \mathcal{B} a_j \mathcal{B}^\dagger &= a_j, \quad j = 1, \ldots, N-1,
+      \end{aligned}
       $$
 
       or
@@ -78,10 +81,9 @@ def gaussian_state_preparation_circuit(quadratic_hamiltonian,
             includes a spin degree of freedom and spin-up modes
             do not interact with spin-down modes.
 
-    Returns
-    -------
-        circuit_description (list[tuple]):
-            A list of operations describing the circuit. Each operation
+    Returns:
+        circuit_description (list[tuple]): A list of operations describing
+            the circuit. Each operation
             is a tuple of objects describing elementary operations that
             can be performed in parallel. Each elementary operation
             is either the string 'pht', indicating a particle-hole
@@ -100,8 +102,8 @@ def gaussian_state_preparation_circuit(quadratic_hamiltonian,
         raise ValueError('Input must be an instance of QuadraticHamiltonian.')
 
     orbital_energies, transformation_matrix, _ = (
-        quadratic_hamiltonian.diagonalizing_bogoliubov_transform(
-            spin_sector=spin_sector))
+        quadratic_hamiltonian.diagonalizing_bogoliubov_transform(spin_sector=spin_sector)
+    )
 
     if quadratic_hamiltonian.conserves_particle_number:
         if occupied_orbitals is None:
@@ -113,8 +115,7 @@ def gaussian_state_preparation_circuit(quadratic_hamiltonian,
         slater_determinant_matrix = transformation_matrix[occupied_orbitals]
 
         # Get the circuit description
-        circuit_description = slater_determinant_preparation_circuit(
-            slater_determinant_matrix)
+        circuit_description = slater_determinant_preparation_circuit(slater_determinant_matrix)
         start_orbitals = range(len(occupied_orbitals))
     else:
         # TODO implement this
@@ -127,14 +128,14 @@ def gaussian_state_preparation_circuit(quadratic_hamiltonian,
         left_block = transformation_matrix[:, :n_qubits]
         right_block = transformation_matrix[:, n_qubits:]
         # Can't use numpy.block because that requires numpy>=1.13.0
-        new_transformation_matrix = numpy.empty((n_qubits, 2 * n_qubits),
-                                                dtype=complex)
+        new_transformation_matrix = numpy.empty((n_qubits, 2 * n_qubits), dtype=complex)
         new_transformation_matrix[:, :n_qubits] = numpy.conjugate(right_block)
         new_transformation_matrix[:, n_qubits:] = numpy.conjugate(left_block)
 
         # Get the circuit description
-        decomposition, left_decomposition, _, _ = (
-            fermionic_gaussian_decomposition(new_transformation_matrix))
+        decomposition, left_decomposition, _, _ = fermionic_gaussian_decomposition(
+            new_transformation_matrix
+        )
         if occupied_orbitals is None:
             # The ground state is desired, so the circuit should be applied
             # to the vaccuum state
@@ -144,8 +145,7 @@ def gaussian_state_preparation_circuit(quadratic_hamiltonian,
             start_orbitals = occupied_orbitals
             # The circuit won't be applied to the ground state, so we need to
             # use left_decomposition
-            circuit_description = list(
-                reversed(decomposition + left_decomposition))
+            circuit_description = list(reversed(decomposition + left_decomposition))
 
     return circuit_description, start_orbitals
 
@@ -204,8 +204,7 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
             (the default), then it is assumed that the ground state is
             desired, i.e., the orbitals with negative energies are filled.
 
-    Returns
-    -------
+    Returns:
         energy (float):
             The eigenvalue.
         state (sparse):
@@ -217,37 +216,34 @@ def jw_get_gaussian_state(quadratic_hamiltonian, occupied_orbitals=None):
     n_qubits = quadratic_hamiltonian.n_qubits
 
     # Compute the energy
-    orbital_energies, constant = quadratic_hamiltonian.orbital_energies()
+    orbital_energies, _, constant = quadratic_hamiltonian.diagonalizing_bogoliubov_transform()
     if occupied_orbitals is None:
         # The ground energy is desired
         if quadratic_hamiltonian.conserves_particle_number:
-            num_negative_energies = numpy.count_nonzero(
-                orbital_energies < -EQ_TOLERANCE)
+            num_negative_energies = numpy.count_nonzero(orbital_energies < -EQ_TOLERANCE)
             occupied_orbitals = range(num_negative_energies)
         else:
             occupied_orbitals = []
     energy = numpy.sum(orbital_energies[occupied_orbitals]) + constant
 
     # Obtain the circuit that prepares the Gaussian state
-    circuit_description, start_orbitals = \
-        gaussian_state_preparation_circuit(quadratic_hamiltonian,
-                                           occupied_orbitals)
+    circuit_description, start_orbitals = gaussian_state_preparation_circuit(
+        quadratic_hamiltonian, occupied_orbitals
+    )
 
     # Initialize the starting state
     state = jw_configuration_state(start_orbitals, n_qubits)
 
     # Apply the circuit
     if not quadratic_hamiltonian.conserves_particle_number:
-        particle_hole_transformation = (
-            jw_sparse_particle_hole_transformation_last_mode(n_qubits))
+        particle_hole_transformation = jw_sparse_particle_hole_transformation_last_mode(n_qubits)
     for parallel_ops in circuit_description:
         for op in parallel_ops:
             if op == 'pht':
                 state = particle_hole_transformation.dot(state)
             else:
                 i, j, theta, phi = op
-                state = jw_sparse_givens_rotation(i, j, theta, phi,
-                                                  n_qubits).dot(state)
+                state = jw_sparse_givens_rotation(i, j, theta, phi, n_qubits).dot(state)
 
     return energy, state
 
@@ -274,8 +270,7 @@ def jw_slater_determinant(slater_determinant_matrix):
     Returns:
         The Slater determinant as a sparse matrix.
     """
-    circuit_description = slater_determinant_preparation_circuit(
-        slater_determinant_matrix)
+    circuit_description = slater_determinant_preparation_circuit(slater_determinant_matrix)
     start_orbitals = range(slater_determinant_matrix.shape[0])
     n_qubits = slater_determinant_matrix.shape[1]
 
@@ -286,7 +281,6 @@ def jw_slater_determinant(slater_determinant_matrix):
     for parallel_ops in circuit_description:
         for op in parallel_ops:
             i, j, theta, phi = op
-            state = jw_sparse_givens_rotation(i, j, theta, phi,
-                                              n_qubits).dot(state)
+            state = jw_sparse_givens_rotation(i, j, theta, phi, n_qubits).dot(state)
 
     return state

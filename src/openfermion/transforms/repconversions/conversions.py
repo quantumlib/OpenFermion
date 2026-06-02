@@ -14,13 +14,16 @@ import numpy
 
 from openfermion.config import EQ_TOLERANCE
 from openfermion.ops.operators import FermionOperator
-from openfermion.ops.representations import (DiagonalCoulombHamiltonian,
-                                             InteractionOperator,
-                                             InteractionOperatorError)
-from openfermion.transforms.opconversions import (check_no_sympy,
-                                                  normal_ordered)
+from openfermion.ops.representations import (
+    DiagonalCoulombHamiltonian,
+    InteractionOperator,
+    InteractionOperatorError,
+)
+from openfermion.transforms.opconversions import check_no_sympy, normal_ordered
 from openfermion.ops.representations.quadratic_hamiltonian import (
-    QuadraticHamiltonian, QuadraticHamiltonianError)
+    QuadraticHamiltonian,
+    QuadraticHamiltonianError,
+)
 
 from openfermion.chem import MolecularData
 
@@ -28,10 +31,9 @@ from openfermion.chem import MolecularData
 from openfermion.utils import operator_utils as op_utils
 
 
-def get_quadratic_hamiltonian(fermion_operator,
-                              chemical_potential=0.,
-                              n_qubits=None,
-                              ignore_incompatible_terms=False):
+def get_quadratic_hamiltonian(
+    fermion_operator, chemical_potential=0.0, n_qubits=None, ignore_incompatible_terms=False
+):
     r"""Convert a quadratic fermionic operator to QuadraticHamiltonian.
 
     Args:
@@ -71,7 +73,7 @@ def get_quadratic_hamiltonian(fermion_operator,
 
     # Normal order the terms and initialize.
     fermion_operator = normal_ordered(fermion_operator)
-    constant = 0.
+    constant = 0.0
     combined_hermitian_part = numpy.zeros((n_qubits, n_qubits), complex)
     antisymmetric_part = numpy.zeros((n_qubits, n_qubits), complex)
 
@@ -98,73 +100,72 @@ def get_quadratic_hamiltonian(fermion_operator,
                 conjugate_term = ((p, 0), (q, 0))
                 if conjugate_term not in fermion_operator.terms:
                     raise QuadraticHamiltonianError(
-                        'FermionOperator does not map '
-                        'to QuadraticHamiltonian (not Hermitian).')
+                        'FermionOperator does not map ' 'to QuadraticHamiltonian (not Hermitian).'
+                    )
                 else:
-                    matching_coefficient = -fermion_operator.terms[
-                        conjugate_term].conjugate()
+                    matching_coefficient = -fermion_operator.terms[conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
                         raise QuadraticHamiltonianError(
                             'FermionOperator does not map '
-                            'to QuadraticHamiltonian (not Hermitian).')
-                antisymmetric_part[p, q] += .5 * coefficient
-                antisymmetric_part[q, p] -= .5 * coefficient
+                            'to QuadraticHamiltonian (not Hermitian).'
+                        )
+                antisymmetric_part[p, q] += 0.5 * coefficient
+                antisymmetric_part[q, p] -= 0.5 * coefficient
             else:
                 # ladder_type == [0, 0]
                 # Need to check that the corresponding [1, 1] term is present
                 conjugate_term = ((p, 1), (q, 1))
                 if conjugate_term not in fermion_operator.terms:
                     raise QuadraticHamiltonianError(
-                        'FermionOperator does not map '
-                        'to QuadraticHamiltonian (not Hermitian).')
+                        'FermionOperator does not map ' 'to QuadraticHamiltonian (not Hermitian).'
+                    )
                 else:
-                    matching_coefficient = -fermion_operator.terms[
-                        conjugate_term].conjugate()
+                    matching_coefficient = -fermion_operator.terms[conjugate_term].conjugate()
                     discrepancy = abs(coefficient - matching_coefficient)
                     if discrepancy > EQ_TOLERANCE:
                         raise QuadraticHamiltonianError(
                             'FermionOperator does not map '
-                            'to QuadraticHamiltonian (not Hermitian).')
-                antisymmetric_part[p, q] -= .5 * coefficient.conjugate()
-                antisymmetric_part[q, p] += .5 * coefficient.conjugate()
+                            'to QuadraticHamiltonian (not Hermitian).'
+                        )
+                antisymmetric_part[p, q] -= 0.5 * coefficient.conjugate()
+                antisymmetric_part[q, p] += 0.5 * coefficient.conjugate()
         elif not ignore_incompatible_terms:
             # Operator contains non-quadratic terms
-            raise QuadraticHamiltonianError('FermionOperator does not map '
-                                            'to QuadraticHamiltonian '
-                                            '(contains non-quadratic terms).')
+            raise QuadraticHamiltonianError(
+                'FermionOperator does not map '
+                'to QuadraticHamiltonian '
+                '(contains non-quadratic terms).'
+            )
 
     # Compute Hermitian part
-    hermitian_part = (combined_hermitian_part +
-                      chemical_potential * numpy.eye(n_qubits))
+    hermitian_part = combined_hermitian_part + chemical_potential * numpy.eye(n_qubits)
 
     # Check that the operator is Hermitian
     if not op_utils.is_hermitian(hermitian_part):
         raise QuadraticHamiltonianError(
-            'FermionOperator does not map '
-            'to QuadraticHamiltonian (not Hermitian).')
+            'FermionOperator does not map ' 'to QuadraticHamiltonian (not Hermitian).'
+        )
 
     # Form QuadraticHamiltonian and return.
     discrepancy = numpy.max(numpy.abs(antisymmetric_part))
     if discrepancy < EQ_TOLERANCE:
         # Hamiltonian conserves particle number
         quadratic_hamiltonian = QuadraticHamiltonian(
-            hermitian_part,
-            constant=constant,
-            chemical_potential=chemical_potential)
+            hermitian_part, constant=constant, chemical_potential=chemical_potential
+        )
     else:
         # Hamiltonian does not conserve particle number
-        quadratic_hamiltonian = QuadraticHamiltonian(hermitian_part,
-                                                     antisymmetric_part,
-                                                     constant,
-                                                     chemical_potential)
+        quadratic_hamiltonian = QuadraticHamiltonian(
+            hermitian_part, antisymmetric_part, constant, chemical_potential
+        )
 
     return quadratic_hamiltonian
 
 
-def get_diagonal_coulomb_hamiltonian(fermion_operator,
-                                     n_qubits=None,
-                                     ignore_incompatible_terms=False):
+def get_diagonal_coulomb_hamiltonian(
+    fermion_operator, n_qubits=None, ignore_incompatible_terms=False
+):
     r"""Convert a FermionOperator to a DiagonalCoulombHamiltonian.
 
     Args:
@@ -190,7 +191,7 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator,
         raise ValueError('Invalid number of qubits specified.')
 
     fermion_operator = normal_ordered(fermion_operator)
-    constant = 0.
+    constant = 0.0
     one_body = numpy.zeros((n_qubits, n_qubits), complex)
     two_body = numpy.zeros((n_qubits, n_qubits), float)
 
@@ -214,25 +215,30 @@ def get_diagonal_coulomb_hamiltonian(fermion_operator,
                     if abs(numpy.imag(coefficient)) > EQ_TOLERANCE:
                         raise ValueError(
                             'FermionOperator does not map to '
-                            'DiagonalCoulombHamiltonian (not Hermitian).')
+                            'DiagonalCoulombHamiltonian (not Hermitian).'
+                        )
                     coefficient = numpy.real(coefficient)
-                    two_body[p, q] = -.5 * coefficient
-                    two_body[q, p] = -.5 * coefficient
+                    two_body[p, q] = -0.5 * coefficient
+                    two_body[q, p] = -0.5 * coefficient
                 elif not ignore_incompatible_terms:
-                    raise ValueError('FermionOperator does not map to '
-                                     'DiagonalCoulombHamiltonian '
-                                     '(contains terms with indices '
-                                     '{}).'.format((p, q, r, s)))
+                    raise ValueError(
+                        'FermionOperator does not map to '
+                        'DiagonalCoulombHamiltonian '
+                        '(contains terms with indices '
+                        '{}).'.format((p, q, r, s))
+                    )
             elif not ignore_incompatible_terms:
-                raise ValueError('FermionOperator does not map to '
-                                 'DiagonalCoulombHamiltonian (contains terms '
-                                 'with action {}.'.format(tuple(actions)))
+                raise ValueError(
+                    'FermionOperator does not map to '
+                    'DiagonalCoulombHamiltonian (contains terms '
+                    'with action {}.'.format(tuple(actions))
+                )
 
     # Check that the operator is Hermitian
     if not op_utils.is_hermitian(one_body):
         raise ValueError(
-            'FermionOperator does not map to DiagonalCoulombHamiltonian '
-            '(not Hermitian).')
+            'FermionOperator does not map to DiagonalCoulombHamiltonian ' '(not Hermitian).'
+        )
 
     return DiagonalCoulombHamiltonian(one_body, two_body, constant)
 
@@ -269,7 +275,7 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
 
     # Normal order the terms and initialize.
     fermion_operator = normal_ordered(fermion_operator)
-    constant = 0.
+    constant = 0.0
     one_body = numpy.zeros((n_qubits, n_qubits), complex)
     two_body = numpy.zeros((n_qubits, n_qubits, n_qubits, n_qubits), complex)
 
@@ -292,8 +298,9 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
                 p, q = [operator[0] for operator in term]
                 one_body[p, q] = coefficient
             else:
-                raise InteractionOperatorError('FermionOperator does not map '
-                                               'to InteractionOperator.')
+                raise InteractionOperatorError(
+                    'FermionOperator does not map ' 'to InteractionOperator.'
+                )
 
         elif len(term) == 4:
             # Handle two-body terms.
@@ -301,26 +308,30 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
                 p, q, r, s = [operator[0] for operator in term]
                 two_body[p, q, r, s] = coefficient
             else:
-                raise InteractionOperatorError('FermionOperator does not map '
-                                               'to InteractionOperator.')
+                raise InteractionOperatorError(
+                    'FermionOperator does not map ' 'to InteractionOperator.'
+                )
 
         else:
             # Handle non-molecular Hamiltonian.
-            raise InteractionOperatorError('FermionOperator does not map '
-                                           'to InteractionOperator.')
+            raise InteractionOperatorError(
+                'FermionOperator does not map ' 'to InteractionOperator.'
+            )
 
     # Form InteractionOperator and return.
     interaction_operator = InteractionOperator(constant, one_body, two_body)
     return interaction_operator
 
 
-def get_molecular_data(interaction_operator,
-                       geometry=None,
-                       basis=None,
-                       multiplicity=None,
-                       n_electrons=None,
-                       reduce_spin=True,
-                       data_directory=None):
+def get_molecular_data(
+    interaction_operator,
+    geometry=None,
+    basis=None,
+    multiplicity=None,
+    n_electrons=None,
+    reduce_spin=True,
+    data_directory=None,
+):
     """Output a MolecularData object generated from an InteractionOperator
 
     Args:
@@ -346,10 +357,9 @@ def get_molecular_data(interaction_operator,
     n_spin_orbitals = interaction_operator.n_qubits
 
     # Introduce bare molecular operator to fill
-    molecule = MolecularData(geometry=geometry,
-                             basis=basis,
-                             multiplicity=multiplicity,
-                             data_directory=data_directory)
+    molecule = MolecularData(
+        geometry=geometry, basis=basis, multiplicity=multiplicity, data_directory=data_directory
+    )
 
     molecule.nuclear_repulsion = interaction_operator.constant
 
@@ -362,10 +372,11 @@ def get_molecular_data(interaction_operator,
     molecule.n_orbitals = len(reduction_indices)
 
     molecule.one_body_integrals = interaction_operator.one_body_tensor[
-        numpy.ix_(reduction_indices, reduction_indices)]
+        numpy.ix_(reduction_indices, reduction_indices)
+    ]
     molecule.two_body_integrals = interaction_operator.two_body_tensor[
-        numpy.ix_(reduction_indices, reduction_indices, reduction_indices,
-                  reduction_indices)]
+        numpy.ix_(reduction_indices, reduction_indices, reduction_indices, reduction_indices)
+    ]
 
     # Fill in other metadata
     molecule.overlap_integrals = numpy.eye(molecule.n_orbitals)

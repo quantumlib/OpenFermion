@@ -22,8 +22,9 @@ if TYPE_CHECKING:
     # pylint: disable=unused-import
     from typing import Set, Type
 
-Hamiltonian = Union[ops.FermionOperator, ops.QubitOperator, ops.
-                    InteractionOperator, ops.DiagonalCoulombHamiltonian]
+Hamiltonian = Union[
+    ops.FermionOperator, ops.QubitOperator, ops.InteractionOperator, ops.DiagonalCoulombHamiltonian
+]
 
 
 class TrotterStep(metaclass=abc.ABCMeta):
@@ -45,9 +46,9 @@ class TrotterStep(metaclass=abc.ABCMeta):
     def __init__(self, hamiltonian: Hamiltonian) -> None:
         self.hamiltonian = hamiltonian
 
-    def prepare(self,
-                qubits: Sequence[cirq.Qid],
-                control_qubit: Optional[cirq.Qid] = None) -> cirq.OP_TREE:
+    def prepare(
+        self, qubits: Sequence[cirq.Qid], control_qubit: Optional[cirq.Qid] = None
+    ) -> cirq.OP_TREE:
         """Operations to perform before doing the Trotter steps.
 
         Args:
@@ -61,10 +62,9 @@ class TrotterStep(metaclass=abc.ABCMeta):
         return ()
 
     @abc.abstractmethod
-    def trotter_step(self,
-                     qubits: Sequence[cirq.Qid],
-                     time: float,
-                     control_qubit: Optional[cirq.Qid] = None) -> cirq.OP_TREE:
+    def trotter_step(
+        self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
+    ) -> cirq.OP_TREE:
         """Yield operations to perform a Trotter step.
 
         Args:
@@ -75,9 +75,7 @@ class TrotterStep(metaclass=abc.ABCMeta):
         """
 
     def step_qubit_permutation(
-            self,
-            qubits: Sequence[cirq.Qid],
-            control_qubit: Optional[cirq.Qid] = None
+        self, qubits: Sequence[cirq.Qid], control_qubit: Optional[cirq.Qid] = None
     ) -> Tuple[Sequence[cirq.Qid], Optional[cirq.Qid]]:
         """The qubit permutation induced by a single Trotter step.
 
@@ -88,11 +86,13 @@ class TrotterStep(metaclass=abc.ABCMeta):
         # Default: identity permutation
         return qubits, control_qubit
 
-    def finish(self,
-               qubits: Sequence[cirq.Qid],
-               n_steps: int,
-               control_qubit: Optional[cirq.Qid] = None,
-               omit_final_swaps: bool = False) -> cirq.OP_TREE:
+    def finish(
+        self,
+        qubits: Sequence[cirq.Qid],
+        n_steps: int,
+        control_qubit: Optional[cirq.Qid] = None,
+        omit_final_swaps: bool = False,
+    ) -> cirq.OP_TREE:
         """Operations to perform after all Trotter steps are done.
 
         Args:
@@ -121,6 +121,7 @@ class TrotterAlgorithm(metaclass=abc.ABCMeta):
             that can be simulated using this Trotter step algorithm.
             For example, {DiagonalCoulombHamiltonian, InteractionOperator}.
     """
+
     supported_types = set()  # type: Set[Type[Hamiltonian]]
 
     def symmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
@@ -129,10 +130,8 @@ class TrotterAlgorithm(metaclass=abc.ABCMeta):
     def asymmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
         return None
 
-    def controlled_symmetric(self,
-                             hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
+    def controlled_symmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
         return None
 
-    def controlled_asymmetric(self, hamiltonian: Hamiltonian
-                             ) -> Optional[TrotterStep]:
+    def controlled_asymmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
         return None

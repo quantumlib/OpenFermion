@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """Defines index mappings."""
+
 import numpy
 
 
@@ -38,7 +39,7 @@ def down_index(index):
 
 
 def up_then_down(mode_idx, num_modes):
-    """ up then down reordering, given the operator has the default even-odd
+    """up then down reordering, given the operator has the default even-odd
      ordering. Otherwise this function will reorder indices where all even
      indices now come before odd indices.
 
@@ -52,9 +53,10 @@ def up_then_down(mode_idx, num_modes):
         mode_idx (int): the mode index that is being reordered
         num_modes (int): the total number of modes of the operator.
 
-    Returns (int): reordered index of the mode.
+    Returns:
+        A reordered index of the mode.
     """
-    halfway = int(numpy.ceil(num_modes / 2.))
+    halfway = int(numpy.ceil(num_modes / 2.0))
 
     if mode_idx % 2 == 0:
         return mode_idx // 2

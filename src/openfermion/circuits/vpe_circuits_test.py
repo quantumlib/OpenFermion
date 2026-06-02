@@ -16,10 +16,7 @@ import cirq
 
 from openfermion.measurements import get_phase_function
 
-from .vpe_circuits import (
-    vpe_single_circuit,
-    vpe_circuits_single_timestep,
-)
+from .vpe_circuits import vpe_single_circuit, vpe_circuits_single_timestep
 
 
 def test_single_circuit():
@@ -27,13 +24,10 @@ def test_single_circuit():
     q1 = cirq.GridQubit(0, 1)
     qubits = reversed([q0, q1])
     prep = cirq.Circuit([cirq.FSimGate(theta=numpy.pi / 4, phi=0).on(q0, q1)])
-    evolve = cirq.Circuit(
-        [cirq.rz(numpy.pi / 2).on(q0),
-         cirq.rz(numpy.pi / 2).on(q1)])
+    evolve = cirq.Circuit([cirq.rz(numpy.pi / 2).on(q0), cirq.rz(numpy.pi / 2).on(q1)])
     initial_rotation = cirq.ry(numpy.pi / 2).on(q0)
     final_rotation = cirq.rx(-numpy.pi / 2).on(q0)
-    circuit = vpe_single_circuit(qubits, prep, evolve, initial_rotation,
-                                 final_rotation)
+    circuit = vpe_single_circuit(qubits, prep, evolve, initial_rotation, final_rotation)
     assert len(circuit) == 6
     simulator = cirq.Simulator()
     result = simulator.run(circuit, repetitions=100)
@@ -46,9 +40,7 @@ def test_single_timestep():
     q1 = cirq.GridQubit(0, 1)
     qubits = [q0, q1]
     prep = cirq.Circuit([cirq.FSimGate(theta=numpy.pi / 4, phi=0).on(q0, q1)])
-    evolve = cirq.Circuit(
-        [cirq.rz(numpy.pi / 2).on(q0),
-         cirq.rz(numpy.pi / 2).on(q1)])
+    evolve = cirq.Circuit([cirq.rz(numpy.pi / 2).on(q0), cirq.rz(numpy.pi / 2).on(q1)])
     target_qubit = q0
     circuits = vpe_circuits_single_timestep(qubits, prep, evolve, target_qubit)
     results = []

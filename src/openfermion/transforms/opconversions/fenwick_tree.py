@@ -14,6 +14,7 @@
 
 class FenwickNode:
     """Fenwick Tree node."""
+
     parent = None
     children = None
     index = None
@@ -53,6 +54,7 @@ class FenwickTree:
     a reference to the update set (U), the parity set (P) and the
     children set (F) sets of the Fenwick.
     """
+
     # Root node.
     root = None
 

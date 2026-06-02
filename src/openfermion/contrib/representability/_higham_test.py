@@ -32,8 +32,13 @@ from itertools import product
 import numpy as np
 import pytest
 from openfermion.contrib.representability._higham import (
-    heaviside, higham_polynomial, higham_root, map_to_tensor, map_to_matrix,
-    fixed_trace_positive_projection)
+    heaviside,
+    higham_polynomial,
+    higham_root,
+    map_to_tensor,
+    map_to_matrix,
+    fixed_trace_positive_projection,
+)
 
 
 def test_heaviside():
@@ -102,27 +107,24 @@ def test_reconstruction():
     test_mat = fixed_trace_positive_projection(mat, np.trace(mat))
     assert np.isclose(np.trace(test_mat), np.trace(mat))
     w, v = np.linalg.eigh(test_mat)
-    assert np.all(w >= -(float(4.0E-15)))
+    assert np.all(w >= -(float(4.0e-15)))
 
     mat = np.arange(16).reshape((4, 4))
     mat = 0.5 * (mat + mat.T)
     mat_tensor = map_to_tensor(mat)
     trace_mat = np.trace(mat)
     true_mat = fixed_trace_positive_projection(mat, trace_mat)
-    test_mat = map_to_matrix(
-        fixed_trace_positive_projection(mat_tensor, trace_mat))
+    test_mat = map_to_matrix(fixed_trace_positive_projection(mat_tensor, trace_mat))
     assert np.allclose(true_mat, test_mat)
 
-    assert np.allclose(true_mat,
-                       fixed_trace_positive_projection(true_mat, trace_mat))
+    assert np.allclose(true_mat, fixed_trace_positive_projection(true_mat, trace_mat))
 
 
 def test_mlme():
     """
     Test from fig 1 of maximum likelihood minimum effort!
     """
-    eigs = np.array(
-        list(reversed([3.0 / 5, 1.0 / 2, 7.0 / 20, 1.0 / 10, -11.0 / 20])))
+    eigs = np.array(list(reversed([3.0 / 5, 1.0 / 2, 7.0 / 20, 1.0 / 10, -11.0 / 20])))
     target_trace = 1.0
     sigma = higham_root(eigs, target_trace)
     shifted_eigs = np.multiply(heaviside(eigs - sigma), (eigs - sigma))

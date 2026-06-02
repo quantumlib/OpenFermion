@@ -15,20 +15,21 @@ import unittest
 import numpy
 
 from openfermion.ops.operators import QubitOperator, FermionOperator
-from openfermion.transforms.repconversions import (project_onto_sector,
-                                                   projection_error,
-                                                   rotate_qubit_by_pauli)
+from openfermion.transforms.repconversions import (
+    project_onto_sector,
+    projection_error,
+    rotate_qubit_by_pauli,
+)
 from openfermion.utils import count_qubits
 
 
 class ProjectionTest(unittest.TestCase):
-
     def setUp(self):
         pass
 
     def test_function_errors(self):
         """Test main function errors."""
-        operator = (QubitOperator('Z0 X1', 1.0) + QubitOperator('X1', 2.0))
+        operator = QubitOperator('Z0 X1', 1.0) + QubitOperator('X1', 2.0)
         sector1 = [0]
         sector2 = [1]
         qbt_list = [0]
@@ -41,29 +42,19 @@ class ProjectionTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             projection_error(operator=operator, qubits=0.0, sectors=sector2)
         with self.assertRaises(TypeError):
-            project_onto_sector(operator=operator,
-                                qubits=qbt_list,
-                                sectors=operator)
+            project_onto_sector(operator=operator, qubits=qbt_list, sectors=operator)
         with self.assertRaises(TypeError):
-            projection_error(operator=operator,
-                             qubits=qbt_list,
-                             sectors=operator)
+            projection_error(operator=operator, qubits=qbt_list, sectors=operator)
         with self.assertRaises(ValueError):
-            project_onto_sector(operator=operator,
-                                qubits=[0, 1],
-                                sectors=sector1)
+            project_onto_sector(operator=operator, qubits=[0, 1], sectors=sector1)
         with self.assertRaises(ValueError):
             projection_error(operator=operator, qubits=[0, 1], sectors=sector1)
         with self.assertRaises(ValueError):
-            project_onto_sector(operator=operator,
-                                qubits=qbt_list,
-                                sectors=[0, 0])
+            project_onto_sector(operator=operator, qubits=qbt_list, sectors=[0, 0])
         with self.assertRaises(ValueError):
             projection_error(operator=operator, qubits=qbt_list, sectors=[0, 0])
         with self.assertRaises(ValueError):
-            project_onto_sector(operator=operator,
-                                qubits=qbt_list,
-                                sectors=[-1])
+            project_onto_sector(operator=operator, qubits=qbt_list, sectors=[-1])
         with self.assertRaises(ValueError):
             projection_error(operator=operator, qubits=qbt_list, sectors=[-1])
 
@@ -73,9 +64,7 @@ class ProjectionTest(unittest.TestCase):
         opstring2 = ((0, 'X'), (2, 'Z'), (3, 'Z'))
         operator = QubitOperator(opstring, coefficient)
         operator += QubitOperator(opstring2, coefficient)
-        new_operator = project_onto_sector(operator,
-                                           qubits=[2, 3],
-                                           sectors=[0, 1])
+        new_operator = project_onto_sector(operator, qubits=[2, 3], sectors=[0, 1])
         error = projection_error(operator, qubits=[2, 3], sectors=[0, 1])
         self.assertEqual(count_qubits(new_operator), 2)
         self.assertEqual(error, 0)
@@ -94,13 +83,11 @@ class ProjectionTest(unittest.TestCase):
         error = projection_error(operator, qubits=[1], sectors=[0])
         self.assertEqual(count_qubits(new_operator), 3)
         self.assertTrue(((0, 'X'), (1, 'Z'), (2, 'Z')) in new_operator.terms)
-        self.assertEqual(new_operator.terms[((0, 'X'), (1, 'Z'), (2, 'Z'))],
-                         0.5)
+        self.assertEqual(new_operator.terms[((0, 'X'), (1, 'Z'), (2, 'Z'))], 0.5)
         self.assertEqual(error, 0.5)
 
 
 class UnitaryRotationsTest(unittest.TestCase):
-
     def setup(self):
         pass
 

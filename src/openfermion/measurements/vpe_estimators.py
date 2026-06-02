@@ -37,8 +37,7 @@ class _VPEEstimator(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def get_expectation_value(self,
-                              phase_function: numpy.ndarray) -> numpy.ndarray:
+    def get_expectation_value(self, phase_function: numpy.ndarray) -> numpy.ndarray:
         """Estimates expectation values from an input phase function
 
         Given a phase function g(t), estimates the expectation value <H> of the
@@ -121,14 +120,11 @@ class PhaseFitEstimator(_VPEEstimator):
                 of the given frequencies (in the same order as in self.energies)
         """
         times = self.get_simulation_points()
-        phase_function_shifted = numpy.array(phase_function) *\
-            numpy.exp(1j * times * self.ref_eval)
-        amplitudes = fit_known_frequencies(phase_function_shifted, times,
-                                           self.evals)
+        phase_function_shifted = numpy.array(phase_function) * numpy.exp(1j * times * self.ref_eval)
+        amplitudes = fit_known_frequencies(phase_function_shifted, times, self.evals)
         return amplitudes
 
-    def get_expectation_value(self,
-                              phase_function: numpy.ndarray) -> numpy.ndarray:
+    def get_expectation_value(self, phase_function: numpy.ndarray) -> numpy.ndarray:
         """Estates expectation values via amplitude fitting of known frequencies
 
         Arguments:
@@ -139,16 +135,18 @@ class PhaseFitEstimator(_VPEEstimator):
             expectation_value [float] -- the estimated expectation value
         """
         amplitudes = self.get_amplitudes(phase_function)
-        expectation_value = numpy.dot(numpy.abs(amplitudes),
-                                      self.evals) / numpy.sum(
-                                          numpy.abs(amplitudes))
+        expectation_value = numpy.dot(numpy.abs(amplitudes), self.evals) / numpy.sum(
+            numpy.abs(amplitudes)
+        )
         return expectation_value
 
 
-def get_phase_function(results: Sequence[cirq.Result],
-                       qubits: Sequence[cirq.Qid],
-                       target_qid: int,
-                       rotation_set: Optional[Sequence] = None):
+def get_phase_function(
+    results: Sequence[cirq.Result],
+    qubits: Sequence[cirq.Qid],
+    target_qid: int,
+    rotation_set: Optional[Sequence] = None,
+):
     """Generates an estimate of the phase function g(t) from circuit output
 
     The output from a VPE circuit is a set of measurements; from the frequency
@@ -182,14 +180,15 @@ def get_phase_function(results: Sequence[cirq.Result],
     Returns:
         phase_function [complex] -- An estimate of g(t).
     """
-    hs_index = 2**(len(qubits) - target_qid - 1)
+    hs_index = 2 ** (len(qubits) - target_qid - 1)
     if rotation_set is None:
         rotation_set = standard_vpe_rotation_set
     phase_function = 0
     if len(results) != len(rotation_set):
-        raise ValueError("I have an incorrect number of TrialResults "
-                         "in results. Correct length should be: {}".format(
-                             len(rotation_set)))
+        raise ValueError(
+            "I have an incorrect number of TrialResults "
+            "in results. Correct length should be: {}".format(len(rotation_set))
+        )
     for result, rdata in zip(results, rotation_set):
         total_shots = result.data['msmt'].count()
         msmt_counts = result.data['msmt'].value_counts()

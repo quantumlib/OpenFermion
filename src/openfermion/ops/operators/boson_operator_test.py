@@ -18,7 +18,6 @@ from openfermion.hamiltonians import number_operator
 
 
 class BosonOperatorTest(unittest.TestCase):
-
     def test_is_normal_ordered_empty(self):
         op = BosonOperator() * 2
         self.assertTrue(op.is_normal_ordered())

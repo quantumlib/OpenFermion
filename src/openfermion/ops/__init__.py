@@ -16,6 +16,7 @@ serve as storage of the operators.  The abstract instance objects derive from
 the PolynomialTensor.  Here we differentiate between generic storage objects and
 particular instantiations.
 """
+
 from .operators import (
     BinaryPolynomial,
     BinaryPolynomialError,

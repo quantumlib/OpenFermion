@@ -19,11 +19,13 @@ from openfermion.circuits.gates import FSWAP
 
 
 def swap_network(
-        qubits: Sequence[cirq.Qid],
-        operation: Callable[[int, int, cirq.Qid, cirq.Qid], cirq.
-                            OP_TREE] = lambda p, q, p_qubit, q_qubit: (),
-        fermionic: bool = False,
-        offset: bool = False) -> List[cirq.Operation]:
+    qubits: Sequence[cirq.Qid],
+    operation: Callable[
+        [int, int, cirq.Qid, cirq.Qid], cirq.OP_TREE
+    ] = lambda p, q, p_qubit, q_qubit: (),
+    fermionic: bool = False,
+    offset: bool = False,
+) -> List[cirq.Operation]:
     """Apply operations to pairs of qubits or modes using a swap network.
 
     This is used for applying operations between arbitrary pairs of qubits or
@@ -124,13 +126,11 @@ def swap_network(
 
     for layer_num in range(n_qubits):
         lowest_active_qubit = (layer_num + offset) % 2
-        active_pairs = (
-            (i, i + 1) for i in range(lowest_active_qubit, n_qubits - 1, 2))
+        active_pairs = ((i, i + 1) for i in range(lowest_active_qubit, n_qubits - 1, 2))
         for i, j in active_pairs:
             p, q = order[i], order[j]
             extra_ops = operation(p, q, qubits[i], qubits[j])
-            result.extend(
-                cast(Iterable[cirq.Operation], cirq.flatten_op_tree(extra_ops)))
+            result.extend(cast(Iterable[cirq.Operation], cirq.flatten_op_tree(extra_ops)))
             result.append(swap_gate(qubits[i], qubits[j]))
             order[i], order[j] = q, p
 

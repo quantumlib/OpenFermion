@@ -12,5 +12,9 @@
 
 from .contextuality import is_contextual
 
-from .get_one_norm import (get_one_norm_mol, get_one_norm_mol_woconst,
-                           get_one_norm_int, get_one_norm_int_woconst)
+from .get_one_norm import (
+    get_one_norm_mol,
+    get_one_norm_mol_woconst,
+    get_one_norm_int,
+    get_one_norm_int_woconst,
+)

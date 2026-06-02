@@ -103,12 +103,10 @@ class HubbardLattice(metaclass=abc.ABCMeta):
 
     def to_spin_orbital_index(self, site_index, dof_index, spin_index):
         """The index of the spin orbital."""
-        return (self.site_index_offset(site_index) +
-                self.dof_index_offset(dof_index) + spin_index)
+        return self.site_index_offset(site_index) + self.dof_index_offset(dof_index) + spin_index
 
     def from_spin_orbital_index(self, spin_orbital_index):
-        site_index, offset = divmod(spin_orbital_index,
-                                    self.n_spin_orbitals_per_site)
+        site_index, offset = divmod(spin_orbital_index, self.n_spin_orbitals_per_site)
         dof_index, spin_index = divmod(offset, self.n_spin_values)
         return site_index, dof_index, spin_index
 
@@ -123,9 +121,7 @@ class HubbardLattice(metaclass=abc.ABCMeta):
         return range(self.n_dofs)
 
     def dof_pairs_iter(self, exclude_same=False):
-        return ((a, b)
-                for a in range(self.n_dofs)
-                for b in range(a + exclude_same, self.n_dofs))
+        return ((a, b) for a in range(self.n_dofs) for b in range(a + exclude_same, self.n_dofs))
 
     @property
     def spin_indices(self):
@@ -133,28 +129,30 @@ class HubbardLattice(metaclass=abc.ABCMeta):
 
     def spin_pairs_iter(self, spin_pairs=SpinPairs.ALL, ordered=True):
         if spin_pairs == SpinPairs.ALL:
-            return (itertools.product(self.spin_indices, repeat=2)
-                    if ordered else itertools.combinations_with_replacement(
-                        self.spin_indices, 2))
+            return (
+                itertools.product(self.spin_indices, repeat=2)
+                if ordered
+                else itertools.combinations_with_replacement(self.spin_indices, 2)
+            )
         elif spin_pairs == SpinPairs.SAME:
             return ((s, s) for s in self.spin_indices)
         elif spin_pairs == SpinPairs.DIFF:
-            return (itertools.permutations(self.spin_indices, 2) if ordered else
-                    itertools.combinations(self.spin_indices, 2))
-        raise ValueError(
-            '{} not a valid SpinPairs specification.'.format(spin_pairs))
+            return (
+                itertools.permutations(self.spin_indices, 2)
+                if ordered
+                else itertools.combinations(self.spin_indices, 2)
+            )
+        raise ValueError('{} not a valid SpinPairs specification.'.format(spin_pairs))
 
     # validation
 
     def validate_edge_type(self, edge_type):
         if edge_type not in self.edge_types:
-            raise ValueError('{} not a valid edge type {}.'.format(
-                edge_type, self.edge_types))
+            raise ValueError('{} not a valid edge type {}.'.format(edge_type, self.edge_types))
 
     def validate_dof(self, dof, length=None):
         if not (0 <= dof < self.n_dofs):
-            raise ValueError('not (0 <= {} < n_dofs = {})'.format(
-                dof, self.n_dofs))
+            raise ValueError('not (0 <= {} < n_dofs = {})'.format(dof, self.n_dofs))
 
     def validate_dofs(self, dofs, length=None):
         for dof in dofs:
@@ -174,12 +172,7 @@ class HubbardSquareLattice(HubbardLattice):
         * 'diagonal_neighbor'
     """
 
-    def __init__(self,
-                 x_dimension,
-                 y_dimension,
-                 n_dofs=1,
-                 spinless=False,
-                 periodic=True):
+    def __init__(self, x_dimension, y_dimension, n_dofs=1, spinless=False, periodic=True):
         """
         Args:
             x_dimension (int): The width of the grid.
@@ -212,8 +205,13 @@ class HubbardSquareLattice(HubbardLattice):
 
     @property
     def edge_types(self):
-        return ('onsite', 'neighbor', 'diagonal_neighbor',
-                'horizontal_neighbor', 'vertical_neighbor')
+        return (
+            'onsite',
+            'neighbor',
+            'diagonal_neighbor',
+            'horizontal_neighbor',
+            'vertical_neighbor',
+        )
 
     @property
     def onsite_edge_types(self):
@@ -234,11 +232,17 @@ class HubbardSquareLattice(HubbardLattice):
 
     def __repr__(self):
         return '{}({})'.format(
-            self.__class__.__name__, ', '.join(
-                (('x_dimension={}'.format(self.x_dimension)),
-                 ('y_dimension={}'.format(self.y_dimension)),
-                 ('n_dofs={}'.format(self.n_dofs)), ('spinless={}'.format(
-                     self.spinless)), ('periodic={}'.format(self.periodic)))))
+            self.__class__.__name__,
+            ', '.join(
+                (
+                    ('x_dimension={}'.format(self.x_dimension)),
+                    ('y_dimension={}'.format(self.y_dimension)),
+                    ('n_dofs={}'.format(self.n_dofs)),
+                    ('spinless={}'.format(self.spinless)),
+                    ('periodic={}'.format(self.periodic)),
+                )
+            ),
+        )
 
     # site indexing
 
@@ -254,45 +258,39 @@ class HubbardSquareLattice(HubbardLattice):
 
     def n_horizontal_neighbor_pairs(self, ordered=True):
         """Number of horizontally neighboring (unordered) pairs of sites."""
-        n_horizontal_edges_per_y = (
-            self.x_dimension - (self.x_dimension <= 2 or not self.periodic))
-        return (self.y_dimension * n_horizontal_edges_per_y *
-                (2 if ordered else 1))
+        n_horizontal_edges_per_y = self.x_dimension - (self.x_dimension <= 2 or not self.periodic)
+        return self.y_dimension * n_horizontal_edges_per_y * (2 if ordered else 1)
 
     def n_vertical_neighbor_pairs(self, ordered=True):
         """Number of vertically neighboring (unordered) pairs of sites."""
-        n_vertical_edges_per_x = (self.y_dimension -
-                                  (self.y_dimension <= 2 or not self.periodic))
-        return (self.x_dimension * n_vertical_edges_per_x *
-                (2 if ordered else 1))
+        n_vertical_edges_per_x = self.y_dimension - (self.y_dimension <= 2 or not self.periodic)
+        return self.x_dimension * n_vertical_edges_per_x * (2 if ordered else 1)
 
     def n_neighbor_pairs(self, ordered=True):
         """Number of neighboring (unordered) pairs of sites."""
-        return (self.n_horizontal_neighbor_pairs(ordered) +
-                self.n_vertical_neighbor_pairs(ordered))
+        return self.n_horizontal_neighbor_pairs(ordered) + self.n_vertical_neighbor_pairs(ordered)
 
     def neighbors_iter(self, ordered=True):
-        return itertools.chain(self.horizontal_neighbors_iter(ordered),
-                               self.vertical_neighbors_iter(ordered))
+        return itertools.chain(
+            self.horizontal_neighbors_iter(ordered), self.vertical_neighbors_iter(ordered)
+        )
 
     def diagonal_neighbors_iter(self, ordered=True):
-        n_sites_per_y = (self.x_dimension -
-                         (self.x_dimension <= 2 or not self.periodic))
-        n_sites_per_x = (self.y_dimension -
-                         (self.y_dimension <= 2 or not self.periodic))
+        n_sites_per_y = self.x_dimension - (self.x_dimension <= 2 or not self.periodic)
+        n_sites_per_x = self.y_dimension - (self.y_dimension <= 2 or not self.periodic)
         for x in range(n_sites_per_y):
             for y in range(n_sites_per_x):
                 for dy in (-1, 1):
                     i = self.to_site_index((x, y))
-                    j = self.to_site_index(((x + 1) % self.x_dimension,
-                                            (y + dy) % self.y_dimension))
+                    j = self.to_site_index(
+                        ((x + 1) % self.x_dimension, (y + dy) % self.y_dimension)
+                    )
                     yield (i, j)
                     if ordered:
                         yield (j, i)
 
     def horizontal_neighbors_iter(self, ordered=True):
-        n_horizontal_edges_per_y = (
-            self.x_dimension - (self.x_dimension <= 2 or not self.periodic))
+        n_horizontal_edges_per_y = self.x_dimension - (self.x_dimension <= 2 or not self.periodic)
         for x in range(n_horizontal_edges_per_y):
             for y in range(self.y_dimension):
                 i = self.to_site_index((x, y))
@@ -302,8 +300,7 @@ class HubbardSquareLattice(HubbardLattice):
                     yield (j, i)
 
     def vertical_neighbors_iter(self, ordered=True):
-        n_vertical_edges_per_x = (self.y_dimension -
-                                  (self.y_dimension <= 2 or not self.periodic))
+        n_vertical_edges_per_x = self.y_dimension - (self.y_dimension <= 2 or not self.periodic)
         for y in range(n_vertical_edges_per_x):
             for x in range(self.x_dimension):
                 i = self.to_site_index((x, y))
@@ -321,13 +318,11 @@ class HubbardSquareLattice(HubbardLattice):
     def delta_mag(self, X, Y, by_index=False):
         """The distance between sites X and Y in each dimension."""
         if by_index:
-            return self.delta_mag(self.from_site_index(X),
-                                  self.from_site_index(Y))
+            return self.delta_mag(self.from_site_index(X), self.from_site_index(Y))
         if self.periodic:
             return tuple(
-                min(abs((s * (x - y)) % d)
-                    for s in (-1, 1))
-                for d, x, y in zip(self.shape, X, Y))
+                min(abs((s * (x - y)) % d) for s in (-1, 1)) for d, x, y in zip(self.shape, X, Y)
+            )
         return tuple(abs(x - xx) for x, xx in zip(X, Y))
 
     def manhattan_distance(self, X, Y, by_index=False):

@@ -19,11 +19,10 @@ import nbformat
 
 
 class ExamplesTest(unittest.TestCase):
-
     def setUp(self):
         """Construct test info"""
         self.testing_folder = os.path.join(
-            os.path.dirname(__file__),  # Start at this file's directory.
+            os.path.dirname(__file__)  # Start at this file's directory.
         )
 
     def test_example(self):
@@ -37,7 +36,7 @@ class ExamplesTest(unittest.TestCase):
 
     def test_can_run_examples_jupyter_notebooks(self):  # pragma: no cover
         """No coverage on this test because it is not run.
-           The test is kept as an example.
+        The test is kept as an example.
         """
         for filename in os.listdir(self.testing_folder):
             if not filename.endswith('.ipynb'):
@@ -63,12 +62,9 @@ def is_matplotlib_cell(cell):  # pragma: no cover
 
 def strip_magics_and_shows(text):  # pragma: no cover
     """Remove Jupyter magics and pyplot show commands."""
-    lines = [
-        line for line in text.split('\n') if not contains_magic_or_show(line)
-    ]
+    lines = [line for line in text.split('\n') if not contains_magic_or_show(line)]
     return '\n'.join(lines)
 
 
 def contains_magic_or_show(line):  # pragma: no cover
-    return (line.strip().startswith('%') or 'pyplot.show(' in line or
-            'plt.show(' in line)
+    return line.strip().startswith('%') or 'pyplot.show(' in line or 'plt.show(' in line

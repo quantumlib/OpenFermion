@@ -9,26 +9,25 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-""" The transform function that does Fermion-qubit mappings
-    based on a BinaryCode (arXiv:1712.07067) """
+"""The transform function that does Fermion-qubit mappings
+based on a BinaryCode (arXiv:1712.07067)"""
 
 from typing import Any, List, Tuple, Union
 
 import numpy
 
-from openfermion.ops.operators import (BinaryCode, FermionOperator,
-                                       QubitOperator, BinaryPolynomial)
+from openfermion.ops.operators import BinaryCode, FermionOperator, QubitOperator, BinaryPolynomial
 
 
 def extractor(binary_op: BinaryPolynomial) -> QubitOperator:
-    """ Applies the extraction superoperator to a binary expression
+    """Applies the extraction superoperator to a binary expression
      to obtain the corresponding qubit operators.
 
     Args:
         binary_op (BinaryPolynomial): the binary term
 
-    Returns (QubitOperator): the qubit operator corresponding to the
-        binary terms
+    Returns:
+        The qubit operator corresponding to the binary terms
     """
     return_fn = 1
     for term in binary_op.terms:
@@ -54,7 +53,8 @@ def dissolve(term: Tuple[Any, Any]) -> QubitOperator:
     Args:
         term (tuple): product of binary variables, i.e.: 'w0 w2 w3'
 
-    Returns (QubitOperator): superposition of Pauli-strings
+    Returns:
+        A QubitOperator, the superposition of Pauli-strings
 
     Raises:
         ValueError: if the variable in term is not integer
@@ -63,7 +63,7 @@ def dissolve(term: Tuple[Any, Any]) -> QubitOperator:
     for var in term:
         if not isinstance(var, (numpy.int32, numpy.int64, int)):
             raise ValueError('dissolve only works on integers')
-        prod *= (QubitOperator((), 0.5) - QubitOperator('Z' + str(var), 0.5))
+        prod *= QubitOperator((), 0.5) - QubitOperator('Z' + str(var), 0.5)
     return QubitOperator((), 1.0) - prod
 
 
@@ -74,7 +74,8 @@ def make_parity_list(code: BinaryCode) -> List[BinaryPolynomial]:
     Args:
         code (BinaryCode): the code to extract the parity list from.
 
-    Returns (list): list of BinaryPolynomial, the parity list
+    Returns:
+        a list of BinaryPolynomial, the parity list
 
     Raises:
         TypeError: argument is not BinaryCode
@@ -87,9 +88,8 @@ def make_parity_list(code: BinaryCode) -> List[BinaryPolynomial]:
     return parity_binaries
 
 
-def binary_code_transform(hamiltonian: FermionOperator,
-                          code: BinaryCode) -> QubitOperator:
-    """ Transforms a Hamiltonian written in fermionic basis into a Hamiltonian
+def binary_code_transform(hamiltonian: FermionOperator, code: BinaryCode) -> QubitOperator:
+    """Transforms a Hamiltonian written in fermionic basis into a Hamiltonian
     written in qubit basis, via a binary code.
 
     The role of the binary code is to relate the occupation vectors (v0 v1 v2
@@ -111,27 +111,28 @@ def binary_code_transform(hamiltonian: FermionOperator,
         hamiltonian (FermionOperator): the fermionic Hamiltonian
         code (BinaryCode): the binary code to transform the Hamiltonian
 
-    Returns (QubitOperator): the transformed Hamiltonian
+    Returns:
+        A  QubitOperator, the transformed Hamiltonian
 
     Raises:
         TypeError: if the hamiltonian is not a FermionOperator or code is not
         a BinaryCode
     """
     if not isinstance(hamiltonian, FermionOperator):
-        raise TypeError('hamiltonian provided must be a FermionOperator'
-                        'received {}'.format(type(hamiltonian)))
+        raise TypeError(
+            'hamiltonian provided must be a FermionOperator' 'received {}'.format(type(hamiltonian))
+        )
 
     if not isinstance(code, BinaryCode):
-        raise TypeError('code provided must be a BinaryCode'
-                        'received {}'.format(type(code)))
+        raise TypeError('code provided must be a BinaryCode' 'received {}'.format(type(code)))
 
     new_hamiltonian = QubitOperator()
     parity_list = make_parity_list(code)
 
     # for each term in hamiltonian
     for term, term_coefficient in hamiltonian.terms.items():
-        """ the updated parity and occupation account for sign changes due
-        changed occupations mid-way in the term """
+        """the updated parity and occupation account for sign changes due
+        changed occupations mid-way in the term"""
         updated_parity = 0  # parity sign exponent
         parity_term = BinaryPolynomial()
         changed_occupation_vector = [0] * code.n_modes
@@ -144,14 +145,12 @@ def binary_code_transform(hamiltonian: FermionOperator,
         for op_idx, op_tuple in enumerate(reversed(term)):
             # get count exponent, parity exponent addition
             fermionic_indices = numpy.append(fermionic_indices, op_tuple[0])
-            count = numpy.count_nonzero(
-                fermionic_indices[:op_idx] == op_tuple[0])
-            updated_parity += numpy.count_nonzero(
-                fermionic_indices[:op_idx] < op_tuple[0])
+            count = numpy.count_nonzero(fermionic_indices[:op_idx] == op_tuple[0])
+            updated_parity += numpy.count_nonzero(fermionic_indices[:op_idx] < op_tuple[0])
 
             # update term
             extracted = extractor(code.decoder[op_tuple[0]])
-            extracted *= (((-1)**count) * ((-1)**(op_tuple[1])) * 0.5)
+            extracted *= ((-1) ** count) * ((-1) ** (op_tuple[1])) * 0.5
             transformed_term *= QubitOperator((), 0.5) - extracted
 
             # update parity term and occupation vector
@@ -159,12 +158,11 @@ def binary_code_transform(hamiltonian: FermionOperator,
             parity_term += parity_list[op_tuple[0]]
 
         # the parity sign and parity term
-        transformed_term *= QubitOperator((), (-1)**updated_parity)
+        transformed_term *= QubitOperator((), (-1) ** updated_parity)
         transformed_term *= extractor(parity_term)
 
         # the update operator
-        changed_qubit_vector = numpy.mod(
-            code.encoder.dot(changed_occupation_vector), 2)
+        changed_qubit_vector = numpy.mod(code.encoder.dot(changed_occupation_vector), 2)
 
         update_operator = QubitOperator(())
         for index, q_vec in enumerate(changed_qubit_vector):
@@ -172,8 +170,7 @@ def binary_code_transform(hamiltonian: FermionOperator,
                 update_operator *= QubitOperator('X' + str(index))
 
         # append new term to new hamiltonian
-        new_hamiltonian += term_coefficient * update_operator * \
-                           transformed_term
+        new_hamiltonian += term_coefficient * update_operator * transformed_term
 
     new_hamiltonian.compress()
     return new_hamiltonian

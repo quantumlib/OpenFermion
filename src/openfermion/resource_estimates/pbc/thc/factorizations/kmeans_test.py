@@ -12,13 +12,11 @@
 #   limitations under the License.
 import numpy as np
 
-from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import (
-    KMeansCVT)
+from openfermion.resource_estimates.pbc.thc.factorizations.kmeans import KMeansCVT
 
 
 def gaussian(dx, sigma):
-    return np.exp(-np.einsum("Gx,Gx->G", dx, dx) /
-                  sigma**2.0) / (2 * (sigma * np.pi)**0.5)
+    return np.exp(-np.einsum("Gx,Gx->G", dx, dx) / sigma**2.0) / (2 * (sigma * np.pi) ** 0.5)
 
 
 def gen_gaussian(xx, yy, grid, sigma=0.125):
@@ -52,9 +50,7 @@ def test_kmeans():
 
     weight = gen_gaussian(xx, yy, grid)
     kmeans = KMeansCVT(grid)
-    interp_points = kmeans.find_interpolating_points(num_interp_points,
-                                                     weight,
-                                                     verbose=False)
+    interp_points = kmeans.find_interpolating_points(num_interp_points, weight, verbose=False)
     interp_points_ref = [37, 27, 77, 81, 38, 24, 73, 62, 76, 22]
     assert np.allclose(interp_points, interp_points_ref)
 

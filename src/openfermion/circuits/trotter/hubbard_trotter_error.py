@@ -15,8 +15,7 @@ import numpy
 
 from openfermion.utils import count_qubits
 from openfermion.transforms.opconversions import normal_ordered
-from openfermion.circuits.trotter.low_depth_trotter_error import \
-    stagger_with_info
+from openfermion.circuits.trotter.low_depth_trotter_error import stagger_with_info
 
 
 def simulation_ordered_grouped_hubbard_terms_with_info(hubbard_hamiltonian):
@@ -55,7 +54,9 @@ def simulation_ordered_grouped_hubbard_terms_with_info(hubbard_hamiltonian):
     for i in range(0, n_qubits - side_length, 2 * side_length):
         for j in range(2 * bool(i % (4 * side_length)), 2 * side_length, 4):
             original_ordering[i + j], original_ordering[i + j + 1] = (
-                original_ordering[i + j + 1], original_ordering[i + j])
+                original_ordering[i + j + 1],
+                original_ordering[i + j],
+            )
 
     input_ordering = list(original_ordering)
 

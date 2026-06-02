@@ -24,19 +24,19 @@ def lambda_norm(diagonal_operator):
     Returns:
         lambda_norm: A float giving the lambda norm.
     """
-    lambda_norm = 0.
+    lambda_norm = 0.0
     n_qubits = diagonal_operator.one_body.shape[0]
     z_vector = numpy.zeros(n_qubits, float)
     for p in range(n_qubits):
         for q in range(n_qubits):
             if p == q:
-                z_vector[p] -= diagonal_operator.one_body[p, p] / 2.
-                z_vector[p] -= diagonal_operator.two_body[p, p] / 2.
+                z_vector[p] -= diagonal_operator.one_body[p, p] / 2.0
+                z_vector[p] -= diagonal_operator.two_body[p, p] / 2.0
             else:
-                lambda_norm += abs(diagonal_operator.one_body[p, q]) / 2.
-                lambda_norm += abs(diagonal_operator.two_body[p, q]) / 4.
-                z_vector[p] -= diagonal_operator.two_body[p, q] / 4.
-                z_vector[q] -= diagonal_operator.two_body[p, q] / 4.
+                lambda_norm += abs(diagonal_operator.one_body[p, q]) / 2.0
+                lambda_norm += abs(diagonal_operator.two_body[p, q]) / 4.0
+                z_vector[p] -= diagonal_operator.two_body[p, q] / 4.0
+                z_vector[q] -= diagonal_operator.two_body[p, q] / 4.0
     lambda_norm += numpy.sum(numpy.absolute(z_vector))
     return lambda_norm
 
@@ -87,9 +87,7 @@ def _discretize_probability_distribution(unnormalized_probabilities, epsilon):
 
     cumulative = list(_partial_sums(unnormalized_probabilities))
     total = cumulative[-1]
-    discretized_cumulative = [
-        int(math.floor(c / total * bin_count + 0.5)) for c in cumulative
-    ]
+    discretized_cumulative = [int(math.floor(c / total * bin_count + 0.5)) for c in cumulative]
     discretized = list(_differences(discretized_cumulative))
     return discretized, bin_count, sub_bit_precision
 
@@ -168,8 +166,7 @@ def _preprocess_for_efficient_roulette_selection(discretized_probabilities):
     return alternates, keep_weights
 
 
-def preprocess_lcu_coefficients_for_reversible_sampling(lcu_coefficients,
-                                                        epsilon):
+def preprocess_lcu_coefficients_for_reversible_sampling(lcu_coefficients, epsilon):
     """Prepares data used to perform efficient reversible roulette selection.
 
     Treats the coefficients of unitaries in the linear combination of
@@ -204,8 +201,8 @@ def preprocess_lcu_coefficients_for_reversible_sampling(lcu_coefficients,
             a probability. The actual denominator is 2**sub_bit_precision.
     """
     numers, denom, sub_bit_precision = _discretize_probability_distribution(
-        lcu_coefficients, epsilon)
+        lcu_coefficients, epsilon
+    )
     assert denom == 2**sub_bit_precision * len(numers)
-    alternates, keep_numers = _preprocess_for_efficient_roulette_selection(
-        numers)
+    alternates, keep_numers = _preprocess_for_efficient_roulette_selection(numers)
     return alternates, keep_numers, sub_bit_precision

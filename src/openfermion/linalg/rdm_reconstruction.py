@@ -6,7 +6,7 @@ def valdemoro_reconstruction(tpdm, n_electrons):
     """
     Build a 3-RDM by cumulant expansion and setting 3rd cumulant to zero
 
-    d3 approx = D ^ D ^ D + 3 (2C) ^ D
+        d3 approx = D ^ D ^ D + 3 (2C) ^ D
 
     tpdm has normalization (n choose 2) where n is the number of electrons
 

@@ -1,0 +1,477 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Continuous integration
+run-name: >-
+  Run continuous integration tests on
+  ${{github.event_name == 'pull_request' && format('PR #{0}', github.event.pull_request.number)
+    || format('push to {0}', github.ref_name) }}
+  by @${{github.actor}}
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+
+  merge_group:
+    types:
+      - checks_requested
+
+  workflow_dispatch:
+    inputs:
+      python_ver:
+        description: Normal version of Python to use
+        type: string
+
+      python_compat_ver:
+        description: Max compat version of Python
+        type: string
+
+permissions: read-all
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
+
+env:
+  # Default Python version to use. Make sure to use full x.y.z number.
+  python_ver: '3.12.8'
+
+  # Oldest Python version to use, for max_compat tests.
+  python_compat_ver: '3.11.9'
+
+  # Files listing dependencies we install using pip in the various jobs below.
+  # This is used by setup-python to check whether its cache needs updating.
+  python_dep_files: >-
+    dev_tools/requirements/envs/format.env.txt
+    dev_tools/requirements/envs/mypy.env.txt
+    dev_tools/requirements/envs/pylint.env.txt
+    dev_tools/requirements/envs/pytest-extra.env.txt
+    dev_tools/requirements/envs/pytest.env.txt
+    dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+
+jobs:
+  # GitHub Actions can have path filters (i.e., the use of a "paths:" keyword
+  # on the trigger definitions in the "on:" block earlier in this file). Path
+  # filters *would* be the natural way to make workflows trigger only when the
+  # desired files are affected by a pull request – except that the way branch
+  # protection rules work today is: "If a workflow is skipped due to path
+  # filtering [...] then checks associated with that workflow will remain in a
+  # Pending state. A pull request that requires those checks to be successful
+  # will be blocked from merging." Surprisingly, GitHub doesn't provide
+  # guidance on how to handle this. Discussions about solutions sometimes
+  # suggest hacky solutions (c.f. https://stackoverflow.com/a/78003720/743730).
+  # The approach taken here is to forgo the use of path filtering rules in the
+  # trigger condition, and instead, do our own filtering using a combination
+  # of testing specific file patterns (in the changes job below) and "if:"
+  # conditions on individual jobs in the rest of this workflow.
+  changes:
+    name: Changed file filtering
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    outputs:
+      gha: ${{steps.filter.outputs.gha}}
+      gha_files: ${{steps.filter.outputs.gha_files}}
+
+      # The rest all test both the relevant files and ALSO tools & scripts b/c
+      # a change in the CI workflows or scripts can affect the check results.
+
+      python: ${{steps.filter.outputs.python || steps.filter.outputs.ci}}
+      python_files: ${{steps.filter.outputs.python_files}}
+
+      yaml: ${{steps.filter.outputs.yaml || steps.filter.outputs.ci}}
+      yaml_files: ${{steps.filter.outputs.yaml_files}}
+
+      json: ${{steps.filter.outputs.json || steps.filter.outputs.ci}}
+      json_files: ${{steps.filter.outputs.json_files}}
+
+      docker: ${{steps.filter.outputs.docker || steps.filter.outputs.ci}}
+      docker_files: ${{steps.filter.outputs.docker_files}}
+
+      shell: ${{steps.filter.outputs.shell || steps.filter.outputs.ci}}
+      shell_files: ${{steps.filter.outputs.shell_files}}
+
+      notebooks: ${{steps.filter.outputs.notebooks || steps.filter.outputs.ci}}
+      notebook_files: ${{steps.filter.outputs.notebooks_files}}
+    steps:
+      - name: Check out a copy of the OpenFermion git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Determine files changed by this ${{github.event_name}} event
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: filter
+        with:
+          list-files: 'shell'
+          # The outputs will be variables named "foo_files" for a filter "foo".
+          filters: |
+            ci:
+              - '.github/workflows/**'
+              - 'check/**'
+              - 'dev_tools/**'
+            python:
+              - '**/*.py'
+              - 'dev_tools/conf/**'
+              - 'dev_tools/requirements/**/*.txt'
+              - 'docs/**/*-requirements.txt'
+              - 'pyproject.toml'
+            gha:
+              - '.github/workflows/*.yaml'
+            yaml:
+              - '*.cff'
+              - '**/*.yaml'
+            json:
+              - '**/*.json'
+            docker:
+              - '**/[Dd]ockerfile'
+            shell:
+              - '**/*.sh'
+              - 'check/*'
+            notebooks:
+              - '**/*.ipynb'
+
+  python-checks:
+    if: needs.changes.outputs.python == 'true'
+    name: Python file checks
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install requirements
+        env:
+          files: >-
+            dev_tools/requirements/envs/format.env.txt
+            dev_tools/requirements/envs/pylint.env.txt
+            dev_tools/requirements/envs/mypy.env.txt
+        run: |
+          requirements=()
+          for file in $files; do
+            requirements+=("-r" "$file")
+          done
+          pip install "${requirements[@]}"
+
+      - name: Check format
+        run: |
+          echo '::add-matcher::.github/problem-matchers/black.json'
+          check/format-incremental
+
+      - name: Check lint
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pylint.json'
+          check/pylint -j 0
+
+      - name: Check type declarations
+        run: |
+          echo '::add-matcher::.github/problem-matchers/mypy.json'
+          check/mypy
+
+  pytest:
+    if: needs.changes.outputs.python == 'true'
+    name: Unit tests
+    needs: [changes, python-checks]
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        os: [ ubuntu-24.04, macos-14, windows-2022 ]
+        cirq-version: [ 1.4.1 ]
+      fail-fast: false
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install requirements
+        run: |
+          pip install -r dev_tools/requirements/envs/pytest.env.txt
+          pip install cirq-core==${{matrix.cirq-version}}
+
+      - name: Run pytest
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pytest.json'
+          check/pytest -n auto -m "not slow"
+
+  pytest-extra:
+    if: needs.changes.outputs.python == 'true'
+    name: Extra unit tests
+    needs: [changes, python-checks]
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+        cirq-version: [ 1.4.1 ]
+      fail-fast: false
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install requirements
+        run: |
+          pip install -r dev_tools/requirements/envs/pytest-extra.env.txt
+          pip install cirq-core==${{matrix.cirq-version}}
+
+      - name: Run pytest
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pytest.json'
+          check/pytest -n auto -m "not slow" src/openfermion/resource_estimates
+
+  pytest-compat:
+    if: needs.changes.outputs.python == 'true'
+    name: Python compatibility tests
+    needs: [changes, python-checks]
+    # Note: this is deliberately Ubuntu 22 because this is a compatibility test.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+        # Note: deliberately not using our Python cache here b/c this runs
+        # a different version of Python.
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{env.python_compat_ver}}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install requirements
+        run: pip install -r dev_tools/requirements/max_compat/pytest-max-compat.env.txt
+
+      - name: Run pytest
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pytest.json'
+          check/pytest -n auto -m "not slow"
+
+  coverage:
+    if: needs.changes.outputs.python == 'true'
+    name: Python code coverage tests
+    needs: [changes, python-checks]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install requirements
+        run: pip install -r dev_tools/requirements/envs/pytest.env.txt
+
+      - name: Run code coverage tests
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pytest.json'
+          check/pytest-and-incremental-coverage
+
+  yaml-lint:
+    if: needs.changes.outputs.yaml == 'true'
+    name: YAML lint checks
+    needs: changes
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    env:
+      CHANGED_FILES: ${{needs.changes.outputs.yaml_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install yamllint
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y yamllint
+
+      - name: Run yamllint
+        run: |
+          echo '::add-matcher::.github/problem-matchers/yamllint.json'
+          # shellcheck disable=SC2086
+          yamllint ${CHANGED_FILES}
+
+  json-lint:
+    if: needs.changes.outputs.json == 'true'
+    name: JSON lint checks
+    needs: changes
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    env:
+      CHANGED_FILES: ${{needs.changes.outputs.json_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install jsonlint
+        run: npm install -g @prantlf/jsonlint
+
+      - name: Run jsonlint on JSON files
+        run: |
+          echo '::add-matcher::.github/problem-matchers/jsonlint.json'
+          # shellcheck disable=SC2086
+          jsonlint --continue ${CHANGED_FILES}
+
+  docker-lint:
+    if: needs.changes.outputs.docker == 'true'
+    name: Dockerfile lint checks
+    needs: changes
+    # This uses a Mac runner because hadolint isn't available via Linux apt.
+    runs-on: macos-14
+    timeout-minutes: 5
+    env:
+      CHANGED_FILES: ${{needs.changes.outputs.docker_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Note: there is a hadolint GitHub Actions available, but it only accepts
+      # one Dockerfile to check. We have > 1 file to check, so we need the CLI.
+      - name: Install hadolint
+        run: brew install hadolint
+
+      - name: Run hadolint on Dockerfiles that have been changed
+        run: |
+          echo '::add-matcher::.github/problem-matchers/hadolint.json'
+          # shellcheck disable=SC2086
+          hadolint ${CHANGED_FILES}
+
+  workflow-lint:
+    if: needs.changes.outputs.gha == 'true'
+    name: GitHub workflow lint checks
+    needs: changes
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run actionlint
+        uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8 # v2.1.2
+        with:
+          flags: ${{runner.debug && '-verbose'}}
+          files: '.github/workflows/*.{yaml,yml}'
+          pyflakes: false
+
+  shell-script-lint:
+    if: needs.changes.outputs.shell == 'true'
+    name: Shell script lint checks
+    needs: changes
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    env:
+      CHANGED_FILES: ${{needs.changes.outputs.shell_files}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run shellcheck on shell scripts that have been changed
+        run: |
+          echo '::add-matcher::.github/problem-matchers/shellcheck.json'
+          # shellcheck disable=SC2086
+          shellcheck ${CHANGED_FILES}
+
+  notebook-checks:
+    if: needs.changes.outputs.notebooks == 'true'
+    name: Notebook format checks
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python and restore cache
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{inputs.python_ver || env.python_ver}}
+          cache: pip
+          cache-dependency-path: ${{env.python_dep_files}}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install requirements
+        run: pip install -r dev_tools/requirements/envs/pytest.env.txt
+
+      - name: Check notebook format
+        run: check/nbformat
+
+  report-results:
+    name: CI
+    if: always()
+    needs:
+      - coverage
+      - docker-lint
+      - json-lint
+      - notebook-checks
+      - pytest
+      - pytest-compat
+      - pytest-extra
+      - python-checks
+      - shell-script-lint
+      - workflow-lint
+      - yaml-lint
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Report failure (if any occurred)
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          {
+          echo ":x: CI checks failed"
+          echo "One or more CI jobs failed. Please check the logs for details."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1

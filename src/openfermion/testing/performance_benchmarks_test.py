@@ -1,6 +1,7 @@
 """
 test coverage for performance benchmarks. Check type returns.
 """
+
 from .performance_benchmarks import (
     benchmark_molecular_operator_jordan_wigner,
     benchmark_fermion_math_and_normal_order,
@@ -38,8 +39,7 @@ def test_linear_qop():
 
 
 def test_comm_diag_coulomb():
-    r1, r2 = \
-        benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(4)
+    r1, r2 = benchmark_commutator_diagonal_coulomb_operators_2D_spinless_jellium(4)
     assert isinstance(r1, float)
     assert isinstance(r2, float)
 

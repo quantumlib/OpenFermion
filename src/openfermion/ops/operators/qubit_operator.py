@@ -17,22 +17,22 @@ from openfermion.ops.operators.symbolic_operator import SymbolicOperator
 
 # Define products of all Pauli operators for symbolic multiplication.
 _PAULI_OPERATOR_PRODUCTS = {
-    ('I', 'I'): (1., 'I'),
-    ('I', 'X'): (1., 'X'),
-    ('X', 'I'): (1., 'X'),
-    ('I', 'Y'): (1., 'Y'),
-    ('Y', 'I'): (1., 'Y'),
-    ('I', 'Z'): (1., 'Z'),
-    ('Z', 'I'): (1., 'Z'),
-    ('X', 'X'): (1., 'I'),
-    ('Y', 'Y'): (1., 'I'),
-    ('Z', 'Z'): (1., 'I'),
-    ('X', 'Y'): (1.j, 'Z'),
-    ('X', 'Z'): (-1.j, 'Y'),
-    ('Y', 'X'): (-1.j, 'Z'),
-    ('Y', 'Z'): (1.j, 'X'),
-    ('Z', 'X'): (1.j, 'Y'),
-    ('Z', 'Y'): (-1.j, 'X')
+    ('I', 'I'): (1.0, 'I'),
+    ('I', 'X'): (1.0, 'X'),
+    ('X', 'I'): (1.0, 'X'),
+    ('I', 'Y'): (1.0, 'Y'),
+    ('Y', 'I'): (1.0, 'Y'),
+    ('I', 'Z'): (1.0, 'Z'),
+    ('Z', 'I'): (1.0, 'Z'),
+    ('X', 'X'): (1.0, 'I'),
+    ('Y', 'Y'): (1.0, 'I'),
+    ('Z', 'Z'): (1.0, 'I'),
+    ('X', 'Y'): (1.0j, 'Z'),
+    ('X', 'Z'): (-1.0j, 'Y'),
+    ('Y', 'X'): (-1.0j, 'Z'),
+    ('Y', 'Z'): (1.0j, 'X'),
+    ('Z', 'X'): (1.0j, 'Y'),
+    ('Z', 'Y'): (-1.0j, 'X'),
 }
 
 
@@ -128,8 +128,7 @@ class QubitOperator(SymbolicOperator):
 
             # Still on the same qubit, keep simplifying.
             if left_index == right_index:
-                new_coefficient, new_action = _PAULI_OPERATOR_PRODUCTS[
-                    left_action, right_action]
+                new_coefficient, new_action = _PAULI_OPERATOR_PRODUCTS[left_action, right_action]
                 left_factor = (left_index, new_action)
                 coefficient *= new_coefficient
 

@@ -14,28 +14,29 @@
 
 import subprocess
 import os
+from typing import Any, Callable, Optional
 
 import pytest
 
 from dev_tools import shell_tools
 
 
-def only_on_posix(func):
+def only_on_posix(func: Callable) -> Optional[Callable]:
     if os.name != 'posix':
         return None
     return func
 
 
-def run_cmd(*args, **kwargs):
+def run_cmd(*args: Any, **kwargs: Any) -> shell_tools.CommandOutput:
     return shell_tools.run_cmd(*args, log_run_to_stderr=False, **kwargs)
 
 
-def run_shell(*args, **kwargs):
+def run_shell(*args: Any, **kwargs: Any) -> shell_tools.CommandOutput:
     return shell_tools.run_shell(*args, log_run_to_stderr=False, **kwargs)
 
 
 @only_on_posix
-def test_run_cmd_raise_on_fail():
+def test_run_cmd_raise_on_fail() -> None:
     assert run_cmd('true') == (None, None, 0)
     assert run_cmd('true', raise_on_fail=False) == (None, None, 0)
 
@@ -45,7 +46,7 @@ def test_run_cmd_raise_on_fail():
 
 
 @only_on_posix
-def test_run_shell_raise_on_fail():
+def test_run_shell_raise_on_fail() -> None:
     assert run_shell('true') == (None, None, 0)
     assert run_shell('true', raise_on_fail=False) == (None, None, 0)
 
@@ -55,36 +56,33 @@ def test_run_shell_raise_on_fail():
 
 
 @only_on_posix
-def test_run_cmd_capture():
+def test_run_cmd_capture() -> None:
     assert run_cmd('echo', 'test', out=None) == (None, None, 0)
-    assert run_cmd('echo', 'test',
-                   out=shell_tools.TeeCapture()) == ('test\n', None, 0)
-    assert run_cmd('echo', 'test', out=None,
-                   err=shell_tools.TeeCapture()) == (None, '', 0)
+    assert run_cmd('echo', 'test', out=shell_tools.TeeCapture()) == ('test\n', None, 0)
+    assert run_cmd('echo', 'test', out=None, err=shell_tools.TeeCapture()) == (None, '', 0)
 
 
 @only_on_posix
-def test_run_shell_capture():
+def test_run_shell_capture() -> None:
     assert run_shell('echo test 1>&2', err=None) == (None, None, 0)
-    assert run_shell('echo test 1>&2',
-                     err=shell_tools.TeeCapture()) == (None, 'test\n', 0)
-    assert run_shell('echo test 1>&2', err=None,
-                     out=shell_tools.TeeCapture()) == ('', None, 0)
+    assert run_shell('echo test 1>&2', err=shell_tools.TeeCapture()) == (None, 'test\n', 0)
+    assert run_shell('echo test 1>&2', err=None, out=shell_tools.TeeCapture()) == ('', None, 0)
 
 
 @only_on_posix
-def test_run_shell_does_not_deadlock_on_large_outputs():
+def test_run_shell_does_not_deadlock_on_large_outputs() -> None:
     assert run_shell(
         r"""python3 -c "import sys;"""
         r"""print((('o' * 99) + '\n') * 10000);"""
         r"""print((('e' * 99) + '\n') * 10000, file=sys.stderr)"""
         '"',
         out=None,
-        err=None) == (None, None, 0)
+        err=None,
+    ) == (None, None, 0)
 
 
 @only_on_posix
-def test_output_of():
+def test_output_of() -> None:
     assert shell_tools.output_of('true') == ''
     with pytest.raises(subprocess.CalledProcessError):
         _ = shell_tools.output_of('false')

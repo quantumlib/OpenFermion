@@ -1,7 +1,6 @@
 from typing import List, Optional, Union
 from itertools import product
-from openfermion.contrib.representability._dualbasis import \
-    DualBasisElement, DualBasis
+from openfermion.contrib.representability._dualbasis import DualBasisElement, DualBasis
 from openfermion.utils.rdm_mapping_functions import kronecker_delta
 
 
@@ -20,11 +19,13 @@ def tpdm_trace_constraint(dim: int, normalization: float) -> DualBasisElement:
     tensor_names = ['cckk'] * (dim**2)
     tensor_coeffs = [1.0] * (dim**2)
     bias = 0
-    return DualBasisElement(tensor_names=tensor_names,
-                            tensor_elements=tensor_elements,
-                            tensor_coeffs=tensor_coeffs,
-                            bias=bias,
-                            scalar=normalization)
+    return DualBasisElement(
+        tensor_names=tensor_names,
+        tensor_elements=tensor_elements,
+        tensor_coeffs=tensor_coeffs,
+        bias=bias,
+        scalar=normalization,
+    )
 
 
 def tpdm_antisymmetry_constraint(dim: int) -> DualBasis:
@@ -40,14 +41,11 @@ def tpdm_antisymmetry_constraint(dim: int) -> DualBasis:
     for p, q, r, s in product(range(dim), repeat=4):
         if p * dim + q <= r * dim + s:
             if p < q and r < s:
-                tensor_elements = [
-                    tuple(indices) for indices in _coord_generator(p, q, r, s)
-                ]
+                tensor_elements = [tuple(indices) for indices in _coord_generator(p, q, r, s)]
                 tensor_names = ['cckk'] * len(tensor_elements)
                 tensor_coeffs = [0.5] * len(tensor_elements)
                 dbe = DualBasisElement()
-                for n, e, c in zip(tensor_names, tensor_elements,
-                                   tensor_coeffs):
+                for n, e, c in zip(tensor_names, tensor_elements, tensor_coeffs):
                     dbe.add_element(n, e, c)
 
                 # dual_basis += dbe
@@ -56,8 +54,7 @@ def tpdm_antisymmetry_constraint(dim: int) -> DualBasis:
     return DualBasis(elements=dbe_list)
 
 
-def tpdm_to_opdm_mapping(dim: int,
-                         normalization: Union[float, int]) -> DualBasis:
+def tpdm_to_opdm_mapping(dim: int, normalization: Union[float, int]) -> DualBasis:
     """
     Construct the DualBasis for mapping of the tpdm to the opdm
 
@@ -190,8 +187,7 @@ def tpdm_to_thdm_mapping(dim: int) -> DualBasis:
     """
     dbe_list = []
 
-    def d2q2element(p: int, q: int, r: int, s: int, factor: Union[float, int])\
-            -> DualBasisElement:
+    def d2q2element(p: int, q: int, r: int, s: int, factor: Union[float, int]) -> DualBasisElement:
         """
         Build the dual basis element for symmetric form of 2-marginal
 
@@ -210,13 +206,14 @@ def tpdm_to_thdm_mapping(dim: int) -> DualBasis:
         if p == r:
             dbe.add_element('ck', (q, s), factor)
         if q == r:
-            dbe.add_element('ck', (p, s), -1. * factor)
+            dbe.add_element('ck', (p, s), -1.0 * factor)
         if p == s:
-            dbe.add_element('ck', (q, r), -1. * factor)
+            dbe.add_element('ck', (q, r), -1.0 * factor)
 
         dbe.dual_scalar = (
-            kronecker_delta(q, s) * kronecker_delta(p, r) -
-            kronecker_delta(q, r) * kronecker_delta(p, s)) * factor
+            kronecker_delta(q, s) * kronecker_delta(p, r)
+            - kronecker_delta(q, r) * kronecker_delta(p, s)
+        ) * factor
         return dbe
 
     for i, j, k, l in product(range(dim), repeat=4):
@@ -239,11 +236,9 @@ def tpdm_to_phdm_mapping(dim: int) -> DualBasis:
     """
     dbe_list = []
 
-    def g2d2map(p: int,
-                q: int,
-                r: int,
-                s: int,
-                factor: Optional[Union[float, int]] = 1) -> DualBasisElement:
+    def g2d2map(
+        p: int, q: int, r: int, s: int, factor: Optional[Union[float, int]] = 1
+    ) -> DualBasisElement:
         """
         Build the dual basis element for a symmetric 2-marginal
 
@@ -256,7 +251,7 @@ def tpdm_to_phdm_mapping(dim: int) -> DualBasis:
         """
         dbe = DualBasisElement()
         if q == s:
-            dbe.add_element('ck', (p, r), -1. * factor)
+            dbe.add_element('ck', (p, r), -1.0 * factor)
         dbe.add_element('ckck', (p, s, r, q), 1.0 * factor)
         dbe.add_element('cckk', (p, q, r, s), 1.0 * factor)
         dbe.dual_scalar = 0
@@ -272,12 +267,13 @@ def tpdm_to_phdm_mapping(dim: int) -> DualBasis:
     return DualBasis(elements=dbe_list)
 
 
-def spin_orbital_linear_constraints(dim: int,
-                                    num_alpha: Union[int, float],
-                                    num_beta: Union[int, float],
-                                    constraint_list: List[str],
-                                    sz: Optional[Union[None, float, int]] = None
-                                   ) -> DualBasis:
+def spin_orbital_linear_constraints(
+    dim: int,
+    num_alpha: Union[int, float],
+    num_beta: Union[int, float],
+    constraint_list: List[str],
+    sz: Optional[Union[None, float, int]] = None,
+) -> DualBasis:
     """
     Construct dual basis constraints for 2-positivity in a spin-orbital
     basis
@@ -346,7 +342,15 @@ def _coord_generator(i, j, k, l):
     l, k, i, j
     l, k, j, i
     """
-    unique_set = {(i, j, k, l), (j, i, k, l), (i, j, l, k), (j, i, l, k),
-                  (k, l, i, j), (k, l, j, i), (l, k, i, j), (l, k, j, i)}
+    unique_set = {
+        (i, j, k, l),
+        (j, i, k, l),
+        (i, j, l, k),
+        (j, i, l, k),
+        (k, l, i, j),
+        (k, l, j, i),
+        (l, k, i, j),
+        (l, k, j, i),
+    }
     for index_element in unique_set:
         yield index_element

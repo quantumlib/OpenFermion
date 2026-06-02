@@ -2,8 +2,7 @@ from itertools import product
 import pytest
 import numpy
 
-from openfermion.linalg.wedge_product import (wedge,
-                                              generate_parity_permutations)
+from openfermion.linalg.wedge_product import wedge, generate_parity_permutations
 
 
 def test_upper_lower_index_size_check():
@@ -29,10 +28,12 @@ def test_eye_wedge():
     m_tensor = numpy.eye(2)
     true_eye2 = numpy.zeros((2, 2, 2, 2))
     for p, q, r, s in product(range(2), repeat=4):
-        true_eye2[p, q, r, s] += (n_tensor[p, s] * m_tensor[q, r] -
-                                  n_tensor[q, s] * m_tensor[p, r] -
-                                  n_tensor[p, r] * m_tensor[q, s] +
-                                  n_tensor[q, r] * m_tensor[p, s])
+        true_eye2[p, q, r, s] += (
+            n_tensor[p, s] * m_tensor[q, r]
+            - n_tensor[q, s] * m_tensor[p, r]
+            - n_tensor[p, r] * m_tensor[q, s]
+            + n_tensor[q, r] * m_tensor[p, s]
+        )
     true_eye2 /= 2**2
     test_eye2 = wedge(n_tensor, m_tensor, (1, 1), (1, 1))
     assert numpy.allclose(test_eye2, true_eye2)
@@ -49,10 +50,12 @@ def test_random_wedge():
     m_tensor = numpy.random.random((dim, dim))
     true_eye2 = numpy.zeros(tuple([dim] * 4))
     for p, q, r, s in product(range(dim), repeat=4):
-        true_eye2[p, q, r, s] += (n_tensor[p, s] * m_tensor[q, r] -
-                                  n_tensor[q, s] * m_tensor[p, r] -
-                                  n_tensor[p, r] * m_tensor[q, s] +
-                                  n_tensor[q, r] * m_tensor[p, s])
+        true_eye2[p, q, r, s] += (
+            n_tensor[p, s] * m_tensor[q, r]
+            - n_tensor[q, s] * m_tensor[p, r]
+            - n_tensor[p, r] * m_tensor[q, s]
+            + n_tensor[q, r] * m_tensor[p, s]
+        )
     true_eye2 /= 2**2
     test_eye2 = wedge(n_tensor, m_tensor, (1, 1), (1, 1))
     assert numpy.allclose(test_eye2, true_eye2)
@@ -72,9 +75,12 @@ def test_random_two_wedge():
     for a, b, c, d, e, f in product(range(dim), repeat=6):
         for u_perm, u_phase in generate_parity_permutations([a, b, c]):
             for l_perm, l_phase in generate_parity_permutations([f, e, d]):
-                true_tensor[a, b, c, d, e, f] += u_phase * l_phase * n_tensor[
-                    u_perm[0], u_perm[1], l_perm[1],
-                    l_perm[0]] * m_tensor[u_perm[2], l_perm[2]]
+                true_tensor[a, b, c, d, e, f] += (
+                    u_phase
+                    * l_phase
+                    * n_tensor[u_perm[0], u_perm[1], l_perm[1], l_perm[0]]
+                    * m_tensor[u_perm[2], l_perm[2]]
+                )
 
     true_tensor /= 6**2
     test_tensor = wedge(n_tensor, m_tensor, (2, 2), (1, 1))
@@ -97,15 +103,14 @@ def test_random_two_wedge_two():
             for l_perm, l_phase in generate_parity_permutations([h, g, f, e]):
                 # D_{hgfe}^{abcd} = C [D_{hg}^{ab}D_{fe}^{cd} +
                 # -1 * D_{hg}^{ab}D_{ef}^{cd} + ...]
-                true_tensor[a, b, c, d, e, f, g, h] += u_phase * l_phase * \
-                                                       n_tensor[
-                                                           u_perm[0], u_perm[1],
-                                                           l_perm[1], l_perm[
-                                                               0]] * m_tensor[
-                                                           u_perm[2], u_perm[3],
-                                                           l_perm[3], l_perm[2]]
+                true_tensor[a, b, c, d, e, f, g, h] += (
+                    u_phase
+                    * l_phase
+                    * n_tensor[u_perm[0], u_perm[1], l_perm[1], l_perm[0]]
+                    * m_tensor[u_perm[2], u_perm[3], l_perm[3], l_perm[2]]
+                )
 
-    true_tensor /= (4 * 3 * 2)**2
+    true_tensor /= (4 * 3 * 2) ** 2
     test_tensor = wedge(n_tensor, m_tensor, (2, 2), (2, 2))
     assert numpy.allclose(test_tensor, true_tensor)
 
@@ -120,11 +125,14 @@ def test_random_1_2_wedge_1_1():
             for l_perm, l_phase in generate_parity_permutations([e, d, c]):
                 # D_{edc}^{ab} = C[D_{ed}^{a}D_{c}^{b} - D_{ed}^{b}D_{c}^{a} -
                 # D_{ec}^{a}D_{d}^{b} +...]
-                true_tensor[a, b, c, d, e] += u_phase * l_phase * n_tensor[
-                    u_perm[0], l_perm[2], l_perm[1]] * m_tensor[u_perm[1],
-                                                                l_perm[0]]
+                true_tensor[a, b, c, d, e] += (
+                    u_phase
+                    * l_phase
+                    * n_tensor[u_perm[0], l_perm[2], l_perm[1]]
+                    * m_tensor[u_perm[1], l_perm[0]]
+                )
 
-    true_tensor /= (2 * 3 * 2)
+    true_tensor /= 2 * 3 * 2
     test_tensor = wedge(n_tensor, m_tensor, (1, 2), (1, 1))
     assert numpy.allclose(test_tensor, true_tensor)
 
@@ -137,10 +145,13 @@ def test_random_2_1_wedge_1_1():
     for a, b, c, d, e in product(range(dim), repeat=5):
         for u_perm, u_phase in generate_parity_permutations([a, b, c]):
             for l_perm, l_phase in generate_parity_permutations([e, d]):
-                true_tensor[a, b, c, d, e] += u_phase * l_phase * n_tensor[
-                    u_perm[0], u_perm[1], l_perm[0]] * m_tensor[u_perm[2],
-                                                                l_perm[1]]
+                true_tensor[a, b, c, d, e] += (
+                    u_phase
+                    * l_phase
+                    * n_tensor[u_perm[0], u_perm[1], l_perm[0]]
+                    * m_tensor[u_perm[2], l_perm[1]]
+                )
 
-    true_tensor /= (2 * 3 * 2)
+    true_tensor /= 2 * 3 * 2
     test_tensor = wedge(n_tensor, m_tensor, (2, 1), (1, 1))
     assert numpy.allclose(test_tensor, true_tensor)

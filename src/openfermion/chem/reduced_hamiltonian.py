@@ -3,8 +3,9 @@ import numpy
 from openfermion.ops.representations import InteractionOperator
 
 
-def make_reduced_hamiltonian(molecular_hamiltonian: InteractionOperator,
-                             n_electrons: int) -> InteractionOperator:
+def make_reduced_hamiltonian(
+    molecular_hamiltonian: InteractionOperator, n_electrons: int
+) -> InteractionOperator:
     r"""
     Construct the reduced Hamiltonian.
 
@@ -14,10 +15,11 @@ def make_reduced_hamiltonian(molecular_hamiltonian: InteractionOperator,
     lift the 1-body terms to the two-body space.
 
     Derivation:
-        use the fact that i^l = (1/(n -1)) sum_{jk}\delta_{jk}i^ j^ k l
-                          i^l = (-1/(n -1)) sum_{jk}\delta_{jk}j^ i^ k l
-                          i^l = (-1/(n -1)) sum_{jk}\delta_{jk}i^ j^ l k
-                          i^l = (1/(n -1)) sum_{jk}\delta_{jk}j^ i^ l k
+        use the fact that
+        - $i^l = (1/(n -1)) sum_{jk}\delta_{jk}i^ j^ k l$
+        - $i^l = (-1/(n -1)) sum_{jk}\delta_{jk}j^ i^ k l$
+        - $i^l = (-1/(n -1)) sum_{jk}\delta_{jk}i^ j^ l k$
+        - $i^l = (1/(n -1)) sum_{jk}\delta_{jk}j^ i^ l k$
 
         Rewrite each one-body term as an even weighting of all four 2-RDM
         elements with delta functions. Then rearrange terms so that each ijkl
@@ -39,8 +41,15 @@ def make_reduced_hamiltonian(molecular_hamiltonian: InteractionOperator,
     k2 = numpy.zeros_like(h2)
     normalization = 1 / (4 * (n_electrons - 1))
     for i, j, k, l in product(range(h1.shape[0]), repeat=4):
-        k2[i, j, k, l] = normalization * (
-            h1[i, l] * delta[j, k] + h1[j, k] * delta[i, l] -
-            h1[i, k] * delta[j, l] - h1[j, l] * delta[i, k]) + h2[i, j, k, l]
+        k2[i, j, k, l] = (
+            normalization
+            * (
+                h1[i, l] * delta[j, k]
+                + h1[j, k] * delta[i, l]
+                - h1[i, k] * delta[j, l]
+                - h1[j, l] * delta[i, k]
+            )
+            + h2[i, j, k, l]
+        )
 
     return InteractionOperator(constant, numpy.zeros_like(h1), k2)

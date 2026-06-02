@@ -13,11 +13,9 @@
 from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    HamiltonianProperties,)
+from openfermion.resource_estimates.pbc.hamiltonian import HamiltonianProperties
 
-from openfermion.resource_estimates.pbc.sf.sf_integrals import (
-    SingleFactorization,)
+from openfermion.resource_estimates.pbc.sf.sf_integrals import SingleFactorization
 
 
 @dataclass
@@ -31,8 +29,7 @@ class SFHamiltonianProperties(HamiltonianProperties):
     num_aux: int
 
 
-def compute_lambda(hcore: npt.NDArray,
-                   sf_obj: SingleFactorization) -> SFHamiltonianProperties:
+def compute_lambda(hcore: npt.NDArray, sf_obj: SingleFactorization) -> SFHamiltonianProperties:
     """Lambda for single-factorized Hamiltonian.
 
     Compute one-body and two-body lambda for qubitization of
@@ -75,15 +72,13 @@ def compute_lambda(hcore: npt.NDArray,
         for qidx in range(len(kpts)):
             # - 0.5 * sum_{Q}sum_{r}(pkrQ|rQqk)
             eri_kqqk_pqrs = sf_obj.get_eri([kidx, qidx, qidx, kidx])
-            h1_neg -= (np.einsum("prrq->pq", eri_kqqk_pqrs, optimize=True) /
-                       nkpts)
+            h1_neg -= np.einsum("prrq->pq", eri_kqqk_pqrs, optimize=True) / nkpts
             # + sum_{Q}sum_{r}(pkqk|rQrQ)
             eri_kkqq_pqrs = sf_obj.get_eri([kidx, kidx, qidx, qidx])
             h1_pos += np.einsum("pqrr->pq", eri_kkqq_pqrs) / nkpts
 
         one_body_mat[kidx] = hcore[kidx] + 0.5 * h1_neg + h1_pos
-        lambda_one_body += np.sum(
-            np.abs(one_body_mat[kidx].real) + np.abs(one_body_mat[kidx].imag))
+        lambda_one_body += np.sum(np.abs(one_body_mat[kidx].real) + np.abs(one_body_mat[kidx].imag))
 
     ############################################################################
     #
@@ -103,12 +98,8 @@ def compute_lambda(hcore: npt.NDArray,
         A /= np.sqrt(nkpts)
         B /= np.sqrt(nkpts)
         # sum_q sum_n (sum_{pq} |Re{A_{pq}^n}| + |Im{A_{pq}^n|)^2
-        lambda_two_body += np.sum(
-            np.einsum("npq->n",
-                      np.abs(A.real) + np.abs(A.imag))**2)
-        lambda_two_body += np.sum(
-            np.einsum("npq->n",
-                      np.abs(B.real) + np.abs(B.imag))**2)
+        lambda_two_body += np.sum(np.einsum("npq->n", np.abs(A.real) + np.abs(A.imag)) ** 2)
+        lambda_two_body += np.sum(np.einsum("npq->n", np.abs(B.real) + np.abs(B.imag)) ** 2)
 
     lambda_two_body *= 0.5
 

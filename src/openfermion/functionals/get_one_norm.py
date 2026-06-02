@@ -25,18 +25,15 @@ def get_one_norm_mol(molecule: MolecularData):
     https://arxiv.org/abs/2103.14753 after a fermion-to-qubit
     transformation given a MolecularData class.
 
-    Parameters
-    ----------
+    Args:
+        molecule: MolecularData class representing a molecular Hamiltonian
 
-    molecule : MolecularData class representing a molecular Hamiltonian
-
-    Returns
-    -------
-    one_norm : 1-Norm of the qubit Hamiltonian
+    Returns:
+        A 1-Norm of the qubit Hamiltonian
     """
-    return get_one_norm_int(molecule.nuclear_repulsion,
-                            molecule.one_body_integrals,
-                            molecule.two_body_integrals)
+    return get_one_norm_int(
+        molecule.nuclear_repulsion, molecule.one_body_integrals, molecule.two_body_integrals
+    )
 
 
 def get_one_norm_mol_woconst(molecule: MolecularData):
@@ -44,39 +41,34 @@ def get_one_norm_mol_woconst(molecule: MolecularData):
     Returns 1-norm, emitting the constant term in the qubit Hamiltonian.
     See get_one_norm_mol.
 
-    Parameters
-    ----------
+    Args:
+        molecule: MolecularData class representing a molecular Hamiltonian
 
-    molecule : MolecularData class representing a molecular Hamiltonian
-
-    Returns
-    -------
-    one_norm : 1-Norm of the qubit Hamiltonian
+    Returns:
+        A 1-Norm of the qubit Hamiltonian
     """
-    return get_one_norm_int_woconst(molecule.one_body_integrals,
-                                    molecule.two_body_integrals)
+    return get_one_norm_int_woconst(molecule.one_body_integrals, molecule.two_body_integrals)
 
 
-def get_one_norm_int(constant: float, one_body_integrals: np.ndarray,
-                     two_body_integrals: np.ndarray):
+def get_one_norm_int(
+    constant: float, one_body_integrals: np.ndarray, two_body_integrals: np.ndarray
+):
     """
     Returns the 1-Norm of a RHF or ROHF Hamiltonian described in
     https://arxiv.org/abs/2103.14753 after a fermion-to-qubit
     transformation given nuclear constant, one-body (2D np.array)
     and two-body (4D np.array) integrals in spatial orbital basis.
 
-    Parameters
-    ----------
-    constant(float) : Nuclear repulsion or adjustment to constant shift in
-        Hamiltonian from integrating out core orbitals.
-    one_body_integrals(ndarray) : An array of the one-electron integrals having
-        shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
-    two_body_integrals(ndarray) : An array of the two-electron integrals having
-        shape of (n_orb, n_orb, n_orb, n_orb).
+    Args:
+        constant(float): Nuclear repulsion or adjustment to constant shift in
+            Hamiltonian from integrating out core orbitals.
+        one_body_integrals(ndarray): An array of the one-electron integrals having
+            shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
+        two_body_integrals(ndarray): An array of the two-electron integrals having
+            shape of (n_orb, n_orb, n_orb, n_orb).
 
-    Returns
-    -------
-    one_norm : 1-Norm of the qubit Hamiltonian
+    Returns:
+        A 1-Norm of the qubit Hamiltonian
     """
     n_orb = one_body_integrals.shape[0]
 
@@ -84,21 +76,22 @@ def get_one_norm_int(constant: float, one_body_integrals: np.ndarray,
     for p in range(n_orb):
         htilde += one_body_integrals[p, p]
         for q in range(n_orb):
-            htilde += ((1 / 2 * two_body_integrals[p, q, q, p]) -
-                       (1 / 4 * two_body_integrals[p, q, p, q]))
+            htilde += (1 / 2 * two_body_integrals[p, q, q, p]) - (
+                1 / 4 * two_body_integrals[p, q, p, q]
+            )
 
     htildepq = np.zeros(one_body_integrals.shape)
     for p in range(n_orb):
         for q in range(n_orb):
             htildepq[p, q] = one_body_integrals[p, q]
             for r in range(n_orb):
-                htildepq[p, q] += ((two_body_integrals[p, r, r, q]) -
-                                   (1 / 2 * two_body_integrals[p, r, q, r]))
+                htildepq[p, q] += (two_body_integrals[p, r, r, q]) - (
+                    1 / 2 * two_body_integrals[p, r, q, r]
+                )
 
     one_norm = abs(htilde) + np.sum(np.absolute(htildepq))
 
-    anti_sym_integrals = two_body_integrals - np.transpose(
-        two_body_integrals, (0, 1, 3, 2))
+    anti_sym_integrals = two_body_integrals - np.transpose(two_body_integrals, (0, 1, 3, 2))
 
     one_norm += 1 / 8 * np.sum(np.absolute(anti_sym_integrals))
     one_norm += 1 / 4 * np.sum(np.absolute(two_body_integrals))
@@ -106,22 +99,19 @@ def get_one_norm_int(constant: float, one_body_integrals: np.ndarray,
     return one_norm
 
 
-def get_one_norm_int_woconst(one_body_integrals: np.ndarray,
-                             two_body_integrals: np.ndarray):
+def get_one_norm_int_woconst(one_body_integrals: np.ndarray, two_body_integrals: np.ndarray):
     """
     Returns 1-norm, emitting the constant term in the qubit Hamiltonian.
     See get_one_norm_int.
 
-    Parameters
-    ----------
-    one_body_integrals(ndarray) : An array of the one-electron integrals having
-        shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
-    two_body_integrals(ndarray) : An array of the two-electron integrals having
-        shape of (n_orb, n_orb, n_orb, n_orb).
+    Args:
+        one_body_integrals(ndarray): An array of the one-electron integrals having
+            shape of (n_orb, n_orb), where n_orb is the number of spatial orbitals.
+        two_body_integrals(ndarray): An array of the two-electron integrals having
+            shape of (n_orb, n_orb, n_orb, n_orb).
 
-    Returns
-    -------
-    one_norm : 1-Norm of the qubit Hamiltonian
+    Returns:
+        A 1-Norm of the qubit Hamiltonian
     """
     n_orb = one_body_integrals.shape[0]
 
@@ -130,13 +120,13 @@ def get_one_norm_int_woconst(one_body_integrals: np.ndarray,
         for q in range(n_orb):
             htildepq[p, q] = one_body_integrals[p, q]
             for r in range(n_orb):
-                htildepq[p, q] += ((two_body_integrals[p, r, r, q]) -
-                                   (1 / 2 * two_body_integrals[p, r, q, r]))
+                htildepq[p, q] += (two_body_integrals[p, r, r, q]) - (
+                    1 / 2 * two_body_integrals[p, r, q, r]
+                )
 
     one_norm = np.sum(np.absolute(htildepq))
 
-    anti_sym_integrals = two_body_integrals - np.transpose(
-        two_body_integrals, (0, 1, 3, 2))
+    anti_sym_integrals = two_body_integrals - np.transpose(two_body_integrals, (0, 1, 3, 2))
 
     one_norm += 1 / 8 * np.sum(np.absolute(anti_sym_integrals))
     one_norm += 1 / 4 * np.sum(np.absolute(two_body_integrals))

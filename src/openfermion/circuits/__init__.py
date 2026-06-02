@@ -32,10 +32,7 @@ from .gates import (
     CRyxxy,
 )
 
-from .lcu_util import (
-    preprocess_lcu_coefficients_for_reversible_sampling,
-    lambda_norm,
-)
+from .lcu_util import preprocess_lcu_coefficients_for_reversible_sampling, lambda_norm
 
 from .low_rank import (
     get_chemist_two_body_coefficients,

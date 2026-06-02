@@ -1,6 +1,9 @@
 from itertools import product
-from openfermion.contrib.representability._bijections import Bijection, \
-    index_index_basis, index_tuple_basis
+from openfermion.contrib.representability._bijections import (
+    Bijection,
+    index_index_basis,
+    index_tuple_basis,
+)
 
 
 def test_bijection():

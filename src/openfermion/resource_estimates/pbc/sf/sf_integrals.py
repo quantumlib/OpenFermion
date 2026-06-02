@@ -16,17 +16,12 @@ import numpy.typing as npt
 
 from pyscf.pbc import scf
 
-from openfermion.resource_estimates.pbc.hamiltonian import (
-    build_momentum_transfer_mapping,)
+from openfermion.resource_estimates.pbc.hamiltonian import build_momentum_transfer_mapping
 
 
 # Single-Factorization
 class SingleFactorization:
-
-    def __init__(self,
-                 cholesky_factor: npt.NDArray,
-                 kmf: scf.HF,
-                 naux: int = None):
+    def __init__(self, cholesky_factor: npt.NDArray, kmf: scf.HF, naux: int = None):
         """Class defining single-factorized ERIs.
 
         Args:
@@ -44,8 +39,7 @@ class SingleFactorization:
             naux = cholesky_factor[0, 0].shape[0]
         self.naux = naux
         self.nao = cholesky_factor[0, 0].shape[-1]
-        k_transfer_map = build_momentum_transfer_mapping(
-            self.kmf.cell, self.kmf.kpts)
+        k_transfer_map = build_momentum_transfer_mapping(self.kmf.cell, self.kmf.kpts)
         self.k_transfer_map = k_transfer_map
 
     def build_AB_from_chol(self, qidx: int):
@@ -66,17 +60,16 @@ class SingleFactorization:
         # now form A and B
         # First set up matrices to store. We will loop over Q index and
         # construct entire set of matrices index by n-aux.
-        rho = np.zeros((naux, nmo * self.nk, nmo * self.nk),
-                       dtype=np.complex128)
+        rho = np.zeros((naux, nmo * self.nk, nmo * self.nk), dtype=np.complex128)
 
         for kidx in range(self.nk):
             k_minus_q_idx = self.k_transfer_map[qidx, kidx]
             for p, q in itertools.product(range(nmo), repeat=2):
                 P = int(kidx * nmo + p)  # a^_{pK}
                 Q = int(k_minus_q_idx * nmo + q)  # a_{q(K-Q)}
-                rho[:, P, Q] += self.chol[
-                    kidx, k_minus_q_idx][:naux, p,
-                                         q]  # L_{pK, q(K-Q)}a^_{pK}a_{q(K-Q)}
+                rho[:, P, Q] += self.chol[kidx, k_minus_q_idx][
+                    :naux, p, q
+                ]  # L_{pK, q(K-Q)}a^_{pK}a_{q(K-Q)}
 
         A = 0.5 * (rho + rho.transpose((0, 2, 1)).conj())
         B = 0.5j * (rho - rho.transpose((0, 2, 1)).conj())
@@ -112,15 +105,9 @@ class SingleFactorization:
                     optimize=True,
                 ),
                 np.einsum(
-                    "npq,nrs->pqrs",
-                    self.chol[ikp, ikq][:n],
-                    self.chol[ikr, iks][:n],
-                    optimize=True,
+                    "npq,nrs->pqrs", self.chol[ikp, ikq][:n], self.chol[ikr, iks][:n], optimize=True
                 ),
             )
         return np.einsum(
-            "npq,nsr->pqrs",
-            self.chol[ikp, ikq][:n],
-            self.chol[iks, ikr][:n].conj(),
-            optimize=True,
+            "npq,nsr->pqrs", self.chol[ikp, ikq][:n], self.chol[iks, ikr][:n].conj(), optimize=True
         )

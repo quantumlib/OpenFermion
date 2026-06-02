@@ -19,9 +19,7 @@ from openfermion.testing.testing_utils import EqualsTester
 
 
 class GridTest(unittest.TestCase):
-
     def test_orbital_id(self):
-
         # Test in 1D with spin.
         grid = Grid(dimensions=1, length=5, scale=1.0)
         input_coords = [0, 1, 2, 3, 4]
@@ -45,55 +43,64 @@ class GridTest(unittest.TestCase):
         self.assertEqual(test_output, tensor_factors)
 
     def test_position_vector(self):
-
         # Test in 1D.
-        grid = Grid(dimensions=1, length=4, scale=4.)
-        test_output = [
-            grid.position_vector(i)[0] for i in range(grid.length[0])
-        ]
+        grid = Grid(dimensions=1, length=4, scale=4.0)
+        test_output = [grid.position_vector(i)[0] for i in range(grid.length[0])]
         correct_output = [-2, -1, 0, 1]
         self.assertEqual(correct_output, test_output)
 
         # Test in 2D.
-        grid = Grid(dimensions=2, length=3, scale=3.)
+        grid = Grid(dimensions=2, length=3, scale=3.0)
         test_input = []
         test_output = []
         for i in range(3):
             for j in range(3):
                 test_input += [(i, j)]
                 test_output += [grid.position_vector((i, j))]
-        correct_output = numpy.array([[-1., -1.], [-1., 0.], [-1., 1.],
-                                      [0., -1.], [0., 0.], [0., 1.], [1., -1.],
-                                      [1., 0.], [1., 1.]])
-        self.assertAlmostEqual(0., numpy.amax(test_output - correct_output))
+        correct_output = numpy.array(
+            [
+                [-1.0, -1.0],
+                [-1.0, 0.0],
+                [-1.0, 1.0],
+                [0.0, -1.0],
+                [0.0, 0.0],
+                [0.0, 1.0],
+                [1.0, -1.0],
+                [1.0, 0.0],
+                [1.0, 1.0],
+            ]
+        )
+        self.assertAlmostEqual(0.0, numpy.amax(test_output - correct_output))
 
     def test_momentum_vector(self):
-        grid = Grid(dimensions=1, length=3, scale=2. * numpy.pi)
+        grid = Grid(dimensions=1, length=3, scale=2.0 * numpy.pi)
         test_output = [grid.momentum_vector(i) for i in range(grid.length[0])]
-        correct_output = [-1., 0, 1.]
+        correct_output = [-1.0, 0, 1.0]
         self.assertEqual(correct_output, test_output)
 
-        grid = Grid(dimensions=1, length=2, scale=2. * numpy.pi)
+        grid = Grid(dimensions=1, length=2, scale=2.0 * numpy.pi)
         test_output = [grid.momentum_vector(i) for i in range(grid.length[0])]
-        correct_output = [-1., 0.]
+        correct_output = [-1.0, 0.0]
         self.assertEqual(correct_output, test_output)
 
-        grid = Grid(dimensions=1, length=11, scale=2. * numpy.pi)
+        grid = Grid(dimensions=1, length=11, scale=2.0 * numpy.pi)
         for i in range(grid.length[0]):
-            self.assertAlmostEqual(-grid.momentum_vector(i),
-                                   grid.momentum_vector(grid.length[0] - i - 1))
+            self.assertAlmostEqual(
+                -grid.momentum_vector(i), grid.momentum_vector(grid.length[0] - i - 1)
+            )
 
         # Test in 2D.
-        grid = Grid(dimensions=2, length=3, scale=2. * numpy.pi)
+        grid = Grid(dimensions=2, length=3, scale=2.0 * numpy.pi)
         test_input = []
         test_output = []
         for i in range(3):
             for j in range(3):
                 test_input += [(i, j)]
                 test_output += [grid.momentum_vector((i, j))]
-        correct_output = numpy.array([[-1, -1], [-1, 0], [-1, 1], [0, -1],
-                                      [0, 0], [0, 1], [1, -1], [1, 0], [1, 1]])
-        self.assertAlmostEqual(0., numpy.amax(test_output - correct_output))
+        correct_output = numpy.array(
+            [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 0], [0, 1], [1, -1], [1, 0], [1, 1]]
+        )
+        self.assertAlmostEqual(0.0, numpy.amax(test_output - correct_output))
 
     def test_grid_indices(self):
         g1 = Grid(dimensions=2, length=4, scale=1.0)
@@ -162,17 +169,10 @@ class GridTest(unittest.TestCase):
         g = Grid(dimensions=2, length=3, scale=5.0)
         self.assertEqual(g.num_points, 9)
         self.assertEqual(g.volume_scale(), 25)
-        self.assertEqual(list(g.all_points_indices()), [
-            (0, 0),
-            (0, 1),
-            (0, 2),
-            (1, 0),
-            (1, 1),
-            (1, 2),
-            (2, 0),
-            (2, 1),
-            (2, 2),
-        ])
+        self.assertEqual(
+            list(g.all_points_indices()),
+            [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)],
+        )
 
     def test_equality(self):
         eq = EqualsTester(self)

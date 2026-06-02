@@ -21,20 +21,17 @@ if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf.pbc import gto, scf, mp
     from pyscf.pbc.cc import KRCCSD
     from pyscf.lib import chkfile
-    from openfermion.resource_estimates.pbc.hamiltonian import (
-        cholesky_from_df_ints,)
+    from openfermion.resource_estimates.pbc.hamiltonian import cholesky_from_df_ints
     from openfermion.resource_estimates.pbc.hamiltonian.cc_extensions import (
         build_approximate_eris_rohf,
         build_approximate_eris,
     )
-    from openfermion.resource_estimates.pbc.sf.sf_integrals import (
-        SingleFactorization,)
+    from openfermion.resource_estimates.pbc.sf.sf_integrals import SingleFactorization
 
 _TEST_CHK = os.path.join(os.path.dirname(__file__), "../test_data/scf.chk")
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 @pytest.mark.slow
 def test_cc_extension_rohf():
     cell = gto.Cell()
@@ -94,8 +91,7 @@ def test_cc_extension_rohf():
         "VOvv",
     ]
     for block in eri_blocks:
-        assert np.allclose(test_eris.__dict__[block][:],
-                           ref_eris.__dict__[block][:])
+        assert np.allclose(test_eris.__dict__[block][:], ref_eris.__dict__[block][:])
     # Test MP2 energy is the correct
     emp2_approx, _, _ = cc_inst.init_amps(test_eris)
     assert abs(emp2_approx - emp2_ref) < 1e-12
@@ -104,8 +100,7 @@ def test_cc_extension_rohf():
     helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris_approx = build_approximate_eris_rohf(cc_inst, helper)
     for block in eri_blocks:
-        assert not np.allclose(test_eris_approx.__dict__[block][:],
-                               ref_eris.__dict__[block][:])
+        assert not np.allclose(test_eris_approx.__dict__[block][:], ref_eris.__dict__[block][:])
     emp2_approx, _, _ = cc_inst.init_amps(test_eris_approx)
     # MP2 energy should be pretty bad
     assert abs(emp2_approx - emp2_ref) > 1e-12
@@ -123,8 +118,7 @@ def test_cc_extension_rohf():
     helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris = build_approximate_eris_rohf(cc_approx, helper)
     for block in eri_blocks:
-        assert not np.allclose(test_eris.__dict__[block][:],
-                               ref_eris.__dict__[block][:])
+        assert not np.allclose(test_eris.__dict__[block][:], ref_eris.__dict__[block][:])
     # Want to avoid ccsd helper using density-fitted integrals which will be
     # "exact"
     assert test_eris.Lpv is None
@@ -136,8 +130,7 @@ def test_cc_extension_rohf():
     assert abs(ecc_exact - ecc_approx) > 1e-12
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 @pytest.mark.slow
 def test_cc_helper_rhf():
     cell = gto.Cell()
@@ -177,17 +170,9 @@ def test_cc_helper_rhf():
 
     helper = SingleFactorization(cholesky_factor=Luv, kmf=mf)
     test_eris = build_approximate_eris(cc_inst, helper)
-    eri_blocks = [
-        "oooo",
-        "ooov",
-        "oovv",
-        "ovov",
-        "voov",
-        "vovv",
-    ]
+    eri_blocks = ["oooo", "ooov", "oovv", "ovov", "voov", "vovv"]
     for block in eri_blocks:
-        assert np.allclose(test_eris.__dict__[block][:],
-                           ref_eris.__dict__[block][:])
+        assert np.allclose(test_eris.__dict__[block][:], ref_eris.__dict__[block][:])
     # Test MP2 energy is the correct
     emp2_approx, _, _ = cc_inst.init_amps(test_eris)
     assert abs(emp2_approx - emp2_ref) < 1e-12
@@ -196,8 +181,7 @@ def test_cc_helper_rhf():
     helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris_approx = build_approximate_eris(cc_inst, helper)
     for block in eri_blocks:
-        assert not np.allclose(test_eris_approx.__dict__[block][:],
-                               ref_eris.__dict__[block][:])
+        assert not np.allclose(test_eris_approx.__dict__[block][:], ref_eris.__dict__[block][:])
     emp2_approx, _, _ = cc_inst.init_amps(test_eris_approx)
     # MP2 energy should be pretty bad
     assert abs(emp2_approx - emp2_ref) > 1e-12
@@ -215,8 +199,7 @@ def test_cc_helper_rhf():
     helper = SingleFactorization(cholesky_factor=Luv, kmf=mf, naux=10)
     test_eris = build_approximate_eris(cc_approx, helper)
     for block in eri_blocks:
-        assert not np.allclose(test_eris.__dict__[block][:],
-                               ref_eris.__dict__[block][:])
+        assert not np.allclose(test_eris.__dict__[block][:], ref_eris.__dict__[block][:])
     # Want to avoid ccsd helper using density-fitted integrals which will be
     # "exact"
     cc_approx = KRCCSD(mf)

@@ -17,6 +17,7 @@ For more information, examples, or tutorials visit our website:
 
 www.openfermion.org
 """
+
 from openfermion.chem import (
     make_atom,
     make_atomic_lattice,
@@ -34,9 +35,13 @@ from openfermion.chem import (
     make_reduced_hamiltonian,
 )
 
-from openfermion.functionals import (contextuality, get_one_norm_mol,
-                                     get_one_norm_mol_woconst, get_one_norm_int,
-                                     get_one_norm_int_woconst)
+from openfermion.functionals import (
+    contextuality,
+    get_one_norm_mol,
+    get_one_norm_mol_woconst,
+    get_one_norm_int,
+    get_one_norm_int_woconst,
+)
 
 from openfermion.hamiltonians import (
     FermiHubbardModel,
@@ -73,7 +78,6 @@ from openfermion.hamiltonians import (
     sy_operator,
     sz_operator,
     majorana_operator,
-    number_operator,
 )
 
 from openfermion.linalg import (

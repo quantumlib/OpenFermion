@@ -14,6 +14,7 @@
 try:
     import jax
     import pyscf
+
     HAVE_DEPS_FOR_RESOURCE_ESTIMATES = True
 except ModuleNotFoundError:
     HAVE_DEPS_FOR_RESOURCE_ESTIMATES = False

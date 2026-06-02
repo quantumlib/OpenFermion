@@ -15,22 +15,18 @@ import numpy
 
 from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.ops.representations import DiagonalCoulombHamiltonian
-from openfermion.testing.testing_utils import \
-    random_diagonal_coulomb_hamiltonian
+from openfermion.testing.testing_utils import random_diagonal_coulomb_hamiltonian
 
 
 class DiagonalCoulombHamiltonianTest(unittest.TestCase):
-
     def test_init(self):
-        one_body = numpy.array([[2., 3.], [3., 5.]])
-        two_body = numpy.array([[7., 11.], [11., 13.]])
-        constant = 17.
+        one_body = numpy.array([[2.0, 3.0], [3.0, 5.0]])
+        two_body = numpy.array([[7.0, 11.0], [11.0, 13.0]])
+        constant = 17.0
         op = DiagonalCoulombHamiltonian(one_body, two_body, constant)
-        self.assertTrue(
-            numpy.allclose(op.one_body, numpy.array([[9., 3.], [3., 18.]])))
-        self.assertTrue(
-            numpy.allclose(op.two_body, numpy.array([[0., 11.], [11., 0.]])))
-        self.assertAlmostEqual(op.constant, 17.)
+        self.assertTrue(numpy.allclose(op.one_body, numpy.array([[9.0, 3.0], [3.0, 18.0]])))
+        self.assertTrue(numpy.allclose(op.two_body, numpy.array([[0.0, 11.0], [11.0, 0.0]])))
+        self.assertAlmostEqual(op.constant, 17.0)
 
     def test_multiply(self):
         n_qubits = 5
@@ -38,20 +34,19 @@ class DiagonalCoulombHamiltonianTest(unittest.TestCase):
         op2 = op1 * 1.5
         op3 = 1.5 * op1
         self.assertEqual(
-            get_fermion_operator(op1) * 1.5, get_fermion_operator(op2),
-            get_fermion_operator(op3))
+            get_fermion_operator(op1) * 1.5, get_fermion_operator(op2), get_fermion_operator(op3)
+        )
 
     def test_divide(self):
         n_qubits = 5
         op1 = random_diagonal_coulomb_hamiltonian(n_qubits)
         op2 = op1 / 1.5
-        self.assertEqual(
-            get_fermion_operator(op1) / 1.5, get_fermion_operator(op2))
+        self.assertEqual(get_fermion_operator(op1) / 1.5, get_fermion_operator(op2))
 
     def test_exceptions(self):
-        mat1 = numpy.array([[2., 3.], [3., 5.]])
-        mat2 = numpy.array([[2., 3. + 1.j], [3 - 1.j, 5.]])
-        mat3 = numpy.array([[2., 3.], [4., 5.]])
+        mat1 = numpy.array([[2.0, 3.0], [3.0, 5.0]])
+        mat2 = numpy.array([[2.0, 3.0 + 1.0j], [3 - 1.0j, 5.0]])
+        mat3 = numpy.array([[2.0, 3.0], [4.0, 5.0]])
         with self.assertRaises(ValueError):
             _ = DiagonalCoulombHamiltonian(mat1, mat2)
         with self.assertRaises(ValueError):

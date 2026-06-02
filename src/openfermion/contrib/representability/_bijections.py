@@ -2,7 +2,6 @@ from typing import Callable, List, Tuple
 
 
 class Bijection:
-
     def __init__(self, fwd: Callable, rev: Callable, sizes: Callable):
         """
         Bijection holds forward maps and backwards maps

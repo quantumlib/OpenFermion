@@ -20,25 +20,23 @@ from openfermion.linalg import get_sparse_operator
 from openfermion.utils import is_hermitian
 
 from openfermion.transforms.repconversions.fourier_transforms import (
-    fourier_transform, inverse_fourier_transform)
+    fourier_transform,
+    inverse_fourier_transform,
+)
 
 
 class FourierTransformTest(unittest.TestCase):
-
     def test_fourier_transform(self):
         for length in [2, 3]:
             grid = Grid(dimensions=1, scale=1.5, length=length)
             spinless_set = [True, False]
             geometry = [('H', (0.1,)), ('H', (0.5,))]
             for spinless in spinless_set:
-                h_plane_wave = plane_wave_hamiltonian(grid, geometry, spinless,
-                                                      True)
-                h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless,
-                                                      False)
+                h_plane_wave = plane_wave_hamiltonian(grid, geometry, spinless, True)
+                h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless, False)
                 h_plane_wave_t = fourier_transform(h_plane_wave, grid, spinless)
 
-                self.assertEqual(normal_ordered(h_plane_wave_t),
-                                 normal_ordered(h_dual_basis))
+                self.assertEqual(normal_ordered(h_plane_wave_t), normal_ordered(h_dual_basis))
 
                 # Verify that all 3 are Hermitian
                 plane_wave_operator = get_sparse_operator(h_plane_wave)
@@ -53,14 +51,10 @@ class FourierTransformTest(unittest.TestCase):
         spinless_set = [True, False]
         geometry = [('H', (0,)), ('H', (0.5,))]
         for spinless in spinless_set:
-            h_plane_wave = plane_wave_hamiltonian(grid, geometry, spinless,
-                                                  True)
-            h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless,
-                                                  False)
-            h_dual_basis_t = inverse_fourier_transform(h_dual_basis, grid,
-                                                       spinless)
-            self.assertEqual(normal_ordered(h_dual_basis_t),
-                             normal_ordered(h_plane_wave))
+            h_plane_wave = plane_wave_hamiltonian(grid, geometry, spinless, True)
+            h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless, False)
+            h_dual_basis_t = inverse_fourier_transform(h_dual_basis, grid, spinless)
+            self.assertEqual(normal_ordered(h_dual_basis_t), normal_ordered(h_plane_wave))
 
     def test_inverse_fourier_transform_2d(self):
         grid = Grid(dimensions=2, scale=1.5, length=3)
@@ -69,5 +63,4 @@ class FourierTransformTest(unittest.TestCase):
         h_plane_wave = plane_wave_hamiltonian(grid, geometry, spinless, True)
         h_dual_basis = plane_wave_hamiltonian(grid, geometry, spinless, False)
         h_dual_basis_t = inverse_fourier_transform(h_dual_basis, grid, spinless)
-        self.assertEqual(normal_ordered(h_dual_basis_t),
-                         normal_ordered(h_plane_wave))
+        self.assertEqual(normal_ordered(h_dual_basis_t), normal_ordered(h_plane_wave))

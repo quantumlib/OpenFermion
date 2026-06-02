@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a problem with this software or project
+type: Bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to fill out this bug report!
+
+  - type: textarea
+    attributes:
+      label: Describe the issue
+      description: >-
+        Please explain clearly and in detail what the issue is. What led up
+        to it, or how did you encounter it?
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: What version of this software are you using?
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: How can the issue be reproduced?
+      description: >-
+        Explain in a step-by-step fashion what someone else would need to
+        do in order to reproduce the issue. If possible, include literal
+        examples of commands or code using [Markdown fenced code
+        blocks](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks).
+        For long output, paste the text into [collapsed
+        sections](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections)
+        or attach text files.
+    validations:
+      required: false

@@ -44,13 +44,17 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
             giving the $g_{pqrs}$ tensor in chemist notation.
 
     Raises:
-        TypeError: Input must be two-body number conserving
-            FermionOperator or InteractionOperator.
+        ValueError: Input two-body tensor is not spin-symmetric. The LOW_RANK
+            decomposition requires a spin-symmetric interaction when
+            spin_basis=True. A spin-symmetric interaction satisfies
+            h[p,q,r,s] == h[p+1,q+1,r+1,s+1] for all even p, q, r, s
+            (i.e., the same coefficient for alpha and beta spin channels).
+            Consider passing spin_basis=False if your Hamiltonian is not
+            spin-symmetric.
     """
     # Initialize.
     n_orbitals = two_body_coefficients.shape[0]
-    chemist_two_body_coefficients = numpy.transpose(two_body_coefficients,
-                                                    [0, 3, 1, 2])
+    chemist_two_body_coefficients = numpy.transpose(two_body_coefficients, [0, 3, 1, 2])
 
     # If the specification was in spin-orbitals, chop down to spatial orbitals
     # assuming a spin-symmetric interaction.
@@ -58,25 +62,50 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
         n_orbitals = n_orbitals // 2
         alpha_indices = list(range(0, n_orbitals * 2, 2))
         beta_indices = list(range(1, n_orbitals * 2, 2))
-        chemist_two_body_coefficients = chemist_two_body_coefficients[numpy.ix_(
-            alpha_indices, alpha_indices, beta_indices, beta_indices)]
+        # Extract the αα→ββ block, which is the only block used by the
+        # spatial-orbital low-rank decomposition.
+        alpha_alpha_beta_beta = chemist_two_body_coefficients[
+            numpy.ix_(alpha_indices, alpha_indices, beta_indices, beta_indices)
+        ]
+
+        # Validate spin-symmetry by checking that the extracted block is
+        # symmetric when reshaped to a matrix. For a spin-symmetric interaction
+        # the chemist tensor satisfies g[p,q,r,s] == g[r,s,p,q] (up to
+        # permutation symmetry), which makes the reshaped matrix symmetric.
+        # General spin-dependent interactions such as spin-exchange Hamiltonians
+        # produce an asymmetric matrix here and cannot be handled by this
+        # spatial-orbital downfolding approach.
+        flat = numpy.reshape(alpha_alpha_beta_beta, (n_orbitals**2, n_orbitals**2))
+        spin_asymmetry = numpy.amax(numpy.absolute(flat - flat.T))
+        if spin_asymmetry > EQ_TOLERANCE:
+            raise ValueError(
+                'The two-body tensor is not spin-symmetric. The LOW_RANK '
+                'decomposition requires a spin-symmetric interaction when '
+                'spin_basis=True (i.e., the same coefficients for alpha and '
+                'beta spin channels). Spin-dependent interactions such as '
+                'spin-exchange Hamiltonians violate this requirement. '
+                'Consider passing spin_basis=False if your Hamiltonian is '
+                'not spin-symmetric.'
+            )
+
+        chemist_two_body_coefficients = alpha_alpha_beta_beta
 
     # Determine a one body correction in the spin basis from spatial basis.
     one_body_correction = numpy.zeros((2 * n_orbitals, 2 * n_orbitals), complex)
     for p, q, r, s in itertools.product(range(n_orbitals), repeat=4):
         for sigma, tau in itertools.product(range(2), repeat=2):
             if (q == r) and (sigma == tau):
-                one_body_correction[2 * p + sigma, 2 * s + tau] -= (
-                    chemist_two_body_coefficients[p, q, r, s])
+                one_body_correction[2 * p + sigma, 2 * s + tau] -= chemist_two_body_coefficients[
+                    p, q, r, s
+                ]
 
     # Return.
     return one_body_correction, chemist_two_body_coefficients
 
 
-def low_rank_two_body_decomposition(two_body_coefficients,
-                                    truncation_threshold=1e-8,
-                                    final_rank=None,
-                                    spin_basis=True):
+def low_rank_two_body_decomposition(
+    two_body_coefficients, truncation_threshold=1e-8, final_rank=None, spin_basis=True
+):
     r"""Convert two-body operator into sum of squared one-body operators.
 
     As in arXiv:1808.02625, this function decomposes
@@ -106,38 +135,44 @@ def low_rank_two_body_decomposition(two_body_coefficients,
             $\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x$
 
     Raises:
-        TypeError: Invalid two-body coefficient tensor specification.
+        ValueError: The two-body tensor failed symmetry or reality checks
+            required for the low-rank decomposition. When spin_basis=True,
+            the tensor must be spin-symmetric (see
+            get_chemist_two_body_coefficients()). When spin_basis=False,
+            the chemist-ordered tensor must be real and symmetric.
     """
     # Initialize N^2 by N^2 interaction array.
-    one_body_correction, chemist_two_body_coefficients = (
-        get_chemist_two_body_coefficients(two_body_coefficients, spin_basis))
+    one_body_correction, chemist_two_body_coefficients = get_chemist_two_body_coefficients(
+        two_body_coefficients, spin_basis
+    )
     n_orbitals = chemist_two_body_coefficients.shape[0]
     full_rank = n_orbitals**2
-    interaction_array = numpy.reshape(chemist_two_body_coefficients,
-                                      (full_rank, full_rank))
+    interaction_array = numpy.reshape(chemist_two_body_coefficients, (full_rank, full_rank))
 
     # Make sure interaction array is symmetric and real.
-    asymmetry = numpy.sum(
-        numpy.absolute(interaction_array - interaction_array.transpose()))
-    imaginary_norm = numpy.sum(numpy.absolute(interaction_array.imag))
+    asymmetry = numpy.amax(numpy.absolute(interaction_array - interaction_array.transpose()))
+    imaginary_norm = numpy.amax(numpy.absolute(interaction_array.imag))
     if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
-        raise TypeError('Invalid two-body coefficient tensor specification.')
+        raise ValueError(
+            'The two-body coefficient tensor failed the symmetry or reality '
+            'checks required by the low-rank decomposition. If spin_basis=True, '
+            'ensure the Hamiltonian is spin-symmetric. If spin_basis=False, '
+            'ensure the chemist-ordered two-body tensor is real and symmetric.'
+        )
 
     # Decompose with exact diagonalization.
     eigenvalues, eigenvectors = numpy.linalg.eigh(interaction_array)
 
     # Get one-body squares and compute weights.
     term_weights = numpy.zeros(full_rank)
-    one_body_squares = numpy.zeros((full_rank, 2 * n_orbitals, 2 * n_orbitals),
-                                   complex)
+    one_body_squares = numpy.zeros((full_rank, 2 * n_orbitals, 2 * n_orbitals), complex)
 
     # Reshape and add spin back in.
     for l in range(full_rank):
         one_body_squares[l] = numpy.kron(
-            numpy.reshape(eigenvectors[:, l], (n_orbitals, n_orbitals)),
-            numpy.eye(2))
-        term_weights[l] = abs(eigenvalues[l]) * numpy.sum(
-            numpy.absolute(one_body_squares[l]))**2
+            numpy.reshape(eigenvectors[:, l], (n_orbitals, n_orbitals)), numpy.eye(2)
+        )
+        term_weights[l] = abs(eigenvalues[l]) * numpy.sum(numpy.absolute(one_body_squares[l])) ** 2
 
     # Sort by weight.
     indices = numpy.argsort(term_weights)[::-1]
@@ -155,8 +190,12 @@ def low_rank_two_body_decomposition(two_body_coefficients,
     else:
         max_rank = final_rank
     truncation_value = truncation_errors[max_rank - 1]
-    return (eigenvalues[:max_rank], one_body_squares[:max_rank],
-            one_body_correction, truncation_value)
+    return (
+        eigenvalues[:max_rank],
+        one_body_squares[:max_rank],
+        one_body_correction,
+        truncation_value,
+    )
 
 
 def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
@@ -190,8 +229,7 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
     if spin_basis:
         n_modes = one_body_matrix.shape[0]
         alpha_indices = list(range(0, n_modes, 2))
-        one_body_matrix = one_body_matrix[numpy.ix_(alpha_indices,
-                                                    alpha_indices)]
+        one_body_matrix = one_body_matrix[numpy.ix_(alpha_indices, alpha_indices)]
 
     # Diagonalize the one-body matrix.
     if utils.is_hermitian(one_body_matrix):
@@ -202,8 +240,7 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
 
     # If the specification was in spin-orbitals, expand back
     if spin_basis:
-        basis_transformation_matrix = numpy.kron(basis_transformation_matrix,
-                                                 numpy.eye(2))
+        basis_transformation_matrix = numpy.kron(basis_transformation_matrix, numpy.eye(2))
         eigenvalues = numpy.kron(eigenvalues, numpy.ones(2))
 
     # Obtain the diagonal two-body matrix.

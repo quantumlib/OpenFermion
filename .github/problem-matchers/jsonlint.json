@@ -1,0 +1,16 @@
+{
+  "problemMatcher": [
+    {
+      "owner": "json-lint",
+      "pattern": [
+        {
+          "regexp": "^(.+):\\sline\\s(\\d+),\\scol\\s(\\d+),\\s(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        }
+      ]
+    }
+  ]
+}

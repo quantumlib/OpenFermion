@@ -17,7 +17,7 @@ from openfermion.ops.operators import BosonOperator, QuadOperator
 
 
 def mccoy(mode, op_a, op_b, m, n):
-    """ Implement the McCoy formula on two operators of the
+    """Implement the McCoy formula on two operators of the
     form op_a^m op_b^n.
 
     Args:
@@ -30,8 +30,7 @@ def mccoy(mode, op_a, op_b, m, n):
     new_op = dict()
     for r in range(0, n + 1):
         coeff = binom(n, r) / (2**n)
-        new_term = tuple([(mode, op_b)] * r + [(mode, op_a)] * m +
-                         [(mode, op_b)] * (n - r))
+        new_term = tuple([(mode, op_b)] * r + [(mode, op_a)] * m + [(mode, op_b)] * (n - r))
         if new_term not in new_op:
             new_op[tuple(new_term)] = coeff
         else:
@@ -40,13 +39,13 @@ def mccoy(mode, op_a, op_b, m, n):
 
 
 def weyl_polynomial_quantization(polynomial):
-    r""" Apply the Weyl quantization to a phase space polynomial.
+    r"""Apply the Weyl quantization to a phase space polynomial.
 
     The Weyl quantization is performed by applying McCoy's formula
     directly to a polynomial term of the form q^m p^n:
 
-    q^m p^n ->
-        (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) \hat{q}^r \hat{p}^m q^{n-r}
+    $q^m p^n ->
+        (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) \hat{q}^r \hat{p}^m q^{n-r}$
 
     where q and p are phase space variables, and \hat{q} and \hat{p}
     are quadrature operators.
@@ -107,12 +106,12 @@ def weyl_polynomial_quantization(polynomial):
 
 
 def symmetric_ordering(operator, ignore_coeff=True, ignore_identity=True):
-    """ Apply the symmetric ordering to a BosonOperator or QuadOperator.
+    """Apply the symmetric ordering to a BosonOperator or QuadOperator.
 
     The symmetric ordering is performed by applying McCoy's formula
     directly to polynomial terms of quadrature operators:
 
-    q^m p^n -> (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) q^r p^m q^{n-r}
+    $q^m p^n -> (1/ 2^n) sum_{r=0}^{n} Binomial(n, r) q^r p^m q^{n-r}$
 
     Note: in general, symmetric ordering is performed on a single term
     containing the tensor product of various operators. However, this

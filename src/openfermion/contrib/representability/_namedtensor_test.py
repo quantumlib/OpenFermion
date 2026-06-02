@@ -1,8 +1,11 @@
 from itertools import product
 import numpy as np
 import pytest
-from openfermion.contrib.representability._bijections import Bijection, \
-    index_index_basis, index_tuple_basis
+from openfermion.contrib.representability._bijections import (
+    Bijection,
+    index_index_basis,
+    index_tuple_basis,
+)
 from openfermion.contrib.representability._namedtensor import Tensor
 
 
@@ -18,9 +21,7 @@ def test_namedtensor_initialization():
     assert np.allclose(td.data, data)
 
     with pytest.raises(TypeError):
-        _ = Tensor(name='opdm',
-                   tensor=data,
-                   basis=dict(zip(range(4), range(4))))
+        _ = Tensor(name='opdm', tensor=data, basis=dict(zip(range(4), range(4))))
 
     td = Tensor(name='opdm', tensor=data)
     assert isinstance(td.basis, Bijection)
@@ -66,14 +67,12 @@ def test_namedtensor_call():
     assert test_tensor(0, 1, 0, 1) == rand_mat[0, 0]
     assert test_tensor(0, 1, 0, 1) == rand_mat[0, 0]
     assert test_tensor(1, 2, 0, 1) == rand_mat[rev_bas[(1, 2)], rev_bas[(0, 1)]]
-    assert test_tensor.index_vectorized(1, 2, 0, 1) == rev_bas[(1, 2)] * dim + \
-           rev_bas[(0, 1)]
+    assert test_tensor.index_vectorized(1, 2, 0, 1) == rev_bas[(1, 2)] * dim + rev_bas[(0, 1)]
 
     # testing iteration over the upper triangle
     for iter_vals in test_tensor.utri_iterator():
         val, [i, j] = iter_vals
-        assert val == rand_mat[test_tensor.basis.rev(i),
-                               test_tensor.basis.rev(j)]
+        assert val == rand_mat[test_tensor.basis.rev(i), test_tensor.basis.rev(j)]
 
 
 def test_tensor_index():

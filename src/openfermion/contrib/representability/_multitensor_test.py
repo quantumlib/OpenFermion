@@ -2,10 +2,8 @@ import numpy as np
 import pytest
 import scipy as sp
 from openfermion.contrib.representability._namedtensor import Tensor
-from openfermion.contrib.representability._multitensor import MultiTensor, \
-    TMap
-from openfermion.contrib.representability._dualbasis import DualBasis, \
-    DualBasisElement
+from openfermion.contrib.representability._multitensor import MultiTensor, TMap
+from openfermion.contrib.representability._dualbasis import DualBasis, DualBasisElement
 
 
 def test_tmap():
@@ -96,6 +94,33 @@ def test_add_dualelement():
     mt.add_dual_elements(dbe)
     assert len(mt.dual_basis) == 1
 
+    dbe2 = DualBasisElement()
+    dbe2.add_element('b', (0, 1, 2), 5)
+    mt.add_dual_elements(dbe2)
+    assert len(mt.dual_basis) == 2
+
+    A, bias, scalar = mt.synthesize_dual_basis()
+    assert A.shape[0] == 2
+    # Verify that the elements are correctly added as DualBasisElements
+    # and not as their internal tuples (which would cause synthesis to fail).
+    assert isinstance(mt.dual_basis[0], DualBasisElement)
+    assert isinstance(mt.dual_basis[1], DualBasisElement)
+
+
+def test_multitensor_init_isolation():
+    # Test that different MultiTensor instances don't share the same dual_basis.
+    a = np.random.random((2, 2))
+    at = Tensor(tensor=a, name='a')
+    mt1 = MultiTensor([at])
+    mt2 = MultiTensor([at])
+
+    dbe = DualBasisElement()
+    dbe.add_element('a', (0, 0), 1.0)
+    mt1.add_dual_elements(dbe)
+
+    assert len(mt1.dual_basis) == 1
+    assert len(mt2.dual_basis) == 0
+
 
 def test_synthesis_element():
     a = np.random.random((5, 5))
@@ -158,11 +183,13 @@ def test_dual_basis_element():
     rdm = MultiTensor([opdm])
 
     def generate_dual_basis_element(i, j):
-        element = DualBasisElement(tensor_names=["opdm"],
-                                   tensor_elements=[(i, j)],
-                                   tensor_coeffs=[-1.0],
-                                   bias=1 if i == j else 0,
-                                   scalar=0)
+        element = DualBasisElement(
+            tensor_names=["opdm"],
+            tensor_elements=[(i, j)],
+            tensor_coeffs=[-1.0],
+            bias=1 if i == j else 0,
+            scalar=0,
+        )
         return element
 
     opdm_to_oqdm_map = DualBasis()

@@ -1,0 +1,71 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312', 'py313']
+skip-string-normalization = true
+skip-magic-trailing-comma = true
+
+[tool.coverage.run]
+# Speed up pytest-cov on Python 3.12+ by enabling sys.monitoring if possible.
+core = "sysmon"
+disable_warnings = ["no-sysmon"]
+
+[tool.pytest.ini_options]
+markers = [
+    """slow: marks tests as slow (deselect with '-m "not slow"')""",
+]
+filterwarnings = [
+    "ignore:Skipped assert_qasm_is_consistent_with_unitary because qiskit.*:UserWarning",
+]
+
+[tool.mypy]
+implicit_optional = true
+# TODO: this is temporary for 1.7.0 release. Remove this & fix the errors.
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "__main__"
+follow_imports = "silent"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "_pytest.*",
+    "absl",
+    "apiclient.*",
+    "h5py",
+    "numpy.*",
+    "pubchempy",
+    "pybtas",
+    "pyscf.*",
+    "pytest.*",
+    "scipy.*",
+    "tensorflow_docs",
+]
+follow_imports = "silent"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sympy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tensorflow_docs.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "deprecation"
+follow_untyped_imports = true

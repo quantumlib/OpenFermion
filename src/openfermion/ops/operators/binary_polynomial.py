@@ -9,7 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""symbolic binary class for decoder definitions (arxiv 1712.07067) """
+"""symbolic binary class for decoder definitions (arxiv 1712.07067)"""
 
 import copy
 
@@ -23,7 +23,7 @@ class BinaryPolynomialError(Exception):
     pass
 
 
-class BinaryPolynomial(object):
+class BinaryPolynomial:
     r"""The BinaryPolynomial class provides an analytic representation
     of non-linear binary functions. An instance of this class describes
     a term of binary variables (variables of the values {0,1}, indexed
@@ -71,7 +71,7 @@ class BinaryPolynomial(object):
     """
 
     def __init__(self, term=None):
-        """ Initialize the BinaryPolynomial based on term
+        """Initialize the BinaryPolynomial based on term
 
         Args:
             term (str, list, tuple): used for initializing a BinaryPolynomial
@@ -110,7 +110,7 @@ class BinaryPolynomial(object):
         self._check_terms()
 
     def _check_terms(self):
-        """ Ensures all terms obey binary rules, updates terms in place."""
+        """Ensures all terms obey binary rules, updates terms in place."""
         sorted_input = []
         for item in self.terms:
             if len(item):
@@ -142,7 +142,8 @@ class BinaryPolynomial(object):
             term (list): a single term for BinaryPolynomial
             factor (int or str): a factor in term
 
-        Returns (list): updated term
+        Returns:
+            An updated term
 
         Raises:
             ValueError: invalid action/negative or non-integer qubit index
@@ -157,16 +158,17 @@ class BinaryPolynomial(object):
 
         elif isinstance(factor, (numpy.int32, numpy.int64, int)):
             if factor < 0:
-                raise ValueError('Invalid factor {},'
-                                 'must be a positive integer'.format(factor))
+                raise ValueError('Invalid factor {},' 'must be a positive integer'.format(factor))
             return tuple(set(term))
         else:
-            raise ValueError('Invalid factor {}.'
-                             'valid factor is positive integers and {} '
-                             'for constant 1'.format(factor, _SYMBOLIC_ONE))
+            raise ValueError(
+                'Invalid factor {}.'
+                'valid factor is positive integers and {} '
+                'for constant 1'.format(factor, _SYMBOLIC_ONE)
+            )
 
     def _parse_sequence(self, term):
-        """ Parse a term given as a sequence type (i.e., list, tuple, etc.).
+        """Parse a term given as a sequence type (i.e., list, tuple, etc.).
         e.g. [(0,1,2,3,_SYMBOLIC_ONE),...] -> [(0,1,2,3),...]. Updates terms
         in place
 
@@ -186,12 +188,13 @@ class BinaryPolynomial(object):
 
     @staticmethod
     def _parse_string(term):
-        """ Parse a string term like 'w1 w2 w0'
+        """Parse a string term like 'w1 w2 w0'
 
         Args:
             term (str): string representation of BinaryPolynomial term.
 
-        Returns (tuple): parsed string term
+        Returns:
+            A parsed string term
 
         Raises:
           ValueError: Incorrect terms
@@ -199,7 +202,7 @@ class BinaryPolynomial(object):
         term_list = []
         add_one = False
         for factor in term.split():
-            """ if 1 is already present; remove it since its not necessary to
+            """if 1 is already present; remove it since its not necessary to
             keep it if there are more than 1 terms"""
             if add_one:
                 term_list.remove(_SYMBOLIC_ONE)  # if 1
@@ -226,19 +229,17 @@ class BinaryPolynomial(object):
         return parsed_term
 
     def enumerate_qubits(self):
-        """ Enumerates all qubits indexed in a given BinaryPolynomial.
+        """Enumerates all qubits indexed in a given BinaryPolynomial.
 
-        Returns (list): a list of qubits
+        Returns:
+            A list of qubits
         """
-        qubits = [
-            factor for summand in self.terms for factor in summand
-            if factor != _SYMBOLIC_ONE
-        ]
+        qubits = [factor for summand in self.terms for factor in summand if factor != _SYMBOLIC_ONE]
 
         return list(set(qubits))
 
     def shift(self, const):
-        """ Shift all qubit indices by a given constant.
+        """Shift all qubit indices by a given constant.
 
         Args:
             const (int): the constant to shift the indices by
@@ -247,8 +248,9 @@ class BinaryPolynomial(object):
             TypeError: const must be integer
         """
         if not isinstance(const, (numpy.int64, numpy.int32, int)):
-            raise TypeError('can only shift qubit indices by an integer'
-                            'received {}'.format(const))
+            raise TypeError(
+                'can only shift qubit indices by an integer' 'received {}'.format(const)
+            )
         shifted_terms = []
         for summand in self.terms:
             shifted_summand = []
@@ -269,7 +271,8 @@ class BinaryPolynomial(object):
                 corresponding  each binary variable
                 (in order of their indices) in the expression
 
-        Returns (int, 0 or 1): result of the evaluation
+        Returns
+            The result of the evaluation
 
         Raises:
           BinaryPolynomialError: Length of list provided must match the number
@@ -283,7 +286,8 @@ class BinaryPolynomial(object):
             if max(all_qubits) >= len(binary_list):
                 raise BinaryPolynomialError(
                     'the length of the binary list provided does not match'
-                    ' the number of variables in the BinaryPolynomial')
+                    ' the number of variables in the BinaryPolynomial'
+                )
 
             evaluation = 0
             for summand in self.terms:
@@ -300,7 +304,7 @@ class BinaryPolynomial(object):
             return 0
 
     def _add_one(self):
-        """ Adds constant 1 to a BinaryPolynomial. """
+        """Adds constant 1 to a BinaryPolynomial."""
 
         # (_SYMBOLIC_ONE,) can only exist as a loner in BinaryPolynomial
         if (_SYMBOLIC_ONE,) in self.terms:
@@ -329,7 +333,7 @@ class BinaryPolynomial(object):
         return cls(term=[(_SYMBOLIC_ONE,)])
 
     def __str__(self):
-        """ Return an easy-to-read string representation."""
+        """Return an easy-to-read string representation."""
         if not self.terms:
             return '0'
         string_rep = ''
@@ -347,7 +351,7 @@ class BinaryPolynomial(object):
         return str(self)
 
     def __imul__(self, multiplier):
-        """ In-place multiply (*=) with a scalar or operator of the same type.
+        """In-place multiply (*=) with a scalar or operator of the same type.
 
         Args:
             multiplier(int or BinaryPolynomial): multiplier
@@ -371,12 +375,10 @@ class BinaryPolynomial(object):
         elif isinstance(multiplier, self.__class__):
             result_terms = []
             for left_term in self.terms:
-                left_indices = set(
-                    [term for term in left_term if term != _SYMBOLIC_ONE])
+                left_indices = set([term for term in left_term if term != _SYMBOLIC_ONE])
 
                 for right_term in multiplier.terms:
-                    right_indices = set(
-                        [term for term in right_term if term != _SYMBOLIC_ONE])
+                    right_indices = set([term for term in right_term if term != _SYMBOLIC_ONE])
 
                     if len(left_indices) == 0 and len(right_indices) == 0:
                         product_term = (_SYMBOLIC_ONE,)
@@ -393,11 +395,14 @@ class BinaryPolynomial(object):
 
         # Invalid multiplier type
         else:
-            raise TypeError('Cannot multiply {} with {}'.format(
-                self.__class__.__name__, multiplier.__class__.__name__))
+            raise TypeError(
+                'Cannot multiply {} with {}'.format(
+                    self.__class__.__name__, multiplier.__class__.__name__
+                )
+            )
 
     def __rmul__(self, multiplier):
-        """ Return multiplier * self for a scalar or BinaryPolynomial.
+        """Return multiplier * self for a scalar or BinaryPolynomial.
 
         Args:
           multiplier (int or BinaryPolynomial): the multiplier of the
@@ -409,10 +414,8 @@ class BinaryPolynomial(object):
         Raises:
           TypeError: Object of invalid type cannot multiply BinaryPolynomial.
         """
-        if not isinstance(multiplier,
-                          (numpy.int64, numpy.int32, int, type(self))):
-            raise TypeError('Object of invalid type cannot multiply with ' +
-                            str(type(self)) + '.')
+        if not isinstance(multiplier, (numpy.int64, numpy.int32, int, type(self))):
+            raise TypeError('Object of invalid type cannot multiply with ' + str(type(self)) + '.')
         return self * multiplier
 
     def __mul__(self, multiplier):
@@ -433,8 +436,7 @@ class BinaryPolynomial(object):
             product *= multiplier
             return product
         else:
-            raise TypeError('Object of invalid type cannot multiply with ' +
-                            str(type(self)) + '.')
+            raise TypeError('Object of invalid type cannot multiply with ' + str(type(self)) + '.')
 
     def __iadd__(self, addend):
         """In-place method for += addition of a int or a BinaryPolynomial.
@@ -456,8 +458,7 @@ class BinaryPolynomial(object):
             if mod_add:
                 self._add_one()
         if not isinstance(addend, (numpy.int64, numpy.int32, int, type(self))):
-            raise TypeError('Object of invalid type cannot add with ' +
-                            str(type(self)) + '.')
+            raise TypeError('Object of invalid type cannot add with ' + str(type(self)) + '.')
         return self
 
     def __radd__(self, addend):
@@ -473,8 +474,7 @@ class BinaryPolynomial(object):
             TypeError: Cannot add invalid type.
         """
         if not isinstance(addend, (numpy.int64, numpy.int32, int, type(self))):
-            raise TypeError('Object of invalid type cannot add with ' +
-                            str(type(self)) + '.')
+            raise TypeError('Object of invalid type cannot add with ' + str(type(self)) + '.')
         return self + addend
 
     def __add__(self, addend):
@@ -505,13 +505,12 @@ class BinaryPolynomial(object):
         """
         # Handle invalid exponents.
         if not isinstance(exponent, (numpy.int64, numpy.int32, int)):
-            raise TypeError('exponent must be int, but was {} {}'.format(
-                type(exponent), repr(exponent)))
+            raise TypeError(
+                'exponent must be int, but was {} {}'.format(type(exponent), repr(exponent))
+            )
         else:
             if exponent < 0:
-                raise TypeError(
-                    'exponent must be non-negative, but was {}'.format(
-                        exponent))
+                raise TypeError('exponent must be non-negative, but was {}'.format(exponent))
 
         # Check if exponent is zero - if yes return self, if not return zero.
         if exponent == 0:
@@ -521,7 +520,7 @@ class BinaryPolynomial(object):
 
 
 def binary_sum_rule(terms, summand):
-    """ Updates terms in place based on binary rules.
+    """Updates terms in place based on binary rules.
     Args:
         terms: symbolicBinary terms
         summand: new potential addition to term

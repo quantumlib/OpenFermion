@@ -16,14 +16,10 @@ import sympy
 
 import cirq
 
-_setup_code = ("import cirq\n"
-               "import numpy as np\n"
-               "import sympy\n"
-               "import openfermion\n")
+_setup_code = "import cirq\n" "import numpy as np\n" "import sympy\n" "import openfermion\n"
 
 
-def assert_equivalent_repr(value: Any, *,
-                           setup_code: str = _setup_code) -> None:
+def assert_equivalent_repr(value: Any, *, setup_code: str = _setup_code) -> None:
     """Checks that eval(repr(v)) == v.
 
     Args:
@@ -36,15 +32,15 @@ def assert_equivalent_repr(value: Any, *,
 
 
 def assert_implements_consistent_protocols(
-        val: Any,
-        *,
-        exponents: Sequence[Any] = (0, 1, -1, 0.5, 0.25, -0.5, 0.1,
-                                    sympy.Symbol("s")),
-        qubit_count: Optional[int] = None,
-        ignoring_global_phase: bool = False,
-        setup_code: str = _setup_code,
-        global_vals: Optional[Dict[str, Any]] = None,
-        local_vals: Optional[Dict[str, Any]] = None) -> None:
+    val: Any,
+    *,
+    exponents: Sequence[Any] = (0, 1, -1, 0.5, 0.25, -0.5, 0.1, sympy.Symbol("s")),
+    qubit_count: Optional[int] = None,
+    ignoring_global_phase: bool = False,
+    setup_code: str = _setup_code,
+    global_vals: Optional[Dict[str, Any]] = None,
+    local_vals: Optional[Dict[str, Any]] = None,
+) -> None:
     """Checks that a value is internally consistent and has a good __repr__."""
     try:
         # Cirq 0.14

@@ -5,14 +5,17 @@ import unittest
 import numpy
 
 from openfermion.hamiltonians import jellium_model, wigner_seitz_length_scale
-from openfermion.linalg import (get_sparse_operator, get_ground_state,
-                                expectation, jw_number_restrict_operator)
+from openfermion.linalg import (
+    get_sparse_operator,
+    get_ground_state,
+    expectation,
+    jw_number_restrict_operator,
+)
 from openfermion.utils.grid import Grid
 from openfermion.hamiltonians.jellium_hf_state import hartree_fock_state_jellium
 
 
 class JelliumHartreeFockStateTest(unittest.TestCase):
-
     def test_hf_state_energy_close_to_ground_energy_at_high_density(self):
         grid_length = 8
         dimension = 1
@@ -26,13 +29,9 @@ class JelliumHartreeFockStateTest(unittest.TestCase):
         hamiltonian = jellium_model(grid, spinless)
         hamiltonian_sparse = get_sparse_operator(hamiltonian)
 
-        hf_state = hartree_fock_state_jellium(grid,
-                                              n_particles,
-                                              spinless,
-                                              plane_wave=True)
+        hf_state = hartree_fock_state_jellium(grid, n_particles, spinless, plane_wave=True)
 
-        restricted_hamiltonian = jw_number_restrict_operator(
-            hamiltonian_sparse, n_particles)
+        restricted_hamiltonian = jw_number_restrict_operator(hamiltonian_sparse, n_particles)
 
         E_g = get_ground_state(restricted_hamiltonian)[0]
         E_HF_plane_wave = expectation(hamiltonian_sparse, hf_state)
@@ -50,8 +49,7 @@ class JelliumHartreeFockStateTest(unittest.TestCase):
             n_orbitals *= 2
         n_particles = n_orbitals // 2
 
-        length_scale = wigner_seitz_length_scale(wigner_seitz_radius,
-                                                 n_particles, dimension)
+        length_scale = wigner_seitz_length_scale(wigner_seitz_radius, n_particles, dimension)
 
         grid = Grid(dimension, grid_length, length_scale)
         hamiltonian = jellium_model(grid, spinless)
@@ -61,14 +59,8 @@ class JelliumHartreeFockStateTest(unittest.TestCase):
         hamiltonian_sparse = get_sparse_operator(hamiltonian)
         hamiltonian_dual_sparse = get_sparse_operator(hamiltonian_dual_basis)
 
-        hf_state = hartree_fock_state_jellium(grid,
-                                              n_particles,
-                                              spinless,
-                                              plane_wave=True)
-        hf_state_dual = hartree_fock_state_jellium(grid,
-                                                   n_particles,
-                                                   spinless,
-                                                   plane_wave=False)
+        hf_state = hartree_fock_state_jellium(grid, n_particles, spinless, plane_wave=True)
+        hf_state_dual = hartree_fock_state_jellium(grid, n_particles, spinless, plane_wave=False)
 
         E_HF_plane_wave = expectation(hamiltonian_sparse, hf_state)
         E_HF_dual = expectation(hamiltonian_dual_sparse, hf_state_dual)
@@ -86,18 +78,15 @@ class JelliumHartreeFockStateTest(unittest.TestCase):
         hamiltonian = jellium_model(grid, spinless)
         hamiltonian_sparse = get_sparse_operator(hamiltonian)
 
-        hf_state = hartree_fock_state_jellium(grid,
-                                              n_particles,
-                                              spinless,
-                                              plane_wave=True)
+        hf_state = hartree_fock_state_jellium(grid, n_particles, spinless, plane_wave=True)
 
         HF_energy = expectation(hamiltonian_sparse, hf_state)
 
-        for occupied_orbitals in permutations([1] * n_particles + [0] *
-                                              (grid_length - n_particles)):
-            state_index = numpy.sum(2**numpy.array(occupied_orbitals))
+        for occupied_orbitals in permutations(
+            [1] * n_particles + [0] * (grid_length - n_particles)
+        ):
+            state_index = numpy.sum(2 ** numpy.array(occupied_orbitals))
             HF_competitor = numpy.zeros(2**grid_length)
             HF_competitor[state_index] = 1.0
 
-            self.assertLessEqual(HF_energy,
-                                 expectation(hamiltonian_sparse, HF_competitor))
+            self.assertLessEqual(HF_energy, expectation(hamiltonian_sparse, HF_competitor))

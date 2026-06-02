@@ -9,7 +9,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Base class for representating operators that are polynomials in the
+"""Base class for representing operators that are polynomials in the
 fermionic ladder operators."""
 
 import copy
@@ -83,19 +83,16 @@ def general_basis_change(general_tensor, rotation_matrix, key):
     subscripts = subscripts_first + ',' + subscripts_rest
 
     # The list of rotation matrices, conjugated as necessary.
-    rotation_matrices = [
-        rotation_matrix.conj() if x else rotation_matrix for x in key
-    ]
+    rotation_matrices = [rotation_matrix.conj() if x else rotation_matrix for x in key]
 
     # "optimize = True" does greedy optimization, which will be enough here.
-    transformed_general_tensor = numpy.einsum(subscripts,
-                                              general_tensor,
-                                              *rotation_matrices,
-                                              optimize=True)
+    transformed_general_tensor = numpy.einsum(
+        subscripts, general_tensor, *rotation_matrices, optimize=True
+    )
     return transformed_general_tensor
 
 
-class PolynomialTensor(object):
+class PolynomialTensor:
     r"""Class for storing tensor representations of operators that correspond
     with multilinear polynomials in the fermionic ladder operators.
     For instance, in a quadratic Hamiltonian (degree 2 polynomial) which
@@ -197,17 +194,16 @@ class PolynomialTensor(object):
         if self.n_qubits != other.n_qubits:
             return False
 
-        diff = 0.
+        diff = 0.0
         self_keys = set(self.n_body_tensors.keys())
         other_keys = set(other.n_body_tensors.keys())
 
-        for key in (self_keys | other_keys):
+        for key in self_keys | other_keys:
             self_tensor = self.n_body_tensors.get(key)
             other_tensor = other.n_body_tensors.get(key)
 
             if self_tensor is not None and other_tensor is not None:
-                discrepancy = numpy.amax(
-                    numpy.absolute(self_tensor - other_tensor))
+                discrepancy = numpy.amax(numpy.absolute(self_tensor - other_tensor))
             else:
                 tensor = self_tensor if other_tensor is None else other_tensor
                 discrepancy = numpy.amax(numpy.absolute(tensor))
@@ -220,7 +216,6 @@ class PolynomialTensor(object):
         return not (self == other)
 
     def __iadd__(self, addend):
-
         if isinstance(addend, COEFFICIENT_TYPES):
             self.constant += addend
             return self
@@ -233,8 +228,9 @@ class PolynomialTensor(object):
 
         for key in addend.n_body_tensors:
             if key in self.n_body_tensors:
-                self.n_body_tensors[key] = numpy.add(self.n_body_tensors[key],
-                                                     addend.n_body_tensors[key])
+                self.n_body_tensors[key] = numpy.add(
+                    self.n_body_tensors[key], addend.n_body_tensors[key]
+                )
             else:
                 self.n_body_tensors[key] = addend.n_body_tensors[key]
 
@@ -261,7 +257,6 @@ class PolynomialTensor(object):
         return self.with_function_applied_elementwise(lambda x: x % other)
 
     def __isub__(self, subtrahend):
-
         if isinstance(subtrahend, COEFFICIENT_TYPES):
             self.constant -= subtrahend
             return self
@@ -275,7 +270,8 @@ class PolynomialTensor(object):
         for key in subtrahend.n_body_tensors:
             if key in self.n_body_tensors:
                 self.n_body_tensors[key] = numpy.subtract(
-                    self.n_body_tensors[key], subtrahend.n_body_tensors[key])
+                    self.n_body_tensors[key], subtrahend.n_body_tensors[key]
+                )
             else:
                 self.n_body_tensors[key] = subtrahend.n_body_tensors[key]
 
@@ -300,13 +296,12 @@ class PolynomialTensor(object):
             for key in self.n_body_tensors:
                 if key in multiplier.n_body_tensors:
                     self.n_body_tensors[key] = numpy.multiply(
-                        self.n_body_tensors[key],
-                        multiplier.n_body_tensors[key])
+                        self.n_body_tensors[key], multiplier.n_body_tensors[key]
+                    )
                 elif key == ():
-                    self.constant = 0.
+                    self.constant = 0.0
                 else:
-                    self.n_body_tensors[key] = numpy.zeros(
-                        self.n_body_tensors[key].shape)
+                    self.n_body_tensors[key] = numpy.zeros(self.n_body_tensors[key].shape)
         else:
             raise TypeError('Invalid type.')
 
@@ -354,8 +349,7 @@ class PolynomialTensor(object):
                 yield ()
             else:
                 n_body_tensor = self.n_body_tensors[key]
-                for index in itertools.product(range(self.n_qubits),
-                                               repeat=len(key)):
+                for index in itertools.product(range(self.n_qubits), repeat=len(key)):
                     if n_body_tensor[index]:
                         yield tuple(zip(index, key))
 
@@ -380,7 +374,8 @@ class PolynomialTensor(object):
                 pass
             else:
                 self.n_body_tensors[key] = general_basis_change(
-                    self.n_body_tensors[key], rotation_matrix, key)
+                    self.n_body_tensors[key], rotation_matrix, key
+                )
 
     def __repr__(self):
         return str(self)
@@ -395,7 +390,7 @@ class PolynomialTensor(object):
                 True) the specified indices.
             exact (bool): Whether or not the selection is strict.
         """
-        comparator = (operator.eq if exact else operator.le)
+        comparator = operator.eq if exact else operator.le
         if isinstance(selection, int):
             pred = lambda index: comparator(len(set(index)), selection)
             dims = range(self.n_qubits)
@@ -407,8 +402,7 @@ class PolynomialTensor(object):
         projected_n_body_tensors = dict()
         for key, tensor in self.n_body_tensors.items():
             if not key:
-                projected_n_body_tensors[key] = (
-                    tensor if not (exact and selection) else 0)
+                projected_n_body_tensors[key] = tensor if not (exact and selection) else 0
                 continue
             projected_tensor = numpy.zeros_like(tensor)
             for index in itertools.product(dims, repeat=len(key)):

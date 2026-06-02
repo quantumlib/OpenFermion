@@ -33,33 +33,28 @@ def geometry_from_pubchem(name: str, structure: str = None):
     import pubchempy
 
     if structure in ['2d', '3d']:
-        pubchempy_molecule = pubchempy.get_compounds(name,
-                                                     'name',
-                                                     record_type=structure)
+        pubchempy_molecule = pubchempy.get_compounds(name, 'name', record_type=structure)
     elif structure is None:
         # Ideally get the 3-D geometry if available.
-        pubchempy_molecule = pubchempy.get_compounds(name,
-                                                     'name',
-                                                     record_type='3d')
+        pubchempy_molecule = pubchempy.get_compounds(name, 'name', record_type='3d')
 
         # If the 3-D geometry isn't available, get the 2-D geometry instead.
         if not pubchempy_molecule:
-            pubchempy_molecule = pubchempy.get_compounds(name,
-                                                         'name',
-                                                         record_type='2d')
+            pubchempy_molecule = pubchempy.get_compounds(name, 'name', record_type='2d')
     else:
-        raise ValueError('Incorrect value for the argument structure=%s' %
-                         structure)
+        raise ValueError('Incorrect value for the argument structure=%s' % structure)
 
     # Check if pubchempy_molecule is an empty list or None
     if not pubchempy_molecule:
-        print("Unable to find structure info in the PubChem database"
-              "for the specified molecule %s." % name)
+        print(
+            "Unable to find structure info in the PubChem database"
+            "for the specified molecule %s." % name
+        )
         return None
 
-    pubchempy_geometry = \
-        pubchempy_molecule[0].to_dict(properties=['atoms'])['atoms']
-    geometry = [(atom['element'], (atom['x'], atom['y'], atom.get('z', 0)))
-                for atom in pubchempy_geometry]
+    pubchempy_geometry = pubchempy_molecule[0].to_dict(properties=['atoms'])['atoms']
+    geometry = [
+        (atom['element'], (atom['x'], atom['y'], atom.get('z', 0))) for atom in pubchempy_geometry
+    ]
 
     return geometry

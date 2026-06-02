@@ -27,10 +27,7 @@ from .hartree_fock import (
     generate_hamiltonian,
 )
 
-from .hubbard import (
-    bose_hubbard,
-    fermi_hubbard,
-)
+from .hubbard import bose_hubbard, fermi_hubbard
 
 from .jellium import (
     dual_basis_kinetic,
@@ -44,10 +41,7 @@ from .jellium import (
     wigner_seitz_length_scale,
 )
 
-from .jellium_hf_state import (
-    hartree_fock_state_jellium,
-    lowest_single_particle_energy_states,
-)
+from .jellium_hf_state import hartree_fock_state_jellium, lowest_single_particle_energy_states
 
 from .mean_field_dwave import mean_field_dwave
 
@@ -62,6 +56,7 @@ from .plane_wave_hamiltonian import (
 
 from .special_operators import (
     s_plus_operator,
+    s_minus_operator,
     s_squared_operator,
     sx_operator,
     sy_operator,

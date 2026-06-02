@@ -30,8 +30,7 @@ def _verify_channel_inputs(density_matrix, probability, target_qubit):
     """
     n_qubits = int(log2(density_matrix.shape[0]))
 
-    if (len(density_matrix.shape) != 2 or
-            density_matrix.shape[0] != density_matrix.shape[1]):
+    if len(density_matrix.shape) != 2 or density_matrix.shape[0] != density_matrix.shape[1]:
         raise ValueError("Error in input of density matrix to channel.")
     if (probability < 0) or (probability > 1):
         raise ValueError("Channel probability must be between 0 and 1.")
@@ -51,17 +50,18 @@ def _lift_operator(operator, n_qubits, target_qubit):
         new_operator(Sparse Operator): Operator representing the embedding in
             the full space.
     """
-    new_operator = (reduce(
+    new_operator = reduce(
         kron,
-        chain((eye(2) for i in range(0, target_qubit)), [operator],
-              (eye(2) for i in range(target_qubit + 1, n_qubits)))))
+        chain(
+            (eye(2) for i in range(0, target_qubit)),
+            [operator],
+            (eye(2) for i in range(target_qubit + 1, n_qubits)),
+        ),
+    )
     return new_operator
 
 
-def amplitude_damping_channel(density_matrix,
-                              probability,
-                              target_qubit,
-                              transpose=False):
+def amplitude_damping_channel(density_matrix, probability, target_qubit, transpose=False):
     r"""Apply an amplitude damping channel
 
     Applies an amplitude damping channel with a given probability to the target
@@ -82,27 +82,23 @@ def amplitude_damping_channel(density_matrix,
     n_qubits = int(log2(density_matrix.shape[0]))
 
     E0 = _lift_operator(
-        array([[1.0, 0.0], [0.0, sqrt(1.0 - probability)]], dtype=complex),
-        n_qubits, target_qubit)
+        array([[1.0, 0.0], [0.0, sqrt(1.0 - probability)]], dtype=complex), n_qubits, target_qubit
+    )
 
     E1 = _lift_operator(
-        array([[0.0, sqrt(probability)], [0.0, 0.0]], dtype=complex), n_qubits,
-        target_qubit)
+        array([[0.0, sqrt(probability)], [0.0, 0.0]], dtype=complex), n_qubits, target_qubit
+    )
 
     if transpose:
         E0 = E0.T
         E1 = E1.T
 
-    new_density_matrix = (dot(E0, dot(density_matrix, E0.T)) +
-                          dot(E1, dot(density_matrix, E1.T)))
+    new_density_matrix = dot(E0, dot(density_matrix, E0.T)) + dot(E1, dot(density_matrix, E1.T))
 
     return new_density_matrix
 
 
-def dephasing_channel(density_matrix,
-                      probability,
-                      target_qubit,
-                      transpose=False):
+def dephasing_channel(density_matrix, probability, target_qubit, transpose=False):
     r"""Apply a dephasing channel
 
     Applies an amplitude damping channel with a given probability to the target
@@ -122,26 +118,21 @@ def dephasing_channel(density_matrix,
     _verify_channel_inputs(density_matrix, probability, target_qubit)
     n_qubits = int(log2(density_matrix.shape[0]))
 
-    E0 = _lift_operator(
-        sqrt(1.0 - probability / 2.) * eye(2), n_qubits, target_qubit)
+    E0 = _lift_operator(sqrt(1.0 - probability / 2.0) * eye(2), n_qubits, target_qubit)
     E1 = _lift_operator(
-        sqrt(probability / 2.) * array([[1.0, 0.0], [1.0, -1.0]]), n_qubits,
-        target_qubit)
+        sqrt(probability / 2.0) * array([[1.0, 0.0], [1.0, -1.0]]), n_qubits, target_qubit
+    )
 
     if transpose:
         E0 = E0.T
         E1 = E1.T
 
-    new_density_matrix = (dot(E0, dot(density_matrix, E0.T)) +
-                          dot(E1, dot(density_matrix, E1.T)))
+    new_density_matrix = dot(E0, dot(density_matrix, E0.T)) + dot(E1, dot(density_matrix, E1.T))
 
     return new_density_matrix
 
 
-def depolarizing_channel(density_matrix,
-                         probability,
-                         target_qubit,
-                         transpose=False):
+def depolarizing_channel(density_matrix, probability, target_qubit, transpose=False):
     r"""Apply a depolarizing channel
 
     Applies an amplitude damping channel with a given probability to the target
@@ -165,28 +156,30 @@ def depolarizing_channel(density_matrix,
     # Toggle depolarizing channel on all qubits
     if isinstance(target_qubit, str) and target_qubit.lower() == "all":
         dimension = density_matrix.shape[0]
-        new_density_matrix = ((1.0 - probability) * density_matrix +
-                              probability * eye(dimension) / float(dimension))
+        new_density_matrix = (1.0 - probability) * density_matrix + probability * eye(
+            dimension
+        ) / float(dimension)
         return new_density_matrix
 
     # For any other case, depolarize only the target qubit
     _verify_channel_inputs(density_matrix, probability, target_qubit)
 
-    E0 = _lift_operator(
-        sqrt(1.0 - probability) * eye(2), n_qubits, target_qubit)
+    E0 = _lift_operator(sqrt(1.0 - probability) * eye(2), n_qubits, target_qubit)
     E1 = _lift_operator(
-        sqrt(probability / 3.) * array([[0.0, 1.0], [1.0, 0.0]]), n_qubits,
-        target_qubit)
+        sqrt(probability / 3.0) * array([[0.0, 1.0], [1.0, 0.0]]), n_qubits, target_qubit
+    )
     E2 = _lift_operator(
-        sqrt(probability / 3.) * array([[0.0, -1.0j], [1.0j, 0.0]]), n_qubits,
-        target_qubit)
+        sqrt(probability / 3.0) * array([[0.0, -1.0j], [1.0j, 0.0]]), n_qubits, target_qubit
+    )
     E3 = _lift_operator(
-        sqrt(probability / 3.) * array([[1.0, 0.0], [0.0, -1.0]]), n_qubits,
-        target_qubit)
+        sqrt(probability / 3.0) * array([[1.0, 0.0], [0.0, -1.0]]), n_qubits, target_qubit
+    )
 
-    new_density_matrix = (dot(E0, dot(density_matrix, E0)) +
-                          dot(E1, dot(density_matrix, E1)) +
-                          dot(E2, dot(density_matrix, E2)) +
-                          dot(E3, dot(density_matrix, E3)))
+    new_density_matrix = (
+        dot(E0, dot(density_matrix, E0))
+        + dot(E1, dot(density_matrix, E1))
+        + dot(E2, dot(density_matrix, E2))
+        + dot(E3, dot(density_matrix, E3))
+    )
 
     return new_density_matrix

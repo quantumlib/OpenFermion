@@ -10,13 +10,13 @@ electronic structure plugins are only compatible with Mac and Linux. However,
 for those who would like to use Windows, or for anyone having other difficulties
 with installing OpenFermion or its plugins, we have provided a Docker image and
 usage instructions in the
-[docker folder](https://github.com/quantumlib/OpenFermion/tree/master/docker).
+[docker folder](https://github.com/quantumlib/OpenFermion/tree/main/docker).
 The Docker image provides a virtual environment with OpenFermion and select
 plugins pre-installed. The Docker installation should run on any operating
 system.
 
 You might also want to explore the alpha release of the
-[OpenFermion Cloud Library](https://github.com/quantumlib/OpenFermion/tree/master/cloud_library)
+[OpenFermion Cloud Library](https://github.com/quantumlib/OpenFermion/tree/main/cloud_library)
 where users can share and download precomputed molecular benchmark files.
 
 Check out other [projects and papers](docs/projects.md) using OpenFermion for
@@ -47,8 +47,8 @@ python3 -m pip install --user openfermion
 The guides and tutorials are built from the `docs/` directory. Preview Markdown
 files directly in GitHub. Notebooks can be loaded, viewed, and executed in Colab
 by passing the GitHub location in the URL, for example:
-<a href="https://colab.research.google.com/github/quantumlib/OpenFermion/blob/master/docs/tutorials/intro_to_openfermion.ipynb"
-class="external">https://colab.research.google.com/github/quantumlib/OpenFermion/blob/master/docs/tutorials/intro_to_openfermion.ipynb</a>
+<a href="https://colab.research.google.com/github/quantumlib/OpenFermion/blog/main/docs/tutorials/intro_to_openfermion.ipynb"
+class="external">https://colab.research.google.com/github/quantumlib/OpenFermion/blog/main/docs/tutorials/intro_to_openfermion.ipynb</a>
 
 See the
 <a href="https://www.tensorflow.org/community/contribute/docs_style" class="external">TensorFlow docs style guide</a>

@@ -2,6 +2,7 @@
 virtualenv
 
 # for creating packages
+build
 setuptools
 wheel
 

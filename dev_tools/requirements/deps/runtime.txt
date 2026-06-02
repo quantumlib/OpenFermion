@@ -1,12 +1,21 @@
-cirq-core~=1.0
+cirq-core>=1.4.1,<1.6.0
 deprecation
-h5py>=2.8
+h5py>=3.10.0
 networkx
-numpy>=1.11.0
+numpy>=1.26
 pubchempy
-requests>=2.18
+requests~=2.34.0
 
-# https://github.com/scipy/scipy/issues/18250
-scipy>=1.1.0,<1.10.0
+scipy~=1.15
 
 sympy
+
+# Transitive dependency. Versions 1.3.3+ require Python 311. Constraining it
+# lets us produce a single set of requirements files for Python 3.10 - 3.12.
+contourpy<1.3.3
+
+# Another transitive dependency. We don't care about the version of this
+# backport because it's only needed for a pytest extension. However, because we
+# run pip-compile in Python 3.10 for maximum compatibility, we need to add an
+# explicit constraint to keep this package out of the requirements files.
+backports-asyncio-runner ; python_full_version < '3.11'

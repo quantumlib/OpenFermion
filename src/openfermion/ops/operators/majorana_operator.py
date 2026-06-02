@@ -11,6 +11,7 @@
 #   limitations under the License.
 """The MajoranaOperator data structure."""
 
+import copy
 import itertools
 import numpy
 
@@ -59,7 +60,7 @@ class MajoranaOperator:
         self.terms = {}
         if term is not None:
             term, parity = _sort_majorana_term(term)
-            self.terms[term] = coefficient * (-1)**parity
+            self.terms[term] = coefficient * (-1) ** parity
 
     @staticmethod
     def from_dict(terms):
@@ -77,14 +78,14 @@ class MajoranaOperator:
 
     def commutes_with(self, other):
         """Test commutation with another MajoranaOperator"""
+        if isinstance(other, (int, float, complex)):
+            return True
+
         if not isinstance(other, type(self)):
-            raise TypeError(
-                'Can only test commutation with another MajoranaOperator.')
+            raise TypeError('Can only test commutation with another MajoranaOperator.')
 
         if len(self.terms) == 1 and len(other.terms) == 1:
-            return _majorana_terms_commute(
-                list(self.terms.keys())[0],
-                list(other.terms.keys())[0])
+            return _majorana_terms_commute(list(self.terms.keys())[0], list(other.terms.keys())[0])
         return self * other == other * self
 
     def with_basis_rotated_by(self, transformation_matrix):
@@ -117,75 +118,75 @@ class MajoranaOperator:
             rotated_op += rotated_term
         return rotated_op
 
+    @property
+    def constant(self):
+        """The value of the constant term."""
+        return self.terms.get((), 0.0)
+
+    @constant.setter
+    def constant(self, value):
+        """Set the value of the constant term"""
+        self.terms[()] = value
+
+    @classmethod
+    def zero(cls):
+        """Returns additive_identity."""
+        return cls(term=None)
+
+    @classmethod
+    def identity(cls):
+        """Returns multiplicative_identity."""
+        return cls(term=(), coefficient=1.0)
+
     def __iadd__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        for term, coefficient in other.terms.items():
-            if term in self.terms:
-                self.terms[term] += coefficient
-            else:
-                self.terms[term] = coefficient
-
+        if isinstance(other, type(self)):
+            for term, coefficient in other.terms.items():
+                if term in self.terms:
+                    self.terms[term] += coefficient
+                else:
+                    self.terms[term] = coefficient
+        elif isinstance(other, (int, float, complex)):
+            self.constant += other
+        else:
+            raise TypeError("Cannot add invalid type to {}".format(type(self)))
         return self
 
     def __add__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        terms = {}
-        terms.update(self.terms)
-
-        for term, coefficient in other.terms.items():
-            if term in terms:
-                terms[term] += coefficient
-            else:
-                terms[term] = coefficient
-
-        return MajoranaOperator.from_dict(terms)
+        summand = copy.deepcopy(self)
+        summand += other
+        return summand
 
     def __isub__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        for term, coefficient in other.terms.items():
-            if term in self.terms:
-                self.terms[term] -= coefficient
-            else:
-                self.terms[term] = coefficient
-
+        if isinstance(other, type(self)):
+            for term, coefficient in other.terms.items():
+                if term in self.terms:
+                    self.terms[term] -= coefficient
+                else:
+                    self.terms[term] = -coefficient
+        elif isinstance(other, (int, float, complex)):
+            self.constant -= other
+        else:
+            raise TypeError("Cannot subtract invalid type from {}".format(type(self)))
         return self
 
     def __sub__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        terms = {}
-        terms.update(self.terms)
-        for term, coefficient in other.terms.items():
-            if term in terms:
-                terms[term] -= coefficient
-            else:
-                terms[term] = -coefficient
-        return MajoranaOperator.from_dict(terms)
+        minuend = copy.deepcopy(self)
+        minuend -= other
+        return minuend
 
     def __mul__(self, other):
         if not isinstance(other, (type(self), int, float, complex)):
             return NotImplemented
 
         if isinstance(other, (int, float, complex)):
-            terms = {
-                term: coefficient * other
-                for term, coefficient in self.terms.items()
-            }
+            terms = {term: coefficient * other for term, coefficient in self.terms.items()}
             return MajoranaOperator.from_dict(terms)
 
         terms = {}
         for left_term, left_coefficient in self.terms.items():
             for right_term, right_coefficient in other.terms.items():
                 new_term, parity = _merge_majorana_terms(left_term, right_term)
-                coefficient = left_coefficient * right_coefficient * (
-                    -1)**parity
+                coefficient = left_coefficient * right_coefficient * (-1) ** parity
                 if new_term in terms:
                     terms[new_term] += coefficient
                 else:
@@ -212,10 +213,7 @@ class MajoranaOperator:
         if not isinstance(other, (int, float, complex)):
             return NotImplemented
 
-        terms = {
-            term: coefficient / other
-            for term, coefficient in self.terms.items()
-        }
+        terms = {term: coefficient / other for term, coefficient in self.terms.items()}
         return MajoranaOperator.from_dict(terms)
 
     def __itruediv__(self, other):
@@ -371,5 +369,8 @@ def _rotate_basis(term, transformation_matrix):
 
 def _is_real_orthogonal(matrix):
     n, m = matrix.shape
-    return (n == m and numpy.allclose(numpy.imag(matrix), 0.0) and
-            numpy.allclose(numpy.dot(matrix.T, matrix), numpy.eye(n)))
+    return (
+        n == m
+        and numpy.allclose(numpy.imag(matrix), 0.0)
+        and numpy.allclose(numpy.dot(matrix.T, matrix), numpy.eye(n))
+    )

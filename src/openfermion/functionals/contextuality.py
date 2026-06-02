@@ -10,6 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """tests for whether operators are contextual contextuality"""
+
 from typing import List
 
 from openfermion.ops.operators import QubitOperator
@@ -19,8 +20,7 @@ def _commutes(operator1: QubitOperator, operator2: QubitOperator) -> bool:
     return operator1 * operator2 == operator2 * operator1
 
 
-def _non_fully_commuting_terms(hamiltonian: QubitOperator
-                              ) -> List[QubitOperator]:
+def _non_fully_commuting_terms(hamiltonian: QubitOperator) -> List[QubitOperator]:
     terms = list([QubitOperator(key) for key in hamiltonian.terms.keys()])
     T = []  # will contain the subset of terms that do not
     # commute universally in terms
@@ -51,8 +51,12 @@ def is_contextual(hamiltonian: QubitOperator) -> bool:
         # commutes with both others.
         for j in range(len(T)):
             for k in range(j + 1, len(T)):  # Ordering of j, k does not matter.
-                if i!=j and i!=k and _commutes(T[i],T[j]) \
-                    and _commutes(T[i],T[k]) and \
-                        not _commutes(T[j],T[k]):
+                if (
+                    i != j
+                    and i != k
+                    and _commutes(T[i], T[j])
+                    and _commutes(T[i], T[k])
+                    and not _commutes(T[j], T[k])
+                ):
                     return True
     return False

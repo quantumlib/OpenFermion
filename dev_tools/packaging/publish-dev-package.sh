@@ -56,7 +56,7 @@ if [[ "${EXPECTED_VERSION}" != *dev* ]]; then
   echo -e "\e[31mExpected version must include 'dev'.\e[0m"
   exit 1
 fi
-ACTUAL_VERSION_LINE=$(cat "src/${PROJECT_NAME}/_version.py" | tail -n 1)
+ACTUAL_VERSION_LINE=$(tail -n 1 "src/${PROJECT_NAME}/_version.py")
 if [ "${ACTUAL_VERSION_LINE}" != '__version__ = "'"${EXPECTED_VERSION}"'"' ]; then
   echo -e "\e[31mExpected version (${EXPECTED_VERSION}) didn't match the one in ${PROJECT_NAME}/_version.py (${ACTUAL_VERSION_LINE}).\e[0m"
   exit 1
@@ -103,7 +103,7 @@ cd "$(git rev-parse --show-toplevel)"
 
 # Temporary workspace.
 tmp_package_dir=$(mktemp -d "/tmp/publish-dev-package_package.XXXXXXXXXXXXXXXX")
-trap "{ rm -rf ${tmp_package_dir}; }" EXIT
+trap '{ rm -rf "${tmp_package_dir}"; }' EXIT
 
 # Produce packages.
 dev_tools/packaging/produce-package.sh "${tmp_package_dir}" "${UPLOAD_VERSION}"

@@ -14,11 +14,12 @@
 import unittest
 from openfermion.ops.operators import FermionOperator, BosonOperator
 from openfermion.transforms.repconversions.operator_tapering import (
-    freeze_orbitals, prune_unused_indices)
+    freeze_orbitals,
+    prune_unused_indices,
+)
 
 
 class FreezeOrbitalsTest(unittest.TestCase):
-
     def test_freeze_orbitals_nonvanishing(self):
         op = FermionOperator(((1, 1), (1, 0), (0, 1), (2, 0)))
         op_frozen = freeze_orbitals(op, [1])
@@ -32,7 +33,6 @@ class FreezeOrbitalsTest(unittest.TestCase):
 
 
 class PruneUnusedIndicesTest(unittest.TestCase):
-
     def test_prune(self):
         for LadderOp in (FermionOperator, BosonOperator):
             op = LadderOp(((1, 1), (8, 1), (3, 0)), 0.5)

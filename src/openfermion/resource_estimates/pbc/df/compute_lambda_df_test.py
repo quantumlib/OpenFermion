@@ -19,18 +19,13 @@ from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from pyscf.pbc import mp
 
-    from openfermion.resource_estimates.pbc.df.compute_lambda_df import (
-        compute_lambda,)
-    from openfermion.resource_estimates.pbc.df.df_integrals import (
-        DFABKpointIntegrals,)
-    from openfermion.resource_estimates.pbc.hamiltonian import (
-        cholesky_from_df_ints,)
-    from openfermion.resource_estimates.pbc.testing import (
-        make_diamond_113_szv,)
+    from openfermion.resource_estimates.pbc.df.compute_lambda_df import compute_lambda
+    from openfermion.resource_estimates.pbc.df.df_integrals import DFABKpointIntegrals
+    from openfermion.resource_estimates.pbc.hamiltonian import cholesky_from_df_ints
+    from openfermion.resource_estimates.pbc.testing import make_diamond_113_szv
 
 
-@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES,
-                    reason='pyscf and/or jax not installed.')
+@pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 def test_lambda_calc():
     mf = make_diamond_113_szv()
     mymp = mp.KMP2(mf)
@@ -39,10 +34,9 @@ def test_lambda_calc():
     helper.double_factorize(thresh=1.0e-13)
 
     hcore_ao = mf.get_hcore()
-    hcore_mo = np.asarray([
-        reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo))
-        for k, mo in enumerate(mf.mo_coeff)
-    ])
+    hcore_mo = np.asarray(
+        [reduce(np.dot, (mo.T.conj(), hcore_ao[k], mo)) for k, mo in enumerate(mf.mo_coeff)]
+    )
 
     lambda_data = compute_lambda(hcore_mo, helper)
     assert np.isclose(lambda_data.lambda_total, 179.62240330857406)
@@ -63,15 +57,13 @@ def test_lambda_calc():
             Bmats /= np.sqrt(nkpts)
             wa, _ = np.linalg.eigh(Amats)
             wb, _ = np.linalg.eigh(Bmats)
-            aval_to_square += np.einsum("npq->n", np.abs(Amats)**2)
-            bval_to_square += np.einsum("npq->n", np.abs(Bmats)**2)
+            aval_to_square += np.einsum("npq->n", np.abs(Amats) ** 2)
+            bval_to_square += np.einsum("npq->n", np.abs(Bmats) ** 2)
 
-            aval_to_square_v2 += np.sum(np.abs(wa)**2, axis=-1)
-            bval_to_square_v2 += np.sum(np.abs(wb)**2, axis=-1)
+            aval_to_square_v2 += np.sum(np.abs(wa) ** 2, axis=-1)
+            bval_to_square_v2 += np.sum(np.abs(wb) ** 2, axis=-1)
             assert np.allclose(
-                np.sum(np.abs(wa)**2, axis=-1),
-                np.einsum("npq->n",
-                          np.abs(Amats)**2),
+                np.sum(np.abs(wa) ** 2, axis=-1), np.einsum("npq->n", np.abs(Amats) ** 2)
             )
 
         lambda_two_body += np.sum(aval_to_square)

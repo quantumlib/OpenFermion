@@ -14,8 +14,7 @@
 import numpy
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.transforms.opconversions.term_reordering\
-    import normal_ordered
+from openfermion.transforms.opconversions.term_reordering import normal_ordered
 
 
 def commutator(operator_a, operator_b):
@@ -64,13 +63,15 @@ def anticommutator(operator_a, operator_b):
     return result
 
 
-def double_commutator(op1,
-                      op2,
-                      op3,
-                      indices2=None,
-                      indices3=None,
-                      is_hopping_operator2=None,
-                      is_hopping_operator3=None):
+def double_commutator(
+    op1,
+    op2,
+    op3,
+    indices2=None,
+    indices3=None,
+    is_hopping_operator2=None,
+    is_hopping_operator3=None,
+):
     """Return the double commutator [op1, [op2, op3]].
 
     Args:
@@ -88,7 +89,7 @@ def double_commutator(op1,
         indices3 = set(indices3)
         # Determine which indices both op2 and op3 act on.
         try:
-            intersection, = indices2.intersection(indices3)
+            (intersection,) = indices2.intersection(indices3)
         except ValueError:
             return FermionOperator.zero()
 
@@ -98,13 +99,13 @@ def double_commutator(op1,
         indices3.remove(intersection)
 
         # Find the indices of the final output hopping operator.
-        index2, = indices2
-        index3, = indices3
+        (index2,) = indices2
+        (index3,) = indices3
         coeff2 = op2.terms[list(op2.terms)[0]]
         coeff3 = op3.terms[list(op3.terms)[0]]
-        commutator23 = (FermionOperator(
-            ((index2, 1), (index3, 0)), coeff2 * coeff3) + FermionOperator(
-                ((index3, 1), (index2, 0)), -coeff2 * coeff3))
+        commutator23 = FermionOperator(
+            ((index2, 1), (index3, 0)), coeff2 * coeff3
+        ) + FermionOperator(((index3, 1), (index2, 0)), -coeff2 * coeff3)
     else:
         commutator23 = normal_ordered(commutator(op2, op3))
 
@@ -112,13 +113,14 @@ def double_commutator(op1,
 
 
 def trivially_double_commutes_dual_basis_using_term_info(
-        indices_alpha=None,
-        indices_beta=None,
-        indices_alpha_prime=None,
-        is_hopping_operator_alpha=None,
-        is_hopping_operator_beta=None,
-        is_hopping_operator_alpha_prime=None,
-        jellium_only=False):
+    indices_alpha=None,
+    indices_beta=None,
+    indices_alpha_prime=None,
+    is_hopping_operator_alpha=None,
+    is_hopping_operator_beta=None,
+    is_hopping_operator_alpha_prime=None,
+    jellium_only=False,
+):
     """Return whether [op_a, [op_b, op_a_prime]] is trivially zero.
 
     Assumes all the operators are FermionOperators from the dual basis
@@ -159,9 +161,11 @@ def trivially_double_commutes_dual_basis_using_term_info(
     # form i^ i + j^ j or i^ j^ i j + c*(i^ i + j^ j), and not both
     # hopping operators) commute if they act on the same modes or if
     # there is no intersection.
-    if (jellium_only and (not is_hopping_operator_alpha_prime or
-                          not is_hopping_operator_beta) and
-            len(indices_beta.intersection(indices_alpha_prime)) != 1):
+    if (
+        jellium_only
+        and (not is_hopping_operator_alpha_prime or not is_hopping_operator_beta)
+        and len(indices_beta.intersection(indices_alpha_prime)) != 1
+    ):
         return True
 
     # If the modes operator_alpha acts on are disjoint with the modes
@@ -184,45 +188,44 @@ def trivially_commutes_dual_basis(term_a, term_b):
     Returns:
         Whether or not the commutator is trivially zero.
     """
-    modes_acted_on_by_term_a, = term_a.terms.keys()
-    modes_acted_on_by_term_b, = term_b.terms.keys()
+    (modes_acted_on_by_term_a,) = term_a.terms.keys()
+    (modes_acted_on_by_term_b,) = term_b.terms.keys()
 
-    modes_touched_a = [
-        modes_acted_on_by_term_a[0][0], modes_acted_on_by_term_a[1][0]
-    ]
-    modes_touched_b = [
-        modes_acted_on_by_term_b[0][0], modes_acted_on_by_term_b[1][0]
-    ]
+    modes_touched_a = [modes_acted_on_by_term_a[0][0], modes_acted_on_by_term_a[1][0]]
+    modes_touched_b = [modes_acted_on_by_term_b[0][0], modes_acted_on_by_term_b[1][0]]
 
     # If there's no intersection between the modes term_a and term_b act
     # on, the commutator is zero.
-    if not (modes_touched_a[0] in modes_touched_b or
-            modes_touched_a[1] in modes_touched_b):
+    if not (modes_touched_a[0] in modes_touched_b or modes_touched_a[1] in modes_touched_b):
         return True
 
     # In the dual basis, possible number operators take the form
     # a^ a or a^ b^ a b. Number operators always commute trivially.
     term_a_is_number_operator = (
-        modes_acted_on_by_term_a[0][0] == modes_acted_on_by_term_a[1][0] or
-        modes_acted_on_by_term_a[1][1])
+        modes_acted_on_by_term_a[0][0] == modes_acted_on_by_term_a[1][0]
+        or modes_acted_on_by_term_a[1][1]
+    )
     term_b_is_number_operator = (
-        modes_acted_on_by_term_b[0][0] == modes_acted_on_by_term_b[1][0] or
-        modes_acted_on_by_term_b[1][1])
+        modes_acted_on_by_term_b[0][0] == modes_acted_on_by_term_b[1][0]
+        or modes_acted_on_by_term_b[1][1]
+    )
     if term_a_is_number_operator and term_b_is_number_operator:
         return True
 
     # If the first commutator's terms are both hopping, and both create
     # or annihilate the same mode, then the result is zero.
     if not (term_a_is_number_operator or term_b_is_number_operator):
-        if (modes_acted_on_by_term_a[0][0] == modes_acted_on_by_term_b[0][0] or
-                modes_acted_on_by_term_a[1][0] == modes_acted_on_by_term_b[1][0]
-           ):
+        if (
+            modes_acted_on_by_term_a[0][0] == modes_acted_on_by_term_b[0][0]
+            or modes_acted_on_by_term_a[1][0] == modes_acted_on_by_term_b[1][0]
+        ):
             return True
 
     # If both terms act on the same operators and are not both hopping
     # operators, then they commute.
-    if ((term_a_is_number_operator or term_b_is_number_operator) and
-            set(modes_touched_a) == set(modes_touched_b)):
+    if (term_a_is_number_operator or term_b_is_number_operator) and set(modes_touched_a) == set(
+        modes_touched_b
+    ):
         return True
 
     return False
@@ -245,27 +248,29 @@ def trivially_double_commutes_dual_basis(term_a, term_b, term_c):
         Whether or not the double commutator is trivially zero.
     """
     # Determine the set of modes each term acts on.
-    modes_acted_on_by_term_b, = term_b.terms.keys()
-    modes_acted_on_by_term_c, = term_c.terms.keys()
+    (modes_acted_on_by_term_b,) = term_b.terms.keys()
+    (modes_acted_on_by_term_c,) = term_c.terms.keys()
 
-    modes_touched_c = [
-        modes_acted_on_by_term_c[0][0], modes_acted_on_by_term_c[1][0]
-    ]
+    modes_touched_c = [modes_acted_on_by_term_c[0][0], modes_acted_on_by_term_c[1][0]]
 
     # If there's no intersection between the modes term_b and term_c act
     # on, the commutator is trivially zero.
-    if not (modes_acted_on_by_term_b[0][0] in modes_touched_c or
-            modes_acted_on_by_term_b[1][0] in modes_touched_c):
+    if not (
+        modes_acted_on_by_term_b[0][0] in modes_touched_c
+        or modes_acted_on_by_term_b[1][0] in modes_touched_c
+    ):
         return True
 
     # In the dual_basis Hamiltonian, possible number operators take the
     # form a^ a or a^ b^ a b. Check for this.
     term_b_is_number_operator = (
-        modes_acted_on_by_term_b[0][0] == modes_acted_on_by_term_b[1][0] or
-        modes_acted_on_by_term_b[1][1])
+        modes_acted_on_by_term_b[0][0] == modes_acted_on_by_term_b[1][0]
+        or modes_acted_on_by_term_b[1][1]
+    )
     term_c_is_number_operator = (
-        modes_acted_on_by_term_c[0][0] == modes_acted_on_by_term_c[1][0] or
-        modes_acted_on_by_term_c[1][1])
+        modes_acted_on_by_term_c[0][0] == modes_acted_on_by_term_c[1][0]
+        or modes_acted_on_by_term_c[1][1]
+    )
 
     # Number operators always commute.
     if term_b_is_number_operator and term_c_is_number_operator:
@@ -274,35 +279,38 @@ def trivially_double_commutes_dual_basis(term_a, term_b, term_c):
     # If the first commutator's terms are both hopping, and both create
     # or annihilate the same mode, then the result is zero.
     if not (term_b_is_number_operator or term_c_is_number_operator):
-        if (modes_acted_on_by_term_b[0][0] == modes_acted_on_by_term_c[0][0] or
-                modes_acted_on_by_term_b[1][0] == modes_acted_on_by_term_c[1][0]
-           ):
+        if (
+            modes_acted_on_by_term_b[0][0] == modes_acted_on_by_term_c[0][0]
+            or modes_acted_on_by_term_b[1][0] == modes_acted_on_by_term_c[1][0]
+        ):
             return True
 
     # The modes term_a acts on are only needed if we reach this stage.
-    modes_acted_on_by_term_a, = term_a.terms.keys()
-    modes_touched_b = [
-        modes_acted_on_by_term_b[0][0], modes_acted_on_by_term_b[1][0]
-    ]
+    (modes_acted_on_by_term_a,) = term_a.terms.keys()
+    modes_touched_b = [modes_acted_on_by_term_b[0][0], modes_acted_on_by_term_b[1][0]]
     modes_touched_bc = [
-        modes_acted_on_by_term_b[0][0], modes_acted_on_by_term_b[1][0],
-        modes_acted_on_by_term_c[0][0], modes_acted_on_by_term_c[1][0]
+        modes_acted_on_by_term_b[0][0],
+        modes_acted_on_by_term_b[1][0],
+        modes_acted_on_by_term_c[0][0],
+        modes_acted_on_by_term_c[1][0],
     ]
 
     # If the term_a shares no indices with bc, the double commutator is zero.
-    if not (modes_acted_on_by_term_a[0][0] in modes_touched_bc or
-            modes_acted_on_by_term_a[1][0] in modes_touched_bc):
+    if not (
+        modes_acted_on_by_term_a[0][0] in modes_touched_bc
+        or modes_acted_on_by_term_a[1][0] in modes_touched_bc
+    ):
         return True
 
     # If term_b and term_c are not both number operators and act on the
     # same modes, the commutator is zero.
-    if (sum(1 for i in modes_touched_b if i in modes_touched_c) > 1 and
-        (term_b_is_number_operator or term_c_is_number_operator)):
+    if sum(1 for i in modes_touched_b if i in modes_touched_c) > 1 and (
+        term_b_is_number_operator or term_c_is_number_operator
+    ):
         return True
 
     # Create a list of all the creation and annihilations performed.
-    all_changes = (modes_acted_on_by_term_a + modes_acted_on_by_term_b +
-                   modes_acted_on_by_term_c)
+    all_changes = modes_acted_on_by_term_a + modes_acted_on_by_term_b + modes_acted_on_by_term_c
     counts = {}
     for operator in all_changes:
         counts[operator[0]] = counts.get(operator[0], 0) + 2 * operator[1] - 1

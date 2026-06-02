@@ -1,4 +1,4 @@
-#coverage:ignore
+# coverage:ignore
 # Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,15 +21,15 @@ Schedule = Callable[[Step], float]
 
 def adagrad(step_size, momentum=0.9):
     """Construct optimizer triple for Adagrad.
-  Adaptive Subgradient Methods for Online Learning and Stochastic Optimization:
-  http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf
-  Args:
-    step_size: positive scalar, or a callable representing a step size schedule
-      that maps the iteration index to positive scalar.
-    momentum: optional, a positive scalar value for momentum
-  Returns:
-    An (init_fun, update_fun, get_params) triple.
-  """
+    Adaptive Subgradient Methods for Online Learning and Stochastic Optimization:
+    http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf
+    Args:
+      step_size: positive scalar, or a callable representing a step size schedule
+        that maps the iteration index to positive scalar.
+      momentum: optional, a positive scalar value for momentum
+    Returns:
+      An (init_fun, update_fun, get_params) triple.
+    """
     step_size = make_schedule(step_size)
 
     def init(x0):
@@ -37,11 +37,13 @@ def adagrad(step_size, momentum=0.9):
         m = np.zeros_like(x0)
         return x0, g_sq, m
 
-    def update(i, g, state):
+    def update(i, g, state, eps=1e-9):
         x, g_sq, m = state
         g_sq += np.square(g)
-        g_sq_inv_sqrt = np.where(g_sq > 0, 1. / np.sqrt(g_sq), 0.0)
-        m = (1. - momentum) * (g * g_sq_inv_sqrt) + momentum * m
+        # Add a small number to avoid division by zero
+        g_sq_safe = g_sq + eps
+        g_sq_inv_sqrt = 1.0 / np.sqrt(g_sq_safe)
+        m = (1.0 - momentum) * (g * g_sq_inv_sqrt) + momentum * m
         x = x - step_size(i) * m
         return x, g_sq, m
 
@@ -56,7 +58,6 @@ def adagrad(step_size, momentum=0.9):
 
 
 def constant(step_size) -> Schedule:
-
     def schedule(i):
         return step_size
 
@@ -64,9 +65,8 @@ def constant(step_size) -> Schedule:
 
 
 def exponential_decay(step_size, decay_steps, decay_rate):
-
     def schedule(i):
-        return step_size * decay_rate**(i / decay_steps)
+        return step_size * decay_rate ** (i / decay_steps)
 
     return schedule
 
@@ -76,6 +76,7 @@ def inverse_time_decay(step_size, decay_steps, decay_rate, staircase=False):
 
         def schedule(i):
             return step_size / (1 + decay_rate * np.floor(i / decay_steps))
+
     else:
 
         def schedule(i):
@@ -85,10 +86,9 @@ def inverse_time_decay(step_size, decay_steps, decay_rate, staircase=False):
 
 
 def polynomial_decay(step_size, decay_steps, final_step_size, power=1.0):
-
     def schedule(step_num):
         step_num = np.minimum(step_num, decay_steps)
-        step_mult = (1 - step_num / decay_steps)**power
+        step_mult = (1 - step_num / decay_steps) ** power
         return step_mult * (step_size - final_step_size) + final_step_size
 
     return schedule
@@ -100,8 +100,7 @@ def piecewise_constant(boundaries: Any, values: Any):
     if not boundaries.ndim == values.ndim == 1:
         raise ValueError("boundaries and values must be sequences")
     if not boundaries.shape[0] == values.shape[0] - 1:
-        raise ValueError(
-            "boundaries length must be one shorter than values length")
+        raise ValueError("boundaries length must be one shorter than values length")
 
     def schedule(i):
         return values[np.sum(i > boundaries)]
