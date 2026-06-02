@@ -104,7 +104,7 @@ jobs:
       shell_files: ${{steps.filter.outputs.shell_files}}
 
       notebooks: ${{steps.filter.outputs.notebooks || steps.filter.outputs.ci}}
-      notebook_files: ${{steps.filter.outputs.notebook_files}}
+      notebook_files: ${{steps.filter.outputs.notebooks_files}}
     steps:
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
