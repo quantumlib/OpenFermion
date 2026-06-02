@@ -116,7 +116,7 @@ repos:
         files: '(\.sh$|^check/[^.]+$)'
 
   - repo: https://github.com/AleksaC/hadolint-py
-    rev: v2.14.0
+    rev: '458cb25edf664682e3e856a53a2f9af33e068297' # frozen: 2.14.0
     hooks:
       - id: hadolint
         name: 'Check Docker files'
