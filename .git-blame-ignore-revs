@@ -12,3 +12,7 @@
 
 # Run check/format-incremental --all --apply.
 7f262ff9cc9eeb9b1b2d6a26c4acbfb7ab17063e
+
+# Reformat all .ipynb tutorial files using TensorFlow Docs's nbfmt.
+50b500e3dc2c61fcf1e820faba747813a5d6fd04
+
