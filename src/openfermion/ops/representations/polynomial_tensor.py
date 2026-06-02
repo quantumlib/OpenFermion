@@ -77,8 +77,7 @@ def general_basis_change(general_tensor, rotation_matrix, key):
     subscripts_first = ''.join(chr(ord('a') + i) for i in range(order))
 
     # The 'Aa,Bb,Cc,Dd' part of the subscripts
-    subscripts_rest = ','.join(
-        chr(ord('A') + i) + chr(ord('a') + i) for i in range(order))
+    subscripts_rest = ','.join(chr(ord('A') + i) + chr(ord('a') + i) for i in range(order))
 
     subscripts = subscripts_first + ',' + subscripts_rest
 
