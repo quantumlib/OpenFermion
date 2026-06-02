@@ -125,8 +125,7 @@ def bravyi_kitaev_fast_interaction_op(iop: InteractionOperator) -> QubitOperator
                             qubit_operator += transformed_term
                             continue
                         elif p != r and q < p:
-                            # TODO: remove pragma if reachable continue
-                            continue  # pragma: no cover
+                            continue
 
                     # Handle the two-body terms.
                     transformed_term = _two_body(edge_matrix_indices, p, q, r, s)
@@ -169,8 +168,7 @@ def bravyi_kitaev_fast_edge_matrix(
 
                     # Skip zero terms.
                     if (not coefficient2) or (p == q) or (r == s):
-                        # TODO: remove pragma if this is a reachable continue
-                        continue  # pragma: no cover
+                        continue
 
                     # Identify and skip one of the complex conjugates.
                     if [p, q, r, s] != [s, r, q, p]:
