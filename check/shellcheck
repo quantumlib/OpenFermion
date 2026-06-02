@@ -57,6 +57,7 @@ required_shell_scripts=(
     check/all
     check/format-incremental
     check/mypy
+    check/nbformat
     check/pylint
     check/pylint-changed-files
     check/pytest
