@@ -44,8 +44,13 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
             giving the $g_{pqrs}$ tensor in chemist notation.
 
     Raises:
-        TypeError: Input must be two-body number conserving
-            FermionOperator or InteractionOperator.
+        ValueError: Input two-body tensor is not spin-symmetric. The LOW_RANK
+            decomposition requires a spin-symmetric interaction when
+            spin_basis=True. A spin-symmetric interaction satisfies
+            h[p,q,r,s] == h[p+1,q+1,r+1,s+1] for all even p, q, r, s
+            (i.e., the same coefficient for alpha and beta spin channels).
+            Consider passing spin_basis=False if your Hamiltonian is not
+            spin-symmetric.
     """
     # Initialize.
     n_orbitals = two_body_coefficients.shape[0]
@@ -57,9 +62,33 @@ def get_chemist_two_body_coefficients(two_body_coefficients, spin_basis=True):
         n_orbitals = n_orbitals // 2
         alpha_indices = list(range(0, n_orbitals * 2, 2))
         beta_indices = list(range(1, n_orbitals * 2, 2))
-        chemist_two_body_coefficients = chemist_two_body_coefficients[
+        # Extract the αα→ββ block, which is the only block used by the
+        # spatial-orbital low-rank decomposition.
+        alpha_alpha_beta_beta = chemist_two_body_coefficients[
             numpy.ix_(alpha_indices, alpha_indices, beta_indices, beta_indices)
         ]
+
+        # Validate spin-symmetry by checking that the extracted block is
+        # symmetric when reshaped to a matrix. For a spin-symmetric interaction
+        # the chemist tensor satisfies g[p,q,r,s] == g[r,s,p,q] (up to
+        # permutation symmetry), which makes the reshaped matrix symmetric.
+        # General spin-dependent interactions such as spin-exchange Hamiltonians
+        # produce an asymmetric matrix here and cannot be handled by this
+        # spatial-orbital downfolding approach.
+        flat = numpy.reshape(alpha_alpha_beta_beta, (n_orbitals**2, n_orbitals**2))
+        spin_asymmetry = numpy.amax(numpy.absolute(flat - flat.T))
+        if spin_asymmetry > EQ_TOLERANCE:
+            raise ValueError(
+                'The two-body tensor is not spin-symmetric. The LOW_RANK '
+                'decomposition requires a spin-symmetric interaction when '
+                'spin_basis=True (i.e., the same coefficients for alpha and '
+                'beta spin channels). Spin-dependent interactions such as '
+                'spin-exchange Hamiltonians violate this requirement. '
+                'Consider passing spin_basis=False if your Hamiltonian is '
+                'not spin-symmetric.'
+            )
+
+        chemist_two_body_coefficients = alpha_alpha_beta_beta
 
     # Determine a one body correction in the spin basis from spatial basis.
     one_body_correction = numpy.zeros((2 * n_orbitals, 2 * n_orbitals), complex)
@@ -106,7 +135,11 @@ def low_rank_two_body_decomposition(
             $\sum_{l=0}^{L-1} (\sum_{pq} |g_{lpq}|)^2 |\lambda_l| < x$
 
     Raises:
-        TypeError: Invalid two-body coefficient tensor specification.
+        ValueError: The two-body tensor failed symmetry or reality checks
+            required for the low-rank decomposition. When spin_basis=True,
+            the tensor must be spin-symmetric (see
+            get_chemist_two_body_coefficients()). When spin_basis=False,
+            the chemist-ordered tensor must be real and symmetric.
     """
     # Initialize N^2 by N^2 interaction array.
     one_body_correction, chemist_two_body_coefficients = get_chemist_two_body_coefficients(
@@ -117,10 +150,15 @@ def low_rank_two_body_decomposition(
     interaction_array = numpy.reshape(chemist_two_body_coefficients, (full_rank, full_rank))
 
     # Make sure interaction array is symmetric and real.
-    asymmetry = numpy.sum(numpy.absolute(interaction_array - interaction_array.transpose()))
-    imaginary_norm = numpy.sum(numpy.absolute(interaction_array.imag))
+    asymmetry = numpy.amax(numpy.absolute(interaction_array - interaction_array.transpose()))
+    imaginary_norm = numpy.amax(numpy.absolute(interaction_array.imag))
     if asymmetry > EQ_TOLERANCE or imaginary_norm > EQ_TOLERANCE:
-        raise TypeError('Invalid two-body coefficient tensor specification.')
+        raise ValueError(
+            'The two-body coefficient tensor failed the symmetry or reality '
+            'checks required by the low-rank decomposition. If spin_basis=True, '
+            'ensure the Hamiltonian is spin-symmetric. If spin_basis=False, '
+            'ensure the chemist-ordered two-body tensor is real and symmetric.'
+        )
 
     # Decompose with exact diagonalization.
     eigenvalues, eigenvectors = numpy.linalg.eigh(interaction_array)
