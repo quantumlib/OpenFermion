@@ -99,6 +99,7 @@ fi
 run check/mypy
 run check/pytest-and-incremental-coverage "${rev[@]}"
 run check/shellcheck
+run check/nbformat
 
 # ~~~~ Summarize the results and exit with a status code ~~~~
 
