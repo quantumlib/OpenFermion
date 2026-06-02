@@ -18,7 +18,10 @@ import numpy
 from openfermion.config import EQ_TOLERANCE, DATA_DIRECTORY
 from openfermion.chem import MolecularData
 from openfermion.ops.operators import QubitOperator
+from openfermion.ops.representations.interaction_operator import InteractionOperator
+from openfermion.ops.representations.interaction_rdm import InteractionRDM
 from openfermion.ops.representations.interaction_rdm import InteractionRDMError
+from openfermion.ops.representations.polynomial_tensor import general_basis_change
 from openfermion.transforms.opconversions import jordan_wigner
 
 
@@ -77,3 +80,71 @@ class InteractionRDMTest(unittest.TestCase):
         self.assertTrue(
             numpy.array_equal(temp_rdm.n_body_tensors[(1, 1, 0, 0)], two_body_tensor_test)
         )
+
+    def test_rotate_basis(self):
+        """Test RDM basis set rotation."""
+        # Get molecular RDM
+        temp_rdm = self.molecule.get_molecular_rdm()
+        temp_one_body = temp_rdm.one_body_tensor
+        temp_two_body = temp_rdm.two_body_tensor
+        n_orbitals = temp_rdm.n_body_tensors[(1, 0)].shape[0]
+
+        # Generate random rotation matrix U
+        x = numpy.random.rand(n_orbitals, n_orbitals) + 1j * numpy.random.rand(
+            n_orbitals, n_orbitals
+        )
+        u, _ = numpy.linalg.qr(x)  # QR decomposition guarantees u is unitary
+
+        # Compute reference RDM
+        expected_one_body = general_basis_change(temp_one_body, u, (0, 1))
+        expected_two_body = general_basis_change(temp_two_body, u, (0, 0, 1, 1))
+
+        # Rotate RDM
+        temp_rdm.rotate_basis(u)
+
+        # Compare
+        self.assertTrue(numpy.allclose(temp_rdm.one_body_tensor, expected_one_body))
+        self.assertTrue(numpy.allclose(temp_rdm.two_body_tensor, expected_two_body))
+
+    def test_expectation_rotation_invariance(self):
+        """Test invariance of expectation value under basis rotations."""
+
+        n_orbitals = 3
+
+        # Generate random complex tensors for RDM
+        one_body_rdm = numpy.random.rand(n_orbitals, n_orbitals) + 1j * numpy.random.rand(
+            n_orbitals, n_orbitals
+        )
+        two_body_rdm = numpy.random.rand(
+            n_orbitals, n_orbitals, n_orbitals, n_orbitals
+        ) + 1j * numpy.random.rand(n_orbitals, n_orbitals, n_orbitals, n_orbitals)
+        rdm = InteractionRDM(one_body_rdm, two_body_rdm)
+
+        # Generate a random complex Operator
+        one_body_op = numpy.random.rand(n_orbitals, n_orbitals) + 1j * numpy.random.rand(
+            n_orbitals, n_orbitals
+        )
+        two_body_op = numpy.random.rand(
+            n_orbitals, n_orbitals, n_orbitals, n_orbitals
+        ) + 1j * numpy.random.rand(n_orbitals, n_orbitals, n_orbitals, n_orbitals)
+        constant = 0.5
+        op = InteractionOperator(constant, one_body_op, two_body_op)
+
+        # Generate a random complex unitary matrix U
+        x = numpy.random.rand(n_orbitals, n_orbitals) + 1j * numpy.random.rand(
+            n_orbitals, n_orbitals
+        )
+        u, _ = numpy.linalg.qr(x)  # QR decomposition guarantees u is unitary
+
+        # Calculate expectation value in original basis
+        exp_before = rdm.expectation(op)
+
+        # Rotate both RDM and Operator with U
+        rdm.rotate_basis(u)
+        op.rotate_basis(u)
+
+        # Calculate expectation value in rotated basis
+        exp_after = rdm.expectation(op)
+
+        # Assert invariance
+        self.assertTrue(numpy.allclose(exp_before, exp_after))
