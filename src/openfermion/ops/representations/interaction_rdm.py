@@ -61,6 +61,23 @@ class InteractionRDM(PolynomialTensor):
         """Set the value of the two-body tensor."""
         self.n_body_tensors[1, 1, 0, 0] = value
 
+    def rotate_basis(self, rotation_matrix):
+        """Rotate the orbital basis of the InteractionRDM.
+
+        Note that rotating the basis of an RDM M via some rotation uses the
+        conjugate rotation matrices of the corresponding rotation performed
+        on an operator:
+
+        M'^{p_1p_2...p_n} = R^{p_1}_{a_1}^T R^{p_2}_{a_2}^T ...
+                            R^{p_n}_{a_n}^T M^{a_1a_2...a_n} R^{p_n}_{a_n} ...
+                            R^{p_2}_{a_2} R_{p_1}_{a_1}
+
+        Args:
+            rotation_matrix: A square numpy array or matrix having
+                dimensions of n_qubits by n_qubits. Assumed to be unitary.
+        """
+        super().rotate_basis(numpy.conjugate(rotation_matrix))
+
     def expectation(self, operator):
         """Return expectation value of an InteractionRDM with an operator.
 
