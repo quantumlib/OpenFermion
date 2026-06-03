@@ -282,4 +282,4 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
         iop = InteractionOperator(constant, one_body_tensor, two_body_tensor)
         qubit_op = bravyi_kitaev_fast_interaction_op(iop)
 
-        assert qubit_op is not None
+        self.assertIsNotNone(qubit_op)
