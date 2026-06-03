@@ -31,7 +31,7 @@ class IndexingTest(unittest.TestCase):
         self.assertEqual(down_index(5), 11)
 
     def test_up_then_down(self):
-        # Test even num_modes (6 modes)
+        # Test even num_modes (6 modes).
         # Even indices: 0->0, 2->1, 4->2
         # Odd indices: 1->3, 3->4, 5->5
         self.assertEqual(up_then_down(0, 6), 0)
@@ -41,8 +41,8 @@ class IndexingTest(unittest.TestCase):
         self.assertEqual(up_then_down(3, 6), 4)
         self.assertEqual(up_then_down(5, 6), 5)
 
-        # Test odd num_modes (5 modes)
-        # halfway = ceil(2.5) = 3
+        # Test odd num_modes (5 modes).
+        # Halfway = ceil(2.5) = 3
         # Even indices: 0->0, 2->1, 4->2
         # Odd indices: 1->3, 3->4
         self.assertEqual(up_then_down(0, 5), 0)
