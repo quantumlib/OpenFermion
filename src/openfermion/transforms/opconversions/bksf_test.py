@@ -21,10 +21,10 @@ from openfermion.config import DATA_DIRECTORY
 from openfermion.linalg import eigenspectrum, get_sparse_operator
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.ops.representations import InteractionOperator
+from openfermion.transforms import bravyi_kitaev_fast_interaction_op
 from openfermion.transforms.opconversions import bksf, get_fermion_operator, normal_ordered
 from openfermion.transforms.opconversions.jordan_wigner import jordan_wigner, jordan_wigner_one_body
 from openfermion.utils import count_qubits
-
 
 class bravyi_kitaev_fastTransformTest(unittest.TestCase):
     def setUp(self):
@@ -258,3 +258,27 @@ class bravyi_kitaev_fastTransformTest(unittest.TestCase):
                 evensector_n += 1
         self.assertEqual(evensector_H, 2 ** (n_qubits - 1))
         self.assertEqual(evensector_n, 2 ** (n_qubits - 1))
+
+    def test_bravyi_kitaev_fast_interaction_op_coverage(self):
+        n_qubits = 4
+        constant = 0.0
+        one_body_tensor = numpy.zeros((n_qubits, n_qubits))
+        two_body_tensor = numpy.zeros((n_qubits, n_qubits, n_qubits, n_qubits))
+
+        # Set up a Hermitian term with p != r and q < p
+        # For p = 2, q = 1, r = 3, s = 0: p != r (2 != 3) and q < p (1 < 2)
+        two_body_tensor[2, 1, 3, 0] = 1.0
+        two_body_tensor[1, 2, 3, 0] = -1.0
+        two_body_tensor[2, 1, 0, 3] = -1.0
+        two_body_tensor[1, 2, 0, 3] = 1.0
+
+        # Hermitian conjugate terms
+        two_body_tensor[3, 0, 2, 1] = 1.0
+        two_body_tensor[3, 0, 1, 2] = -1.0
+        two_body_tensor[0, 3, 2, 1] = -1.0
+        two_body_tensor[0, 3, 1, 2] = 1.0
+
+        iop = InteractionOperator(constant, one_body_tensor, two_body_tensor)
+        qubit_op = bravyi_kitaev_fast_interaction_op(iop)
+
+        assert qubit_op is not None
