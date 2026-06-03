@@ -37,5 +37,8 @@ indent_size = 2
 [*.json]
 indent_size = 2
 
+[*.rst]
+indent_size = 3
+
 [{*.yaml,*.yml,*.cff}]
 indent_size = 2
