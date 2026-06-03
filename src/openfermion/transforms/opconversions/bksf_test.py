@@ -26,6 +26,7 @@ from openfermion.transforms.opconversions import bksf, get_fermion_operator, nor
 from openfermion.transforms.opconversions.jordan_wigner import jordan_wigner, jordan_wigner_one_body
 from openfermion.utils import count_qubits
 
+
 class bravyi_kitaev_fastTransformTest(unittest.TestCase):
     def setUp(self):
         geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
