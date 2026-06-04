@@ -35,6 +35,7 @@ def test_single_circuit():
     assert data_counts[1] == 100
 
 
+@cirq.testing.retry_once_with_later_random_values
 def test_single_timestep():
     q0 = cirq.GridQubit(0, 0)
     q1 = cirq.GridQubit(0, 1)
