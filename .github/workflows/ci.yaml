@@ -380,7 +380,7 @@ jobs:
       # Note: there is a hadolint GitHub Actions available, but it only accepts
       # one Dockerfile to check. We have > 1 file to check, so we need the CLI.
       - name: Install hadolint
-        run: brew install hadolint
+        run: HOMEBREW_NO_AUTO_UPDATE=1 brew install hadolint
 
       - name: Run hadolint on Dockerfiles that have been changed
         run: |
