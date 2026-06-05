@@ -47,6 +47,7 @@ setup(
     maintainer_email='quantum-oss-maintainers@google.com',
     description=('The electronic structure package for quantum computers.'),
     long_description=long_description,
+    long_description_content_type='text/markdown',
     python_requires='>=3.10.0',
     install_requires=requirements,
     extras_require={'resources': resource_requirements},

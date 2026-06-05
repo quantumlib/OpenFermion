@@ -207,6 +207,6 @@ Copyright 2017 The OpenFermion Developers.
 <div align="center">
   <a href="https://quantumai.google">
     <img width="15%" alt="Google Quantum AI"
-         src="https://raw.githubusercontent.com/quantumlib/OpenFermion/refs/heads/main/docs/images/quantum-ai-vertical.svg">
+         src="https://raw.githubusercontent.com/quantumlib/OpenFermion/main/docs/images/quantum-ai-vertical.svg">
   </a>
 </div>
