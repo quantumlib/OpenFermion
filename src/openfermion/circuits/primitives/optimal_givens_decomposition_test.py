@@ -198,6 +198,23 @@ def test_circuit_generation_and_accuracy():
         assert numpy.isclose(abs(numpy.trace(true_unitary.conj().T.dot(test_unitary))), 2**dim)
 
 
+def test_circuit_generation_does_not_mutate_input_unitary():
+    dim = 4
+    qubits = cirq.LineQubit.range(dim)
+    rng = numpy.random.default_rng(1618033)
+    u_generator = rng.random((dim, dim)) + 1j * rng.random((dim, dim))
+    u_generator = u_generator - numpy.conj(u_generator).T
+
+    unitary = scipy.linalg.expm(u_generator)
+    expected_unitary = unitary.copy()
+
+    first_circuit = cirq.Circuit(optimal_givens_decomposition(qubits, unitary))
+    second_circuit = cirq.Circuit(optimal_givens_decomposition(qubits, unitary))
+
+    assert numpy.allclose(unitary, expected_unitary)
+    assert first_circuit == second_circuit
+
+
 def test_circuit_generation_state():
     """
     Determine if we rotate the Hartree-Fock state correctly
