@@ -255,7 +255,9 @@ def pauli_exp_to_qasm(qubit_operator_list, evolution_time=1.0, qubit_list=None, 
                     ]
             else:
                 if len(qids) > 0:
-                    ret_list = ret_list + ["Rz {} {}".format(term_coeff * evolution_time, qids[-1])]
+                    ret_list = ret_list + [
+                        "Rz {} {}".format(2 * term_coeff * evolution_time, qids[-1])
+                    ]
 
             # 4. Second set of CNOTs
             ret_list = ret_list + cnots2

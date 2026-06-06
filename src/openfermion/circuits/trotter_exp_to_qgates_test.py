@@ -210,10 +210,15 @@ class TrottQasmTest(unittest.TestCase):
         # Correct string
         strcorrect = '''5
 CNOT 3 4
-Rz 0.6 4
+Rz 1.2 4
 CNOT 3 4'''
 
         self.assertEqual(qasmstr, strcorrect)
+
+    def test_pauli_exp_to_qasm_uses_rz_angle_for_exp_minus_i_theta_z(self):
+        qasmstr = "\n".join(pauli_exp_to_qasm([QubitOperator('Z0', 0.5)], evolution_time=3))
+
+        self.assertEqual(qasmstr, 'Rz 3.0 0')
 
     def test_qasm_string_XYZ(self):
         # Testing for correct QASM string output w/ Pauli-{X,Y,Z}
@@ -231,7 +236,7 @@ H 0
 Rx 1.5707963267948966 3
 CNOT 0 1
 CNOT 1 3
-Rz 0.5 3
+Rz 1.0 3
 CNOT 1 3
 CNOT 0 1
 H 0
@@ -329,13 +334,13 @@ Rz 1.0 ancilla'''
         # the order in which the operators loop.
         strcorrect1 = '''5
 CNOT 3 4
-Rz 0.6 4
+Rz 1.2 4
 CNOT 3 4
 H 0
 Rx 1.5707963267948966 3
 CNOT 0 1
 CNOT 1 3
-Rz 0.5 3
+Rz 1.0 3
 CNOT 1 3
 CNOT 0 1
 H 0
@@ -346,13 +351,13 @@ H 0
 Rx 1.5707963267948966 3
 CNOT 0 1
 CNOT 1 3
-Rz 0.5 3
+Rz 1.0 3
 CNOT 1 3
 CNOT 0 1
 H 0
 Rx -1.5707963267948966 3
 CNOT 3 4
-Rz 0.6 4
+Rz 1.2 4
 CNOT 3 4'''
         try:
             self.assertEqual(qasmstr, strcorrect1)
