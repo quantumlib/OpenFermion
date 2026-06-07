@@ -95,7 +95,7 @@ jobs:
         run: echo '::add-matcher::.github/problem-matchers/pytest.json'
 
       - name: Run Pytest
-        run: check/pytest
+        run: check/pytest --run-slow
 
       - name: Print debugging info upon job failure
         if: failure()

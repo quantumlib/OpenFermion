@@ -23,7 +23,7 @@
 #
 # You may specify pytest flags and specific files to test. The file paths
 # must be relative to the repository root. If no files are specified, everything
-# is tested.
+# except tests marked slow is tested. Pass --run-slow to include slow tests.
 ################################################################################
 
 # Get the working directory to the repo root.

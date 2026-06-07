@@ -70,6 +70,7 @@ fi
 check/pytest . \
     -n auto \
     --actually-quiet \
+    --run-slow \
     --cov \
     --cov-report=annotate
 pytest_result=$?

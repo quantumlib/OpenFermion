@@ -25,7 +25,7 @@ disable_warnings = ["no-sysmon"]
 
 [tool.pytest.ini_options]
 markers = [
-    """slow: marks tests as slow (deselect with '-m "not slow"')""",
+    """slow: marks tests as slow (run with '--run-slow' or '-m slow')""",
 ]
 filterwarnings = [
     "ignore:Skipped assert_qasm_is_consistent_with_unitary because qiskit.*:UserWarning",
