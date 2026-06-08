@@ -10,13 +10,16 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from collections.abc import Generator, Iterable
+from typing import Any
+
 import numpy
 from openfermion.measurements import partition_iterator
 
 MAX_LOOPS = 1e6
 
 
-def pair_within(labels: list) -> list:
+def pair_within(labels: list[Any]) -> Generator[tuple[Any, ...], None, None]:
     """
     Generates pairings of labels that contain each pair at least once.
 
@@ -81,7 +84,9 @@ def pair_within(labels: list) -> list:
             yield pairing1 + pairing2
 
 
-def pair_between(frag1: list, frag2: list, start_offset: int = 0) -> tuple:
+def pair_between(
+    frag1: list[Any], frag2: list[Any], start_offset: int = 0
+) -> Generator[tuple[Any, ...], None, None]:
     """Pairs between two fragments of a larger list
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
@@ -197,7 +202,7 @@ def _gen_pairings_between_partitions(parta, partb):
                 yield pair_a + pair_b + pair_ab
 
 
-def pair_within_simultaneously(labels: list) -> tuple:
+def pair_within_simultaneously(labels: list[Any]) -> Generator[tuple[Any, ...], None, None]:
     """Generates simultaneous pairings between four-element combinations
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
@@ -230,7 +235,7 @@ def pair_within_simultaneously(labels: list) -> tuple:
     for partition in _gen_partitions(labels):
         generator_list = [_loop_iterator(pair_within, partition[j]) for j in range(len(partition))]
         for dummy1 in range(len(partition[-2]) - 1 + len(partition[-2]) % 2):
-            pairing = tuple()
+            pairing: tuple[Any, ...] = ()
             for generator in generator_list[::2]:
                 pairing = pairing + next(generator)[0]
             for dummy2 in range(len(partition[-1]) - 1 + len(partition[-1]) % 2):
@@ -277,7 +282,9 @@ def _get_padding(num_bins, bin_size):
         trial_size += 1
 
 
-def _asynchronous_iter(iterators, flatten=False):
+def _asynchronous_iter(
+    iterators: Iterable[Iterable[Any]], flatten: bool = False
+) -> Generator[tuple[Any, ...], None, None]:
     """
     Iterates over a set of K iterators with max L elements to
     generate all pairs between them in O(L^2 + 2L log(L) + log(L)^2),
@@ -367,7 +374,9 @@ def _parallel_iter(iterators, flatten=False):
             yield tuple(next_result)
 
 
-def pair_within_simultaneously_binned(binned_majoranas: list) -> tuple:
+def pair_within_simultaneously_binned(
+    binned_majoranas: list[list[Any]],
+) -> Generator[tuple[Any, ...], None, None]:
     """Generates symmetry-respecting pairings between four-elements in a list
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
@@ -426,7 +435,9 @@ def pair_within_simultaneously_binned(binned_majoranas: list) -> tuple:
             yield pairing
 
 
-def pair_within_simultaneously_symmetric(num_fermions: int, num_symmetries: int) -> tuple:
+def pair_within_simultaneously_symmetric(
+    num_fermions: int, num_symmetries: int
+) -> Generator[tuple[Any, ...], None, None]:
     """Generates symmetry-respecting pairings between four-elements in a list
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
