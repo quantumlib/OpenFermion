@@ -214,7 +214,7 @@ def compute_cost(
         print("  [+] iters = ", iters)
         print("  [+] aca = ", aca)
 
-    # Sanity checks before returning as int
+    # Validate values before returning as int
     # assert cost.is_integer()
     # assert iters.is_integer()
     # assert aca.is_integer()

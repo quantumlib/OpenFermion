@@ -144,7 +144,7 @@ class ReduceSymmetryQubitsTest(unittest.TestCase):
     # e.g. system with 2 particles, 4 spin-orbitals, and want to determine
     # elements of one- and two-particle reduced density matrix
     def test_single_operator(self):
-        # Dummy operator acting only on 2 qubits of overall 4-qubit system
+        # Simple test operator acting only on 2 qubits of overall 4-qubit system
         op = FermionOperator("0^ 1^ 1 0") + FermionOperator("1^ 0^ 0 1")
         trafo_op = symmetry_conserving_bravyi_kitaev(op, active_fermions=2, active_orbitals=4)
         # Check via eigenspectrum -- needs to stay the same

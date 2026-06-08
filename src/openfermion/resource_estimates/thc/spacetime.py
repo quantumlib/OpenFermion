@@ -606,7 +606,7 @@ def group_steps(labels, tgates, qubits):
     for label, group in itertools.groupby(L, key_func):
         grouped_qubits.append(np.mean([i[1] for i in group]))
 
-    # sanity check -- shouldn't be losing total value in toffoli
+    # Validate total toffoli count is preserved
     if np.sum(tgates) != np.sum(grouped_tgates):
         raise RuntimeError('Sum of Toffoli gates does not equal sum of grouped gates.')
     return grouped_labels, grouped_tgates, grouped_qubits

@@ -183,7 +183,7 @@ class TaperingTest(unittest.TestCase):
 
     def test_lookup_term(self):
         """Test for the auxiliar function _lookup_term."""
-        # Dummy test where the initial Pauli string is larger than the
+        # Edge-case test where the initial Pauli string is larger than the
         # updated one.
         start_op = list(QubitOperator('Z0 Z1 Z2 Z3').terms.keys())[0]
         updateop1 = QubitOperator('Z0 Z2', -1.0)

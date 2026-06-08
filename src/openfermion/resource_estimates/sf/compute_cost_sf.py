@@ -214,7 +214,7 @@ def compute_cost(
 
     total_qubit_count = ac1 + ac2 + ac3 + ac4 + ac5 + ac6 + ac7 + ac8 + ac9
 
-    # Sanity checks before returning as int
+    # Validate values before returning as int
     assert cost.is_integer()
     assert iters.is_integer()
     assert total_qubit_count.is_integer()
