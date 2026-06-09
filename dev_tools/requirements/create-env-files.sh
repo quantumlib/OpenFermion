@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eu
+set -o errexit
+set -o nounset
 
-USAGE="Usage: ${0} [-h] [UV_OPTIONS]
+usage="Usage: ${0} [-h] [UV_OPTIONS]
 Generate environment files for OpenFermion development using uv's
 'universal' option, making the result compatible with multiple
 Python versions. The output is written to subdirectories under
@@ -30,15 +31,15 @@ options available."
 
 while [[ $# -gt 0 ]]; do
     case "${1}" in
-        -h) echo "${USAGE}"; exit 0 ;;
+        -h) echo "${usage}"; exit 0 ;;
         *) break ;;
     esac
 done
 
 # Go to the top of the local TFQ git tree. Do it early in case this fails.
-SCRIPT_DIR=$(CDPATH="" cd -- "$(dirname -- "${0}")" && pwd -P)
-REPO_DIR=$(git -C "${SCRIPT_DIR}" rev-parse --show-toplevel 2>/dev/null)
-cd "${REPO_DIR}"
+script_dir=$(CDPATH="" cd -- "$(dirname -- "${0}")" && pwd -P)
+repo_dir=$(git -C "${script_dir}" rev-parse --show-toplevel 2>/dev/null)
+cd "${repo_dir}"
 
 mkdir -p dev_tools/requirements/envs dev_tools/requirements/max_compat
 
