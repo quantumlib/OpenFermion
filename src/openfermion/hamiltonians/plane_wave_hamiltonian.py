@@ -90,6 +90,25 @@ def dual_basis_external_potential(
     return operator
 
 
+def filter_plane_wave_operator(
+    operator: FermionOperator, grid: Grid, e_cutoff: float, spinless: bool
+) -> FermionOperator:
+    """Filter plane wave operator to only include terms within energy cutoff."""
+    new_operator = FermionOperator()
+    for term, coeff in operator.terms.items():
+        keep = True
+        for mode, _ in term:
+            indices = grid.grid_indices(mode, spinless)
+            momenta = grid.momentum_vector(indices)
+            energy = momenta.dot(momenta) / 2.0
+            if energy > e_cutoff:
+                keep = False
+                break
+        if keep:
+            new_operator += FermionOperator(term, coeff)
+    return new_operator
+
+
 def plane_wave_external_potential(
     grid: Grid,
     geometry: List[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]],
@@ -124,6 +143,9 @@ def plane_wave_external_potential(
         grid, geometry, spinless, non_periodic, period_cutoff
     )
     operator = inverse_fourier_transform(dual_basis_operator, grid, spinless)
+
+    if e_cutoff is not None:
+        operator = filter_plane_wave_operator(operator, grid, e_cutoff, spinless)
 
     return operator
 

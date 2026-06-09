@@ -183,6 +183,13 @@ def plane_wave_potential(
         for spin in spins:
             orbital_ids[indices_a][spin] = grid.orbital_id(indices_a, spin)
 
+    # Identify active grid indices within the energy cutoff.
+    active_indices = set()
+    for indices in grid.all_points_indices():
+        momenta = grid.momentum_vector(indices)
+        if e_cutoff is None or momenta.dot(momenta) / 2.0 <= e_cutoff:
+            active_indices.add(indices)
+
     # Loop once through all plane waves.
     for omega_indices in grid.all_points_indices():
         shifted_omega_indices = shifted_omega_indices_dict[omega_indices]
@@ -195,10 +202,6 @@ def plane_wave_potential(
         if momenta_squared == 0:
             continue
 
-        # Energy cutoff.
-        if e_cutoff is not None and momenta_squared / 2.0 > e_cutoff:
-            continue
-
         # Compute coefficient.
         coefficient = coulomb_potential_momentum(
             momenta_squared, grid.dimensions, grid.volume_scale()
@@ -206,10 +209,14 @@ def plane_wave_potential(
         if non_periodic:
             coefficient *= 1.0 - numpy.cos(period_cutoff * numpy.sqrt(momenta_squared))
 
-        for grid_indices_a in grid.all_points_indices():
+        for grid_indices_a in active_indices:
             shifted_indices_d = shifted_indices_minus_dict[omega_indices][grid_indices_a]
-            for grid_indices_b in grid.all_points_indices():
+            if shifted_indices_d not in active_indices:
+                continue
+            for grid_indices_b in active_indices:
                 shifted_indices_c = shifted_indices_plus_dict[omega_indices][grid_indices_b]
+                if shifted_indices_c not in active_indices:
+                    continue
 
                 # Loop over spins.
                 for spin_a in spins:
@@ -300,12 +307,12 @@ def dual_basis_jellium_model(
             if kinetic:
                 kinetic_coefficient += cos_difference * momenta_squared / (2.0 * float(n_points))
             if potential:
-                potential_coefficient += (
-                    coulomb_potential_momentum(
-                        momenta_squared, grid.dimensions, grid.volume_scale()
-                    )
-                    * cos_difference
+                coef = coulomb_potential_momentum(
+                    momenta_squared, grid.dimensions, grid.volume_scale()
                 )
+                if non_periodic:
+                    coef *= 1.0 - numpy.cos(period_cutoff * numpy.sqrt(momenta_squared))
+                potential_coefficient += coef * cos_difference
         for grid_indices_shift in grid.all_points_indices():
             # Loop over spins and identify interacting orbitals.
             orbital_a = {}
