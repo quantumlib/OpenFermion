@@ -29,14 +29,13 @@ All other options on the command line are passed to uv."
 
 QUIET=
 
-while getopts "hq" opt; do
-    # shellcheck disable=SC2220  # Don't process any other options.
-    case "${opt}" in
-        h) echo "${USAGE}"; exit 0 ;;
-        q) QUIET="--quiet" ;;
+while [[ $# -gt 0 ]]; do
+    case "${1}" in
+        -h) echo "${USAGE}"; exit 0 ;;
+        -q) QUIET="--quiet"; shift ;;
+        *) break ;;
     esac
 done
-shift $((OPTIND -1))
 
 # Go to the top of the local TFQ git tree. Do it early in case this fails.
 SCRIPT_DIR=$(CDPATH="" cd -- "$(dirname -- "${0}")" && pwd -P)
