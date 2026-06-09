@@ -1,0 +1,109 @@
+#!/bin/bash
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eu
+
+declare -r USAGE="Usage: ${0} [-h | -q] [UV_OPTIONS]
+Generate environment files for OpenFermion development using uv's
+'universal' option, making the result compatible with multiple
+Python versions. The output is written to subdirectories under
+dev_tools/requirements/.
+
+Options:
+  -h   Show this help message and exit
+  -q   Use quiet output
+
+All other options on the command line are passed to uv."
+
+QUIET=
+
+while getopts "hq" opt; do
+    # shellcheck disable=SC2220  # Don't process any other options.
+    case "${opt}" in
+        h) echo "${USAGE}"; exit 0 ;;
+        q) QUIET="--quiet" ;;
+    esac
+done
+shift $((OPTIND -1))
+
+# Go to the top of the local TFQ git tree. Do it early in case this fails.
+SCRIPT_DIR=$(CDPATH="" cd -- "$(dirname -- "${0}")" && pwd -P)
+REPO_DIR=$(git -C "${SCRIPT_DIR}" rev-parse --show-toplevel 2>/dev/null)
+cd "${REPO_DIR}"
+
+mkdir -p dev_tools/requirements/envs dev_tools/requirements/max_compat
+
+# ~~~~ Generate normal requirements files ~~~~
+
+uv pip compile ${QUIET} "$@" \
+    -o dev_tools/requirements/envs/dev.env.txt \
+    dev_tools/requirements/deps/format.txt \
+    dev_tools/requirements/deps/mypy.txt \
+    dev_tools/requirements/deps/pylint.txt \
+    dev_tools/requirements/deps/pytest.txt \
+    dev_tools/requirements/deps/resource_estimates_runtime.txt \
+    dev_tools/requirements/deps/runtime.txt \
+    dev_tools/requirements/deps/shellcheck.txt
+
+uv pip compile ${QUIET} "$@" \
+    -o dev_tools/requirements/envs/format.env.txt \
+    -c dev_tools/requirements/envs/dev.env.txt \
+    dev_tools/requirements/deps/format.txt \
+    dev_tools/requirements/deps/runtime.txt
+
+uv pip compile ${QUIET} "$@" \
+    -o dev_tools/requirements/envs/pylint.env.txt \
+    -c dev_tools/requirements/envs/dev.env.txt \
+    dev_tools/requirements/deps/pylint.txt \
+    dev_tools/requirements/deps/runtime.txt
+
+uv pip compile ${QUIET} "$@" \
+    -o dev_tools/requirements/envs/pytest.env.txt \
+    -c dev_tools/requirements/envs/dev.env.txt \
+    dev_tools/requirements/deps/pytest.txt \
+    dev_tools/requirements/deps/runtime.txt
+
+uv pip compile ${QUIET} "$@" \
+    -o dev_tools/requirements/envs/pytest-extra.env.txt \
+    -c dev_tools/requirements/envs/dev.env.txt \
+    dev_tools/requirements/deps/pytest.txt \
+    dev_tools/requirements/deps/resource_estimates_runtime.txt \
+    dev_tools/requirements/deps/runtime.txt
+
+uv pip compile ${QUIET} "$@" \
+    -o dev_tools/requirements/envs/mypy.env.txt \
+    -c dev_tools/requirements/envs/dev.env.txt \
+    dev_tools/requirements/deps/mypy.txt \
+    dev_tools/requirements/deps/runtime.txt
+
+uv pip compile ${QUIET} "$@" \
+    -o dev_tools/requirements/envs/shellcheck.env.txt \
+    -c dev_tools/requirements/envs/dev.env.txt \
+    dev_tools/requirements/deps/shellcheck.txt
+
+# ~~~~ Generate max_compat files ~~~~
+
+uv pip compile ${QUIET} "$@" \
+    -o dev_tools/requirements/max_compat/dev.env.txt \
+    -c dev_tools/requirements/deps/oldest-versions.txt \
+    dev_tools/requirements/deps/pytest.txt \
+    dev_tools/requirements/deps/runtime.txt
+
+uv pip compile ${QUIET} "$@" \
+    -o dev_tools/requirements/max_compat/pytest-max-compat.env.txt \
+    -c dev_tools/requirements/deps/oldest-versions.txt \
+    -c dev_tools/requirements/max_compat/dev.env.txt \
+    dev_tools/requirements/deps/pytest.txt \
+    dev_tools/requirements/deps/runtime.txt
