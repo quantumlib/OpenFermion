@@ -278,7 +278,7 @@ def get_num_active_alpha_beta(pyscf_mf, cas_electrons):
         num_alpha (int): number of alpha (spin-up) electrons in active space
         num_beta (int):  number of beta (spin-down) electrons in active space
     """
-    # Sanity checks and active space info
+    # Validate inputs and active space info
     total_electrons = pyscf_mf.mol.nelectron
     frozen_electrons = total_electrons - cas_electrons
     assert frozen_electrons % 2 == 0

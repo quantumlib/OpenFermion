@@ -120,7 +120,7 @@ class ChannelTest(unittest.TestCase):
         self.assertAlmostEqual(norm(correct_density_matrix - test_density_matrix), 0.0, places=6)
 
     def test_verification(self):
-        """Verify basic sanity checking on inputs"""
+        """Verify basic input validation"""
         with self.assertRaises(ValueError):
             _ = amplitude_damping_channel(self.density_matrix, 2, 1)
 

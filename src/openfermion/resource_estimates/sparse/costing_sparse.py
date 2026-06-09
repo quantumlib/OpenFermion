@@ -120,7 +120,7 @@ def cost_sparse(n: int, lam: float, d: int, dE: float, chi: int, stps: int) -> T
 
     ancilla_cost = ac1 + ac2 + ac3 + ac45 + ac6 + ac7 + ac8
 
-    # Sanity checks before returning as int
+    # Validate values before returning as int
     assert cost.is_integer()
     assert iters.is_integer()
     assert ancilla_cost.is_integer()
