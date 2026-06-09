@@ -15,7 +15,7 @@
 
 set -eu
 
-declare -r USAGE="Usage: ${0} [-h | -q] [UV_OPTIONS]
+USAGE="Usage: ${0} [-h] [UV_OPTIONS]
 Generate environment files for OpenFermion development using uv's
 'universal' option, making the result compatible with multiple
 Python versions. The output is written to subdirectories under
@@ -23,16 +23,14 @@ dev_tools/requirements/.
 
 Options:
   -h   Show this help message and exit
-  -q   Use quiet output
 
-All other options on the command line are passed to uv."
-
-QUIET=
+All other options on the command line will be passed directly to
+'uv pip compile'. Run 'uv pip compile --help' to learn about the
+options available."
 
 while [[ $# -gt 0 ]]; do
     case "${1}" in
         -h) echo "${USAGE}"; exit 0 ;;
-        -q) QUIET="--quiet"; shift ;;
         *) break ;;
     esac
 done
@@ -46,7 +44,7 @@ mkdir -p dev_tools/requirements/envs dev_tools/requirements/max_compat
 
 # ~~~~ Generate normal requirements files ~~~~
 
-uv pip compile ${QUIET} "$@" \
+uv pip compile "$@" \
     -o dev_tools/requirements/envs/dev.env.txt \
     dev_tools/requirements/deps/format.txt \
     dev_tools/requirements/deps/mypy.txt \
@@ -56,51 +54,51 @@ uv pip compile ${QUIET} "$@" \
     dev_tools/requirements/deps/runtime.txt \
     dev_tools/requirements/deps/shellcheck.txt
 
-uv pip compile ${QUIET} "$@" \
+uv pip compile "$@" \
     -o dev_tools/requirements/envs/format.env.txt \
     -c dev_tools/requirements/envs/dev.env.txt \
     dev_tools/requirements/deps/format.txt \
     dev_tools/requirements/deps/runtime.txt
 
-uv pip compile ${QUIET} "$@" \
+uv pip compile "$@" \
     -o dev_tools/requirements/envs/pylint.env.txt \
     -c dev_tools/requirements/envs/dev.env.txt \
     dev_tools/requirements/deps/pylint.txt \
     dev_tools/requirements/deps/runtime.txt
 
-uv pip compile ${QUIET} "$@" \
+uv pip compile "$@" \
     -o dev_tools/requirements/envs/pytest.env.txt \
     -c dev_tools/requirements/envs/dev.env.txt \
     dev_tools/requirements/deps/pytest.txt \
     dev_tools/requirements/deps/runtime.txt
 
-uv pip compile ${QUIET} "$@" \
+uv pip compile "$@" \
     -o dev_tools/requirements/envs/pytest-extra.env.txt \
     -c dev_tools/requirements/envs/dev.env.txt \
     dev_tools/requirements/deps/pytest.txt \
     dev_tools/requirements/deps/resource_estimates_runtime.txt \
     dev_tools/requirements/deps/runtime.txt
 
-uv pip compile ${QUIET} "$@" \
+uv pip compile "$@" \
     -o dev_tools/requirements/envs/mypy.env.txt \
     -c dev_tools/requirements/envs/dev.env.txt \
     dev_tools/requirements/deps/mypy.txt \
     dev_tools/requirements/deps/runtime.txt
 
-uv pip compile ${QUIET} "$@" \
+uv pip compile "$@" \
     -o dev_tools/requirements/envs/shellcheck.env.txt \
     -c dev_tools/requirements/envs/dev.env.txt \
     dev_tools/requirements/deps/shellcheck.txt
 
 # ~~~~ Generate max_compat files ~~~~
 
-uv pip compile ${QUIET} "$@" \
+uv pip compile "$@" \
     -o dev_tools/requirements/max_compat/dev.env.txt \
     -c dev_tools/requirements/deps/oldest-versions.txt \
     dev_tools/requirements/deps/pytest.txt \
     dev_tools/requirements/deps/runtime.txt
 
-uv pip compile ${QUIET} "$@" \
+uv pip compile "$@" \
     -o dev_tools/requirements/max_compat/pytest-max-compat.env.txt \
     -c dev_tools/requirements/deps/oldest-versions.txt \
     -c dev_tools/requirements/max_compat/dev.env.txt \
