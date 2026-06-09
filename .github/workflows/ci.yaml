@@ -259,6 +259,8 @@ jobs:
         run: npm install -g @prantlf/jsonlint
 
       - name: Run jsonlint on JSON files
+        env:
+          SHELLOPTS: ${{(inputs.debug || runner.debug) && 'xtrace'}}
         run: |
           echo '::add-matcher::.github/problem-matchers/jsonlint.json'
           jsonlint --check .
