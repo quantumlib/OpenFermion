@@ -261,11 +261,7 @@ jobs:
       - name: Run jsonlint on JSON files
         run: |
           echo '::add-matcher::.github/problem-matchers/jsonlint.json'
-          shopt -s globstar
-          files=(**/*.json)
-          if [[ ${#files[@]} -gt 0 ]]; then
-            jsonlint --check "${files[@]}"
-          fi
+          jsonlint --check .
 
   docker-lint:
     name: Dockerfile lint checks
