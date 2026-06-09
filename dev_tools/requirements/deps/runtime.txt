@@ -1,4 +1,4 @@
-cirq-core < 1.6.0; python_version < "3.11"
+cirq-core >= 1.4.1, < 1.6.0; python_version < "3.11"
 cirq-core >= 1.6.0; python_version >= "3.11"
 deprecation
 h5py
