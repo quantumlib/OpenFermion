@@ -15,6 +15,7 @@ import unittest
 import numpy
 
 from openfermion.hamiltonians.jellium import (
+    coulomb_potential_momentum,
     dual_basis_jellium_model,
     dual_basis_kinetic,
     dual_basis_potential,
@@ -256,7 +257,7 @@ class JelliumTest(unittest.TestCase):
 
     def test_coefficients(self):
         # Test that the coefficients post-JW transform are as claimed in paper.
-        grid = Grid(dimensions=2, length=3, scale=2.0)
+        grid = Grid(dimensions=3, length=2, scale=2.0)
         spinless = 1
         n_orbitals = grid.num_points
         n_qubits = (2 ** (1 - spinless)) * n_orbitals
@@ -431,3 +432,17 @@ class JelliumTest(unittest.TestCase):
         #     integration test.
         jellium_model(grid, spinless, True, False, None, True)
         jellium_model(grid, spinless, False, False, None, True)
+
+
+class CoulombPotentialMomentumTest(unittest.TestCase):
+    def test_zero_momentum(self):
+        # return 0.0 when momenta_squared == 0
+        val = coulomb_potential_momentum(0.0, dimension=3, volume=10.0)
+        self.assertEqual(val, 0.0)
+
+    def test_unsupported_dimension(self):
+        # crash when number dimensions not in [1,3]
+        with self.assertRaises(ValueError):
+            _ = coulomb_potential_momentum(1.0, dimension=0, volume=10.0)
+        with self.assertRaises(ValueError):
+            _ = coulomb_potential_momentum(1.0, dimension=4, volume=10.0)
