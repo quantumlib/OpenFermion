@@ -34,11 +34,6 @@ on:
       - checks_requested
 
   workflow_dispatch:
-    inputs:
-      debug:
-        description: 'Run with debugging options'
-        type: boolean
-        default: true
 
 env:
   # Default Python version to use. Make sure to use full x.y.z number.
@@ -56,9 +51,6 @@ env:
     dev_tools/requirements/envs/pytest-extra.env.txt
     dev_tools/requirements/envs/pytest.env.txt
     dev_tools/requirements/max_compat/pytest-max-compat.env.txt
-
-  # Turn on Bash script tracing globally if debug mode is on.
-  SHELLOPTS: ${{inputs.debug && 'xtrace'}}
 
 concurrency:
   cancel-in-progress: true
@@ -259,10 +251,9 @@ jobs:
         run: npm install -g @prantlf/jsonlint
 
       - name: Run jsonlint on JSON files
-        env:
-          SHELLOPTS: ${{(inputs.debug || runner.debug) && 'xtrace'}}
         run: |
           echo '::add-matcher::.github/problem-matchers/jsonlint.json'
+          ls
           jsonlint --version
           jsonlint --check .
 
