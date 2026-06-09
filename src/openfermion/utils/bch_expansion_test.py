@@ -93,7 +93,7 @@ class BCHTest(unittest.TestCase):
             self.assertAlmostEqual(norm(test - baseline), 0.0)
 
     def test_verification(self):
-        """Verify basic sanity checking on inputs"""
+        """Verify basic input validation"""
         with self.assertRaises(TypeError):
             order = 2
             _ = bch_expand(1, numpy.ones((2, 2)), order=order)
