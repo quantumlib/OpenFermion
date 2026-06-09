@@ -263,6 +263,7 @@ jobs:
           SHELLOPTS: ${{(inputs.debug || runner.debug) && 'xtrace'}}
         run: |
           echo '::add-matcher::.github/problem-matchers/jsonlint.json'
+          jsonlint --version
           jsonlint --check .
 
   docker-lint:
