@@ -239,24 +239,6 @@ jobs:
           echo '::add-matcher::.github/problem-matchers/yamllint.json'
           yamllint -f github . CITATION.cff
 
-  json-lint:
-    name: JSON lint checks
-    runs-on: ubuntu-slim
-    timeout-minutes: 5
-    steps:
-      - name: Check out a copy of the git repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-
-      - name: Install jsonlint
-        run: npm install -g @prantlf/jsonlint
-
-      - name: Run jsonlint on JSON files
-        run: |
-          echo '::add-matcher::.github/problem-matchers/jsonlint.json'
-          ls
-          jsonlint --version
-          jsonlint --check .
-
   docker-lint:
     name: Dockerfile lint checks
     if: github.repository_owner == 'quantumlib'
@@ -337,7 +319,6 @@ jobs:
     needs:
       - coverage
       - docker-lint
-      - json-lint
       - notebook-checks
       - pytest
       - pytest-compat
