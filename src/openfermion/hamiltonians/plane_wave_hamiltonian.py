@@ -95,18 +95,22 @@ def filter_plane_wave_operator(
 ) -> FermionOperator:
     """Filter plane wave operator to only include terms within energy cutoff."""
     n_qubits = grid.num_points if spinless else 2 * grid.num_points
-    valid_modes = {}
+    valid_modes = set()
     for mode in range(n_qubits):
         indices = grid.grid_indices(mode, spinless)
         momenta = grid.momentum_vector(indices)
         energy = momenta.dot(momenta) / 2.0
-        valid_modes[mode] = energy <= e_cutoff
+        if energy <= e_cutoff:
+            valid_modes.add(mode)
 
     new_terms = {}
     for term, coeff in operator.terms.items():
-        if all(valid_modes.get(mode, False) for mode, _ in term):
+        if all(mode in valid_modes for mode, _ in term):
             new_terms[term] = coeff
-    return FermionOperator(new_terms)
+
+    filtered_operator = FermionOperator()
+    filtered_operator.terms = new_terms
+    return filtered_operator
 
 
 def plane_wave_external_potential(
