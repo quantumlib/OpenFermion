@@ -16,7 +16,7 @@
 set -o errexit
 set -o nounset
 
-usage="Usage: ${0} [-h] [UV_OPTIONS]
+declare -r usage="Usage: ${0} [-h] [UV_OPTIONS]
 Generate environment files for OpenFermion development using uv's
 'universal' option, making the result compatible with multiple
 Python versions. The output is written to subdirectories under
