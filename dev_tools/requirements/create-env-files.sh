@@ -31,7 +31,7 @@ options available."
 
 while [[ $# -gt 0 ]]; do
     case "${1}" in
-        -h) echo "${usage}"; exit 0 ;;
+        -h|--help) echo "${usage}"; exit 0 ;;
         *) break ;;
     esac
 done
@@ -49,6 +49,7 @@ uv pip compile "$@" \
     -o dev_tools/requirements/envs/dev.env.txt \
     dev_tools/requirements/deps/format.txt \
     dev_tools/requirements/deps/mypy.txt \
+    dev_tools/requirements/deps/packaging.txt \
     dev_tools/requirements/deps/pylint.txt \
     dev_tools/requirements/deps/pytest.txt \
     dev_tools/requirements/deps/resource_estimates_runtime.txt \
