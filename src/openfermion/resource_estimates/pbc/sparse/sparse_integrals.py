@@ -67,7 +67,7 @@ def _ps_qr_two_body_terms(quad):
     """Symmetry inequivalent indices when kp = ks and kq = kr.
 
     A subset of the four-fold symmetry can be applied (pkp,qkq|rkq,skp) ->
-    (skp,rkq|qkq,pkp) by complex conj and dummy index exchange
+    (skp,rkq|qkq,pkp) by complex conj and summation index exchange
     """
     p, q, r, s = quad
     yield p, q, r, s
@@ -87,7 +87,7 @@ def _pr_qs_two_body_terms(quad):
     """Symmetry inequivalent indices when kp = kr and kq = ks.
 
     A subset of the four-fold symmetry can be applied (pkp,qkq|rkp,skq) ->
-    (rkp,skq|pkp,rkq) by dummy index exchange
+    (rkp,skq|pkp,rkq) by summation index exchange
     """
     p, q, r, s = quad
     yield p, q, r, s

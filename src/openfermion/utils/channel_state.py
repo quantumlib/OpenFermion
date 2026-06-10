@@ -143,7 +143,7 @@ def depolarizing_channel(density_matrix, probability, target_qubit, transpose=Fa
         probability (float): Probability error is applied p \in [0, 1]
         target_qubit (int/str): target for the channel error, if given special
             value "all", then a total depolarizing channel is applied.
-        transpose (bool): Dummy parameter to match signature of other
+        transpose (bool): Unused parameter to match signature of other
             channels but depolarizing channel is symmetric under
             conjugate transpose.
 

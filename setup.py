@@ -40,7 +40,7 @@ setup(
     name='openfermion',
     version=__version__,
     url='https://quantumai.google/openfermion',
-    license='Apache 2',
+    license='Apache-2.0',
     author='The OpenFermion Developers',
     author_email='openfermion-dev@googlegroups.com',
     maintainer='Google Quantum AI open-source maintainers',
