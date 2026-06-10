@@ -25,7 +25,7 @@ T = TypeVar('T')
 Pairing = tuple[tuple[T, T] | T, ...]
 
 
-def pair_within(labels: list[T]) -> Generator[Pairing, None, None]:
+def pair_within(labels: list[T]) -> Generator[Pairing[T], None, None]:
     """
     Generates pairings of labels that contain each pair at least once.
 
