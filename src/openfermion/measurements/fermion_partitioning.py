@@ -446,7 +446,7 @@ def pair_within_simultaneously_binned(
 
 def pair_within_simultaneously_symmetric(
     num_fermions: int, num_symmetries: int
-) -> Generator[Pairing, None, None]:
+) -> Generator[Pairing[int], None, None]:
     """Generates symmetry-respecting pairings between four-elements in a list
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
