@@ -94,7 +94,7 @@ def pair_within(labels: list[T]) -> Generator[Pairing[T], None, None]:
 
 def pair_between(
     frag1: list[T], frag2: list[T], start_offset: int = 0
-) -> Generator[Pairing, None, None]:
+) -> Generator[Pairing[T], None, None]:
     """Pairs between two fragments of a larger list
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
