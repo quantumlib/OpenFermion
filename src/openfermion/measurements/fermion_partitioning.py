@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 from collections.abc import Generator, Iterable
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 import numpy
 from openfermion.measurements import partition_iterator
@@ -67,7 +67,10 @@ def pair_within(labels: list[T]) -> Generator[Pairing[T], None, None]:
         yield pairing
 
     if len(labels) % 4 == 1:
-        frag1_pairings = pair_within([*frag1_part, None])
+        # None is an internal sentinel; cast keeps T out of the public Pairing[T] type.
+        frag1_pairings = cast(
+            Generator[Pairing[T], None, None], pair_within(cast(list[T], [*frag1_part, None]))
+        )
     else:
         frag1_pairings = pair_within(frag1_part)
 
@@ -76,13 +79,19 @@ def pair_within(labels: list[T]) -> Generator[Pairing[T], None, None]:
             if pairing1[-1] is None:
                 yield pairing1[:-1] + pairing2
             else:
-                extra_pair = ((pairing1[-1], pairing2[-1]),)
-                (zero_index,) = [pair[0] for pair in pairing1[:-1] if pair[1] is None]
-                pairing1_filtered = tuple(pair for pair in pairing1[:-1] if pair[1] is not None)
+                extra_pair = cast(tuple[tuple[T, T], ...], ((pairing1[-1], pairing2[-1]),))
+                (zero_index,) = [
+                    pair[0] for pair in pairing1[:-1] if isinstance(pair, tuple) and pair[1] is None
+                ]
+                pairing1_filtered = tuple(
+                    pair
+                    for pair in pairing1[:-1]
+                    if isinstance(pair, tuple) and pair[1] is not None
+                )
                 yield pairing1_filtered + pairing2[:-1] + extra_pair + (zero_index,)
 
         elif len(labels) % 4 == 2:
-            extra_pair = ((pairing1[-1], pairing2[-1]),)
+            extra_pair = cast(tuple[tuple[T, T], ...], ((pairing1[-1], pairing2[-1]),))
             yield pairing1[:-1] + pairing2[:-1] + extra_pair
 
         elif len(labels) % 4 == 3:
