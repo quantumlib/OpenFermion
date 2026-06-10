@@ -16,6 +16,7 @@ from typing import List, Tuple, Optional, Union
 import numpy as np
 
 from openfermion.hamiltonians.jellium import jellium_model, jordan_wigner_dual_basis_jellium
+from openfermion.hamiltonians.jellium import coulomb_potential_momentum
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.transforms.repconversions import inverse_fourier_transform
 from openfermion.utils.grid import Grid
@@ -52,7 +53,6 @@ def dual_basis_external_potential(
     Returns:
         FermionOperator: The dual basis operator.
     """
-    prefactor = -4.0 * np.pi / grid.volume_scale()
     if non_periodic and period_cutoff is None:
         period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
     operator = None
@@ -72,8 +72,10 @@ def dual_basis_external_potential(
 
                 cos_index = momenta.dot(coordinate_j - coordinate_p)
                 coefficient = (
-                    prefactor
-                    / momenta_squared
+                    -2.0
+                    * coulomb_potential_momentum(
+                        momenta_squared, grid.dimensions, grid.volume_scale()
+                    )
                     * md.periodic_hash_table[nuclear_term[0]]
                     * np.cos(cos_index)
                 )
@@ -86,6 +88,29 @@ def dual_basis_external_potential(
                     else:
                         operator += FermionOperator(operators, coefficient)
     return operator
+
+
+def filter_plane_wave_operator(
+    operator: FermionOperator, grid: Grid, e_cutoff: float, spinless: bool
+) -> FermionOperator:
+    """Filter plane wave operator to only include terms within energy cutoff."""
+    n_qubits = grid.num_points if spinless else 2 * grid.num_points
+    valid_modes = set()
+    for mode in range(n_qubits):
+        indices = grid.grid_indices(mode, spinless)
+        momenta = grid.momentum_vector(indices)
+        energy = momenta.dot(momenta) / 2.0
+        if energy <= e_cutoff:
+            valid_modes.add(mode)
+
+    new_terms = {}
+    for term, coeff in operator.terms.items():
+        if all(mode in valid_modes for mode, _ in term):
+            new_terms[term] = coeff
+
+    filtered_operator = FermionOperator()
+    filtered_operator.terms = new_terms
+    return filtered_operator
 
 
 def plane_wave_external_potential(
@@ -122,6 +147,9 @@ def plane_wave_external_potential(
         grid, geometry, spinless, non_periodic, period_cutoff
     )
     operator = inverse_fourier_transform(dual_basis_operator, grid, spinless)
+
+    if e_cutoff is not None:
+        operator = filter_plane_wave_operator(operator, grid, e_cutoff, spinless)
 
     return operator
 
@@ -226,7 +254,6 @@ def jordan_wigner_dual_basis_hamiltonian(
         n_qubits = n_orbitals
     else:
         n_qubits = 2 * n_orbitals
-    prefactor = -2 * np.pi / volume
     external_potential = QubitOperator()
 
     for k_indices in grid.all_points_indices():
@@ -244,8 +271,8 @@ def jordan_wigner_dual_basis_hamiltonian(
 
                 cos_index = momenta.dot(coordinate_j - coordinate_p)
                 coefficient = (
-                    prefactor
-                    / momenta_squared
+                    -1.0
+                    * coulomb_potential_momentum(momenta_squared, grid.dimensions, volume)
                     * md.periodic_hash_table[nuclear_term[0]]
                     * np.cos(cos_index)
                 )

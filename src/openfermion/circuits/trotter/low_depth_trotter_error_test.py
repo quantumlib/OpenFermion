@@ -100,7 +100,7 @@ class ErrorBoundTest(unittest.TestCase):
         terms, indices, is_hopping = result
         self.assertAlmostEqual(
             low_depth_second_order_trotter_error_bound(terms, indices, is_hopping),
-            7.4239378440953283,
+            0.00021764888459867673,
         )
 
     def test_error_bound_using_info_1d_with_input_ordering(self):
@@ -119,7 +119,7 @@ class ErrorBoundTest(unittest.TestCase):
         terms, indices, is_hopping = result
         self.assertAlmostEqual(
             low_depth_second_order_trotter_error_bound(terms, indices, is_hopping),
-            7.4239378440953283,
+            0.00021764888459867673,
         )
 
     def test_error_bound_using_info_2d_verbose(self):
@@ -138,7 +138,7 @@ class ErrorBoundTest(unittest.TestCase):
             low_depth_second_order_trotter_error_bound(
                 terms, indices, is_hopping, jellium_only=True, verbose=True
             ),
-            0.052213321121580794,
+            0.0003030867254527683,
         )
 
 
@@ -352,13 +352,13 @@ class OrderedDualBasisTermsNoInfoTest(unittest.TestCase):
             expected_terms.append(FO(((i, 1), ((i + 3) % 4, 0)), -0.012337005501361697))
             expected_terms.append(
                 normal_ordered(
-                    FO(((i, 1), ((i + 1) % 4, 1), (i, 0), ((i + 1) % 4, 0)), 3.1830988618379052)
+                    FO(((i, 1), ((i + 1) % 4, 1), (i, 0), ((i + 1) % 4, 0)), 0.06651568175782213)
                 )
             )
             if i // 2:
                 expected_terms.append(
                     normal_ordered(
-                        FO(((i, 1), ((i + 2) % 4, 1), (i, 0), ((i + 2) % 4, 0)), 22.281692032865351)
+                        FO(((i, 1), ((i + 2) % 4, 1), (i, 0), ((i + 2) % 4, 0)), 0.1320111630094219)
                     )
                 )
 

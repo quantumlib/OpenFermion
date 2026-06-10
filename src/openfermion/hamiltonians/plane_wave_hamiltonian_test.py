@@ -115,14 +115,16 @@ class PlaneWaveHamiltonianTest(unittest.TestCase):
         geometry = [('H', (0,)), ('H', (0.8,))]
         grid = Grid(dimensions=1, scale=1.1, length=5)
         e_cutoff = 50.0
+        spinless = True
+        n_qubits = grid.num_points if spinless else 2 * grid.num_points
 
-        h_1 = plane_wave_hamiltonian(grid, geometry, True, True, False)
+        h_1 = plane_wave_hamiltonian(grid, geometry, spinless, True, False)
         jw_1 = jordan_wigner(h_1)
-        spectrum_1 = eigenspectrum(jw_1)
+        spectrum_1 = eigenspectrum(jw_1, n_qubits=n_qubits)
 
-        h_2 = plane_wave_hamiltonian(grid, geometry, True, True, False, e_cutoff)
+        h_2 = plane_wave_hamiltonian(grid, geometry, spinless, True, False, e_cutoff)
         jw_2 = jordan_wigner(h_2)
-        spectrum_2 = eigenspectrum(jw_2)
+        spectrum_2 = eigenspectrum(jw_2, n_qubits=n_qubits)
 
         max_diff = np.amax(np.absolute(spectrum_1 - spectrum_2))
         self.assertGreater(max_diff, 0.0)
