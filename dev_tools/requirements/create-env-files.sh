@@ -95,12 +95,6 @@ uv pip compile "$@" \
 # ~~~~ Generate max_compat files ~~~~
 
 uv pip compile "$@" \
-    -o dev_tools/requirements/max_compat/dev.env.txt \
-    -c dev_tools/requirements/deps/oldest-versions.txt \
-    dev_tools/requirements/deps/pytest.txt \
-    dev_tools/requirements/deps/runtime.txt
-
-uv pip compile "$@" \
     -o dev_tools/requirements/max_compat/pytest-max-compat.env.txt \
     -c dev_tools/requirements/deps/oldest-versions.txt \
     -c dev_tools/requirements/max_compat/dev.env.txt \
