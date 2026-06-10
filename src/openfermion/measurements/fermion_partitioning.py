@@ -128,7 +128,7 @@ def pair_between(
     num_pairs = min(len(frag1), len(frag2))
 
     for index_offset in range(start_offset, num_iter):
-        pairing: Pairing
+        pairing: Pairing[T]
         if len(frag1) > len(frag2):
             pairing = tuple(
                 (frag1[(index + index_offset) % len(frag1)], frag2[index])
