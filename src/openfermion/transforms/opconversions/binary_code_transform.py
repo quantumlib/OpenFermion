@@ -158,7 +158,7 @@ def binary_code_transform(hamiltonian: FermionOperator, code: BinaryCode) -> Qub
             parity_term += parity_list[op_tuple[0]]
 
         # the parity sign and parity term
-        transformed_term *= QubitOperator((), (-1) ** updated_parity)
+        transformed_term *= QubitOperator((), (-1) ** int(updated_parity))
         transformed_term *= extractor(parity_term)
 
         # the update operator
