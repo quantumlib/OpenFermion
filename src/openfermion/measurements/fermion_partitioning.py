@@ -211,7 +211,7 @@ def _gen_pairings_between_partitions(parta, partb):
                 yield pair_a + pair_b + pair_ab
 
 
-def pair_within_simultaneously(labels: list[T]) -> Generator[Pairing, None, None]:
+def pair_within_simultaneously(labels: list[T]) -> Generator[Pairing[T], None, None]:
     """Generates simultaneous pairings between four-element combinations
 
     A pairing of a list is a set of pairs of list elements. E.g. a pairing of
