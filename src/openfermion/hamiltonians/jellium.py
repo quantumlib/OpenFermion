@@ -67,14 +67,14 @@ def coulomb_potential_momentum(
 ) -> float:
     """Return the momentum space Coulomb potential for a given dimension.
 
-    For 1d systems, a soft coulomb potential is used with a regularization
-    parameter of a_1d: v(r) = 1/sqrt(r^2 + a_1d^2)
+    For 1-D systems, a soft coulomb potential is used with a regularization
+    parameter of a: $$v(r) = \frac{1}{\sqrt{r^2 + a^2}}$$
 
     Args:
         momenta_squared (float): The squared momentum vector.
         dimension (int): The dimension of the system (1, 2, or 3).
         volume (float): The volume (or area, or length) of the simulation cell.
-        a_1d (float): The regularization parameter for 1D systems (default 1.0).
+        a_1d (float): The regularization parameter a for 1-D systems (default 1.0).
 
     Returns:
         float: The potential coefficient.
