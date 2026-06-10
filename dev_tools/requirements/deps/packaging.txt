@@ -8,3 +8,6 @@ wheel
 
 # for uploading packages to pypi
 twine
+
+# for regenerating requirements files
+uv
