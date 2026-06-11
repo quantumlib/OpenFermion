@@ -352,3 +352,19 @@ After a task is finished, run each of the following to make sure everything pass
     perform the necessary changes locally, commit them to your branch as usual, and then push
     changes to your fork on GitHub following the same process as above. When you do that, GitHub
     will update the code in the pull request automatically.
+
+## Miscellaneous maintainer activities
+
+The following summarizes some additional tasks done by project maintainers.
+
+### Regenerating requirements files
+
+The lists of OpenFermion dependencies in `dev_tools/requirements/envs/` and
+`dev_tools/requirements/max_compat` are generated using the Python package manager
+[uv](https://docs.astral.sh/uv/). The process to generate them is encapsulated in the script
+`dev_tools/requirements/create-env-files.sh`. It can be run like this:
+
+```shell
+pip install -r dev_tools/requirements/envs/dev.env.txt
+./dev_tools/requirements/create-env-files.sh
+```
