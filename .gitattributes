@@ -22,4 +22,3 @@
 # Exclude config files from GitHub's file statistics. Most are YAML files and
 # Linguist already treats .yaml files as data, so only add some exceptions.
 .markdownlintrc linguist-documentation
-.shfmt          linguist-documentation
