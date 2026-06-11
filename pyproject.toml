@@ -69,3 +69,8 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "deprecation"
 follow_untyped_imports = true
+
+[tool.uv.pip]
+universal = true
+generate-hashes = true
+custom-compile-command = "dev_tools/requirements/create-env-files.sh"

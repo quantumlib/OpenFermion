@@ -12,11 +12,13 @@
 
 import os
 import random
-import pytest
+from typing import Any
+
 import numpy as np
+import pytest
 
 
-def pytest_configure(config):
+def pytest_configure(config: Any) -> None:
     # Set seeds for collection-time parameterization.
     random.seed(0)
     np.random.seed(0)
@@ -25,7 +27,7 @@ def pytest_configure(config):
 
 
 @pytest.fixture(autouse=True)
-def set_random_seed():
+def set_random_seed() -> None:
     """Set a fixed random seed when testing."""
     random.seed(0)
     np.random.seed(0)

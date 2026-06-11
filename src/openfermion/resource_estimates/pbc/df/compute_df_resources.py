@@ -350,7 +350,7 @@ def _compute_cost(
 
     ancilla_cost = ac1 + ac2 + ac3 + ac4 + ac5 + ac6 + ac8 + ac9 + ac10 + ac11 + ac12 + ac13 + ac14
 
-    # Sanity checks before returning as int
+    # Validate values before returning as int
     assert cost.is_integer()
     assert iters.is_integer()
     assert ancilla_cost.is_integer()

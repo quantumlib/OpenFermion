@@ -390,7 +390,7 @@ def test_kpoint_isdf_symmetries():
     _, minus_Q_G_map_unique = build_minus_q_g_mapping(cell, kpts, momentum_map)
     num_kpts = len(kpts)
     # Test symmetries from Appendix D of https://arxiv.org/pdf/2302.05531.pdf
-    # Test LHS for sanity too (need to uncomment)
+    # Test LHS as well (need to uncomment)
     grid_points = cell.gen_uniform_grids(mf.with_df.mesh)
     from pyscf.pbc.lib.kpts_helper import conj_mapping
 
@@ -402,7 +402,7 @@ def test_kpoint_isdf_symmetries():
     iGpq = G_unique[iq, ik]
     iGsr = G_unique[iq, ik_prime]
     ik_prime_minus_q = momentum_map[iq, ik_prime]
-    # Sanity check G mappings
+    # Check G mappings
     assert np.allclose(kpts[ik] - kpts[ik_minus_q] - kpts[iq], delta_Gs[iq][iGpq])
     assert np.allclose(kpts[ik_prime] - kpts[ik_prime_minus_q] - kpts[iq], delta_Gs[iq][iGsr])
     # (pk qk-Q | rk'-Q sk') = (q k-Q p k | sk' rk'-Q)*
@@ -413,7 +413,7 @@ def test_kpoint_isdf_symmetries():
     # kpt_pqrs = [ik, ik_minus_q, ik_prime_minus_q, ik_prime]
     # kpt_pqrs = [ik_minus_q, ik, ik_prime, ik_prime_minus_q]
     # eri_qpsr = build_eri(mf, kpt_pqrs).transpose((1, 0, 3, 2))
-    # Sanity check relationship
+    # Check relationship
     # assert np.allclose(eri_pqrs, eri_qpsr.conj())
     # Now check how to index into correct G when Q is conjugated
     # We want to find (-Q) + G_pq_comp + (Q + Gpq) = 0,
@@ -428,7 +428,7 @@ def test_kpoint_isdf_symmetries():
     zeta_test = kpt_thc.zeta[minus_iq][iGpq_comp, iGsr_comp]
     # F31 (pk qk-Q | rk'-Q sk') = (rk'-Q s k'| pk qk-Q)
     assert np.allclose(zeta_ref, zeta_test.conj())
-    # Sanity check do literal minus signs (should be complex
+    # Check literal minus signs (should be complex
     # conjugate)
     zeta_test = build_kpoint_zeta(
         mf.with_df, -kpts[iq], -delta_Gs[iq][iGpq], -delta_Gs[iq][iGsr], grid_points, kpt_thc.xi

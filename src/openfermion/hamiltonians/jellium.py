@@ -15,6 +15,7 @@ import math
 from typing import Optional
 
 import numpy
+import scipy.special
 
 from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.utils.grid import Grid
@@ -59,6 +60,37 @@ def wigner_seitz_length_scale(
     length_scale = volume ** (1.0 / dimension)
 
     return length_scale
+
+
+def coulomb_potential_momentum(
+    momenta_squared: float, dimension: int, volume: float, a_1d: float = 1.0
+) -> float:
+    """Return the momentum space Coulomb potential for a given dimension.
+
+    For 1-D systems, a soft coulomb potential is used with a regularization
+    parameter of a: $$v(r) = \frac{1}{\sqrt{r^2 + a^2}}$$
+
+    Args:
+        momenta_squared (float): The squared momentum vector.
+        dimension (int): The dimension of the system (1, 2, or 3).
+        volume (float): The volume (or area, or length) of the simulation cell.
+        a_1d (float): The regularization parameter a for 1-D systems (default 1.0).
+
+    Returns:
+        float: The potential coefficient.
+    """
+    if momenta_squared == 0:
+        return 0.0
+    q = numpy.sqrt(momenta_squared)
+    if dimension == 3:
+        return 2.0 * numpy.pi / (volume * momenta_squared)
+    elif dimension == 2:
+        return numpy.pi / (volume * q)
+    elif dimension == 1:
+        # use a soft coulomb potential with reg. param a_1d
+        return scipy.special.k0(q * a_1d) / volume
+    else:
+        raise ValueError(f'Unsupported dimension {dimension}.')
 
 
 def plane_wave_kinetic(
@@ -119,7 +151,6 @@ def plane_wave_potential(
         operator (FermionOperator)
     """
     # Initialize.
-    prefactor = 2.0 * numpy.pi / grid.volume_scale()
     operator = FermionOperator((), 0.0)
     spins = [None] if spinless else [0, 1]
     if non_periodic and period_cutoff is None:
@@ -152,6 +183,13 @@ def plane_wave_potential(
         for spin in spins:
             orbital_ids[indices_a][spin] = grid.orbital_id(indices_a, spin)
 
+    # Identify active grid indices within the energy cutoff.
+    active_indices = set()
+    for indices in grid.all_points_indices():
+        momenta = grid.momentum_vector(indices)
+        if e_cutoff is None or momenta.dot(momenta) / 2.0 <= e_cutoff:
+            active_indices.add(indices)
+
     # Loop once through all plane waves.
     for omega_indices in grid.all_points_indices():
         shifted_omega_indices = shifted_omega_indices_dict[omega_indices]
@@ -164,19 +202,21 @@ def plane_wave_potential(
         if momenta_squared == 0:
             continue
 
-        # Energy cutoff.
-        if e_cutoff is not None and momenta_squared / 2.0 > e_cutoff:
-            continue
-
         # Compute coefficient.
-        coefficient = prefactor / momenta_squared
+        coefficient = coulomb_potential_momentum(
+            momenta_squared, grid.dimensions, grid.volume_scale()
+        )
         if non_periodic:
             coefficient *= 1.0 - numpy.cos(period_cutoff * numpy.sqrt(momenta_squared))
 
-        for grid_indices_a in grid.all_points_indices():
+        for grid_indices_a in active_indices:
             shifted_indices_d = shifted_indices_minus_dict[omega_indices][grid_indices_a]
-            for grid_indices_b in grid.all_points_indices():
+            if shifted_indices_d not in active_indices:
+                continue
+            for grid_indices_b in active_indices:
                 shifted_indices_c = shifted_indices_plus_dict[omega_indices][grid_indices_b]
+                if shifted_indices_c not in active_indices:
+                    continue
 
                 # Loop over spins.
                 for spin_a in spins:
@@ -228,7 +268,6 @@ def dual_basis_jellium_model(
     """
     # Initialize.
     n_points = grid.num_points
-    position_prefactor = 2.0 * numpy.pi / grid.volume_scale()
     operator = FermionOperator()
     spins = [None] if spinless else [0, 1]
     if potential and non_periodic and period_cutoff is None:
@@ -268,7 +307,12 @@ def dual_basis_jellium_model(
             if kinetic:
                 kinetic_coefficient += cos_difference * momenta_squared / (2.0 * float(n_points))
             if potential:
-                potential_coefficient += position_prefactor * cos_difference / momenta_squared
+                coef = coulomb_potential_momentum(
+                    momenta_squared, grid.dimensions, grid.volume_scale()
+                )
+                if non_periodic:
+                    coef *= 1.0 - numpy.cos(period_cutoff * numpy.sqrt(momenta_squared))
+                potential_coefficient += coef * cos_difference
         for grid_indices_shift in grid.all_points_indices():
             # Loop over spins and identify interacting orbitals.
             orbital_a = {}
@@ -431,13 +475,15 @@ def jordan_wigner_dual_basis_jellium(
     z_coefficient = 0.0
     for k_indices in grid.all_points_indices():
         momenta = momentum_vectors[k_indices]
-        momenta_squared = momenta.dot(momenta)
+        momenta_squared = momenta_squared_dict[k_indices]
         if momenta_squared == 0:
             continue
 
+        coulomb_potential = coulomb_potential_momentum(momenta_squared, grid.dimensions, volume)
+
         identity_coefficient += momenta_squared / 2.0
-        identity_coefficient -= numpy.pi * float(n_orbitals) / (momenta_squared * volume)
-        z_coefficient += numpy.pi / (momenta_squared * volume)
+        identity_coefficient -= coulomb_potential * float(n_orbitals) / 2.0
+        z_coefficient += coulomb_potential / 2.0
         z_coefficient -= momenta_squared / (4.0 * float(n_orbitals))
     if spinless:
         identity_coefficient /= 2.0
@@ -452,7 +498,6 @@ def jordan_wigner_dual_basis_jellium(
         hamiltonian += qubit_term
 
     # Add ZZ terms and XZX + YZY terms.
-    zz_prefactor = numpy.pi / volume
     xzx_yzy_prefactor = 0.25 / float(n_orbitals)
     for p in range(n_qubits):
         index_p = grid.grid_indices(p, spinless)
@@ -476,7 +521,10 @@ def jordan_wigner_dual_basis_jellium(
 
                 cos_difference = numpy.cos(momenta.dot(difference))
 
-                zpzq_coefficient += zz_prefactor * cos_difference / momenta_squared
+                coulomb_potential = coulomb_potential_momentum(
+                    momenta_squared, grid.dimensions, volume
+                )
+                zpzq_coefficient += coulomb_potential / 2.0 * cos_difference
 
                 if skip_xzx_yzy:
                     continue
