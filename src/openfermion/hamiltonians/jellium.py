@@ -14,7 +14,6 @@
 import math
 from typing import Optional
 
-import numpy
 import scipy.special
 
 from openfermion.ops.operators import FermionOperator, QubitOperator
@@ -45,13 +44,13 @@ def wigner_seitz_length_scale(
         volume_per_particle = (
             2
             * math.factorial(half_dimension)
-            * (4 * numpy.pi) ** half_dimension
+            * (4 * math.pi) ** half_dimension
             / math.factorial(dimension)
             * wigner_seitz_radius**dimension
         )
     else:
         volume_per_particle = (
-            numpy.pi**half_dimension
+            math.pi**half_dimension
             / math.factorial(half_dimension)
             * wigner_seitz_radius**dimension
         )
@@ -65,7 +64,7 @@ def wigner_seitz_length_scale(
 def coulomb_potential_momentum(
     momenta_squared: float, dimension: int, volume: float, a_1d: float = 1.0
 ) -> float:
-    """Return the momentum space Coulomb potential for a given dimension.
+    r"""Return the momentum space Coulomb potential for a given dimension.
 
     For 1-D systems, a soft coulomb potential is used with a regularization
     parameter of a: $$v(r) = \frac{1}{\sqrt{r^2 + a^2}}$$
@@ -81,11 +80,11 @@ def coulomb_potential_momentum(
     """
     if momenta_squared == 0:
         return 0.0
-    q = numpy.sqrt(momenta_squared)
+    q = math.sqrt(momenta_squared)
     if dimension == 3:
-        return 2.0 * numpy.pi / (volume * momenta_squared)
+        return 2.0 * math.pi / (volume * momenta_squared)
     elif dimension == 2:
-        return numpy.pi / (volume * q)
+        return math.pi / (volume * q)
     elif dimension == 1:
         # use a soft coulomb potential with reg. param a_1d
         return scipy.special.k0(q * a_1d) / volume
@@ -207,7 +206,7 @@ def plane_wave_potential(
             momenta_squared, grid.dimensions, grid.volume_scale()
         )
         if non_periodic:
-            coefficient *= 1.0 - numpy.cos(period_cutoff * numpy.sqrt(momenta_squared))
+            coefficient *= 1.0 - math.cos(period_cutoff * math.sqrt(momenta_squared))
 
         for grid_indices_a in active_indices:
             shifted_indices_d = shifted_indices_minus_dict[omega_indices][grid_indices_a]
@@ -303,7 +302,7 @@ def dual_basis_jellium_model(
             if momenta_squared == 0:
                 continue
 
-            cos_difference = numpy.cos(momenta.dot(differences))
+            cos_difference = math.cos(momenta.dot(differences))
             if kinetic:
                 kinetic_coefficient += cos_difference * momenta_squared / (2.0 * float(n_points))
             if potential:
@@ -311,7 +310,7 @@ def dual_basis_jellium_model(
                     momenta_squared, grid.dimensions, grid.volume_scale()
                 )
                 if non_periodic:
-                    coef *= 1.0 - numpy.cos(period_cutoff * numpy.sqrt(momenta_squared))
+                    coef *= 1.0 - math.cos(period_cutoff * math.sqrt(momenta_squared))
                 potential_coefficient += coef * cos_difference
         for grid_indices_shift in grid.all_points_indices():
             # Loop over spins and identify interacting orbitals.
@@ -519,7 +518,7 @@ def jordan_wigner_dual_basis_jellium(
                 if momenta_squared == 0:
                     continue
 
-                cos_difference = numpy.cos(momenta.dot(difference))
+                cos_difference = math.cos(momenta.dot(difference))
 
                 coulomb_potential = coulomb_potential_momentum(
                     momenta_squared, grid.dimensions, volume
@@ -578,7 +577,7 @@ def hypercube_grid_with_given_wigner_seitz_radius_and_filling(
     if not spinless:
         n_qubits *= 2
 
-    n_particles = int(numpy.floor(n_qubits * filling_fraction))
+    n_particles = int(math.floor(n_qubits * filling_fraction))
 
     if not n_particles:
         raise ValueError(
