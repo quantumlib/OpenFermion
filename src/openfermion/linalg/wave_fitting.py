@@ -68,8 +68,7 @@ def prony(signal: numpy.ndarray) -> Tuple[numpy.ndarray, numpy.ndarray]:
     generation_matrix = numpy.array([[phase**k for phase in phases] for k in range(len(signal))])
     amplitudes = scipy.linalg.lstsq(generation_matrix, signal)[0]
 
-    amplitudes, phases = zip(
-        *sorted(zip(amplitudes, phases), key=lambda x: numpy.abs(x[0]), reverse=True)
-    )
+    sorted_pairs = sorted(zip(amplitudes, phases), key=lambda x: numpy.abs(x[0]), reverse=True)
+    sorted_amplitudes, sorted_phases = zip(*sorted_pairs)
 
-    return numpy.array(amplitudes), numpy.array(phases)
+    return numpy.array(sorted_amplitudes), numpy.array(sorted_phases)

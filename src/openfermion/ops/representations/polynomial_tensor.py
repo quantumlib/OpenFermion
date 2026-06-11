@@ -117,7 +117,7 @@ class PolynomialTensor:
             of the form a_i a^\dagger_j.
     """
 
-    __hash__ = None
+    __hash__ = None  # type: ignore[assignment]
 
     def __init__(self, n_body_tensors):
         """Initialize the PolynomialTensor class.

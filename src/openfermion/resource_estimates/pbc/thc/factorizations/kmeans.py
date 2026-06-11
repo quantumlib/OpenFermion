@@ -136,7 +136,7 @@ class KMeansCVT:
             grid_mapping = self.classify_grid_points(self.grid, centroids)
             # Global reduce
             new_centroids[:] = self.compute_new_centroids(weighting_factor, grid_mapping, centroids)
-            delta_grid = np.linalg.norm(new_centroids - centroids)
+            delta_grid = float(np.linalg.norm(new_centroids - centroids))
             if verbose and iteration % 10 == 0:
                 print(f"{iteration:<9d}  {delta_grid:13.8e}")
             if delta_grid < self.threshold:
