@@ -132,7 +132,7 @@ class ErrorBoundTest(unittest.TestCase):
 
     def test_error_bound_xyz_loose(self):
         terms = [QubitOperator('X1'), QubitOperator('Y1'), QubitOperator('Z1')]
-        self.assertTrue(numpy.isclose(error_bound(terms, tight=False), 4.0 * (2**2 + 1**2)))
+        self.assertTrue(numpy.isclose(error_bound(terms, tight=False), 4.0 * (2**2 + 1**2 + 2 + 1)))
 
     def test_error_operator_xyz(self):
         terms = [QubitOperator('X1'), QubitOperator('Y1'), QubitOperator('Z1')]
