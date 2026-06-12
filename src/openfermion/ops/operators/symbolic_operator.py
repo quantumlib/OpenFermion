@@ -120,7 +120,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         """Whether factors acting on different indices commute."""
         pass
 
-    __hash__ = None
+    __hash__ = None  # type: ignore[assignment]
 
     def __init__(self, term=None, coefficient=1.0):
         if not isinstance(coefficient, COEFFICIENT_TYPES):
