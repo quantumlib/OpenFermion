@@ -235,7 +235,7 @@ def _ffft(qubits: Sequence[cirq.Qid], factors: List[int]) -> cirq.OP_TREE:
     # ny is a first prime factor, nx is a product of all the remaining ones.
     factors_y = factors[:1]
     factors_x = factors[1:]
-    ny = int(np.prod(factors_y))
+    ny = factors[0]
     nx = n // ny
 
     permutation = [(i % ny) * nx + (i // ny) for i in range(n)]

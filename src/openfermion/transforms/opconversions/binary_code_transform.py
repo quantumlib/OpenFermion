@@ -139,14 +139,14 @@ def binary_code_transform(hamiltonian: FermionOperator, code: BinaryCode) -> Qub
         transformed_term = QubitOperator(())
 
         # keep track of indices appeared before
-        fermionic_indices = numpy.array([])
+        fermionic_indices: list[int] = []
 
         # for each multiplier
         for op_idx, op_tuple in enumerate(reversed(term)):
             # get count exponent, parity exponent addition
-            fermionic_indices = numpy.append(fermionic_indices, op_tuple[0])
-            count = numpy.count_nonzero(fermionic_indices[:op_idx] == op_tuple[0])
-            updated_parity += int(numpy.count_nonzero(fermionic_indices[:op_idx] < op_tuple[0]))
+            fermionic_indices.append(op_tuple[0])
+            count = fermionic_indices[:op_idx].count(op_tuple[0])
+            updated_parity += sum(idx < op_tuple[0] for idx in fermionic_indices[:op_idx])
 
             # update term
             extracted = extractor(code.decoder[op_tuple[0]])
