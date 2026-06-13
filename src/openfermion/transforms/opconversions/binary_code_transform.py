@@ -146,7 +146,7 @@ def binary_code_transform(hamiltonian: FermionOperator, code: BinaryCode) -> Qub
             # get count exponent, parity exponent addition
             fermionic_indices = numpy.append(fermionic_indices, op_tuple[0])
             count = numpy.count_nonzero(fermionic_indices[:op_idx] == op_tuple[0])
-            updated_parity += numpy.count_nonzero(fermionic_indices[:op_idx] < op_tuple[0])
+            updated_parity += int(numpy.count_nonzero(fermionic_indices[:op_idx] < op_tuple[0]))
 
             # update term
             extracted = extractor(code.decoder[op_tuple[0]])

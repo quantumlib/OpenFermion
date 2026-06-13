@@ -131,18 +131,18 @@ def fermionic_simulation_gates_from_interaction_operator(
         )
         if gate:
             gates[modes] = gate
-    for modes in itertools.combinations(range(n_qubits), 3):
+    for modes3 in itertools.combinations(range(n_qubits), 3):
         gate = CubicFermionicSimulationGate.from_interaction_operator(
-            operator=operator, modes=modes
+            operator=operator, modes=modes3
         )
         if gate:
-            gates[modes] = gate
-    for modes in itertools.combinations(range(n_qubits), 4):
+            gates[modes3] = gate
+    for modes4 in itertools.combinations(range(n_qubits), 4):
         gate = QuarticFermionicSimulationGate.from_interaction_operator(
-            operator=operator, modes=modes
+            operator=operator, modes=modes4
         )
         if gate:
-            gates[modes] = gate
+            gates[modes4] = gate
     return gates
 
 
