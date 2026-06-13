@@ -179,7 +179,7 @@ class MajoranaOperator:
         return minuend
 
     def __mul__(self, other):
-        if not isinstance(other, (type(self), *COEFFICIENT_TYPES)):
+        if not isinstance(other, (type(self), COEFFICIENT_TYPES)):
             return NotImplemented
 
         if isinstance(other, COEFFICIENT_TYPES):
@@ -198,7 +198,7 @@ class MajoranaOperator:
         return MajoranaOperator.from_dict(terms)
 
     def __imul__(self, other):
-        if not isinstance(other, (type(self), *COEFFICIENT_TYPES)):
+        if not isinstance(other, (type(self), COEFFICIENT_TYPES)):
             return NotImplemented
 
         if isinstance(other, COEFFICIENT_TYPES):
