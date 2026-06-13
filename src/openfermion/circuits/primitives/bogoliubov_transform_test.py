@@ -116,6 +116,182 @@ def test_spin_symmetric_bogoliubov_transform(
     numpy.testing.assert_allclose(quad_ham_sparse.dot(state), energy * state, atol=atol)
 
 
+def _independent_spin_sector_transform(n_spatial_orbitals, seed_up, seed_down, real):
+    """Assemble an N x 2N Bogoliubov transformation that does not mix spin.
+
+    Builds two independent non-particle-conserving quadratic Hamiltonians, one
+    per spin sector, and places their diagonalizing transforms into a combined
+    matrix. The matrix acts on the column vector of all creation operators
+    followed by all annihilation operators, so each sector's creation
+    (annihilation) block lands in the left (right) half, offset by the sector's
+    position within that half.
+    """
+    quad_ham_up = random_quadratic_hamiltonian(
+        n_spatial_orbitals, conserves_particle_number=False, real=real, seed=seed_up
+    )
+    quad_ham_down = random_quadratic_hamiltonian(
+        n_spatial_orbitals, conserves_particle_number=False, real=real, seed=seed_down
+    )
+    up_energies, up_matrix, up_constant = quad_ham_up.diagonalizing_bogoliubov_transform()
+    down_energies, down_matrix, down_constant = quad_ham_down.diagonalizing_bogoliubov_transform()
+
+    n = n_spatial_orbitals
+    n_qubits = 2 * n
+    transformation_matrix = numpy.zeros((n_qubits, 2 * n_qubits), dtype=complex)
+    transformation_matrix[:n, :n] = up_matrix[:, :n]
+    transformation_matrix[:n, n_qubits : n_qubits + n] = up_matrix[:, n:]
+    transformation_matrix[n:, n:n_qubits] = down_matrix[:, :n]
+    transformation_matrix[n:, n_qubits + n :] = down_matrix[:, n:]
+    return (
+        transformation_matrix,
+        (quad_ham_up, up_energies, up_constant),
+        (quad_ham_down, down_energies, down_constant),
+    )
+
+
+def test_bogoliubov_transform_spin_block_gaussian_regression():
+    """Regression test for issue #776.
+
+    A non-square transformation matrix that does not mix spin sectors used to
+    be misidentified as a square spin-block-diagonal matrix, leading to bogus
+    slicing and a ValueError when constructing the circuit.
+    """
+    qubits = LineQubit.range(2)
+    phase = -9.57167901e-01 - 2.89533435e-01j
+    phase /= abs(phase)
+    transformation_matrix = numpy.array([[phase, 0, 0, 0], [0, 1, 0, 0]], dtype=complex)
+
+    circuit = cirq.Circuit(
+        bogoliubov_transform(qubits, transformation_matrix), cirq.I.on_each(*qubits)
+    )
+
+    # The transformation is a phase rotation of mode 0, so it should leave
+    # computational basis states invariant up to phase.
+    state = circuit.final_state_vector(initial_state=0, qubit_order=qubits, dtype=numpy.complex128)
+    expected_state = numpy.zeros(4, dtype=numpy.complex128)
+    expected_state[0] = 1
+    cirq.testing.assert_allclose_up_to_global_phase(state, expected_state, atol=1e-6)
+
+
+@pytest.mark.parametrize(
+    'n_spatial_orbitals, real, up_orbitals, down_orbitals',
+    [(2, True, [0], [0, 1]), (2, False, [1], []), (3, True, [0, 2], [1]), (3, False, [], [0, 2])],
+)
+def test_bogoliubov_transform_spin_block_gaussian(
+    n_spatial_orbitals, real, up_orbitals, down_orbitals, atol=5e-5
+):
+    """A non-particle-conserving transform that does not mix spin sectors must
+    prepare eigenstates of the combined Hamiltonian with the correct energy."""
+    n_qubits = 2 * n_spatial_orbitals
+    qubits = LineQubit.range(n_qubits)
+    sim = cirq.Simulator(dtype=numpy.complex128)
+
+    transformation_matrix, up_data, down_data = _independent_spin_sector_transform(
+        n_spatial_orbitals, 51624, 48201, real
+    )
+    quad_ham_up, up_energies, up_constant = up_data
+    quad_ham_down, down_energies, down_constant = down_data
+
+    # Combined Hamiltonian with spin-down modes shifted to come after spin-up
+    ferm_op = openfermion.get_fermion_operator(quad_ham_up)
+    for term, coefficient in openfermion.get_fermion_operator(quad_ham_down).terms.items():
+        shifted_term = tuple((index + n_spatial_orbitals, action) for index, action in term)
+        ferm_op += openfermion.FermionOperator(shifted_term, coefficient)
+    combined_ham_sparse = get_sparse_operator(ferm_op, n_qubits=n_qubits)
+
+    energy = (
+        sum(up_energies[i] for i in up_orbitals)
+        + sum(down_energies[i] for i in down_orbitals)
+        + up_constant
+        + down_constant
+    )
+    occupied_orbitals = list(up_orbitals) + [i + n_spatial_orbitals for i in down_orbitals]
+    initial_state = sum(2 ** (n_qubits - 1 - int(i)) for i in occupied_orbitals)
+
+    circuit = cirq.Circuit(
+        bogoliubov_transform(qubits, transformation_matrix, initial_state=initial_state)
+    )
+    state = sim.simulate(
+        circuit, initial_state=initial_state, qubit_order=qubits
+    ).final_state_vector
+
+    numpy.testing.assert_allclose(combined_ham_sparse.dot(state), energy * state, atol=atol)
+
+
+@pytest.mark.parametrize(
+    'n_spatial_orbitals, seed_up, seed_down, real',
+    [
+        # The (2, 1000, ...) case has a parity-preserving spin-up sector while
+        # the (2, 1001, ...) case has a parity-flipping one; the latter is the
+        # regression guard for the spin-down Jordan-Wigner sign correction.
+        (2, 1000, 2000, True),
+        (2, 1001, 2001, True),
+        (3, 1000, 2000, False),
+        (3, 1001, 2001, True),
+    ],
+)
+def test_bogoliubov_transform_spin_block_operator_algebra(
+    n_spatial_orbitals, seed_up, seed_down, real, atol=1e-6
+):
+    """The factorized circuit must implement the documented transformation
+    exactly: U a_p^dagger U^-1 = b_p^dagger for every mode p, including the
+    cross-sector Jordan-Wigner sign carried by spin-down operators. Eigenstate
+    energies cannot detect a wrong sign on b_p^dagger, so this checks the full
+    operator algebra of the circuit's unitary directly.
+    """
+    n_qubits = 2 * n_spatial_orbitals
+    qubits = LineQubit.range(n_qubits)
+    transformation_matrix, _, _ = _independent_spin_sector_transform(
+        n_spatial_orbitals, seed_up, seed_down, real
+    )
+
+    circuit = cirq.Circuit(
+        bogoliubov_transform(qubits, transformation_matrix), cirq.I.on_each(*qubits)
+    )
+    unitary = circuit.unitary(qubit_order=qubits)
+
+    def ladder(mode, action):
+        return get_sparse_operator(
+            openfermion.FermionOperator(((mode, action),)), n_qubits=n_qubits
+        ).toarray()
+
+    for p in range(n_qubits):
+        transformed = unitary @ ladder(p, 1) @ unitary.conj().T
+        expected = numpy.zeros_like(transformed)
+        for q in range(n_qubits):
+            expected += transformation_matrix[p, q] * ladder(q, 1)
+            expected += transformation_matrix[p, n_qubits + q] * ladder(q, 0)
+        numpy.testing.assert_allclose(transformed, expected, atol=atol)
+
+
+def test_bogoliubov_transform_spin_mixing_gaussian_not_split(atol=5e-5):
+    """A transform whose annihilation block mixes spin sectors must use the
+    general procedure even if its creation block is spin-block-diagonal."""
+    n_qubits = 4
+    qubits = LineQubit.range(n_qubits)
+    sim = cirq.Simulator(dtype=numpy.complex128)
+
+    # A pairing Hamiltonian whose antisymmetric part couples the two sectors
+    quad_ham = random_quadratic_hamiltonian(
+        n_qubits, conserves_particle_number=False, real=True, seed=63003
+    )
+    quad_ham_sparse = get_sparse_operator(quad_ham)
+    energies, transformation_matrix, constant = quad_ham.diagonalizing_bogoliubov_transform()
+
+    occupied_orbitals = [0, 2]
+    energy = sum(energies[i] for i in occupied_orbitals) + constant
+    initial_state = sum(2 ** (n_qubits - 1 - int(i)) for i in occupied_orbitals)
+
+    circuit = cirq.Circuit(
+        bogoliubov_transform(qubits, transformation_matrix, initial_state=initial_state)
+    )
+    state = sim.simulate(
+        circuit, initial_state=initial_state, qubit_order=qubits
+    ).final_state_vector
+
+    numpy.testing.assert_allclose(quad_ham_sparse.dot(state), energy * state, atol=atol)
+
+
 @pytest.mark.parametrize(
     'n_qubits, conserves_particle_number', [(4, True), (4, False), (5, True), (5, False)]
 )

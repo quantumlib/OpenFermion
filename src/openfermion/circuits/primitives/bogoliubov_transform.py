@@ -92,13 +92,14 @@ def bogoliubov_transform(
         initial_state = _occupied_orbitals(initial_state, n_qubits)
     initially_occupied_orbitals = cast(Optional[Sequence[int]], initial_state)
 
-    # If the transformation matrix is block diagonal with two blocks,
-    # do each block separately
-    if _is_spin_block_diagonal(transformation_matrix):
-        up_block = transformation_matrix[: n_qubits // 2, : n_qubits // 2]
+    # If the transformation matrix does not mix the two spin sectors, do each
+    # sector separately. This is both faster (two half-size decompositions) and
+    # more robust: the general fermionic Gaussian decomposition is numerically
+    # unreliable on exactly block-structured matrices. See issue #776.
+    spin_blocks = _spin_blocks(transformation_matrix)
+    if spin_blocks is not None:
+        up_block, down_block = spin_blocks
         up_qubits = qubits[: n_qubits // 2]
-
-        down_block = transformation_matrix[n_qubits // 2 :, n_qubits // 2 :]
         down_qubits = qubits[n_qubits // 2 :]
 
         if initially_occupied_orbitals is None:
@@ -109,6 +110,17 @@ def bogoliubov_transform(
             down_orbitals = [
                 i - n_qubits // 2 for i in initially_occupied_orbitals if i >= n_qubits // 2
             ]
+
+        # Spin-down ladder operators carry a Jordan-Wigner Z string over all
+        # spin-up qubits, so they anticommute with the spin-up parity operator.
+        # If the spin-up circuit flips spin-up parity (an odd number of
+        # particle-hole transformations) the factorized circuit would realize
+        # the spin-down operators with a flipped sign. A layer of Z gates on the
+        # spin-down qubits restores the documented action U a_p^dagger U^-1 =
+        # b_p^dagger. When an initial computational basis state is fixed this
+        # only contributes an irrelevant global phase, so it is skipped there.
+        if initially_occupied_orbitals is None and not _preserves_parity(up_block):
+            yield (cirq.Z(q) for q in down_qubits)
 
         yield bogoliubov_transform(up_qubits, up_block, initial_state=up_orbitals)
         yield bogoliubov_transform(down_qubits, down_block, initial_state=down_orbitals)
@@ -122,6 +134,38 @@ def bogoliubov_transform(
         yield _gaussian_basis_change(qubits, transformation_matrix, initially_occupied_orbitals)
 
 
+def _spin_blocks(matrix: numpy.ndarray) -> Optional[Tuple[numpy.ndarray, numpy.ndarray]]:
+    r"""Split a transformation matrix into independent spin-sector transforms.
+
+    Returns a pair of transformation matrices (spin-up block, spin-down block)
+    if the transformation does not mix the two spin sectors, assuming modes are
+    ordered with all spin-up modes before all spin-down modes. Returns None if
+    the transformation mixes the sectors.
+
+    For an $N \times N$ matrix the blocks are the diagonal blocks. An
+    $N \times 2N$ matrix $W = (W_1 \; W_2)$ acts on the column vector of all
+    creation operators followed by all annihilation operators, so it preserves
+    the spin sectors if and only if both $W_1$ and $W_2$ are block diagonal;
+    the sector transforms are then $(N/2) \times N$ matrices formed from the
+    corresponding diagonal blocks of $W_1$ and $W_2$.
+    """
+    n, m = matrix.shape
+    if n % 2:
+        return None
+    k = n // 2
+    if m == n:
+        if _is_spin_block_diagonal(matrix):
+            return matrix[:k, :k], matrix[k:, k:]
+        return None
+    left_block = matrix[:, :n]
+    right_block = matrix[:, n:]
+    if _is_spin_block_diagonal(left_block) and _is_spin_block_diagonal(right_block):
+        up_block = numpy.concatenate([left_block[:k, :k], right_block[:k, :k]], axis=1)
+        down_block = numpy.concatenate([left_block[k:, k:], right_block[k:, k:]], axis=1)
+        return up_block, down_block
+    return None
+
+
 def _is_spin_block_diagonal(matrix) -> bool:
     n = matrix.shape[0]
     if n % 2:
@@ -129,6 +173,28 @@ def _is_spin_block_diagonal(matrix) -> bool:
     max_upper_right = numpy.max(numpy.abs(matrix[: n // 2, n // 2 :]))
     max_lower_left = numpy.max(numpy.abs(matrix[n // 2 :, : n // 2]))
     return numpy.isclose(max_upper_right, 0.0) and numpy.isclose(max_lower_left, 0.0)
+
+
+def _preserves_parity(transformation_matrix: numpy.ndarray) -> bool:
+    r"""Whether the Bogoliubov circuit for this block preserves fermion parity.
+
+    A particle-number-conserving (square) transformation uses only Givens
+    rotations and always preserves parity. A general $N \times 2N$ Gaussian
+    transformation preserves parity if and only if its fermionic Gaussian
+    decomposition contains an even number of particle-hole transformations
+    (each of which is realized as an X gate, which flips the parity).
+    """
+    n, m = transformation_matrix.shape
+    if m == n:
+        return True
+    # Rearrange exactly as _gaussian_basis_change does, so the particle-hole
+    # count matches the circuit that will actually be generated.
+    left_block = transformation_matrix[:, :n]
+    right_block = transformation_matrix[:, n:]
+    rearranged = numpy.block([numpy.conjugate(right_block), numpy.conjugate(left_block)])
+    decomposition, _, _, _ = linalg.fermionic_gaussian_decomposition(rearranged)
+    num_particle_hole = sum(op == 'pht' for parallel_ops in decomposition for op in parallel_ops)
+    return num_particle_hole % 2 == 0
 
 
 def _occupied_orbitals(computational_basis_state: int, n_qubits) -> List[int]:
