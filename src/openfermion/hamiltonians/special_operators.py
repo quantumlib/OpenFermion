@@ -11,6 +11,7 @@
 #   limitations under the License.
 """Commonly used operators (mainly instances of SymbolicOperator)."""
 
+import numbers
 from typing import Optional, Union, Tuple
 
 from openfermion.ops.operators import BosonOperator, FermionOperator
@@ -236,7 +237,7 @@ def majorana_operator(
     Returns:
         FermionOperator
     """
-    if not isinstance(coefficient, (int, float, complex)):
+    if not isinstance(coefficient, (int, float, complex, numbers.Number)):
         raise ValueError('Coefficient must be scalar.')
 
     # If term is a string, convert it to a tuple

@@ -277,3 +277,19 @@ class DOCIHamiltonianTest(unittest.TestCase):
             + "Hamiltonian\n"
             + str(sub_matrix)
         )
+
+
+def test_doci_numpy_scalar_coefficients():
+    """NumPy scalar coefficients behave like Python scalars (issue #1097)."""
+    doci = DOCIHamiltonian(
+        1.0,
+        numpy.array([1.0, 2.0]),
+        numpy.array([[0.0, 0.5], [0.5, 0.0]]),
+        numpy.array([[0.0, 0.3], [0.3, 0.0]]),
+    )
+    cases = [(numpy.int64(2), 2), (numpy.float32(0.5), 0.5)]
+    for numpy_scalar, python_scalar in cases:
+        assert doci * numpy_scalar == doci * python_scalar
+        assert doci + numpy_scalar == doci + python_scalar
+        assert doci - numpy_scalar == doci - python_scalar
+        assert doci / numpy_scalar == doci / python_scalar

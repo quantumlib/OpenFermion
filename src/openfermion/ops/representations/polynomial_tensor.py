@@ -14,13 +14,14 @@ fermionic ladder operators."""
 
 import copy
 import itertools
+import numbers
 import operator
 
 import numpy
 
 from openfermion.config import EQ_TOLERANCE
 
-COEFFICIENT_TYPES = (int, float, complex)
+COEFFICIENT_TYPES = (int, float, complex, numbers.Number)
 
 
 class PolynomialTensorError(Exception):

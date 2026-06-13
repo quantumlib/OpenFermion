@@ -238,3 +238,27 @@ def test_majorana_operator_str():
 def test_majorana_operator_repr():
     a = MajoranaOperator((0, 1, 5), 1.5)
     assert repr(a) == 'MajoranaOperator.from_dict(terms={(0, 1, 5): 1.5})'
+
+
+def test_majorana_operator_numpy_scalar_coefficients():
+    """NumPy scalar coefficients behave like Python scalars (issue #1097)."""
+    op = MajoranaOperator((0, 1), 1.0) + MajoranaOperator((2, 3), 2.0)
+    cases = [(numpy.int64(2), 2), (numpy.float32(0.5), 0.5), (numpy.complex64(1 + 2j), 1 + 2j)]
+    for numpy_scalar, python_scalar in cases:
+        assert op * numpy_scalar == op * python_scalar
+        assert numpy_scalar * op == python_scalar * op
+        assert op + numpy_scalar == op + python_scalar
+        assert op - numpy_scalar == op - python_scalar
+        assert op / numpy_scalar == op / python_scalar
+    assert op.commutes_with(numpy.int64(5))
+
+    # In-place operators, using exact values so the comparison is not subject
+    # to float32 round-off across the sequence of operations.
+    for numpy_scalar, python_scalar in [(numpy.int64(2), 2), (numpy.float32(0.5), 0.5)]:
+        numpy_op = MajoranaOperator((0, 1), 1.0) + MajoranaOperator((2, 3), 2.0)
+        python_op = MajoranaOperator((0, 1), 1.0) + MajoranaOperator((2, 3), 2.0)
+        numpy_op *= numpy_scalar
+        python_op *= python_scalar
+        numpy_op /= numpy_scalar
+        python_op /= python_scalar
+        assert numpy_op == python_op
