@@ -165,14 +165,14 @@ def error_bound(terms, tight=False):
 
                 for beta in range(alpha + 1, len(terms)):
                     term_b = terms[beta]
-                    (coefficient_b,) = term_b.terms.values()
                     if not (
                         trivially_commutes(term_a, term_b) or commutator(term_a, term_b) == zero
                     ):
+                        (coefficient_b,) = term_b.terms.values()
                         error_a += abs(coefficient_b)
 
-                error += 4.0 * abs(coefficient_a) ** 2 * error_a
-                error += 4.0 * abs(coefficient_a) * error_a**2
+                acoefficient_a = abs(coefficient_a)
+                error += 4.0 * acoefficient_a * error_a * (acoefficient_a + error_a)
 
     return error
 
