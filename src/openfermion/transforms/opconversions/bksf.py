@@ -340,7 +340,7 @@ def edge_operator_b(edge_matrix_indices: numpy.ndarray, i: int) -> QubitOperator
     qubit_position_matrix = numpy.array(numpy.where(edge_matrix_indices == i))
     qubit_position = qubit_position_matrix[1][:]
     qubit_position = numpy.sort(qubit_position)
-    operator = tuple()
+    operator: tuple[tuple[int, str], ...] = ()
     for d1 in qubit_position:
         operator += ((int(d1), 'Z'),)
     B_i += QubitOperator(operator)
@@ -359,7 +359,7 @@ def edge_operator_aij(edge_matrix_indices: numpy.ndarray, i: int, j: int) -> Qub
         An instance of QubitOperator
     """
     a_ij = QubitOperator()
-    operator = tuple()
+    operator: tuple[tuple[int, str], ...] = ()
     position_ij = -1
     qubit_position_i = numpy.array(numpy.where(edge_matrix_indices == i))
     for edge_index in range(numpy.size(edge_matrix_indices[0, :])):
@@ -401,7 +401,7 @@ def vacuum_operator(edge_matrix_indices: numpy.ndarray) -> QubitOperator:
 
     """
     # Initialize qubit operator.
-    g = networkx.Graph()
+    g: networkx.Graph = networkx.Graph()
     g.add_edges_from(tuple(edge_matrix_indices.transpose()))
     stabs = numpy.array(networkx.cycle_basis(g))
     vac_operator = QubitOperator(())
