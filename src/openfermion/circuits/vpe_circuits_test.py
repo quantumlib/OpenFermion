@@ -15,6 +15,7 @@ import numpy
 import cirq
 
 from openfermion.measurements import get_phase_function
+from openfermion.testing import retry_once_with_later_random_values
 
 from .vpe_circuits import vpe_single_circuit, vpe_circuits_single_timestep
 
@@ -35,7 +36,7 @@ def test_single_circuit():
     assert data_counts[1] == 100
 
 
-@cirq.testing.retry_once_with_later_random_values
+@retry_once_with_later_random_values
 def test_single_timestep():
     q0 = cirq.GridQubit(0, 0)
     q1 = cirq.GridQubit(0, 1)
