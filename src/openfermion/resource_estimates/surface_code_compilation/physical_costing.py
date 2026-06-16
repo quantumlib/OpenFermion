@@ -9,8 +9,8 @@ from typing import Tuple, Iterator
 class MagicStateFactory:
     details: str
     physical_qubit_footprint: int
-    rounds: int
-    failure_rate: int
+    rounds: float
+    failure_rate: float
 
 
 @dataclasses.dataclass(frozen=True, unsafe_hash=True)

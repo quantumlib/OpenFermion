@@ -56,6 +56,7 @@ def dual_basis_external_potential(
     if non_periodic and period_cutoff is None:
         period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
     operator = None
+    spins: list[Optional[int]]
     if spinless:
         spins = [None]
     else:
