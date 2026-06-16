@@ -11,14 +11,13 @@
 #   limitations under the License.
 """Class and functions to store interaction operators."""
 
-import numbers
-
 import numpy
 
+import openfermion.config as config
 from openfermion.ops import QubitOperator
 from openfermion.ops.representations import PolynomialTensor, get_tensors_from_integrals
 
-COEFFICIENT_TYPES = (int, float, complex, numbers.Number)
+COEFFICIENT_TYPES = config.COEFFICIENT_TYPES
 
 
 class DOCIHamiltonian(PolynomialTensor):

@@ -10,10 +10,16 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import numbers
 import os
 
 # Tolerance to consider number zero.
 EQ_TOLERANCE = 1e-8
+
+# Numeric types accepted as operator and tensor coefficients. numbers.Number
+# covers Python and NumPy scalar types alike (NumPy scalars are not subclasses
+# of the built-in int/float/complex types).
+COEFFICIENT_TYPES = (int, float, complex, numbers.Number)
 
 # Molecular data directory.
 THIS_DIRECTORY = os.path.dirname(os.path.realpath(__file__))

@@ -13,11 +13,12 @@
 
 import copy
 import itertools
-import numbers
 
 import numpy
 
-COEFFICIENT_TYPES = (int, float, complex, numbers.Number)
+import openfermion.config as config
+
+COEFFICIENT_TYPES = config.COEFFICIENT_TYPES
 
 
 class MajoranaOperator:
@@ -179,7 +180,7 @@ class MajoranaOperator:
         return minuend
 
     def __mul__(self, other):
-        if not isinstance(other, (type(self), COEFFICIENT_TYPES)):
+        if not isinstance(other, _MAJORANA_MUL_TYPES):
             return NotImplemented
 
         if isinstance(other, COEFFICIENT_TYPES):
@@ -198,7 +199,7 @@ class MajoranaOperator:
         return MajoranaOperator.from_dict(terms)
 
     def __imul__(self, other):
-        if not isinstance(other, (type(self), COEFFICIENT_TYPES)):
+        if not isinstance(other, _MAJORANA_MUL_TYPES):
             return NotImplemented
 
         if isinstance(other, COEFFICIENT_TYPES):
@@ -277,6 +278,12 @@ class MajoranaOperator:
 
     def __repr__(self):
         return 'MajoranaOperator.from_dict(terms={!r})'.format(self.terms)
+
+
+# Types accepted by MajoranaOperator multiplication: another MajoranaOperator or
+# a scalar coefficient. Defined here, after the class, so the tuple is built once
+# at import rather than on every __mul__/__imul__ call.
+_MAJORANA_MUL_TYPES = (MajoranaOperator,) + COEFFICIENT_TYPES
 
 
 def _sort_majorana_term(term):
