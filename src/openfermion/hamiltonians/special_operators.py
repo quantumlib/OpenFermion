@@ -13,8 +13,11 @@
 
 from typing import Optional, Union, Tuple
 
+import openfermion.config as config
 from openfermion.ops.operators import BosonOperator, FermionOperator
 from openfermion.utils.indexing import down_index, up_index
+
+COEFFICIENT_TYPES = config.COEFFICIENT_TYPES
 
 
 def s_plus_operator(n_spatial_orbitals: int) -> FermionOperator:
@@ -236,7 +239,7 @@ def majorana_operator(
     Returns:
         FermionOperator
     """
-    if not isinstance(coefficient, (int, float, complex)):
+    if not isinstance(coefficient, COEFFICIENT_TYPES):
         raise ValueError('Coefficient must be scalar.')
 
     # If term is a string, convert it to a tuple

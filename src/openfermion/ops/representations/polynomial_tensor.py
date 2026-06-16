@@ -18,9 +18,10 @@ import operator
 
 import numpy
 
-from openfermion.config import EQ_TOLERANCE
+import openfermion.config as config
 
-COEFFICIENT_TYPES = (int, float, complex)
+EQ_TOLERANCE = config.EQ_TOLERANCE
+COEFFICIENT_TYPES = config.COEFFICIENT_TYPES
 
 
 class PolynomialTensorError(Exception):

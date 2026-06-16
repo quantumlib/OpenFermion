@@ -13,7 +13,12 @@
 
 import copy
 import itertools
+
 import numpy
+
+import openfermion.config as config
+
+COEFFICIENT_TYPES = config.COEFFICIENT_TYPES
 
 
 class MajoranaOperator:
@@ -78,7 +83,7 @@ class MajoranaOperator:
 
     def commutes_with(self, other):
         """Test commutation with another MajoranaOperator"""
-        if isinstance(other, (int, float, complex)):
+        if isinstance(other, COEFFICIENT_TYPES):
             return True
 
         if not isinstance(other, type(self)):
@@ -145,7 +150,7 @@ class MajoranaOperator:
                     self.terms[term] += coefficient
                 else:
                     self.terms[term] = coefficient
-        elif isinstance(other, (int, float, complex)):
+        elif isinstance(other, COEFFICIENT_TYPES):
             self.constant += other
         else:
             raise TypeError("Cannot add invalid type to {}".format(type(self)))
@@ -163,7 +168,7 @@ class MajoranaOperator:
                     self.terms[term] -= coefficient
                 else:
                     self.terms[term] = -coefficient
-        elif isinstance(other, (int, float, complex)):
+        elif isinstance(other, COEFFICIENT_TYPES):
             self.constant -= other
         else:
             raise TypeError("Cannot subtract invalid type from {}".format(type(self)))
@@ -175,10 +180,10 @@ class MajoranaOperator:
         return minuend
 
     def __mul__(self, other):
-        if not isinstance(other, (type(self), int, float, complex)):
+        if not isinstance(other, _MAJORANA_MUL_TYPES):
             return NotImplemented
 
-        if isinstance(other, (int, float, complex)):
+        if isinstance(other, COEFFICIENT_TYPES):
             terms = {term: coefficient * other for term, coefficient in self.terms.items()}
             return MajoranaOperator.from_dict(terms)
 
@@ -194,10 +199,10 @@ class MajoranaOperator:
         return MajoranaOperator.from_dict(terms)
 
     def __imul__(self, other):
-        if not isinstance(other, (type(self), int, float, complex)):
+        if not isinstance(other, _MAJORANA_MUL_TYPES):
             return NotImplemented
 
-        if isinstance(other, (int, float, complex)):
+        if isinstance(other, COEFFICIENT_TYPES):
             for term in self.terms:
                 self.terms[term] *= other
             return self
@@ -205,19 +210,19 @@ class MajoranaOperator:
         return self * other
 
     def __rmul__(self, other):
-        if not isinstance(other, (int, float, complex)):
+        if not isinstance(other, COEFFICIENT_TYPES):
             return NotImplemented
         return self * other
 
     def __truediv__(self, other):
-        if not isinstance(other, (int, float, complex)):
+        if not isinstance(other, COEFFICIENT_TYPES):
             return NotImplemented
 
         terms = {term: coefficient / other for term, coefficient in self.terms.items()}
         return MajoranaOperator.from_dict(terms)
 
     def __itruediv__(self, other):
-        if not isinstance(other, (int, float, complex)):
+        if not isinstance(other, COEFFICIENT_TYPES):
             return NotImplemented
 
         for term in self.terms:
@@ -273,6 +278,12 @@ class MajoranaOperator:
 
     def __repr__(self):
         return 'MajoranaOperator.from_dict(terms={!r})'.format(self.terms)
+
+
+# Types accepted by MajoranaOperator multiplication: another MajoranaOperator or
+# a scalar coefficient. Defined here, after the class, so the tuple is built once
+# at import rather than on every __mul__/__imul__ call.
+_MAJORANA_MUL_TYPES = (MajoranaOperator,) + COEFFICIENT_TYPES
 
 
 def _sort_majorana_term(term):
