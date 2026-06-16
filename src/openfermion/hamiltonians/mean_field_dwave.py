@@ -73,6 +73,9 @@ def mean_field_dwave(
     Returns:
         mean_field_dwave_model: An instance of the FermionOperator class.
     """  # pylint: disable=line-too-long
+    if chemical_potential is None:
+        chemical_potential = 0.0
+
     # Initialize fermion operator class.
     n_sites = x_dimension * y_dimension
     n_spin_orbitals = 2 * n_sites

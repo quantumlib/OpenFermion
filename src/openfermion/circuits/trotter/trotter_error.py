@@ -106,7 +106,7 @@ def error_operator(terms, series_order=2):
 
 
 def error_bound(terms, tight=False):
-    """
+    r"""
     Numerically upper bound the error in the ground state energy
     for the second order Trotter-Suzuki expansion.
 
@@ -122,9 +122,26 @@ def error_bound(terms, tight=False):
 
     Notes: follows Poulin et al.'s work in "The Trotter Step Size
            Required for Accurate Quantum Simulation of Quantum
-           Chemistry". In particular, Equation 16 is used for a loose
-           upper bound, and the norm of Equation 9 is calculated for
-           a tighter bound using the error operator from error_operator.
+           Chemistry". For a tighter bound, the 1-norm of Equation 9
+           is used with the error operator from error_operator:
+
+           $$
+           \Delta E_{\text{tight}} = \frac{1}{12} \left\|
+           \sum_{\beta} \sum_{\alpha \leq \beta} \sum_{\alpha' < \beta}
+           \left[ H_\alpha \left(1 - \frac{\delta_{\alpha\beta}}{2}\right),
+           [H_{\beta}, H_{\alpha'}] \right] \right\| \Delta t^2
+           $$
+
+           For the loose bound, Equation 16 is used to bound term 2
+           of Equation 6, and a similar expression is used for term 1:
+
+           $$
+           \Delta E_{\text{loose}} =
+           4 \sum_{\alpha} \lVert H_{\alpha} \rVert
+           \left( \sum_{\beta}' \lVert H_{\beta} \rVert \right)^2 \Delta t^2
+           + 4 \sum_{\alpha} \lVert H_{\alpha} \rVert^2
+           \sum_{\beta}' \lVert H_{\beta} \rVert \Delta t^2
+           $$
 
            Possible extensions of this function would be to get the
            expectation value of the error operator with the Hartree-Fock
@@ -148,13 +165,14 @@ def error_bound(terms, tight=False):
 
                 for beta in range(alpha + 1, len(terms)):
                     term_b = terms[beta]
-                    (coefficient_b,) = term_b.terms.values()
                     if not (
                         trivially_commutes(term_a, term_b) or commutator(term_a, term_b) == zero
                     ):
+                        (coefficient_b,) = term_b.terms.values()
                         error_a += abs(coefficient_b)
 
-                error += 4.0 * abs(coefficient_a) * error_a**2
+                acoefficient_a = abs(coefficient_a)
+                error += 4.0 * acoefficient_a * error_a * (acoefficient_a + error_a)
 
     return error
 

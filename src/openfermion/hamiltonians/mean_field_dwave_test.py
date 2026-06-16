@@ -82,6 +82,11 @@ class MeanfieldDwaveTest(unittest.TestCase):
         self.assertAlmostEqual(mean_field_dwave_model.terms[((7, 0), (2, 0))], self.sc_gap / 2)
         self.assertAlmostEqual(mean_field_dwave_model.terms[((6, 0), (3, 0))], -self.sc_gap / 2)
 
+    def test_none_chemical_potential_matches_zero(self):
+        zero_model = mean_field_dwave(2, 2, self.tunneling, self.sc_gap, 0.0)
+        none_model = mean_field_dwave(2, 2, self.tunneling, self.sc_gap, None)
+        self.assertEqual(zero_model.terms, none_model.terms)
+
     def test_two_by_three_spinless_periodic_rudimentary(self):
         mean_field_dwave_model = mean_field_dwave(2, 3, self.tunneling, self.sc_gap)
         # Check top/bottom hopping terms.

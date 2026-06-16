@@ -19,7 +19,7 @@ from .adagrad import adagrad
 
 # set mkl thread count for numpy einsum/tensordot calls
 # leave one CPU un used  so we can still access this computer
-os.environ["MKL_NUM_THREADS"] = "{}".format(os.cpu_count() - 1)
+os.environ["MKL_NUM_THREADS"] = str(max((os.cpu_count() or 1) - 1, 1))
 
 
 def thc_objective_jax(xcur, norb, nthc, eri):
