@@ -180,21 +180,23 @@ def _preserves_parity(transformation_matrix: numpy.ndarray) -> bool:
 
     A particle-number-conserving (square) transformation uses only Givens
     rotations and always preserves parity. A general $N \times 2N$ Gaussian
-    transformation preserves parity if and only if its fermionic Gaussian
-    decomposition contains an even number of particle-hole transformations
-    (each of which is realized as an X gate, which flips the parity).
+    transformation preserves parity if and only if the orthogonal matrix that
+    implements it on the Majorana operators lies in the identity component of
+    O(2N), i.e. has determinant $+1$; the other component requires an odd
+    number of particle-hole transformations, each an X gate that flips the
+    parity. That determinant equals the determinant of the unitary
+    Bogoliubov-de Gennes extension of $W = (W_1 \; W_2)$, namely
+    $\begin{pmatrix} W_1 & W_2 \\ W_2^* & W_1^* \end{pmatrix}$, which is real and
+    equal to $\pm 1$, so the parity is read off directly without running the
+    full fermionic Gaussian decomposition.
     """
     n, m = transformation_matrix.shape
     if m == n:
         return True
-    # Rearrange exactly as _gaussian_basis_change does, so the particle-hole
-    # count matches the circuit that will actually be generated.
-    left_block = transformation_matrix[:, :n]
-    right_block = transformation_matrix[:, n:]
-    rearranged = numpy.block([numpy.conjugate(right_block), numpy.conjugate(left_block)])
-    decomposition, _, _, _ = linalg.fermionic_gaussian_decomposition(rearranged)
-    num_particle_hole = sum(op == 'pht' for parallel_ops in decomposition for op in parallel_ops)
-    return num_particle_hole % 2 == 0
+    w1 = transformation_matrix[:, :n]
+    w2 = transformation_matrix[:, n:]
+    bogoliubov_de_gennes = numpy.block([[w1, w2], [numpy.conjugate(w2), numpy.conjugate(w1)]])
+    return numpy.isclose(numpy.linalg.det(bogoliubov_de_gennes), 1.0)
 
 
 def _occupied_orbitals(computational_basis_state: int, n_qubits) -> List[int]:
