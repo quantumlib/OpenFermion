@@ -474,39 +474,33 @@ class PolynomialTensorTest(unittest.TestCase):
         polynomial_tensor.rotate_basis(rotation_matrix_reverse)
         self.assertEqual(polynomial_tensor, want_polynomial_tensor)
 
-    def test_rotate_basis_90deg(self):
-        rotation_matrix_90deg = numpy.zeros((self.n_qubits, self.n_qubits))
-        rotation_matrix_90deg[0, 1] = -1
-        rotation_matrix_90deg[1, 0] = 1
+    def test_rotate_basis_cyclic(self):
+        n_qubits = 3
+        # Cyclic permutation matrix: 0->1, 1->2, 2->0
+        rotation_matrix = numpy.zeros((n_qubits, n_qubits))
+        rotation_matrix[0, 1] = 1
+        rotation_matrix[1, 2] = 1
+        rotation_matrix[2, 0] = 1
 
-        one_body = numpy.zeros((self.n_qubits, self.n_qubits))
-        two_body = numpy.zeros((self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits))
-        one_body_90deg = numpy.zeros((self.n_qubits, self.n_qubits))
-        two_body_90deg = numpy.zeros((self.n_qubits, self.n_qubits, self.n_qubits, self.n_qubits))
-        i = 0
-        j = 0
-        i_90deg = pow(self.n_qubits, 2) - 1
-        j_90deg = pow(self.n_qubits, 4) - 1
-        for p in range(self.n_qubits):
-            for q in range(self.n_qubits):
-                one_body[p, q] = i
-                i = i + 1
-                one_body_90deg[p, q] = (-1) ** ([p, q].count(0)) * i_90deg
-                i_90deg = i_90deg - 1
-                for r in range(self.n_qubits):
-                    for s in range(self.n_qubits):
-                        two_body[p, q, r, s] = j
-                        j = j + 1
-                        two_body_90deg[p, q, r, s] = (-1) ** ([p, q, r, s].count(0)) * j_90deg
-                        j_90deg = j_90deg - 1
+        one_body = numpy.arange(n_qubits**2, dtype=float).reshape((n_qubits, n_qubits))
+        two_body = numpy.arange(n_qubits**4, dtype=float).reshape(
+            (n_qubits, n_qubits, n_qubits, n_qubits)
+        )
         polynomial_tensor = PolynomialTensor(
             {(): self.constant, (1, 0): one_body, (1, 1, 0, 0): two_body}
         )
-        want_polynomial_tensor = PolynomialTensor(
-            {(): self.constant, (1, 0): one_body_90deg, (1, 1, 0, 0): two_body_90deg}
+
+        # map from rotated index to old index rotation_map[new_ind] = old_ind
+        # R maps 1->0, 2->1, 0->2. So new index 0 comes from old 1, etc.
+        rotation_map = [1, 2, 0]
+        ref_one_body = one_body[numpy.ix_(rotation_map, rotation_map)]
+        ref_two_body = two_body[numpy.ix_(rotation_map, rotation_map, rotation_map, rotation_map)]
+        ref_polynomial_tensor = PolynomialTensor(
+            {(): self.constant, (1, 0): ref_one_body, (1, 1, 0, 0): ref_two_body}
         )
-        polynomial_tensor.rotate_basis(rotation_matrix_90deg)
-        self.assertEqual(polynomial_tensor, want_polynomial_tensor)
+
+        polynomial_tensor.rotate_basis(rotation_matrix)
+        self.assertEqual(polynomial_tensor, ref_polynomial_tensor)
 
     def test_rotate_basis_quadratic_hamiltonian_real(self):
         self.do_rotate_basis_quadratic_hamiltonian(True)
