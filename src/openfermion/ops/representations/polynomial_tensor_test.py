@@ -536,3 +536,19 @@ class PolynomialTensorTest(unittest.TestCase):
         polynomial_tensor.rotate_basis(numpy.array([[rotation]]))
 
         return polynomial_tensor, want_polynomial_tensor
+
+    def test_numpy_scalar_coefficients(self):
+        """NumPy scalar coefficients behave like Python scalars (issue #1097)."""
+        tensor = PolynomialTensor(
+            {
+                (): 1.0,
+                (1, 0): numpy.array([[1.0, 2.0], [3.0, 4.0]]),
+                (1, 1, 0, 0): numpy.arange(16, dtype=float).reshape((2, 2, 2, 2)),
+            }
+        )
+        cases = [(numpy.int64(2), 2), (numpy.int32(3), 3), (numpy.float32(0.5), 0.5)]
+        for numpy_scalar, python_scalar in cases:
+            self.assertEqual(tensor * numpy_scalar, tensor * python_scalar)
+            self.assertEqual(tensor + numpy_scalar, tensor + python_scalar)
+            self.assertEqual(tensor - numpy_scalar, tensor - python_scalar)
+            self.assertEqual(tensor / numpy_scalar, tensor / python_scalar)

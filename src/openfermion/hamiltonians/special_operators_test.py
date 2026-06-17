@@ -12,6 +12,9 @@
 """testing angular momentum generators. _fermion_spin_operators.py"""
 
 import unittest
+
+import numpy
+
 from openfermion.ops.operators import FermionOperator, BosonOperator
 from openfermion.utils import commutator
 from openfermion.transforms.opconversions import normal_ordered
@@ -204,3 +207,11 @@ class MajoranaOperatorTest(unittest.TestCase):
             majorana_operator('a')
         with self.assertRaises(ValueError):
             majorana_operator(2)
+
+    def test_builder_numpy_scalar_coefficient(self):
+        """The majorana_operator builder accepts NumPy scalar coefficients (issue #1097)."""
+        cases = [(numpy.int64(2), 2), (numpy.float32(0.5), 0.5), (numpy.complex64(1 + 2j), 1 + 2j)]
+        for numpy_scalar, python_scalar in cases:
+            self.assertEqual(
+                majorana_operator((1, 0), numpy_scalar), majorana_operator((1, 0), python_scalar)
+            )
