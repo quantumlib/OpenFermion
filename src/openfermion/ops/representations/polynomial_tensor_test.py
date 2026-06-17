@@ -474,6 +474,34 @@ class PolynomialTensorTest(unittest.TestCase):
         polynomial_tensor.rotate_basis(rotation_matrix_reverse)
         self.assertEqual(polynomial_tensor, want_polynomial_tensor)
 
+    def test_rotate_basis_cyclic(self):
+        n_qubits = 3
+        # Cyclic permutation matrix: 0->1, 1->2, 2->0
+        rotation_matrix = numpy.zeros((n_qubits, n_qubits))
+        rotation_matrix[0, 1] = 1
+        rotation_matrix[1, 2] = 1
+        rotation_matrix[2, 0] = 1
+
+        one_body = numpy.arange(n_qubits**2, dtype=float).reshape((n_qubits, n_qubits))
+        two_body = numpy.arange(n_qubits**4, dtype=float).reshape(
+            (n_qubits, n_qubits, n_qubits, n_qubits)
+        )
+        polynomial_tensor = PolynomialTensor(
+            {(): self.constant, (1, 0): one_body, (1, 1, 0, 0): two_body}
+        )
+
+        # map from rotated index to old index rotation_map[new_ind] = old_ind
+        # R maps 1->0, 2->1, 0->2. So new index 0 comes from old 1, etc.
+        rotation_map = [1, 2, 0]
+        ref_one_body = one_body[numpy.ix_(rotation_map, rotation_map)]
+        ref_two_body = two_body[numpy.ix_(rotation_map, rotation_map, rotation_map, rotation_map)]
+        ref_polynomial_tensor = PolynomialTensor(
+            {(): self.constant, (1, 0): ref_one_body, (1, 1, 0, 0): ref_two_body}
+        )
+
+        polynomial_tensor.rotate_basis(rotation_matrix)
+        self.assertEqual(polynomial_tensor, ref_polynomial_tensor)
+
     def test_rotate_basis_quadratic_hamiltonian_real(self):
         self.do_rotate_basis_quadratic_hamiltonian(True)
 
@@ -492,7 +520,7 @@ class PolynomialTensorTest(unittest.TestCase):
 
         # Rotate a basis where the Hamiltonian is diagonal
         _, diagonalizing_unitary, _ = quad_ham.diagonalizing_bogoliubov_transform()
-        quad_ham.rotate_basis(diagonalizing_unitary.T)
+        quad_ham.rotate_basis(diagonalizing_unitary)
 
         # Check that the rotated Hamiltonian is diagonal with the correct
         # orbital energies
@@ -515,6 +543,8 @@ class PolynomialTensorTest(unittest.TestCase):
             self.assertEqual(tensor, want_tensor)
         # I originally wanted to test 25 and 26, but it turns out that
         # numpy.einsum complains "too many subscripts in einsum" before 26.
+        # Currently, the sum of the number of output labels and combined labels
+        # can't not exceed NPY_MAXDIMS(=32).
 
         for order in [27, 28]:
             with self.assertRaises(ValueError):
