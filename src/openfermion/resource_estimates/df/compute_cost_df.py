@@ -81,13 +81,13 @@ def compute_cost(
         )
 
     # Bits of precision for rotation
-    br = int(np.argmin(oh) + 1)
+    br_first = int(np.argmin(oh) + 1)
 
     # The following costs are from the list starting on page 50.
 
     # The cost for preparing an equal superposition for preparing the first
     # register in step 1 (a). We double this cost to account for the inverse.
-    cost1a = 2 * (3 * nL + 2 * br - 3 * eta - 9)
+    cost1a = 2 * (3 * nL + 2 * br_first - 3 * eta - 9)
 
     # The output size for the QROM for the first state preparation in Eq. (C27)
     bp1 = nL + chi
@@ -103,9 +103,13 @@ def compute_cost(
     # The total cost for preparing the first register in step 1.
     cost1 = cost1a + cost1b + cost1cd
 
+    # The number of bits for rotating the ancilla for the second preparation.
+    # We are just entering this manually because it is a typical value.
+    br_second = 7
+
     # The output size for the QROM for the data to prepare the equal
     # superposition on the second register, as given in Eq. (C29).
-    bo = nxi + nLxi + br + 1
+    bo = nxi + nLxi + br_second + 1
 
     # This is step 2. This is the cost of outputting the data to prepare the
     # equal superposition on the second register. We will assume it is not
@@ -113,13 +117,9 @@ def compute_cost(
     # outputting the rotations.
     cost2 = QR(L + 1, bo)[1] + QI(L + 1)[1]
 
-    # The number of bits for rotating the ancilla for the second preparation.
-    # We are just entering this manually because it is a typical value.
-    br = 7
-
     # The cost of preparing an equal superposition over the second register in
     # a controlled way. We pay this cost 4 times.
-    cost3a = 4 * (7 * nxi + 2 * br - 6)
+    cost3a = 4 * (7 * nxi + 2 * br_second - 6)
 
     # The cost of the offset to apply the QROM for state preparation on the
     # second register.
