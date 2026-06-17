@@ -26,4 +26,8 @@ from .testing_utils import (
     module_importable,
 )
 
-from .wrapped import assert_equivalent_repr, assert_implements_consistent_protocols
+from .wrapped import (
+    assert_equivalent_repr,
+    assert_implements_consistent_protocols,
+    retry_once_with_later_random_values,
+)

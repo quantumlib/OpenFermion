@@ -65,3 +65,28 @@ def assert_implements_consistent_protocols(
             global_vals=global_vals,  # coverage: ignore
             local_vals=local_vals,  # coverage: ignore
         )  # coverage: ignore
+
+
+def retry_once_with_later_random_values(testfunc: Any) -> Any:
+    """Marks a test function for one retry with later random values.
+
+    This decorator is intended for test functions which occasionally fail
+    for specific random seeds from pytest-randomly.
+    """
+    try:
+        return cirq.testing.retry_once_with_later_random_values(testfunc)
+    except AttributeError:
+        # decorator not available in cirq < 1.5.0
+        import functools
+        import warnings
+
+        @functools.wraps(testfunc)
+        def wrapped_func(*args, **kwargs) -> Any:
+            try:
+                return testfunc(*args, **kwargs)
+            except AssertionError:
+                pass
+            warnings.warn("Retrying in case we got a failing seed from pytest-randomly.")
+            return testfunc(*args, **kwargs)
+
+        return wrapped_func
