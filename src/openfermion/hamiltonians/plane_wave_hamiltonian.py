@@ -11,7 +11,7 @@
 #   limitations under the License.
 """Construct Hamiltonians in plan wave basis and its dual in 3D."""
 
-from typing import List, Tuple, Optional, Union
+from typing import Tuple, Optional, Union
 
 import numpy as np
 
@@ -26,7 +26,7 @@ import openfermion.chem.molecular_data as md
 
 def dual_basis_external_potential(
     grid: Grid,
-    geometry: List[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]],
+    geometry: list[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]],
     spinless: bool,
     non_periodic: bool = False,
     period_cutoff: Optional[float] = None,
@@ -56,7 +56,7 @@ def dual_basis_external_potential(
     if non_periodic and period_cutoff is None:
         period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
     operator = None
-    spins: List[Optional[int]]
+    spins: list[Optional[int]]
     if spinless:
         spins = [None]
     else:
@@ -116,7 +116,7 @@ def filter_plane_wave_operator(
 
 def plane_wave_external_potential(
     grid: Grid,
-    geometry: List[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]],
+    geometry: list[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]],
     spinless: bool,
     e_cutoff: Optional[float] = None,
     non_periodic: bool = False,
@@ -158,7 +158,7 @@ def plane_wave_external_potential(
 def plane_wave_hamiltonian(
     grid: Grid,
     geometry: Optional[
-        List[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]]
+        list[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]]
     ] = None,
     spinless: bool = False,
     plane_wave: bool = True,
@@ -217,7 +217,7 @@ def plane_wave_hamiltonian(
 def jordan_wigner_dual_basis_hamiltonian(
     grid: Grid,
     geometry: Optional[
-        List[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]]
+        list[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]]
     ] = None,
     spinless: bool = False,
     include_constant: bool = False,
