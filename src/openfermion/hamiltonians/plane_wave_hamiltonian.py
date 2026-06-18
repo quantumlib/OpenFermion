@@ -11,8 +11,6 @@
 #   limitations under the License.
 """Construct Hamiltonians in plan wave basis and its dual in 3D."""
 
-from typing import Tuple, Optional, Union
-
 import numpy as np
 
 from openfermion.hamiltonians.jellium import jellium_model, jordan_wigner_dual_basis_jellium
@@ -26,10 +24,10 @@ import openfermion.chem.molecular_data as md
 
 def dual_basis_external_potential(
     grid: Grid,
-    geometry: list[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]],
+    geometry: list[tuple[str, tuple[int | float, int | float, int | float]]],
     spinless: bool,
     non_periodic: bool = False,
-    period_cutoff: Optional[float] = None,
+    period_cutoff: float | None = None,
 ) -> FermionOperator:
     """Return the external potential in the dual basis of arXiv:1706.00023.
 
@@ -55,8 +53,8 @@ def dual_basis_external_potential(
     """
     if non_periodic and period_cutoff is None:
         period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
-    operator = None
-    spins: list[Optional[int]]
+    operator: FermionOperator | None = None
+    spins: list[int | None]
     if spinless:
         spins = [None]
     else:
@@ -116,11 +114,11 @@ def filter_plane_wave_operator(
 
 def plane_wave_external_potential(
     grid: Grid,
-    geometry: list[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]],
+    geometry: list[tuple[str, tuple[int | float, int | float, int | float]]],
     spinless: bool,
-    e_cutoff: Optional[float] = None,
+    e_cutoff: float | None = None,
     non_periodic: bool = False,
-    period_cutoff: Optional[float] = None,
+    period_cutoff: float | None = None,
 ) -> FermionOperator:
     """Return the external potential operator in plane wave basis.
 
@@ -157,15 +155,13 @@ def plane_wave_external_potential(
 
 def plane_wave_hamiltonian(
     grid: Grid,
-    geometry: Optional[
-        list[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]]
-    ] = None,
+    geometry: list[tuple[str, tuple[int | float, int | float, int | float]]] | None = None,
     spinless: bool = False,
     plane_wave: bool = True,
     include_constant: bool = False,
-    e_cutoff: Optional[float] = None,
+    e_cutoff: float | None = None,
     non_periodic: bool = False,
-    period_cutoff: Optional[float] = None,
+    period_cutoff: float | None = None,
 ) -> FermionOperator:
     """Returns Hamiltonian as FermionOperator class.
 
@@ -216,9 +212,7 @@ def plane_wave_hamiltonian(
 
 def jordan_wigner_dual_basis_hamiltonian(
     grid: Grid,
-    geometry: Optional[
-        list[Tuple[str, Tuple[Union[int, float], Union[int, float], Union[int, float]]]]
-    ] = None,
+    geometry: list[tuple[str, tuple[int | float, int | float, int | float]]] | None = None,
     spinless: bool = False,
     include_constant: bool = False,
 ) -> QubitOperator:
