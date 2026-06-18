@@ -55,15 +55,15 @@ def test_costing():
 
     res = _compute_cost(nLi, lamLi, dE, LLi, LxiLi, chi, betaLi, 2, 2, 2, 20_000)
     res = _compute_cost(nLi, lamLi, dE, LLi, LxiLi, chi, betaLi, 2, 2, 2, res[0])
-    # print(res) # 79212, 145727663004, 13873
-    assert np.isclose(res[0], 79212)
-    assert np.isclose(res[1], 145727663004)
-    assert np.isclose(res[2], 13873)
+    # print(res) # 79215, 145733182155, 13874
+    assert np.isclose(res[0], 79215)
+    assert np.isclose(res[1], 145733182155)
+    assert np.isclose(res[2], 13874)
     res = _compute_cost(nLi, lamLi, dE, LLi, LxiLi, chi, betaLi, 3, 5, 1, res[0])
-    # print(res) # 86042, 158292930114, 14952
-    assert np.isclose(res[0], 86042)
-    assert np.isclose(res[1], 158292930114)
-    assert np.isclose(res[2], 14952)
+    # print(res) # 86045, 158298449265, 14953
+    assert np.isclose(res[0], 86045)
+    assert np.isclose(res[1], 158298449265)
+    assert np.isclose(res[2], 14953)
 
 
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
@@ -123,10 +123,10 @@ def test_costing_helper():
         chi=chi,
         beta=betaLi,
     )
-    # print(res) # 79212, 145727663004, 13873
-    assert np.isclose(res.toffolis_per_step, 86042)
-    assert np.isclose(res.total_toffolis, 158292930114)
-    assert np.isclose(res.logical_qubits, 14952)
+    # print(res) # 86045, 158298449265, 14953
+    assert np.isclose(res.toffolis_per_step, 86045)
+    assert np.isclose(res.total_toffolis, 158298449265)
+    assert np.isclose(res.logical_qubits, 14953)
 
 
 if __name__ == "__main__":

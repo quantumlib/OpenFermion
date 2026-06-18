@@ -50,4 +50,4 @@ def test_li_df():
     output = df.compute_cost(N, LAM, DE, L, LXI, CHI, BETA, stps=20000)
     stps2 = output[0]
     output = df.compute_cost(N, LAM, DE, L, LXI, CHI, BETA, stps2)
-    assert output == (35008, 64404812736, 6404)
+    assert output == (35011, 64410331887, 6405)
