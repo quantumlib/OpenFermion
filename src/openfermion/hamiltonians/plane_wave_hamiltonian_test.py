@@ -16,16 +16,23 @@ import unittest
 import numpy as np
 
 from openfermion.hamiltonians.plane_wave_hamiltonian import (
+    dual_basis_external_potential,
     jellium_model,
     jordan_wigner_dual_basis_hamiltonian,
     plane_wave_hamiltonian,
 )
+from openfermion.ops.operators import FermionOperator
 from openfermion.transforms.opconversions import jordan_wigner
 from openfermion.linalg import eigenspectrum, get_sparse_operator
 from openfermion.utils import Grid, is_hermitian
 
 
 class PlaneWaveHamiltonianTest(unittest.TestCase):
+    def test_dual_basis_external_potential_empty_geometry(self):
+        grid = Grid(dimensions=1, scale=1.0, length=2)
+        operator = dual_basis_external_potential(grid, geometry=[], spinless=True)
+        self.assertEqual(operator, FermionOperator())
+
     def test_plane_wave_hamiltonian_integration(self):
         length_set = [2, 3, 4]
         spinless_set = [True, False]

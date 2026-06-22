@@ -35,6 +35,10 @@ def test_namedtensor_getdata():
     blank_td = Tensor(name='opdm')
     with pytest.raises(TypeError):
         _ = blank_td[0, 0]
+    with pytest.raises(TypeError, match='data store is not set'):
+        blank_td.vectorize()
+    with pytest.raises(TypeError, match='data store is not set'):
+        list(blank_td.utri_iterator())
 
 
 def test_namedtensor_call():
