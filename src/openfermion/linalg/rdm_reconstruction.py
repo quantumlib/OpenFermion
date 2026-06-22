@@ -16,6 +16,10 @@ def valdemoro_reconstruction(tpdm, n_electrons):
     Returns:
         six-tensor reprsenting the three-RDM
     """
+    if n_electrons < 2:
+        raise ValueError(
+            'n_electrons must be at least 2 to avoid division by zero.'
+        )
     opdm = (2 / (n_electrons - 1)) * np.einsum('ijjk', tpdm)
     unconnected_tpdm = wedge(opdm, opdm, (1, 1), (1, 1))
     unconnected_d3 = wedge(opdm, unconnected_tpdm, (1, 1), (2, 2))
