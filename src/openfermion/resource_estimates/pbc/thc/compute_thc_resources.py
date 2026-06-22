@@ -200,7 +200,7 @@ def _compute_cost(
     cs2 = 4 * n * (Nk - 1)
 
     # The QROM for the rotation angles the first time.
-    cs2a = QR3(Nk * (M + n // 2), n * beta)[1] + QI(Nk * (M + n // 2))[1]
+    cs2a = QR3(Nk * (M + n / 2), n * beta)[1] + QI(int(Nk * (M + n / 2)))[1]
 
     # The QROM for the rotation angles the second time.
     cs2b = QR3(Nk * M, n * beta)[1] + QI(Nk * M)[1]
