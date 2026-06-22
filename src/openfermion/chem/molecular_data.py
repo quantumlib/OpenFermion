@@ -273,10 +273,12 @@ def name_molecule(geometry, basis, multiplicity, charge, description):
         11: 'undectet',
         12: 'duodectet',
     }
-    if multiplicity not in multiplicity_dict:
-        raise MoleculeNameError('Invalid spin multiplicity provided.')
-    else:
+    if multiplicity in multiplicity_dict:
         name += '_{}'.format(multiplicity_dict[multiplicity])
+    elif isinstance(multiplicity, (int, numpy.integer)) and multiplicity > 0:
+        name += '_{}-multiplet'.format(multiplicity)
+    else:
+        raise MoleculeNameError('Invalid spin multiplicity provided.')
 
     # Add charge.
     if charge > 0:
