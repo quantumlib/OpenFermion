@@ -97,7 +97,9 @@ from .trotter import (
     error_bound,
     error_operator,
     trotter_steps_required,
+    trotter_steps_required_propagator,
 )
+
 
 from .vpe_circuits import (
     vpe_single_circuit,

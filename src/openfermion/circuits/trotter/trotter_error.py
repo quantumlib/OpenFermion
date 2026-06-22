@@ -178,7 +178,20 @@ def error_bound(terms, tight=False):
 
 
 def trotter_steps_required(trotter_error_bound, time, energy_precision):
-    """Determine the number of Trotter steps for accurate simulation.
+    r"""Determine the number of Trotter steps for accurate energy estimation.
+
+    This function calculates the number of steps required to bound the
+    systematic energy shift (eigenvalue shift) of the effective Hamiltonian
+    to a given precision. This is appropriate for applications like Quantum
+    Phase Estimation (QPE) where we only care about the eigenvalues of the
+    propagator. See appendix B from https://arxiv.org/pdf/1312.1695
+    This uses the following definition of error for time t and
+    number of steps r:
+
+
+    $$
+    \lvert E - E^{TS} \rvert = \frac{t^2}{r^2} E_{bound}(H)
+    $$
 
     Args:
         trotter_error_bound (float): Upper bound on Trotter error in the
@@ -187,11 +200,34 @@ def trotter_steps_required(trotter_error_bound, time, energy_precision):
         energy_precision (float): Acceptable shift in state energy.
 
     Returns:
-        The integer minimum number of Trotter steps required for
-        simulation to the desired precision.
-
-    Notes:
-        The number of Trotter steps required is an upper bound on the
-        true requirement, which may be lower.
+        The integer minimum number of Trotter steps required.
     """
-    return int(ceil(time * sqrt(trotter_error_bound / energy_precision)))
+    return int(ceil(abs(time) * sqrt(trotter_error_bound / energy_precision)))
+
+
+def trotter_steps_required_propagator(trotter_error_bound, time, prop_precision):
+    r"""Determine the number of Trotter steps for accurate state evolution.
+
+    This function calculates the number of steps required to bound the
+    error in the time evolution operator (propagator error / spectral norm error)
+    to a given fidelity precision. This is appropriate for quantum dynamics
+    applications where we care about the accuracy of the state itself over
+    time. This uses the following definition of error for time t and
+    number of steps r:
+
+    $$
+    \lVert U - U^{TS} \rVert = \frac{t^3}{r^2} E_{bound}(H)
+    $$
+
+    Args:
+        trotter_error_bound (float): Upper bound on Trotter error in the
+                                     state of interest.
+        time (float): The total simulation time.
+        prop_precision (float): Acceptable error in the time evolution
+                                    operator (propagator error).
+
+    Returns:
+        The integer minimum number of Trotter steps required.
+    """
+    atime = abs(time)
+    return int(ceil(atime * sqrt(atime * trotter_error_bound / prop_precision)))
