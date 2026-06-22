@@ -18,6 +18,7 @@ import numpy as np
 from numpy.lib.scimath import arccos, arcsin
 from sympy import factorint
 from openfermion.resource_estimates.utils import QI
+from openfermion.resource_estimates.pbc.df.compute_df_resources import compute_beta_for_resources
 
 from openfermion.resource_estimates.pbc.resources.data_types import ResourceEstimates
 from openfermion.resource_estimates.pbc.resources.qrom import QR3
@@ -48,6 +49,12 @@ def compute_cost(
     Returns:
         resources: THC factorized resource estimates
     """
+    if beta is None:
+        num_kpts = int(np.prod(kmesh))
+        beta = int(compute_beta_for_resources(num_spin_orbs, num_kpts, dE_for_qpe))
+    else:
+        beta = int(beta)
+
     # run once to determine stps parameter
     thc_costs = _compute_cost(
         n=num_spin_orbs,
@@ -193,7 +200,7 @@ def _compute_cost(
     cs2 = 4 * n * (Nk - 1)
 
     # The QROM for the rotation angles the first time.
-    cs2a = QR3(Nk * (M + n / 2), n * beta)[1] + QI(Nk * (M + n / 2))[1]
+    cs2a = QR3(Nk * (M + n // 2), n * beta)[1] + QI(Nk * (M + n // 2))[1]
 
     # The QROM for the rotation angles the second time.
     cs2b = QR3(Nk * M, n * beta)[1] + QI(Nk * M)[1]

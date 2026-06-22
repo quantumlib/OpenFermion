@@ -86,6 +86,8 @@ def dual_basis_external_potential(
                         operator = FermionOperator(operators, coefficient)
                     else:
                         operator += FermionOperator(operators, coefficient)
+    if operator is None:
+        return FermionOperator()
     return operator
 
 

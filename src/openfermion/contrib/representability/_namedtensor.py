@@ -1,4 +1,4 @@
-from typing import Iterable, Generator, Optional, Union
+from typing import Iterable, Generator, Literal, Optional, Union
 from itertools import zip_longest
 import numpy as np
 from openfermion.contrib.representability._bijections import Bijection, index_index_basis
@@ -8,6 +8,13 @@ class Tensor:
     """
     Instantiation of named tensor
     """
+
+    dim: int | None
+    ndim: int | None
+    data: np.ndarray | None
+    size: int | None
+    basis: Bijection | None
+    name: str | None
 
     def __init__(
         self,
@@ -156,6 +163,10 @@ class Tensor:
         """
         Iterate over the a data store yielding the upper/lower/all values
         """
+        if self.data is None or self.ndim is None or self.dim is None or self.basis is None:
+            raise TypeError("data store is not set")
+
+        basis = self.basis
         if ultri not in ['upper', 'lower', 'all']:
             raise TypeError("iteration type {} is not 'upper', 'lower', or 'all'".format(ultri))
 
@@ -168,21 +179,24 @@ class Tensor:
             )
 
             if ultri == 'upper' and left_idx_set <= right_idx_set:
-                yield it[0], map(lambda x: self.basis.fwd(x), it.multi_index)
+                yield it[0], map(lambda x: basis.fwd(x), it.multi_index)
             elif ultri == 'lower' and left_idx_set >= right_idx_set:
-                yield it[0], map(lambda x: self.basis.fwd(x), it.multi_index)
+                yield it[0], map(lambda x: basis.fwd(x), it.multi_index)
             elif ultri == 'all':
-                yield it[0], map(lambda x: self.basis.fwd(x), it.multi_index)
+                yield it[0], map(lambda x: basis.fwd(x), it.multi_index)
 
             it.iternext()
 
-    def vectorize(self, order: Optional[str] = 'C') -> np.ndarray:
+    def vectorize(self, order: Literal["A", "C", "F"] | None = "C") -> np.ndarray:
         """
         Take a multidimensional array and vectorized via C ordering
 
         :return: a vector of self.size x 1
         """
-        return np.reshape(self.data, (-1, 1), order=order)
+        if self.data is None:
+            raise TypeError("data store is not set")
+        reshape_order: Literal["A", "C", "F"] = "C" if order is None else order
+        return self.data.reshape(-1, 1, order=reshape_order)
 
 
 # from standard library itertools recipe book
