@@ -100,7 +100,6 @@ from .trotter import (
     trotter_steps_required_propagator,
 )
 
-
 from .vpe_circuits import (
     vpe_single_circuit,
     vpe_circuits_single_timestep,

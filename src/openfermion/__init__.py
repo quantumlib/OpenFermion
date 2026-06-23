@@ -272,7 +272,6 @@ from openfermion.circuits import (
     standard_vpe_rotation_set,
 )
 
-
 from openfermion.testing import (
     validate_trotterized_evolution,
     random_interaction_operator_term,
