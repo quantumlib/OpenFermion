@@ -26,7 +26,7 @@ description = (
 
 # The readme file is used as the long_description.
 with open('README.md', 'r', encoding='utf-8') as readme:
-    long_description += readme.read()
+    long_description = readme.read()
 
 # Read in OpenFermion runtime requirements.
 with open('dev_tools/requirements/deps/runtime.txt') as r:
