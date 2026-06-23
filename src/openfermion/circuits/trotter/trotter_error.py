@@ -204,6 +204,8 @@ def trotter_steps_required(trotter_error_bound, time, energy_precision):
     """
     if energy_precision <= 0:
         raise ValueError("energy_precision must be strictly positive.")
+    if trotter_error_bound < 0:
+        raise ValueError("trotter_error_bound must be non-negative.")
     if time == 0:
         return 0
     return max(1, int(ceil(abs(time) * sqrt(trotter_error_bound / energy_precision))))
@@ -235,6 +237,8 @@ def trotter_steps_required_propagator(trotter_error_bound, time, prop_precision)
     """
     if prop_precision <= 0:
         raise ValueError("prop_precision must be strictly positive.")
+    if trotter_error_bound < 0:
+        raise ValueError("trotter_error_bound must be non-negative.")
     if time == 0:
         return 0
     atime = abs(time)

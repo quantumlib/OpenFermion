@@ -212,6 +212,14 @@ class TrotterStepsRequiredTest(unittest.TestCase):
                 trotter_error_bound=0.3, time=2.5, prop_precision=-0.04
             )
 
+    def test_trotter_steps_required_invalid_error_bound(self):
+        with self.assertRaises(ValueError):
+            trotter_steps_required(trotter_error_bound=-0.3, time=2.5, energy_precision=0.04)
+        with self.assertRaises(ValueError):
+            trotter_steps_required_propagator(
+                trotter_error_bound=-0.3, time=2.5, prop_precision=0.04
+            )
+
     def test_return_type(self):
         self.assertIsInstance(trotter_steps_required(0.1, 0.1, 0.1), int)
         self.assertIsInstance(trotter_steps_required_propagator(0.1, 0.1, 0.1), int)
