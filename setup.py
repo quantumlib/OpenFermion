@@ -19,12 +19,16 @@ from setuptools import find_packages, setup
 __version__ = runpy.run_path('src/openfermion/_version.py')['__version__']
 assert __version__, 'Version string cannot be empty'
 
-# The readme file is used as the long_description:
-long_description = '===========\n' + 'OpenFermion\n' + '===========\n\n'
+description = (
+    'A Python package for compiling and analyzing quantum algorithms to '
+    'simulate electronic structures.'
+)
+
+# The readme file is used as the long_description.
 with open('README.md', 'r', encoding='utf-8') as readme:
     long_description += readme.read()
 
-# Read in package requirements.txt.
+# Read in OpenFermion runtime requirements.
 with open('dev_tools/requirements/deps/runtime.txt') as r:
     requirements = r.readlines()
 requirements = [r.strip() for r in requirements]
@@ -45,8 +49,9 @@ setup(
     author_email='openfermion-dev@googlegroups.com',
     maintainer='Google Quantum AI open-source maintainers',
     maintainer_email='quantum-oss-maintainers@google.com',
-    description=('The electronic structure package for quantum computers.'),
+    description=description,
     long_description=long_description,
+    long_description_content_type='text/markdown',
     python_requires='>=3.10.0',
     install_requires=requirements,
     extras_require={'resources': resource_requirements},
