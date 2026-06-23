@@ -30,6 +30,7 @@ from openfermion.chem.molecular_data import (
     bohr_to_angstroms,
     load_molecular_hamiltonian,
     MolecularData,
+    MoleculeNameError,
     geometry_from_file,
     MissingCalculationError,
     periodic_table,
@@ -100,15 +101,15 @@ class MolecularDataTest(unittest.TestCase):
         geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
         basis = 'sto-3g'
         multiplicity = -1
-        with self.assertRaises(ValueError):
+        with self.assertRaises(MoleculeNameError):
             MolecularData(geometry, basis, multiplicity)
 
         # Test non-integer multiplicity
-        with self.assertRaises(ValueError):
+        with self.assertRaises(MoleculeNameError):
             MolecularData(geometry, basis, multiplicity=1.5)
 
         # Test zero multiplicity
-        with self.assertRaises(ValueError):
+        with self.assertRaises(MoleculeNameError):
             MolecularData(geometry, basis, multiplicity=0)
 
     def test_high_multiplicity(self):

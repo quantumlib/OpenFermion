@@ -33,7 +33,9 @@ r"""NOTE ON PQRS CONVENTION:
 
 
 # Define error objects which inherit from Exception.
-class MoleculeNameError(Exception):
+class MoleculeNameError(ValueError):
+    """Exception raised when a molecule name is invalid or cannot be generated."""
+
     pass
 
 
@@ -278,7 +280,7 @@ def name_molecule(geometry, basis, multiplicity, charge, description):
     elif multiplicity > 0:
         name += '_{}-multiplet'.format(multiplicity)
     else:
-        raise ValueError('Invalid spin multiplicity provided.')
+        raise MoleculeNameError('Invalid spin multiplicity provided.')
 
     # Add charge.
     if charge > 0:
@@ -498,7 +500,7 @@ class MolecularData:
         ) and multiplicity == int(multiplicity):
             self.multiplicity = int(multiplicity)
         else:
-            raise ValueError('Invalid spin multiplicity provided.')
+            raise MoleculeNameError('Invalid spin multiplicity provided.')
 
         # Metadata fields with default values.
         self.charge = charge
