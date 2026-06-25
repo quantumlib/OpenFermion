@@ -84,7 +84,7 @@ files configure various tools to the project conventions:
 
 *   `.pylintrc`: Python file lint
 
-*   `.pyproject.toml`: Python tools other than Pylint
+*   `pyproject.toml`: package metadata, dependencies, and Python tool configuration (except Pylint)
 
 *   `.yamllint.yaml`: YAML files
 
@@ -222,11 +222,21 @@ After that, the hooks will run automatically when triggered by the corresponding
     pip install -U pip
     ```
 
-2.  Use the following command to install Python dependencies into the virtual environment:
+2.  Use one of the following to install Python dependencies into the virtual environment:
 
     ```shell
     pip install -r dev_tools/requirements/envs/dev.env.txt
     ```
+
+    Or, with [uv](https://docs.astral.sh/uv/) (locked files are still generated from
+    `dev_tools/requirements/deps/*.txt`; see _Regenerating requirements files_ below):
+
+    ```shell
+    uv sync --group dev
+    ```
+
+    Package metadata and runtime dependencies are defined in `pyproject.toml` (there is no
+    `setup.py`).
 
 Please refer to the section _Developer install_ of the [installation instructions](docs/install.md)
 for information about how to set up a local copy of the software for development.
