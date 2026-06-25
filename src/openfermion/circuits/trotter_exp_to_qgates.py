@@ -233,37 +233,29 @@ def pauli_exp_to_qasm(qubit_operator_list, evolution_time=1.0, qubit_list=None, 
             # Exponentiating each Pauli string requires five parts
 
             # 1. Perform basis rotations
-            ret_list = ret_list + string_basis_1
+            ret_list.extend(string_basis_1)
 
             # 2. First set CNOTs
-            ret_list = ret_list + cnots1
+            ret_list.extend(cnots1)
 
             # 3. Rotation (Note kexp & Ntrot)
             if ancilla is not None:
                 if len(qids) > 0:
-                    ret_list = ret_list + [
+                    ret_list.append(
                         "C-Phase {} {} {}".format(
                             2 * term_coeff * evolution_time, ancilla, qids[-1]
                         )
-                    ]
-                    ret_list = ret_list + [
-                        "Rz {} {}".format(-1 * term_coeff * evolution_time, ancilla)
-                    ]
-                else:
-                    ret_list = ret_list + [
-                        "Rz {} {}".format(-1 * term_coeff * evolution_time, ancilla)
-                    ]
+                    )
+                ret_list.append("Rz {} {}".format(-term_coeff * evolution_time, ancilla))
             else:
                 if len(qids) > 0:
-                    ret_list = ret_list + [
-                        "Rz {} {}".format(2 * term_coeff * evolution_time, qids[-1])
-                    ]
+                    ret_list.append("Rz {} {}".format(2 * term_coeff * evolution_time, qids[-1]))
 
             # 4. Second set of CNOTs
-            ret_list = ret_list + cnots2
+            ret_list.extend(cnots2)
 
             # 5. Rotate back to Z basis
-            ret_list = ret_list + string_basis_2
+            ret_list.extend(string_basis_2)
 
             for gate in ret_list:
                 yield gate
