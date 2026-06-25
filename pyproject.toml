@@ -12,6 +12,148 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Note: there are three types of dependencies listed in this file:
+#
+# [build-system].requires: packages needed by the build backend. Not stored in
+# package metadata.
+#
+# [project].dependencies: core runtime packages (install_requires). Stored in
+# package metadata and installed with `pip install openfermion`.
+#
+# [dependency-groups].dev: development tools for tests, linters, and packaging.
+# Install with `uv sync --group dev` or `pip install --group dev` (PEP 735).
+# Locked CI environments are still generated under dev_tools/requirements/envs/
+# via dev_tools/requirements/create-env-files.sh.
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=78.1.1", "wheel"]
+
+[project]
+name = "openfermion"
+description = "The electronic structure package for quantum computers."
+readme = {file = "README.md", content-type = "text/markdown"}
+license = "Apache-2.0"
+authors = [
+    {name = "The OpenFermion Developers", email = "openfermion-dev@googlegroups.com"},
+]
+maintainers = [
+    {name = "Google Quantum AI open-source maintainers", email = "quantum-oss-maintainers@google.com"},
+]
+requires-python = ">=3.10.0"
+dynamic = ["version", "dependencies", "optional-dependencies"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Quantum Computing",
+]
+keywords = [
+    "algorithms",
+    "api",
+    "application programming interface",
+    "chemistry",
+    "cirq",
+    "electronic structure",
+    "fermion",
+    "fermionic systems",
+    "google quantum",
+    "google",
+    "hamiltonians",
+    "high performance",
+    "nisq",
+    "noisy intermediate-scale quantum",
+    "python",
+    "quantum algorithms",
+    "quantum chemistry",
+    "quantum circuit simulator",
+    "quantum circuit",
+    "quantum computer simulator",
+    "quantum computing",
+    "quantum development kit",
+    "quantum programming language",
+    "quantum programming",
+    "quantum simulation",
+    "quantum",
+    "qubit hamiltonians",
+    "qubit",
+    "sdk",
+    "simulation",
+    "software development kit",
+]
+
+[project.urls]
+Homepage = "https://quantumai.google/openfermion"
+Documentation = "https://quantumai.google/openfermion"
+Source = "https://github.com/quantumlib/OpenFermion"
+
+[dependency-groups]
+# Development dependencies. Keep in sync with dev_tools/requirements/deps/*.txt.
+dev = [
+    # Formatting and linting.
+    "black",
+    "mypy",
+    "pandas-stubs",
+    "pylint~=3.3",
+    "types-networkx",
+    "types-requests",
+    "types-setuptools",
+
+    # Testing.
+    "nbformat",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-randomly",
+    "pytest-retry",
+    "pytest-xdist",
+    "tensorflow-docs",
+
+    # Packaging and requirements regeneration.
+    "build",
+    "setuptools",
+    "shellcheck-py~=0.11.0",
+    "twine",
+    "uv",
+    "virtualenv",
+    "wheel",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.package-data]
+openfermion = [
+    "resource_estimates/integrals/*.h5",
+    "testing/*.npy",
+    "testing/*.hdf5",
+    "testing/*.data",
+    "testing/*.txt",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "openfermion._version.__version__"}
+dependencies = {file = ["dev_tools/requirements/deps/runtime.txt"]}
+
+[tool.setuptools.dynamic.optional-dependencies]
+resources = {file = ["dev_tools/requirements/deps/resource_estimates_runtime.txt"]}
+
 [tool.black]
 line-length = 100
 target-version = ['py310', 'py311', 'py312', 'py313']
