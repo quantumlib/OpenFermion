@@ -33,7 +33,9 @@ r"""NOTE ON PQRS CONVENTION:
 
 
 # Define error objects which inherit from Exception.
-class MoleculeNameError(Exception):
+class MoleculeNameError(ValueError):
+    """Exception raised when a molecule name is invalid or cannot be generated."""
+
     pass
 
 
@@ -273,10 +275,12 @@ def name_molecule(geometry, basis, multiplicity, charge, description):
         11: 'undectet',
         12: 'duodectet',
     }
-    if multiplicity not in multiplicity_dict:
-        raise MoleculeNameError('Invalid spin multiplicity provided.')
-    else:
+    if multiplicity in multiplicity_dict:
         name += '_{}'.format(multiplicity_dict[multiplicity])
+    elif multiplicity > 0:
+        name += '_{}-multiplet'.format(multiplicity)
+    else:
+        raise MoleculeNameError('Invalid spin multiplicity provided.')
 
     # Add charge.
     if charge > 0:
@@ -491,7 +495,12 @@ class MolecularData:
         # Metadata fields which must be provided.
         self.geometry = geometry
         self.basis = basis
-        self.multiplicity = multiplicity
+        if isinstance(
+            multiplicity, (int, float, numpy.integer, numpy.floating)
+        ) and multiplicity == int(multiplicity):
+            self.multiplicity = int(multiplicity)
+        else:
+            raise MoleculeNameError('Invalid spin multiplicity provided.')
 
         # Metadata fields with default values.
         self.charge = charge
@@ -500,7 +509,7 @@ class MolecularData:
         self.description = description
 
         # Name molecule and get associated filename
-        self.name = name_molecule(geometry, basis, multiplicity, charge, description)
+        self.name = name_molecule(geometry, basis, self.multiplicity, charge, description)
         if filename:
             if filename[-5:] == '.hdf5':
                 filename = filename[: (len(filename) - 5)]
