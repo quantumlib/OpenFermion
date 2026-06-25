@@ -29,6 +29,7 @@
 # this, stricter requirements for versioning were introduced. This means that
 # the "version" argument to this script must conform to patterns described at
 # https://packaging.python.org/en/latest/discussions/versioning/.
+# Project metadata and dependencies are defined in pyproject.toml.
 ################################################################################
 
 PROJECT_NAME=openfermion
@@ -64,7 +65,7 @@ function confirm() {
 }
 
 # Make a clean copy of HEAD, without files ignored by git (but potentially kept
-# by setup.py).
+# locally).
 if [ -n "$(git status --short)" ]; then
     echo -e "${RED}WARNING: There are uncommitted git changes."
     echo -e "They won't be included in the package.${RESET}"
