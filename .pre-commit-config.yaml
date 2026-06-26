@@ -12,17 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Summary: config for setting up git hooks using the pre-commit framework. This
-# is optional and NOT set up by default nor used by the scripts in check/. Here
-# is a suggested installation approach; after doing this, the pre-commit hooks
-# will be called automatically by git at the appropriate times:
+# Summary: config for setting up git hooks using the pre-commit framework.
+# Install it like this:
 #
 #     pip install pre-commit
-#     pre-commit install -t pre-commit -t commit-msg -t pre-push
+#     pre-commit install
 #     pre-commit run
+#
+# After doing the above, the pre-commit hooks will be called automatically by
+# git at the appropriate times. Note the use of pre-commit hooks is optional,
+# and NOT set up by default nor used by the scripts in this repository.
 
 default_stages:
+  # If a hook does not define a value for `stages:`, it applies to this stage.
   - pre-commit
+
+default_install_hook_types:
+  - commit-msg
+  - pre-commit
+  - pre-push
 
 # Note: these are Python regular expressions matched with re.search.
 exclude: |
