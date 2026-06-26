@@ -80,6 +80,7 @@ repos:
 
       - id: name-tests-test
         name: 'Verify test files are named correctly'
+        args: [--pytest]
 
       - id: check-symlinks
         name: 'Check for symlinks that do not point to anything'
