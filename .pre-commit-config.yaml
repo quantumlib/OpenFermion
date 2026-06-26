@@ -100,6 +100,14 @@ repos:
       - id: check-shebang-scripts-are-executable
         name: 'Shell script files are executable'
 
+  - repo: https://github.com/Boeing/config-file-validator
+    rev: 151f1415bacfd813c20afecf35ce3335f67a83ba  # frozen: v2.2.2
+    hooks:
+      - id: config-file-validator
+        name: 'Config files are free of syntax errors'
+        types_or: [ini, toml, yaml]
+        args: [--gitignore, --exclude-dirs=.git]
+
   - repo: https://github.com/adrienverge/yamllint
     rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
     hooks:
