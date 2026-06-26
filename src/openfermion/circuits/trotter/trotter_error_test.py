@@ -24,6 +24,7 @@ from openfermion.circuits.trotter.trotter_error import (
     error_operator,
     error_bound,
     trotter_steps_required,
+    trotter_steps_required_propagator,
 )
 
 
@@ -158,11 +159,67 @@ class TrotterStepsRequiredTest(unittest.TestCase):
         self.assertEqual(
             trotter_steps_required(trotter_error_bound=0.3, time=2.5, energy_precision=0.04), 7
         )
+        self.assertEqual(
+            trotter_steps_required_propagator(
+                trotter_error_bound=0.3, time=2.5, prop_precision=0.04
+            ),
+            11,
+        )
 
     def test_trotter_steps_required_negative_time(self):
         self.assertEqual(
-            trotter_steps_required(trotter_error_bound=0.1, time=3.3, energy_precision=0.11), 4
+            trotter_steps_required(trotter_error_bound=0.1, time=-3.3, energy_precision=0.11), 4
         )
+        self.assertEqual(
+            trotter_steps_required_propagator(
+                trotter_error_bound=0.1, time=-3.3, prop_precision=0.11
+            ),
+            6,
+        )
+
+    def test_trotter_steps_required_zero_time(self):
+        self.assertEqual(
+            trotter_steps_required(trotter_error_bound=0.3, time=0.0, energy_precision=0.04), 0
+        )
+        self.assertEqual(
+            trotter_steps_required_propagator(
+                trotter_error_bound=0.3, time=0.0, prop_precision=0.04
+            ),
+            0,
+        )
+
+    def test_trotter_steps_required_zero_error_bound(self):
+        # Should return at least 1 step for non-zero time even if error bound is 0
+        self.assertEqual(
+            trotter_steps_required(trotter_error_bound=0.0, time=2.5, energy_precision=0.04), 1
+        )
+        self.assertEqual(
+            trotter_steps_required_propagator(
+                trotter_error_bound=0.0, time=2.5, prop_precision=0.04
+            ),
+            1,
+        )
+
+    def test_trotter_steps_required_invalid_precision(self):
+        with self.assertRaises(ValueError):
+            trotter_steps_required(trotter_error_bound=0.3, time=2.5, energy_precision=0.0)
+        with self.assertRaises(ValueError):
+            trotter_steps_required(trotter_error_bound=0.3, time=2.5, energy_precision=-0.04)
+        with self.assertRaises(ValueError):
+            trotter_steps_required_propagator(trotter_error_bound=0.3, time=2.5, prop_precision=0.0)
+        with self.assertRaises(ValueError):
+            trotter_steps_required_propagator(
+                trotter_error_bound=0.3, time=2.5, prop_precision=-0.04
+            )
+
+    def test_trotter_steps_required_invalid_error_bound(self):
+        with self.assertRaises(ValueError):
+            trotter_steps_required(trotter_error_bound=-0.3, time=2.5, energy_precision=0.04)
+        with self.assertRaises(ValueError):
+            trotter_steps_required_propagator(
+                trotter_error_bound=-0.3, time=2.5, prop_precision=0.04
+            )
 
     def test_return_type(self):
         self.assertIsInstance(trotter_steps_required(0.1, 0.1, 0.1), int)
+        self.assertIsInstance(trotter_steps_required_propagator(0.1, 0.1, 0.1), int)

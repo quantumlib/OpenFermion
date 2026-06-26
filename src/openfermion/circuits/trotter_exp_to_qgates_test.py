@@ -210,7 +210,7 @@ class TrottQasmTest(unittest.TestCase):
         # Correct string
         strcorrect = '''5
 CNOT 3 4
-Rz 0.6 4
+Rz 1.2 4
 CNOT 3 4'''
 
         self.assertEqual(qasmstr, strcorrect)
@@ -231,7 +231,7 @@ H 0
 Rx 1.5707963267948966 3
 CNOT 0 1
 CNOT 1 3
-Rz 0.5 3
+Rz 1.0 3
 CNOT 1 3
 CNOT 0 1
 H 0
@@ -255,8 +255,8 @@ H 0
 Rx 1.5707963267948966 3
 CNOT 0 1
 CNOT 1 3
-C-Phase -1.0 ancilla 3
-Rz 0.5 ancilla
+C-Phase 1.0 ancilla 3
+Rz -0.5 ancilla
 CNOT 1 3
 CNOT 0 1
 H 0
@@ -284,8 +284,8 @@ H q0
 Rx 1.5707963267948966 q3
 CNOT q0 q1
 CNOT q1 q3
-C-Phase -1.0 ancilla q3
-Rz 0.5 ancilla
+C-Phase 1.0 ancilla q3
+Rz -0.5 ancilla
 CNOT q1 q3
 CNOT q0 q1
 H q0
@@ -300,7 +300,7 @@ Rx -1.5707963267948966 q3'''
         qasmstr += "\n".join(trotterize_exp_qubop_to_qasm(self.op_id, ancilla='ancilla'))
 
         strcorrect = '''1
-Rz 1.0 ancilla'''
+Rz -1.0 ancilla'''
 
         self.assertEqual(qasmstr, strcorrect)
 
@@ -329,13 +329,13 @@ Rz 1.0 ancilla'''
         # the order in which the operators loop.
         strcorrect1 = '''5
 CNOT 3 4
-Rz 0.6 4
+Rz 1.2 4
 CNOT 3 4
 H 0
 Rx 1.5707963267948966 3
 CNOT 0 1
 CNOT 1 3
-Rz 0.5 3
+Rz 1.0 3
 CNOT 1 3
 CNOT 0 1
 H 0
@@ -346,13 +346,13 @@ H 0
 Rx 1.5707963267948966 3
 CNOT 0 1
 CNOT 1 3
-Rz 0.5 3
+Rz 1.0 3
 CNOT 1 3
 CNOT 0 1
 H 0
 Rx -1.5707963267948966 3
 CNOT 3 4
-Rz 0.6 4
+Rz 1.2 4
 CNOT 3 4'''
         try:
             self.assertEqual(qasmstr, strcorrect1)

@@ -104,6 +104,34 @@ class MolecularDataTest(unittest.TestCase):
         with self.assertRaises(MoleculeNameError):
             MolecularData(geometry, basis, multiplicity)
 
+        # Test non-integer multiplicity
+        with self.assertRaises(MoleculeNameError):
+            MolecularData(geometry, basis, multiplicity=1.5)
+
+        # Test zero multiplicity
+        with self.assertRaises(MoleculeNameError):
+            MolecularData(geometry, basis, multiplicity=0)
+
+    def test_high_multiplicity(self):
+        # 12 hydrogens can support multiplicity 13
+        geometry = [('H', (0.0, 0.0, i * 1.3)) for i in range(12)]
+        basis = 'sto-3g'
+        molecule = MolecularData(geometry, basis, multiplicity=13)
+        self.assertEqual(molecule.name, 'H12_sto-3g_13-multiplet')
+
+    def test_float_multiplicity(self):
+        geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
+        basis = 'sto-3g'
+
+        # Float multiplicity <= 12 should work and use name
+        molecule = MolecularData(geometry, basis, multiplicity=2.0)
+        self.assertEqual(molecule.name, 'H2_sto-3g_doublet')
+
+        # Float multiplicity > 12 should work and use number
+        geometry_high = [('H', (0.0, 0.0, i * 1.3)) for i in range(12)]
+        molecule_high = MolecularData(geometry_high, basis, multiplicity=13.0)
+        self.assertEqual(molecule_high.name, 'H12_sto-3g_13-multiplet')
+
     def test_geometry_from_file(self):
         water_geometry = [
             ('O', (0.0, 0.0, 0.0)),
