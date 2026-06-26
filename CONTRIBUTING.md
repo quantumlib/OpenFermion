@@ -201,10 +201,10 @@ like this:
 
 ```shell
 pip install pre-commit
-pre-commit install -t pre-commit -t pre-push -t commit-msg
+pre-commit install
 ```
 
-Next, run it once after installation to download the hook environments and verify your setup:
+Next, run it once so that it downloads the various hook environments and verifies your setup:
 
 ```shell
 pre-commit run --all-files
