@@ -38,9 +38,11 @@ exclude: |
     .*\.egg-info/.* |
     .*\.h5 |
     .*\.ipynb_checkpoints(/.*)? |
+    .*\.lock |
     .*\.log |
     .*\.out |
     .*\.pytest_cache/.* |
+    .*\.tmp |
     .*__pycache__/.* |
     .env/.* |
     .venv/.* |
