@@ -127,11 +127,13 @@ repos:
         # yamllint disable rule:line-length
         args: [--schemafile, https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json]
 
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: '38980559e3a605691d6579f96222c30778e5a69e'  # frozen: 3.0.0
+  - repo: local
     hooks:
       - id: shellcheck
         name: 'Shell scripts are lint-free'
+        entry: check/shellcheck
+        additional_dependencies: [shellcheck-py>=0.11.0]
+        language: python
         files: '(\.sh$|^check/[^.]+$)'
 
   - repo: https://github.com/AleksaC/hadolint-py
@@ -142,12 +144,12 @@ repos:
         files: (?i)dockerfile$
         args: [--failure-threshold, error]
 
-    # Note this is used for YAML files, despite that it's named "jsonschema".
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: 4b2e70d08cb2ccd26d1fba73588de41c7a5d50b7  # frozen: v0.25
     hooks:
-      - id: check-github-workflows
-        name: 'GitHub Actions workflow files are syntactically valid'
+      - id: validate-pyproject
+        name: 'The pyproject.toml file is valid'
+        files: pyproject.toml
 
 # ~~~~ Commit message hooks ~~~~
 
@@ -182,6 +184,22 @@ repos:
         stages: [pre-push]
         args: [--notice=dev_tools/apache-license-header.txt]
 
+    # Note this is used for YAML files, despite that it's named "jsonschema".
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: '8ef330cbb7204d388aa7a620f9549bcea8009663'  # frozen: 0.37.3
+    hooks:
+      - id: check-github-workflows
+        name: 'GitHub Actions workflow files are syntactically valid'
+        entry: |
+          bash -c 'exec check-jsonschema --builtin-schema vendor.github-workflows "$@"' --
+        stages: [pre-push]
+
+      - id: check-github-actions
+        name: 'GitHub Actions definitions (if any) are syntactically valid'
+        entry: |
+          bash -c 'exec check-jsonschema --builtin-schema vendor.github-actions "$@"' --
+        stages: [pre-push]
+
   - repo: https://github.com/tcort/markdown-link-check
     rev: ffc61540dea52bad1c41cfeedcf26c53ad9447ba  # frozen: v3.14.2
     hooks:
@@ -195,12 +213,15 @@ repos:
     hooks:
       - id: python-check-blanket-noqa
         name: '"# noqa" annotations include error codes'
+        types: [python]
         stages: [pre-push]
 
       - id: python-check-blanket-type-ignore
         name: '"# type: ignore" comments include error codes'
         types: [python]
+        stages: [pre-push]
 
       - id: python-check-mock-methods
         name: 'Uses of unittest.mock are free of some common mistakes'
         types: [python]
+        stages: [pre-push]
