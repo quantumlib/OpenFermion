@@ -101,7 +101,7 @@ repos:
         name: 'Shell script files are executable'
 
   - repo: https://github.com/Boeing/config-file-validator
-    rev: 151f1415bacfd813c20afecf35ce3335f67a83ba  # frozen: v2.2.2
+    rev: fc3dea5b2d0bfd47a785ca47375fe6080151f97b  # frozen: v2.3.0
     hooks:
       - id: config-file-validator
         name: 'Config files are free of syntax errors'
@@ -117,7 +117,7 @@ repos:
         args: [--format=colored, --no-warnings]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
+    rev: '8ef330cbb7204d388aa7a620f9549bcea8009663'  # frozen: 0.37.3
     hooks:
       - id: check-jsonschema
         name: 'Jupyter notebooks are valid JSON files'
@@ -154,7 +154,7 @@ repos:
 # ~~~~ Commit message hooks ~~~~
 
   - repo: https://github.com/crate-ci/typos
-    rev: c96c46fae465ab9e3607401d9ce93d75e7998023  # frozen: v1
+    rev: d80b8e26878e372a041833cd67163dbdb6a4336e  # frozen: v1
     hooks:
       - id: typos
         name: 'Commit message is free of typos'
