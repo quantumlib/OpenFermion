@@ -20,8 +20,7 @@ __version__ = runpy.run_path('src/openfermion/_version.py')['__version__']
 assert __version__, 'Version string cannot be empty'
 
 description = (
-    'Package to compile and analyze quantum algorithms for '
-    'simulating fermionic systems.'
+    'Package to compile and analyze quantum algorithms for ' 'simulating fermionic systems.'
 )
 
 # The readme file is used as the long_description.
