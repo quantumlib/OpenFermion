@@ -66,45 +66,45 @@ repos:
       # Use separate yamllint hook later in this file.
 
       - id: no-commit-to-branch
-        name: 'Check that the commit is not made to the main branch'
+        name: 'The commit is not being made to the main branch'
         args: [--branch, main, --branch, master]
 
       - id: check-merge-conflict
-        name: "Check that files are free of merge git conflict strings"
+        name: "Files are free of git merge conflict strings"
 
       - id: check-illegal-windows-names
-        name: "Check that file names can be used on Windows"
+        name: "File names are valid for use on Windows"
 
       - id: check-case-conflict
-        name: "Check that file names won't conflict on case-insensitive systems"
+        name: "File names won't conflict on case-insensitive systems"
 
       - id: name-tests-test
-        name: 'Verify test files are named correctly'
+        name: 'Test files are named correctly'
         args: [--pytest]
 
       - id: check-symlinks
-        name: 'Check for symlinks that do not point to anything'
+        name: 'All symlink targets exist'
 
       - id: destroyed-symlinks
-        name: 'Check that symlinks are not turned into regular files'
-
-      - id: check-shebang-scripts-are-executable
-        name: 'Check that shell script files are executable'
+        name: 'Symlinks are not being changed into regular files'
 
       - id: debug-statements
-        name: 'Check that Python files are free of debug statements'
+        name: 'Python files are free of debug statements'
 
       - id: check-toml
-        name: 'Check TOML files for valid syntax'
+        name: 'TOML files are syntactically valid'
 
       - id: check-xml
-        name: 'Check XML files for valid syntax'
+        name: 'XML files are syntactically valid'
+
+      - id: check-shebang-scripts-are-executable
+        name: 'Shell script files are executable'
 
   - repo: https://github.com/adrienverge/yamllint
     rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
     hooks:
       - id: yamllint
-        name: 'Run YAML linter'
+        name: 'YAML files are lint-free'
         files: \.(yaml|yml|cff)$
         args: [--format=colored, --no-warnings]
 
@@ -112,7 +112,7 @@ repos:
     rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
     hooks:
       - id: check-jsonschema
-        name: 'Check that Jupyter notebooks are valid JSON'
+        name: 'Jupyter notebooks are valid JSON files'
         types: [jupyter]
         files: '.*\.ipynb$'
         # Note: pre-commit will download & cache this file automatically.
@@ -123,14 +123,14 @@ repos:
     rev: '38980559e3a605691d6579f96222c30778e5a69e'  # frozen: 3.0.0
     hooks:
       - id: shellcheck
-        name: 'Check shell scripts'
+        name: 'Shell scripts are lint-free'
         files: '(\.sh$|^check/[^.]+$)'
 
   - repo: https://github.com/AleksaC/hadolint-py
     rev: '458cb25edf664682e3e856a53a2f9af33e068297' # frozen: 2.14.0
     hooks:
       - id: hadolint
-        name: 'Check Docker files'
+        name: 'Docker files are lint-free'
         files: (?i)dockerfile$
         args: [--failure-threshold, error]
 
@@ -139,7 +139,7 @@ repos:
     rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
     hooks:
       - id: check-github-workflows
-        name: 'Check GitHub workflow files'
+        name: 'GitHub Actions workflow files are syntactically valid'
 
 # ~~~~ Commit message hooks ~~~~
 
@@ -147,7 +147,7 @@ repos:
     rev: c96c46fae465ab9e3607401d9ce93d75e7998023  # frozen: v1
     hooks:
       - id: typos
-        name: 'Check commit message for typos'
+        name: 'Commit message is free of typos'
         stages: [commit-msg]
         # Important: add "args: []" to prevent typos from autofixing your files.
         # C.f. https://github.com/crate-ci/typos/blob/master/docs/pre-commit.md
@@ -158,7 +158,7 @@ repos:
   - repo: local
     hooks:
       - id: format-incremental
-        name: 'Run check/format-incremental'
+        name: 'check/format-incremental runs without errors'
         entry: check/format-incremental
         language: script
         pass_filenames: false
@@ -169,7 +169,7 @@ repos:
     rev: 'd9215b6b2a028d1614c92cf43a9fcff3b1dd889e'  # frozen: 0.1.2
     hooks:
       - id: copyright-notice
-        name: 'Check that files have a copyright notice'
+        name: 'Files have copyright notices'
         types: [python]
         stages: [pre-push]
         args: [--notice=dev_tools/apache-license-header.txt]
@@ -178,7 +178,7 @@ repos:
     rev: ffc61540dea52bad1c41cfeedcf26c53ad9447ba  # frozen: v3.14.2
     hooks:
       - id: markdown-link-check
-        name: 'Check Markdown file lint'
+        name: 'Markdown files are lint-free'
         types: [markdown]
         stages: [pre-push]
 
@@ -186,13 +186,13 @@ repos:
     rev: 3a6eb0fadf60b3cccfd80bad9dbb6fae7e47b316  # frozen: v1.10.0
     hooks:
       - id: python-check-blanket-noqa
-        name: 'Check that "# noqa" annotations include error codes'
+        name: '"# noqa" annotations include error codes'
         stages: [pre-push]
 
       - id: python-check-blanket-type-ignore
-        name: 'Check that "# type: ignore" comments include error codes'
-        stages: [pre-push]
+        name: '"# type: ignore" comments include error codes'
+        types: [python]
 
       - id: python-check-mock-methods
-        name: 'Check for common mistakes when using unittest.mock'
-        stages: [pre-push]
+        name: 'Uses of unittest.mock are free of some common mistakes'
+        types: [python]
