@@ -52,6 +52,7 @@ def optimal_givens_decomposition(
                 should be ordered in linear physical order.
         unitary:
     """
+    unitary = unitary.copy()
     N = unitary.shape[0]
     right_rotations = []
     left_rotations = []

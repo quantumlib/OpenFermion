@@ -235,3 +235,14 @@ def test_circuit_generation_state():
     cirq_wf = simulator.simulate(circuit).final_state_vector
 
     assert numpy.allclose(cirq_wf, test_final_state.flatten())
+
+
+def test_consecutive_optimal_givens_decomposition():
+    n_qubits = 3
+    qubits = cirq.LineQubit.range(n_qubits)
+    mat = cirq.testing.random_unitary(n_qubits)
+
+    circuit1 = cirq.Circuit(optimal_givens_decomposition(qubits, mat))
+    circuit2 = cirq.Circuit(optimal_givens_decomposition(qubits, mat))
+
+    assert circuit1 == circuit2

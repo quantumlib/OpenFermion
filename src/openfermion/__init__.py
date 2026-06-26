@@ -266,6 +266,7 @@ from openfermion.circuits import (
     error_bound,
     error_operator,
     trotter_steps_required,
+    trotter_steps_required_propagator,
     vpe_single_circuit,
     vpe_circuits_single_timestep,
     standard_vpe_rotation_set,

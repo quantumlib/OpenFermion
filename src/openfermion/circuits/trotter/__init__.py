@@ -43,4 +43,9 @@ from .simulate_trotter import simulate_trotter
 
 from .trotter_algorithm import TrotterAlgorithm, TrotterStep
 
-from .trotter_error import error_bound, error_operator, trotter_steps_required
+from .trotter_error import (
+    error_bound,
+    error_operator,
+    trotter_steps_required,
+    trotter_steps_required_propagator,
+)
