@@ -19,9 +19,7 @@ from setuptools import find_packages, setup
 __version__ = runpy.run_path('src/openfermion/_version.py')['__version__']
 assert __version__, 'Version string cannot be empty'
 
-description = (
-    'Package to compile and analyze quantum algorithms for ' 'simulating fermionic systems.'
-)
+description = 'Package to compile and analyze quantum algorithms for simulating fermionic systems.'
 
 # The readme file is used as the long_description.
 with open('README.md', 'r', encoding='utf-8') as readme:
