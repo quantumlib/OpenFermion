@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, Tuple
+from collections.abc import Sequence
 import copy
 
 
@@ -18,14 +18,20 @@ class DualBasisElement:
     for all i in [1, dim(`M')].
     """
 
+    primal_tensors_names: list[str]
+    primal_elements: list[tuple[int, ...]]
+    primal_coeffs: list[float]
+    constant_bias: float | int
+    dual_scalar: float | int
+
     def __init__(
         self,
         *,
-        tensor_names: Optional[Union[None, List[str]]] = None,
-        tensor_elements: Optional[Union[None, List[Tuple[int, ...]]]] = None,
-        tensor_coeffs: Optional[Union[None, List[float]]] = None,
-        bias: Optional[int] = 0,
-        scalar: Optional[int] = 0,
+        tensor_names: list[str] | None = None,
+        tensor_elements: Sequence[tuple[int, ...]] | None = None,
+        tensor_coeffs: list[float] | None = None,
+        bias: float | int = 0,
+        scalar: float | int = 0,
     ):
         """
         Define a linear operator on a tensor `A', a bias `b', and a result `c'
@@ -52,7 +58,7 @@ class DualBasisElement:
         if tensor_elements is None:
             self.primal_elements = []
         else:
-            self.primal_elements = tensor_elements
+            self.primal_elements = list(tensor_elements)
 
         if tensor_coeffs is None:
             self.primal_coeffs = []
@@ -155,7 +161,9 @@ class DualBasisElement:
 
 
 class DualBasis:
-    def __init__(self, elements: Optional[Union[None, List[DualBasisElement]]] = None):
+    elements: list[DualBasisElement]
+
+    def __init__(self, elements: list[DualBasisElement] | None = None):
         """
         A collection of DualBasisElements
 

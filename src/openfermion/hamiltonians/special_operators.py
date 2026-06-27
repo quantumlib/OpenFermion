@@ -11,6 +11,8 @@
 #   limitations under the License.
 """Commonly used operators (mainly instances of SymbolicOperator)."""
 
+from typing import cast
+
 import openfermion.config as config
 from openfermion.ops.operators import BosonOperator, FermionOperator
 from openfermion.utils.indexing import down_index, up_index
@@ -266,8 +268,10 @@ def majorana_operator(
             majorana_op = FermionOperator(((mode, 1),), coefficient)
             majorana_op += FermionOperator(((mode, 0),), coefficient)
         elif operator_type == 1:
-            majorana_op = FermionOperator(((mode, 1),), 1.0j * coefficient)
-            majorana_op -= FermionOperator(((mode, 0),), 1.0j * coefficient)
+            scalar_coeff = cast(int | float | complex, coefficient)
+            imag_coeff = 1.0j * scalar_coeff
+            majorana_op = FermionOperator(((mode, 1),), imag_coeff)
+            majorana_op -= FermionOperator(((mode, 0),), imag_coeff)
         else:
             raise ValueError('Invalid operator type: {}'.format(str(operator_type)))
 
@@ -297,7 +301,7 @@ def number_operator(
     """
 
     if parity == -1:
-        Op = FermionOperator
+        Op: type[FermionOperator] | type[BosonOperator] = FermionOperator
     elif parity == 1:
         Op = BosonOperator
     else:
