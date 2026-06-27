@@ -11,8 +11,6 @@
 #   limitations under the License.
 """Commonly used operators (mainly instances of SymbolicOperator)."""
 
-from typing import cast
-
 import openfermion.config as config
 from openfermion.ops.operators import BosonOperator, FermionOperator
 from openfermion.utils.indexing import down_index, up_index
@@ -213,7 +211,7 @@ def s_squared_operator(n_spatial_orbitals: int) -> FermionOperator:
 
 
 def majorana_operator(
-    term: tuple[int, int] | str | None = None, coefficient=1.0
+    term: tuple[int, int] | str | None = None, coefficient: int | float | complex = 1.0
 ) -> FermionOperator:
     r"""Initialize a Majorana operator.
 
@@ -268,8 +266,7 @@ def majorana_operator(
             majorana_op = FermionOperator(((mode, 1),), coefficient)
             majorana_op += FermionOperator(((mode, 0),), coefficient)
         elif operator_type == 1:
-            scalar_coeff = cast(int | float | complex, coefficient)
-            imag_coeff = 1.0j * scalar_coeff
+            imag_coeff = 1.0j * coefficient
             majorana_op = FermionOperator(((mode, 1),), imag_coeff)
             majorana_op -= FermionOperator(((mode, 0),), imag_coeff)
         else:
