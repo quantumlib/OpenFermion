@@ -237,7 +237,7 @@ def tpdm_to_phdm_mapping(dim: int) -> DualBasis:
     dbe_list = []
 
     def g2d2map(
-        p: int, q: int, r: int, s: int, factor: Optional[Union[float, int]] = 1
+        p: int, q: int, r: int, s: int, factor: float | int = 1
     ) -> DualBasisElement:
         """
         Build the dual basis element for a symmetric 2-marginal
