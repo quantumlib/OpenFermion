@@ -11,8 +11,6 @@
 #   limitations under the License.
 """Commonly used operators (mainly instances of SymbolicOperator)."""
 
-from typing import Union
-
 import openfermion.config as config
 from openfermion.ops.operators import BosonOperator, FermionOperator
 from openfermion.utils.indexing import down_index, up_index
@@ -282,7 +280,7 @@ def majorana_operator(
 
 def number_operator(
     n_modes: int, mode: int | None = None, coefficient=1.0, parity: int = -1
-) -> Union[BosonOperator, FermionOperator]:
+) -> BosonOperator | FermionOperator:
     """Return a fermionic or bosonic number operator.
 
     Args:
