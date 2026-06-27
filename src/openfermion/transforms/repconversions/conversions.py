@@ -82,7 +82,7 @@ def get_quadratic_hamiltonian(
         coefficient = fermion_operator.terms[term]
         # Ignore this term if the coefficient is zero
         if abs(coefficient) < EQ_TOLERANCE:
-            # not testable because normal_ordered kills
+            # not testable because normal_ordered eliminates
             # fermion terms lower than EQ_TOLERANCE
             continue  # pragma: no cover
 
@@ -198,7 +198,7 @@ def get_diagonal_coulomb_hamiltonian(
     for term, coefficient in fermion_operator.terms.items():
         # Ignore this term if the coefficient is zero
         if abs(coefficient) < EQ_TOLERANCE:
-            # not testable because normal_ordered kills
+            # not testable because normal_ordered eliminates
             # fermion terms lower than EQ_TOLERANCE
             continue  # pragma: no cover
 
@@ -284,7 +284,7 @@ def get_interaction_operator(fermion_operator, n_qubits=None):
         coefficient = fermion_operator.terms[term]
         # Ignore this term if the coefficient is zero
         if abs(coefficient) < EQ_TOLERANCE:
-            # not testable because normal_ordered kills
+            # not testable because normal_ordered eliminates
             # fermion terms lower than EQ_TOLERANCE
             continue  # pragma: no cover
 

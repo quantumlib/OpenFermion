@@ -54,7 +54,7 @@ def QR2(L1: int, L2: int, M1: int) -> Tuple[int, int, int]:
 
     k1_opt, k2_opt = 0, 0
     val_opt = 1e50
-    # Doing this as a stupid loop for now, worth refactoring but cost is quick
+    # Doing this as a suboptimal loop for now, worth refactoring but cost is quick
     # Biggest concern is if k1 / k2 range is not large enough!
     for k1 in range(1, 17):
         for k2 in range(1, 17):
@@ -109,7 +109,7 @@ def QI2(L1: int, L2: int) -> Tuple[int, int, int]:
 
     k1_opt, k2_opt = 0, 0
     val_opt = 1e50
-    # Doing this as a stupid loop for now, worth refactoring but cost is quick
+    # Doing this as a suboptimal loop for now, worth refactoring but cost is quick
     # Biggest concern is if k1 / k2 range is not large enough!
     for k1 in range(1, 17):
         for k2 in range(1, 17):

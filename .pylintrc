@@ -1013,7 +1013,7 @@ allowed-redefined-builtins=
 callbacks=cb_,
           _cb
 
-# A regular expression matching the name of dummy variables (i.e. expected to
+# A regular expression matching the name of placeholder variables (i.e. expected to
 # not be used).
 dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
 

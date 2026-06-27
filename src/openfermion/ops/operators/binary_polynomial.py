@@ -49,7 +49,7 @@ class BinaryPolynomial:
 
     For initialization, the preferred data types is either a string of the
     multinomial, where each variable and constant is to be well separated by
-    a whitespace, or in its native form of tuples,
+    a whitespace, or in its built-in form of tuples,
     1 + w1 w2 + w0 w1 is represented as [(_SYMBOLIC_ONE,),(1,2),(0,1)]
 
     After initialization,BinaryPolynomial terms can be manipulated with the
