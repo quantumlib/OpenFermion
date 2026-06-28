@@ -25,7 +25,7 @@ from openfermion.ops.operators.fermion_operator import FermionOperator
 from openfermion.ops.operators.symbolic_operator import SymbolicOperator
 
 
-class DummyOperator1(SymbolicOperator):
+class MockOperator1(SymbolicOperator):
     """Subclass of SymbolicOperator created for testing purposes."""
 
     @property
@@ -49,7 +49,7 @@ class DummyOperator1(SymbolicOperator):
         return False
 
 
-class DummyOperator2(SymbolicOperator):
+class MockOperator2(SymbolicOperator):
     """Subclass of SymbolicOperator created for testing purposes."""
 
     @property
@@ -81,19 +81,19 @@ class GeneralTest(unittest.TestCase):
             _ = SymbolicOperator()
 
     def test_symbolic_operator_constant(self):
-        op = DummyOperator1((), 1.723)
+        op = MockOperator1((), 1.723)
         self.assertEqual(op.constant, 1.723)
 
-        op = DummyOperator1('1^ 4', 0.182)
+        op = MockOperator1('1^ 4', 0.182)
         self.assertEqual(op.constant, 0.0)
 
     def test_init_single_factor(self):
-        """Test initialization of the form DummyOperator((index, action))."""
+        """Test initialization of the form MockOperator((index, action))."""
         equals_tester = EqualsTester(self)
 
-        group_1 = [DummyOperator1((3, 0)), DummyOperator1(((3, 0),))]
-        group_2 = [DummyOperator2((5, 'X')), DummyOperator2(((5, 'X'),))]
-        group_3 = [DummyOperator2((5, 'X'), 0.5), DummyOperator2(((5, 'X'),), 0.5)]
+        group_1 = [MockOperator1((3, 0)), MockOperator1(((3, 0),))]
+        group_2 = [MockOperator2((5, 'X')), MockOperator2(((5, 'X'),))]
+        group_3 = [MockOperator2((5, 'X'), 0.5), MockOperator2(((5, 'X'),), 0.5)]
 
         equals_tester.add_equality_group(*group_1)
         equals_tester.add_equality_group(*group_2)
@@ -104,40 +104,40 @@ class GeneralTest(unittest.TestCase):
         equals_tester = EqualsTester(self)
 
         zeros_1 = [
-            DummyOperator1(),
-            DummyOperator1('1^ 0', 0.0),
-            DummyOperator1('1^ 0', -1j) * 0,
-            DummyOperator1('1^ 0', 0 * sympy.Symbol('x')),
-            DummyOperator1('1^ 0', sympy.Symbol('x')) * 0,
+            MockOperator1(),
+            MockOperator1('1^ 0', 0.0),
+            MockOperator1('1^ 0', -1j) * 0,
+            MockOperator1('1^ 0', 0 * sympy.Symbol('x')),
+            MockOperator1('1^ 0', sympy.Symbol('x')) * 0,
         ]
 
         zeros_2 = [
-            DummyOperator2(),
-            DummyOperator2(((1, 'Y'), (0, 'X')), 0.0),
-            DummyOperator2(((1, 'Y'), (0, 'X')), -1j) * 0,
-            DummyOperator2(((1, 'Y'), (0, 'X')), 0 * sympy.Symbol('x')),
-            DummyOperator2(((1, 'Y'), (0, 'X')), sympy.Symbol('x')) * 0,
+            MockOperator2(),
+            MockOperator2(((1, 'Y'), (0, 'X')), 0.0),
+            MockOperator2(((1, 'Y'), (0, 'X')), -1j) * 0,
+            MockOperator2(((1, 'Y'), (0, 'X')), 0 * sympy.Symbol('x')),
+            MockOperator2(((1, 'Y'), (0, 'X')), sympy.Symbol('x')) * 0,
         ]
 
         different_ops_1 = [
-            DummyOperator1(((1, 0),), -0.1j),
-            DummyOperator1(((1, 1),), -0.1j),
-            (DummyOperator1(((1, 0),), -0.1j) + DummyOperator1(((1, 1),), -0.1j)),
+            MockOperator1(((1, 0),), -0.1j),
+            MockOperator1(((1, 1),), -0.1j),
+            (MockOperator1(((1, 0),), -0.1j) + MockOperator1(((1, 1),), -0.1j)),
         ]
 
         different_ops_2 = [
-            DummyOperator2(((1, 'Y'),), -0.1j),
-            DummyOperator2(((1, 'X'),), -0.1j),
-            (DummyOperator2(((1, 'Y'),), -0.1j) + DummyOperator2(((2, 'Y'),), -0.1j)),
+            MockOperator2(((1, 'Y'),), -0.1j),
+            MockOperator2(((1, 'X'),), -0.1j),
+            (MockOperator2(((1, 'Y'),), -0.1j) + MockOperator2(((2, 'Y'),), -0.1j)),
         ]
 
         sympy_ops_1 = [
-            DummyOperator1('1^ 0', sympy.Symbol('x')),
-            DummyOperator1('1^ 0', 2 * sympy.Symbol('x')) / 2,
-            DummyOperator1('1^ 0', sympy.Symbol('x') * sympy.Symbol('y')) * 1 / sympy.Symbol('y'),
+            MockOperator1('1^ 0', sympy.Symbol('x')),
+            MockOperator1('1^ 0', 2 * sympy.Symbol('x')) / 2,
+            MockOperator1('1^ 0', sympy.Symbol('x') * sympy.Symbol('y')) * 1 / sympy.Symbol('y'),
         ]
 
-        sympy_ops_2 = [DummyOperator1('1^ 0', sympy.Symbol('x') + 1)]
+        sympy_ops_2 = [MockOperator1('1^ 0', sympy.Symbol('x') + 1)]
 
         equals_tester.add_equality_group(*sympy_ops_2)
         equals_tester.add_equality_group(*zeros_1)
@@ -150,17 +150,17 @@ class GeneralTest(unittest.TestCase):
 
     def test_many_body_order(self):
         """Test computing the many-body order."""
-        zero = DummyOperator1()
-        identity = DummyOperator2(())
+        zero = MockOperator1()
+        identity = MockOperator2(())
 
-        op1 = DummyOperator1('0^ 3 5^ 6')
-        op2 = op1 + DummyOperator1('8^ 3')
-        op3 = op2 + DummyOperator1('1^ 2 3^ 4 5 ')
+        op1 = MockOperator1('0^ 3 5^ 6')
+        op2 = op1 + MockOperator1('8^ 3')
+        op3 = op2 + MockOperator1('1^ 2 3^ 4 5 ')
 
-        op4 = DummyOperator2('X0 X1 Y3')
-        op5 = op4 - DummyOperator2('Z0')
-        op6 = op5 - DummyOperator2('Z1 Z2 Y3 Y4 Y9 Y10')
-        op7 = op5 - DummyOperator2('Z1 Z2 Y3 Y4 Y9 Y10', EQ_TOLERANCE / 2.0)
+        op4 = MockOperator2('X0 X1 Y3')
+        op5 = op4 - MockOperator2('Z0')
+        op6 = op5 - MockOperator2('Z1 Z2 Y3 Y4 Y9 Y10')
+        op7 = op5 - MockOperator2('Z1 Z2 Y3 Y4 Y9 Y10', EQ_TOLERANCE / 2.0)
 
         self.assertEqual(zero.many_body_order(), 0)
         self.assertEqual(identity.many_body_order(), 0)
@@ -173,8 +173,8 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(op7.many_body_order(), 3)
 
     def test_iter(self):
-        op1 = DummyOperator1('0^ 3 5^ 6')
-        op2 = DummyOperator1('8^ 3')
+        op1 = MockOperator1('0^ 3 5^ 6')
+        op2 = MockOperator1('8^ 3')
         opsum = op1 + op2
         op_list = []
         for op_term in opsum:
@@ -186,72 +186,72 @@ class GeneralTest(unittest.TestCase):
 
 
 class SymbolicOperatorTest1(unittest.TestCase):
-    """Test the subclass DummyOperator1."""
+    """Test the subclass MockOperator1."""
 
     def test_init_defaults(self):
-        loc_op = DummyOperator1()
+        loc_op = MockOperator1()
         self.assertEqual(len(loc_op.terms), 0)
 
     def test_init_tuple_real_coefficient(self):
         loc_op = ((0, 1), (5, 0), (6, 1))
         coefficient = 0.5
-        fermion_op = DummyOperator1(loc_op, coefficient)
+        fermion_op = MockOperator1(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
         self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_tuple_complex_coefficient(self):
         loc_op = ((0, 1), (5, 0), (6, 1))
         coefficient = 0.6j
-        fermion_op = DummyOperator1(loc_op, coefficient)
+        fermion_op = MockOperator1(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
         self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_tuple_npfloat64_coefficient(self):
         loc_op = ((0, 1), (5, 0), (6, 1))
         coefficient = numpy.float64(2.303)
-        fermion_op = DummyOperator1(loc_op, coefficient)
+        fermion_op = MockOperator1(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
         self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_tuple_npcomplex128_coefficient(self):
         loc_op = ((0, 1), (5, 0), (6, 1))
         coefficient = numpy.complex128(-1.123j + 43.7)
-        fermion_op = DummyOperator1(loc_op, coefficient)
+        fermion_op = MockOperator1(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
         self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_list_real_coefficient(self):
         loc_op = [(0, 1), (5, 0), (6, 1)]
         coefficient = 1.0 / 3
-        fermion_op = DummyOperator1(loc_op, coefficient)
+        fermion_op = MockOperator1(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
         self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_list_complex_coefficient(self):
         loc_op = [(0, 1), (5, 0), (6, 1)]
         coefficient = 2j / 3.0
-        fermion_op = DummyOperator1(loc_op, coefficient)
+        fermion_op = MockOperator1(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
         self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_list_npfloat64_coefficient(self):
         loc_op = [(0, 1), (5, 0), (6, 1)]
         coefficient = numpy.float64(2.3037)
-        fermion_op = DummyOperator1(loc_op, coefficient)
+        fermion_op = MockOperator1(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
         self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_init_list_npcomplex128_coefficient(self):
         loc_op = [(0, 1), (5, 0), (6, 1)]
         coefficient = numpy.complex128(-1.1237j + 43.37)
-        fermion_op = DummyOperator1(loc_op, coefficient)
+        fermion_op = MockOperator1(loc_op, coefficient)
         self.assertEqual(len(fermion_op.terms), 1)
         self.assertEqual(fermion_op.terms[tuple(loc_op)], coefficient)
 
     def test_identity_is_multiplicative_identity(self):
-        u = DummyOperator1.identity()
-        f = DummyOperator1(((0, 1), (5, 0), (6, 1)), 0.6j)
-        g = DummyOperator1(((0, 0), (5, 0), (6, 1)), 0.3j)
+        u = MockOperator1.identity()
+        f = MockOperator1(((0, 1), (5, 0), (6, 1)), 0.6j)
+        g = MockOperator1(((0, 0), (5, 0), (6, 1)), 0.3j)
         h = f + g
         self.assertTrue(f == u * f)
         self.assertTrue(f == f * u)
@@ -265,12 +265,12 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertFalse(f == u)
 
         # Method always returns new instances.
-        self.assertFalse(DummyOperator1.identity() == u)
+        self.assertFalse(MockOperator1.identity() == u)
 
     def test_zero_is_additive_identity(self):
-        o = DummyOperator1.zero()
-        f = DummyOperator1(((0, 1), (5, 0), (6, 1)), 0.6j)
-        g = DummyOperator1(((0, 0), (5, 0), (6, 1)), 0.3j)
+        o = MockOperator1.zero()
+        f = MockOperator1(((0, 1), (5, 0), (6, 1)), 0.6j)
+        g = MockOperator1(((0, 0), (5, 0), (6, 1)), 0.3j)
         h = f + g
         self.assertTrue(f == o + f)
         self.assertTrue(f == f + o)
@@ -284,196 +284,196 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertFalse(f == o)
 
         # Method always returns new instances.
-        self.assertFalse(DummyOperator1.zero() == o)
+        self.assertFalse(MockOperator1.zero() == o)
 
     def test_zero_is_multiplicative_nil(self):
-        o = DummyOperator1.zero()
-        u = DummyOperator1.identity()
-        f = DummyOperator1(((0, 1), (5, 0), (6, 1)), 0.6j)
-        g = DummyOperator1(((0, 0), (5, 0), (6, 1)), 0.3j)
+        o = MockOperator1.zero()
+        u = MockOperator1.identity()
+        f = MockOperator1(((0, 1), (5, 0), (6, 1)), 0.6j)
+        g = MockOperator1(((0, 0), (5, 0), (6, 1)), 0.3j)
         self.assertTrue(o == o * u)
         self.assertTrue(o == o * f)
         self.assertTrue(o == o * g)
         self.assertTrue(o == o * (f + g))
 
     def test_init_str(self):
-        fermion_op = DummyOperator1('0^ 5 12^', -1.0)
+        fermion_op = MockOperator1('0^ 5 12^', -1.0)
         correct = ((0, 1), (5, 0), (12, 1))
         self.assertIn(correct, fermion_op.terms)
         self.assertEqual(fermion_op.terms[correct], -1.0)
 
     def test_init_long_str_repeated(self):
-        fermion_op = DummyOperator1('-2 [0^ 1] + [0^ 1]')
-        correct = -1 * DummyOperator1('0^ 1')
+        fermion_op = MockOperator1('-2 [0^ 1] + [0^ 1]')
+        correct = -1 * MockOperator1('0^ 1')
         self.assertTrue(fermion_op == correct)
 
     def test_raises_error_negative_indices(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2('X-1 Y0')
+            _ = MockOperator2('X-1 Y0')
         with self.assertRaises(ValueError):
-            _ = DummyOperator1('-1^ 0')
+            _ = MockOperator1('-1^ 0')
 
     def test_init_long_str(self):
-        fermion_op = DummyOperator1('(-2.0+3.0j) [0^ 1] +\n\n -1.0[ 2^ 3 ] - []', -1.0)
+        fermion_op = MockOperator1('(-2.0+3.0j) [0^ 1] +\n\n -1.0[ 2^ 3 ] - []', -1.0)
         correct = (
-            DummyOperator1('0^ 1', complex(2.0, -3.0))
-            + DummyOperator1('2^ 3', 1.0)
-            + DummyOperator1('', 1.0)
+            MockOperator1('0^ 1', complex(2.0, -3.0))
+            + MockOperator1('2^ 3', 1.0)
+            + MockOperator1('', 1.0)
         )
         self.assertEqual(len((fermion_op - correct).terms), 0)
-        reparsed_op = DummyOperator1(str(fermion_op))
+        reparsed_op = MockOperator1(str(fermion_op))
         self.assertEqual(len((fermion_op - reparsed_op).terms), 0)
 
-        fermion_op = DummyOperator1('1.7 [3^ 2] - 8 [4^]')
-        correct = DummyOperator1('3^ 2', 1.7) + DummyOperator1('4^', -8.0)
+        fermion_op = MockOperator1('1.7 [3^ 2] - 8 [4^]')
+        correct = MockOperator1('3^ 2', 1.7) + MockOperator1('4^', -8.0)
         self.assertEqual(len((fermion_op - correct).terms), 0)
 
-        fermion_op = DummyOperator1('-(2.3 + 1.7j) [3^ 2]')
-        correct = DummyOperator1('3^ 2', complex(-2.3, -1.7))
+        fermion_op = MockOperator1('-(2.3 + 1.7j) [3^ 2]')
+        correct = MockOperator1('3^ 2', complex(-2.3, -1.7))
         self.assertEqual(len((fermion_op - correct).terms), 0)
 
     def test_init_long_str_regex(self):
         """Test the regex for parsing long string initializations."""
         # Test coefficient variations
-        op = DummyOperator1('1.5 [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+        op = MockOperator1('1.5 [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1.5))
 
-        op = DummyOperator1('-1.5 [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', -1.5))
+        op = MockOperator1('-1.5 [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', -1.5))
 
-        op = DummyOperator1('2 [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 2.0))
+        op = MockOperator1('2 [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 2.0))
 
-        op = DummyOperator1('-2 [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', -2.0))
+        op = MockOperator1('-2 [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', -2.0))
 
-        op = DummyOperator1('.5 [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 0.5))
+        op = MockOperator1('.5 [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 0.5))
 
-        op = DummyOperator1('(1+2j) [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1 + 2j))
+        op = MockOperator1('(1+2j) [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1 + 2j))
 
-        op = DummyOperator1('( 1 + 2j ) [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1 + 2j))
+        op = MockOperator1('( 1 + 2j ) [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1 + 2j))
 
-        op = DummyOperator1('-(1+2j) [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', -1 - 2j))
+        op = MockOperator1('-(1+2j) [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', -1 - 2j))
 
-        op = DummyOperator1('3j [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 3j))
+        op = MockOperator1('3j [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 3j))
 
-        op = DummyOperator1('-3j [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', -3j))
+        op = MockOperator1('-3j [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', -3j))
 
-        op = DummyOperator1('+1.5 [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+        op = MockOperator1('+1.5 [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1.5))
 
-        op = DummyOperator1('- 1.5 [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', -1.5))
+        op = MockOperator1('- 1.5 [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', -1.5))
 
-        op = DummyOperator1('[0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1.0))
+        op = MockOperator1('[0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1.0))
 
-        op = DummyOperator1('-[0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', -1.0))
+        op = MockOperator1('-[0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', -1.0))
 
-        op = DummyOperator1('+[0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1.0))
+        op = MockOperator1('+[0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1.0))
 
         # Test spacing variations
-        op = DummyOperator1('1.5[0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+        op = MockOperator1('1.5[0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1.5))
 
-        op = DummyOperator1('1.5  [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+        op = MockOperator1('1.5  [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1.5))
 
-        op = DummyOperator1('1.5 [ 0^ 1 ]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+        op = MockOperator1('1.5 [ 0^ 1 ]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1.5))
 
-        op = DummyOperator1(' 1.5 [0^ 1] ')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1.5))
+        op = MockOperator1(' 1.5 [0^ 1] ')
+        self.assertTrue(op == MockOperator1('0^ 1', 1.5))
 
         # Test multiple terms
-        op = DummyOperator1('1.5 [0^ 1] + 2.0 [2^ 3]')
-        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', 2.0)
+        op = MockOperator1('1.5 [0^ 1] + 2.0 [2^ 3]')
+        correct = MockOperator1('0^ 1', 1.5) + MockOperator1('2^ 3', 2.0)
         self.assertTrue(op == correct)
 
-        op = DummyOperator1('1.5 [0^ 1] - 2.0 [2^ 3]')
-        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', -2.0)
+        op = MockOperator1('1.5 [0^ 1] - 2.0 [2^ 3]')
+        correct = MockOperator1('0^ 1', 1.5) + MockOperator1('2^ 3', -2.0)
         self.assertTrue(op == correct)
 
-        op = DummyOperator1('1.5[0^ 1] - 2.0 [ 2^ 3 ]')
-        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', -2.0)
+        op = MockOperator1('1.5[0^ 1] - 2.0 [ 2^ 3 ]')
+        correct = MockOperator1('0^ 1', 1.5) + MockOperator1('2^ 3', -2.0)
         self.assertTrue(op == correct)
 
         # Test multiline strings
-        op = DummyOperator1('1.5 [0^ 1]\n+\n2.0 [2^ 3]')
-        correct = DummyOperator1('0^ 1', 1.5) + DummyOperator1('2^ 3', 2.0)
+        op = MockOperator1('1.5 [0^ 1]\n+\n2.0 [2^ 3]')
+        correct = MockOperator1('0^ 1', 1.5) + MockOperator1('2^ 3', 2.0)
         self.assertTrue(op == correct)
 
         # Test edge cases
-        op = DummyOperator1('1.5 []')
-        self.assertTrue(op == DummyOperator1((), 1.5))
+        op = MockOperator1('1.5 []')
+        self.assertTrue(op == MockOperator1((), 1.5))
 
-        op = DummyOperator1('1.5 [] - 0.5 []')
-        self.assertTrue(op == DummyOperator1((), 1.0))
+        op = MockOperator1('1.5 [] - 0.5 []')
+        self.assertTrue(op == MockOperator1((), 1.0))
 
-        op = DummyOperator1('+ [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', 1.0))
+        op = MockOperator1('+ [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', 1.0))
 
-        op = DummyOperator1('- [0^ 1]')
-        self.assertTrue(op == DummyOperator1('0^ 1', -1.0))
+        op = MockOperator1('- [0^ 1]')
+        self.assertTrue(op == MockOperator1('0^ 1', -1.0))
 
     def test_merges_multiple_whitespace(self):
-        fermion_op = DummyOperator1('        \n ')
+        fermion_op = MockOperator1('        \n ')
         self.assertEqual(fermion_op.terms, {(): 1})
 
     def test_init_str_identity(self):
-        fermion_op = DummyOperator1('')
+        fermion_op = MockOperator1('')
         self.assertIn((), fermion_op.terms)
 
     def test_init_with_sympy(self):
-        fermion_op = DummyOperator1('0^', sympy.Symbol('x'))
+        fermion_op = MockOperator1('0^', sympy.Symbol('x'))
         self.assertEqual(fermion_op.terms[((0, 1),)], sympy.Symbol('x'))
 
     def test_init_bad_term(self):
         with self.assertRaises(ValueError):
-            DummyOperator1(2)
+            MockOperator1(2)
 
     def test_init_bad_coefficient(self):
         with self.assertRaises(ValueError):
-            DummyOperator1('0^', "0.5")
+            MockOperator1('0^', "0.5")
 
     def test_init_bad_action_str(self):
         with self.assertRaises(ValueError):
-            DummyOperator1('0-')
+            MockOperator1('0-')
 
     def test_init_bad_action_tuple(self):
         with self.assertRaises(ValueError):
-            DummyOperator1(((0, 2),))
+            MockOperator1(((0, 2),))
 
     def test_init_bad_tuple(self):
         with self.assertRaises(ValueError):
-            DummyOperator1(((0, 1, 1),))
+            MockOperator1(((0, 1, 1),))
 
     def test_init_bad_str(self):
         with self.assertRaises(ValueError):
-            DummyOperator1('^')
+            MockOperator1('^')
 
     def test_init_bad_mode_num(self):
         with self.assertRaises(ValueError):
-            DummyOperator1('-1^')
+            MockOperator1('-1^')
 
     def test_init_invalid_tensor_factor(self):
         with self.assertRaises(ValueError):
-            DummyOperator1(((-2, 1), (1, 0)))
+            MockOperator1(((-2, 1), (1, 0)))
 
-    def test_DummyOperator1(self):
-        op = DummyOperator1((), 3.0)
-        self.assertTrue(op == DummyOperator1(()) * 3.0)
+    def test_MockOperator1(self):
+        op = MockOperator1((), 3.0)
+        self.assertTrue(op == MockOperator1(()) * 3.0)
 
     def test_imul_inplace(self):
-        fermion_op = DummyOperator1("1^")
+        fermion_op = MockOperator1("1^")
         prev_id = id(fermion_op)
         fermion_op *= 3.0
         self.assertEqual(id(fermion_op), prev_id)
@@ -482,28 +482,28 @@ class SymbolicOperatorTest1(unittest.TestCase):
     def test_imul_scalar_real(self):
         loc_op = ((1, 0), (2, 1))
         multiplier = 0.5
-        fermion_op = DummyOperator1(loc_op)
+        fermion_op = MockOperator1(loc_op)
         fermion_op *= multiplier
         self.assertEqual(fermion_op.terms[loc_op], multiplier)
 
     def test_imul_scalar_complex(self):
         loc_op = ((1, 0), (2, 1))
         multiplier = 0.6j
-        fermion_op = DummyOperator1(loc_op)
+        fermion_op = MockOperator1(loc_op)
         fermion_op *= multiplier
         self.assertEqual(fermion_op.terms[loc_op], multiplier)
 
     def test_imul_sympy(self):
         loc_op = ((1, 0), (2, 1))
         multiplier = sympy.Symbol('x')
-        fermion_op = DummyOperator1(loc_op)
+        fermion_op = MockOperator1(loc_op)
         fermion_op *= multiplier
         self.assertTrue(fermion_op.terms[loc_op] - multiplier == 0)
 
     def test_imul_sympy_2(self):
         loc_op = ((1, 0), (2, 1))
         multiplier = sympy.Symbol('x') + 3
-        fermion_op = DummyOperator1(loc_op)
+        fermion_op = MockOperator1(loc_op)
         fermion_op *= multiplier
         self.assertTrue(fermion_op.terms[loc_op] - multiplier == 0)
 
@@ -512,54 +512,54 @@ class SymbolicOperatorTest1(unittest.TestCase):
         coeff1 = sympy.Symbol('x') + 3
         loc_op2 = ((1, 1), (3, 1))
         coeff2 = sympy.Symbol('x') + 5
-        fermion_op = DummyOperator1(loc_op1, coeff1)
-        fermion_op *= DummyOperator1(loc_op2, coeff2)
+        fermion_op = MockOperator1(loc_op1, coeff1)
+        fermion_op *= MockOperator1(loc_op2, coeff2)
         self.assertTrue(fermion_op.terms[loc_op1 + loc_op2] - coeff1 * coeff2 == 0)
 
     def test_imul_scalar_npfloat64(self):
         loc_op = ((1, 0), (2, 1))
         multiplier = numpy.float64(2.303)
-        fermion_op = DummyOperator1(loc_op)
+        fermion_op = MockOperator1(loc_op)
         fermion_op *= multiplier
         self.assertEqual(fermion_op.terms[loc_op], multiplier)
 
     def test_imul_scalar_npcomplex128(self):
         loc_op = ((1, 0), (2, 1))
         multiplier = numpy.complex128(-1.123j + 1.7911)
-        fermion_op = DummyOperator1(loc_op)
+        fermion_op = MockOperator1(loc_op)
         fermion_op *= multiplier
         self.assertEqual(fermion_op.terms[loc_op], multiplier)
 
     def test_imul_fermion_op(self):
-        op1 = DummyOperator1(((0, 1), (3, 0), (8, 1), (8, 0), (11, 1)), 3.0j)
-        op2 = DummyOperator1(((1, 1), (3, 1), (8, 0)), 0.5)
+        op1 = MockOperator1(((0, 1), (3, 0), (8, 1), (8, 0), (11, 1)), 3.0j)
+        op2 = MockOperator1(((1, 1), (3, 1), (8, 0)), 0.5)
         op1 *= op2
         correct_term = ((0, 1), (3, 0), (8, 1), (8, 0), (11, 1), (1, 1), (3, 1), (8, 0))
         self.assertEqual(len(op1.terms), 1)
         self.assertIn(correct_term, op1.terms)
 
     def test_imul_fermion_op_2(self):
-        op3 = DummyOperator1(((1, 1), (0, 0)), -1j)
-        op4 = DummyOperator1(((1, 0), (0, 1), (2, 1)), -1.5)
+        op3 = MockOperator1(((1, 1), (0, 0)), -1j)
+        op4 = MockOperator1(((1, 0), (0, 1), (2, 1)), -1.5)
         op3 *= op4
         op4 *= op3
         self.assertIn(((1, 1), (0, 0), (1, 0), (0, 1), (2, 1)), op3.terms)
         self.assertEqual(op3.terms[((1, 1), (0, 0), (1, 0), (0, 1), (2, 1))], 1.5j)
 
     def test_imul_fermion_op_duplicate_term(self):
-        op1 = DummyOperator1('1 2 3')
-        op1 += DummyOperator1('1 2')
-        op1 += DummyOperator1('1')
+        op1 = MockOperator1('1 2 3')
+        op1 += MockOperator1('1 2')
+        op1 += MockOperator1('1')
 
-        op2 = DummyOperator1('3')
-        op2 += DummyOperator1('2 3')
+        op2 = MockOperator1('3')
+        op2 += MockOperator1('2 3')
 
         op1 *= op2
         self.assertAlmostEqual(op1.terms[((1, 0), (2, 0), (3, 0))], 2.0)
 
     def test_imul_bidir(self):
-        op_a = DummyOperator1(((1, 1), (0, 0)), -1j)
-        op_b = DummyOperator1(((1, 1), (0, 1), (2, 1)), -1.5)
+        op_a = MockOperator1(((1, 1), (0, 0)), -1j)
+        op_b = MockOperator1(((1, 1), (0, 1), (2, 1)), -1.5)
         op_a *= op_b
         op_b *= op_a
         self.assertIn(((1, 1), (0, 0), (1, 1), (0, 1), (2, 1)), op_a.terms)
@@ -570,87 +570,87 @@ class SymbolicOperatorTest1(unittest.TestCase):
         )
 
     def test_imul_bad_multiplier(self):
-        op = DummyOperator1(((1, 1), (0, 1)), -1j)
+        op = MockOperator1(((1, 1), (0, 1)), -1j)
         with self.assertRaises(TypeError):
             op *= "1"
 
     def test_mul_by_scalarzero(self):
-        op = DummyOperator1(((1, 1), (0, 1)), -1j) * 0
+        op = MockOperator1(((1, 1), (0, 1)), -1j) * 0
         self.assertNotIn(((0, 1), (1, 1)), op.terms)
         self.assertIn(((1, 1), (0, 1)), op.terms)
         self.assertEqual(op.terms[((1, 1), (0, 1))], 0.0)
 
     def test_mul_bad_multiplier(self):
-        op = DummyOperator1(((1, 1), (0, 1)), -1j)
+        op = MockOperator1(((1, 1), (0, 1)), -1j)
         with self.assertRaises(TypeError):
             op = op * "0.5"
 
     def test_mul_sympy_coeff(self):
-        op = DummyOperator1(((1, 1), (0, 1)), -1j)
+        op = MockOperator1(((1, 1), (0, 1)), -1j)
         op = op * sympy.Symbol('x')
         self.assertTrue(op.terms[((1, 1), (0, 1))] - (-1j * sympy.Symbol('x')) == 0)
 
     def test_mul_out_of_place(self):
-        op1 = DummyOperator1(((0, 1), (3, 1), (3, 0), (11, 1)), 3.0j)
-        op2 = DummyOperator1(((1, 1), (3, 1), (8, 0)), 0.5)
+        op1 = MockOperator1(((0, 1), (3, 1), (3, 0), (11, 1)), 3.0j)
+        op2 = MockOperator1(((1, 1), (3, 1), (8, 0)), 0.5)
         op3 = op1 * op2
         correct_coefficient = 3.0j * 0.5
         correct_term = ((0, 1), (3, 1), (3, 0), (11, 1), (1, 1), (3, 1), (8, 0))
-        self.assertTrue(op1 == DummyOperator1(((0, 1), (3, 1), (3, 0), (11, 1)), 3.0j))
-        self.assertTrue(op2 == DummyOperator1(((1, 1), (3, 1), (8, 0)), 0.5))
-        self.assertTrue(op3 == DummyOperator1(correct_term, correct_coefficient))
+        self.assertTrue(op1 == MockOperator1(((0, 1), (3, 1), (3, 0), (11, 1)), 3.0j))
+        self.assertTrue(op2 == MockOperator1(((1, 1), (3, 1), (8, 0)), 0.5))
+        self.assertTrue(op3 == MockOperator1(correct_term, correct_coefficient))
 
     def test_mul_npfloat64(self):
-        op = DummyOperator1(((1, 0), (3, 1)), 0.5)
+        op = MockOperator1(((1, 0), (3, 1)), 0.5)
         res = op * numpy.float64(0.5)
-        self.assertTrue(res == DummyOperator1(((1, 0), (3, 1)), 0.5 * 0.5))
+        self.assertTrue(res == MockOperator1(((1, 0), (3, 1)), 0.5 * 0.5))
 
     def test_mul_multiple_terms(self):
-        op = DummyOperator1(((1, 0), (8, 1)), 0.5)
-        op += DummyOperator1(((1, 1), (9, 1)), 1.4j)
+        op = MockOperator1(((1, 0), (8, 1)), 0.5)
+        op += MockOperator1(((1, 1), (9, 1)), 1.4j)
         res = op * op
-        correct = DummyOperator1(((1, 0), (8, 1), (1, 0), (8, 1)), 0.5**2)
-        correct += DummyOperator1(((1, 0), (8, 1), (1, 1), (9, 1)), 0.7j) + DummyOperator1(
+        correct = MockOperator1(((1, 0), (8, 1), (1, 0), (8, 1)), 0.5**2)
+        correct += MockOperator1(((1, 0), (8, 1), (1, 1), (9, 1)), 0.7j) + MockOperator1(
             ((1, 1), (9, 1), (1, 0), (8, 1)), 0.7j
         )
-        correct += DummyOperator1(((1, 1), (9, 1), (1, 1), (9, 1)), 1.4j**2)
+        correct += MockOperator1(((1, 1), (9, 1), (1, 1), (9, 1)), 1.4j**2)
         self.assertTrue(res == correct)
 
     def test_rmul_scalar_real(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         multiplier = 0.5
         res1 = op * multiplier
         res2 = multiplier * op
         self.assertTrue(res1 == res2)
 
     def test_rmul_scalar_complex(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         multiplier = 0.6j
         res1 = op * multiplier
         res2 = multiplier * op
         self.assertTrue(res1 == res2)
 
     def test_rmul_scalar_npfloat64(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         multiplier = numpy.float64(2.303)
         res1 = op * multiplier
         res2 = multiplier * op
         self.assertTrue(res1 == res2)
 
     def test_rmul_scalar_npcomplex128(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         multiplier = numpy.complex128(-1.5j + 7.7)
         res1 = op * multiplier
         res2 = multiplier * op
         self.assertTrue(res1 == res2)
 
     def test_rmul_bad_multiplier(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         with self.assertRaises(TypeError):
             op = "0.5" * op
 
     def test_truediv_and_div_real(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         divisor = 0.5
         original = copy.deepcopy(op)
         res = op / divisor
@@ -660,7 +660,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertTrue(op == original)
 
     def test_truediv_and_div_complex(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         divisor = 0.6j
         original = copy.deepcopy(op)
         res = op / divisor
@@ -670,7 +670,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertTrue(op == original)
 
     def test_truediv_and_div_npfloat64(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         divisor = numpy.float64(2.303)
         original = copy.deepcopy(op)
         res = op / divisor
@@ -680,7 +680,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertTrue(op == original)
 
     def test_truediv_and_div_npcomplex128(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         divisor = numpy.complex128(566.4j + 0.3)
         original = copy.deepcopy(op)
         res = op / divisor
@@ -690,12 +690,12 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertTrue(op == original)
 
     def test_truediv_bad_divisor(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         with self.assertRaises(TypeError):
             op = op / "0.5"
 
     def test_itruediv_and_idiv_real(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         divisor = 0.5
         original = copy.deepcopy(op)
         correct = op * (1.0 / divisor)
@@ -705,7 +705,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertFalse(op == original)
 
     def test_itruediv_and_idiv_complex(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         divisor = 0.6j
         original = copy.deepcopy(op)
         correct = op * (1.0 / divisor)
@@ -715,7 +715,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertFalse(op == original)
 
     def test_itruediv_and_idiv_npfloat64(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         divisor = numpy.float64(2.3030)
         original = copy.deepcopy(op)
         correct = op * (1.0 / divisor)
@@ -725,7 +725,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertFalse(op == original)
 
     def test_itruediv_and_idiv_npcomplex128(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         divisor = numpy.complex128(12.3 + 7.4j)
         original = copy.deepcopy(op)
         correct = op * (1.0 / divisor)
@@ -735,19 +735,19 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertFalse(op == original)
 
     def test_itruediv_bad_divisor(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         with self.assertRaises(TypeError):
             op /= "0.5"
 
     def test_iadd_different_term(self):
         term_a = ((1, 1), (3, 0), (8, 1))
         term_b = ((1, 1), (3, 1), (8, 0))
-        a = DummyOperator1(term_a, 1.0)
-        a += DummyOperator1(term_b, 0.5)
+        a = MockOperator1(term_a, 1.0)
+        a += MockOperator1(term_b, 0.5)
         self.assertEqual(len(a.terms), 2)
         self.assertEqual(a.terms[term_a], 1.0)
         self.assertEqual(a.terms[term_b], 0.5)
-        a += DummyOperator1(term_b, 0.5)
+        a += MockOperator1(term_b, 0.5)
         self.assertEqual(len(a.terms), 2)
         self.assertEqual(a.terms[term_a], 1.0)
         self.assertEqual(a.terms[term_b], 1.0)
@@ -757,12 +757,12 @@ class SymbolicOperatorTest1(unittest.TestCase):
         coeff_a = sympy.Symbol('a')
         term_b = ((1, 1), (3, 1), (8, 0))
         coeff_b = sympy.Symbol('b')
-        a = DummyOperator1(term_a, coeff_a)
-        a += DummyOperator1(term_b, coeff_b)
+        a = MockOperator1(term_a, coeff_a)
+        a += MockOperator1(term_b, coeff_b)
         self.assertEqual(len(a.terms), 2)
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] - coeff_b == 0)
-        a += DummyOperator1(term_b, 0.5)
+        a += MockOperator1(term_b, 0.5)
         self.assertEqual(len(a.terms), 2)
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] - coeff_b - 0.5 == 0)
@@ -772,12 +772,12 @@ class SymbolicOperatorTest1(unittest.TestCase):
         coeff_a = sympy.Symbol('a')
         term_b = ((1, 1), (3, 1), (8, 0))
         coeff_b = sympy.Symbol('b')
-        a = DummyOperator1(term_a, coeff_a)
-        a = a + DummyOperator1(term_b, coeff_b)
+        a = MockOperator1(term_a, coeff_a)
+        a = a + MockOperator1(term_b, coeff_b)
         self.assertEqual(len(a.terms), 2)
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] - coeff_b == 0)
-        a = a + DummyOperator1(term_b, 0.5)
+        a = a + MockOperator1(term_b, 0.5)
         self.assertEqual(len(a.terms), 2)
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] - coeff_b - 0.5 == 0)
@@ -793,7 +793,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
     def test_radd(self):
         term_a = ((1, 1), (3, 0), (8, 1))
         coeff_a = 1
-        a = DummyOperator1(term_a, coeff_a)
+        a = MockOperator1(term_a, coeff_a)
         b = 2 + a
         self.assertTrue(b.constant == 2)
 
@@ -802,8 +802,8 @@ class SymbolicOperatorTest1(unittest.TestCase):
         coeff_a = 1
         term_b = ((1, 1), (3, 1), (8, 0))
         coeff_b = 2
-        a = DummyOperator1(term_a, coeff_a)
-        b = DummyOperator1(term_b, coeff_b)
+        a = MockOperator1(term_a, coeff_a)
+        b = MockOperator1(term_b, coeff_b)
         aplusb1 = sum([a, b])
         aplusb2 = a + b
         self.assertEqual(aplusb1, aplusb2)
@@ -811,7 +811,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
     def test_rsub(self):
         term_a = ((1, 1), (3, 0), (8, 1))
         coeff_a = 1
-        a = DummyOperator1(term_a, coeff_a)
+        a = MockOperator1(term_a, coeff_a)
         b = 2 - a
         self.assertTrue(b.constant == 2)
         b = b - 2
@@ -821,38 +821,38 @@ class SymbolicOperatorTest1(unittest.TestCase):
         term_a = ((1, 1), (3, 0), (8, 1))
         coeff_a = sympy.Symbol('a')
 
-        a = DummyOperator1(term_a, coeff_a)
-        a += DummyOperator1(term_a, -coeff_a)
+        a = MockOperator1(term_a, coeff_a)
+        a += MockOperator1(term_a, -coeff_a)
         self.assertEqual(len(a.terms), 0)
 
     def test_iadd_bad_addend(self):
-        op = DummyOperator1((), 1.0)
+        op = MockOperator1((), 1.0)
         with self.assertRaises(TypeError):
             op += "0.5"
 
     def test_add(self):
         term_a = ((1, 1), (3, 0), (8, 1))
         term_b = ((1, 0), (3, 0), (8, 1))
-        a = DummyOperator1(term_a, 1.0)
-        b = DummyOperator1(term_b, 0.5)
+        a = MockOperator1(term_a, 1.0)
+        b = MockOperator1(term_b, 0.5)
         res = a + b + b
         self.assertEqual(len(res.terms), 2)
         self.assertEqual(res.terms[term_a], 1.0)
         self.assertEqual(res.terms[term_b], 1.0)
         # Test out of place
-        self.assertTrue(a == DummyOperator1(term_a, 1.0))
-        self.assertTrue(b == DummyOperator1(term_b, 0.5))
+        self.assertTrue(a == MockOperator1(term_a, 1.0))
+        self.assertTrue(b == MockOperator1(term_b, 0.5))
 
     def test_add_bad_addend(self):
-        op = DummyOperator1((), 1.0)
+        op = MockOperator1((), 1.0)
         with self.assertRaises(TypeError):
             _ = op + "0.5"
 
     def test_sub(self):
         term_a = ((1, 1), (3, 1), (8, 1))
         term_b = ((1, 0), (3, 1), (8, 1))
-        a = DummyOperator1(term_a, 1.0)
-        b = DummyOperator1(term_b, 0.5)
+        a = MockOperator1(term_a, 1.0)
+        b = MockOperator1(term_b, 0.5)
         res = a - b
         self.assertEqual(len(res.terms), 2)
         self.assertEqual(res.terms[term_a], 1.0)
@@ -863,7 +863,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertEqual(res2.terms[term_b], 0.5)
 
     def test_sub_bad_subtrahend(self):
-        op = DummyOperator1((), 1.0)
+        op = MockOperator1((), 1.0)
         with self.assertRaises(TypeError):
             _ = op - "0.5"
 
@@ -872,12 +872,12 @@ class SymbolicOperatorTest1(unittest.TestCase):
         coeff_a = sympy.Symbol('a')
         term_b = ((1, 1), (3, 1), (8, 0))
         coeff_b = sympy.Symbol('b')
-        a = DummyOperator1(term_a, coeff_a)
-        a = a - DummyOperator1(term_b, coeff_b)
+        a = MockOperator1(term_a, coeff_a)
+        a = a - MockOperator1(term_b, coeff_b)
         self.assertEqual(len(a.terms), 2)
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] + coeff_b == 0)
-        a = a - DummyOperator1(term_b, 0.5)
+        a = a - MockOperator1(term_b, 0.5)
         self.assertEqual(len(a.terms), 2)
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] + coeff_b + 0.5 == 0)
@@ -885,18 +885,18 @@ class SymbolicOperatorTest1(unittest.TestCase):
     def test_isub_different_term(self):
         term_a = ((1, 1), (3, 1), (8, 0))
         term_b = ((1, 0), (3, 1), (8, 1))
-        a = DummyOperator1(term_a, 1.0)
-        a -= DummyOperator1(term_b, 0.5)
+        a = MockOperator1(term_a, 1.0)
+        a -= MockOperator1(term_b, 0.5)
         self.assertEqual(len(a.terms), 2)
         self.assertEqual(a.terms[term_a], 1.0)
         self.assertEqual(a.terms[term_b], -0.5)
-        a -= DummyOperator1(term_b, 0.5)
+        a -= MockOperator1(term_b, 0.5)
         self.assertEqual(len(a.terms), 2)
         self.assertEqual(a.terms[term_a], 1.0)
         self.assertEqual(a.terms[term_b], -1.0)
 
     def test_isub_bad_addend(self):
-        op = DummyOperator1((), 1.0)
+        op = MockOperator1((), 1.0)
         with self.assertRaises(TypeError):
             op -= "0.5"
 
@@ -905,12 +905,12 @@ class SymbolicOperatorTest1(unittest.TestCase):
         coeff_a = sympy.Symbol('a')
         term_b = ((1, 1), (3, 1), (8, 0))
         coeff_b = sympy.Symbol('b')
-        a = DummyOperator1(term_a, coeff_a)
-        a -= DummyOperator1(term_b, coeff_b)
+        a = MockOperator1(term_a, coeff_a)
+        a -= MockOperator1(term_b, coeff_b)
         self.assertEqual(len(a.terms), 2)
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] + coeff_b == 0)
-        a -= DummyOperator1(term_b, 0.5)
+        a -= MockOperator1(term_b, 0.5)
         self.assertEqual(len(a.terms), 2)
         self.assertTrue(a.terms[term_a] - coeff_a == 0)
         self.assertTrue(a.terms[term_b] + coeff_b + 0.5 == 0)
@@ -919,52 +919,52 @@ class SymbolicOperatorTest1(unittest.TestCase):
         term_a = ((1, 1), (3, 0), (8, 1))
         coeff_a = sympy.Symbol('a')
 
-        a = DummyOperator1(term_a, coeff_a)
-        a -= DummyOperator1(term_a, coeff_a)
+        a = MockOperator1(term_a, coeff_a)
+        a -= MockOperator1(term_a, coeff_a)
         self.assertEqual(len(a.terms), 0)
 
     def test_neg(self):
-        op = DummyOperator1(((1, 1), (3, 1), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 1), (8, 1)), 0.5)
         _ = -op
         # out of place
-        self.assertTrue(op == DummyOperator1(((1, 1), (3, 1), (8, 1)), 0.5))
+        self.assertTrue(op == MockOperator1(((1, 1), (3, 1), (8, 1)), 0.5))
         correct = -1.0 * op
         self.assertTrue(correct == -op)
 
     def test_pow_square_term(self):
         coeff = 6.7j
         ops = ((3, 1), (1, 0), (4, 1))
-        term = DummyOperator1(ops, coeff)
+        term = MockOperator1(ops, coeff)
         squared = term**2
-        expected = DummyOperator1(ops + ops, coeff**2)
+        expected = MockOperator1(ops + ops, coeff**2)
         self.assertTrue(squared == term * term)
         self.assertTrue(squared == expected)
 
     def test_pow_zero_term(self):
         coeff = 6.7j
         ops = ((3, 1), (1, 0), (4, 1))
-        term = DummyOperator1(ops, coeff)
+        term = MockOperator1(ops, coeff)
         zerod = term**0
-        expected = DummyOperator1(())
+        expected = MockOperator1(())
         self.assertTrue(expected == zerod)
 
     def test_pow_one_term(self):
         coeff = 6.7j
         ops = ((3, 1), (1, 0), (4, 1))
-        term = DummyOperator1(ops, coeff)
+        term = MockOperator1(ops, coeff)
         self.assertTrue(term == term**1)
 
     def test_pow_high_term(self):
         coeff = 6.7j
         ops = ((3, 1), (1, 0), (4, 1))
-        term = DummyOperator1(ops, coeff)
+        term = MockOperator1(ops, coeff)
         high = term**10
-        expected = DummyOperator1(ops * 10, coeff**10)
+        expected = MockOperator1(ops * 10, coeff**10)
         self.assertTrue(high.isclose(expected, rtol=1e-12, atol=1e-12))
 
     def test_isclose_parameter_deprecation(self):
-        op1 = DummyOperator1('0^ 1', 1.0)
-        op2 = DummyOperator1('0^ 1', 1.001)
+        op1 = MockOperator1('0^ 1', 1.0)
+        op2 = MockOperator1('0^ 1', 1.001)
 
         with self.assertWarns(DeprecationWarning):
             op1.isclose(op2, tol=0.01)
@@ -975,8 +975,8 @@ class SymbolicOperatorTest1(unittest.TestCase):
             self.assertFalse(op1.isclose(op2, tol=0.0001))
 
     def test_isclose_parameter_combos(self):
-        op1 = DummyOperator1('0^ 1', 1.0)
-        op2 = DummyOperator1('0^ 1', 1.001)
+        op1 = MockOperator1('0^ 1', 1.0)
+        op2 = MockOperator1('0^ 1', 1.001)
 
         with self.assertRaises(ValueError):
             op1.isclose(op2, tol=0.01, rtol=1e-5)
@@ -985,31 +985,31 @@ class SymbolicOperatorTest1(unittest.TestCase):
             op1.isclose(op2, tol=0.01, atol=1e-5)
 
     def test_isclose_atol_rtol(self):
-        op1 = DummyOperator1('0^ 1', 1.0)
-        op2 = DummyOperator1('0^ 1', 1.001)
+        op1 = MockOperator1('0^ 1', 1.0)
+        op2 = MockOperator1('0^ 1', 1.001)
 
-        op_a = DummyOperator1('0^ 1', 1.0)
-        op_b = DummyOperator1('0^ 1', 1.001)
+        op_a = MockOperator1('0^ 1', 1.0)
+        op_b = MockOperator1('0^ 1', 1.001)
         self.assertTrue(op_a.isclose(op_b, atol=0.001))
         self.assertFalse(op_a.isclose(op_b, atol=0.0001))
 
-        op_c = DummyOperator1('0^ 1', 1000)
-        op_d = DummyOperator1('0^ 1', 1001)
+        op_c = MockOperator1('0^ 1', 1000)
+        op_d = MockOperator1('0^ 1', 1001)
         self.assertTrue(op_c.isclose(op_d, rtol=0.001))
         self.assertFalse(op_c.isclose(op_d, rtol=0.0001))
 
-        op_e = DummyOperator1('0^ 1', 1.0)
-        op_f = DummyOperator1('0^ 1', 1.001)
+        op_e = MockOperator1('0^ 1', 1.0)
+        op_f = MockOperator1('0^ 1', 1.001)
         self.assertTrue(op_e.isclose(op_f, rtol=1e-4, atol=1e-3))
         self.assertFalse(op_e.isclose(op_f, rtol=1e-4, atol=1e-5))
 
     def test_isclose(self):
-        op1 = DummyOperator1()
-        op2 = DummyOperator1()
-        op1 += DummyOperator1('0^ 1', 1000000)
-        op1 += DummyOperator1('2^ 3', 1)
-        op2 += DummyOperator1('0^ 1', 1000000)
-        op2 += DummyOperator1('2^ 3', 1.001)
+        op1 = MockOperator1()
+        op2 = MockOperator1()
+        op1 += MockOperator1('0^ 1', 1000000)
+        op1 += MockOperator1('2^ 3', 1)
+        op2 += MockOperator1('0^ 1', 1000000)
+        op2 += MockOperator1('2^ 3', 1.001)
         self.assertFalse(op1.isclose(op2, atol=1e-4))
         self.assertTrue(op1.isclose(op2, atol=1e-2))
 
@@ -1033,50 +1033,50 @@ class SymbolicOperatorTest1(unittest.TestCase):
 
     def test_pow_neg_error(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator1() ** -1
+            _ = MockOperator1() ** -1
 
     def test_pow_nonint_error(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator1('3 2^') ** 0.5
+            _ = MockOperator1('3 2^') ** 0.5
 
     def test_compress_terms(self):
         op = (
-            DummyOperator1('3^ 1', 0.3 + 3e-11j)
-            + DummyOperator1('2^ 3', 5e-10)
-            + DummyOperator1('1^ 3', 1e-3)
+            MockOperator1('3^ 1', 0.3 + 3e-11j)
+            + MockOperator1('2^ 3', 5e-10)
+            + MockOperator1('1^ 3', 1e-3)
         )
-        op_compressed = DummyOperator1('3^ 1', 0.3) + DummyOperator1('1^ 3', 1e-3)
+        op_compressed = MockOperator1('3^ 1', 0.3) + MockOperator1('1^ 3', 1e-3)
         op.compress(1e-7)
         self.assertTrue(op_compressed == op)
 
     def test_compress_sympy(self):
-        op = DummyOperator1('', sympy.Symbol('x') + sympy.Symbol('y')) + DummyOperator1(
+        op = MockOperator1('', sympy.Symbol('x') + sympy.Symbol('y')) + MockOperator1(
             '3^ 1', sympy.Symbol('x') + 1e-7 - sympy.Symbol('x')
         )
-        op_compressed = DummyOperator1('', sympy.Symbol('x') + sympy.Symbol('y'))
+        op_compressed = MockOperator1('', sympy.Symbol('x') + sympy.Symbol('y'))
         op.compress(1e-6)
         self.assertTrue(op_compressed == op)
 
     def test_str_sympy(self):
-        op = DummyOperator1("0^", sympy.Symbol('x'))
+        op = MockOperator1("0^", sympy.Symbol('x'))
         self.assertEqual(str(op), "x [0^]")
 
     def test_str(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         self.assertEqual(str(op), "0.5 [1^ 3 8^]")
 
-        op = DummyOperator1((), 2)
+        op = MockOperator1((), 2)
         self.assertEqual(str(op), "2 []")
 
-        op = DummyOperator1()
+        op = MockOperator1()
         self.assertEqual(str(op), "0")
 
         op = (
-            DummyOperator1(((3, 1), (4, 1), (5, 0)), 1.0)
-            + DummyOperator1(((3, 1), (4, 1), (4, 0)), 2.0)
-            + DummyOperator1(((2, 1), (4, 1), (5, 0)), 1.0)
-            + DummyOperator1(((3, 0), (2, 1), (1, 1)), 2.0)
-            + DummyOperator1(((3, 0), (2, 0), (1, 1)), 2.0)
+            MockOperator1(((3, 1), (4, 1), (5, 0)), 1.0)
+            + MockOperator1(((3, 1), (4, 1), (4, 0)), 2.0)
+            + MockOperator1(((2, 1), (4, 1), (5, 0)), 1.0)
+            + MockOperator1(((3, 0), (2, 1), (1, 1)), 2.0)
+            + MockOperator1(((3, 0), (2, 0), (1, 1)), 2.0)
         )
         self.assertEqual(
             str(op).strip(),
@@ -1089,7 +1089,7 @@ class SymbolicOperatorTest1(unittest.TestCase):
 """.strip(),
         )
 
-        op = DummyOperator1(((3, 1), (4, 1), (5, 0)), 0.0) + DummyOperator1(
+        op = MockOperator1(((3, 1), (4, 1), (5, 0)), 0.0) + MockOperator1(
             ((3, 1), (4, 1), (4, 0)), 2.0
         )
         self.assertEqual(
@@ -1100,124 +1100,124 @@ class SymbolicOperatorTest1(unittest.TestCase):
         )
 
     def test_rep(self):
-        op = DummyOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
+        op = MockOperator1(((1, 1), (3, 0), (8, 1)), 0.5)
         # Not necessary, repr could do something in addition
         self.assertEqual(repr(op), str(op))
 
 
 class SymbolicOperatorTest2(unittest.TestCase):
-    """Test the subclass DummyOperator2."""
+    """Test the subclass MockOperator2."""
 
     def test_init_defaults(self):
-        loc_op = DummyOperator2()
+        loc_op = MockOperator2()
         self.assertTrue(len(loc_op.terms) == 0)
 
     def test_init_tuple(self):
         coefficient = 0.5
         loc_op = ((0, 'X'), (5, 'Y'), (6, 'Z'))
-        qubit_op = DummyOperator2(loc_op, coefficient)
+        qubit_op = MockOperator2(loc_op, coefficient)
         self.assertTrue(len(qubit_op.terms) == 1)
         self.assertTrue(qubit_op.terms[loc_op] == coefficient)
 
     def test_init_list(self):
         coefficient = 0.6j
         loc_op = [(0, 'X'), (5, 'Y'), (6, 'Z')]
-        qubit_op = DummyOperator2(loc_op, coefficient)
+        qubit_op = MockOperator2(loc_op, coefficient)
         self.assertTrue(len(qubit_op.terms) == 1)
         self.assertTrue(qubit_op.terms[tuple(loc_op)] == coefficient)
 
     def test_init_str(self):
-        qubit_op = DummyOperator2('X0 Y5 Z12', -1.0)
+        qubit_op = MockOperator2('X0 Y5 Z12', -1.0)
         correct = ((0, 'X'), (5, 'Y'), (12, 'Z'))
         self.assertTrue(correct in qubit_op.terms)
         self.assertTrue(qubit_op.terms[correct] == -1.0)
 
     def test_init_long_str(self):
-        qubit_op = DummyOperator2('(-2.0+3.0j) [X0 Y1] +\n\n -1.0[ X2 Y3 ] - []', -1.0)
+        qubit_op = MockOperator2('(-2.0+3.0j) [X0 Y1] +\n\n -1.0[ X2 Y3 ] - []', -1.0)
         correct = (
-            DummyOperator2('X0 Y1', complex(2.0, -3.0))
-            + DummyOperator2('X2 Y3', 1.0)
-            + DummyOperator2('', 1.0)
+            MockOperator2('X0 Y1', complex(2.0, -3.0))
+            + MockOperator2('X2 Y3', 1.0)
+            + MockOperator2('', 1.0)
         )
         self.assertEqual(len((qubit_op - correct).terms), 0)
-        reparsed_op = DummyOperator2(str(qubit_op))
+        reparsed_op = MockOperator2(str(qubit_op))
         self.assertEqual(len((qubit_op - reparsed_op).terms), 0)
 
-        qubit_op = DummyOperator2('[X0 X1] + [Y0 Y1]')
-        correct = DummyOperator2('X0 X1') + DummyOperator2('Y0 Y1')
+        qubit_op = MockOperator2('[X0 X1] + [Y0 Y1]')
+        correct = MockOperator2('X0 X1') + MockOperator2('Y0 Y1')
         self.assertTrue(qubit_op == correct)
-        self.assertTrue(qubit_op == DummyOperator2(str(qubit_op)))
+        self.assertTrue(qubit_op == MockOperator2(str(qubit_op)))
 
     def test_init_long_str_sympy(self):
         coeff = sympy.Symbol('x')
-        qubit_op = DummyOperator2('(-2.0+3.0j) [X0 Y1] +\n\n -1.0[ X2 Y3 ] - []', -coeff)
+        qubit_op = MockOperator2('(-2.0+3.0j) [X0 Y1] +\n\n -1.0[ X2 Y3 ] - []', -coeff)
         correct = (
-            DummyOperator2('X0 Y1', complex(2.0, -3.0) * coeff)
-            + DummyOperator2('X2 Y3', coeff)
-            + DummyOperator2('', coeff)
+            MockOperator2('X0 Y1', complex(2.0, -3.0) * coeff)
+            + MockOperator2('X2 Y3', coeff)
+            + MockOperator2('', coeff)
         )
         self.assertEqual(len((qubit_op - correct).terms), 0)
         with self.assertRaises(ValueError):
-            _ = DummyOperator2(str(qubit_op))
+            _ = MockOperator2(str(qubit_op))
 
     def test_init_long_str_sympy_failure(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2('(x^) [X0 Y1]', -1)
+            _ = MockOperator2('(x^) [X0 Y1]', -1)
 
     def test_init_str_identity(self):
-        qubit_op = DummyOperator2('', 2.0)
+        qubit_op = MockOperator2('', 2.0)
         self.assertTrue(len(qubit_op.terms) == 1)
         self.assertTrue(() in qubit_op.terms)
         self.assertAlmostEqual(qubit_op.terms[()], 2.0)
 
     def test_init_bad_term(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2(2)
+            _ = MockOperator2(2)
 
     def test_init_bad_coefficient(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2('X0', "0.5")
+            _ = MockOperator2('X0', "0.5")
 
     def test_init_bad_action(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2('Q0')
+            _ = MockOperator2('Q0')
 
     def test_init_bad_action_in_tuple(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2(((1, 'Q'),))
+            _ = MockOperator2(((1, 'Q'),))
 
     def test_init_bad_qubit_num_in_tuple(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2((("1", 'X'),))
+            _ = MockOperator2((("1", 'X'),))
 
     def test_init_bad_tuple(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2(((0, 1, 'X'),))
+            _ = MockOperator2(((0, 1, 'X'),))
 
     def test_init_bad_str(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2('X')
+            _ = MockOperator2('X')
 
     def test_init_bad_qubit_num(self):
         with self.assertRaises(ValueError):
-            _ = DummyOperator2('X-1')
+            _ = MockOperator2('X-1')
 
     def test_compress(self):
-        a = DummyOperator2('X0', 0.9e-12)
+        a = MockOperator2('X0', 0.9e-12)
         self.assertTrue(len(a.terms) == 1)
         a.compress()
         self.assertTrue(len(a.terms) == 0)
-        a = DummyOperator2('X0', 1.0 + 1j)
+        a = MockOperator2('X0', 1.0 + 1j)
         a.compress(0.5)
         self.assertTrue(len(a.terms) == 1)
         for term in a.terms:
             self.assertTrue(a.terms[term] == 1.0 + 1j)
-        a = DummyOperator2('X0', 1.1 + 1j)
+        a = MockOperator2('X0', 1.1 + 1j)
         a.compress(1.0)
         self.assertTrue(len(a.terms) == 1)
         for term in a.terms:
             self.assertTrue(a.terms[term] == 1.1)
-        a = DummyOperator2('X0', 1.1 + 1j) + DummyOperator2('X1', 1.0e-6j)
+        a = MockOperator2('X0', 1.1 + 1j) + MockOperator2('X1', 1.0e-6j)
         a.compress()
         self.assertTrue(len(a.terms) == 2)
         for term in a.terms:
@@ -1233,27 +1233,27 @@ class SymbolicOperatorTest2(unittest.TestCase):
 
     def test_rmul_scalar(self):
         multiplier = 0.5
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         res1 = op * multiplier
         res2 = multiplier * op
         self.assertTrue(res1 == res2)
 
     def test_rmul_sympy(self):
         multiplier = sympy.Symbol('x') + 3
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         res1 = op * multiplier
         res2 = multiplier * op
-        zero_op = DummyOperator2()
+        zero_op = MockOperator2()
         self.assertTrue(res1 - res2 == zero_op)
 
     def test_rmul_bad_multiplier(self):
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         with self.assertRaises(TypeError):
             op = "0.5" * op
 
     def test_truediv_and_div(self):
         divisor = 0.6j
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         op2 = copy.deepcopy(op)
         original = copy.deepcopy(op)
         res = op / divisor
@@ -1266,13 +1266,13 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertTrue(op2 == original)
 
     def test_truediv_bad_divisor(self):
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         with self.assertRaises(TypeError):
             op = op / "0.5"
 
     def test_itruediv_and_idiv(self):
         divisor = 2
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         op2 = copy.deepcopy(op)
         original = copy.deepcopy(op)
         correct = op * (1.0 / divisor)
@@ -1285,58 +1285,58 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertTrue(not op2 == original)
 
     def test_itruediv_bad_divisor(self):
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         with self.assertRaises(TypeError):
             op /= "0.5"
 
     def test_iadd_cancellation(self):
         term_a = ((1, 'X'), (3, 'Y'), (8, 'Z'))
         term_b = ((1, 'X'), (3, 'Y'), (8, 'Z'))
-        a = DummyOperator2(term_a, 1.0)
-        a += DummyOperator2(term_b, -1.0)
+        a = MockOperator2(term_a, 1.0)
+        a += MockOperator2(term_b, -1.0)
         self.assertTrue(len(a.terms) == 0)
 
     def test_iadd_different_term(self):
         term_a = ((1, 'X'), (3, 'Y'), (8, 'Z'))
         term_b = ((1, 'Z'), (3, 'Y'), (8, 'Z'))
-        a = DummyOperator2(term_a, 1.0)
-        a += DummyOperator2(term_b, 0.5)
+        a = MockOperator2(term_a, 1.0)
+        a += MockOperator2(term_b, 0.5)
         self.assertTrue(len(a.terms) == 2)
         self.assertAlmostEqual(a.terms[term_a], 1.0)
         self.assertAlmostEqual(a.terms[term_b], 0.5)
-        a += DummyOperator2(term_b, 0.5)
+        a += MockOperator2(term_b, 0.5)
         self.assertTrue(len(a.terms) == 2)
         self.assertAlmostEqual(a.terms[term_a], 1.0)
         self.assertAlmostEqual(a.terms[term_b], 1.0)
 
     def test_iadd_bad_addend(self):
-        op = DummyOperator2((), 1.0)
+        op = MockOperator2((), 1.0)
         with self.assertRaises(TypeError):
             op += "0.5"
 
     def test_add(self):
         term_a = ((1, 'X'), (3, 'Y'), (8, 'Z'))
         term_b = ((1, 'Z'), (3, 'Y'), (8, 'Z'))
-        a = DummyOperator2(term_a, 1.0)
-        b = DummyOperator2(term_b, 0.5)
+        a = MockOperator2(term_a, 1.0)
+        b = MockOperator2(term_b, 0.5)
         res = a + b + b
         self.assertTrue(len(res.terms) == 2)
         self.assertAlmostEqual(res.terms[term_a], 1.0)
         self.assertAlmostEqual(res.terms[term_b], 1.0)
         # Test out of place
-        self.assertTrue(a == DummyOperator2(term_a, 1.0))
-        self.assertTrue(b == DummyOperator2(term_b, 0.5))
+        self.assertTrue(a == MockOperator2(term_a, 1.0))
+        self.assertTrue(b == MockOperator2(term_b, 0.5))
 
     def test_add_bad_addend(self):
-        op = DummyOperator2((), 1.0)
+        op = MockOperator2((), 1.0)
         with self.assertRaises(TypeError):
             op = op + "0.5"
 
     def test_sub(self):
         term_a = ((1, 'X'), (3, 'Y'), (8, 'Z'))
         term_b = ((1, 'Z'), (3, 'Y'), (8, 'Z'))
-        a = DummyOperator2(term_a, 1.0)
-        b = DummyOperator2(term_b, 0.5)
+        a = MockOperator2(term_a, 1.0)
+        b = MockOperator2(term_b, 0.5)
         res = a - b
         self.assertTrue(len(res.terms) == 2)
         self.assertAlmostEqual(res.terms[term_a], 1.0)
@@ -1347,46 +1347,46 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertAlmostEqual(res2.terms[term_b], 0.5)
 
     def test_sub_bad_subtrahend(self):
-        op = DummyOperator2((), 1.0)
+        op = MockOperator2((), 1.0)
         with self.assertRaises(TypeError):
             op = op - "0.5"
 
     def test_isub_different_term(self):
         term_a = ((1, 'X'), (3, 'Y'), (8, 'Z'))
         term_b = ((1, 'Z'), (3, 'Y'), (8, 'Z'))
-        a = DummyOperator2(term_a, 1.0)
-        a -= DummyOperator2(term_b, 0.5)
+        a = MockOperator2(term_a, 1.0)
+        a -= MockOperator2(term_b, 0.5)
         self.assertTrue(len(a.terms) == 2)
         self.assertAlmostEqual(a.terms[term_a], 1.0)
         self.assertAlmostEqual(a.terms[term_b], -0.5)
-        a -= DummyOperator2(term_b, 0.5)
+        a -= MockOperator2(term_b, 0.5)
         self.assertTrue(len(a.terms) == 2)
         self.assertAlmostEqual(a.terms[term_a], 1.0)
         self.assertAlmostEqual(a.terms[term_b], -1.0)
 
     def test_isub_bad_addend(self):
-        op = DummyOperator2((), 1.0)
+        op = MockOperator2((), 1.0)
         with self.assertRaises(TypeError):
             op -= "0.5"
 
     def test_neg(self):
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         # out of place
-        self.assertTrue(op == DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5))
+        self.assertTrue(op == MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5))
         correct = -1.0 * op
         self.assertTrue(correct == -op)
 
     def test_str(self):
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         self.assertEqual(str(op), "0.5 [X1 Y3 Z8]")
-        op2 = DummyOperator2((), 2)
+        op2 = MockOperator2((), 2)
         self.assertEqual(str(op2), "2 []")
         op3 = (
-            DummyOperator2(((3, 'X'), (4, 'Z'), (5, 'Y')), 3.0)
-            + DummyOperator2(((1, 'X'), (4, 'Z'), (4, 'Z')), 2.0)
-            + DummyOperator2(((2, 'Z'), (4, 'Z'), (5, 'X')), 1.0)
-            + DummyOperator2(((3, 'Y'), (2, 'Y'), (1, 'Z')), 2.0)
-            + DummyOperator2(((3, 'Y'), (2, 'Y'), (1, 'Y')), 2.0)
+            MockOperator2(((3, 'X'), (4, 'Z'), (5, 'Y')), 3.0)
+            + MockOperator2(((1, 'X'), (4, 'Z'), (4, 'Z')), 2.0)
+            + MockOperator2(((2, 'Z'), (4, 'Z'), (5, 'X')), 1.0)
+            + MockOperator2(((3, 'Y'), (2, 'Y'), (1, 'Z')), 2.0)
+            + MockOperator2(((3, 'Y'), (2, 'Y'), (1, 'Y')), 2.0)
         )
         self.assertEqual(
             str(op3).strip(),
@@ -1400,50 +1400,50 @@ class SymbolicOperatorTest2(unittest.TestCase):
         )
 
     def test_str_empty(self):
-        op = DummyOperator2()
+        op = MockOperator2()
         self.assertEqual(str(op), '0')
 
     def test_str_out_of_order(self):
-        op = DummyOperator2(((3, 'Y'), (1, 'X'), (8, 'Z')), 0.5)
+        op = MockOperator2(((3, 'Y'), (1, 'X'), (8, 'Z')), 0.5)
         self.assertEqual(str(op), '0.5 [X1 Y3 Z8]')
 
     def test_str_multiple_terms(self):
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
-        op += DummyOperator2(((1, 'Y'), (3, 'Y'), (8, 'Z')), 0.6)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op += MockOperator2(((1, 'Y'), (3, 'Y'), (8, 'Z')), 0.6)
         self.assertTrue(
             (
                 str(op) == "0.5 [X1 Y3 Z8] +\n0.6 [Y1 Y3 Z8]"
                 or str(op) == "0.6 [Y1 Y3 Z8] +\n0.5 [X1 Y3 Z8]"
             )
         )
-        op2 = DummyOperator2((), 2)
+        op2 = MockOperator2((), 2)
         self.assertEqual(str(op2), "2 []")
 
     def test_rep(self):
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         # Not necessary, repr could do something in addition
         self.assertEqual(repr(op), str(op))
 
     def test_norm(self):
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
-        op += DummyOperator2(((2, 'Z'), (3, 'Y')), 1)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 1)
+        op += MockOperator2(((2, 'Z'), (3, 'Y')), 1)
         self.assertAlmostEqual(op.induced_norm(2), numpy.sqrt(2.0))
 
     def test_norm_sympy(self):
         x_sym = sympy.Symbol('x')
         y_sym = sympy.Symbol('y')
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), x_sym)
-        op += DummyOperator2(((2, 'Z'), (3, 'Y')), y_sym)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), x_sym)
+        op += MockOperator2(((2, 'Z'), (3, 'Y')), y_sym)
         norm = op.induced_norm(2)
         self.assertTrue(norm - (abs(x_sym) ** 2 + abs(y_sym) ** 2) ** (0.5) == 0)
 
     def test_many_body_order_sympy(self):
         x_sym = sympy.Symbol('x')
         y_sym = sympy.Symbol('y')
-        op = DummyOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), x_sym)
-        op += DummyOperator2(((2, 'Z'), (3, 'Y')), y_sym)
+        op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), x_sym)
+        op += MockOperator2(((2, 'Z'), (3, 'Y')), y_sym)
         self.assertEqual(op.many_body_order(), 3)
 
     def test_tracenorm_zero(self):
-        op = DummyOperator2()
+        op = MockOperator2()
         self.assertFalse(op.induced_norm())
