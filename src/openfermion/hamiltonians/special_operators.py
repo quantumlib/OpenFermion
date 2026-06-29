@@ -11,8 +11,6 @@
 #   limitations under the License.
 """Commonly used operators (mainly instances of SymbolicOperator)."""
 
-from typing import Optional, Union, Tuple
-
 import openfermion.config as config
 from openfermion.ops.operators import BosonOperator, FermionOperator
 from openfermion.utils.indexing import down_index, up_index
@@ -213,7 +211,7 @@ def s_squared_operator(n_spatial_orbitals: int) -> FermionOperator:
 
 
 def majorana_operator(
-    term: Optional[Union[Tuple[int, int], str]] = None, coefficient=1.0
+    term: tuple[int, int] | str | None = None, coefficient: int | float | complex = 1.0
 ) -> FermionOperator:
     r"""Initialize a Majorana operator.
 
@@ -244,15 +242,15 @@ def majorana_operator(
 
     # If term is a string, convert it to a tuple
     if isinstance(term, str):
-        operator_type = term[0]
+        operator_type_char = term[0]
         mode = int(term[1:])
-        if operator_type == 'c':
-            operator_type = 0
-        elif operator_type == 'd':
-            operator_type = 1
+        if operator_type_char == 'c':
+            operator_type_int = 0
+        elif operator_type_char == 'd':
+            operator_type_int = 1
         else:
-            raise ValueError('Invalid operator type: {}'.format(operator_type))
-        term = (mode, operator_type)
+            raise ValueError('Invalid operator type: {}'.format(operator_type_char))
+        term = (mode, operator_type_int)
 
     # Process term
 
@@ -268,8 +266,9 @@ def majorana_operator(
             majorana_op = FermionOperator(((mode, 1),), coefficient)
             majorana_op += FermionOperator(((mode, 0),), coefficient)
         elif operator_type == 1:
-            majorana_op = FermionOperator(((mode, 1),), 1.0j * coefficient)
-            majorana_op -= FermionOperator(((mode, 0),), 1.0j * coefficient)
+            imag_coeff = 1.0j * coefficient
+            majorana_op = FermionOperator(((mode, 1),), imag_coeff)
+            majorana_op -= FermionOperator(((mode, 0),), imag_coeff)
         else:
             raise ValueError('Invalid operator type: {}'.format(str(operator_type)))
 
@@ -281,8 +280,8 @@ def majorana_operator(
 
 
 def number_operator(
-    n_modes: int, mode: Optional[int] = None, coefficient=1.0, parity: int = -1
-) -> Union[BosonOperator, FermionOperator]:
+    n_modes: int, mode: int | None = None, coefficient=1.0, parity: int = -1
+) -> BosonOperator | FermionOperator:
     """Return a fermionic or bosonic number operator.
 
     Args:
@@ -299,7 +298,7 @@ def number_operator(
     """
 
     if parity == -1:
-        Op = FermionOperator
+        Op: type[FermionOperator] | type[BosonOperator] = FermionOperator
     elif parity == 1:
         Op = BosonOperator
     else:
