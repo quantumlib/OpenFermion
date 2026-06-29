@@ -127,13 +127,11 @@ repos:
         # yamllint disable rule:line-length
         args: [--schemafile, https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json]
 
-  - repo: local
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
         name: 'Shell scripts are lint-free'
-        entry: check/shellcheck
-        additional_dependencies: [shellcheck-py>=0.11.0]
-        language: python
         files: '(\.sh$|^check/[^.]+$)'
 
   - repo: https://github.com/AleksaC/hadolint-py
