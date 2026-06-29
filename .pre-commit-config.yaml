@@ -106,7 +106,7 @@ repos:
     hooks:
       - id: config-file-validator
         name: 'Config files are free of syntax errors'
-        types_or: [ini, yaml]
+        types_or: [editorconfig, ini, yaml]
         args: [--gitignore, --exclude-dirs=.git]
 
   - repo: https://github.com/adrienverge/yamllint
