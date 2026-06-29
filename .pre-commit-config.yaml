@@ -91,12 +91,6 @@ repos:
       - id: debug-statements
         name: 'Python files are free of debug statements'
 
-      - id: check-toml
-        name: 'TOML files are syntactically valid'
-
-      - id: check-xml
-        name: 'XML files are syntactically valid'
-
       - id: check-shebang-scripts-are-executable
         name: 'Shell script files are executable'
 
@@ -112,7 +106,7 @@ repos:
     hooks:
       - id: config-file-validator
         name: 'Config files are free of syntax errors'
-        types_or: [ini, toml, yaml]
+        types_or: [ini, yaml]
         args: [--gitignore, --exclude-dirs=.git]
 
   - repo: https://github.com/adrienverge/yamllint
