@@ -88,6 +88,9 @@ repos:
       - id: destroyed-symlinks
         name: 'Symlinks are not being changed into regular files'
 
+      - id: mixed-line-ending
+        name: "Files don't mix line ending conventions"
+
       - id: debug-statements
         name: 'Python files are free of debug statements'
 
