@@ -5,7 +5,7 @@ Module needs AO integrals
 """
 
 # pylint: disable=C
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Optional, Union
 from itertools import product
 import numpy as np
 import scipy as sp
@@ -316,8 +316,8 @@ def generate_hamiltonian(
 def rhf_params_to_matrix(
     parameters: np.ndarray,
     num_orbitals: int,
-    occ: Optional[Union[None, List[int]]] = None,
-    virt: Optional[Union[None, List[int]]] = None,
+    occ: list[int] | None = None,
+    virt: list[int] | None = None,
 ) -> np.ndarray:
     """
     For restricted Hartree-Fock we have nocc * nvirt parameters.  These are
@@ -374,7 +374,7 @@ def rhf_func_generator(
     rhf_func: HartreeFockFunctional,
     init_occ_vec: Optional[Union[None, np.ndarray]] = None,
     get_opdm_func: Optional[bool] = False,
-) -> Union[Tuple[Callable, Callable, Callable], Tuple[Callable, Callable, Callable, Callable]]:
+) -> tuple[Callable, Callable, Callable] | tuple[Callable, Callable, Callable, Callable]:
     """
     Generate the energy, gradient, and unitary functions
 
@@ -424,7 +424,7 @@ def rhf_minimization(
     method: Optional[str] = 'CG',
     initial_guess: Optional[Union[None, np.ndarray]] = None,
     verbose: Optional[bool] = True,
-    sp_options: Optional[Union[None, Dict]] = None,
+    sp_options: dict | None = None,
 ) -> OptimizeResult:
     """
     Perform Hartree-Fock energy minimization

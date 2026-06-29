@@ -12,14 +12,14 @@
 """Pre-existing codes for Fermion-qubit mappings
 based on (arXiv:1712.07067)"""
 
-from typing import List, Tuple, Union
+from typing import Union
 
 import numpy
 
 from openfermion.ops.operators import BinaryCode, BinaryPolynomial
 
 
-def linearize_decoder(matrix: Union[numpy.ndarray, list]) -> List[BinaryPolynomial]:
+def linearize_decoder(matrix: Union[numpy.ndarray, list]) -> list[BinaryPolynomial]:
     """Outputs  linear decoding function from input matrix
 
     Args:
@@ -95,7 +95,7 @@ def _encoder_checksum(modes: int) -> numpy.ndarray:
     return enc
 
 
-def _decoder_checksum(modes: int, odd: Union[int, bool]) -> List[BinaryPolynomial]:
+def _decoder_checksum(modes: int, odd: Union[int, bool]) -> list[BinaryPolynomial]:
     """Helper function for checksum_code that outputs the decoder.
 
     Args:
@@ -120,7 +120,7 @@ def _decoder_checksum(modes: int, odd: Union[int, bool]) -> List[BinaryPolynomia
     return djw
 
 
-def _binary_address(digits: int, address: int) -> Tuple[List[int], BinaryPolynomial]:
+def _binary_address(digits: int, address: int) -> tuple[list[int], BinaryPolynomial]:
     """Helper function to fill in an encoder column/decoder component of a
     certain number.
 

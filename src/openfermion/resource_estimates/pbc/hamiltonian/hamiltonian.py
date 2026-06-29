@@ -11,7 +11,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 from dataclasses import dataclass, asdict
-from typing import Tuple
 import h5py
 import numpy as np
 import numpy.typing as npt
@@ -43,7 +42,7 @@ class HamiltonianProperties:
     dict = asdict
 
 
-def build_hamiltonian(mf: "scf.KRHF") -> Tuple[npt.NDArray, npt.NDArray]:
+def build_hamiltonian(mf: "scf.KRHF") -> tuple[npt.NDArray, npt.NDArray]:
     """Utility function to build one- and two-electron matrix elements from mean
     field object.
 

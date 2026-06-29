@@ -10,7 +10,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from typing import Union, Tuple
 import itertools
 import numpy as np
 import numpy.typing as npt
@@ -21,7 +20,7 @@ from pyscf.pbc.lib.kpts_helper import KptsHelper, loop_kkk
 from openfermion.resource_estimates.pbc.hamiltonian import build_momentum_transfer_mapping
 
 
-def _symmetric_two_body_terms(quad: Tuple[int, ...], complex_valued: bool):
+def _symmetric_two_body_terms(quad: tuple[int, ...], complex_valued: bool):
     p, q, r, s = quad
     yield p, q, r, s
     yield q, p, s, r
@@ -127,7 +126,7 @@ class SparseFactorization:
 
     def get_total_unique_terms_above_thresh(
         self, return_nk_counter=False
-    ) -> Union[int, Tuple[int, int]]:
+    ) -> int | tuple[int, int]:
         """Determine all unique (pkp, qkq|rkr, sks).
 
         Accounts for momentum conservation and four fold symmetry.
