@@ -12,14 +12,14 @@
 """Pre-existing codes for Fermion-qubit mappings
 based on (arXiv:1712.07067)"""
 
-from typing import List, Tuple, Union
+from typing import Union
 
 import numpy
 
 from openfermion.ops.operators import BinaryCode, BinaryPolynomial
 
 
-def linearize_decoder(matrix: Union[numpy.ndarray, list]) -> List[BinaryPolynomial]:
+def linearize_decoder(matrix: Union[numpy.ndarray, list]) -> list[BinaryPolynomial]:
     """Outputs  linear decoding function from input matrix
 
     Args:
@@ -95,7 +95,7 @@ def _encoder_checksum(modes: int) -> numpy.ndarray:
     return enc
 
 
-def _decoder_checksum(modes: int, odd: Union[int, bool]) -> List[BinaryPolynomial]:
+def _decoder_checksum(modes: int, odd: Union[int, bool]) -> list[BinaryPolynomial]:
     """Helper function for checksum_code that outputs the decoder.
 
     Args:
@@ -120,7 +120,7 @@ def _decoder_checksum(modes: int, odd: Union[int, bool]) -> List[BinaryPolynomia
     return djw
 
 
-def _binary_address(digits: int, address: int) -> Tuple[List[int], BinaryPolynomial]:
+def _binary_address(digits: int, address: int) -> tuple[list[int], BinaryPolynomial]:
     """Helper function to fill in an encoder column/decoder component of a
     certain number.
 
@@ -134,12 +134,12 @@ def _binary_address(digits: int, address: int) -> Tuple[List[int], BinaryPolynom
     binary_expression = BinaryPolynomial('1')
 
     # isolate the binary number and fill up the mismatching digits
-    address = bin(address)[2:]
-    address = ('0' * (digits - len(address))) + address
+    address_bits = bin(address)[2:]
+    address_bits = ('0' * (digits - len(address_bits))) + address_bits
     for index in numpy.arange(digits):
-        binary_expression *= BinaryPolynomial('w' + str(index) + ' + 1 + ' + address[index])
+        binary_expression *= BinaryPolynomial('w' + str(index) + ' + 1 + ' + address_bits[index])
 
-    return list(map(int, list(address))), binary_expression
+    return list(map(int, list(address_bits))), binary_expression
 
 
 def checksum_code(n_modes: int, odd: Union[int, bool]) -> BinaryCode:
@@ -224,7 +224,7 @@ def weight_one_binary_addressing_code(exponent: int) -> BinaryCode:
         The weight one binary addressing BinaryCode
     """
     encoder = numpy.zeros((exponent, 2**exponent), dtype=int)
-    decoder = [0] * (2**exponent)
+    decoder: list[BinaryPolynomial] = [BinaryPolynomial('0')] * (2**exponent)
     for counter in numpy.arange(2**exponent):
         encoder[:, counter], decoder[counter] = _binary_address(exponent, counter)
     return BinaryCode(encoder, decoder)

@@ -17,7 +17,8 @@ arXiv:1701.08213 and Phys. Rev. X 6, 031007.
 import copy
 
 from openfermion.ops.operators import FermionOperator
-from openfermion.transforms.opconversions import bravyi_kitaev_tree, reorder
+from openfermion.transforms.opconversions.bravyi_kitaev_tree import bravyi_kitaev_tree
+from openfermion.transforms.opconversions.term_reordering import reorder
 from openfermion.utils.indexing import up_then_down
 
 

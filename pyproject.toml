@@ -46,6 +46,7 @@ module = [
     "_pytest.*",
     "absl",
     "apiclient.*",
+    "ase.*",
     "h5py",
     "numpy.*",
     "pubchempy",
