@@ -154,7 +154,6 @@ def plane_wave_potential(
     spins = [None] if spinless else [0, 1]
     if non_periodic and period_cutoff is None:
         period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
-    period_cutoff_value = period_cutoff
 
     # Pre-Computations.
     shifted_omega_indices_dict: dict[tuple[int, ...], list[int]] = {}
@@ -207,8 +206,9 @@ def plane_wave_potential(
             momenta_squared, grid.dimensions, grid.volume_scale()
         )
         if non_periodic:
-            assert period_cutoff_value is not None
-            coefficient *= 1.0 - math.cos(period_cutoff_value * math.sqrt(momenta_squared))
+            if period_cutoff is None:
+                raise ValueError('period_cutoff must be set for non-periodic systems.')
+            coefficient *= 1.0 - math.cos(period_cutoff * math.sqrt(momenta_squared))
 
         for grid_indices_a in active_indices:
             shifted_indices_d = shifted_indices_minus_dict[omega_indices][grid_indices_a]
@@ -273,7 +273,6 @@ def dual_basis_jellium_model(
     spins = [None] if spinless else [0, 1]
     if potential and non_periodic and period_cutoff is None:
         period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
-    period_cutoff_value = period_cutoff
 
     # Pre-Computations.
     position_vectors: dict[tuple[int, ...], Any] = {}
@@ -313,8 +312,11 @@ def dual_basis_jellium_model(
                     momenta_squared, grid.dimensions, grid.volume_scale()
                 )
                 if non_periodic:
-                    assert period_cutoff_value is not None
-                    coef *= 1.0 - math.cos(period_cutoff_value * math.sqrt(momenta_squared))
+                    if period_cutoff is None:
+                        raise ValueError(
+                            'period_cutoff must be set for non-periodic potential terms.'
+                        )
+                    coef *= 1.0 - math.cos(period_cutoff * math.sqrt(momenta_squared))
                 potential_coefficient += coef * cos_difference
         for grid_indices_shift in grid.all_points_indices():
             # Loop over spins and identify interacting orbitals.
