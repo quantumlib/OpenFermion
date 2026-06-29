@@ -44,8 +44,8 @@ exclude: |
   .*\.pytest_cache/.* |
   .*\.tmp |
   .*__pycache__/.* |
-  .env/.* |
-  .venv/.* |
+  \.env/.* |
+  \.venv/.* |
   \.([^/]*cache/.*) |
   \.coverage(\..*)? |
   docs/_build/.* |
