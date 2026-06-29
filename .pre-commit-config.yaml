@@ -12,34 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Summary: config for setting up git hooks using the pre-commit framework. This
-# is optional and NOT set up by default nor used by the scripts in check/. Here
-# is a suggested installation approach; after doing this, the pre-commit hooks
-# will be called automatically by git at the appropriate times:
+# Summary: config for setting up git hooks using the pre-commit framework.
+# Install it like this:
 #
 #     pip install pre-commit
-#     pre-commit install -t pre-commit -t commit-msg -t pre-push
+#     pre-commit install
 #     pre-commit run
+#
+# After doing the above, the pre-commit hooks will be called automatically by
+# git at the appropriate times. Note the use of pre-commit hooks is optional,
+# and NOT set up by default nor used by the scripts in this repository.
 
 default_stages:
+  # If a hook does not define a value for `stages:`, it applies to this stage.
   - pre-commit
+
+default_install_hook_types:
+  - commit-msg
+  - pre-commit
+  - pre-push
 
 # Note: these are Python regular expressions matched with re.search.
 exclude: |
   (?x)^(
-    .*\.egg-info/.* |
-    .*\.h5 |
-    .*\.ipynb_checkpoints(/.*)? |
-    .*\.log |
-    .*\.out |
-    .*\.pytest_cache/.* |
-    .*__pycache__/.* |
-    .env/.* |
-    .venv/.* |
-    \.([^/]*cache/.*) |
-    \.coverage(\..*)? |
-    docs/_build/.* |
-    venv/.*
+  .*\.egg-info/.* |
+  .*\.h5 |
+  .*\.ipynb_checkpoints(/.*)? |
+  .*\.lock |
+  .*\.log |
+  .*\.out |
+  .*\.pytest_cache/.* |
+  .*\.tmp |
+  .*__pycache__/.* |
+  \.env/.* |
+  \.venv/.* |
+  \.([^/]*cache/.*) |
+  \.coverage(\..*)? |
+  docs/_build/.* |
+  venv/.*
   )$
 
 fail_fast: true
@@ -56,87 +66,93 @@ repos:
       # Use separate yamllint hook later in this file.
 
       - id: no-commit-to-branch
-        name: 'Check that the commit is not made to the main branch'
+        name: 'The commit is not being made to the main branch'
         args: [--branch, main, --branch, master]
 
       - id: check-merge-conflict
-        name: "Check that files are free of merge git conflict strings"
+        name: "Files are free of git merge conflict strings"
 
       - id: check-illegal-windows-names
-        name: "Check that file names can be used on Windows"
+        name: "File names are valid for use on Windows"
 
       - id: check-case-conflict
-        name: "Check that file names won't conflict on case-insensitive systems"
+        name: "File names won't conflict on case-insensitive systems"
 
       - id: name-tests-test
-        name: 'Verify test files are named correctly'
+        name: 'Test files are named correctly'
+        args: [--pytest]
 
       - id: check-symlinks
-        name: 'Check for symlinks that do not point to anything'
+        name: 'All symlink targets exist'
 
       - id: destroyed-symlinks
-        name: 'Check that symlinks are not turned into regular files'
+        name: 'Symlinks are not being changed into regular files'
 
-      - id: check-shebang-scripts-are-executable
-        name: 'Check that shell script files are executable'
+      - id: mixed-line-ending
+        name: "Files don't mix line ending conventions"
 
       - id: debug-statements
-        name: 'Check that Python files are free of debug statements'
+        name: 'Python files are free of debug statements'
 
-      - id: check-toml
-        name: 'Check TOML files for valid syntax'
+      - id: check-shebang-scripts-are-executable
+        name: 'Shell script files are executable'
 
-      - id: check-xml
-        name: 'Check XML files for valid syntax'
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        name: 'Shell scripts are lint-free'
+        files: '(\.sh$|^check/[^.]+$)'
+
+  - repo: https://github.com/Boeing/config-file-validator
+    rev: fc3dea5b2d0bfd47a785ca47375fe6080151f97b  # frozen: v2.3.0
+    hooks:
+      - id: config-file-validator
+        name: 'Config files are free of syntax errors'
+        types_or: [editorconfig, yaml]
+        args: [--gitignore, --exclude-dirs=.git]
 
   - repo: https://github.com/adrienverge/yamllint
     rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
     hooks:
       - id: yamllint
-        name: 'Run YAML linter'
+        name: 'YAML files are lint-free'
         files: \.(yaml|yml|cff)$
         args: [--format=colored, --no-warnings]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
+    rev: '8ef330cbb7204d388aa7a620f9549bcea8009663'  # frozen: 0.37.3
     hooks:
       - id: check-jsonschema
-        name: 'Check that Jupyter notebooks are valid JSON'
+        name: 'Jupyter notebooks are valid JSON files'
         types: [jupyter]
         files: '.*\.ipynb$'
         # Note: pre-commit will download & cache this file automatically.
         # yamllint disable rule:line-length
         args: [--schemafile, https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json]
 
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: '38980559e3a605691d6579f96222c30778e5a69e'  # frozen: 3.0.0
-    hooks:
-      - id: shellcheck
-        name: 'Check shell scripts'
-        files: '(\.sh$|^check/[^.]+$)'
-
   - repo: https://github.com/AleksaC/hadolint-py
     rev: '458cb25edf664682e3e856a53a2f9af33e068297' # frozen: 2.14.0
     hooks:
       - id: hadolint
-        name: 'Check Docker files'
+        name: 'Docker files are lint-free'
         files: (?i)dockerfile$
         args: [--failure-threshold, error]
 
-    # Note this is used for YAML files, despite that it's named "jsonschema".
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 'ed81924a8b1cecdaa570b072528fa80c9c4d6ccd'  # frozen: 0.37.1
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: 4b2e70d08cb2ccd26d1fba73588de41c7a5d50b7  # frozen: v0.25
     hooks:
-      - id: check-github-workflows
-        name: 'Check GitHub workflow files'
+      - id: validate-pyproject
+        name: 'The pyproject.toml file is valid'
+        files: pyproject.toml
 
 # ~~~~ Commit message hooks ~~~~
 
   - repo: https://github.com/crate-ci/typos
-    rev: c96c46fae465ab9e3607401d9ce93d75e7998023  # frozen: v1
+    rev: d80b8e26878e372a041833cd67163dbdb6a4336e  # frozen: v1
     hooks:
       - id: typos
-        name: 'Check commit message for typos'
+        name: 'Commit message is free of typos'
         stages: [commit-msg]
         # Important: add "args: []" to prevent typos from autofixing your files.
         # C.f. https://github.com/crate-ci/typos/blob/master/docs/pre-commit.md
@@ -147,7 +163,7 @@ repos:
   - repo: local
     hooks:
       - id: format-incremental
-        name: 'Run check/format-incremental'
+        name: 'check/format-incremental runs without errors'
         entry: check/format-incremental
         language: script
         pass_filenames: false
@@ -158,30 +174,37 @@ repos:
     rev: 'd9215b6b2a028d1614c92cf43a9fcff3b1dd889e'  # frozen: 0.1.2
     hooks:
       - id: copyright-notice
-        name: 'Check that files have a copyright notice'
+        name: 'Files have copyright notices'
         types: [python]
         stages: [pre-push]
         args: [--notice=dev_tools/apache-license-header.txt]
 
-  - repo: https://github.com/tcort/markdown-link-check
-    rev: ffc61540dea52bad1c41cfeedcf26c53ad9447ba  # frozen: v3.14.2
+    # Note this is used for YAML files, despite that it's named "jsonschema".
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: '8ef330cbb7204d388aa7a620f9549bcea8009663'  # frozen: 0.37.3
     hooks:
-      - id: markdown-link-check
-        name: 'Check Markdown file lint'
-        types: [markdown]
+      - id: check-github-workflows
+        name: 'GitHub Actions workflow files are syntactically valid'
+        stages: [pre-push]
+
+      - id: check-github-actions
+        name: 'GitHub Actions definitions (if any) are syntactically valid'
         stages: [pre-push]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: 3a6eb0fadf60b3cccfd80bad9dbb6fae7e47b316  # frozen: v1.10.0
     hooks:
       - id: python-check-blanket-noqa
-        name: 'Check that "# noqa" annotations include error codes'
+        name: '"# noqa" annotations include error codes'
+        types: [python]
         stages: [pre-push]
 
       - id: python-check-blanket-type-ignore
-        name: 'Check that "# type: ignore" comments include error codes'
+        name: '"# type: ignore" comments include error codes'
+        types: [python]
         stages: [pre-push]
 
       - id: python-check-mock-methods
-        name: 'Check for common mistakes when using unittest.mock'
+        name: 'Uses of unittest.mock are free of some common mistakes'
+        types: [python]
         stages: [pre-push]
