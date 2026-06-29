@@ -5,7 +5,7 @@ Module needs AO integrals
 """
 
 # pylint: disable=C
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Optional, Union
 from itertools import product
 import numpy as np
 import scipy as sp
@@ -58,7 +58,7 @@ class HartreeFockFunctional:
         overlap: np.ndarray,
         n_electrons: int,
         model='rhf',
-        nuclear_repulsion: Optional[float] = 0.0,
+        nuclear_repulsion: float = 0.0,
         initial_orbitals: Optional[Union[None, Callable]] = None,
     ):
         """
@@ -90,12 +90,12 @@ class HartreeFockFunctional:
         self.num_orbitals = one_body_integrals.shape[0]
         self.num_electrons = n_electrons
         self.constant_offset = nuclear_repulsion
-        self.hamiltonian = None
+        self.hamiltonian: InteractionOperator | None = None
 
-        self.nocc = None
-        self.nvirt = None
-        self.occ = None
-        self.virt = None
+        self.nocc: int
+        self.nvirt: int
+        self.occ: list[int]
+        self.virt: list[int]
         if model == 'rhf':
             self.nocc = self.num_electrons // 2
             self.nvirt = self.num_orbitals - self.nocc
@@ -149,6 +149,7 @@ class HartreeFockFunctional:
         Returns: RHF energy
         """
         rdms = self.rdms_from_rhf_opdm(opdm_aa)
+        assert self.hamiltonian is not None
         return rdms.expectation(self.hamiltonian).real
 
     def rhf_global_gradient(self, params: np.ndarray, alpha_opdm: np.ndarray):
@@ -162,6 +163,9 @@ class HartreeFockFunctional:
 
         Returns: gradient vector the same size as the input `params'
         """
+        assert self.hamiltonian is not None
+        hamiltonian = self.hamiltonian
+
         opdm = np.zeros((2 * self.num_orbitals, 2 * self.num_orbitals), dtype=np.complex128)
         opdm[::2, ::2] = alpha_opdm
         opdm[1::2, 1::2] = alpha_opdm
@@ -197,7 +201,7 @@ class HartreeFockFunctional:
                 -1.0
                 * np.einsum(
                     'ab,pa,pb',
-                    self.hamiltonian.one_body_tensor,
+                    hamiltonian.one_body_tensor,
                     pre_matrix_full,
                     opdm,
                     optimize='optimal',
@@ -208,7 +212,7 @@ class HartreeFockFunctional:
                 1.0
                 * np.einsum(
                     'ab,bq,aq',
-                    self.hamiltonian.one_body_tensor,
+                    hamiltonian.one_body_tensor,
                     pre_matrix_full,
                     opdm,
                     optimize='optimal',
@@ -219,7 +223,7 @@ class HartreeFockFunctional:
                 1.0
                 * np.einsum(
                     'ijkl,pi,jpkl',
-                    self.hamiltonian.two_body_tensor,
+                    hamiltonian.two_body_tensor,
                     pre_matrix_full,
                     tpdm,
                     optimize='optimal',
@@ -230,7 +234,7 @@ class HartreeFockFunctional:
                 -1.0
                 * np.einsum(
                     'ijkl,pj,ipkl',
-                    self.hamiltonian.two_body_tensor,
+                    hamiltonian.two_body_tensor,
                     pre_matrix_full,
                     tpdm,
                     optimize='optimal',
@@ -241,7 +245,7 @@ class HartreeFockFunctional:
                 -1.0
                 * np.einsum(
                     'ijkl,kq,ijlq',
-                    self.hamiltonian.two_body_tensor,
+                    hamiltonian.two_body_tensor,
                     pre_matrix_full,
                     tpdm,
                     optimize='optimal',
@@ -252,7 +256,7 @@ class HartreeFockFunctional:
                 1.0
                 * np.einsum(
                     'ijkl,lq,ijkq',
-                    self.hamiltonian.two_body_tensor,
+                    hamiltonian.two_body_tensor,
                     pre_matrix_full,
                     tpdm,
                     optimize='optimal',
@@ -312,8 +316,8 @@ def generate_hamiltonian(
 def rhf_params_to_matrix(
     parameters: np.ndarray,
     num_orbitals: int,
-    occ: Optional[Union[None, List[int]]] = None,
-    virt: Optional[Union[None, List[int]]] = None,
+    occ: list[int] | None = None,
+    virt: list[int] | None = None,
 ) -> np.ndarray:
     """
     For restricted Hartree-Fock we have nocc * nvirt parameters.  These are
@@ -347,16 +351,20 @@ def rhf_params_to_matrix(
     Returns: np.ndarray kappa matrix
     """
     if occ is None:
-        occ = range(num_orbitals // 2)
+        occ_indices = list(range(num_orbitals // 2))
+    else:
+        occ_indices = occ
     if virt is None:
-        virt = range(num_orbitals // 2, num_orbitals)
+        virt_indices = list(range(num_orbitals // 2, num_orbitals))
+    else:
+        virt_indices = virt
 
     # check that parameters are a real array
     if not np.allclose(parameters.imag, 0):
         raise ValueError("parameters input must be real valued")
 
-    kappa = np.zeros((len(occ) + len(virt), len(occ) + len(virt)))
-    for idx, (v, o) in enumerate(product(virt, occ)):
+    kappa = np.zeros((len(occ_indices) + len(virt_indices), len(occ_indices) + len(virt_indices)))
+    for idx, (v, o) in enumerate(product(virt_indices, occ_indices)):
         kappa[v, o] = parameters[idx].real
         kappa[o, v] = -parameters[idx].real
     return kappa
@@ -366,7 +374,7 @@ def rhf_func_generator(
     rhf_func: HartreeFockFunctional,
     init_occ_vec: Optional[Union[None, np.ndarray]] = None,
     get_opdm_func: Optional[bool] = False,
-) -> Union[Tuple[Callable, Callable, Callable], Tuple[Callable, Callable, Callable, Callable]]:
+) -> tuple[Callable, Callable, Callable] | tuple[Callable, Callable, Callable, Callable]:
     """
     Generate the energy, gradient, and unitary functions
 
@@ -379,7 +387,9 @@ def rhf_func_generator(
     Returns: functions for unitary, energy, gradient (in that order)
     """
     if init_occ_vec is None:
-        initial_opdm = np.diag([1] * rhf_func.nocc + [0] * rhf_func.nvirt)
+        initial_opdm: np.ndarray = np.diag(
+            np.array([1] * rhf_func.nocc + [0] * rhf_func.nvirt, dtype=float)
+        )
     else:
         initial_opdm = np.diag(init_occ_vec)
 
@@ -414,7 +424,7 @@ def rhf_minimization(
     method: Optional[str] = 'CG',
     initial_guess: Optional[Union[None, np.ndarray]] = None,
     verbose: Optional[bool] = True,
-    sp_options: Optional[Union[None, Dict]] = None,
+    sp_options: dict | None = None,
 ) -> OptimizeResult:
     """
     Perform Hartree-Fock energy minimization
@@ -429,7 +439,9 @@ def rhf_minimization(
         sp_options:
     Returns: scipy.optimize result object
     """
-    _, energy, gradient = rhf_func_generator(rhf_object)
+    rhf_callables = rhf_func_generator(rhf_object)
+    energy = rhf_callables[1]
+    gradient = rhf_callables[2]
     if initial_guess is None:
         init_guess = np.zeros(rhf_object.nocc * rhf_object.nvirt)
     else:

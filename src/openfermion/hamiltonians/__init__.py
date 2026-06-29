@@ -12,7 +12,6 @@
 
 from .general_hubbard import (
     FermiHubbardModel,
-    number_operator,
     interaction_operator,
     tunneling_operator,
     number_difference_operator,

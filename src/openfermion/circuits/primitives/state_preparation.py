@@ -11,7 +11,7 @@
 #   limitations under the License.
 """Operations for preparing useful quantum states."""
 
-from typing import Iterable, Optional, Sequence, Set, TYPE_CHECKING, Tuple, Union, cast
+from typing import Iterable, Iterator, Optional, Sequence, Set, TYPE_CHECKING, Tuple, Union, cast
 
 import numpy
 
@@ -32,7 +32,7 @@ def prepare_gaussian_state(
     quadratic_hamiltonian: 'openfermion.QuadraticHamiltonian',
     occupied_orbitals: Optional[Union[Sequence[int], Tuple[Sequence[int], Sequence[int]]]] = None,
     initial_state: Union[int, Sequence[int]] = 0,
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     """Prepare a fermionic Gaussian state from a computational basis state.
 
     A fermionic Gaussian state is an eigenstate of a quadratic Hamiltonian. If
@@ -86,7 +86,7 @@ def _generic_gaussian_circuit(
     quadratic_hamiltonian: 'openfermion.QuadraticHamiltonian',
     occupied_orbitals: Optional[Sequence[int]],
     initial_state: Union[int, Sequence[int]],
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     n_qubits = len(qubits)
     circuit_description, start_orbitals = gaussian_state_preparation_circuit(
         quadratic_hamiltonian, occupied_orbitals
@@ -112,7 +112,7 @@ def _spin_symmetric_gaussian_circuit(
     quadratic_hamiltonian: 'openfermion.QuadraticHamiltonian',
     occupied_orbitals: Tuple[Sequence[int], Sequence[int]],
     initial_state: Union[int, Sequence[int]],
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     n_qubits = len(qubits)
 
     if isinstance(initial_state, int):
@@ -146,7 +146,7 @@ def prepare_slater_determinant(
     qubits: Sequence[cirq.Qid],
     slater_determinant_matrix: numpy.ndarray,
     initial_state: Union[int, Sequence[int]] = 0,
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     r"""Prepare a Slater determinant from a computational basis state.
 
     A Slater determinant is described by an $\eta \times N$ matrix
@@ -212,7 +212,7 @@ def _occupied_orbitals(computational_basis_state: int, n_qubits) -> Set[int]:
 def _ops_from_givens_rotations_circuit_description(
     qubits: Sequence[cirq.Qid],
     circuit_description: Iterable[Iterable[Union[str, Tuple[int, int, float, float]]]],
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     """Yield operations from a Givens rotations circuit obtained from
     OpenFermion.
     """
