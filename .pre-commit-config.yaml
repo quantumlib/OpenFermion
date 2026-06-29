@@ -35,21 +35,21 @@ default_install_hook_types:
 # Note: these are Python regular expressions matched with re.search.
 exclude: |
   (?x)^(
-    .*\.egg-info/.* |
-    .*\.h5 |
-    .*\.ipynb_checkpoints(/.*)? |
-    .*\.lock |
-    .*\.log |
-    .*\.out |
-    .*\.pytest_cache/.* |
-    .*\.tmp |
-    .*__pycache__/.* |
-    .env/.* |
-    .venv/.* |
-    \.([^/]*cache/.*) |
-    \.coverage(\..*)? |
-    docs/_build/.* |
-    venv/.*
+  .*\.egg-info/.* |
+  .*\.h5 |
+  .*\.ipynb_checkpoints(/.*)? |
+  .*\.lock |
+  .*\.log |
+  .*\.out |
+  .*\.pytest_cache/.* |
+  .*\.tmp |
+  .*__pycache__/.* |
+  .env/.* |
+  .venv/.* |
+  \.([^/]*cache/.*) |
+  \.coverage(\..*)? |
+  docs/_build/.* |
+  venv/.*
   )$
 
 fail_fast: true
