@@ -100,6 +100,13 @@ repos:
       - id: check-shebang-scripts-are-executable
         name: 'Shell script files are executable'
 
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        name: 'Shell scripts are lint-free'
+        files: '(\.sh$|^check/[^.]+$)'
+
   - repo: https://github.com/Boeing/config-file-validator
     rev: fc3dea5b2d0bfd47a785ca47375fe6080151f97b  # frozen: v2.3.0
     hooks:
@@ -126,13 +133,6 @@ repos:
         # Note: pre-commit will download & cache this file automatically.
         # yamllint disable rule:line-length
         args: [--schemafile, https://raw.githubusercontent.com/jupyter/nbformat/refs/heads/main/nbformat/v4/nbformat.v4.0.schema.json]
-
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1
-    hooks:
-      - id: shellcheck
-        name: 'Shell scripts are lint-free'
-        files: '(\.sh$|^check/[^.]+$)'
 
   - repo: https://github.com/AleksaC/hadolint-py
     rev: '458cb25edf664682e3e856a53a2f9af33e068297' # frozen: 2.14.0
