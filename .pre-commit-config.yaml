@@ -188,14 +188,10 @@ repos:
     hooks:
       - id: check-github-workflows
         name: 'GitHub Actions workflow files are syntactically valid'
-        entry: |
-          bash -c 'exec check-jsonschema --builtin-schema vendor.github-workflows "$@"' --
         stages: [pre-push]
 
       - id: check-github-actions
         name: 'GitHub Actions definitions (if any) are syntactically valid'
-        entry: |
-          bash -c 'exec check-jsonschema --builtin-schema vendor.github-actions "$@"' --
         stages: [pre-push]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
