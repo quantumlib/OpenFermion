@@ -20,6 +20,12 @@ from openfermion.ops.operators import FermionOperator, QubitOperator
 from openfermion.utils.grid import Grid
 
 
+def _non_periodic_period_cutoff(grid: Grid, period_cutoff: Optional[float]) -> float:
+    if period_cutoff is None:
+        return grid.volume_scale() ** (1.0 / grid.dimensions)
+    return period_cutoff
+
+
 def wigner_seitz_length_scale(
     wigner_seitz_radius: float, n_particles: int, dimension: int
 ) -> float:
@@ -152,8 +158,6 @@ def plane_wave_potential(
     # Initialize.
     operator = FermionOperator((), 0.0)
     spins = [None] if spinless else [0, 1]
-    if non_periodic and period_cutoff is None:
-        period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
 
     # Pre-Computations.
     shifted_omega_indices_dict: dict[tuple[int, ...], list[int]] = {}
@@ -206,9 +210,8 @@ def plane_wave_potential(
             momenta_squared, grid.dimensions, grid.volume_scale()
         )
         if non_periodic:
-            if period_cutoff is None:
-                raise ValueError('period_cutoff must be set for non-periodic systems.')
-            coefficient *= 1.0 - math.cos(period_cutoff * math.sqrt(momenta_squared))
+            cutoff = _non_periodic_period_cutoff(grid, period_cutoff)
+            coefficient *= 1.0 - math.cos(cutoff * math.sqrt(momenta_squared))
 
         for grid_indices_a in active_indices:
             shifted_indices_d = shifted_indices_minus_dict[omega_indices][grid_indices_a]
@@ -271,8 +274,6 @@ def dual_basis_jellium_model(
     n_points = grid.num_points
     operator = FermionOperator()
     spins = [None] if spinless else [0, 1]
-    if potential and non_periodic and period_cutoff is None:
-        period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
 
     # Pre-Computations.
     position_vectors: dict[tuple[int, ...], Any] = {}
@@ -312,11 +313,8 @@ def dual_basis_jellium_model(
                     momenta_squared, grid.dimensions, grid.volume_scale()
                 )
                 if non_periodic:
-                    if period_cutoff is None:
-                        raise ValueError(
-                            'period_cutoff must be set for non-periodic potential terms.'
-                        )
-                    coef *= 1.0 - math.cos(period_cutoff * math.sqrt(momenta_squared))
+                    cutoff = _non_periodic_period_cutoff(grid, period_cutoff)
+                    coef *= 1.0 - math.cos(cutoff * math.sqrt(momenta_squared))
                 potential_coefficient += coef * cos_difference
         for grid_indices_shift in grid.all_points_indices():
             # Loop over spins and identify interacting orbitals.
