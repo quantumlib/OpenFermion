@@ -11,13 +11,15 @@
 #   limitations under the License.
 """Common gates that target three qubits."""
 
+from typing import cast
+
 import numpy as np
 import cirq
 
 
 def rot111(rads: float) -> cirq.CCZPowGate:
     """Phases the |111> state of three qubits by e^{i rads}."""
-    return cirq.CCZ ** (rads / np.pi)
+    return cast(cirq.CCZPowGate, cirq.CCZ ** (rads / np.pi))
 
 
 def CRxxyy(rads: float) -> cirq.ControlledGate:

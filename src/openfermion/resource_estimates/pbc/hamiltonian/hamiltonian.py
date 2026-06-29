@@ -11,7 +11,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 from dataclasses import dataclass, asdict
-from typing import Tuple
 import h5py
 import numpy as np
 import numpy.typing as npt
@@ -43,7 +42,7 @@ class HamiltonianProperties:
     dict = asdict
 
 
-def build_hamiltonian(mf: "scf.KRHF") -> Tuple[npt.NDArray, npt.NDArray]:
+def build_hamiltonian(mf: "scf.KRHF") -> tuple[npt.NDArray, npt.NDArray]:
     """Utility function to build one- and two-electron matrix elements from mean
     field object.
 
@@ -109,11 +108,8 @@ def cholesky_from_df_ints(mp2_inst, pad_mos_with_zeros=True) -> npt.NDArray:
                 "Number of MOs differs at each k-point or is not the same " "as the number of AOs."
             )
     nkpts = len(kpts)
-    if gamma_point(kpts):
-        dtype = np.double
-    else:
-        dtype = np.complex128
-    dtype = np.result_type(dtype, *mo_coeff)
+    base_dtype = np.double if gamma_point(kpts) else np.complex128
+    dtype = np.result_type(base_dtype, *mo_coeff)
     Lchol = np.empty((nkpts, nkpts), dtype=object)
 
     cput0 = (logger.process_clock(), logger.perf_counter())
@@ -124,7 +120,7 @@ def cholesky_from_df_ints(mp2_inst, pad_mos_with_zeros=True) -> npt.NDArray:
     ket_end = 2 * nmo
     with h5py.File(mp2_inst._scf.with_df._cderi, "r") as f:
         kptij_lst = f["j3c-kptij"][:]
-        tao = []
+        tao: list = []
         ao_loc = None
         for ki, kpti in enumerate(kpts):
             for kj, kptj in enumerate(kpts):

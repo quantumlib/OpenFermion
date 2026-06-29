@@ -63,7 +63,11 @@ class RichardsonGaudin(DOCIHamiltonian):
                     hr1[p, q] = g
         super().__init__(0, hc, hr1, hr2)
 
-    @DOCIHamiltonian.constant.setter
+    @property
+    def constant(self):
+        return super().constant
+
+    @constant.setter
     def constant(self, value):
         raise TypeError(
             'Raw edits of the constant of a RichardsonGaudin model'
@@ -71,7 +75,11 @@ class RichardsonGaudin(DOCIHamiltonian):
             'or cast to another PolynomialTensor class.'
         )
 
-    @DOCIHamiltonian.n_body_tensors.setter
+    @property
+    def n_body_tensors(self):
+        return super().n_body_tensors
+
+    @n_body_tensors.setter
     def n_body_tensors(self, value):
         raise TypeError(
             'Raw edits of the n_body_tensors of a RichardsonGaudin model'

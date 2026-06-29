@@ -20,8 +20,8 @@ def vpe_single_circuit(
     qubits: Sequence[cirq.Qid],
     prep: cirq.Circuit,
     evolve: cirq.Circuit,
-    initial_rotation: cirq.Gate,
-    final_rotation: cirq.Gate,
+    initial_rotation: cirq.Operation,
+    final_rotation: cirq.Operation,
 ) -> cirq.Circuit:
     """
     Combines the different parts that make up a VPE circuit
@@ -54,15 +54,15 @@ def vpe_single_circuit(
 
 # Turning off yapf here as its formatting suggestion is bad.
 # yapf: disable
-standard_vpe_rotation_set = [
-    [0.25, cirq.ry(numpy.pi / 2), cirq.ry(-numpy.pi / 2)],
-    [-0.25, cirq.ry(numpy.pi / 2), cirq.ry(numpy.pi / 2)],
-    [-0.25j, cirq.ry(numpy.pi / 2), cirq.rx(-numpy.pi / 2)],
-    [0.25j, cirq.ry(numpy.pi / 2), cirq.rx(numpy.pi / 2)],
-    [0.25, cirq.rx(numpy.pi / 2), cirq.rx(-numpy.pi / 2)],
-    [-0.25, cirq.rx(numpy.pi / 2), cirq.rx(numpy.pi / 2)],
-    [0.25j, cirq.rx(numpy.pi / 2), cirq.ry(-numpy.pi / 2)],
-    [-0.25j, cirq.rx(numpy.pi / 2), cirq.ry(numpy.pi / 2)],
+standard_vpe_rotation_set: list[tuple[complex, cirq.Gate, cirq.Gate]] = [
+    (0.25, cirq.ry(numpy.pi / 2), cirq.ry(-numpy.pi / 2)),
+    (-0.25, cirq.ry(numpy.pi / 2), cirq.ry(numpy.pi / 2)),
+    (-0.25j, cirq.ry(numpy.pi / 2), cirq.rx(-numpy.pi / 2)),
+    (0.25j, cirq.ry(numpy.pi / 2), cirq.rx(numpy.pi / 2)),
+    (0.25, cirq.rx(numpy.pi / 2), cirq.rx(-numpy.pi / 2)),
+    (-0.25, cirq.rx(numpy.pi / 2), cirq.rx(numpy.pi / 2)),
+    (0.25j, cirq.rx(numpy.pi / 2), cirq.ry(-numpy.pi / 2)),
+    (-0.25j, cirq.rx(numpy.pi / 2), cirq.ry(numpy.pi / 2)),
 ]
 # yapf: enable
 
@@ -72,7 +72,7 @@ def vpe_circuits_single_timestep(
     prep: cirq.Circuit,
     evolve: cirq.Circuit,
     target_qubit: cirq.Qid,
-    rotation_set: Optional[Sequence] = None,
+    rotation_set: Optional[Sequence[tuple[complex, cirq.Gate, cirq.Gate]]] = None,
 ) -> Sequence[cirq.Circuit]:
     """Prepares the circuits to perform VPE at a fixed time
 
@@ -97,12 +97,11 @@ def vpe_circuits_single_timestep(
             If rotation_set is set to None, the 'standard rotation set' of all
             possible X and Y rotations before and after the circuit is used.
     """
-    if rotation_set is None:
-        rotation_set = standard_vpe_rotation_set
+    rotations = standard_vpe_rotation_set if rotation_set is None else rotation_set
     circuits = [
         vpe_single_circuit(
             qubits, prep, evolve, rdata[1].on(target_qubit), rdata[2].on(target_qubit)
         )
-        for rdata in rotation_set
+        for rdata in rotations
     ]
     return circuits

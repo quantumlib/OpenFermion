@@ -26,7 +26,6 @@ thus serves as a good initial guess.
 
 import itertools
 from dataclasses import dataclass
-from typing import Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -66,7 +65,7 @@ def check_isdf_solution(
     return np.linalg.norm(lhs - lhs_check)
 
 
-def solve_isdf(orbitals: npt.NDArray, interp_indx: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
+def solve_isdf(orbitals: npt.NDArray, interp_indx: npt.NDArray) -> tuple[npt.NDArray, npt.NDArray]:
     """Solve for interpolating vectors given interpolating points and orbitals.
 
     Used for both supercell and k-point ISDF factorizations.
@@ -108,7 +107,7 @@ def supercell_isdf(
     orbitals: npt.NDArray,
     grid_points: npt.NDArray,
     kpoint=np.zeros(3),
-) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
     r"""
     Build ISDF-THC tensors.
 
@@ -231,7 +230,7 @@ def build_kpoint_zeta_single_tranlsation(
     return zeta
 
 
-def build_g_vectors(cell: gto.Cell) -> npt.NDArray:
+def build_g_vectors(cell: gto.Cell) -> tuple[dict[tuple[int, int, int], int], npt.NDArray]:
     """Build all 27 Gvectors
 
     Args:
@@ -258,7 +257,7 @@ def build_g_vectors(cell: gto.Cell) -> npt.NDArray:
 
 def find_unique_g_vectors(
     g_vectors: npt.NDArray, g_mapping: npt.NDArray
-) -> Tuple[npt.NDArray, npt.NDArray]:
+) -> tuple[npt.NDArray, npt.NDArray]:
     """Find all unique G-vectors and build mapping to original set.
 
     Args:
@@ -284,7 +283,7 @@ def find_unique_g_vectors(
 
 def build_g_vector_mappings_double_translation(
     cell: gto.Cell, kpts: npt.NDArray, momentum_map: npt.NDArray
-) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
     """build g-vector mappings that map k-point differences to 1bz.
 
     args:
@@ -335,7 +334,7 @@ def get_miller(lattice_vectors: npt.NDArray, g: npt.NDArray) -> npt.NDArray:
 
 def build_minus_q_g_mapping(
     cell: gto.Cell, kpts: npt.NDArray, momentum_map: npt.NDArray
-) -> npt.NDArray:
+) -> tuple[npt.NDArray, npt.NDArray]:
     """Build conjugat g map
 
     Mapping satisfies (-Q) + G + (Q + Gpq) = 0 (*)
@@ -385,7 +384,7 @@ def build_minus_q_g_mapping(
 
 def build_g_vector_mappings_single_translation(
     cell: gto.Cell, kpts: npt.NDArray, kpts_pq: npt.NDArray
-) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
     """Build g-vector mappings that map k-point differences to 1BZ.
 
     Args:
@@ -528,7 +527,7 @@ def kpoint_isdf_double_translation(
     orbitals: npt.NDArray,
     grid_points: npt.NDArray,
     only_unique_g: bool = True,
-) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
     r"""Build kpoint ISDF-THC tensors.
 
     Given the orbitals evaluated on a (dense) real space grid, and a set of
@@ -580,9 +579,9 @@ def kpoint_isdf_double_translation(
     )
     if only_unique_g:
         g_mapping = g_mapping_unique
-        delta_gs = delta_gs_unique
+        delta_gs: npt.NDArray = delta_gs_unique
     else:
-        delta_gs = [g_vectors] * num_kpts
+        delta_gs = np.array([g_vectors] * num_kpts, dtype=object)
     zeta = np.zeros((num_kpts,), dtype=object)
     for iq in range(num_kpts):
         num_g = len(delta_gs[iq])
@@ -605,7 +604,7 @@ def kpoint_isdf_single_translation(
     kpts: npt.NDArray,
     orbitals: npt.NDArray,
     grid_points: npt.NDArray,
-) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
     r"""Build kpoint ISDF-THC tensors.
 
     Given the orbitals evaluated on a (dense) real space grid, and a set of
@@ -723,9 +722,7 @@ def density_guess(
     return grid_points[indx]
 
 
-def interp_indx_from_qrcp(
-    Z: npt.NDArray, num_interp_pts: npt.NDArray, return_diagonal: bool = False
-):
+def interp_indx_from_qrcp(Z: npt.NDArray, num_interp_pts: int, return_diagonal: bool = False):
     """Find interpolating points via QRCP
 
     Z^T P = Q R, where R has diagonal elements that are in descending order of
@@ -757,7 +754,7 @@ def interp_indx_from_qrcp(
 
 def setup_isdf(
     mf_inst: scf.RHF, verbose: bool = False
-) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
     """Setup common data for ISDF solution.
 
     Args:
@@ -834,7 +831,7 @@ class KPointTHC:
     chi: npt.NDArray[np.complex128]
     zeta: npt.NDArray
     g_mapping: npt.NDArray
-    xi: Union[npt.NDArray[np.complex128], None]
+    xi: npt.NDArray[np.complex128] | None
 
     @property
     def num_interp_points(self) -> int:
