@@ -12,7 +12,7 @@
 """This module constructs Hamiltonians for the uniform electron gas."""
 
 import math
-from typing import Optional
+from typing import Any, Optional
 
 import scipy.special
 
@@ -154,12 +154,13 @@ def plane_wave_potential(
     spins = [None] if spinless else [0, 1]
     if non_periodic and period_cutoff is None:
         period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
+    period_cutoff_value = period_cutoff
 
     # Pre-Computations.
-    shifted_omega_indices_dict = {}
-    shifted_indices_minus_dict = {}
-    shifted_indices_plus_dict = {}
-    orbital_ids = {}
+    shifted_omega_indices_dict: dict[tuple[int, ...], list[int]] = {}
+    shifted_indices_minus_dict: dict[tuple[int, ...], dict[tuple[int, ...], tuple[int, ...]]] = {}
+    shifted_indices_plus_dict: dict[tuple[int, ...], dict[tuple[int, ...], tuple[int, ...]]] = {}
+    orbital_ids: dict[tuple[int, ...], dict[int | None, int]] = {}
     for indices_a in grid.all_points_indices():
         shifted_omega_indices = [j - grid.length[i] // 2 for i, j in enumerate(indices_a)]
         shifted_omega_indices_dict[indices_a] = shifted_omega_indices
@@ -206,7 +207,8 @@ def plane_wave_potential(
             momenta_squared, grid.dimensions, grid.volume_scale()
         )
         if non_periodic:
-            coefficient *= 1.0 - math.cos(period_cutoff * math.sqrt(momenta_squared))
+            assert period_cutoff_value is not None
+            coefficient *= 1.0 - math.cos(period_cutoff_value * math.sqrt(momenta_squared))
 
         for grid_indices_a in active_indices:
             shifted_indices_d = shifted_indices_minus_dict[omega_indices][grid_indices_a]
@@ -271,12 +273,13 @@ def dual_basis_jellium_model(
     spins = [None] if spinless else [0, 1]
     if potential and non_periodic and period_cutoff is None:
         period_cutoff = grid.volume_scale() ** (1.0 / grid.dimensions)
+    period_cutoff_value = period_cutoff
 
     # Pre-Computations.
-    position_vectors = {}
-    momentum_vectors = {}
-    momenta_squared_dict = {}
-    orbital_ids = {}
+    position_vectors: dict[tuple[int, ...], Any] = {}
+    momentum_vectors: dict[tuple[int, ...], Any] = {}
+    momenta_squared_dict: dict[tuple[int, ...], float] = {}
+    orbital_ids: dict[tuple[int, ...], dict[int | None, int]] = {}
     for indices in grid.all_points_indices():
         position_vectors[indices] = grid.position_vector(indices)
         momenta = grid.momentum_vector(indices)
@@ -310,7 +313,8 @@ def dual_basis_jellium_model(
                     momenta_squared, grid.dimensions, grid.volume_scale()
                 )
                 if non_periodic:
-                    coef *= 1.0 - math.cos(period_cutoff * math.sqrt(momenta_squared))
+                    assert period_cutoff_value is not None
+                    coef *= 1.0 - math.cos(period_cutoff_value * math.sqrt(momenta_squared))
                 potential_coefficient += coef * cos_difference
         for grid_indices_shift in grid.all_points_indices():
             # Loop over spins and identify interacting orbitals.
@@ -341,13 +345,13 @@ def dual_basis_jellium_model(
                     for sb in spins:
                         if orbital_a[sa] == orbital_b[sb]:
                             continue
-                        operators = (
+                        potential_operators = (
                             (orbital_a[sa], 1),
                             (orbital_a[sa], 0),
                             (orbital_b[sb], 1),
                             (orbital_b[sb], 0),
                         )
-                        operator += FermionOperator(operators, potential_coefficient)
+                        operator += FermionOperator(potential_operators, potential_coefficient)
 
     # Include the Madelung constant if requested.
     if include_constant:

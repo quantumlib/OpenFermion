@@ -11,7 +11,7 @@
 #   limitations under the License.
 """Gates that are commonly used for quantum simulation of fermions."""
 
-from typing import Optional
+from typing import cast, Optional
 
 import numpy as np
 import sympy
@@ -111,7 +111,7 @@ def Rzz(rads: float) -> cirq.ZZPowGate:
 def rot11(rads: float) -> cirq.CZPowGate:
     """Phases the |11> state of two qubits by e^{i rads}."""
     pi = sympy.pi if isinstance(rads, sympy.Basic) else np.pi
-    return cirq.CZ ** (rads / pi)
+    return cast(cirq.CZPowGate, cirq.CZ ** (rads / pi))
 
 
 FSWAP = FSwapPowGate()

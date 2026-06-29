@@ -134,12 +134,12 @@ def _binary_address(digits: int, address: int) -> Tuple[List[int], BinaryPolynom
     binary_expression = BinaryPolynomial('1')
 
     # isolate the binary number and fill up the mismatching digits
-    address = bin(address)[2:]
-    address = ('0' * (digits - len(address))) + address
+    address_bits = bin(address)[2:]
+    address_bits = ('0' * (digits - len(address_bits))) + address_bits
     for index in numpy.arange(digits):
-        binary_expression *= BinaryPolynomial('w' + str(index) + ' + 1 + ' + address[index])
+        binary_expression *= BinaryPolynomial('w' + str(index) + ' + 1 + ' + address_bits[index])
 
-    return list(map(int, list(address))), binary_expression
+    return list(map(int, list(address_bits))), binary_expression
 
 
 def checksum_code(n_modes: int, odd: Union[int, bool]) -> BinaryCode:
@@ -224,7 +224,7 @@ def weight_one_binary_addressing_code(exponent: int) -> BinaryCode:
         The weight one binary addressing BinaryCode
     """
     encoder = numpy.zeros((exponent, 2**exponent), dtype=int)
-    decoder = [0] * (2**exponent)
+    decoder: list[BinaryPolynomial] = [BinaryPolynomial('0')] * (2**exponent)
     for counter in numpy.arange(2**exponent):
         encoder[:, counter], decoder[counter] = _binary_address(exponent, counter)
     return BinaryCode(encoder, decoder)

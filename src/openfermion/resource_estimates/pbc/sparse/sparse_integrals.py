@@ -169,11 +169,11 @@ class SparseFactorization:
                     for p, q in itertools.product(range(n), repeat=2):
                         Dpc[p, q] = eri_block[p, q, q, p]
                         eri_block[p, q, q, p] = 0.0
-                    counter += np.count_nonzero(Dd)
-                    counter += np.count_nonzero(Dp) // 2
-                    counter += np.count_nonzero(Dc) // 2
-                    counter += np.count_nonzero(Dpc) // 2
-                    counter += np.count_nonzero(eri_block) // 4
+                    counter += int(np.count_nonzero(Dd))
+                    counter += int(np.count_nonzero(Dp)) // 2
+                    counter += int(np.count_nonzero(Dc)) // 2
+                    counter += int(np.count_nonzero(Dpc)) // 2
+                    counter += int(np.count_nonzero(eri_block)) // 4
                 elif kp == kq and kr == ks:
                     completed[kp, kq, kr] = True
                     completed[kr, ks, kp] = True
@@ -183,8 +183,8 @@ class SparseFactorization:
                     for p, r in itertools.product(range(n), repeat=2):
                         Dc[p, r] = eri_block[p, p, r, r]
                         eri_block[p, p, r, r] = 0.0
-                    counter += np.count_nonzero(Dc)
-                    counter += np.count_nonzero(eri_block) // 2
+                    counter += int(np.count_nonzero(Dc))
+                    counter += int(np.count_nonzero(eri_block)) // 2
                 elif kp == ks and kq == kr:
                     completed[kp, kq, kr] = True
                     completed[kr, ks, kp] = True
@@ -194,8 +194,8 @@ class SparseFactorization:
                     for p, q in itertools.product(range(n), repeat=2):
                         Dpc[p, q] = eri_block[p, q, q, p]
                         eri_block[p, q, q, p] = 0.0
-                    counter += np.count_nonzero(Dpc)
-                    counter += np.count_nonzero(eri_block) // 2
+                    counter += int(np.count_nonzero(Dpc))
+                    counter += int(np.count_nonzero(eri_block)) // 2
                 elif kp == kr and kq == ks:
                     completed[kp, kq, kr] = True
                     completed[kq, kp, ks] = True
@@ -205,10 +205,10 @@ class SparseFactorization:
                     for p, q in itertools.product(range(n), repeat=2):
                         Dp[p, q] = eri_block[p, q, p, q]
                         eri_block[p, q, p, q] = 0.0
-                    counter += np.count_nonzero(Dp)
-                    counter += np.count_nonzero(eri_block) // 2
+                    counter += int(np.count_nonzero(Dp))
+                    counter += int(np.count_nonzero(eri_block)) // 2
                 else:
-                    counter += np.count_nonzero(eri_block)
+                    counter += int(np.count_nonzero(eri_block))
                     completed[kp, kq, kr] = True
                     completed[kr, ks, kp] = True
                     completed[kq, kp, ks] = True

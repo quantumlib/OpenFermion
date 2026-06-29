@@ -11,7 +11,7 @@
 #   limitations under the License.
 """The Bogoliubov transformation."""
 
-from typing import Iterable, List, Optional, Sequence, Tuple, Union, cast
+from typing import Iterable, Iterator, List, Optional, Sequence, Tuple, Union, cast
 
 import numpy
 
@@ -24,7 +24,7 @@ def bogoliubov_transform(
     qubits: Sequence[cirq.Qid],
     transformation_matrix: numpy.ndarray,
     initial_state: Optional[Union[int, Sequence[int]]] = None,
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     r"""Perform a Bogoliubov transformation.
 
     This circuit performs the transformation to a basis determined by a new set
@@ -124,9 +124,7 @@ def bogoliubov_transform(
 
         yield bogoliubov_transform(up_qubits, up_block, initial_state=up_orbitals)
         yield bogoliubov_transform(down_qubits, down_block, initial_state=down_orbitals)
-        return
-
-    if shape == (n_qubits, n_qubits):
+    elif shape == (n_qubits, n_qubits):
         # We're performing a particle-number conserving "Slater" basis change
         yield _slater_basis_change(qubits, transformation_matrix, initially_occupied_orbitals)
     else:
@@ -210,7 +208,7 @@ def _slater_basis_change(
     qubits: Sequence[cirq.Qid],
     transformation_matrix: numpy.ndarray,
     initially_occupied_orbitals: Optional[Sequence[int]],
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     n_qubits = len(qubits)
 
     if initially_occupied_orbitals is None:
@@ -239,7 +237,7 @@ def _gaussian_basis_change(
     qubits: Sequence[cirq.Qid],
     transformation_matrix: numpy.ndarray,
     initially_occupied_orbitals: Optional[Sequence[int]],
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     n_qubits = len(qubits)
 
     # Rearrange the transformation matrix because the OpenFermion routine
@@ -271,7 +269,7 @@ def _gaussian_basis_change(
 def _ops_from_givens_rotations_circuit_description(
     qubits: Sequence[cirq.Qid],
     circuit_description: Iterable[Iterable[Union[str, Tuple[int, int, float, float]]]],
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     """Yield operations from a Givens rotations circuit obtained from
     OpenFermion.
     """

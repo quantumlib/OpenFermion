@@ -29,9 +29,9 @@ def extractor(binary_op: BinaryPolynomial) -> QubitOperator:
     Returns:
         The qubit operator corresponding to the binary terms
     """
-    return_fn = 1
+    return_fn: QubitOperator = QubitOperator(())
     for term in binary_op.terms:
-        multiplier = 1
+        multiplier: QubitOperator | int = 1
         if len(term) == 1:
             term = term[0]
             if isinstance(term, (numpy.int32, numpy.int64, int)):

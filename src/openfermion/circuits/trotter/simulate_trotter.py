@@ -11,7 +11,7 @@
 #   limitations under the License.
 """Perform Hamiltonian simulation via a Trotter-Suzuki product formula."""
 
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Iterator
 
 import cirq
 
@@ -33,7 +33,7 @@ def simulate_trotter(
     algorithm: Optional[TrotterAlgorithm] = None,
     control_qubit: Optional[cirq.Qid] = None,
     omit_final_swaps: bool = False,
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     """Simulate Hamiltonian evolution using a Trotter-Suzuki product formula.
 
     The input is a Hamiltonian represented as an InteractionOperator or
@@ -117,7 +117,7 @@ def _perform_trotter_step(
     order: int,
     trotter_step: TrotterStep,
     control_qubit: Optional[cirq.Qid],
-) -> cirq.OP_TREE:
+) -> Iterator[cirq.OP_TREE]:
     """Perform a Trotter step."""
     if order <= 1:
         yield trotter_step.trotter_step(qubits, time, control_qubit)

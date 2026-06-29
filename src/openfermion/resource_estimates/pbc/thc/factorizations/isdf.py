@@ -231,7 +231,7 @@ def build_kpoint_zeta_single_tranlsation(
     return zeta
 
 
-def build_g_vectors(cell: gto.Cell) -> npt.NDArray:
+def build_g_vectors(cell: gto.Cell) -> Tuple[dict[tuple[int, int, int], int], npt.NDArray]:
     """Build all 27 Gvectors
 
     Args:
@@ -335,7 +335,7 @@ def get_miller(lattice_vectors: npt.NDArray, g: npt.NDArray) -> npt.NDArray:
 
 def build_minus_q_g_mapping(
     cell: gto.Cell, kpts: npt.NDArray, momentum_map: npt.NDArray
-) -> npt.NDArray:
+) -> Tuple[npt.NDArray, npt.NDArray]:
     """Build conjugat g map
 
     Mapping satisfies (-Q) + G + (Q + Gpq) = 0 (*)
@@ -580,9 +580,9 @@ def kpoint_isdf_double_translation(
     )
     if only_unique_g:
         g_mapping = g_mapping_unique
-        delta_gs = delta_gs_unique
+        delta_gs: npt.NDArray = delta_gs_unique
     else:
-        delta_gs = [g_vectors] * num_kpts
+        delta_gs = np.array([g_vectors] * num_kpts, dtype=object)
     zeta = np.zeros((num_kpts,), dtype=object)
     for iq in range(num_kpts):
         num_g = len(delta_gs[iq])
@@ -723,9 +723,7 @@ def density_guess(
     return grid_points[indx]
 
 
-def interp_indx_from_qrcp(
-    Z: npt.NDArray, num_interp_pts: npt.NDArray, return_diagonal: bool = False
-):
+def interp_indx_from_qrcp(Z: npt.NDArray, num_interp_pts: int, return_diagonal: bool = False):
     """Find interpolating points via QRCP
 
     Z^T P = Q R, where R has diagonal elements that are in descending order of

@@ -11,7 +11,7 @@
 #   limitations under the License.
 """A Trotter algorithm using the low rank decomposition strategy."""
 
-from typing import cast, Optional, Sequence, TYPE_CHECKING, Tuple
+from typing import cast, Iterator, Optional, Sequence, TYPE_CHECKING, Tuple
 
 import numpy
 
@@ -23,7 +23,8 @@ import openfermion.ops as ops
 from openfermion.circuits.gates import rot11, rot111
 
 # import openfermion.circuits.primitives as primitives
-from openfermion.circuits.primitives import swap_network, bogoliubov_transform
+from openfermion.circuits.primitives.bogoliubov_transform import bogoliubov_transform
+from openfermion.circuits.primitives.swap_network import swap_network
 from openfermion.circuits.low_rank import (
     low_rank_two_body_decomposition,
     prepare_one_body_squared_evolution,
@@ -95,13 +96,15 @@ class LowRankTrotterAlgorithm(TrotterAlgorithm):
         self.spin_basis = spin_basis
 
     def asymmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
+        interaction_hamiltonian = cast(ops.InteractionOperator, hamiltonian)
         return AsymmetricLowRankTrotterStep(
-            hamiltonian, self.truncation_threshold, self.final_rank, self.spin_basis
+            interaction_hamiltonian, self.truncation_threshold, self.final_rank, self.spin_basis
         )
 
     def controlled_asymmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
+        interaction_hamiltonian = cast(ops.InteractionOperator, hamiltonian)
         return ControlledAsymmetricLowRankTrotterStep(
-            hamiltonian, self.truncation_threshold, self.final_rank, self.spin_basis
+            interaction_hamiltonian, self.truncation_threshold, self.final_rank, self.spin_basis
         )
 
 
@@ -154,7 +157,7 @@ class LowRankTrotterStep(TrotterStep):
 class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         n_qubits = len(qubits)
 
         # Change to the basis in which the one-body term is diagonal
@@ -180,7 +183,9 @@ class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
             # Simulate the off-diagonal two-body terms.
             yield swap_network(
                 qubits,
-                lambda p, q, a, b: rot11(rads=-2 * two_body_coefficients[p, q] * time).on(a, b),
+                lambda p, q, a, b: rot11(rads=float(-2 * two_body_coefficients[p, q] * time)).on(
+                    a, b
+                ),
             )
             qubits = qubits[::-1]
 
@@ -210,7 +215,7 @@ class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
         n_steps: int,
         control_qubit: Optional[cirq.Qid] = None,
         omit_final_swaps: bool = False,
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         if not omit_final_swaps:
             # If the number of swap networks was odd, swap the qubits back
             if n_steps & 1 and len(self.eigenvalues) & 1:
@@ -220,7 +225,7 @@ class AsymmetricLowRankTrotterStep(LowRankTrotterStep):
 class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         if not isinstance(control_qubit, cirq.Qid):
             raise TypeError('Control qudit must be specified.')
 
@@ -249,7 +254,7 @@ class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
             # Simulate the off-diagonal two-body terms.
             yield swap_network(
                 qubits,
-                lambda p, q, a, b: rot111(-2 * two_body_coefficients[p, q] * time).on(
+                lambda p, q, a, b: rot111(float(-2 * two_body_coefficients[p, q] * time)).on(
                     cast(cirq.Qid, control_qubit), a, b
                 ),
             )
@@ -286,7 +291,7 @@ class ControlledAsymmetricLowRankTrotterStep(LowRankTrotterStep):
         n_steps: int,
         control_qubit: Optional[cirq.Qid] = None,
         omit_final_swaps: bool = False,
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         if not omit_final_swaps:
             # If the number of swap networks was odd, swap the qubits back
             if n_steps & 1 and len(self.eigenvalues) & 1:
