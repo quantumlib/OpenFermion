@@ -520,7 +520,9 @@ def lbfgsb_opt_kpthc_l2reg(
     if chkfile_name is not None:
         num_g_per_q = [len(np.unique(GQ)) for GQ in gpq_map]
         chi_out, zeta_out = unpack_thc_factors(params, num_thc, num_orb, num_kpts, num_g_per_q)
-        save_thc_factors(chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map)
+        save_thc_factors(
+            chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map
+        )
     return np.array(params), loss
 
 
@@ -662,7 +664,9 @@ def lbfgsb_opt_kpthc_l2reg_batched(
     if chkfile_name is not None:
         num_g_per_q = [len(np.unique(gq)) for gq in gpq_map]
         chi_out, zeta_out = unpack_thc_factors(params, num_thc, num_orb, num_kpts, num_g_per_q)
-        save_thc_factors(chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map)
+        save_thc_factors(
+            chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map
+        )
     return np.array(params), loss
 
 
@@ -755,7 +759,9 @@ def adagrad_opt_kpthc_batched(
     if chkfile_name is not None:
         num_g_per_q = [len(np.unique(GQ)) for GQ in gpq_map]
         chi_out, zeta_out = unpack_thc_factors(x, num_thc, num_orb, num_kpts, num_g_per_q)
-        save_thc_factors(chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map)
+        save_thc_factors(
+            chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map
+        )
     return params, loss
 
 
@@ -933,7 +939,9 @@ def kpoint_thc_via_isdf(
             )
             info["loss_bfgs"] = loss_bfgs
         num_g_per_q = [len(np.unique(GQ)) for GQ in g_mapping]
-        chi_packed, zeta_list = unpack_thc_factors(opt_params, num_thc, num_mo, num_kpts, num_g_per_q)
+        chi_packed, zeta_list = unpack_thc_factors(
+            opt_params, num_thc, num_mo, num_kpts, num_g_per_q
+        )
         chi = np.asarray(chi_packed)
         zeta = np.array(zeta_list, dtype=object)
     if verbose:
