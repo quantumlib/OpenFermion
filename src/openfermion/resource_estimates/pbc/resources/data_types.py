@@ -70,8 +70,8 @@ class PBCResources:
     def to_dataframe(self) -> pd.DataFrame:
         """Convert PBCResources instance to pandas DataFrame."""
         df = pd.DataFrame(self.dict())
-        lambdas = pd.json_normalize(df.pop("ham_props"))
-        resources = pd.json_normalize(df.pop("resources"))
+        lambdas = pd.json_normalize(df.pop("ham_props").tolist())
+        resources = pd.json_normalize(df.pop("resources").tolist())
         df = df.join(pd.DataFrame(lambdas))
         df = df.join(pd.DataFrame(resources))
         return df

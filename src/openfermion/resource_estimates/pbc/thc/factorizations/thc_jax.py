@@ -114,8 +114,8 @@ def get_zeta_size(zeta: npt.NDArray) -> int:
 
 
 def unpack_thc_factors(
-    xcur: npt.NDArray, num_thc: int, num_orb: int, num_kpts: int, num_g_per_q: list[int]
-) -> tuple[npt.NDArray, list[npt.NDArray]]:
+    xcur: npt.NDArray | jax.Array, num_thc: int, num_orb: int, num_kpts: int, num_g_per_q: list[int]
+) -> tuple[npt.NDArray | jax.Array, list[npt.NDArray | jax.Array]]:
     """Unpack THC factors from flattened array used for reoptimization.
 
     Args:
@@ -314,9 +314,7 @@ def thc_objective_regularized_batched(
     """
     num_kpts = momentum_map.shape[0]
     num_g_per_q = [len(np.unique(gq)) for gq in gpq_map]
-    chi_packed, zeta_list = unpack_thc_factors(
-        np.asarray(xcur), num_thc, num_orb, num_kpts, num_g_per_q
-    )
+    chi_packed, zeta_list = unpack_thc_factors(xcur, num_thc, num_orb, num_kpts, num_g_per_q)
     chi_jax = jnp.asarray(chi_packed)
     # Normalization factor, no factor of sqrt as there are 4 chis in total when
     # building ERI.
@@ -522,7 +520,7 @@ def lbfgsb_opt_kpthc_l2reg(
     if chkfile_name is not None:
         num_g_per_q = [len(np.unique(GQ)) for GQ in gpq_map]
         chi_out, zeta_out = unpack_thc_factors(params, num_thc, num_orb, num_kpts, num_g_per_q)
-        save_thc_factors(chkfile_name, chi_out, np.array(zeta_out, dtype=object), gpq_map)
+        save_thc_factors(chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map)
     return np.array(params), loss
 
 
@@ -664,7 +662,7 @@ def lbfgsb_opt_kpthc_l2reg_batched(
     if chkfile_name is not None:
         num_g_per_q = [len(np.unique(gq)) for gq in gpq_map]
         chi_out, zeta_out = unpack_thc_factors(params, num_thc, num_orb, num_kpts, num_g_per_q)
-        save_thc_factors(chkfile_name, chi_out, np.array(zeta_out, dtype=object), gpq_map)
+        save_thc_factors(chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map)
     return np.array(params), loss
 
 
@@ -757,7 +755,7 @@ def adagrad_opt_kpthc_batched(
     if chkfile_name is not None:
         num_g_per_q = [len(np.unique(GQ)) for GQ in gpq_map]
         chi_out, zeta_out = unpack_thc_factors(x, num_thc, num_orb, num_kpts, num_g_per_q)
-        save_thc_factors(chkfile_name, chi_out, np.array(zeta_out, dtype=object), gpq_map)
+        save_thc_factors(chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map)
     return params, loss
 
 
@@ -935,7 +933,8 @@ def kpoint_thc_via_isdf(
             )
             info["loss_bfgs"] = loss_bfgs
         num_g_per_q = [len(np.unique(GQ)) for GQ in g_mapping]
-        chi, zeta_list = unpack_thc_factors(opt_params, num_thc, num_mo, num_kpts, num_g_per_q)
+        chi_packed, zeta_list = unpack_thc_factors(opt_params, num_thc, num_mo, num_kpts, num_g_per_q)
+        chi = np.asarray(chi_packed)
         zeta = np.array(zeta_list, dtype=object)
     if verbose:
         print("Time for BFGS {:.4f}".format(time.time() - start))
@@ -957,7 +956,10 @@ def kpoint_thc_via_isdf(
             )
             info["loss_adagrad"] = loss_ada
             num_g_per_q = [len(np.unique(GQ)) for GQ in g_mapping]
-            chi, zeta_list = unpack_thc_factors(opt_params, num_thc, num_mo, num_kpts, num_g_per_q)
+            chi_packed, zeta_list = unpack_thc_factors(
+                opt_params, num_thc, num_mo, num_kpts, num_g_per_q
+            )
+            chi = np.asarray(chi_packed)
             zeta = np.array(zeta_list, dtype=object)
     if verbose:
         print("Time for ADAGRAD {:.4f}".format(time.time() - start))
