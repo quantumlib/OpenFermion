@@ -11,7 +11,7 @@
 #   limitations under the License.
 """A Trotter algorithm using a split-operator approach."""
 
-from typing import cast, Optional, Sequence, Tuple
+from typing import cast, Iterator, Optional, Sequence, Tuple
 
 import cirq
 
@@ -20,7 +20,8 @@ from openfermion.circuits.gates import rot11, rot111
 import openfermion.ops as ops
 
 # import openfermion.circuits.primitives as primitives
-from openfermion.circuits.primitives import bogoliubov_transform, swap_network
+from openfermion.circuits.primitives.bogoliubov_transform import bogoliubov_transform
+from openfermion.circuits.primitives.swap_network import swap_network
 from openfermion.circuits.trotter.trotter_algorithm import (
     Hamiltonian,
     TrotterStep,
@@ -45,23 +46,27 @@ class SplitOperatorTrotterAlgorithm(TrotterAlgorithm):
     supported_types = {ops.DiagonalCoulombHamiltonian}
 
     def symmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
-        return SymmetricSplitOperatorTrotterStep(hamiltonian)
+        dc_hamiltonian = cast(ops.DiagonalCoulombHamiltonian, hamiltonian)
+        return SymmetricSplitOperatorTrotterStep(dc_hamiltonian)
 
     def asymmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
-        return AsymmetricSplitOperatorTrotterStep(hamiltonian)
+        dc_hamiltonian = cast(ops.DiagonalCoulombHamiltonian, hamiltonian)
+        return AsymmetricSplitOperatorTrotterStep(dc_hamiltonian)
 
     def controlled_symmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
-        return ControlledSymmetricSplitOperatorTrotterStep(hamiltonian)
+        dc_hamiltonian = cast(ops.DiagonalCoulombHamiltonian, hamiltonian)
+        return ControlledSymmetricSplitOperatorTrotterStep(dc_hamiltonian)
 
     def controlled_asymmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
-        return ControlledAsymmetricSplitOperatorTrotterStep(hamiltonian)
+        dc_hamiltonian = cast(ops.DiagonalCoulombHamiltonian, hamiltonian)
+        return ControlledAsymmetricSplitOperatorTrotterStep(dc_hamiltonian)
 
 
 SPLIT_OPERATOR = SplitOperatorTrotterAlgorithm()
 
 
 class SplitOperatorTrotterStep(TrotterStep):
-    def __init__(self, hamiltonian: 'openfermion.DiagonalCoulombHamiltonian') -> None:
+    def __init__(self, hamiltonian: ops.DiagonalCoulombHamiltonian) -> None:
         quad_ham = ops.QuadraticHamiltonian(hamiltonian.one_body)
         # Get the basis change matrix that diagonalizes the one-body term
         # and associated orbital energies
@@ -74,14 +79,15 @@ class SplitOperatorTrotterStep(TrotterStep):
 class SymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
     def prepare(
         self, qubits: Sequence[cirq.Qid], control_qubits: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         # Change to the basis in which the one-body term is diagonal
         yield cirq.inverse(bogoliubov_transform(qubits, self.basis_change_matrix))
 
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         n_qubits = len(qubits)
+        dc_hamiltonian = cast(ops.DiagonalCoulombHamiltonian, self.hamiltonian)
 
         # Simulate the one-body terms for half of the full time
         yield (
@@ -93,8 +99,8 @@ class SymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
         yield bogoliubov_transform(qubits, self.basis_change_matrix)
 
         # Simulate the two-body terms for the full time
-        def two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield rot11(rads=-2 * self.hamiltonian.two_body[p, q] * time).on(a, b)
+        def two_body_interaction(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield rot11(rads=float(-2 * dc_hamiltonian.two_body[p, q] * time)).on(a, b)
 
         yield swap_network(qubits, two_body_interaction)
         # The qubit ordering has been reversed
@@ -121,7 +127,7 @@ class SymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
         n_steps: int,
         control_qubit: Optional[cirq.Qid] = None,
         omit_final_swaps: bool = False,
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         # Rotate back to the computational basis
         yield bogoliubov_transform(qubits, self.basis_change_matrix)
         # If the number of Trotter steps is odd, possibly swap qubits back
@@ -132,14 +138,15 @@ class SymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
 class ControlledSymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
     def prepare(
         self, qubits: Sequence[cirq.Qid], control_qubits: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         # Change to the basis in which the one-body term is diagonal
         yield cirq.inverse(bogoliubov_transform(qubits, self.basis_change_matrix))
 
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         n_qubits = len(qubits)
+        dc_hamiltonian = cast(ops.DiagonalCoulombHamiltonian, self.hamiltonian)
 
         if not isinstance(control_qubit, cirq.Qid):
             raise TypeError('Control qudit must be specified.')
@@ -154,8 +161,8 @@ class ControlledSymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
         yield bogoliubov_transform(qubits, self.basis_change_matrix)
 
         # Simulate the two-body terms for the full time
-        def two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield rot111(-2 * self.hamiltonian.two_body[p, q] * time).on(
+        def two_body_interaction(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield rot111(rads=float(-2 * dc_hamiltonian.two_body[p, q] * time)).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
 
@@ -173,7 +180,7 @@ class ControlledSymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
         )
 
         # Apply phase from constant term
-        yield cirq.rz(rads=-self.hamiltonian.constant * time).on(control_qubit)
+        yield cirq.rz(rads=-dc_hamiltonian.constant * time).on(control_qubit)
 
     def step_qubit_permutation(
         self, qubits: Sequence[cirq.Qid], control_qubit: Optional[cirq.Qid] = None
@@ -187,7 +194,7 @@ class ControlledSymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
         n_steps: int,
         control_qubit: Optional[cirq.Qid] = None,
         omit_final_swaps: bool = False,
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         # Rotate back to the computational basis
         yield bogoliubov_transform(qubits, self.basis_change_matrix)
         # If the number of Trotter steps is odd, possibly swap qubits back
@@ -198,12 +205,13 @@ class ControlledSymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
 class AsymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         n_qubits = len(qubits)
+        dc_hamiltonian = cast(ops.DiagonalCoulombHamiltonian, self.hamiltonian)
 
         # Simulate the two-body terms for the full time
-        def two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield rot11(rads=-2 * self.hamiltonian.two_body[p, q] * time).on(a, b)
+        def two_body_interaction(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield rot11(rads=float(-2 * dc_hamiltonian.two_body[p, q] * time)).on(a, b)
 
         yield swap_network(qubits, two_body_interaction)
         # The qubit ordering has been reversed
@@ -232,7 +240,7 @@ class AsymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
         n_steps: int,
         control_qubit: Optional[cirq.Qid] = None,
         omit_final_swaps: bool = False,
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         # If the number of Trotter steps is odd, possibly swap qubits back
         if n_steps & 1 and not omit_final_swaps:
             yield swap_network(qubits)
@@ -241,15 +249,16 @@ class AsymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
 class ControlledAsymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         n_qubits = len(qubits)
+        dc_hamiltonian = cast(ops.DiagonalCoulombHamiltonian, self.hamiltonian)
 
         if not isinstance(control_qubit, cirq.Qid):
             raise TypeError('Control qudit must be specified.')
 
         # Simulate the two-body terms for the full time
-        def two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield rot111(-2 * self.hamiltonian.two_body[p, q] * time).on(
+        def two_body_interaction(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield rot111(rads=float(-2 * dc_hamiltonian.two_body[p, q] * time)).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
 
@@ -270,7 +279,7 @@ class ControlledAsymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
         yield bogoliubov_transform(qubits, self.basis_change_matrix)
 
         # Apply phase from constant term
-        yield cirq.rz(rads=-self.hamiltonian.constant * time).on(control_qubit)
+        yield cirq.rz(rads=-dc_hamiltonian.constant * time).on(control_qubit)
 
     def step_qubit_permutation(
         self, qubits: Sequence[cirq.Qid], control_qubit: Optional[cirq.Qid] = None
@@ -284,7 +293,7 @@ class ControlledAsymmetricSplitOperatorTrotterStep(SplitOperatorTrotterStep):
         n_steps: int,
         control_qubit: Optional[cirq.Qid] = None,
         omit_final_swaps: bool = False,
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         # If the number of Trotter steps is odd, possibly swap qubits back
         if n_steps & 1 and not omit_final_swaps:
             yield swap_network(qubits)
