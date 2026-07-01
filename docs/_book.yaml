@@ -1,7 +1,7 @@
 upper_tabs:
 # Dropdown menu
-- name: "Software"
-  path: /software
+- name: "OpenFermion"
+  path: /openfermion
   is_default: true
   lower_tabs:
     # Subsite tabs
