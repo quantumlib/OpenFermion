@@ -41,7 +41,12 @@ from openfermion.ops.operators import (
     MajoranaOperator,
 )
 from openfermion.ops.representations import DiagonalCoulombHamiltonian
-from openfermion.transforms.opconversions import jordan_wigner, get_fermion_operator, normal_ordered
+from openfermion.transforms.opconversions import (
+    jordan_wigner,
+    get_fermion_operator,
+    normal_ordered,
+    symmetry_conserving_bravyi_kitaev,
+)
 from openfermion.transforms.repconversions import fourier_transform, get_interaction_operator
 
 from openfermion.testing.testing_utils import random_hermitian_matrix
@@ -136,6 +141,40 @@ class SparseOperatorTest(unittest.TestCase):
         fermion_sparse = jordan_wigner_sparse(fermion_operator)
         fermion_spectrum = sparse_eigenspectrum(fermion_sparse)
         self.assertAlmostEqual(0.0, numpy.amax(numpy.absolute(fermion_spectrum - qubit_spectrum)))
+
+    def test_qubit_operator_sparse_simplifies_repeated_qubit_factors(self):
+        qubit_operator = QubitOperator()
+        qubit_operator.terms[((0, 'X'), (1, 'Y'), (1, 'X'))] = 1.0
+        expected_operator = -1j * QubitOperator('X0 Z1')
+
+        sparse_operator = qubit_operator_sparse(qubit_operator, n_qubits=2)
+        expected_sparse_operator = qubit_operator_sparse(expected_operator, n_qubits=2)
+
+        self.assertTrue(
+            numpy.allclose(sparse_operator.toarray(), expected_sparse_operator.toarray())
+        )
+
+    def test_get_sparse_operator_with_unsimplified_symmetry_conserving_bk(self):
+        fermion_operator = FermionOperator('0^ 1^')
+        qubit_operator = symmetry_conserving_bravyi_kitaev(fermion_operator, 4, 2)
+        expected_operator = QubitOperator()
+        for qubit_term, coefficient in qubit_operator.terms.items():
+            expected_operator += QubitOperator(qubit_term, coefficient)
+
+        sparse_operator = get_sparse_operator(qubit_operator)
+        expected_sparse_operator = get_sparse_operator(expected_operator)
+
+        self.assertTrue(
+            numpy.allclose(sparse_operator.toarray(), expected_sparse_operator.toarray())
+        )
+
+    def test_get_linear_qubit_operator_diagonal_simplifies_repeated_qubit_factors(self):
+        qubit_operator = QubitOperator()
+        qubit_operator.terms[((0, 'Z'), (1, 'Z'), (1, 'Z'))] = 2.0
+
+        diagonal = get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=2)
+
+        self.assertTrue(numpy.allclose(diagonal, 2.0 * numpy.array([1, 1, -1, -1])))
 
 
 class JordanWignerSparseTest(unittest.TestCase):
