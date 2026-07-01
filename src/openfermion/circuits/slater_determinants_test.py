@@ -137,13 +137,16 @@ class GaussianStatePreparationCircuitTest(unittest.TestCase):
 class JWGetGaussianStateTest(unittest.TestCase):
     def setUp(self):
         self.n_qubits_range = range(2, 10)
+        self.rng = numpy.random.default_rng(5387)
+        self.hamiltonian_seed_sequence = numpy.random.SeedSequence(5387)
 
     def test_ground_state_particle_conserving(self):
         """Test getting the ground state of a Hamiltonian that conserves
         particle number."""
         for n_qubits in self.n_qubits_range:
             # Initialize a particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, True)
+            hamiltonian_seed = self.hamiltonian_seed_sequence.spawn(1)[0].generate_state(1)[0]
+            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, True, seed=hamiltonian_seed)
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
@@ -165,7 +168,8 @@ class JWGetGaussianStateTest(unittest.TestCase):
         conserve particle number."""
         for n_qubits in self.n_qubits_range:
             # Initialize a non-particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, False)
+            hamiltonian_seed = self.hamiltonian_seed_sequence.spawn(1)[0].generate_state(1)[0]
+            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, False, seed=hamiltonian_seed)
 
             # Compute the true ground state
             sparse_operator = get_sparse_operator(quadratic_hamiltonian)
@@ -187,11 +191,12 @@ class JWGetGaussianStateTest(unittest.TestCase):
         particle number."""
         for n_qubits in self.n_qubits_range:
             # Initialize a particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, True)
+            hamiltonian_seed = self.hamiltonian_seed_sequence.spawn(1)[0].generate_state(1)[0]
+            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, True, seed=hamiltonian_seed)
 
             # Pick some orbitals to occupy
-            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
-            occupied_orbitals = numpy.random.choice(range(n_qubits), num_occupied_orbitals, False)
+            num_occupied_orbitals = self.rng.integers(1, n_qubits + 1)
+            occupied_orbitals = self.rng.choice(range(n_qubits), num_occupied_orbitals, False)
 
             # Compute the Gaussian state
             circuit_energy, gaussian_state = jw_get_gaussian_state(
@@ -219,11 +224,12 @@ class JWGetGaussianStateTest(unittest.TestCase):
         particle number."""
         for n_qubits in self.n_qubits_range:
             # Initialize a non-particle-number-conserving Hamiltonian
-            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, False)
+            hamiltonian_seed = self.hamiltonian_seed_sequence.spawn(1)[0].generate_state(1)[0]
+            quadratic_hamiltonian = random_quadratic_hamiltonian(n_qubits, False, seed=hamiltonian_seed)
 
             # Pick some orbitals to occupy
-            num_occupied_orbitals = numpy.random.randint(1, n_qubits + 1)
-            occupied_orbitals = numpy.random.choice(range(n_qubits), num_occupied_orbitals, False)
+            num_occupied_orbitals = self.rng.integers(1, n_qubits + 1)
+            occupied_orbitals = self.rng.choice(range(n_qubits), num_occupied_orbitals, False)
 
             # Compute the Gaussian state
             circuit_energy, gaussian_state = jw_get_gaussian_state(
