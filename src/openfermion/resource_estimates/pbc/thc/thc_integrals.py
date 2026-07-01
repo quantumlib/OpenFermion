@@ -71,13 +71,13 @@ class KPTHCDoubleTranslation:
         r"""Construct ERIs given kpt indices.
 
         $$
-            (pkp qkq| rkr sks) = \\sum_{mu nu} zeta[iq, dG, dG', mu, nu]
-            chi[kp,p,mu]* chi[kq,q,mu] chi[kp,p,nu]* chi[ks,s,nu]
+        (pkp qkq| rkr sks) = \sum_{mu nu} zeta[iq, dG, dG', mu, nu]
+        chi[kp,p,mu]* chi[kq,q,mu] chi[kp,p,nu]* chi[ks,s,nu]
         $$
 
         Arguments:
             ikpts: list of four integers representing the index of the kpoint in
-                `self.kmf.kpts`
+                self.kmf.kpts
 
         Returns:
             eris: ([pkp][qkq]|[rkr][sks])
@@ -147,14 +147,14 @@ class KPTHCSingleTranslation(KPTHCDoubleTranslation):
         self.momentum_transfers = transfers[unique_indx]
 
     def get_eri(self, ikpts):
-        """Construct ERIs from kpt indices
+        r"""Construct ERIs from kpt indices
 
         Evaluated via
 
-        .. math::
-
-            (pkp qkq| rkr sks) = \\sum_{mu nu} zeta[iq, dG, mu, nu]
-                chi[kp,p,mu]* chi[kq,q,mu] chi[kp,p,nu]* chi[ks,s,nu]
+        $$
+        (pkp qkq| rkr sks) = \sum_{mu nu} zeta[iq, dG, mu, nu]
+            chi[kp,p,mu]* chi[kq,q,mu] chi[kp,p,nu]* chi[ks,s,nu]
+        $$
 
         Arguments:
             kpts: list of four integers representing the index of the kpoint in

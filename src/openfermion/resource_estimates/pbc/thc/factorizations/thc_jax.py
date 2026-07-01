@@ -27,7 +27,6 @@ be used as
 # pylint: disable=wrong-import-position
 import math
 import time
-from typing import Tuple, Union
 
 import h5py
 import numpy as np
@@ -79,7 +78,7 @@ def save_thc_factors(
     chi: npt.NDArray,
     zeta: npt.NDArray,
     gpq_map: npt.NDArray,
-    xi: Union[npt.NDArray, None] = None,
+    xi: npt.NDArray | None = None,
 ) -> None:
     """Write THC factors to file
 
@@ -115,8 +114,8 @@ def get_zeta_size(zeta: npt.NDArray) -> int:
 
 
 def unpack_thc_factors(
-    xcur: npt.NDArray, num_thc: int, num_orb: int, num_kpts: int, num_g_per_q: list
-) -> Tuple[npt.NDArray, npt.NDArray]:
+    xcur: npt.NDArray | jax.Array, num_thc: int, num_orb: int, num_kpts: int, num_g_per_q: list[int]
+) -> tuple[npt.NDArray | jax.Array, list[npt.NDArray | jax.Array]]:
     """Unpack THC factors from flattened array used for reoptimization.
 
     Args:
@@ -172,10 +171,10 @@ def pack_thc_factors(chi: npt.NDArray, zeta: npt.NDArray, buffer: npt.NDArray) -
 
 @jax.jit
 def compute_objective_batched(
-    chis: Tuple[jnpt.ArrayLike, jnpt.ArrayLike, jnpt.ArrayLike, jnpt.ArrayLike],
-    zetas: jnpt.ArrayLike,
-    chols: Tuple[jnpt.ArrayLike, jnpt.ArrayLike],
-    norm_factors: Tuple[jnpt.ArrayLike, jnpt.ArrayLike, jnpt.ArrayLike, jnpt.ArrayLike],
+    chis: tuple[jax.Array, jax.Array, jax.Array, jax.Array],
+    zetas: jax.Array,
+    chols: tuple[jax.Array, jax.Array],
+    norm_factors: tuple[jax.Array, jax.Array, jax.Array, jax.Array],
     num_kpts: int,
     penalty_param: float = 0.0,
 ) -> float:
@@ -214,12 +213,12 @@ def compute_objective_batched(
     lambda_z = jnp.sum(jnp.einsum("jpq->j", 0.5 * jnp.abs(mpq_normalized)) ** 2.0)
 
     res = 0.5 * jnp.sum((jnp.abs(deri)) ** 2) + penalty_param * lambda_z
-    return res
+    return float(res)
 
 
 def prepare_batched_data_indx_arrays(
     momentum_map: npt.NDArray, gpq_map: npt.NDArray
-) -> Tuple[npt.NDArray, npt.NDArray]:
+) -> tuple[npt.NDArray, npt.NDArray]:
     r"""Create arrays to batch over.
 
     Flatten sum_q sum_{k,k_prime} -> sum_q \sum_{indx} and pack momentum
@@ -253,7 +252,7 @@ def prepare_batched_data_indx_arrays(
 
 
 @jax.jit
-def get_batched_data_1indx(array: jnpt.ArrayLike, indx: jnpt.ArrayLike) -> jnpt.ArrayLike:
+def get_batched_data_1indx(array: jax.Array, indx: jax.Array) -> jax.Array:
     """Helper function to extract entries of array given another array.
 
     Args:
@@ -267,9 +266,7 @@ def get_batched_data_1indx(array: jnpt.ArrayLike, indx: jnpt.ArrayLike) -> jnpt.
 
 
 @jax.jit
-def get_batched_data_2indx(
-    array: jnpt.ArrayLike, indxa: jnpt.ArrayLike, indxb: jnpt.ArrayLike
-) -> jnpt.ArrayLike:
+def get_batched_data_2indx(array: jax.Array, indxa: jax.Array, indxb: jax.Array) -> jax.Array:
     """Helper function to extract entries of 2D array given another array
 
     Args:
@@ -284,13 +281,13 @@ def get_batched_data_2indx(
 
 
 def thc_objective_regularized_batched(
-    xcur: jnpt.ArrayLike,
+    xcur: npt.NDArray | jax.Array,
     num_orb: int,
     num_thc: int,
     momentum_map: npt.NDArray,
     gpq_map: npt.NDArray,
-    chol: jnpt.ArrayLike,
-    indx_arrays: Tuple[jnpt.ArrayLike, jnpt.ArrayLike],
+    chol: npt.NDArray | jax.Array,
+    indx_arrays: tuple[npt.NDArray, npt.NDArray],
     batch_size: int,
     penalty_param=0.0,
 ) -> float:
@@ -317,10 +314,11 @@ def thc_objective_regularized_batched(
     """
     num_kpts = momentum_map.shape[0]
     num_g_per_q = [len(np.unique(gq)) for gq in gpq_map]
-    chi, zeta = unpack_thc_factors(xcur, num_thc, num_orb, num_kpts, num_g_per_q)
+    chi_packed, zeta_list = unpack_thc_factors(xcur, num_thc, num_orb, num_kpts, num_g_per_q)
+    chi_jax = jnp.asarray(chi_packed)
     # Normalization factor, no factor of sqrt as there are 4 chis in total when
     # building ERI.
-    norm_kp = jnp.einsum("kpP,kpP->kP", chi.conj(), chi, optimize=True) ** 0.5
+    norm_kp = jnp.einsum("kpP,kpP->kP", chi_jax.conj(), chi_jax, optimize=True) ** 0.5
     num_batches = math.ceil(num_kpts**2 / batch_size)
 
     indx_pqrs, indx_zeta = indx_arrays
@@ -329,22 +327,22 @@ def thc_objective_regularized_batched(
         for ibatch in range(num_batches):
             start = ibatch * batch_size
             end = (ibatch + 1) * batch_size
-            chi_p = get_batched_data_1indx(chi, indx_pqrs[iq, start:end, 0])
-            chi_q = get_batched_data_1indx(chi, indx_pqrs[iq, start:end, 1])
-            chi_r = get_batched_data_1indx(chi, indx_pqrs[iq, start:end, 2])
-            chi_s = get_batched_data_1indx(chi, indx_pqrs[iq, start:end, 3])
+            chi_p = get_batched_data_1indx(chi_jax, indx_pqrs[iq, start:end, 0])
+            chi_q = get_batched_data_1indx(chi_jax, indx_pqrs[iq, start:end, 1])
+            chi_r = get_batched_data_1indx(chi_jax, indx_pqrs[iq, start:end, 2])
+            chi_s = get_batched_data_1indx(chi_jax, indx_pqrs[iq, start:end, 3])
             norm_k1 = get_batched_data_1indx(norm_kp, indx_pqrs[iq, start:end, 0])
             norm_k2 = get_batched_data_1indx(norm_kp, indx_pqrs[iq, start:end, 1])
             norm_k3 = get_batched_data_1indx(norm_kp, indx_pqrs[iq, start:end, 2])
             norm_k4 = get_batched_data_1indx(norm_kp, indx_pqrs[iq, start:end, 3])
             zeta_batch = get_batched_data_2indx(
-                zeta[iq], indx_zeta[iq, start:end, 0], indx_zeta[iq, start:end, 1]
+                jnp.asarray(zeta_list[iq]), indx_zeta[iq, start:end, 0], indx_zeta[iq, start:end, 1]
             )
             chol_batch_pq = get_batched_data_2indx(
-                chol, indx_pqrs[iq, start:end, 0], indx_pqrs[iq, start:end, 1]
+                jnp.asarray(chol), indx_pqrs[iq, start:end, 0], indx_pqrs[iq, start:end, 1]
             )
             chol_batch_rs = get_batched_data_2indx(
-                chol, indx_pqrs[iq, start:end, 2], indx_pqrs[iq, start:end, 3]
+                jnp.asarray(chol), indx_pqrs[iq, start:end, 2], indx_pqrs[iq, start:end, 3]
             )
             objective += compute_objective_batched(
                 (chi_p, chi_q, chi_r, chi_s),
@@ -419,11 +417,11 @@ def lbfgsb_opt_kpthc_l2reg(
     momentum_map: npt.NDArray,
     gpq_map: npt.NDArray,
     chol: npt.NDArray,
-    chkfile_name: Union[str, None] = None,
+    chkfile_name: str | None = None,
     maxiter: int = 150_000,
     disp_freq: int = 98,
-    penalty_param: Union[float, None] = None,
-) -> Tuple[npt.NDArray, float]:
+    penalty_param: float | None = None,
+) -> tuple[npt.NDArray, float]:
     """Least-squares fit of two-electron integral tensors with  L-BFGS-B
 
     Uses l2-regularization of lambda penalty function.
@@ -521,8 +519,10 @@ def lbfgsb_opt_kpthc_l2reg(
     )
     if chkfile_name is not None:
         num_g_per_q = [len(np.unique(GQ)) for GQ in gpq_map]
-        chi, zeta = unpack_thc_factors(params, num_thc, num_orb, num_kpts, num_g_per_q)
-        save_thc_factors(chkfile_name, chi, zeta, gpq_map)
+        chi_out, zeta_out = unpack_thc_factors(params, num_thc, num_orb, num_kpts, num_g_per_q)
+        save_thc_factors(
+            chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map
+        )
     return np.array(params), loss
 
 
@@ -532,12 +532,12 @@ def lbfgsb_opt_kpthc_l2reg_batched(
     momentum_map: npt.NDArray,
     gpq_map: npt.NDArray,
     chol: npt.NDArray,
-    chkfile_name: Union[str, None] = None,
+    chkfile_name: str | None = None,
     maxiter: int = 150_000,
     disp_freq: int = 98,
-    penalty_param: Union[float, None] = None,
-    batch_size: Union[int, None] = None,
-) -> Tuple[npt.NDArray, float]:
+    penalty_param: float | None = None,
+    batch_size: int | None = None,
+) -> tuple[npt.NDArray, float]:
     """Least-squares fit of two-electron integral tensors with  L-BFGS-B.
 
     Uses l2-regularization of lambda. This version batches over multiple
@@ -663,8 +663,10 @@ def lbfgsb_opt_kpthc_l2reg_batched(
     params = np.array(res.x)
     if chkfile_name is not None:
         num_g_per_q = [len(np.unique(gq)) for gq in gpq_map]
-        chi, zeta = unpack_thc_factors(params, num_thc, num_orb, num_kpts, num_g_per_q)
-        save_thc_factors(chkfile_name, chi, zeta, gpq_map)
+        chi_out, zeta_out = unpack_thc_factors(params, num_thc, num_orb, num_kpts, num_g_per_q)
+        save_thc_factors(
+            chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map
+        )
     return np.array(params), loss
 
 
@@ -680,7 +682,7 @@ def adagrad_opt_kpthc_batched(
     momentum=0.9,
     maxiter=50_000,
     gtol=1.0e-5,
-) -> Tuple[npt.NDArray, float]:
+) -> tuple[npt.NDArray, float]:
     """Adagrad optimization of THC factors.
 
     THC optimization usually starts with BFGS and then is completed with Adagrad
@@ -756,8 +758,10 @@ def adagrad_opt_kpthc_batched(
     )
     if chkfile_name is not None:
         num_g_per_q = [len(np.unique(GQ)) for GQ in gpq_map]
-        chi, zeta = unpack_thc_factors(x, num_thc, num_orb, num_kpts, num_g_per_q)
-        save_thc_factors(chkfile_name, chi, zeta, gpq_map)
+        chi_out, zeta_out = unpack_thc_factors(x, num_thc, num_orb, num_kpts, num_g_per_q)
+        save_thc_factors(
+            chkfile_name, np.asarray(chi_out), np.array(zeta_out, dtype=object), gpq_map
+        )
     return params, loss
 
 
@@ -836,13 +840,13 @@ def kpoint_thc_via_isdf(
     checkpoint_basename: str = "thc",
     save_checkpoints: bool = False,
     use_batched_algos: bool = True,
-    penalty_param: Union[None, float] = None,
-    batch_size: Union[None, bool] = None,
+    penalty_param: float | None = None,
+    batch_size: int | None = None,
     max_kmeans_iteration: int = 500,
     verbose: bool = False,
-    initial_guess: Union[None, KPointTHC] = None,
+    initial_guess: KPointTHC | None = None,
     isdf_density_guess: bool = False,
-) -> Tuple[KPointTHC, dict]:
+) -> tuple[KPointTHC, dict]:
     """
     Solve k-point THC using ISDF as an initial guess.
 
@@ -897,8 +901,7 @@ def kpoint_thc_via_isdf(
     num_kpts = len(kmf.kpts)
     chi, zeta, g_mapping = kpt_thc.chi, kpt_thc.zeta, kpt_thc.g_mapping
     if save_checkpoints:
-        chkfile_name = f"{checkpoint_basename}_isdf.h5"
-        save_thc_factors(chkfile_name, chi, zeta, g_mapping, kpt_thc.xi)
+        save_thc_factors(f"{checkpoint_basename}_isdf.h5", chi, zeta, g_mapping, kpt_thc.xi)
     momentum_map = build_momentum_transfer_mapping(kmf.cell, kmf.kpts)
     if cholesky is not None:
         cholesky_contiguous = make_contiguous_cholesky(cholesky)
@@ -907,10 +910,7 @@ def kpoint_thc_via_isdf(
         )
     start = time.time()
     if perform_bfgs_opt:
-        if save_checkpoints:
-            chkfile_name = f"{checkpoint_basename}_bfgs.h5"
-        else:
-            chkfile_name = None
+        bfgs_chkfile: str | None = f"{checkpoint_basename}_bfgs.h5" if save_checkpoints else None
         if use_batched_algos:
             opt_params, loss_bfgs = lbfgsb_opt_kpthc_l2reg_batched(
                 chi,
@@ -918,7 +918,7 @@ def kpoint_thc_via_isdf(
                 momentum_map,
                 g_mapping,
                 cholesky_contiguous,
-                chkfile_name=chkfile_name,
+                chkfile_name=bfgs_chkfile,
                 maxiter=bfgs_maxiter,
                 penalty_param=penalty_param,
                 batch_size=batch_size,
@@ -932,23 +932,25 @@ def kpoint_thc_via_isdf(
                 momentum_map,
                 g_mapping,
                 cholesky_contiguous,
-                chkfile_name=chkfile_name,
+                chkfile_name=bfgs_chkfile,
                 maxiter=bfgs_maxiter,
                 penalty_param=penalty_param,
                 disp_freq=(98 if verbose else -1),
             )
             info["loss_bfgs"] = loss_bfgs
         num_g_per_q = [len(np.unique(GQ)) for GQ in g_mapping]
-        chi, zeta = unpack_thc_factors(opt_params, num_thc, num_mo, num_kpts, num_g_per_q)
+        chi_packed, zeta_list = unpack_thc_factors(
+            opt_params, num_thc, num_mo, num_kpts, num_g_per_q
+        )
+        chi = np.asarray(chi_packed)
+        zeta = np.array(zeta_list, dtype=object)
     if verbose:
         print("Time for BFGS {:.4f}".format(time.time() - start))
     start = time.time()
-    opt_params = ()
     if perform_adagrad_opt:
-        if save_checkpoints:
-            chkfile_name = f"{checkpoint_basename}_adagrad.h5"
-        else:
-            chkfile_name = None
+        adagrad_chkfile: str | None = (
+            f"{checkpoint_basename}_adagrad.h5" if save_checkpoints else None
+        )
         if use_batched_algos:
             opt_params, loss_ada = adagrad_opt_kpthc_batched(
                 chi,
@@ -956,13 +958,17 @@ def kpoint_thc_via_isdf(
                 momentum_map,
                 g_mapping,
                 cholesky_contiguous,
-                chkfile_name=chkfile_name,
+                chkfile_name=adagrad_chkfile,
                 maxiter=adagrad_maxiter,
                 batch_size=batch_size,
             )
             info["loss_adagrad"] = loss_ada
-        num_g_per_q = [len(np.unique(GQ)) for GQ in g_mapping]
-        chi, zeta = unpack_thc_factors(opt_params, num_thc, num_mo, num_kpts, num_g_per_q)
+            num_g_per_q = [len(np.unique(GQ)) for GQ in g_mapping]
+            chi_packed, zeta_list = unpack_thc_factors(
+                opt_params, num_thc, num_mo, num_kpts, num_g_per_q
+            )
+            chi = np.asarray(chi_packed)
+            zeta = np.array(zeta_list, dtype=object)
     if verbose:
         print("Time for ADAGRAD {:.4f}".format(time.time() - start))
     result = KPointTHC(chi=chi, zeta=zeta, g_mapping=g_mapping, xi=kpt_thc.xi)

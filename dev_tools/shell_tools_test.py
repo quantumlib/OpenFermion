@@ -28,11 +28,13 @@ def only_on_posix(func: Callable) -> Optional[Callable]:
 
 
 def run_cmd(*args: Any, **kwargs: Any) -> shell_tools.CommandOutput:
-    return shell_tools.run_cmd(*args, log_run_to_stderr=False, **kwargs)
+    kwargs['log_run_to_stderr'] = False
+    return shell_tools.run_cmd(*args, **kwargs)
 
 
 def run_shell(*args: Any, **kwargs: Any) -> shell_tools.CommandOutput:
-    return shell_tools.run_shell(*args, log_run_to_stderr=False, **kwargs)
+    kwargs['log_run_to_stderr'] = False
+    return shell_tools.run_shell(*args, **kwargs)
 
 
 @only_on_posix

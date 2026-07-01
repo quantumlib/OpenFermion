@@ -62,7 +62,7 @@ def check_isdf_solution(
     lhs = np.einsum("Ri,Rj->Rij", orbitals.conj(), orbitals, optimize=True)
     rhs = np.einsum("mi,mj->mij", interp_orbitals.conj(), interp_orbitals, optimize=True)
     lhs_check = np.einsum("Rm,mij->Rij", xi, rhs, optimize=True)
-    return np.linalg.norm(lhs - lhs_check)
+    return float(np.linalg.norm(lhs - lhs_check))
 
 
 def solve_isdf(orbitals: npt.NDArray, interp_indx: npt.NDArray) -> tuple[npt.NDArray, npt.NDArray]:

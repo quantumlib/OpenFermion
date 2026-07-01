@@ -70,12 +70,12 @@ class KMeansCVT:
         r"""
         Centroids are defined via:
 
-        .. math::
+        $$
+        c(C_\mu) = \frac{\sum_{j in C(\mu)} r_j \rho(r_j)}{\sum_{j in
+            C(\mu)} \rho(r_j)},
+        $$
 
-            c(C_\mu) = \frac{\sum_{j in C(\mu)} r_j \rho(r_j)}{\sum_{j in
-                C(\mu)} \rho(r_j)},
-
-        where :math:`\rho(r_j)` is the weighting factor.
+        where $\rho(r_j)$ is the weighting factor.
 
         Args:
             weighting: Weighting function.

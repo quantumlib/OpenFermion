@@ -11,13 +11,13 @@
 #   limitations under the License.
 """A Trotter algorithm using the "fermionic simulation gate"."""
 
-from typing import cast, Optional, Sequence, Tuple
+from typing import cast, Iterator, Optional, Sequence, Tuple
 
 import cirq
 
 from openfermion.circuits.gates import Ryxxy, Rxxyy, CRyxxy, CRxxyy, rot111, rot11
 from openfermion.ops import DiagonalCoulombHamiltonian
-from openfermion.circuits.primitives import swap_network
+from openfermion.circuits.primitives.swap_network import swap_network
 from openfermion.circuits.trotter.trotter_algorithm import (
     Hamiltonian,
     TrotterStep,
@@ -38,73 +38,84 @@ class LinearSwapNetworkTrotterAlgorithm(TrotterAlgorithm):
     supported_types = {DiagonalCoulombHamiltonian}
 
     def symmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
-        return SymmetricLinearSwapNetworkTrotterStep(hamiltonian)
+        dc_hamiltonian = cast(DiagonalCoulombHamiltonian, hamiltonian)
+        return SymmetricLinearSwapNetworkTrotterStep(dc_hamiltonian)
 
     def asymmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
-        return AsymmetricLinearSwapNetworkTrotterStep(hamiltonian)
+        dc_hamiltonian = cast(DiagonalCoulombHamiltonian, hamiltonian)
+        return AsymmetricLinearSwapNetworkTrotterStep(dc_hamiltonian)
 
     def controlled_symmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
-        return ControlledSymmetricLinearSwapNetworkTrotterStep(hamiltonian)
+        dc_hamiltonian = cast(DiagonalCoulombHamiltonian, hamiltonian)
+        return ControlledSymmetricLinearSwapNetworkTrotterStep(dc_hamiltonian)
 
     def controlled_asymmetric(self, hamiltonian: Hamiltonian) -> Optional[TrotterStep]:
-        return ControlledAsymmetricLinearSwapNetworkTrotterStep(hamiltonian)
+        dc_hamiltonian = cast(DiagonalCoulombHamiltonian, hamiltonian)
+        return ControlledAsymmetricLinearSwapNetworkTrotterStep(dc_hamiltonian)
 
 
 LINEAR_SWAP_NETWORK = LinearSwapNetworkTrotterAlgorithm()
 
 
-class SymmetricLinearSwapNetworkTrotterStep(TrotterStep):
+class LinearSwapNetworkTrotterStep(TrotterStep):
+    def __init__(self, hamiltonian: DiagonalCoulombHamiltonian) -> None:
+        super().__init__(hamiltonian)
+
+
+class SymmetricLinearSwapNetworkTrotterStep(LinearSwapNetworkTrotterStep):
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         n_qubits = len(qubits)
+        dc_hamiltonian = cast(DiagonalCoulombHamiltonian, self.hamiltonian)
 
         # Apply one- and two-body interactions for half of the full time
-        def one_and_two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield Rxxyy(0.5 * self.hamiltonian.one_body[p, q].real * time).on(a, b)
-            yield Ryxxy(0.5 * self.hamiltonian.one_body[p, q].imag * time).on(a, b)
-            yield rot11(rads=-self.hamiltonian.two_body[p, q] * time).on(a, b)
+        def one_and_two_body_interaction(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield Rxxyy(0.5 * dc_hamiltonian.one_body[p, q].real * time).on(a, b)
+            yield Ryxxy(0.5 * dc_hamiltonian.one_body[p, q].imag * time).on(a, b)
+            yield rot11(rads=float(-dc_hamiltonian.two_body[p, q] * time)).on(a, b)
 
         yield swap_network(qubits, one_and_two_body_interaction, fermionic=True)
         qubits = qubits[::-1]
 
         # Apply one-body potential for the full time
         yield (
-            cirq.rz(rads=-self.hamiltonian.one_body[i, i].real * time).on(qubits[i])
+            cirq.rz(rads=-dc_hamiltonian.one_body[i, i].real * time).on(qubits[i])
             for i in range(n_qubits)
         )
 
         # Apply one- and two-body interactions for half of the full time
         # This time, reorder the operations so that the entire Trotter step is
         # symmetric
-        def one_and_two_body_interaction_reverse_order(p, q, a, b) -> cirq.OP_TREE:
-            yield rot11(rads=-self.hamiltonian.two_body[p, q] * time).on(a, b)
-            yield Ryxxy(0.5 * self.hamiltonian.one_body[p, q].imag * time).on(a, b)
-            yield Rxxyy(0.5 * self.hamiltonian.one_body[p, q].real * time).on(a, b)
+        def one_and_two_body_interaction_reverse_order(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield rot11(rads=float(-dc_hamiltonian.two_body[p, q] * time)).on(a, b)
+            yield Ryxxy(0.5 * dc_hamiltonian.one_body[p, q].imag * time).on(a, b)
+            yield Rxxyy(0.5 * dc_hamiltonian.one_body[p, q].real * time).on(a, b)
 
         yield swap_network(
             qubits, one_and_two_body_interaction_reverse_order, fermionic=True, offset=True
         )
 
 
-class ControlledSymmetricLinearSwapNetworkTrotterStep(TrotterStep):
+class ControlledSymmetricLinearSwapNetworkTrotterStep(LinearSwapNetworkTrotterStep):
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         n_qubits = len(qubits)
+        dc_hamiltonian = cast(DiagonalCoulombHamiltonian, self.hamiltonian)
 
         if not isinstance(control_qubit, cirq.Qid):
             raise TypeError('Control qudit must be specified.')
 
         # Apply one- and two-body interactions for half of the full time
-        def one_and_two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield CRxxyy(0.5 * self.hamiltonian.one_body[p, q].real * time).on(
+        def one_and_two_body_interaction(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield CRxxyy(0.5 * dc_hamiltonian.one_body[p, q].real * time).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
-            yield CRyxxy(0.5 * self.hamiltonian.one_body[p, q].imag * time).on(
+            yield CRyxxy(0.5 * dc_hamiltonian.one_body[p, q].imag * time).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
-            yield rot111(-self.hamiltonian.two_body[p, q] * time).on(
+            yield rot111(rads=float(-dc_hamiltonian.two_body[p, q] * time)).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
 
@@ -113,21 +124,21 @@ class ControlledSymmetricLinearSwapNetworkTrotterStep(TrotterStep):
 
         # Apply one-body potential for the full time
         yield (
-            rot11(rads=-self.hamiltonian.one_body[i, i].real * time).on(control_qubit, qubits[i])
+            rot11(rads=-dc_hamiltonian.one_body[i, i].real * time).on(control_qubit, qubits[i])
             for i in range(n_qubits)
         )
 
         # Apply one- and two-body interactions for half of the full time
         # This time, reorder the operations so that the entire Trotter step is
         # symmetric
-        def one_and_two_body_interaction_reverse_order(p, q, a, b) -> cirq.OP_TREE:
-            yield rot111(-self.hamiltonian.two_body[p, q] * time).on(
+        def one_and_two_body_interaction_reverse_order(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield rot111(rads=float(-dc_hamiltonian.two_body[p, q] * time)).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
-            yield CRyxxy(0.5 * self.hamiltonian.one_body[p, q].imag * time).on(
+            yield CRyxxy(0.5 * dc_hamiltonian.one_body[p, q].imag * time).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
-            yield CRxxyy(0.5 * self.hamiltonian.one_body[p, q].real * time).on(
+            yield CRxxyy(0.5 * dc_hamiltonian.one_body[p, q].real * time).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
 
@@ -136,27 +147,28 @@ class ControlledSymmetricLinearSwapNetworkTrotterStep(TrotterStep):
         )
 
         # Apply phase from constant term
-        yield cirq.rz(rads=-self.hamiltonian.constant * time).on(control_qubit)
+        yield cirq.rz(rads=-dc_hamiltonian.constant * time).on(control_qubit)
 
 
-class AsymmetricLinearSwapNetworkTrotterStep(TrotterStep):
+class AsymmetricLinearSwapNetworkTrotterStep(LinearSwapNetworkTrotterStep):
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         n_qubits = len(qubits)
+        dc_hamiltonian = cast(DiagonalCoulombHamiltonian, self.hamiltonian)
 
         # Apply one- and two-body interactions for the full time
-        def one_and_two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield Rxxyy(self.hamiltonian.one_body[p, q].real * time).on(a, b)
-            yield Ryxxy(self.hamiltonian.one_body[p, q].imag * time).on(a, b)
-            yield rot11(rads=-2 * self.hamiltonian.two_body[p, q] * time).on(a, b)
+        def one_and_two_body_interaction(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield Rxxyy(dc_hamiltonian.one_body[p, q].real * time).on(a, b)
+            yield Ryxxy(dc_hamiltonian.one_body[p, q].imag * time).on(a, b)
+            yield rot11(rads=float(-2 * dc_hamiltonian.two_body[p, q] * time)).on(a, b)
 
         yield swap_network(qubits, one_and_two_body_interaction, fermionic=True)
         qubits = qubits[::-1]
 
         # Apply one-body potential for the full time
         yield (
-            cirq.rz(rads=-self.hamiltonian.one_body[i, i].real * time).on(qubits[i])
+            cirq.rz(rads=-dc_hamiltonian.one_body[i, i].real * time).on(qubits[i])
             for i in range(n_qubits)
         )
 
@@ -172,30 +184,31 @@ class AsymmetricLinearSwapNetworkTrotterStep(TrotterStep):
         n_steps: int,
         control_qubit: Optional[cirq.Qid] = None,
         omit_final_swaps: bool = False,
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         # If the number of Trotter steps is odd, possibly swap qubits back
         if n_steps & 1 and not omit_final_swaps:
             yield swap_network(qubits, fermionic=True)
 
 
-class ControlledAsymmetricLinearSwapNetworkTrotterStep(TrotterStep):
+class ControlledAsymmetricLinearSwapNetworkTrotterStep(LinearSwapNetworkTrotterStep):
     def trotter_step(
         self, qubits: Sequence[cirq.Qid], time: float, control_qubit: Optional[cirq.Qid] = None
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         n_qubits = len(qubits)
+        dc_hamiltonian = cast(DiagonalCoulombHamiltonian, self.hamiltonian)
 
         if not isinstance(control_qubit, cirq.Qid):
             raise TypeError('Control qudit must be specified.')
 
         # Apply one- and two-body interactions for the full time
-        def one_and_two_body_interaction(p, q, a, b) -> cirq.OP_TREE:
-            yield CRxxyy(self.hamiltonian.one_body[p, q].real * time).on(
+        def one_and_two_body_interaction(p, q, a, b) -> Iterator[cirq.OP_TREE]:
+            yield CRxxyy(dc_hamiltonian.one_body[p, q].real * time).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
-            yield CRyxxy(self.hamiltonian.one_body[p, q].imag * time).on(
+            yield CRyxxy(dc_hamiltonian.one_body[p, q].imag * time).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
-            yield rot111(-2 * self.hamiltonian.two_body[p, q] * time).on(
+            yield rot111(rads=float(-2 * dc_hamiltonian.two_body[p, q] * time)).on(
                 cast(cirq.Qid, control_qubit), a, b
             )
 
@@ -204,12 +217,12 @@ class ControlledAsymmetricLinearSwapNetworkTrotterStep(TrotterStep):
 
         # Apply one-body potential for the full time
         yield (
-            rot11(rads=-self.hamiltonian.one_body[i, i].real * time).on(control_qubit, qubits[i])
+            rot11(rads=-dc_hamiltonian.one_body[i, i].real * time).on(control_qubit, qubits[i])
             for i in range(n_qubits)
         )
 
         # Apply phase from constant term
-        yield cirq.rz(rads=-self.hamiltonian.constant * time).on(control_qubit)
+        yield cirq.rz(rads=-dc_hamiltonian.constant * time).on(control_qubit)
 
     def step_qubit_permutation(
         self, qubits: Sequence[cirq.Qid], control_qubit: Optional[cirq.Qid] = None
@@ -223,7 +236,7 @@ class ControlledAsymmetricLinearSwapNetworkTrotterStep(TrotterStep):
         n_steps: int,
         control_qubit: Optional[cirq.Qid] = None,
         omit_final_swaps: bool = False,
-    ) -> cirq.OP_TREE:
+    ) -> Iterator[cirq.OP_TREE]:
         # If the number of Trotter steps is odd, possibly swap qubits back
         if n_steps & 1 and not omit_final_swaps:
             yield swap_network(qubits, fermionic=True)
