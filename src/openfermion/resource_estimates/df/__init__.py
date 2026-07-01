@@ -18,5 +18,6 @@ from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from .compute_cost_df import compute_cost
     from .compute_lambda_df import compute_lambda
+    from .compute_lambda_df_with_bliss import compute_lambda_df_with_bliss_post_processing
     from .factorize_df import factorize
     from .generate_costing_table_df import generate_costing_table
