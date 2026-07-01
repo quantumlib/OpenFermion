@@ -6,6 +6,10 @@ from openfermion.ops.representations import InteractionOperator
 def make_reduced_hamiltonian(
     molecular_hamiltonian: InteractionOperator, n_electrons: int
 ) -> InteractionOperator:
+    if n_electrons < 2:
+        raise ValueError(
+            'n_electrons must be at least 2 to avoid division by zero.'
+        )
     r"""
     Construct the reduced Hamiltonian.
 
