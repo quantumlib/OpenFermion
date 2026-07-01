@@ -407,7 +407,7 @@ def test_kpoint_isdf_symmetries():
     assert np.allclose(kpts[ik_prime] - kpts[ik_prime_minus_q] - kpts[iq], delta_Gs[iq][iGsr])
     # (pk qk-Q | rk'-Q sk') = (q k-Q p k | sk' rk'-Q)*
     ik_prime_minus_q = momentum_map[iq, ik_prime]
-    # uncomment to check normal eris
+    # uncomment to check eris
     # kpt_pqrs = [ik, ik_minus_q, ik_prime_minus_q, ik_prime]
     # eri_pqrs = build_eri(mf, kpt_pqrs)
     # kpt_pqrs = [ik, ik_minus_q, ik_prime_minus_q, ik_prime]
@@ -435,7 +435,7 @@ def test_kpoint_isdf_symmetries():
     )
     assert np.allclose(zeta_ref, zeta_test.conj())
     # (pk qk-Q | rk'-Q sk') = (rk'-Q s k'| pk qk-Q)
-    # uncomment to check normal eris
+    # uncomment to check eris
     # kpt_pqrs = [ik_prime_minus_q, ik_prime, ik, ik_minus_q]
     # eri_rspq = build_eri(mf, kpt_pqrs).transpose((2, 3, 0, 1))
     # assert np.allclose(eri_pqrs, eri_rspq)
@@ -444,7 +444,7 @@ def test_kpoint_isdf_symmetries():
     zeta_test = kpt_thc.zeta[minus_iq][iGsr_comp, iGpq_comp]
     assert np.allclose(zeta_ref, zeta_test.T)
     # (pk qk-Q | rk'-Q sk') = (sk' r k'-Q| qk-Q pk)
-    # uncomment to check normal eris
+    # uncomment to check eris
     # kpt_pqrs = [ik_prime, ik_prime_minus_q, ik_minus_q, ik]
     # eri_srqp = build_eri(mf, kpt_pqrs).transpose((3, 2, 1, 0))
     # assert np.allclose(eri_pqrs, eri_srqp.conj())

@@ -43,7 +43,7 @@ cd "${repo_dir}"
 
 mkdir -p dev_tools/requirements/envs dev_tools/requirements/max_compat
 
-# ~~~~ Generate normal requirements files ~~~~
+# ~~~~ Generate basic requirements files ~~~~
 
 uv pip compile "$@" \
     -o dev_tools/requirements/envs/dev.env.txt \

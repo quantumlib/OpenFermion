@@ -114,7 +114,7 @@ def swap_network(
             representing either qubits or fermionic modes, and p_qubit and
             q_qubit are the qubits which are currently storing those modes.
         fermionic: If True, use fermionic swaps under the JWT (that is, swap
-            fermionic modes instead of qubits). If False, use normal qubit
+            fermionic modes instead of qubits). If False, use ordinary qubit
             swaps.
         offset: If True, then qubit 0 will participate in odd-numbered layers
             instead of even-numbered layers.

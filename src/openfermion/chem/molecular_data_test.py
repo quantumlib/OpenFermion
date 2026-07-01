@@ -155,12 +155,12 @@ class MolecularDataTest(unittest.TestCase):
         self.assertEqual(self.molecule.n_atoms, n_atoms + 1)
         self.molecule.load()
         self.assertEqual(self.molecule.n_atoms, n_atoms)
-        dummy_data = self.molecule.get_from_file("dummy_entry")
-        self.assertTrue(dummy_data is None)
+        placeholder_data = self.molecule.get_from_file("placeholder_entry")
+        self.assertTrue(placeholder_data is None)
 
-    def test_dummy_save(self):
+    def test_placeholder_save(self):
         # Make fake molecule.
-        filename = os.path.join(self.test_dir, 'dummy_molecule')
+        filename = os.path.join(self.test_dir, 'placeholder_molecule')
         geometry = [('H', (0.0, 0.0, 0.0)), ('H', (0.0, 0.0, 0.7414))]
         basis = '6-31g*'
         multiplicity = 7

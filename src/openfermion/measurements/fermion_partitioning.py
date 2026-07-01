@@ -252,11 +252,11 @@ def pair_within_simultaneously(labels: list[T]) -> Generator[Pairing[T], None, N
 
     for partition in _gen_partitions(labels):
         generator_list = [_loop_iterator(pair_within, partition[j]) for j in range(len(partition))]
-        for dummy1 in range(len(partition[-2]) - 1 + len(partition[-2]) % 2):
+        for _unused1 in range(len(partition[-2]) - 1 + len(partition[-2]) % 2):
             pairing: Pairing[T] = ()
             for generator in generator_list[::2]:
                 pairing = pairing + next(generator)[0]
-            for dummy2 in range(len(partition[-1]) - 1 + len(partition[-1]) % 2):
+            for _unused2 in range(len(partition[-1]) - 1 + len(partition[-1]) % 2):
                 pairing2 = tuple(pairing)
                 for generator in generator_list[1::2]:
                     pairing2 = pairing2 + next(generator)[0]
