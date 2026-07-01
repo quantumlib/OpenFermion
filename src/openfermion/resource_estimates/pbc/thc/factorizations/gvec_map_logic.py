@@ -12,12 +12,12 @@
 #   limitations under the License.
 """Module for testing how to map k-points between each other.
 
-Reciprocal lattice vectors (G_{pqr}) are defined as linear combinations of
-underlying primitive vectors {b_i} via
+Reciprocal lattice vectors ($G_{\mathrm{pqr}}$) are defined as linear combinations of
+underlying primitive vectors ${b_i}$ via
 
-.. math::
-
-    G_{pqr} = p b_1 + q b_2 + r b_3 (*)
+$$
+G_{pqr} = p b_1 + q b_2 + r b_3 (*)
+$$
 
 For quantum algorithms it is convenient to work with the underlying integer
 representation of reciprocal lattice vectors (pqr) (G-vectors or gvecs) rather
