@@ -12,48 +12,35 @@
 
 # Dockerfile for OpenFermion, Cirq, and select plugins.
 
-FROM ubuntu
+FROM ubuntu:22.04
 
-USER root
+WORKDIR /root/workspace
+COPY . /root/workspace
 
-RUN apt-get update
+# Set PATH for miniforge
+ENV PATH="/root/conda/bin:${PATH}"
 
-# Install utilities
-RUN apt-get install -y bzip2
-RUN apt-get install -y cmake
-RUN apt-get install -y git
-RUN apt-get install -y wget
-RUN apt-get install -y libblas-dev
-RUN apt-get install -y liblapack-dev
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git=1:2.34.1-1ubuntu1.15 \
+    wget=1.21.2-2ubuntu1.1 \
+    libblas-dev=3.10.0-2ubuntu1 \
+    liblapack-dev=3.10.0-2ubuntu1 \
+    # in order to verify github's certificate
+    ca-certificates=20240203~22.04.1 \
+    build-essential=12.9ubuntu3 && \
+    # delete the apt-get lists after the installation
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install Python 3
-RUN apt-get install -y python3
+# Install miniforge https://github.com/conda-forge/miniforge?tab=readme-ov-file#as-part-of-a-ci-pipeline
+RUN wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/25.3.1-0/Miniforge3-25.3.1-0-$(uname)-$(uname -m).sh" && \
+    bash Miniforge3.sh -b -p "${HOME}/conda" && \
+    rm Miniforge3.sh && \
+    conda init bash && \
+    # Create virtual env (fermion) with installing Psi4
+    conda create -n fermion psi4==1.10 python=3.12 -c conda-forge -y && \
+    # Install OpenFermion and plugins
+    conda install -n fermion -c conda-forge openfermion==1.7.1 openfermionpsi4==0.5 openfermionpyscf==0.5 -y
 
-# Install pip.
-RUN apt-get install -y python3-pip
-
-# Install Psi4.
-RUN cd /root; wget http://vergil.chemistry.gatech.edu/psicode-download/psi4conda-1.2.1-py36-Linux-x86_64.sh
-RUN echo '/root/psi4conda' | bash /root/psi4conda-1.2.1-py36-Linux-x86_64.sh
-RUN rm /root/psi4conda-1.2.1-py36-Linux-x86_64.sh
-RUN export PATH=/root/psi4conda/bin:$PATH
-
-# Install PySCF.
-RUN cd /root; git clone https://github.com/sunqm/pyscf
-RUN cd /root/pyscf/pyscf/lib; mkdir build; cd build; cmake ..; make
-
-# Install OpenFermion, Cirq, and plugins.
-RUN pip3 install openfermion
-RUN pip3 install cirq
-RUN pip3 install openfermioncirq
-RUN pip3 install openfermionpsi4
-RUN pip3 install openfermionpyscf
-
-# Update paths
-RUN export PATH=/root/psi4conda/bin:$PATH
-RUN export PYTHONPATH=/root/pyscf:$PYTHONPATH
-
-# Make python point to python3
-RUN ln -s /usr/bin/python3 /usr/bin/python
-
-ENTRYPOINT bash
+# Activate venv (fermion)
+RUN echo "conda activate fermion" >> ~/.bashrc
