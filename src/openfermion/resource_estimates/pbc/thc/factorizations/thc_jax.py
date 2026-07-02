@@ -213,7 +213,7 @@ def compute_objective_batched(
     lambda_z = jnp.sum(jnp.einsum("jpq->j", 0.5 * jnp.abs(mpq_normalized)) ** 2.0)
 
     res = 0.5 * jnp.sum((jnp.abs(deri)) ** 2) + penalty_param * lambda_z
-    return float(res)
+    return res
 
 
 def prepare_batched_data_indx_arrays(
