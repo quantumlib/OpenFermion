@@ -124,9 +124,17 @@ class DoubleExcitationGate(cirq.EigenGate):
             # Split up this string to avoid SyntaxError in Python 3.12.
             down_up = r'\/ /' + '\\'
             wire_symbols = (up_down, up_down, down_up, down_up)
-        return cirq.CircuitDiagramInfo(
-            wire_symbols=wire_symbols, exponent=self._diagram_exponent(args)
-        )
+
+        exponent = self._diagram_exponent(args)
+        if isinstance(exponent, (int, float)):
+            # Canonicalize rounded exponent into (-1, 1] range (DoubleExcitation has period 2)
+            h = 1.0
+            if not (-h < exponent <= h):
+                exponent = h - exponent
+                exponent %= 2.0
+                exponent = h - exponent
+
+        return cirq.CircuitDiagramInfo(wire_symbols=wire_symbols, exponent=exponent)
 
     def __repr__(self):
         if self.exponent == 1:
