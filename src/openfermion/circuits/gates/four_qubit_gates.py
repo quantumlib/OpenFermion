@@ -126,13 +126,9 @@ class DoubleExcitationGate(cirq.EigenGate):
             wire_symbols = (up_down, up_down, down_up, down_up)
 
         exponent = self._diagram_exponent(args)
-        if isinstance(exponent, (int, float)):
+        if isinstance(exponent, (int, float, np.integer, np.floating)):
             # Canonicalize rounded exponent into (-1, 1] range (DoubleExcitation has period 2)
-            h = 1.0
-            if not (-h < exponent <= h):
-                exponent = h - exponent
-                exponent %= 2.0
-                exponent = h - exponent
+            exponent = 1.0 - (1.0 - exponent) % 2.0
 
         return cirq.CircuitDiagramInfo(wire_symbols=wire_symbols, exponent=exponent)
 
