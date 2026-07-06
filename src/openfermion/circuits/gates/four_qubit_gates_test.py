@@ -372,3 +372,28 @@ def test_double_excitation_matches_fermionic_evolution(exponent):
     time_evol_op = time_evol_op.todense()
 
     cirq.testing.assert_allclose_up_to_global_phase(cirq.unitary(gate), time_evol_op, atol=1e-7)
+
+
+def test_double_excitation_diagram_real_exponent_types():
+    import fractions
+    import sympy
+
+    # Test types that should be canonicalized (e.g. 2.3 -> 0.3)
+    exponents = [
+        2.3,
+        numpy.float64(2.3),
+        sympy.Float(2.3),
+        fractions.Fraction(23, 10),
+    ]
+    for exponent in exponents:
+        gate = openfermion.DoubleExcitationGate(exponent=exponent)
+        info = cirq.protocols.circuit_diagram_info(gate)
+        # 1.0 - (1.0 - 2.3) % 2.0 is 0.3
+        assert numpy.isclose(float(info.exponent), 0.3)
+
+    # Symbolic exponent should remain untouched
+    sym = sympy.Symbol('x')
+    gate = openfermion.DoubleExcitationGate(exponent=sym)
+    info = cirq.protocols.circuit_diagram_info(gate)
+    assert info.exponent == sym
+
