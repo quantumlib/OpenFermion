@@ -379,12 +379,7 @@ def test_double_excitation_diagram_real_exponent_types():
     import sympy
 
     # Test types that should be canonicalized (e.g. 2.3 -> 0.3)
-    exponents = [
-        2.3,
-        numpy.float64(2.3),
-        sympy.Float(2.3),
-        fractions.Fraction(23, 10),
-    ]
+    exponents = [2.3, numpy.float64(2.3), sympy.Float(2.3), fractions.Fraction(23, 10)]
     for exponent in exponents:
         gate = openfermion.DoubleExcitationGate(exponent=exponent)
         info = cirq.protocols.circuit_diagram_info(gate)
@@ -396,4 +391,3 @@ def test_double_excitation_diagram_real_exponent_types():
     gate = openfermion.DoubleExcitationGate(exponent=sym)
     info = cirq.protocols.circuit_diagram_info(gate)
     assert info.exponent == sym
-
