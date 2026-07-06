@@ -13,6 +13,7 @@
 
 from typing import Optional, Union
 
+import numbers
 import numpy as np
 import sympy
 
@@ -126,9 +127,9 @@ class DoubleExcitationGate(cirq.EigenGate):
             wire_symbols = (up_down, up_down, down_up, down_up)
 
         exponent = self._diagram_exponent(args)
-        if isinstance(exponent, (int, float, np.integer, np.floating)):
+        if isinstance(exponent, numbers.Real):
             # Canonicalize rounded exponent into (-1, 1] range (DoubleExcitation has period 2)
-            exponent = 1.0 - (1.0 - exponent) % 2.0
+            exponent = 1.0 - (1.0 - float(exponent)) % 2.0
 
         return cirq.CircuitDiagramInfo(wire_symbols=wire_symbols, exponent=exponent)
 
