@@ -138,3 +138,28 @@ class SetThreadpoolLimitsTest(unittest.TestCase):
                 mock_threadpoolctl.threadpool_limits.assert_not_called()
                 with self.assertRaises(StopIteration):
                     next(gen)
+
+
+class SetThreadingLimitsTest(unittest.TestCase):
+
+    def test_set_threading_limits(self):
+        from openfermion.config import set_threading_limits
+        from unittest.mock import patch
+
+        # Clean/mocked environment dictionary.
+        env = {}
+        with patch.dict(os.environ, env, clear=True):
+            with patch("openfermion.config.get_available_cpu_count", return_value=8):
+                set_threading_limits()
+                self.assertEqual(os.environ.get("MKL_NUM_THREADS"), "7")
+                self.assertEqual(os.environ.get("OMP_NUM_THREADS"), "7")
+                self.assertEqual(os.environ.get("OPENBLAS_NUM_THREADS"), "7")
+
+        # Test respecting existing values.
+        env = {"OMP_NUM_THREADS": "3"}
+        with patch.dict(os.environ, env, clear=True):
+            with patch("openfermion.config.get_available_cpu_count", return_value=8):
+                set_threading_limits()
+                self.assertEqual(os.environ.get("MKL_NUM_THREADS"), "7")
+                self.assertEqual(os.environ.get("OMP_NUM_THREADS"), "3")  # Respected!
+                self.assertEqual(os.environ.get("OPENBLAS_NUM_THREADS"), "7")
