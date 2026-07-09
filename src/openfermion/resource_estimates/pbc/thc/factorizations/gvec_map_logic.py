@@ -10,7 +10,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Module for testing how to map k-points between each other.
+r"""Module for testing how to map k-points between each other.
 
 Reciprocal lattice vectors ($G_{\mathrm{pqr}}$) are defined as linear combinations of
 underlying primitive vectors ${b_i}$ via
