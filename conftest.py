@@ -1,3 +1,4 @@
+# pylint: disable=wrong-import-position,wrong-import-order
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -11,16 +12,21 @@
 #   limitations under the License.
 
 import os
-import random
 import sys
-from typing import Any
-
-import numpy as np
-import pytest
 
 # Ensure src/ is in sys.path so that the OpenFermion utils module can be
 # imported at Pytest startup time.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src")))
+
+from openfermion.config import set_threading_limits
+
+set_threading_limits()
+
+import random
+from typing import Any
+
+import numpy as np
+import pytest
 
 
 def pytest_configure(config: Any) -> None:
