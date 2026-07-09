@@ -292,12 +292,14 @@ tests, follow these general principles:
 We use [pytest](https://docs.pytest.org) to run our tests and
 [pytest-cov](https://pytest-cov.readthedocs.io) to compute coverage.
 
-*   While developing, periodically check that changes do not break anything. For fast checks, use
-    `pytest -m "not slow" PATH`, where `PATH` is a directory or pytest file to test.
+*   While developing, periodically check that changes do not break anything. By default, pytest
+    skips tests marked `slow`; use `pytest PATH`, where `PATH` is a directory or pytest file to
+    test.
 
-*   After finishing a task, run `check/pytest` to test all of the OpenFermion code. If your system
-    has multiple processor cores, you can add the option `-n auto` to make pytest use multiple
-    parallel processes for a speed increase. (Beware, though, that this is resource-intensive.)
+*   After finishing a task, run `check/pytest --run-slow` to test all of the OpenFermion code. If
+    your system has multiple processor cores, you can add the option `-n auto` to make pytest use
+    multiple parallel processes for a speed increase. (Beware, though, that this is
+    resource-intensive.)
 
 We don't require 100% coverage, but coverage should be very high, and any uncovered code must be
 annotated with `# pragma: no cover`. To ignore coverage of a single line, place `# pragma: no cover`
@@ -311,7 +313,7 @@ After a task is finished, run each of the following to make sure everything pass
 *   `check/format-incremental` (and `check/format-incremental --apply` to auto-fix format problems)
 *   `check/pylint -j 0`
 *   `check/mypy`
-*   `check/pytest -n auto`
+*   `check/pytest -n auto --run-slow`
 *   `check/pytest-and-incremental-coverage`
 
 ### Pull requests and code reviews
