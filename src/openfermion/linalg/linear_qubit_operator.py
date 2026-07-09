@@ -20,7 +20,7 @@ import numpy.linalg
 import scipy.sparse
 import scipy.sparse.linalg
 
-from openfermion.utils.operator_utils import count_qubits
+from openfermion.utils.operator_utils import count_qubits, get_available_cpu_count
 
 
 class LinearQubitOperatorOptions:
@@ -35,7 +35,7 @@ class LinearQubitOperatorOptions:
         if processes <= 0:
             raise ValueError('Invalid number of processors specified {} <= 0'.format(processes))
 
-        self.processes = min(processes, multiprocessing.cpu_count())
+        self.processes = min(processes, get_available_cpu_count())
         self.pool = pool
 
     def get_processes(self, num):

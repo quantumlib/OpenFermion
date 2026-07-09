@@ -14,6 +14,7 @@ jax.config.update("jax_enable_x64", True)
 
 import jax.numpy as jnp
 from jax import jit, grad
+from openfermion.utils import get_available_cpu_count
 from .adagrad import adagrad
 from .thc_objectives import (
     thc_objective,
@@ -25,7 +26,7 @@ from .thc_objectives import (
 
 # set mkl thread count for numpy einsum/tensordot calls
 # leave one CPU un used  so we can still access this computer
-os.environ["MKL_NUM_THREADS"] = str(max((os.cpu_count() or 1) - 1, 1))
+os.environ["MKL_NUM_THREADS"] = str(max(get_available_cpu_count() - 1, 1))
 
 
 class CallBackStore:

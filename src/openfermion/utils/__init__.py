@@ -32,6 +32,7 @@ from .indexing import up_index, down_index, up_then_down
 
 from .operator_utils import (
     count_qubits,
+    get_available_cpu_count,
     get_file_path,
     hermitian_conjugated,
     is_hermitian,
