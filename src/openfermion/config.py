@@ -48,7 +48,6 @@ def get_available_cpu_count() -> int:
         try:
             worker_count = int(os.environ["PYTEST_XDIST_WORKER_COUNT"])
             if worker_count > 0:
-                # cpus = max(1, (cpus - 1) // worker_count)
                 cpus = max(1, cpus // worker_count)
         except ValueError:
             pass
