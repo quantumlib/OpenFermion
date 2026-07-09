@@ -25,7 +25,7 @@ from openfermion.linalg.linear_qubit_operator import (
     generate_linear_qubit_operator,
 )
 from openfermion.linalg.sparse_tools import qubit_operator_sparse
-from openfermion.utils import get_available_cpu_count
+from openfermion.config import get_available_cpu_count
 
 
 class LinearQubitOperatorOptionsTest(unittest.TestCase):

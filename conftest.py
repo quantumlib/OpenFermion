@@ -53,7 +53,7 @@ def set_threadpool_limits():
         return
 
     if "PYTEST_XDIST_WORKER_COUNT" in os.environ:
-        from openfermion.utils import get_available_cpu_count
+        from openfermion.config import get_available_cpu_count
 
         # Limit native library thread pools for this worker.
         with threadpoolctl.threadpool_limits(limits=get_available_cpu_count()):

@@ -24,3 +24,33 @@ COEFFICIENT_TYPES = (int, float, complex, numbers.Number)
 # Molecular data directory.
 THIS_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 DATA_DIRECTORY = os.path.realpath(os.path.join(THIS_DIRECTORY, 'testing/data'))
+
+
+def get_available_cpu_count() -> int:
+    """Returns the number of CPU cores available to the current process.
+
+    This function respects active CPU limits such as process affinity,
+    Docker container limits, and pytest-xdist worker distribution to
+    prevent oversubscription.
+    """
+    if hasattr(os, "process_cpu_count"):  # Python 3.13+
+        cpus = os.process_cpu_count() or 1
+    elif hasattr(os, "sched_getaffinity"):  # Unix/Linux
+        try:
+            cpus = len(os.sched_getaffinity(0))
+        except Exception:  # pylint: disable=broad-exception-caught
+            cpus = os.cpu_count() or 1
+    else:  # Fallback for older Python on Windows/macOS
+        cpus = os.cpu_count() or 1
+
+    # Divide by the number of active pytest-xdist workers.
+    if "PYTEST_XDIST_WORKER_COUNT" in os.environ:
+        try:
+            worker_count = int(os.environ["PYTEST_XDIST_WORKER_COUNT"])
+            if worker_count > 0:
+                # cpus = max(1, (cpus - 1) // worker_count)
+                cpus = max(1, cpus // worker_count)
+        except ValueError:
+            pass
+
+    return cpus
