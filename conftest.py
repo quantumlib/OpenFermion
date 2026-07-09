@@ -54,14 +54,8 @@ def set_threadpool_limits():
 
     if "PYTEST_XDIST_WORKER_COUNT" in os.environ:
         from openfermion.utils import get_available_cpu_count
-
-        try:
-            n_workers = max(1, int(os.environ["PYTEST_XDIST_WORKER_COUNT"]))
-        except ValueError:
-            n_workers = 1
-        max_threads_per_worker = max(1, get_available_cpu_count() // n_workers)
         # Limit native library thread pools for this worker.
-        with threadpoolctl.threadpool_limits(limits=max_threads_per_worker):
+        with threadpoolctl.threadpool_limits(limits=get_available_cpu_count()):
             yield
     else:
         yield
