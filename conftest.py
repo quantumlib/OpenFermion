@@ -36,3 +36,32 @@ def set_random_seed() -> None:
     """Set a fixed random seed when testing."""
     random.seed(0)
     np.random.seed(0)
+
+
+@pytest.fixture(autouse=True, scope="session")
+def set_threadpool_limits():
+    """Limit number of threads to prevent oversubscription with pytest-xdist.
+
+    This only has an effect if the Python threadpoolctl package is installed,
+    and it only influences parallellism in some numerical libraries used in
+    packages such as NumPy.
+    """
+    try:
+        import threadpoolctl  # type: ignore
+    except ImportError:
+        yield
+        return
+
+    if "PYTEST_XDIST_WORKER_COUNT" in os.environ:
+        from openfermion.utils import get_available_cpu_count
+
+        try:
+            n_workers = max(1, int(os.environ["PYTEST_XDIST_WORKER_COUNT"]))
+        except ValueError:
+            n_workers = 1
+        max_threads_per_worker = max(1, get_available_cpu_count() // n_workers)
+        # Limit native library thread pools for this worker.
+        with threadpoolctl.threadpool_limits(limits=max_threads_per_worker):
+            yield
+    else:
+        yield
