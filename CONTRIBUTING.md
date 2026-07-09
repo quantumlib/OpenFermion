@@ -270,7 +270,7 @@ for formatting code, and provide scripts to run them.
     check/pylint-changed-files
     ```
 
-### Testing and test coverage
+### Functional testing and test coverage
 
 When new functions, classes, and files are introduced, they should also have corresponding tests.
 Existing tests must continue to pass (or be updated) when changes are introduced. When writing
@@ -289,15 +289,30 @@ tests, follow these general principles:
     `true`, assert that a specific value equals an expected value. Provide meaningful failure
     messages.
 
-We use [pytest](https://docs.pytest.org) to run our tests and
-[pytest-cov](https://pytest-cov.readthedocs.io) to compute coverage.
+This project uses [pytest](https://docs.pytest.org) to run tests and
+[pytest-cov](https://pytest-cov.readthedocs.io) to compute coverage. There are wrapper scripts in
+the `check/` subdirectory to run these programs.
 
-*   While developing, periodically check that changes do not break anything. For fast checks, use
-    `pytest -m "not slow" PATH`, where `PATH` is a directory or pytest file to test.
+*   During development, periodically run tests to check that code changes do not break anything. For
+    fast checks, run `check/pytest -n auto -m "not slow" PATH`, where `PATH` is a directory or test
+    file. Additional suggestions:
 
-*   After finishing a task, run `check/pytest` to test all of the OpenFermion code. If your system
-    has multiple processor cores, you can add the option `-n auto` to make pytest use multiple
-    parallel processes for a speed increase. (Beware, though, that this is resource-intensive.)
+    *   It can be helpful to add the option `--instafail` to the pytest command line to make it stop
+        when the first error occurs.
+
+    *   To make it print the name of every test, add the `-v` option to pytest.
+
+    *   Pytest normally captures stdout and stderr; add the `-s` option to make console print
+        statements or debugging output appear as they happen while tests are running.
+
+    *   If an especially perplexing error arises, try running pytest without multiple processes by
+        removing the `-n auto` option.
+
+*   After finishing a round of development:
+
+    *   Run all tests with `check/pytest -n auto`.
+
+    *   Verify test coverage with `check/pytest-and-incremental-coverage`.
 
 We don't require 100% coverage, but coverage should be very high, and any uncovered code must be
 annotated with `# pragma: no cover`. To ignore coverage of a single line, place `# pragma: no cover`
@@ -306,7 +321,8 @@ cover` comment on its own line. Note, however, that these annotations should be 
 
 ### Final checks
 
-After a task is finished, run each of the following to make sure everything passes all the tests:
+After the work planned for a pull request is finished, run each of the following to make sure
+everything passes all the tests:
 
 *   `check/format-incremental` (and `check/format-incremental --apply` to auto-fix format problems)
 *   `check/pylint -j 0`
