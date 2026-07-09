@@ -62,7 +62,10 @@ def set_threading_limits() -> None:
     This prevents libraries like NumPy, SciPy, and JAX from oversubscribing
     available CPU resources on high-core-count or multi-worker environments.
     """
-    limit = str(max(get_available_cpu_count() - 1, 1))
+    if "PYTEST_XDIST_WORKER_COUNT" in os.environ:
+        limit = str(max(get_available_cpu_count(), 1))
+    else:
+        limit = str(max(get_available_cpu_count() - 1, 1))
     for var in ["MKL_NUM_THREADS", "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS"]:
         if var not in os.environ:
             os.environ[var] = limit
