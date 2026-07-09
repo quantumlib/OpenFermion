@@ -155,9 +155,8 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     column_list = [[]]
 
     # Loop through the terms.
-    for qubit_term in qubit_operator.terms:
+    for qubit_term, coefficient in _iter_simplified_qubit_operator_terms(qubit_operator):
         tensor_factor = 0
-        coefficient = qubit_operator.terms[qubit_term]
         sparse_operators = [coefficient]
         for pauli_operator in qubit_term:
             # Grow space for missing identity operators.
@@ -194,6 +193,13 @@ def qubit_operator_sparse(qubit_operator, n_qubits=None):
     return sparse_operator
 
 
+def _iter_simplified_qubit_operator_terms(qubit_operator):
+    """Yield terms after applying QubitOperator's Pauli simplification."""
+    for qubit_term, coefficient in qubit_operator.terms.items():
+        coefficient, qubit_term = qubit_operator._simplify(qubit_term, coefficient)
+        yield qubit_term, coefficient
+
+
 def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
     """Return a linear operator's diagonal elements.
 
@@ -221,7 +227,7 @@ def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
     ones_diagonal = numpy.ones(n_hilbert)
     linear_operator_diagonal = zeros_diagonal
     # Loop through the terms.
-    for qubit_term in qubit_operator.terms:
+    for qubit_term, coefficient in _iter_simplified_qubit_operator_terms(qubit_operator):
         is_zero = False
         tensor_factor = 0
         vecs = [ones_diagonal]
@@ -243,7 +249,7 @@ def get_linear_qubit_operator_diagonal(qubit_operator, n_qubits=None):
             vecs = [v for vp in vec_pairs for v in (vp[0], -vp[1])]
             tensor_factor = pauli_operator[0] + 1
         if not is_zero:
-            linear_operator_diagonal += qubit_operator.terms[qubit_term] * numpy.concatenate(vecs)
+            linear_operator_diagonal += coefficient * numpy.concatenate(vecs)
     return linear_operator_diagonal
 
 
