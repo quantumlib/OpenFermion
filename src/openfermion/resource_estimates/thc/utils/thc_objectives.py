@@ -1,6 +1,15 @@
 # coverage:ignore
 # pylint: disable=wrong-import-position
 import os
+
+from openfermion.config import get_available_cpu_count
+
+# Set Intel MKL thread count for NumPy einsum/tensordot calls.
+# Needs to be set before other libraries are loaded.
+# Reduce count by 1 to lessen impact on host system.
+os.environ["MKL_NUM_THREADS"] = str(max(get_available_cpu_count() - 1, 1))
+
+
 from uuid import uuid4
 import scipy.optimize
 
@@ -15,12 +24,8 @@ import numpy
 import numpy.random
 import numpy.linalg
 from scipy.optimize import minimize
-from openfermion.utils import get_available_cpu_count
+from openfermion.config import get_available_cpu_count
 from .adagrad import adagrad
-
-# set mkl thread count for numpy einsum/tensordot calls
-# leave one CPU un used  so we can still access this computer
-os.environ["MKL_NUM_THREADS"] = str(max(get_available_cpu_count() - 1, 1))
 
 
 def thc_objective_jax(xcur, norb, nthc, eri):
