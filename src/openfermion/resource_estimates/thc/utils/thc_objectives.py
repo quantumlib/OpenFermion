@@ -2,13 +2,11 @@
 # pylint: disable=wrong-import-position,wrong-import-order
 import os
 
-from openfermion.config import get_available_cpu_count
+from openfermion.config import set_threading_limits
 
-# Set Intel MKL thread count for NumPy einsum/tensordot calls.
+# Set thread limits for NumPy einsum/tensordot calls.
 # Needs to be set before other libraries are loaded.
-# Reduce count by 1 to lessen impact on host system.
-if "MKL_NUM_THREADS" not in os.environ:
-    os.environ["MKL_NUM_THREADS"] = str(max(get_available_cpu_count() - 1, 1))
+set_threading_limits()
 
 
 from uuid import uuid4
