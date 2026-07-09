@@ -24,7 +24,6 @@ core = "sysmon"
 disable_warnings = ["no-sysmon"]
 
 [tool.pytest.ini_options]
-addopts = "--strict-config"
 markers = [
     """slow: marks tests as slow (deselect with '-m "not slow"')""",
 ]
