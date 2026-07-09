@@ -12,10 +12,15 @@
 
 import os
 import random
+import sys
 from typing import Any
 
 import numpy as np
 import pytest
+
+# Ensure src/ is in sys.path so that the OpenFermion utils module can be
+# imported at Pytest startup time.
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src")))
 
 
 def pytest_configure(config: Any) -> None:
