@@ -297,10 +297,12 @@ the `check/` subdirectory to run these programs.
     fast checks, run `check/pytest -n auto -m "not slow" PATH`, where `PATH` is a directory or test
     file. Additional suggestions:
 
-    *   It can be helpful to add the option `--instafail` to the pytest command line to make it stop
-        when the first error occurs.
+    *   It can be helpful to add the option `--instafail` to the pytest options to make it print
+        error messages as they happen instead of waiting until the test suite finishes.
 
-    *   To make it print the name of every test, add the `-v` option to pytest.
+    *   To make pytest stop execution after the first error, add the option `-x`.
+
+    *   To make it print the name of every test as it is run, add the `-v` option to pytest.
 
     *   Pytest normally captures stdout and stderr; add the `-s` option to make console print
         statements or debugging output appear as they happen while tests are running.
