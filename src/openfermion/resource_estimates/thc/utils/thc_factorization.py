@@ -1,5 +1,5 @@
 # coverage:ignore
-# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position,wrong-import-order
 import os
 
 from openfermion.config import get_available_cpu_count

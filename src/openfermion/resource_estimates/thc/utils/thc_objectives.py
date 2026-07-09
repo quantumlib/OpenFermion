@@ -1,5 +1,5 @@
 # coverage:ignore
-# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position,wrong-import-order
 import os
 
 from openfermion.config import get_available_cpu_count
@@ -24,7 +24,6 @@ import numpy
 import numpy.random
 import numpy.linalg
 from scipy.optimize import minimize
-from openfermion.config import get_available_cpu_count
 from .adagrad import adagrad
 
 
