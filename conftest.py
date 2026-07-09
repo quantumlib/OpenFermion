@@ -47,7 +47,7 @@ def set_threadpool_limits():
     packages such as NumPy.
     """
     try:
-        import threadpoolctl  # type: ignore
+        import threadpoolctl  # type: ignore[import-untyped]
     except ImportError:
         yield
         return
