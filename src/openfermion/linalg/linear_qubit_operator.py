@@ -186,6 +186,9 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         if not self.linear_operators:
             return numpy.zeros(x.shape)
 
+        if self.options.processes <= 1:
+            return functools.reduce(numpy.add, (operator * x for operator in self.linear_operators))
+
         pool = self.options.get_pool(len(self.linear_operators))
         vecs = pool.imap_unordered(
             apply_operator, [(operator, x) for operator in self.linear_operators]
