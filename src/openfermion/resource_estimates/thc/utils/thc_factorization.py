@@ -7,7 +7,8 @@ from openfermion.config import get_available_cpu_count
 # Set Intel MKL thread count for NumPy einsum/tensordot calls.
 # Needs to be set before other libraries are loaded.
 # Reduce count by 1 to lessen impact on host system.
-os.environ["MKL_NUM_THREADS"] = str(max(get_available_cpu_count() - 1, 1))
+if "MKL_NUM_THREADS" not in os.environ:
+    os.environ["MKL_NUM_THREADS"] = str(max(get_available_cpu_count() - 1, 1))
 
 
 from uuid import uuid4
