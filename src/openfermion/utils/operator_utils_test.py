@@ -725,7 +725,7 @@ class SetThreadpoolLimitsTest(unittest.TestCase):
         with patch.dict(sys.modules, {"threadpoolctl": mock_threadpoolctl}):
             # Test Case 2: PYTEST_XDIST_WORKER_COUNT is in os.environ.
             with patch.dict(os.environ, {"PYTEST_XDIST_WORKER_COUNT": "4"}):
-                with patch("openfermion.utils.get_available_cpu_count", return_value=8):
+                with patch("openfermion.utils.get_available_cpu_count", return_value=2):
                     gen = conftest.set_threadpool_limits.__wrapped__()
                     val = next(gen)
                     self.assertIsNone(val)
