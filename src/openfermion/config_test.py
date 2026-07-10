@@ -55,9 +55,9 @@ class GetAvailableCpuCountTest(unittest.TestCase):
             self.assertEqual(get_available_cpu_count(), 1)
 
         # Test Case 2: Linux/Unix (no process_cpu_count, has sched_getaffinity).
-        mock_os = MockOS(sched_getaffinity_val=[1, 2, 3, 4])
+        mock_os = MockOS(sched_getaffinity_val=[1, 2, 3])
         with patch.object(config, "os", mock_os):
-            self.assertEqual(get_available_cpu_count(), 4)
+            self.assertEqual(get_available_cpu_count(), 3)
 
         # Test Case 3: Linux/Unix but sched_getaffinity raises exception.
         mock_os = MockOS(sched_getaffinity_val=ValueError("error"), cpu_count_val=4)
