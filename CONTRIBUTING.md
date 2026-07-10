@@ -241,10 +241,6 @@ to run it:
 check/mypy
 ```
 
-If your computer has multiple processor cores, you can add the option `-j 0` to the command above to
-make Mypy run in parallel for a substantial speed increase.
-
-
 ### Linting and formatting
 
 Code should meet common style standards for Python and be free of error-prone constructs. We use
@@ -290,14 +286,15 @@ tests, follow these general principles:
     messages.
 
 We use [pytest](https://docs.pytest.org) to run our tests and
-[pytest-cov](https://pytest-cov.readthedocs.io) to compute coverage.
+[pytest-cov](https://pytest-cov.readthedocs.io) to compute coverage. There are wrapper scripts
+in the `check/` subdirectory to run these programs.
 
-*   While developing, periodically check that changes do not break anything. For fast checks, use
-    `pytest -m "not slow" PATH`, where `PATH` is a directory or pytest file to test.
+*   During development, periodically check that code changes do not break anything. For fast checks,
+    run `check/pytest -m "not slow" -n auto PATH ...`, where `PATH ...` is one or more directories
+    or `_test.py` files to test. (The `-n auto` option makes pytest use parallel processes; omit it
+    if it causes problems on your system.)
 
-*   After finishing a task, run `check/pytest` to test all of the OpenFermion code. If your system
-    has multiple processor cores, you can add the option `-n auto` to make pytest use multiple
-    parallel processes for a speed increase. (Beware, though, that this is resource-intensive.)
+*   After finishing a task, run all tests with `check/pytest -n auto`.
 
 We don't require 100% coverage, but coverage should be very high, and any uncovered code must be
 annotated with `# pragma: no cover`. To ignore coverage of a single line, place `# pragma: no cover`
@@ -306,13 +303,12 @@ cover` comment on its own line. Note, however, that these annotations should be 
 
 ### Final checks
 
-After a task is finished, run each of the following to make sure everything passes all the tests:
+After the work planned for a pull request is finished, run each of the following to make sure
+everything passes all tests:
 
-*   `check/format-incremental` (and `check/format-incremental --apply` to auto-fix format problems)
-*   `check/pylint -j 0`
-*   `check/mypy`
-*   `check/pytest -n auto`
-*   `check/pytest-and-incremental-coverage`
+```shell
+check/all
+```
 
 ### Pull requests and code reviews
 
