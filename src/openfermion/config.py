@@ -66,5 +66,4 @@ def set_threading_limits() -> None:
     else:
         limit = str(max(get_available_cpu_count() - 1, 1))
     for var in ["MKL_NUM_THREADS", "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS"]:
-        if var not in os.environ:
-            os.environ[var] = limit
+        os.environ[var] = limit
