@@ -55,18 +55,19 @@ for arg in "$@"; do
 done
 
 if [[ -z "${rev}" ]]; then
-    if [[ "$(git cat-file -t upstream/main 2> /dev/null)" == "commit" ]]; then
-        rev=upstream/main
-    elif [[ "$(git cat-file -t origin/main 2> /dev/null)" == "commit" ]]; then
-        rev=origin/main
-    elif [[ "$(git cat-file -t main 2> /dev/null)" == "commit" ]]; then
-        rev=main
-    else
+    for candidate in upstream/main origin/main main; do
+        if [[ "$(git cat-file -t "${candidate}" 2>/dev/null)" == "commit" ]]; then
+            rev="${candidate}"
+            break
+        fi
+    done
+    if [[ -z "${rev}" ]]; then
         echo -e "\033[31mNo default revision found to compare against. \
 Please specify a base revision (e.g. 'origin/main' or 'HEAD~1') as an argument.\033[0m" >&2
         exit 1
     fi
 fi
+
 base="$(git merge-base "${rev}" HEAD)"
 if [[ "$(git rev-parse "${rev}")" == "${base}" ]]; then
     echo -e "Comparing against revision '${rev}'." >&2
