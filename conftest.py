@@ -49,7 +49,7 @@ def set_threadpool_limits():
     """Limit number of threads to prevent oversubscription with pytest-xdist.
 
     This only has an effect if the Python threadpoolctl package is installed,
-    and it only influences parallellism in some numerical libraries used in
+    and it only influences parallelism in some numerical libraries used in
     packages such as NumPy.
     """
     try:
