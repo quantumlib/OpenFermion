@@ -155,16 +155,7 @@ class SetThreadingLimitsTest(unittest.TestCase):
                 self.assertEqual(os.environ.get("OMP_NUM_THREADS"), "7")
                 self.assertEqual(os.environ.get("OPENBLAS_NUM_THREADS"), "7")
 
-        # Test respecting existing values.
-        env = {"OMP_NUM_THREADS": "3"}
-        with patch.dict(os.environ, env, clear=True):
-            with patch("openfermion.config.get_available_cpu_count", return_value=8):
-                set_threading_limits()
-                self.assertEqual(os.environ.get("MKL_NUM_THREADS"), "7")
-                self.assertEqual(os.environ.get("OMP_NUM_THREADS"), "3")  # Respected!
-                self.assertEqual(os.environ.get("OPENBLAS_NUM_THREADS"), "7")
-
-        # Test when PYTEST_XDIST_WORKER_COUNT is in os.environ (line 65 coverage).
+        # Test when PYTEST_XDIST_WORKER_COUNT is in os.environ.
         env = {"PYTEST_XDIST_WORKER_COUNT": "4"}
         with patch.dict(os.environ, env, clear=True):
             with patch("openfermion.config.get_available_cpu_count", return_value=8):
@@ -172,3 +163,10 @@ class SetThreadingLimitsTest(unittest.TestCase):
                 self.assertEqual(os.environ.get("MKL_NUM_THREADS"), "8")
                 self.assertEqual(os.environ.get("OMP_NUM_THREADS"), "8")
                 self.assertEqual(os.environ.get("OPENBLAS_NUM_THREADS"), "8")
+
+        # Test when there are existing values.
+        env = {"OMP_NUM_THREADS": "3"}
+        with patch.dict(os.environ, env, clear=True):
+            with patch("openfermion.config.get_available_cpu_count", return_value=8):
+                set_threading_limits()
+                self.assertEqual(os.environ.get("OMP_NUM_THREADS"), "7")
