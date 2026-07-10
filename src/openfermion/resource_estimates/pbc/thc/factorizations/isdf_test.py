@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 
 from openfermion.resource_estimates import HAVE_DEPS_FOR_RESOURCE_ESTIMATES
+from openfermion.testing import retry_once_with_later_random_values
 
 if HAVE_DEPS_FOR_RESOURCE_ESTIMATES:
     from ase.build import bulk
@@ -360,7 +361,7 @@ def get_complement(miller_indx, kmesh):
 
 @pytest.mark.skipif(not HAVE_DEPS_FOR_RESOURCE_ESTIMATES, reason='pyscf and/or jax not installed.')
 @pytest.mark.slow
-@pytest.mark.flaky(retries=1)
+@retry_once_with_later_random_values
 def test_kpoint_isdf_symmetries():
     cell = gto.Cell()
     cell.atom = """
