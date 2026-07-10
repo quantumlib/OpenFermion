@@ -264,10 +264,9 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
 
     def test_matvec_single_process(self):
         """Tests that when processes is 1, it computes correctly and doesn't crash."""
-        qubit_operator = QubitOperator('Z3') + QubitOperator('Y0') + QubitOperator('X1')
         options = LinearQubitOperatorOptions(processes=1)
         parallel_qubit_op = ParallelLinearQubitOperator(
-            qubit_operator, self.n_qubits, options=options
+            self.qubit_operator, self.n_qubits, options=options
         )
         self.assertTrue(numpy.allclose(parallel_qubit_op * self.vec, self.expected_matvec))
 
