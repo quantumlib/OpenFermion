@@ -17,22 +17,34 @@
 # This script is modeled in part on Cirq's check/all script.
 
 declare -r usage="\
-Usage: ${0##*/} [--help] [--only-changed-files] [--apply-format-changes] [BASE_REV]
+Usage: ${0##*/} [OPTIONS] [BASE_REV]
+
+Runs multiple checks on the code base.
+
+If --apply-changes (or -a) is given, the flag --apply will be passed to
+check/format-incremental to make it apply format changes suggested by the
+formatter.
+
+If --only-changed-files (or -c) is given, most checks will be limited to the
+files that have changed since the BASE_REV version. If BASE_REV is not given,
+the version at the end of the base branch (origin/main) will be used.
+
+By default, this program runs checks in parallel mode. To prevent this, use the
+option --no-parallel (or -p).
+
+You can specify a base git revision to compare against (that is, the revision
+to be used when determining whether a file is considered to have changed). If
+given, the argument BASE_REV is passed on to tests that can use it, such as
+check/pytest-and-incremental-coverage.
 
 If the first argument given on the command line is the option --help or -h,
 this program prints usage information and then exits.
 
-With no arguments, this runs multiple checks on the code base. These tests
-are based on the programs in the checks/ subdirectory.
-
-If --apply-format-changes is specified, the flag --apply will be passed to
-check/format-incremental to apply the format changes suggested by the
-formatter.
-
-You can specify a base git revision to compare against (i.e., to use when
-determining whether or not a file is considered to have changed). If given,
-the argument BASE_REV is passed on to tests that can use it, such as
-check/pytest-and-incremental-coverage."
+Summary of available options:
+  --apply-changes       Pass the flag --apply to check/format-incremental
+  --no-parallel         Do not pass the parallelism flags to the check programs
+  --only-changed-files  Limit checks to files that have changed since BASE_REV
+  -h or --help          Show this help message and exit"
 
 set -eo pipefail -o errtrace
 shopt -s inherit_errexit
@@ -51,53 +63,63 @@ function error() {
 declare -a rev=()
 declare -a apply_arg=()
 declare only_changed=""
-for arg in "$@"; do
-    case "${arg}" in
+declare no_parallel=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -a | --apply-changes | --apply-format-changes)
+            apply_arg=( "--apply" )
+            ;;
+        -c | --only-changed-files)
+            only_changed="true"
+            ;;
         -h | --help)
             echo "${usage}"
             exit 0
             ;;
-        --apply-format-changes)
-            apply_arg=( "--apply" )
-            shift
-            ;;
-        --only-changed-files)
-            only_changed="true"
-            shift
+        -p | --no-parallel)
+            no_parallel="true"
             ;;
         -*)
-            error "Invalid option '${arg}'"
+            error "Invalid option '$1'"
             error "See '$0 --help' for the list of supported options."
             exit 1
             ;;
         *)
-            if ! rev=( "$(git rev-parse --verify --end-of-options "${arg}^{commit}")" ); then
-                error "No revision '${arg}'"
+            if ! rev=( "$(git rev-parse --verify --end-of-options "$1^{commit}")" ); then
+                error "No revision '$1'"
                 exit 1
             fi
             ;;
     esac
+    shift
 done
 
 # ~~~~ Run the tests ~~~~
 
 declare -a errors=()
+declare -a pylint_j=()
+declare -a pytest_n=()
 
 function run() {
-    echo "Running $* ..."
+    echo "Running $*"
     "$@" || errors+=( "$* failed" )
-    echo
 }
+
+if [[ -z "${no_parallel}" ]]; then
+    pylint_j=("-j0")
+    pytest_n=("-n" "auto")
+fi
 
 if [[ -n "${only_changed}" ]]; then
     run check/format-incremental "${rev[@]}" "${apply_arg[@]}"
-    run check/pylint-changed-files "${rev[@]}"
+    run check/pylint-changed-files "${pylint_j[@]}" "${rev[@]}"
 else
     run check/format-incremental "${rev[@]}" "${apply_arg[@]}" --all
-    run check/pylint "${rev[@]}"
+    run check/pylint "${pylint_j[@]}" "${rev[@]}"
 fi
 run check/mypy
-run check/pytest-and-incremental-coverage "${rev[@]}"
+run check/pytest-and-incremental-coverage "${pytest_n[@]}" "${rev[@]}"
 run check/shellcheck
 run check/nbformat
 
