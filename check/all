@@ -100,15 +100,23 @@ done
 declare -a errors=()
 declare -a pylint_j=()
 declare -a pytest_n=()
+declare -a mypy_n=()
 
 function run() {
     echo "Running $*"
     "$@" || errors+=( "$* failed" )
 }
 
+# Count only the physical cores (usually fewer than logical cores). This leaves
+# some CPU resources for OpenFermion modules that use multiple processes.
+cpus=$(python3 -c 'import psutil; print(psutil.cpu_count(logical=False))')
+
 if [[ -z "${no_parallel}" ]]; then
-    pylint_j=("-j0")
-    pytest_n=("-n" "auto")
+    # Pylint & pytest can auto-detect the number of CPUs, but not mypy. To be
+    # consistent, this uses the same explicit number for all of them.
+    pylint_j=("-j" "${cpus}")
+    pytest_n=("-n" "${cpus}")
+    mypy_n=("-n" "${cpus}")
 fi
 
 if [[ -n "${only_changed}" ]]; then
@@ -118,7 +126,7 @@ else
     run check/format-incremental "${rev[@]}" "${apply_arg[@]}" --all
     run check/pylint "${pylint_j[@]}" "${rev[@]}"
 fi
-run check/mypy
+run check/mypy "${mypy_n[@]}"
 run check/pytest-and-incremental-coverage "${pytest_n[@]}" "${rev[@]}"
 run check/shellcheck
 run check/nbformat
