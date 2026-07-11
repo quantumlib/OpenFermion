@@ -103,7 +103,7 @@ declare -a pytest_n=()
 declare -a mypy_n=()
 
 function run() {
-    echo "Running $*"
+    echo "~~~~ Running $* ~~~~"
     "$@" || errors+=( "$* failed" )
 }
 
