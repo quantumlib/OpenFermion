@@ -1,6 +1,14 @@
 # coverage:ignore
-# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position,wrong-import-order
 import os
+
+from openfermion.config import set_threading_limits
+
+# Set thread limits for NumPy einsum/tensordot calls.
+# Needs to be set before other libraries are loaded.
+set_threading_limits()
+
+
 from uuid import uuid4
 import h5py
 import numpy
@@ -14,6 +22,7 @@ jax.config.update("jax_enable_x64", True)
 
 import jax.numpy as jnp
 from jax import jit, grad
+
 from .adagrad import adagrad
 from .thc_objectives import (
     thc_objective,
@@ -22,10 +31,6 @@ from .thc_objectives import (
     cp_ls_cholesky_factor_objective,
     thc_objective_regularized,
 )
-
-# set mkl thread count for numpy einsum/tensordot calls
-# leave one CPU un used  so we can still access this computer
-os.environ["MKL_NUM_THREADS"] = str(max((os.cpu_count() or 1) - 1, 1))
 
 
 class CallBackStore:

@@ -95,7 +95,7 @@ def _generic_gaussian_circuit(
     if isinstance(initial_state, int):
         initially_occupied_orbitals = _occupied_orbitals(initial_state, n_qubits)
     else:
-        initially_occupied_orbitals = initial_state  # type: ignore
+        initially_occupied_orbitals = initial_state  # type: ignore[assignment]
 
     # Flip bits so that the correct starting orbitals are occupied
     yield (
@@ -118,7 +118,7 @@ def _spin_symmetric_gaussian_circuit(
     if isinstance(initial_state, int):
         initially_occupied_orbitals = _occupied_orbitals(initial_state, n_qubits)
     else:
-        initially_occupied_orbitals = initial_state  # type: ignore
+        initially_occupied_orbitals = initial_state  # type: ignore[assignment]
 
     for spin_sector in range(2):
         circuit_description, start_orbitals = gaussian_state_preparation_circuit(
@@ -190,7 +190,7 @@ def prepare_slater_determinant(
     if isinstance(initial_state, int):
         initially_occupied_orbitals = _occupied_orbitals(initial_state, n_qubits)
     else:
-        initially_occupied_orbitals = initial_state  # type: ignore
+        initially_occupied_orbitals = initial_state  # type: ignore[assignment]
 
     # Flip bits so that the first n_occupied are 1 and the rest 0
     yield (

@@ -11,7 +11,6 @@
 #   limitations under the License.
 """Tests for linear_qubit_operator.py."""
 
-import multiprocessing
 import unittest
 
 import numpy
@@ -26,6 +25,7 @@ from openfermion.linalg.linear_qubit_operator import (
     generate_linear_qubit_operator,
 )
 from openfermion.linalg.sparse_tools import qubit_operator_sparse
+from openfermion.config import get_available_cpu_count
 
 
 class LinearQubitOperatorOptionsTest(unittest.TestCase):
@@ -33,7 +33,7 @@ class LinearQubitOperatorOptionsTest(unittest.TestCase):
 
     def setUp(self):
         """LinearQubitOperatorOptions test set up."""
-        self.processes = multiprocessing.cpu_count()
+        self.processes = get_available_cpu_count()
         self.options = LinearQubitOperatorOptions(self.processes)
 
     def test_init(self):
@@ -214,13 +214,13 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         self.assertEqual(self.linear_operator.n_qubits, self.n_qubits)
         self.assertIsNone(self.linear_operator.options.pool)
 
-        cpu_count = multiprocessing.cpu_count()
+        cpu_count = get_available_cpu_count()
         default_processes = min(cpu_count, 10)
         self.assertEqual(self.linear_operator.options.processes, default_processes)
 
         # Generated variables.
         self.assertEqual(
-            len(self.linear_operator.qubit_operator_groups), min(multiprocessing.cpu_count(), 3)
+            len(self.linear_operator.qubit_operator_groups), min(get_available_cpu_count(), 3)
         )
         self.assertEqual(
             QubitOperator.accumulate(self.linear_operator.qubit_operator_groups),
@@ -261,6 +261,14 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         parallel_qubit_op.dot(state)
         parallel_qubit_op.dot(state)
         self.assertIsNone(parallel_qubit_op.options.pool)
+
+    def test_matvec_single_process(self):
+        """Tests that when processes is 1, it computes correctly and doesn't crash."""
+        options = LinearQubitOperatorOptions(processes=1)
+        parallel_qubit_op = ParallelLinearQubitOperator(
+            self.qubit_operator, self.n_qubits, options=options
+        )
+        self.assertTrue(numpy.allclose(parallel_qubit_op * self.vec, self.expected_matvec))
 
 
 class UtilityFunctionTest(unittest.TestCase):

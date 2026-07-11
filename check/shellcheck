@@ -81,5 +81,6 @@ if (( opt_dry_run )); then
     printf '\\\n  %s ' "${our_shell_scripts[@]}"
     printf '\\\n;\n'
 else
-    shellcheck "${shellcheck_options[@]}" "${our_shell_scripts[@]}"
+    shellcheck "${shellcheck_options[@]}" "${our_shell_scripts[@]}" && \
+        echo "shellcheck completed successfully."
 fi
