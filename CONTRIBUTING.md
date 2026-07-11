@@ -263,8 +263,11 @@ for formatting code, and provide scripts to run them.
 *   To run the linter:
 
     ```shell
-    check/pylint-changed-files
+    check/pylint-changed-files -j 0
     ```
+
+    (The option `-j 0` tells pylint to use parallel processes; omit it if it causes problems on your
+    system.)
 
 ### Testing and test coverage
 
