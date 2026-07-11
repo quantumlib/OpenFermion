@@ -6,5 +6,6 @@ pytest-retry
 pytest-xdist
 
 nbformat
+psutil
 tensorflow-docs
 threadpoolctl
