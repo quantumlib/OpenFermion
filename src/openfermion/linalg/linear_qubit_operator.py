@@ -24,6 +24,17 @@ from openfermion.utils.operator_utils import count_qubits
 from openfermion.config import get_available_cpu_count
 
 
+def _bit_parity(values):
+    """Returns the parity of the population count of each uint64 value."""
+    values = values ^ (values >> numpy.uint64(32))
+    values = values ^ (values >> numpy.uint64(16))
+    values = values ^ (values >> numpy.uint64(8))
+    values = values ^ (values >> numpy.uint64(4))
+    values = values ^ (values >> numpy.uint64(2))
+    values = values ^ (values >> numpy.uint64(1))
+    return values & numpy.uint64(1)
+
+
 class LinearQubitOperatorOptions:
     """Options for LinearQubitOperator."""
 
@@ -63,20 +74,14 @@ class LinearQubitOperatorOptions:
 class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
     """A LinearOperator implied from a QubitOperator.
 
-    The idea is that a single i_th qubit operator, O_i, is a 2-by-2 matrix, to
-    be applied on a vector of length n_hilbert / 2^i, performs permutations
-    and/or adds an extra factor for its first half and the second half, e.g. a `Z`
-    operator keeps the first half unchanged, while adds a factor of -1 to the
-    second half, while an `I` keeps it both components unchanged.
-
-    Note that the vector length is n_hilbert / 2^i, therefore when one works on
-    i monotonically (in increasing order), one keeps splitting the vector to the
-    right size and then apply O_i on them independently.
-
-    Also note that operator O_i, is an *envelop operator* for all operators
-    after it, i.e. {O_j | j > i}, which implies that starting with i = 0, one
-    can split the vector, apply O_i, split the resulting vector (cached) again
-    for the next operator."""
+    Each term of the QubitOperator is a tensor product of Pauli operators and
+    acts on an amplitude vector as a signed permutation. Qubit q corresponds to
+    bit (n_qubits - 1 - q) of the amplitude index. The qubits carrying an X or Y
+    flip that bit, so the amplitude at index c moves to index c ^ x_mask, where
+    x_mask collects those bits. The qubits carrying a Y or Z multiply the
+    amplitude by -1 whenever the matching index bit is set, and every Y adds a
+    further factor of 1j. Applying a term is therefore a reindexing of the vector
+    together with these per-index signs, accumulated over all terms."""
 
     def __init__(self, qubit_operator, n_qubits=None):
         """
@@ -108,38 +113,36 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         Returns:
           retvec(numpy.ndarray): same to the shape of input vector of x.
         """
-        retvec = numpy.zeros(x.shape, dtype=complex)
-        # Loop through the terms.
-        for qubit_term in self.qubit_operator.terms:
-            vecs = [x]
-            tensor_factor = 0
-            coefficient = self.qubit_operator.terms[qubit_term]
+        arr = numpy.asarray(x)
+        vec = arr.reshape(-1)
+        indices = numpy.arange(vec.size, dtype=numpy.uint64)
+        retvec = numpy.zeros(vec.size, dtype=complex)
 
-            for pauli_operator in qubit_term:
-                # Split vector by half and half for each bit.
-                if pauli_operator[0] > tensor_factor:
-                    vecs = [
-                        v
-                        for iter_v in vecs
-                        for v in numpy.split(iter_v, 2 ** (pauli_operator[0] - tensor_factor))
-                    ]
+        for qubit_term, coefficient in self.qubit_operator.terms.items():
+            x_mask = 0
+            z_mask = 0
+            y_count = 0
+            for qubit, action in qubit_term:
+                bit = 1 << (self.n_qubits - 1 - qubit)
+                if action == 'X':
+                    x_mask ^= bit
+                elif action == 'Y':
+                    x_mask ^= bit
+                    z_mask ^= bit
+                    y_count += 1
+                else:
+                    z_mask ^= bit
 
-                # Note that this is to make sure that XYZ operations always work
-                # on vector pairs.
-                vec_pairs = [numpy.split(v, 2) for v in vecs]
+            amplitudes = coefficient * (1j ** (y_count % 4)) * vec
+            if z_mask:
+                signs = 1 - 2 * _bit_parity(indices & numpy.uint64(z_mask)).astype(numpy.int64)
+                amplitudes = signs * amplitudes
+            if x_mask:
+                retvec[indices ^ numpy.uint64(x_mask)] += amplitudes
+            else:
+                retvec += amplitudes
 
-                # There is an non-identity op here, transform the vector.
-                xyz = {
-                    'X': lambda vps: [[vp[1], vp[0]] for vp in vps],
-                    'Y': lambda vps: [[-1j * vp[1], 1j * vp[0]] for vp in vps],
-                    'Z': lambda vps: [[vp[0], -vp[1]] for vp in vps],
-                }
-                vecs = [v for vp in xyz[pauli_operator[1]](vec_pairs) for v in vp]
-                tensor_factor = pauli_operator[0] + 1
-
-            # No need to check tensor_factor, i.e. to deal with bits left.
-            retvec += coefficient * numpy.concatenate(vecs)
-        return retvec
+        return retvec.reshape(arr.shape)
 
 
 class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
