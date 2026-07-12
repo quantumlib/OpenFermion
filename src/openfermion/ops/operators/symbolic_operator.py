@@ -12,7 +12,6 @@
 """SymbolicOperator is the base class for FermionOperator and QubitOperator"""
 
 import abc
-import copy
 import itertools
 import re
 import warnings
@@ -354,6 +353,16 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
     def __repr__(self):
         return str(self)
 
+    def _clone(self):
+        """Returns a copy of self.
+
+        Term keys and coefficients are immutable, so copying the terms
+        dictionary yields a result independent of self without a deep copy.
+        """
+        cloned = self.__class__()
+        cloned.terms = dict(self.terms)
+        return cloned
+
     def __imul__(self, multiplier):
         """In-place multiply (*=) with scalar or operator of the same type.
 
@@ -415,7 +424,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
             TypeError: Invalid type cannot be multiply with SymbolicOperator.
         """
         if isinstance(multiplier, COEFFICIENT_TYPES + (type(self),)):
-            product = copy.deepcopy(self)
+            product = self._clone()
             product *= multiplier
             return product
         else:
@@ -454,7 +463,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Returns:
             sum (SymbolicOperator)
         """
-        summand = copy.deepcopy(self)
+        summand = self._clone()
         summand += addend
         return summand
 
@@ -500,7 +509,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         Returns:
             difference (SymbolicOperator)
         """
-        minuend = copy.deepcopy(self)
+        minuend = self._clone()
         minuend -= subtrahend
         return minuend
 
@@ -753,7 +762,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
     @classmethod
     def accumulate(cls, operators, start=None):
         """Sums over SymbolicOperators."""
-        total = copy.deepcopy(start or cls.zero())
+        total = (start or cls.zero())._clone()
         for operator in operators:
             total += operator
         return total
