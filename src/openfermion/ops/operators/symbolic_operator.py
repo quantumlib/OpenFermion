@@ -762,7 +762,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
     @classmethod
     def accumulate(cls, operators, start=None):
         """Sums over SymbolicOperators."""
-        total = (start or cls.zero())._clone()
+        total = start._clone() if start is not None else cls.zero()
         for operator in operators:
             total += operator
         return total
