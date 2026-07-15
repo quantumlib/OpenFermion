@@ -1,6 +1,6 @@
 ---
 name: Bug report
-description: Report a problem with this software or project
+about: Report a problem with this software or project
 labels: kind/bug-report
 ---
 
