@@ -1,5 +1,5 @@
 ---
-name: Task
+name: Project task
 about: Describe a task that needs to be done
 labels: kind/task
 ---
