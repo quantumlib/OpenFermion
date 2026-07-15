@@ -1,1 +1,5 @@
 blank_issues_enabled: true
+contact_links:
+  - name: OpenFermion community discussions
+    url: https://github.com/quantumlib/OpenFermion/discussions
+    about: Please use GitHub Discussions to ask and answer questions
