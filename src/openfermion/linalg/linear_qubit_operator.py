@@ -133,7 +133,7 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
                 else:
                     z_mask ^= bit
 
-            amplitudes = coefficient * (1j ** (y_count % 4)) * vec
+            amplitudes = coefficient * [1, 1j, -1, -1j][y_count % 4] * vec
             if z_mask:
                 signs = 1 - 2 * _bit_parity(indices & numpy.uint64(z_mask)).astype(numpy.int64)
                 amplitudes = signs * amplitudes
