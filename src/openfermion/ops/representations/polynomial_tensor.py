@@ -14,6 +14,7 @@ fermionic ladder operators."""
 
 import copy
 import itertools
+import warnings
 import operator
 
 import numpy
@@ -360,7 +361,7 @@ class PolynomialTensor:
             strings.append('{} {}\n'.format(key, self[key]))
         return ''.join(strings) if strings else '0'
 
-    def rotate_basis(self, rotation_matrix):
+    def rotate_basis(self, rotation_matrix, transpose=None):
         """
         Rotate the orbital basis of the PolynomialTensor.
 
@@ -368,7 +369,22 @@ class PolynomialTensor:
             rotation_matrix: A square numpy array or matrix having
                 dimensions of n_qubits by n_qubits. Assumed to be real and
                 invertible.
+            transpose: If True, transposes the rotation matrix before applying it.
+                If None (default), behaves as True to maintain backwards
+                compatibility, but raises a DeprecationWarning.
         """
+        if transpose is None:
+            warnings.warn(
+                "rotate_basis(R) is deprecated, please use rotate_basis(R, transpose). "
+                "tranpose=True will be used currently to maintain backwards compatiblity, "
+                "but the default will change to transpose=False a future release",
+                DeprecationWarning,
+            )
+            transpose = True
+
+        if transpose:
+            rotation_matrix = rotation_matrix.T
+
         for key in self.n_body_tensors:
             if key == ():
                 pass
