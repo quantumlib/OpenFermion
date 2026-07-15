@@ -1,5 +1,9 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Questions and discussions
+  - name: Question
     url: https://github.com/quantumlib/OpenFermion/discussions
-    about: Please use GitHub Discussions to ask and answer questions
+    about: Use GitHub Discussions to ask and answer questions or start discussions
+
+  - name: Tutorials and references
+    url: https://quantumai.google/openfermion/overview
+    about: Consult our documentation site for in-depth information about OpenFermion
