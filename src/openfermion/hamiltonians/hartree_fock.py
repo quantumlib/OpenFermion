@@ -112,8 +112,12 @@ class HartreeFockFunctional:
             _, core_orbs = sp.linalg.eigh(one_body_integrals, b=overlap)
 
             molecular_hamiltonian = generate_hamiltonian(
-                one_body_integrals=general_basis_change(self.obi, core_orbs, (1, 0)),
-                two_body_integrals=general_basis_change(self.tbi, core_orbs, (1, 1, 0, 0)),
+                one_body_integrals=general_basis_change(
+                    self.obi, core_orbs, (1, 0), transpose=False
+                ),
+                two_body_integrals=general_basis_change(
+                    self.tbi, core_orbs, (1, 1, 0, 0), transpose=False
+                ),
                 constant=self.constant_offset,
             )
             self.hamiltonian = molecular_hamiltonian

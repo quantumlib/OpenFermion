@@ -16,7 +16,7 @@ import unittest
 import copy
 import numpy
 
-from openfermion.ops.representations import PolynomialTensor
+from openfermion.ops.representations import PolynomialTensor, general_basis_change
 from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.circuits.slater_determinants_test import random_quadratic_hamiltonian
 
@@ -435,8 +435,8 @@ class PolynomialTensorTest(unittest.TestCase):
             {(): self.constant, (1, 0): one_body_spinful, (1, 1, 0, 0): two_body_spinful}
         )
 
-        polynomial_tensor.rotate_basis(rotation_matrix_identical)
-        polynomial_tensor_spinful.rotate_basis(rotation_matrix_identical)
+        polynomial_tensor.rotate_basis(rotation_matrix_identical, transpose=False)
+        polynomial_tensor_spinful.rotate_basis(rotation_matrix_identical, transpose=False)
         self.assertEqual(polynomial_tensor, want_polynomial_tensor)
         self.assertEqual(polynomial_tensor_spinful, want_polynomial_tensor_spinful)
 
@@ -471,7 +471,7 @@ class PolynomialTensorTest(unittest.TestCase):
         want_polynomial_tensor = PolynomialTensor(
             {(): self.constant, (1, 0): one_body_reverse, (1, 1, 0, 0): two_body_reverse}
         )
-        polynomial_tensor.rotate_basis(rotation_matrix_reverse)
+        polynomial_tensor.rotate_basis(rotation_matrix_reverse, transpose=False)
         self.assertEqual(polynomial_tensor, want_polynomial_tensor)
 
     def test_rotate_basis_cyclic(self):
@@ -499,7 +499,7 @@ class PolynomialTensorTest(unittest.TestCase):
             {(): self.constant, (1, 0): ref_one_body, (1, 1, 0, 0): ref_two_body}
         )
 
-        polynomial_tensor.rotate_basis(rotation_matrix)
+        polynomial_tensor.rotate_basis(rotation_matrix, transpose=False)
         self.assertEqual(polynomial_tensor, ref_polynomial_tensor)
 
     def test_rotate_basis_quadratic_hamiltonian_real(self):
@@ -520,7 +520,7 @@ class PolynomialTensorTest(unittest.TestCase):
 
         # Rotate a basis where the Hamiltonian is diagonal
         _, diagonalizing_unitary, _ = quad_ham.diagonalizing_bogoliubov_transform()
-        quad_ham.rotate_basis(diagonalizing_unitary)
+        quad_ham.rotate_basis(diagonalizing_unitary, transpose=False)
 
         # Check that the rotated Hamiltonian is diagonal with the correct
         # orbital energies
@@ -536,6 +536,47 @@ class PolynomialTensorTest(unittest.TestCase):
 
         self.assertTrue(numpy.allclose(orbital_energies, new_orbital_energies))
         self.assertAlmostEqual(constant, new_constant)
+
+    def test_rotate_basis_quadratic_hamiltonian_transpose_real(self):
+        self.do_rotate_basis_quadratic_hamiltonian_transpose(True)
+
+    def test_rotate_basis_quadratic_hamiltonian_transpose_complex(self):
+        self.do_rotate_basis_quadratic_hamiltonian_transpose(False)
+
+    def do_rotate_basis_quadratic_hamiltonian_transpose(self, real):
+        """Test diagonalizing a quadratic Hamiltonian that conserves particle
+        number with transposed rotation."""
+        n_qubits = 5
+
+        # Initialize a particle-number-conserving quadratic Hamiltonian
+        # and compute its orbital energies
+        quad_ham = random_quadratic_hamiltonian(n_qubits, True, real=real)
+        orbital_energies, _, constant = quad_ham.diagonalizing_bogoliubov_transform()
+
+        # Rotate a basis where the Hamiltonian is diagonal
+        _, diagonalizing_unitary, _ = quad_ham.diagonalizing_bogoliubov_transform()
+        quad_ham.rotate_basis(diagonalizing_unitary.T, transpose=True)
+
+        # Check that the rotated Hamiltonian is diagonal with the correct
+        # orbital energies
+        D = numpy.zeros((n_qubits, n_qubits), dtype=complex)
+        D[numpy.diag_indices(n_qubits)] = orbital_energies
+        self.assertTrue(numpy.allclose(quad_ham.combined_hermitian_part, D))
+
+        # Check that the new Hamiltonian still conserves particle number
+        self.assertTrue(quad_ham.conserves_particle_number)
+
+        # Check that the orbital energies and constant are the same
+        new_orbital_energies, _, new_constant = quad_ham.diagonalizing_bogoliubov_transform()
+
+        self.assertTrue(numpy.allclose(orbital_energies, new_orbital_energies))
+        self.assertAlmostEqual(constant, new_constant)
+
+    def test_rotate_basis_warning(self):
+        n_qubits = 2
+        polynomial_tensor = PolynomialTensor({(1, 0): numpy.identity(n_qubits)})
+        with self.assertWarns(FutureWarning):
+            polynomial_tensor.rotate_basis(numpy.identity(n_qubits))
 
     def test_rotate_basis_max_order(self):
         for order in [15, 16]:
@@ -563,7 +604,7 @@ class PolynomialTensorTest(unittest.TestCase):
             num *= rotation
         want_polynomial_tensor = PolynomialTensor({key: numpy.zeros(shape) + num})
 
-        polynomial_tensor.rotate_basis(numpy.array([[rotation]]))
+        polynomial_tensor.rotate_basis(numpy.array([[rotation]]), transpose=False)
 
         return polynomial_tensor, want_polynomial_tensor
 
@@ -582,3 +623,24 @@ class PolynomialTensorTest(unittest.TestCase):
             self.assertEqual(tensor + numpy_scalar, tensor + python_scalar)
             self.assertEqual(tensor - numpy_scalar, tensor - python_scalar)
             self.assertEqual(tensor / numpy_scalar, tensor / python_scalar)
+
+    def test_general_basis_change_warning(self):
+        n_orbitals = 2
+        tensor = numpy.identity(n_orbitals)
+        with self.assertWarns(FutureWarning):
+            general_basis_change(tensor, numpy.identity(n_orbitals), (1, 0))
+
+    def test_general_basis_change_transpose(self):
+        n_orbitals = 2
+        # Use a non-symmetric tensor to differentiate transpose
+        tensor = numpy.array([[1.0, 2.0], [3.0, 4.0]])
+        u = numpy.array([[0.8, 0.6], [-0.6, 0.8]])
+
+        expected_old = u.conj().T @ tensor @ u
+        expected_new = u.conj() @ tensor @ u.T
+
+        result_old = general_basis_change(tensor, u, (1, 0), transpose=True)
+        self.assertTrue(numpy.allclose(result_old, expected_old))
+
+        result_new = general_basis_change(tensor, u, (1, 0), transpose=False)
+        self.assertTrue(numpy.allclose(result_new, expected_new))
