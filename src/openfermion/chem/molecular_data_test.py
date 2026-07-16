@@ -290,8 +290,8 @@ class MolecularDataTest(unittest.TestCase):
         rotation_matrix = scipy.linalg.expm(rotation_generator - rotation_generator.T)
 
         # Compute total energy from RDM under some basis set rotation.
-        molecular_rdm.rotate_basis(rotation_matrix)
-        molecular_hamiltonian.rotate_basis(rotation_matrix)
+        molecular_rdm.rotate_basis(rotation_matrix, transpose=False)
+        molecular_hamiltonian.rotate_basis(rotation_matrix, transpose=False)
         total_energy = molecular_rdm.expectation(molecular_hamiltonian)
         self.assertAlmostEqual(total_energy, self.molecule.cisd_energy)
 
