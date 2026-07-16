@@ -16,7 +16,7 @@ import unittest
 import copy
 import numpy
 
-from openfermion.ops.representations import PolynomialTensor
+from openfermion.ops.representations import PolynomialTensor, general_basis_change
 from openfermion.transforms.opconversions import get_fermion_operator
 from openfermion.circuits.slater_determinants_test import random_quadratic_hamiltonian
 
@@ -623,3 +623,24 @@ class PolynomialTensorTest(unittest.TestCase):
             self.assertEqual(tensor + numpy_scalar, tensor + python_scalar)
             self.assertEqual(tensor - numpy_scalar, tensor - python_scalar)
             self.assertEqual(tensor / numpy_scalar, tensor / python_scalar)
+
+    def test_general_basis_change_warning(self):
+        n_orbitals = 2
+        tensor = numpy.identity(n_orbitals)
+        with self.assertWarns(FutureWarning):
+            general_basis_change(tensor, numpy.identity(n_orbitals), (1, 0))
+
+    def test_general_basis_change_transpose(self):
+        n_orbitals = 2
+        # Use a non-symmetric tensor to differentiate transpose
+        tensor = numpy.array([[1.0, 2.0], [3.0, 4.0]])
+        u = numpy.array([[0.8, 0.6], [-0.6, 0.8]])
+
+        expected_old = u.conj().T @ tensor @ u
+        expected_new = u.conj() @ tensor @ u.T
+
+        result_old = general_basis_change(tensor, u, (1, 0), transpose=True)
+        self.assertTrue(numpy.allclose(result_old, expected_old))
+
+        result_new = general_basis_change(tensor, u, (1, 0), transpose=False)
+        self.assertTrue(numpy.allclose(result_new, expected_new))

@@ -96,8 +96,8 @@ class InteractionRDMTest(unittest.TestCase):
         u, _ = numpy.linalg.qr(x)  # QR decomposition guarantees u is unitary
 
         # Compute reference RDM
-        expected_one_body = general_basis_change(temp_one_body, u, (0, 1))
-        expected_two_body = general_basis_change(temp_two_body, u, (0, 0, 1, 1))
+        expected_one_body = general_basis_change(temp_one_body, u, (0, 1), transpose=False)
+        expected_two_body = general_basis_change(temp_two_body, u, (0, 0, 1, 1), transpose=False)
 
         # Rotate RDM
         temp_rdm.rotate_basis(u, transpose=False)
@@ -121,8 +121,8 @@ class InteractionRDMTest(unittest.TestCase):
         u, _ = numpy.linalg.qr(x)  # QR decomposition guarantees u is unitary
 
         # Compute reference RDM
-        expected_one_body = general_basis_change(temp_one_body, u, (0, 1))
-        expected_two_body = general_basis_change(temp_two_body, u, (0, 0, 1, 1))
+        expected_one_body = general_basis_change(temp_one_body, u, (0, 1), transpose=False)
+        expected_two_body = general_basis_change(temp_two_body, u, (0, 0, 1, 1), transpose=False)
 
         # Rotate RDM
         temp_rdm.rotate_basis(u.T, transpose=True)
