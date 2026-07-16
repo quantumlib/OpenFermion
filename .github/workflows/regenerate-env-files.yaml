@@ -21,8 +21,9 @@
 #   * On pull requests that change deps inputs, results are pushed back to the
 #     same branch so reviewers can merge deps and env files together.
 #   * After a merge to main, a follow-up pull request is opened if env files
-#     are still out of date.
-#   * Maintainers can also invoke the workflow manually.
+#     are still out of date (requires the repository setting that allows GitHub
+#     Actions to create pull requests).
+#   * Manual invocation pushes directly to the selected branch.
 #
 # Manual invocation:
 # https://github.com/quantumlib/OpenFermion/actions/workflows/regenerate-env-files.yaml
@@ -107,7 +108,13 @@ jobs:
             exit 0
           fi
 
-          if [[ "${{github.ref}}" == "refs/heads/main" ]]; then
+          if [[ "${{github.event_name}}" == "workflow_dispatch" ]]; then
+            git push origin "HEAD:${{github.ref_name}}"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${{github.event_name}}" == "push" && "${{github.ref}}" == "refs/heads/main" ]]; then
             branch="automation/regenerate-env-files-${GITHUB_RUN_ID}"
             git checkout -b "${branch}"
             git push origin "${branch}"
