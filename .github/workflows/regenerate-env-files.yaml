@@ -50,7 +50,8 @@ on:
 permissions: read-all
 
 concurrency:
-  group: regenerate-env-files-${{github.event.pull_request.number || github.ref}}
+  group: >-
+    regenerate-env-files-${{github.event.pull_request.number || github.ref}}
   cancel-in-progress: true
 
 jobs:
@@ -66,11 +67,13 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      CHECKOUT_REF: ${{github.event.pull_request.head.ref || github.ref}}
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          ref: ${{github.event.pull_request.head.ref || github.ref}}
+          ref: ${{env.CHECKOUT_REF}}
           fetch-depth: 0
           token: ${{secrets.GITHUB_TOKEN}}
 
@@ -86,48 +89,62 @@ jobs:
         id: publish
         env:
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          EVENT_NAME: ${{github.event_name}}
+          PR_HEAD_REF: ${{github.event.pull_request.head.ref}}
+          REF_NAME: ${{github.ref_name}}
+          REF_FULL: ${{github.ref}}
         run: |
           set -euo pipefail
 
-          if git diff --quiet -- dev_tools/requirements/envs dev_tools/requirements/max_compat; then
+          if git diff --quiet -- \
+              dev_tools/requirements/envs \
+              dev_tools/requirements/max_compat; then
             echo "Environment files are already up to date."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
           git add dev_tools/requirements/envs dev_tools/requirements/max_compat
           git commit \
             -m "Regenerate environment files after dependency update" \
             -m "Automated commit from the regenerate-env-files workflow."
 
-          if [[ "${{github.event_name}}" == "pull_request" ]]; then
-            git push origin "HEAD:${{github.event.pull_request.head.ref}}"
+          if [[ "${EVENT_NAME}" == "pull_request" ]]; then
+            git push origin "HEAD:${PR_HEAD_REF}"
             echo "changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          if [[ "${{github.event_name}}" == "workflow_dispatch" ]]; then
-            git push origin "HEAD:${{github.ref_name}}"
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            git push origin "HEAD:${REF_NAME}"
             echo "changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          if [[ "${{github.event_name}}" == "push" && "${{github.ref}}" == "refs/heads/main" ]]; then
+          if [[ "${EVENT_NAME}" == "push" && "${REF_FULL}" == "refs/heads/main" ]]; then
             branch="automation/regenerate-env-files-${GITHUB_RUN_ID}"
             git checkout -b "${branch}"
             git push origin "${branch}"
+            pr_body_file="$(mktemp)"
+            printf '%s\n' \
+              'Automated regeneration triggered by a push to main that changed' \
+              'files under dev_tools/requirements/deps/. Review and merge to' \
+              'keep compiled environment files in sync.' \
+              > "${pr_body_file}"
             gh pr create \
               --title "Regenerate environment files after dependency update" \
-              --body "Automated regeneration triggered by a push to \`main\` that changed files under \`dev_tools/requirements/deps/\`. Review and merge to keep compiled environment files in sync." \
+              --body-file "${pr_body_file}" \
               --base main \
               --head "${branch}"
+            rm -f "${pr_body_file}"
             echo "changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          git push origin "HEAD:${{github.ref_name}}"
+          git push origin "HEAD:${REF_NAME}"
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Comment on pull request
@@ -136,6 +153,13 @@ jobs:
           && github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
-          gh pr comment "${{github.event.pull_request.number}}" \
-            --body "Regenerated compiled environment files in \`dev_tools/requirements/envs/\` and \`dev_tools/requirements/max_compat/\` using \`dev_tools/requirements/create-env-files.sh\`."
+          comment_body_file="$(mktemp)"
+          printf '%s\n' \
+            'Regenerated compiled environment files in' \
+            'dev_tools/requirements/envs/ and dev_tools/requirements/max_compat/' \
+            'using dev_tools/requirements/create-env-files.sh.' \
+            > "${comment_body_file}"
+          gh pr comment "${PR_NUMBER}" --body-file "${comment_body_file}"
+          rm -f "${comment_body_file}"
