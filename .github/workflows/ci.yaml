@@ -130,7 +130,7 @@ jobs:
       - name: Run pytest
         run: |
           echo '::add-matcher::.github/problem-matchers/pytest.json'
-          check/pytest -n auto -m "not slow"
+          check/pytest -n auto --skipslow
 
   pytest-extra:
     name: Extra unit tests
@@ -162,7 +162,7 @@ jobs:
       - name: Run pytest
         run: |
           echo '::add-matcher::.github/problem-matchers/pytest.json'
-          check/pytest -n auto -m "not slow" src/openfermion/resource_estimates
+          check/pytest -n auto --skipslow src/openfermion/resource_estimates
 
   pytest-compat:
     name: Python compatibility tests
@@ -190,7 +190,7 @@ jobs:
       - name: Run pytest
         run: |
           echo '::add-matcher::.github/problem-matchers/pytest.json'
-          check/pytest -n auto -m "not slow"
+          check/pytest -n auto --skipslow
 
   coverage:
     name: Python code coverage tests

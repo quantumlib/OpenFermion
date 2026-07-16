@@ -293,7 +293,7 @@ We use [pytest](https://docs.pytest.org) to run our tests and
 in the `check/` subdirectory to run these programs.
 
 *   During development, periodically check that code changes do not break anything. For fast checks,
-    run `check/pytest -m "not slow" -n auto PATH ...`, where `PATH ...` is one or more directories
+    run `check/pytest --skipslow -n auto PATH ...`, where `PATH ...` is one or more directories
     or `_test.py` files to test. (The `-n auto` option makes pytest use parallel processes; omit it
     if it causes problems on your system.)
 
