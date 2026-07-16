@@ -131,6 +131,15 @@ class InteractionRDMTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(temp_rdm.one_body_tensor, expected_one_body))
         self.assertTrue(numpy.allclose(temp_rdm.two_body_tensor, expected_two_body))
 
+    def test_rotate_basis_warning(self):
+        """Test that calling rotate_basis without transpose raises a warning."""
+        n_orbitals = 2
+        one_body_rdm = numpy.identity(n_orbitals)
+        two_body_rdm = numpy.zeros((n_orbitals, n_orbitals, n_orbitals, n_orbitals))
+        rdm = InteractionRDM(one_body_rdm, two_body_rdm)
+        with self.assertWarns(FutureWarning):
+            rdm.rotate_basis(numpy.identity(n_orbitals))
+
     def test_expectation_rotation_invariance(self):
         """Test invariance of expectation value under basis rotations."""
 

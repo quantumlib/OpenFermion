@@ -575,7 +575,7 @@ class PolynomialTensorTest(unittest.TestCase):
     def test_rotate_basis_warning(self):
         n_qubits = 2
         polynomial_tensor = PolynomialTensor({(1, 0): numpy.identity(n_qubits)})
-        with self.assertWarns(DeprecationWarning):
+        with self.assertWarns(FutureWarning):
             polynomial_tensor.rotate_basis(numpy.identity(n_qubits))
 
     def test_rotate_basis_max_order(self):

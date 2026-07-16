@@ -361,7 +361,7 @@ class PolynomialTensor:
             strings.append('{} {}\n'.format(key, self[key]))
         return ''.join(strings) if strings else '0'
 
-    def rotate_basis(self, rotation_matrix, transpose=None):
+    def rotate_basis(self, rotation_matrix: numpy.ndarray, transpose: bool | None = None) -> None:
         """
         Rotate the orbital basis of the PolynomialTensor.
 
@@ -370,15 +370,18 @@ class PolynomialTensor:
                 dimensions of n_qubits by n_qubits. Assumed to be real and
                 invertible.
             transpose: If True, transposes the rotation matrix before applying it.
+                If False, does not transpose the rotation matrix.
                 If None (default), behaves as True to maintain backwards
-                compatibility, but raises a DeprecationWarning.
+                compatibility, but raises a FutureWarning.
         """
         if transpose is None:
             warnings.warn(
-                "rotate_basis(R) is deprecated, please use rotate_basis(R, transpose). "
-                "tranpose=True will be used currently to maintain backwards compatiblity, "
-                "but the default will change to transpose=False a future release",
-                DeprecationWarning,
+                "PolynomialTensor.rotate_basis was called without specifying the 'transpose' "
+                "parameter. The current default is transpose=True to maintain backwards "
+                "compatibility, but this will change to transpose=False in a future release. "
+                "Specify the value of 'transpose' explicitly to silence this warning.",
+                FutureWarning,
+                stacklevel=2,
             )
             transpose = True
 
