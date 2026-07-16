@@ -11,6 +11,7 @@
 #   limitations under the License.
 """Tests for linear_qubit_operator.py."""
 
+import sys
 import unittest
 
 import numpy
@@ -269,6 +270,18 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
             self.qubit_operator, self.n_qubits, options=options
         )
         self.assertTrue(numpy.allclose(parallel_qubit_op * self.vec, self.expected_matvec))
+
+    @unittest.skipIf(sys.platform == 'win32', 'forkserver multiprocessing is Unix-only')
+    def test_matvec_large_vector_multiprocess(self):
+        """Regression test for imap_unordered/pool.join() pipe deadlock (#1405)."""
+        n_qubits = 14
+        qubit_operator = QubitOperator('Z0') + QubitOperator('Z1') + QubitOperator('Z2')
+        options = LinearQubitOperatorOptions(processes=2)
+        parallel_op = ParallelLinearQubitOperator(qubit_operator, n_qubits, options=options)
+        serial_op = LinearQubitOperator(qubit_operator, n_qubits)
+
+        vec = numpy.ones(2**n_qubits, dtype=complex)
+        self.assertTrue(numpy.allclose(parallel_op * vec, serial_op * vec))
 
 
 class UtilityFunctionTest(unittest.TestCase):
