@@ -196,7 +196,9 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         pool.close()
         # Consume results before join(): imap_unordered uses a bounded pipe and
         # workers block on write if the main process has not read them yet.
+    try:
         result = functools.reduce(numpy.add, vecs)
+    finally:
         pool.join()
         return result
 
