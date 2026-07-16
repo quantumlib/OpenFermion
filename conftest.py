@@ -68,10 +68,10 @@ def set_threadpool_limits():
         yield
 
 
-def pytest_addoption(parser: Any) -> None:
+def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption("--skipslow", action="store_true", help="skips slow tests")
 
 
-def pytest_runtest_setup(item: Any) -> None:
-    if "slow" in item.keywords and item.config.getvalue("skipslow"):
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    if "slow" in item.keywords and item.config.getoption("skipslow"):
         pytest.skip("skipped because of --skipslow option")
