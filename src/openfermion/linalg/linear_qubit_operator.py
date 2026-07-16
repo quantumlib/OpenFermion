@@ -115,7 +115,7 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         """
         arr = numpy.asarray(x)
         vec = arr.reshape(-1)
-        indices = numpy.arange(vec.size, dtype=numpy.uint64)
+        indices = None
         retvec = numpy.zeros(vec.size, dtype=complex)
 
         for qubit_term, coefficient in self.qubit_operator.terms.items():
@@ -133,9 +133,12 @@ class LinearQubitOperator(scipy.sparse.linalg.LinearOperator):
                 else:
                     z_mask ^= bit
 
-            amplitudes = coefficient * [1, 1j, -1, -1j][y_count % 4] * vec
+            amplitudes = coefficient * (1, 1j, -1, -1j)[y_count % 4] * vec
+            if z_mask or x_mask:
+                if indices is None:
+                    indices = numpy.arange(vec.size, dtype=numpy.uint64)
             if z_mask:
-                signs = 1 - 2 * _bit_parity(indices & numpy.uint64(z_mask)).astype(numpy.int64)
+                signs = 1 - 2 * _bit_parity(indices & numpy.uint64(z_mask)).astype(numpy.int8)
                 amplitudes = signs * amplitudes
             if x_mask:
                 retvec[indices ^ numpy.uint64(x_mask)] += amplitudes
