@@ -367,3 +367,11 @@ The lists of OpenFermion dependencies in `dev_tools/requirements/envs/` and
 pip install -r dev_tools/requirements/envs/dev.env.txt
 ./dev_tools/requirements/create-env-files.sh
 ```
+
+When a pull request changes files under `dev_tools/requirements/deps/`, the
+[`regenerate-env-files` workflow](.github/workflows/regenerate-env-files.yaml)
+automatically runs `create-env-files.sh` and pushes any resulting updates back to
+the same branch. After a dependency update is merged to `main`, that workflow can
+also open a follow-up pull request if the compiled environment files are still out
+of date. Maintainers can trigger regeneration manually from the
+[Actions tab](https://github.com/quantumlib/OpenFermion/actions/workflows/regenerate-env-files.yaml).
