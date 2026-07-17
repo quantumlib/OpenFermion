@@ -106,8 +106,8 @@ title: OpenFermion
 authors:
 - name: The OpenFermion Developers
 abstract: The electronic structure package for quantum computers.
-version: 1.8.0
-date-released: 2026-07-14
+version: 1.8.1
+date-released: 2026-07-17
 url: https://github.com/quantumlib/openfermion
 repository-code: https://github.com/quantumlib/openfermion
 license: Apache-2.0
