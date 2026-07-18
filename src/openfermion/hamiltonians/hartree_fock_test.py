@@ -100,8 +100,8 @@ def test_gradient():
     mo_obi = molecule.one_body_integrals
     mo_tbi = molecule.two_body_integrals
     rotation_mat = molecule.canonical_orbitals.T.dot(overlap)
-    obi = general_basis_change(mo_obi, rotation_mat, (1, 0))
-    tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0))
+    obi = general_basis_change(mo_obi, rotation_mat, (1, 0), transpose=False)
+    tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0), transpose=False)
     hff = HartreeFockFunctional(
         one_body_integrals=obi,
         two_body_integrals=tbi,
@@ -150,8 +150,8 @@ def test_gradient_lih():
     mo_obi = molecule.one_body_integrals
     mo_tbi = molecule.two_body_integrals
     rotation_mat = molecule.canonical_orbitals.T.dot(overlap)
-    obi = general_basis_change(mo_obi, rotation_mat, (1, 0))
-    tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0))
+    obi = general_basis_change(mo_obi, rotation_mat, (1, 0), transpose=False)
+    tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0), transpose=False)
 
     hff = HartreeFockFunctional(
         one_body_integrals=obi,
@@ -201,8 +201,8 @@ def test_rhf_func_generator():
     mo_obi = molecule.one_body_integrals
     mo_tbi = molecule.two_body_integrals
     rotation_mat = molecule.canonical_orbitals.T.dot(overlap)
-    obi = general_basis_change(mo_obi, rotation_mat, (1, 0))
-    tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0))
+    obi = general_basis_change(mo_obi, rotation_mat, (1, 0), transpose=False)
+    tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0), transpose=False)
 
     hff = HartreeFockFunctional(
         one_body_integrals=obi,
@@ -273,8 +273,8 @@ def test_rhf_min():
     mo_obi = molecule.one_body_integrals
     mo_tbi = molecule.two_body_integrals
     rotation_mat = molecule.canonical_orbitals.T.dot(overlap)
-    obi = general_basis_change(mo_obi, rotation_mat, (1, 0))
-    tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0))
+    obi = general_basis_change(mo_obi, rotation_mat, (1, 0), transpose=False)
+    tbi = general_basis_change(mo_tbi, rotation_mat, (1, 1, 0, 0), transpose=False)
     hff = HartreeFockFunctional(
         one_body_integrals=obi,
         two_body_integrals=tbi,

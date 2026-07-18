@@ -14,6 +14,7 @@ fermionic ladder operators."""
 
 import copy
 import itertools
+import warnings
 import operator
 
 import numpy
@@ -28,7 +29,12 @@ class PolynomialTensorError(Exception):
     pass
 
 
-def general_basis_change(general_tensor, rotation_matrix, key):
+def general_basis_change(
+    general_tensor: numpy.ndarray,
+    rotation_matrix: numpy.ndarray,
+    key: tuple[int, ...],
+    transpose: bool | None = None,
+) -> numpy.ndarray:
     r"""Change the basis of a general interaction tensor.
 
     M'^{p_1p_2...p_n} = R^{p_1}_{a_1} R^{p_2}_{a_2} ...
@@ -52,10 +58,28 @@ def general_basis_change(general_tensor, rotation_matrix, key):
             $a^\dagger_p a_q$ would have a key of (1, 0) whereas a tensor
             storing coefficients of $a^\dagger_p a_q a_r a^\dagger_s$
             would have a key of (1, 0, 0, 1).
+        transpose: If True, transposes the rotation matrix before applying it.
+            If False, the rotation matrix is not transposed.
+            If None (default), behaves as True to maintain backwards
+            compatibility, but raises a FutureWarning.
 
     Returns:
         transformed_general_tensor: general_tensor in the rotated basis.
     """
+    if transpose is None:
+        warnings.warn(
+            "general_basis_change was called without specifying the 'transpose' "
+            "parameter. The current default is transpose=True to maintain backwards "
+            "compatibility, but this will change to transpose=False in a future release. "
+            "Specify the value of 'transpose' explicitly to silence this warning.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        transpose = True
+
+    if transpose:
+        rotation_matrix = rotation_matrix.T
+
     # If operator acts on spin degrees of freedom, enlarge rotation matrix.
     n_orbitals = rotation_matrix.shape[0]
     if general_tensor.shape[0] == 2 * n_orbitals:
@@ -360,7 +384,7 @@ class PolynomialTensor:
             strings.append('{} {}\n'.format(key, self[key]))
         return ''.join(strings) if strings else '0'
 
-    def rotate_basis(self, rotation_matrix):
+    def rotate_basis(self, rotation_matrix: numpy.ndarray, transpose: bool | None = None) -> None:
         """
         Rotate the orbital basis of the PolynomialTensor.
 
@@ -368,13 +392,28 @@ class PolynomialTensor:
             rotation_matrix: A square numpy array or matrix having
                 dimensions of n_qubits by n_qubits. Assumed to be real and
                 invertible.
+            transpose: If True, transposes the rotation matrix before applying it.
+                If False, does not transpose the rotation matrix.
+                If None (default), behaves as True to maintain backwards
+                compatibility, but raises a FutureWarning.
         """
+        if transpose is None:
+            warnings.warn(
+                "PolynomialTensor.rotate_basis was called without specifying the 'transpose' "
+                "parameter. The current default is transpose=True to maintain backwards "
+                "compatibility, but this will change to transpose=False in a future release. "
+                "Specify the value of 'transpose' explicitly to silence this warning.",
+                FutureWarning,
+                stacklevel=2,
+            )
+            transpose = True
+
         for key in self.n_body_tensors:
             if key == ():
                 pass
             else:
                 self.n_body_tensors[key] = general_basis_change(
-                    self.n_body_tensors[key], rotation_matrix, key
+                    self.n_body_tensors[key], rotation_matrix, key, transpose=transpose
                 )
 
     def __repr__(self):

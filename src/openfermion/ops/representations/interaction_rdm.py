@@ -12,6 +12,7 @@
 """Class and functions to store reduced density matrices."""
 
 import copy
+import warnings
 import numpy
 
 from openfermion.ops.operators import FermionOperator, QubitOperator
@@ -61,7 +62,7 @@ class InteractionRDM(PolynomialTensor):
         """Set the value of the two-body tensor."""
         self.n_body_tensors[1, 1, 0, 0] = value
 
-    def rotate_basis(self, rotation_matrix):
+    def rotate_basis(self, rotation_matrix: numpy.ndarray, transpose: bool | None = None) -> None:
         """Rotate the orbital basis of the InteractionRDM.
 
         Note that rotating the basis of an RDM M via some rotation uses the
@@ -75,8 +76,22 @@ class InteractionRDM(PolynomialTensor):
         Args:
             rotation_matrix: A square numpy array or matrix having
                 dimensions of n_qubits by n_qubits. Assumed to be unitary.
+            transpose: If True, transposes the rotation matrix before applying it.
+                If False, the rotation matrix is not transposed.
+                If None (default), behaves as True to maintain backwards
+                compatibility, but raises a FutureWarning.
         """
-        super().rotate_basis(numpy.conjugate(rotation_matrix))
+        if transpose is None:
+            warnings.warn(
+                "InteractionRDM.rotate_basis was called without specifying the 'transpose' "
+                "parameter. The current default is transpose=True to maintain backwards "
+                "compatibility, but this will change to transpose=False in a future release. "
+                "Specify the value of 'transpose' explicitly to silence this warning.",
+                FutureWarning,
+                stacklevel=2,
+            )
+            transpose = True
+        super().rotate_basis(numpy.conjugate(rotation_matrix), transpose=transpose)
 
     def expectation(self, operator):
         """Return expectation value of an InteractionRDM with an operator.
