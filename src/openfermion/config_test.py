@@ -217,4 +217,3 @@ class ConftestTest(unittest.TestCase):
         item.config.getoption.return_value = False
 
         conftest.pytest_runtest_setup(item)
-
