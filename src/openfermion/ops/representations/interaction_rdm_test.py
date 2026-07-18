@@ -96,15 +96,49 @@ class InteractionRDMTest(unittest.TestCase):
         u, _ = numpy.linalg.qr(x)  # QR decomposition guarantees u is unitary
 
         # Compute reference RDM
-        expected_one_body = general_basis_change(temp_one_body, u, (0, 1))
-        expected_two_body = general_basis_change(temp_two_body, u, (0, 0, 1, 1))
+        expected_one_body = general_basis_change(temp_one_body, u, (0, 1), transpose=False)
+        expected_two_body = general_basis_change(temp_two_body, u, (0, 0, 1, 1), transpose=False)
 
         # Rotate RDM
-        temp_rdm.rotate_basis(u)
+        temp_rdm.rotate_basis(u, transpose=False)
 
         # Compare
         self.assertTrue(numpy.allclose(temp_rdm.one_body_tensor, expected_one_body))
         self.assertTrue(numpy.allclose(temp_rdm.two_body_tensor, expected_two_body))
+
+    def test_rotate_basis_transpose(self):
+        """Test RDM basis set rotation with transpose=True"""
+        # Get molecular RDM
+        temp_rdm = self.molecule.get_molecular_rdm()
+        temp_one_body = temp_rdm.one_body_tensor
+        temp_two_body = temp_rdm.two_body_tensor
+        n_orbitals = temp_rdm.n_body_tensors[(1, 0)].shape[0]
+
+        # Generate random rotation matrix U
+        x = numpy.random.rand(n_orbitals, n_orbitals) + 1j * numpy.random.rand(
+            n_orbitals, n_orbitals
+        )
+        u, _ = numpy.linalg.qr(x)  # QR decomposition guarantees u is unitary
+
+        # Compute reference RDM
+        expected_one_body = general_basis_change(temp_one_body, u, (0, 1), transpose=False)
+        expected_two_body = general_basis_change(temp_two_body, u, (0, 0, 1, 1), transpose=False)
+
+        # Rotate RDM
+        temp_rdm.rotate_basis(u.T, transpose=True)
+
+        # Compare
+        self.assertTrue(numpy.allclose(temp_rdm.one_body_tensor, expected_one_body))
+        self.assertTrue(numpy.allclose(temp_rdm.two_body_tensor, expected_two_body))
+
+    def test_rotate_basis_warning(self):
+        """Test that calling rotate_basis without transpose raises a warning."""
+        n_orbitals = 2
+        one_body_rdm = numpy.identity(n_orbitals)
+        two_body_rdm = numpy.zeros((n_orbitals, n_orbitals, n_orbitals, n_orbitals))
+        rdm = InteractionRDM(one_body_rdm, two_body_rdm)
+        with self.assertWarns(FutureWarning):
+            rdm.rotate_basis(numpy.identity(n_orbitals))
 
     def test_expectation_rotation_invariance(self):
         """Test invariance of expectation value under basis rotations."""
@@ -140,8 +174,8 @@ class InteractionRDMTest(unittest.TestCase):
         exp_before = rdm.expectation(op)
 
         # Rotate both RDM and Operator with U
-        rdm.rotate_basis(u)
-        op.rotate_basis(u)
+        rdm.rotate_basis(u, transpose=False)
+        op.rotate_basis(u, transpose=False)
 
         # Calculate expectation value in rotated basis
         exp_after = rdm.expectation(op)
