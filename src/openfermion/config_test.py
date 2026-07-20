@@ -170,3 +170,50 @@ class SetThreadingLimitsTest(unittest.TestCase):
             with patch("openfermion.config.get_available_cpu_count", return_value=8):
                 set_threading_limits()
                 self.assertEqual(os.environ.get("OMP_NUM_THREADS"), "7")
+
+
+class ConftestTest(unittest.TestCase):
+
+    def test_pytest_addoption(self):
+        import conftest
+        from unittest.mock import MagicMock
+
+        parser = MagicMock()
+        conftest.pytest_addoption(parser)
+        parser.addoption.assert_called_once_with(
+            "--skipslow", action="store_true", help="skips slow tests"
+        )
+
+    def test_pytest_runtest_setup_skips(self):
+        import conftest
+        import pytest
+        from unittest.mock import MagicMock
+
+        # Create mock item representing a slow test when skipslow is True.
+        item = MagicMock()
+        item.keywords = {"slow"}
+        item.config.getoption.return_value = True
+
+        with self.assertRaises(pytest.skip.Exception):
+            conftest.pytest_runtest_setup(item)
+
+        item.config.getoption.assert_called_once_with("skipslow")
+
+    def test_pytest_runtest_setup_does_not_skip_if_not_slow(self):
+        import conftest
+        from unittest.mock import MagicMock
+
+        # Test case 1: Not marked as 'slow', skipslow is True.
+        item = MagicMock()
+        item.keywords = set()
+        item.config.getoption.return_value = True
+
+        # Should not raise an exception.
+        conftest.pytest_runtest_setup(item)
+
+        # Test case 2: Marked as 'slow', skipslow is False.
+        item = MagicMock()
+        item.keywords = {"slow"}
+        item.config.getoption.return_value = False
+
+        conftest.pytest_runtest_setup(item)
