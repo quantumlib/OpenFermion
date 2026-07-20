@@ -31,7 +31,7 @@ What version does this happen in? Write the version number below.
 ### What computing environment are you using?
 <!--
 Please tell us what kind of computing system you are using (e.g.,
-Linux, Mac, Windows, Google Colab, Google Cloud, etc.) as well as the
+Linux, Mac, Windows, Google Colab, Google Cloud, etc.) as well as
 the version, and if relevant, any special hardware features it has,
 such as a GPU.
 -->
