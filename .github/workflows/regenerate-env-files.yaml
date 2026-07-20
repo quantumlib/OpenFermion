@@ -1,0 +1,165 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Regenerate compiled environment files when dependency inputs change.
+#
+# Dependabot updates dev_tools/requirements/deps/*.txt but cannot run
+# dev_tools/requirements/create-env-files.sh. This workflow runs that script
+# under maintainer control:
+#   * On pull requests that change deps inputs, results are pushed back to the
+#     same branch so reviewers can merge deps and env files together.
+#   * After a merge to main, a follow-up pull request is opened if env files
+#     are still out of date (requires the repository setting that allows GitHub
+#     Actions to create pull requests).
+#   * Manual invocation pushes directly to the selected branch.
+#
+# Manual invocation:
+# https://github.com/quantumlib/OpenFermion/actions/workflows/regenerate-env-files.yaml
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+name: Regenerate environment files
+run-name: >-
+  Regenerate environment files
+  ${{github.event_name == 'workflow_dispatch' && ' (manual)' || '' }}
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths:
+      - 'dev_tools/requirements/deps/**'
+
+  pull_request:
+    paths:
+      - 'dev_tools/requirements/deps/**'
+
+permissions: read-all
+
+concurrency:
+  group: >-
+    regenerate-env-files-${{github.event.pull_request.number || github.ref}}
+  cancel-in-progress: true
+
+jobs:
+  regenerate:
+    name: Regenerate environment files
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || github.event_name == 'push'
+      || (github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository)
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      CHECKOUT_REF: ${{github.event.pull_request.head.ref || github.ref}}
+    steps:
+      - name: Check out a copy of the git repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{env.CHECKOUT_REF}}
+          fetch-depth: 0
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/0.11.28/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Regenerate environment files
+        run: ./dev_tools/requirements/create-env-files.sh
+
+      - name: Commit and publish if changed
+        id: publish
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          EVENT_NAME: ${{github.event_name}}
+          PR_HEAD_REF: ${{github.event.pull_request.head.ref}}
+          REF_NAME: ${{github.ref_name}}
+          REF_FULL: ${{github.ref}}
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- \
+              dev_tools/requirements/envs \
+              dev_tools/requirements/max_compat; then
+            echo "Environment files are already up to date."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dev_tools/requirements/envs dev_tools/requirements/max_compat
+          git commit \
+            -m "Regenerate environment files after dependency update" \
+            -m "Automated commit from the regenerate-env-files workflow."
+
+          if [[ "${EVENT_NAME}" == "pull_request" ]]; then
+            git push origin "HEAD:${PR_HEAD_REF}"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            git push origin "HEAD:${REF_NAME}"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${EVENT_NAME}" == "push" && "${REF_FULL}" == "refs/heads/main" ]]; then
+            branch="automation/regenerate-env-files-${GITHUB_RUN_ID}"
+            git checkout -b "${branch}"
+            git push origin "${branch}"
+            pr_body_file="$(mktemp)"
+            printf '%s\n' \
+              'Automated regeneration triggered by a push to main that changed' \
+              'files under dev_tools/requirements/deps/. Review and merge to' \
+              'keep compiled environment files in sync.' \
+              > "${pr_body_file}"
+            gh pr create \
+              --title "Regenerate environment files after dependency update" \
+              --body-file "${pr_body_file}" \
+              --base main \
+              --head "${branch}"
+            rm -f "${pr_body_file}"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git push origin "HEAD:${REF_NAME}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on pull request
+        if: >-
+          steps.publish.outputs.changed == 'true'
+          && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          PR_NUMBER: ${{github.event.pull_request.number}}
+        run: |
+          comment_body_file="$(mktemp)"
+          printf '%s\n' \
+            'Regenerated compiled environment files in' \
+            'dev_tools/requirements/envs/ and dev_tools/requirements/max_compat/' \
+            'using dev_tools/requirements/create-env-files.sh.' \
+            > "${comment_body_file}"
+          gh pr comment "${PR_NUMBER}" --body-file "${comment_body_file}"
+          rm -f "${comment_body_file}"
