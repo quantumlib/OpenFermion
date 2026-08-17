@@ -6,12 +6,12 @@ from openfermion.contrib.representability._multitensor import MultiTensor, TMap
 from openfermion.contrib.representability._dualbasis import DualBasis, DualBasisElement
 
 
-@pytest.fixture(name='rng')
-def rng_fixture() -> np.random.Generator:
+@pytest.fixture
+def rng() -> np.random.Generator:
     return np.random.default_rng(0)
 
 
-def test_tmap(rng):
+def test_tmap(rng: np.random.Generator) -> None:
     a = rng.random((5, 5))
     b = rng.random((4, 4))
     c = rng.random((3, 3))
@@ -28,7 +28,7 @@ def test_tmap(rng):
         assert np.allclose(iterated_tensor.data, tmp_tensors[idx])
 
 
-def test_multitensor_init(rng):
+def test_multitensor_init(rng: np.random.Generator) -> None:
     """
     Testing the generation of a multitensor object with random tensors
     """
@@ -48,7 +48,7 @@ def test_multitensor_init(rng):
     assert np.isclose(mt.vec_dim, 5**2 + 4**2 + 3**2)
 
 
-def test_multitensor_offsetmap(rng):
+def test_multitensor_offsetmap(rng: np.random.Generator) -> None:
     a = rng.random((5, 5, 5, 5))
     b = rng.random((4, 4, 4))
     c = rng.random((3, 3))
@@ -60,7 +60,7 @@ def test_multitensor_offsetmap(rng):
     assert mt.off_set_map == {'a': 0, 'b': 5**4, 'c': 5**4 + 4**3}
 
 
-def test_vectorize_test(rng):
+def test_vectorize_test(rng: np.random.Generator) -> None:
     a = rng.random((5, 5))
     b = rng.random((4, 4))
     c = rng.random((3, 3))
@@ -84,7 +84,7 @@ def test_vectorize_test(rng):
     assert np.allclose(vec, mt.vectorize_tensors())
 
 
-def test_add_dualelement(rng):
+def test_add_dualelement(rng: np.random.Generator) -> None:
     a = rng.random((5, 5, 5, 5))
     b = rng.random((4, 4, 4))
     c = rng.random((3, 3))
@@ -112,7 +112,7 @@ def test_add_dualelement(rng):
     assert isinstance(mt.dual_basis[1], DualBasisElement)
 
 
-def test_multitensor_init_isolation(rng):
+def test_multitensor_init_isolation(rng: np.random.Generator) -> None:
     # Test that different MultiTensor instances don't share the same dual_basis.
     a = rng.random((2, 2))
     at = Tensor(tensor=a, name='a')
@@ -127,7 +127,7 @@ def test_multitensor_init_isolation(rng):
     assert len(mt2.dual_basis) == 0
 
 
-def test_synthesis_element(rng):
+def test_synthesis_element(rng: np.random.Generator) -> None:
     a = rng.random((5, 5))
     b = rng.random((4, 4))
     c = rng.random((3, 3))
@@ -140,7 +140,7 @@ def test_synthesis_element(rng):
     dbe.add_element('a', (0, 1), 4)
     dbe.add_element('a', (1, 0), 4)
     with pytest.raises(TypeError):
-        dbe.add_element(5)
+        dbe.add_element(5)  # type: ignore[call-arg]
 
     with pytest.raises(TypeError):
         mt.add_dual_elements(5)
@@ -149,10 +149,11 @@ def test_synthesis_element(rng):
     colidx, data_vals = mt.synthesize_element(dbe)
     assert data_vals == [4, 4]
     assert colidx == [1, 5]
+    assert at.data is not None
     assert [at.data[0, 1], at.data[1, 0]] == [at(0, 1), at(1, 0)]
 
 
-def test_synthesis_dualbasis(rng):
+def test_synthesis_dualbasis(rng: np.random.Generator) -> None:
     a = rng.random((5, 5))
     b = rng.random((4, 4))
     c = rng.random((3, 3))
@@ -173,7 +174,7 @@ def test_synthesis_dualbasis(rng):
     assert c.shape == (1, 1)
 
 
-def test_dual_basis_element(rng):
+def test_dual_basis_element(rng: np.random.Generator) -> None:
     de = DualBasisElement()
     de_2 = DualBasisElement()
     db_0 = de + de_2
@@ -182,12 +183,12 @@ def test_dual_basis_element(rng):
     assert isinstance(db_1, DualBasis)
 
     dim = 2
-    opdm = rng.random((dim, dim))
-    opdm = (opdm.T + opdm) / 2
-    opdm = Tensor(tensor=opdm, name='opdm')
+    opdm_data = rng.random((dim, dim))
+    opdm_data = (opdm_data.T + opdm_data) / 2
+    opdm = Tensor(tensor=opdm_data, name='opdm')
     rdm = MultiTensor([opdm])
 
-    def generate_dual_basis_element(i, j):
+    def generate_dual_basis_element(i: int, j: int) -> DualBasisElement:
         element = DualBasisElement(
             tensor_names=["opdm"],
             tensor_elements=[(i, j)],
@@ -205,13 +206,13 @@ def test_dual_basis_element(rng):
     rdm.dual_basis = opdm_to_oqdm_map
     A, b, _ = rdm.synthesize_dual_basis()
     Adense = A.todense()
-    opdm_flat = opdm.data.reshape((-1, 1))
+    opdm_flat = opdm_data.reshape((-1, 1))
     oqdm = Adense.dot(opdm_flat)
     test_oqdm = oqdm + b.todense()
-    assert np.allclose(test_oqdm.reshape((dim, dim)), np.eye(dim) - opdm.data)
+    assert np.allclose(test_oqdm.reshape((dim, dim)), np.eye(dim) - opdm_data)
 
 
-def test_cover_make_offset_dict(rng):
+def test_cover_make_offset_dict(rng: np.random.Generator) -> None:
     a = rng.random((5, 5))
     b = rng.random((4, 4))
     c = rng.random((3, 3))
