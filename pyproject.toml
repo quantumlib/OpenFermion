@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ requires = ["setuptools>=78.1.1", "wheel"]
 
 [project]
 name = "openfermion"
-description = "The electronic structure package for quantum computers."
+description = "Package to compile and analyze quantum algorithms for simulating fermionic systems."
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "Apache-2.0"
 authors = [
@@ -104,13 +104,14 @@ dev = [
     "black",
     "mypy",
     "pandas-stubs",
-    "pylint~=3.3",
+    "pylint~=4.0",
     "types-networkx",
     "types-requests",
     "types-setuptools",
 
     # Testing.
     "nbformat",
+    "psutil",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
@@ -118,6 +119,7 @@ dev = [
     "pytest-retry",
     "pytest-xdist",
     "tensorflow-docs",
+    "threadpoolctl",
 
     # Resource-estimate runtime deps (see resource_estimates_runtime.txt).
     "ase",

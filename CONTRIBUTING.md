@@ -235,8 +235,7 @@ After that, the hooks will run automatically when triggered by the corresponding
     uv sync --group dev
     ```
 
-    Package metadata and runtime dependencies are defined in `pyproject.toml` (there is no
-    `setup.py`).
+    Package metadata and runtime dependencies are defined in `pyproject.toml`.
 
 Please refer to the section _Developer install_ of the [installation instructions](docs/install.md)
 for information about how to set up a local copy of the software for development.
