@@ -300,10 +300,10 @@ class BinaryCode:
     def __str__(self):
         """Return an easy-to-read string representation."""
 
-        def convert_to_native(value):
+        def to_python_type(value):
             return getattr(value, "tolist", lambda: value)()
 
-        string_return = [list(map(list, convert_to_native(self.encoder.toarray())))]
+        string_return = [list(map(list, to_python_type(self.encoder.toarray())))]
 
         dec_str = '['
         for term in self.decoder:

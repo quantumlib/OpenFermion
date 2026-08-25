@@ -67,7 +67,7 @@ repos:
 
       - id: no-commit-to-branch
         name: 'The commit is not being made to the main branch'
-        args: [--branch, main, --branch, master]
+        args: [--branch, main]
 
       - id: check-merge-conflict
         name: "Files are free of git merge conflict strings"
