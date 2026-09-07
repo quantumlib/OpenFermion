@@ -331,6 +331,18 @@ class ParallelLinearQubitOperatorSingleProcessTest(unittest.TestCase):
         ]
         self.assertTrue(numpy.allclose(self.parallel_op * self.vec, self.serial_op * self.vec))
 
+    def test_options_without_processes_defaults_to_single_process(self):
+        """Missing or None processes should not break construction or matvec."""
+
+        class OptionsWithoutProcesses:
+            pool = None
+
+        parallel_op = ParallelLinearQubitOperator(
+            self.qubit_operator, self.n_qubits, options=OptionsWithoutProcesses()
+        )
+        self.assertEqual(len(parallel_op.linear_operators), 1)
+        self.assertTrue(numpy.allclose(parallel_op * self.vec, self.serial_op * self.vec))
+
 
 class AccumulateVectorsTest(unittest.TestCase):
     """Tests for in-place vector accumulation helper (#1410)."""
