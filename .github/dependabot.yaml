@@ -25,6 +25,8 @@ updates:
     labels:
       - "area/dependencies"
       - "area/docker"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "github-actions"
     # The "github-actions" code explicitly looks in /.github/workflows if the
@@ -35,6 +37,8 @@ updates:
     labels:
       - "area/dependencies"
       - "area/devops"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "pip"
     # OpenFermion has requirements.txt files in multiple places.
@@ -46,3 +50,5 @@ updates:
     versioning-strategy: "increase-if-necessary"
     labels:
       - "area/dependencies"
+    cooldown:
+      default-days: 7

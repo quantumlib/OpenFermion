@@ -39,7 +39,8 @@ concurrency:
   group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
 # Declare default workflow permissions as read only.
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   run-scorecard:
@@ -47,12 +48,12 @@ jobs:
     if: >-
       github.repository_owner == 'quantumlib' &&
       (github.event_name != 'pull_request' ||
-       github.event.pull_request.head.repo.fork == false)
+       github.event.pull_request.head.repo.full_name == github.repository)
     name: Scorecard analyzer
     runs-on: ubuntu-24.04
     permissions:
-      security-events: write
-      id-token: write
+      security-events: write # Needed to upload SARIF results to GitHub Code Scanning dashboard.
+      id-token: write # Needed to sign and publish Scorecard results.
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
@@ -83,10 +84,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Write the Scorecard report page link to the workflow summary
+        env:
+          REPO: ${{github.repository}}
         run: |
-          repo="${{github.repository}}"
-          url="https://scorecard.dev/viewer/?uri=github.com/${repo}"
+          url="https://scorecard.dev/viewer/?uri=github.com/${REPO}"
           {
           echo -n "The results are available on the OpenSSF Scorecard "
-          echo "[report page for ${{github.repository}}]($url)."
+          echo "[report page for ${REPO}]($url)."
           } >> "$GITHUB_STEP_SUMMARY"

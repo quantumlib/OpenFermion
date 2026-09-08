@@ -35,8 +35,13 @@ on:
   # Allow manual invocation.
   workflow_dispatch:
 
+concurrency:
+  cancel-in-progress: true
+  group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
+
 # Declare default workflow permissions as read only.
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   Pytest:
@@ -75,6 +80,8 @@ jobs:
     steps:
       - name: Check out a copy of the OpenFermion git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python ${{matrix.python-version}}
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -89,7 +96,11 @@ jobs:
         run: pip install -r dev_tools/requirements/envs/pytest.env.txt
 
       - name: Install cirq-core (current stable version)
-        run: pip install -U cirq-core ${{inputs.args}}
+        env:
+          INSTALL_ARGS: ${{inputs.args}}
+        run: |
+          # shellcheck disable=SC2086
+          pip install -U cirq-core $INSTALL_ARGS
 
       - name: Set up Pytest output problem matcher
         run: echo '::add-matcher::.github/problem-matchers/pytest.json'
