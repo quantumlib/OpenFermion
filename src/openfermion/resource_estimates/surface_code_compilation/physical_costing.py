@@ -177,7 +177,7 @@ def cost_estimator(
     routing_overhead_proportion=0.5,
 ):
     """Produce best cost in terms of physical qubits and real run time based on
-     number of toffoli, number of logical qubits, and physical error rate.
+    number of toffoli, number of logical qubits, and physical error rate.
     """
     best_cost = None
     best_params = None
