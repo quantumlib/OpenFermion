@@ -169,7 +169,7 @@ def _physical_qubits_per_logical_qubit(code_distance: int) -> int:
 
 
 def cost_estimator(
-    num_logical_qubits, num_toffoli, physical_error_rate=1.0e-3, portion_of_bounding_box=1.0
+    num_logical_qubits, num_toffoli, physical_error_rate=1.0e-3, portion_of_bounding_box=1.0, factory_count = 4, routing_overhead_proportion = 0.5
 ):
     """
     Produce best cost in terms of physical qubits and real run time based on
@@ -187,8 +187,8 @@ def cost_estimator(
                 magic_state_factory=factory,
                 toffoli_count=num_toffoli,
                 max_allocated_logical_qubits=num_logical_qubits,
-                factory_count=4,
-                routing_overhead_proportion=0.5,
+                factory_count= factory_count,
+                routing_overhead_proportion= routing_overhead_proportion,
                 proportion_of_bounding_box=portion_of_bounding_box,
             )
             cost = params.estimate_cost()
