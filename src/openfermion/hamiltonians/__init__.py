@@ -28,6 +28,8 @@ from .hartree_fock import (
 
 from .hubbard import bose_hubbard, fermi_hubbard
 
+from .orbital_optimization import optimize_orbitals
+
 from .jellium import (
     dual_basis_kinetic,
     dual_basis_potential,

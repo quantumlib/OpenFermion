@@ -57,6 +57,7 @@ from openfermion.hamiltonians import (
     generate_hamiltonian,
     bose_hubbard,
     fermi_hubbard,
+    optimize_orbitals,
     dual_basis_kinetic,
     dual_basis_potential,
     dual_basis_jellium_model,
