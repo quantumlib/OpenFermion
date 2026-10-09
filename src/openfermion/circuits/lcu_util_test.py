@@ -29,16 +29,16 @@ class LambdaNormTest(unittest.TestCase):
     def test_random(self):
         # Create random DiagonalCoulombHamiltonian.
         n_qubits = 8
-        random.seed(n_qubits)
+        rng = random.Random(n_qubits)
         one_body = numpy.zeros((n_qubits, n_qubits), float)
         two_body = numpy.zeros((n_qubits, n_qubits), float)
         for p in range(8):
             for q in range(p, 8):
-                one_body[p, q] = random.random()
-                two_body[p, q] = random.random()
+                one_body[p, q] = rng.random()
+                two_body[p, q] = rng.random()
         one_body += one_body.T
         two_body += two_body.T
-        diagonal_operator = DiagonalCoulombHamiltonian(one_body, two_body, random.random())
+        diagonal_operator = DiagonalCoulombHamiltonian(one_body, two_body, rng.random())
 
         # Compute the lambda norm using expensive (reliable) method.
         qubit_operator = jordan_wigner(diagonal_operator)
@@ -72,11 +72,11 @@ class DiscretizeDistributionTest(unittest.TestCase):
         return numers, denom
 
     def test_fuzz(self):
-        random.seed(8)
+        rng = random.Random(8)
         for _ in range(100):
-            n = random.randint(1, 50)
-            weights = [random.random() for _ in range(n)]
-            self.assertGetDiscretizedDistribution(weights, 2 ** -random.randint(1, 20))
+            n = rng.randint(1, 50)
+            weights = [rng.random() for _ in range(n)]
+            self.assertGetDiscretizedDistribution(weights, 2 ** -rng.randint(1, 20))
 
     def test_known_discretizations(self):
         self.assertEqual(self.assertGetDiscretizedDistribution([1], 0.25), ([4], 4))
@@ -124,10 +124,10 @@ class PreprocessForEfficientRouletteSelectionTest(unittest.TestCase):
         return alternates, keep_chances
 
     def test_fuzz(self):
-        random.seed(8)
+        rng = random.Random(8)
         for _ in range(100):
-            n = random.randint(1, 50)
-            weights = [random.randint(0, 100) for _ in range(n)]
+            n = rng.randint(1, 50)
+            weights = [rng.randint(0, 100) for _ in range(n)]
             weights[-1] += n - sum(weights) % n  # Ensure multiple of length.
             self.assertPreprocess(weights)
 
@@ -182,12 +182,12 @@ class PreprocessLCUCoefficientsForReversibleSamplingTest(unittest.TestCase):
         return alternates, keep_numers, keep_denom
 
     def test_fuzz(self):
-        random.seed(8)
+        rng = random.Random(8)
         for _ in range(100):
-            n = random.randint(1, 50)
-            weights = [random.randint(0, 100) for _ in range(n)]
+            n = rng.randint(1, 50)
+            weights = [rng.randint(0, 100) for _ in range(n)]
             weights[-1] += n - sum(weights) % n  # Ensure multiple of length.
-            self.assertPreprocess(weights, 2 ** -random.randint(1, 20))
+            self.assertPreprocess(weights, 2 ** -rng.randint(1, 20))
 
     def test_known(self):
         self.assertEqual(self.assertPreprocess([1, 2], epsilon=0.01), ([1, 1], [43, 0], 64))
