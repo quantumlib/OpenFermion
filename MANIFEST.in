@@ -2,7 +2,7 @@ include LICENSE
 include MANIFEST.in
 include NOTICE
 include README.md
+include pyproject.toml
 include dev_tools/requirements/deps/runtime.txt
 include dev_tools/requirements/deps/resource_estimates_runtime.txt
-include setup.py
 recursive-include src *.py *.hdf5 *.h5 bad_type_operator.data geometry_example.txt

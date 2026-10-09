@@ -11,7 +11,6 @@
 #   limitations under the License.
 """LinearQubitOperator is a linear operator from QubitOperator."""
 
-import functools
 import logging
 import multiprocessing
 
@@ -22,6 +21,20 @@ import scipy.sparse.linalg
 
 from openfermion.utils.operator_utils import count_qubits
 from openfermion.config import get_available_cpu_count
+
+
+def _accumulate_vectors(vectors, shape):
+    """Sum vectors into one array without reduce() intermediate allocations.
+
+    `functools.reduce(numpy.add, ...)` builds a new full-sized array for every
+    partial sum. For large state vectors that creates substantial temporary
+    memory pressure. Accumulating with in-place `+=` keeps a single result
+    buffer instead.
+    """
+    result = numpy.zeros(shape, dtype=complex)
+    for vector in vectors:
+        result += vector
+    return result
 
 
 def _bit_parity(values):
@@ -168,14 +181,16 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         self.qubit_operator = qubit_operator
         self.n_qubits = n_qubits
         self.options = options or LinearQubitOperatorOptions()
+        # Duck-typed options may omit processes; default to a single process.
+        processes = getattr(self.options, 'processes', None) or 1
 
-        if not ParallelLinearQubitOperator._start_method_set:
+        # Only required when actually spawning workers; the single-process path
+        # must remain usable on platforms without forkserver (e.g. Windows).
+        if processes > 1 and not ParallelLinearQubitOperator._start_method_set:
             multiprocessing.set_start_method('forkserver', force=True)
             ParallelLinearQubitOperator._start_method_set = True
 
-        self.qubit_operator_groups = list(
-            qubit_operator.get_operator_groups(self.options.processes)
-        )
+        self.qubit_operator_groups = list(qubit_operator.get_operator_groups(processes))
         self.linear_operators = [
             LinearQubitOperator(operator, n_qubits) for operator in self.qubit_operator_groups
         ]
@@ -192,8 +207,11 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         if not self.linear_operators:
             return numpy.zeros(x.shape)
 
-        if self.options.processes <= 1:
-            return functools.reduce(numpy.add, (operator * x for operator in self.linear_operators))
+        processes = getattr(self.options, 'processes', None) or 1
+        if processes <= 1:
+            return _accumulate_vectors(
+                (operator * x for operator in self.linear_operators), x.shape
+            )
 
         pool = self.options.get_pool(len(self.linear_operators))
         vecs = pool.imap_unordered(
@@ -203,10 +221,9 @@ class ParallelLinearQubitOperator(scipy.sparse.linalg.LinearOperator):
         # Consume results before join(): imap_unordered uses a bounded pipe and
         # workers block on write if the main process has not read them yet.
         try:
-            result = functools.reduce(numpy.add, vecs)
+            return _accumulate_vectors(vecs, x.shape)
         finally:
             pool.join()
-        return result
 
 
 def apply_operator(args):

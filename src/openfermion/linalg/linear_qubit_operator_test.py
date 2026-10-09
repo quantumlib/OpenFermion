@@ -22,6 +22,7 @@ from openfermion.linalg.linear_qubit_operator import (
     LinearQubitOperator,
     LinearQubitOperatorOptions,
     ParallelLinearQubitOperator,
+    _accumulate_vectors,
     apply_operator,
     generate_linear_qubit_operator,
 )
@@ -188,6 +189,7 @@ class LinearQubitOperatorTest(unittest.TestCase):
         )
 
 
+@unittest.skipIf(sys.platform == 'win32', 'forkserver multiprocessing is Unix-only')
 class ParallelLinearQubitOperatorTest(unittest.TestCase):
     """Tests for ParallelLinearQubitOperator class."""
 
@@ -284,6 +286,86 @@ class ParallelLinearQubitOperatorTest(unittest.TestCase):
         self.assertTrue(numpy.allclose(parallel_op * vec, serial_op * vec))
 
 
+class ParallelLinearQubitOperatorSingleProcessTest(unittest.TestCase):
+    """Single-process ParallelLinearQubitOperator path (#1410).
+
+    Kept separate so Windows can exercise the processes=1 accumulate path without
+    constructing a default multi-process operator (forkserver is Unix-only).
+    """
+
+    def setUp(self):
+        self.qubit_operator = QubitOperator('Z3') + QubitOperator('Y0') + QubitOperator('X1')
+        self.n_qubits = 4
+        self.vec = numpy.array(range(2**self.n_qubits))
+        self.options = LinearQubitOperatorOptions(processes=1)
+        self.parallel_op = ParallelLinearQubitOperator(
+            self.qubit_operator, self.n_qubits, options=self.options
+        )
+        self.serial_op = LinearQubitOperator(self.qubit_operator, self.n_qubits)
+
+    def test_matvec_matches_expected(self):
+        expected = numpy.array([0, -1, 2, -3, 4, -5, 6, -7, 8, -9, 10, -11, 12, -13, 14, -15])
+        expected = expected + numpy.array(
+            [-8j, -9j, -10j, -11j, -12j, -13j, -14j, -15j, 0j, 1j, 2j, 3j, 4j, 5j, 6j, 7j]
+        )
+        expected += numpy.array([4, 5, 6, 7, 0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11])
+        self.assertTrue(numpy.allclose(self.parallel_op * self.vec, expected))
+
+    def test_matvec_matches_serial(self):
+        self.assertTrue(numpy.allclose(self.parallel_op * self.vec, self.serial_op * self.vec))
+
+    def test_matvec_preserves_input_shape(self):
+        column = self.vec.reshape(-1, 1)
+        result = self.parallel_op * column
+        self.assertEqual(result.shape, column.shape)
+        self.assertTrue(numpy.allclose(result.reshape(-1), (self.serial_op * self.vec)))
+
+    def test_matvec_accumulates_multiple_operator_groups(self):
+        """Force several groups with processes=1 to exercise in-place summing."""
+        # Normal construction with processes=1 yields a single group; override the
+        # operator list to verify accumulation of multiple partial matvecs.
+        self.parallel_op.linear_operators = [
+            LinearQubitOperator(QubitOperator('Z3'), self.n_qubits),
+            LinearQubitOperator(QubitOperator('Y0'), self.n_qubits),
+            LinearQubitOperator(QubitOperator('X1'), self.n_qubits),
+        ]
+        self.assertTrue(numpy.allclose(self.parallel_op * self.vec, self.serial_op * self.vec))
+
+    def test_options_without_processes_defaults_to_single_process(self):
+        """Missing or None processes should not break construction or matvec."""
+
+        class OptionsWithoutProcesses:
+            pool = None
+
+        parallel_op = ParallelLinearQubitOperator(
+            self.qubit_operator, self.n_qubits, options=OptionsWithoutProcesses()
+        )
+        self.assertEqual(len(parallel_op.linear_operators), 1)
+        self.assertTrue(numpy.allclose(parallel_op * self.vec, self.serial_op * self.vec))
+
+
+class AccumulateVectorsTest(unittest.TestCase):
+    """Tests for in-place vector accumulation helper (#1410)."""
+
+    def test_accumulate_vectors_sums_like_numpy_add(self):
+        vectors = [
+            numpy.array([1, 2, 3], dtype=complex),
+            numpy.array([4, 5, 6], dtype=complex),
+            numpy.array([7, 8, 9], dtype=complex),
+        ]
+        expected = vectors[0] + vectors[1] + vectors[2]
+        self.assertTrue(numpy.allclose(_accumulate_vectors(vectors, (3,)), expected))
+
+    def test_accumulate_vectors_empty_iterable(self):
+        self.assertTrue(
+            numpy.allclose(_accumulate_vectors([], (4,)), numpy.zeros(4, dtype=complex))
+        )
+
+    def test_accumulate_vectors_single_vector(self):
+        vector = numpy.array([1j, -2j], dtype=complex)
+        self.assertTrue(numpy.allclose(_accumulate_vectors([vector], (2,)), vector))
+
+
 class UtilityFunctionTest(unittest.TestCase):
     """Tests for utility functions."""
 
@@ -308,8 +390,9 @@ class UtilityFunctionTest(unittest.TestCase):
         self.assertTrue(isinstance(operator, LinearQubitOperator))
         self.assertFalse(isinstance(operator, ParallelLinearQubitOperator))
 
+        # processes=1 exercises ParallelLinearQubitOperator without forkserver.
         operator_again = generate_linear_qubit_operator(
-            qubit_operator, n_qubits, options=LinearQubitOperatorOptions(2)
+            qubit_operator, n_qubits, options=LinearQubitOperatorOptions(1)
         )
         self.assertTrue(isinstance(operator_again, ParallelLinearQubitOperator))
         self.assertFalse(isinstance(operator_again, LinearQubitOperator))
