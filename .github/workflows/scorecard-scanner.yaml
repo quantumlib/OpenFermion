@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 
 name: Scorecard analysis
-run-name: Run Scorecard scanner for security best practices
+run-name: Run Scorecard analyzer
 
 # Scorecard (https://github.com/ossf/scorecard) is a repository-scanning tool
 # that evaluates a project's security practices. Its use is suggested by
@@ -23,23 +23,24 @@ run-name: Run Scorecard scanner for security best practices
 on:
   schedule:
     # Run weekly on Saturdays.
-    - cron:  '30 9 * * 6'
+    - cron: '30 9 * * 6'
 
   pull_request:
-    types: [opened, synchronize]
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
     branches:
       - main
 
-  # Allow manual invocation.
   workflow_dispatch:
 
 concurrency:
-  # Cancel any previously-started but still active runs on the same branch.
   cancel-in-progress: true
   group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
-# Declare default workflow permissions as read only.
-permissions: read-all
+permissions: {}
 
 jobs:
   run-scorecard:
@@ -53,6 +54,11 @@ jobs:
     permissions:
       security-events: write
       id-token: write
+      contents: read
+      actions: read
+      issues: read
+      pull-requests: read
+      checks: read
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
@@ -70,7 +76,7 @@ jobs:
 
       - name: Upload results to code-scanning dashboard
         # yamllint disable rule:line-length
-        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           sarif_file: scorecard-results.sarif
 
