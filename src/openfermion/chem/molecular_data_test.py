@@ -286,7 +286,8 @@ class MolecularDataTest(unittest.TestCase):
 
         # Build random rotation with correction dimension.
         num_spatial_orbitals = self.molecule.n_orbitals
-        rotation_generator = numpy.random.randn(num_spatial_orbitals, num_spatial_orbitals)
+        rng = numpy.random.default_rng(0)
+        rotation_generator = rng.standard_normal((num_spatial_orbitals, num_spatial_orbitals))
         rotation_matrix = scipy.linalg.expm(rotation_generator - rotation_generator.T)
 
         # Compute total energy from RDM under some basis set rotation.
