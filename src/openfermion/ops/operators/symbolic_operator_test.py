@@ -1447,3 +1447,49 @@ class SymbolicOperatorTest2(unittest.TestCase):
     def test_tracenorm_zero(self):
         op = MockOperator2()
         self.assertFalse(op.induced_norm())
+
+    def test_symbolic_operator_sympy_coefficients(self):
+        import sympy
+
+        x = sympy.Symbol('x')
+        y = sympy.Symbol('y')
+
+        # 1. Initialize MockOperator1 with a SymPy symbol coefficient
+        op1 = MockOperator1(((0, 1), (1, 0)), x)
+        self.assertEqual(op1.terms[((0, 1), (1, 0))], x)
+
+        # 2. Scalar multiplication with a SymPy expression
+        op2 = op1 * (2 * y)
+        self.assertEqual(op2.terms[((0, 1), (1, 0))], 2 * x * y)
+
+        # 3. Addition of symbolic operators
+        op3 = MockOperator1(((0, 1), (1, 0)), y)
+        op_sum = op1 + op3
+        self.assertEqual(op_sum.terms[((0, 1), (1, 0))], x + y)
+
+        # 4. Symbolic zero cancellation (x - x -> 0 term should be pruned)
+        op4 = MockOperator1(((0, 1), (1, 0)), -x)
+        op_cancel = op1 + op4
+        self.assertEqual(len(op_cancel.terms), 0)
+
+    def test_compress_sympy_coefficients(self):
+        import sympy
+
+        x = sympy.Symbol('x')
+
+        # Operator with x - x (evaluates to 0 on compress)
+        op = MockOperator1(((0, 1), (1, 0)), x - x)
+        op.compress()
+        self.assertEqual(len(op.terms), 0)
+
+        # Operator with unsimplified expression that simplifies to 0
+        unsimplified_zero = sympy.sin(x) ** 2 + sympy.cos(x) ** 2 - 1
+        op2 = MockOperator1(((0, 1), (1, 0)), unsimplified_zero)
+        op2.compress()
+        self.assertEqual(len(op2.terms), 0)
+
+        # Operator with symbolic number that cannot be converted to complex
+        func_num = sympy.Function('f')(1)
+        op3 = MockOperator1(((0, 1), (1, 0)), func_num)
+        op3.compress()
+        self.assertEqual(len(op3.terms), 1)

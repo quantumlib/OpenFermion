@@ -16,12 +16,23 @@ import itertools
 import re
 import warnings
 import numbers
-
-import sympy
+from typing import Tuple, Type
 
 from openfermion.config import EQ_TOLERANCE
 
-COEFFICIENT_TYPES = (int, float, complex, sympy.Expr, numbers.Number)
+try:
+    import sympy
+
+    HAS_SYMPY = True
+except ImportError:  # pragma: no cover
+    HAS_SYMPY = False
+    sympy = None
+
+COEFFICIENT_TYPES: Tuple[Type, ...]
+if HAS_SYMPY:
+    COEFFICIENT_TYPES = (int, float, complex, numbers.Number, sympy.Expr, sympy.Symbol, sympy.Basic)
+else:  # pragma: no cover
+    COEFFICIENT_TYPES = (int, float, complex, numbers.Number)
 
 
 class SymbolicOperator(metaclass=abc.ABCMeta):
@@ -692,33 +703,41 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
         return True
 
     def compress(self, abs_tol=EQ_TOLERANCE):
-        """
-        Eliminates all terms with coefficients close to zero and removes
+        """Eliminates all terms with coefficients close to zero and removes
         small imaginary and real parts.
 
         Args:
             abs_tol(float): Absolute tolerance, must be at least 0.0
         """
         new_terms = {}
-        for term in self.terms:
-            coeff = self.terms[term]
+        for term, coeff in self.terms.items():
+            if HAS_SYMPY and isinstance(coeff, (sympy.Expr, sympy.Symbol, sympy.Basic)):
+                # SymPy symbolic handling
+                if coeff == 0 or coeff.is_zero is True:
+                    continue
 
-            if isinstance(coeff, sympy.Expr):
-                if sympy.simplify(sympy.im(coeff) <= abs_tol) == True:
-                    coeff = sympy.re(coeff)
-                if sympy.simplify(sympy.re(coeff) <= abs_tol) == True:
-                    coeff = 1j * sympy.im(coeff)
-                if sympy.simplify(abs(coeff) <= abs_tol) != True:
-                    new_terms[term] = coeff
+                # Simplify the symbolic expression
+                simplified_coeff = sympy.simplify(coeff)
+                if simplified_coeff == 0 or simplified_coeff.is_zero is True:
+                    continue
+
+                # Check if simplified expression evaluates to a float/number under abs_tol
+                if simplified_coeff.is_number:
+                    try:
+                        if abs(complex(simplified_coeff)) <= abs_tol:
+                            continue
+                    except (TypeError, ValueError):  # pragma: no cover
+                        pass
+
+                new_terms[term] = simplified_coeff
                 continue
 
-            # Remove small imaginary and real parts
+            # Standard numerical handling
             if abs(coeff.imag) <= abs_tol:
                 coeff = coeff.real
             if abs(coeff.real) <= abs_tol:
                 coeff = 1.0j * coeff.imag
 
-            # Add the term if the coefficient is large enough
             if abs(coeff) > abs_tol:
                 new_terms[term] = coeff
 

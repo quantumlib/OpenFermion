@@ -279,3 +279,21 @@ def test_get_operator_groups_six():
 
     assert check_length(operator_groups, [4, 4, 3, 3, 3, 3])
     assert check_sum(operator_groups, operator)
+
+
+def test_qubit_operator_sympy_support():
+    import sympy
+
+    x = sympy.Symbol('x')
+    y = sympy.Symbol('y')
+    # Hamiltonian creation as described in issue #1053
+    hamiltonian = x * QubitOperator('X0 X5') + 0.3 * QubitOperator('Z0')
+
+    # Check symbolic equality using sympy.simplify
+    term_coeff = hamiltonian.terms[((0, 'X'), (5, 'X'))]
+    assert sympy.simplify(term_coeff - x) == 0
+    assert hamiltonian.terms[((0, 'Z'),)] == 0.3
+
+    cancelled = hamiltonian - x * QubitOperator('X0 X5')
+    cancelled.compress()
+    assert ((0, 'X'), (5, 'X')) not in cancelled.terms
