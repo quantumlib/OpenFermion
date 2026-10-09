@@ -170,6 +170,14 @@ repos:
         files: \.(cc|h|cu|py)$
         stages: [pre-push]
 
+      - id: typecheck
+        name: 'check/typecheck runs without errors'
+        entry: check/typecheck
+        language: script
+        pass_filenames: false
+        types: [python]
+        stages: [pre-push]
+
   - repo: https://github.com/Pierre-Sassoulas/copyright_notice_precommit
     rev: 'd9215b6b2a028d1614c92cf43a9fcff3b1dd889e'  # frozen: 0.1.2
     hooks:

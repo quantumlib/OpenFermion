@@ -100,7 +100,7 @@ done
 declare -a errors=()
 declare -a pylint_j=()
 declare -a pytest_n=()
-declare -a mypy_n=()
+declare -a typecheck_j=()
 
 function run() {
     echo "~~~~ Running $* ~~~~"
@@ -112,11 +112,11 @@ function run() {
 cpus=$(python3 -c 'import psutil; print(psutil.cpu_count(logical=False))')
 
 if [[ -z "${no_parallel}" ]]; then
-    # Pylint & pytest can auto-detect the number of CPUs, but not mypy. To be
-    # consistent, this uses the same explicit number for all of them.
+    # Pylint & pytest can auto-detect the number of CPUs; pyrefly uses -j.
+    # To be consistent, this uses the same explicit number for all of them.
     pylint_j=("-j" "${cpus}")
     pytest_n=("-n" "${cpus}")
-    mypy_n=("-n" "${cpus}")
+    typecheck_j=("-j" "${cpus}")
 fi
 
 if [[ -n "${only_changed}" ]]; then
@@ -126,7 +126,7 @@ else
     run check/format-incremental "${rev[@]}" "${apply_arg[@]}" --all
     run check/pylint "${pylint_j[@]}" "${rev[@]}"
 fi
-run check/mypy "${mypy_n[@]}"
+run check/typecheck "${typecheck_j[@]}"
 run check/pytest-and-incremental-coverage "${pytest_n[@]}" "${rev[@]}"
 run check/shellcheck
 run check/nbformat

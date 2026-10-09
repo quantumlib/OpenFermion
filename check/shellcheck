@@ -62,6 +62,7 @@ required_shell_scripts=(
     check/pylint-changed-files
     check/pytest
     check/pytest-and-incremental-coverage
+    check/typecheck
 )
 
 scripts_not_found=$(comm -13 \

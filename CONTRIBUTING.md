@@ -243,12 +243,14 @@ for information about how to set up a local copy of the software for development
 ### Type annotation conventions
 
 Code should have [type annotations](https://www.python.org/dev/peps/pep-0484/). We use
-[mypy](http://mypy-lang.org/) to check that type annotations are correct, and the following script
-to run it:
+[Pyrefly](https://pyrefly.org/) to check that type annotations are correct, and the following
+script to run it:
 
 ```shell
-check/mypy
+check/typecheck
 ```
+
+(`check/mypy` remains as a deprecated wrapper that forwards to `check/typecheck`.)
 
 ### Linting and formatting
 
