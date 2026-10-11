@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: CI
+name: Continuous Integration
 run-name: >-
-  Run continuous integration tests on
+  Run CI tests on
   ${{github.event_name == 'pull_request' && format('PR #{0}', github.event.pull_request.number)
     || format('push to {0}', github.ref_name) }}
   by @${{github.actor}}
@@ -56,11 +56,13 @@ concurrency:
   cancel-in-progress: true
   group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
-permissions: read-all
+permissions: {}
 
 jobs:
   python-checks:
     name: Python file checks
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -68,6 +70,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python and restore cache
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -103,6 +106,8 @@ jobs:
   pytest:
     name: Unit tests
     needs: python-checks
+    permissions:
+      contents: read
     runs-on: ${{matrix.os}}
     timeout-minutes: 15
     strategy:
@@ -112,6 +117,8 @@ jobs:
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python and restore cache
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -135,6 +142,8 @@ jobs:
   pytest-extra:
     name: Extra unit tests
     needs: python-checks
+    permissions:
+      contents: read
     runs-on: ${{matrix.os}}
     timeout-minutes: 15
     strategy:
@@ -144,6 +153,8 @@ jobs:
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python and restore cache
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -167,12 +178,16 @@ jobs:
   pytest-compat:
     name: Python compatibility tests
     needs: python-checks
+    permissions:
+      contents: read
     # Note: this is deliberately Ubuntu 22 because this is a compatibility test.
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
         # Note: deliberately not using our Python cache here b/c this runs
         # a different version of Python.
@@ -195,6 +210,8 @@ jobs:
   coverage:
     name: Python code coverage tests
     needs: python-checks
+    permissions:
+      contents: read
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
@@ -202,6 +219,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python and restore cache
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -223,11 +241,15 @@ jobs:
 
   yaml-lint:
     name: YAML lint checks
+    permissions:
+      contents: read
     runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install yamllint
         run: |
@@ -242,12 +264,16 @@ jobs:
   docker-lint:
     name: Dockerfile lint checks
     if: github.repository_owner == 'quantumlib'
+    permissions:
+      contents: read
     # ubuntu-slim runners don't have docker installed.
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Run hadolint on Dockerfiles
         env:
@@ -263,11 +289,15 @@ jobs:
 
   workflow-lint:
     name: GitHub workflow lint checks
+    permissions:
+      contents: read
     runs-on: ubuntu-slim
     timeout-minutes: 15
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Run actionlint
         uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
@@ -278,11 +308,15 @@ jobs:
 
   shell-script-lint:
     name: Shell script lint checks
+    permissions:
+      contents: read
     runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Run shellcheck on shell scripts
         run: |
@@ -291,11 +325,15 @@ jobs:
 
   notebook-checks:
     name: Notebook format checks
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Check out a copy of the git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python and restore cache
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
