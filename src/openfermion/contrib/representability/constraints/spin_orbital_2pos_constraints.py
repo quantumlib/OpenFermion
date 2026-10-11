@@ -145,7 +145,7 @@ def na_constraint(dim: int, na: Union[float, int]) -> DualBasis:
         na: Number of spin up electrons
 
     Returns:
-        DualBasis representing the cosntraint that is length 1
+        DualBasis representing the constraint that is length 1
     """
 
     dbe = DualBasisElement()
@@ -165,7 +165,7 @@ def nb_constraint(dim, nb):
         na: Number of spin down electrons
 
     Returns:
-        DualBasis representing the cosntraint that is length 1
+        DualBasis representing the constraint that is length 1
     """
     dbe = DualBasisElement()
     for i in range(dim // 2):

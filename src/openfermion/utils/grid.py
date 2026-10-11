@@ -26,7 +26,7 @@ class Grid:
     """
     A multi-dimension grid of points with an assigned length scale.
 
-    This grid acts as a helper class for parallelpiped super cells.  It
+    This grid acts as a helper class for parallelepiped super cells.  It
         tracks a mapping from indices to grid points and stores the associated
         reciprocal lattice with respect to the original real-space lattice.
         This enables calculations with non-trivial unit cells.
@@ -38,7 +38,7 @@ class Grid:
         shifts (list of ints): Integer shifts in position to center grid.
         scale (ndarray): Vectors defining the super cell being simulated,
             vectors are stored as columns in the matrix.
-        volume (float): Total volume of the supercell parallelpiped.
+        volume (float): Total volume of the supercell parallelepiped.
         num_points (int): Total number of points in the grid.
         reciprocal_scale (ndarray): Vectors defining the reciprocal lattice.
             The vectors are stored as the columns in the matrix.

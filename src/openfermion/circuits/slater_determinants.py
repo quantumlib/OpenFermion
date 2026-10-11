@@ -138,7 +138,7 @@ def gaussian_state_preparation_circuit(
         )
         if occupied_orbitals is None:
             # The ground state is desired, so the circuit should be applied
-            # to the vaccuum state
+            # to the vacuum state
             start_orbitals = []
             circuit_description = list(reversed(decomposition))
         else:

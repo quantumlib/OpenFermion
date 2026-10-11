@@ -130,7 +130,7 @@ class HartreeFockFunctional:
         opdm.
 
         Args:
-            opdm_aa: single spin sector of the 1-particle denstiy matrix
+            opdm_aa: single spin sector of the 1-particle density matrix
 
         Returns:  InteractionRDM object for full spin-orbital 1-RDM and 2-RDM
         """
@@ -195,7 +195,7 @@ class HartreeFockFunctional:
             )
             Y_full = np.kron(Y, np.eye(2))
 
-            # Now rotate Y int othe basis that diagonalizes Z
+            # Now rotate Y into the basis that diagonalizes Z
             Y_kl_full = v_full.conj().T.dot(Y_full).dot(v_full)
             # now rotate Y_{kl} * (exp(i(l_{k} - l_{l})) - 1) / (i(l_{k} - l_{l}))
             # into the original basis

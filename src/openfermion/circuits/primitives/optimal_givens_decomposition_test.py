@@ -46,7 +46,7 @@ def test_givens_inverse():
 
 def test_row_eliminate():
     """
-    Test elemination of element in U[i, j] by rotating in i-1 and i.
+    Test elimination of element in U[i, j] by rotating in i-1 and i.
     """
     dim = 3
     u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random((dim, dim))

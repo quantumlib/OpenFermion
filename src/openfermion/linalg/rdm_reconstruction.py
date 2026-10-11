@@ -14,7 +14,7 @@ def valdemoro_reconstruction(tpdm, n_electrons):
         tpdm (np.ndarray): four-tensor representing the two-RDM
         n_electrons (int): number of electrons in the system
     Returns:
-        six-tensor reprsenting the three-RDM
+        six-tensor representing the three-RDM
     """
     opdm = (2 / (n_electrons - 1)) * np.einsum('ijjk', tpdm)
     unconnected_tpdm = wedge(opdm, opdm, (1, 1), (1, 1))

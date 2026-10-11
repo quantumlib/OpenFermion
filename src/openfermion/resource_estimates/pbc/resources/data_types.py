@@ -47,7 +47,7 @@ class PBCResources:
         chi: A number of bits controlling the precision of the factorization.
             What this means is dependent on the factorization.
         exact_energy: Exact energy (no cutoff).
-        energy_method: Which method to use to copute energy (MP2 or CCSD).
+        energy_method: Which method to use to compute energy (MP2 or CCSD).
         cutoff: list of cuttofs.
         ham_props: list of lambda values for each cutoff.
         resources: list of resource estimates for each cutoff.
