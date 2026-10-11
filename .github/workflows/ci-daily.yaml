@@ -1,0 +1,87 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This workflow runs nightly to run tests on the OpenFermion codebase.
+# It can also be invoked manually via the "Run workflow" button at
+# https://github.com/quantumlib/OpenFermion/actions/workflows/nightly-pytest.yaml
+
+name: 'Continuous integration – daily'
+run-name: Run daily full test to validate current head revision
+
+on:
+  schedule:
+    - cron: '15 2 * * *'
+
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  Pytest:
+    # Try to fit as much info as possible into the GHA sidebar at run-time.
+    name: Py ${{matrix.python-version}} + ${{matrix.os}}/${{matrix.arch}} + Cirq ${{matrix.cirq}}
+    permissions:
+      contents: read
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # These Python versions were carefully selected by trial and error
+        # to be available on as many os/arch combos as possible, while also
+        # making all necessary Python dependencies available on those combos.
+        python-version: ['3.11.9', '3.12.7', '3.13.1']
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, windows-2025]
+        arch: [x64, arm64]
+        cirq: [stable, pre-release]
+        exclude:
+          - os: ubuntu-24.04
+            arch: arm64
+
+          - os: ubuntu-24.04-arm
+            arch: x64
+
+          # MacOS 15 is only available for arm64.
+          - os: macos-15
+            arch: x64
+
+          # Windows 2025 is only available for x64.
+          - os: windows-2025
+            arch: arm64
+
+    steps:
+      - name: Check out a copy of the OpenFermion git repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python ${{matrix.python-version}}
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: cache
+        with:
+          python-version: ${{matrix.python-version}}
+          architecture: ${{matrix.arch}}
+          cache: pip
+          cache-dependency-path: dev_tools/requirements/envs/pytest.env.txt
+
+      - name: Install OpenFermion Python requirements
+        run: pip install -r dev_tools/requirements/envs/pytest.env.txt
+
+      - name: Install cirq-core (${{matrix.cirq}} version)
+        run: pip install -U cirq-core ${{case(matrix.cirq == 'pre-release', '--pre', '')}}
+
+      - name: Run Pytest
+        run: |
+          echo '::add-matcher::.github/problem-matchers/pytest.json'
+          check/pytest -n auto
