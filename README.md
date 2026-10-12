@@ -25,7 +25,7 @@ OpenFermion is an open-source Python package for compiling and analyzing quantum
 simulate fermionic systems, including quantum chemistry. Among other features, it includes data
 structures and tools for obtaining and manipulating representations of fermionic and qubit
 Hamiltonians. More information can be found in the [release
-paper](https://arxiv.org/abs/1710.07629).
+paper](https://doi.org/10.1088/2058-9565/ab8ebc).
 
 ## Installation
 
@@ -62,8 +62,8 @@ python -m pip install -e .
 ## Plugins
 
 OpenFermion relies on modular plugin packages for significant functionality. Specifically, plugins
-are used to simulate and compile quantum circuits and to perform classical electronic structure
-calculations. Follow the links below to learn more!
+are used to simulate quantum circuits and to perform classical electronic structure calculations.
+Follow the links below to learn more!
 
 ### High-performance simulators
 
@@ -71,21 +71,17 @@ calculations. Follow the links below to learn more!
     of fermionic quantum evolutions specified by a sequence of fermion operators, which can exploit
     fermionic symmetries such as spin and particle number.
 
-### Circuit compilation plugins
-
-*   [Forest-OpenFermion](https://github.com/rigetticomputing/forestopenfermion) to support
-    integration with [Forest](https://www.rigetti.com/forest).
-*   [SFOpenBoson](https://github.com/XanaduAI/SFOpenBoson) to support integration with [Strawberry
-    Fields](https://github.com/XanaduAI/strawberryfields).
-
 ### Electronic structure package plugins
 
-*   [OpenFermion-Psi4](http://github.com/quantumlib/OpenFermion-Psi4) to support integration with
-    [Psi4](http://psicode.org).
-*   [OpenFermion-PySCF](http://github.com/quantumlib/OpenFermion-PySCF) to support integration with
-    [PySCF](https://github.com/sunqm/pyscf).
+*   [OpenFermion-Psi4](https://github.com/quantumlib/OpenFermion-Psi4) to support integration with
+    [Psi4](https://psicode.org).
+
+*   [OpenFermion-PySCF](https://github.com/quantumlib/OpenFermion-PySCF) to support integration with
+    [PySCF](https://github.com/pyscf/pyscf).
+
 *   [OpenFermion-Dirac](https://github.com/bsenjean/Openfermion-Dirac) to support integration with
-    [DIRAC](http://diracprogram.org/doku.php).
+    [DIRAC](https://diracprogram.org/doku.php).
+
 *   [OpenFermion-QChem](https://github.com/qchemsoftware/OpenFermion-QChem) to support integration
     with [Q-Chem](https://www.q-chem.com).
 
@@ -95,13 +91,15 @@ Documentation for OpenFermion can be found at
 [quantumai.google/openfermion](https://quantumai.google/openfermion) and the following links:
 
 *   [Installation](https://quantumai.google/openfermion/install)
+
 *   [API Docs](https://quantumai.google/reference/python/openfermion/all_symbols)
+
 *   [Tutorials](https://quantumai.google/openfermion/tutorials/intro_to_openfermion)
 
 You can run OpenFermion's interactive Jupyter Notebooks, such as the introductory tutorial, in
-[Colab](https://colab.research.google.com/github/quantumlib/OpenFermion/blob/main/examples/intro_to_openfermion.ipynb)
+[Colab](https://colab.research.google.com/github/quantumlib/OpenFermion/blob/main/docs/tutorials/intro_to_openfermion.ipynb)
 or
-[MyBinder](https://mybinder.org/v2/gh/quantumlib/OpenFermion/main?filepath=examples%2Fintro_to_openfermion.ipynb).
+[MyBinder](https://mybinder.org/v2/gh/quantumlib/OpenFermion/main?filepath=docs%2Ftutorials%2Fintro_to_openfermion.ipynb).
 
 ## Contributing to OpenFermion
 
@@ -112,18 +110,28 @@ you need to follow.
     (or your employer) retain the copyright to your contribution; the CLA simply gives us permission
     to use and redistribute your contributions as part of the OpenFermion project. Please visit
     https://cla.developers.google.com/ to see your current agreements on file or to sign a new one.
+
 *   All submissions, including submissions by project members, require review. We use GitHub pull
-    requests for this purpose. Consult the appropriate [GitHub Help
-    documentation](https://help.github.com/articles/about-pull-requests/) for more information on
-    using pull requests.
+    requests for this purpose. Consult the appropriate [GitHub
+    documentation](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)
+    for more information on using pull requests.
+
 *   Please make sure your new code comes with extensive tests! We use automatic testing to make sure
     all pull requests pass tests and do not decrease overall test coverage by too much.
-*   Please also make sure to follow the OpenFermion source code style. We mostly follow Python's
-    [PEP 8](https://www.python.org/dev/peps/pep-0008/) guidelines and use the corresponding
-    [linter](https://pypi.python.org/pypi/pep8) to check for it.
+
+*   Please also make sure to follow the OpenFermion source code style. We follow Google coding
+    conventions, with a few changes described in
+    [`CONTRIBUTING.md`](https://github.com/quantumlib/OpenFermion/blob/main/CONTRIBUTING.md), and use
+    [black](https://github.com/psf/black), [Pylint](https://pylint.readthedocs.io/), and
+    [mypy](https://mypy.readthedocs.io/) to check for it. Running `check/all` runs all the checks.
+
+*   Please review our
+    [code of conduct](https://github.com/quantumlib/OpenFermion/blob/main/CODE_OF_CONDUCT.md).
+
 *   Code should always be accompanied by documentation. Formatted OpenFermion documentation is
     generated automatically and can be found [on the Quantum AI web
     site](https://quantumai.google/openfermion).
+
 *   We use [GitHub issues](https://github.com/quantumlib/OpenFermion/issues) for tracking requests
     and bugs. Please post questions to the [Quantum Computing Stack
     Exchange](https://quantumcomputing.stackexchange.com/) with an `openfermion` tag.
@@ -142,16 +150,17 @@ the [published paper](https://doi.org/10.1088/2058-9565/ab8ebc):
 > OpenFermion: The Electronic Structure Package for Quantum Computers. _Quantum Science and
 > Technology_, 5(3), 034014.
 
-For formatted citations and records in other formats, as well as records for all releases of OpenFermion
-past and present, please visit the [OpenFermion page on Zenodo](https://zenodo.org/records/15604843).
+For formatted citations and records in other formats, as well as records for all releases of
+OpenFermion past and present, please visit the [OpenFermion page on
+Zenodo](https://doi.org/10.5281/zenodo.14879835).
 
 ## Authors
 
-[Ryan Babbush](https://ryanbabbush.com) (Google),
+[Ryan Babbush](https://github.com/babbush) (Google),
 [Jarrod McClean](https://jarrodmcclean.com) (Google),
 [Nicholas Rubin](https://github.com/ncrubin) (Google),
 [Kevin Sung](https://github.com/kevinsung) (University of Michigan),
-[Ian Kivlichan](https://aspuru.chem.harvard.edu/ian-kivlichan/) (Harvard),
+[Ian Kivlichan](https://github.com/idk3) (Harvard),
 [Dave Bacon](https://github.com/dabacon) (Google),
 [Xavier Bonet-Monroig](https://github.com/xabomon) (Leiden University),
 [Yudong Cao](https://github.com/yudongcao) (Harvard),
@@ -162,17 +171,18 @@ past and present, please visit the [OpenFermion page on Zenodo](https://zenodo.o
 [Pranav Gokhale](https://github.com/singular-value) (University of Chicago),
 [Thomas Häner](https://github.com/thomashaener) (ETH Zurich),
 [Tarini Hardikar](https://github.com/TariniHardikar) (Dartmouth),
-[Vojtĕch Havlíček](https://github.com/VojtaHavlicek) (Oxford),
+[Vojtěch Havlíček](https://github.com/VojtaHavlicek) (Oxford),
 [Oscar Higgott](https://github.com/oscarhiggott) (University College London),
-[Cupjin Huang](https://github.com/pertoX4726) (University of Michigan),
+[Cupjin Huang](https://github.com/cupjinhuang) (University of Michigan),
 [Josh Izaac](https://github.com/josh146) (Xanadu),
-[Zhang Jiang](https://ti.arc.nasa.gov/profile/zjiang3) (NASA),
+[Zhang Jiang](https://research.google/people/105870/) (NASA),
 [William Kirby](https://williammkirby.com) (Tufts University),
+[Emiel Koridon](https://github.com/Emieeel) (Leiden University),
 [Xinle Liu](https://github.com/sheilaliuxl) (Google),
 [Sam McArdle](https://github.com/sammcardle30) (Oxford),
 [Matthew Neeley](https://github.com/maffoo) (Google),
 [Thomas O'Brien](https://github.com/obriente) (Leiden University),
-[Bryan O'Gorman](https://ti.arc.nasa.gov/profile/bogorman) (UC Berkeley, NASA),
+[Bryan O'Gorman](https://github.com/bryano) (UC Berkeley, NASA),
 [Isil Ozfidan](https://github.com/conta877) (D-Wave Systems),
 [Max Radin](https://github.com/max-radin) (UC Santa Barbara),
 [Jhonathan Romero](https://github.com/jromerofontalvo) (Harvard),
@@ -187,8 +197,7 @@ past and present, please visit the [OpenFermion page on Zenodo](https://zenodo.o
 [Wei Sun](https://github.com/Spaceenter) (Google),
 [Daochen Wang](https://github.com/daochenw) (River Lane Research),
 [Chris Winkler](https://github.com/quid256) (University of Chicago),
-[Fang Zhang](https://github.com/fangzh-umich) (University of Michigan),
-and [Emiel Koridon](https://github.com/Emieeel) (Leiden University).
+and [Fang Zhang](https://github.com/fangzh-umich) (University of Michigan).
 
 We are happy to include future contributors as authors on later releases.
 
@@ -198,7 +207,7 @@ For any questions or concerns not addressed here, please email quantum-oss-maint
 
 ## Disclaimer
 
-This is not an officially-supported Google product. This project is not eligible for the [Google
+This is not an officially supported Google product. This project is not eligible for the [Google
 Open Source Software Vulnerability Rewards
 Program](https://bughunters.google.com/open-source-security).
 
