@@ -36,8 +36,9 @@ def test_givens_inverse():
 
     confirm numerically its hermitian conjugate is it's inverse
     """
-    a = numpy.random.random() + 1j * numpy.random.random()
-    b = numpy.random.random() + 1j * numpy.random.random()
+    rng = numpy.random.default_rng(0)
+    a = rng.random() + 1j * rng.random()
+    b = rng.random() + 1j * rng.random()
     ab_rotation = givens_matrix_elements(a, b, which='right')
 
     assert numpy.allclose(ab_rotation.dot(numpy.conj(ab_rotation).T), numpy.eye(2))
@@ -49,7 +50,8 @@ def test_row_eliminate():
     Test elemination of element in U[i, j] by rotating in i-1 and i.
     """
     dim = 3
-    u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random((dim, dim))
+    rng = numpy.random.default_rng(0)
+    u_generator = rng.random((dim, dim)) + 1j * rng.random((dim, dim))
     u_generator = u_generator - numpy.conj(u_generator).T
 
     # make sure the generator is actually antihermitian
@@ -96,7 +98,8 @@ def test_col_eliminate():
     inverse givens
     """
     dim = 3
-    u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random((dim, dim))
+    rng = numpy.random.default_rng(0)
+    u_generator = rng.random((dim, dim)) + 1j * rng.random((dim, dim))
     u_generator = u_generator - numpy.conj(u_generator).T
     # make sure the generator is actually antihermitian
     assert numpy.allclose(-1 * u_generator, numpy.conj(u_generator).T)
@@ -177,7 +180,8 @@ def test_front_back_iteration():
 def test_circuit_generation_and_accuracy():
     for dim in range(2, 10):
         qubits = cirq.LineQubit.range(dim)
-        u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random((dim, dim))
+        rng = numpy.random.default_rng(dim)
+        u_generator = rng.random((dim, dim)) + 1j * rng.random((dim, dim))
         u_generator = u_generator - numpy.conj(u_generator).T
         assert numpy.allclose(-1 * u_generator, numpy.conj(u_generator).T)
 
@@ -220,7 +224,8 @@ def test_circuit_generation_state():
     wavefunction[10, 0] = 1.0
 
     dim = 2
-    u_generator = numpy.random.random((dim, dim)) + 1j * numpy.random.random((dim, dim))
+    rng = numpy.random.default_rng(0)
+    u_generator = rng.random((dim, dim)) + 1j * rng.random((dim, dim))
     u_generator = u_generator - numpy.conj(u_generator).T
     unitary = scipy.linalg.expm(u_generator)
 
