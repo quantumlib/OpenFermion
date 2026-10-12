@@ -13,7 +13,7 @@
 """
 Estimate the physical, logical, and Toffoli gate requirements for
 single-factorization qubitization.  Single-Factorization uses
-an LCU formed from a symmeterized Cholesky decomposition of the integrals
+an LCU formed from a symmetrized Cholesky decomposition of the integrals
 """
 
 from typing import Tuple
@@ -37,7 +37,7 @@ def compute_cost(
 ) -> ResourceEstimates:
     """Determine fault-tolerant costs using single factorizated Hamiltonian.
 
-    Light wrapper around _compute_cost to automate choice of stps paramter.
+    Light wrapper around _compute_cost to automate choice of stps parameter.
 
     Arguments:
         num_spin_orbs: the number of spin-orbitals

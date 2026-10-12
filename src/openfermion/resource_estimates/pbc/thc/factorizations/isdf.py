@@ -159,7 +159,7 @@ def build_kpoint_zeta(
 ) -> npt.NDArray:
     """Build k-point THC zeta (central tensor).
 
-    Built for for given q, delta_g, delta_g_prime.
+    Built for given q, delta_g, delta_g_prime.
 
     Args:
         mydf: instance of pyscf.pbc.df.FFTDF object.
@@ -198,7 +198,7 @@ def build_kpoint_zeta_single_tranlsation(
 ) -> npt.NDArray:
     """Build k-point THC zeta (central tensor)
 
-    Built for for given q, delta_g. Note single delta_g (single translation
+    Built for given q, delta_g. Note single delta_g (single translation
     vector) in controast to the _double_translation variant above.
 
     Args:
@@ -537,7 +537,7 @@ def kpoint_isdf_double_translation(
 
     For the double translation case we build zeta[Q, G, G'] for all possible G
     and G' that satisfy Q - (Q-k) = G. If only_unique_G is True we only build
-    the unique G's which satisfiy this expression rather than all 27^2.
+    the unique G's which satisfy this expression rather than all 27^2.
 
     Args:
         df_inst: instance of pyscf.pbc.df.FFTDF object.
@@ -614,7 +614,7 @@ def kpoint_isdf_single_translation(
 
     For the double translation case we build zeta[Q, G, G'] for all possible G
     and G' that satisfy Q - (Q-k) = G. If only_unique_G is True we only build
-    the unique G's which satisfiy this expression rather than all 27^2.
+    the unique G's which satisfy this expression rather than all 27^2.
 
     Args:
         df_inst: instance of pyscf.pbc.df.FFTDF object.
@@ -800,7 +800,7 @@ def setup_isdf(
 class KPointTHC:
     """Light class to hold THC tensors.
 
-    Atributes:
+    Attributes:
         chi: THC leaf tensor. shape = [num_kpts, num_mo, num_thc]
         zeta: THC central tensor.
           shape = [num_kpts, num_G, num_G, num_thc, num_thc]

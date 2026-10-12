@@ -132,7 +132,7 @@ def lbfgsb_opt_thc_l2reg(
     else:
         x = initial_guess  # add more checks here for safety
 
-    # compute inital lambda to set penalty param
+    # compute initial lambda to set penalty param
     etaPp = x[: norb * nthc].reshape(nthc, norb)  # leaf tensor  nthc x norb
     MPQ = x[norb * nthc : norb * nthc + nthc * nthc].reshape(nthc, nthc)  # central tensor
     SPQ = etaPp.dot(etaPp.T)  # (nthc x norb)  x (norb x nthc) -> (nthc  x nthc) metric

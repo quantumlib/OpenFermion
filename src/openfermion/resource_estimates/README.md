@@ -1,6 +1,6 @@
 ### Disclaimer: testing, dependencies, etc.
 
-Code is system tested on Debian GNU/Linux with Python 3.8.5. All the code comes with tests (use `pytest`), but not unit tested with GitHub worflows.
+Code is system tested on Debian GNU/Linux with Python 3.8.5. All the code comes with tests (use `pytest`), but not unit tested with GitHub workflows.
 
 Since the FT costing is closely tied to manipulation of molecular integrals (localization, active space selection, benchmarking against CCSD(T), ...) the code depends on [PySCF](https://pyscf.org/) and is not installed by default. To install it do:
 

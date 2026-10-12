@@ -118,7 +118,7 @@ class DFABKpointIntegrals:
         if k_minus_q_idx == kidx:
             Amat[:, :nmo, :nmo] = self.chol[
                 kidx, k_minus_q_idx
-            ]  # beacuse L_{pK, qK,n}= L_{qK,pK,n}^{*}
+            ]  # because L_{pK, qK,n}= L_{qK,pK,n}^{*}
             Bmat[:, :nmo, :nmo] = 0.5j * (
                 self.chol[kidx, k_minus_q_idx]
                 - self.chol[kidx, k_minus_q_idx].conj().transpose(0, 2, 1)

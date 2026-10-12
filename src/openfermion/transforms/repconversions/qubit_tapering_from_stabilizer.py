@@ -26,7 +26,7 @@ class StabilizerError(Exception):
         Throw custom errors connected to stabilizers.
 
         Args:
-            message(str): custome error message string.
+            message(str): custom error message string.
         """
         Exception.__init__(self, message)
 

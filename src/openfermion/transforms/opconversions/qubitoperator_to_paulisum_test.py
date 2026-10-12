@@ -39,7 +39,7 @@ def test_pauli_sum_qubits():
 
 
 def test_identity():
-    """Test correct hanlding of Identity."""
+    """Test correct handling of Identity."""
     identity_op = QubitOperator(' ', -0.5)
     pau_from_qop = _qubit_operator_term_to_pauli_string(
         term=list(identity_op.terms.items())[0], qubits=cirq.LineQubit.range(2)

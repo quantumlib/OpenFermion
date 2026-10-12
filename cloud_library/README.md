@@ -12,7 +12,7 @@ include other types of data such as measurements from a relevant experiment.
 
 The text files in this folder are manifests for currently available datasets on
 the cloud. Each manifest contains a short description of the data and makes it
-clear how files are named. The remainer of the manifest lists the name of
+clear how files are named. The remainder of the manifest lists the name of
 available data files. You can find and download files you want by
 clicking on them in our [molecule cloud
 website](https://quantumlib.github.io/openfermioncloud/).
@@ -42,13 +42,13 @@ following steps:
 3. Either give your email in the pull request or email us so we can privately
    send you a signed URL for the upload.
 
-4. You will recieve an email with a signed URL which you should use to upload
+4. You will receive an email with a signed URL which you should use to upload
    your data to our staging bucket, For instance, you can use the command
    ```
    curl -X PUT --upload-file <your_files.zip> <signed_url>
    ```
 
 5. Wait for OpenFermion administrators to perform a security review of your data
-   and then transfer your data to the public facing producting bucket from where
+   and then transfer your data to the public facing production bucket from where
    it can be downloaded. We will signal that your files have been exposed to
    the public facing cloud library by merging your pull request.

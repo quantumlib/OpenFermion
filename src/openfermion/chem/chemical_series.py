@@ -41,7 +41,7 @@ def make_atomic_ring(n_atoms, spacing, basis, atom_type='H', charge=0, filename=
         filename: An optional string to give a filename for the molecule.
 
     Returns:
-        molecule: A an instance of the MolecularData class.
+        molecule: An instance of the MolecularData class.
     """
     # Make geometry.
     geometry = []
@@ -83,7 +83,7 @@ def make_atomic_lattice(
         filename: An optional string to give a filename for the molecule.
 
     Returns:
-        molecule: A an instance of the MolecularData class.
+        molecule: An instance of the MolecularData class.
 
     Raises:
         MolecularLatticeError: If lattice specification is invalid.

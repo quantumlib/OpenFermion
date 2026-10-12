@@ -193,7 +193,7 @@ def _fermion_operator_to_majorana_operator(fermion_operator: FermionOperator) ->
     """
     Convert FermionOperator to MajoranaOperator.
 
-    Auxiliar function of get_majorana_operator.
+    Auxiliary function of get_majorana_operator.
 
     Args:
         fermion_operator (FermionOperator): To convert to MajoranaOperator.

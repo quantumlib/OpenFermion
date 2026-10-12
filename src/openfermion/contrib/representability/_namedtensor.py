@@ -161,7 +161,7 @@ class Tensor:
 
     def _iterator(self, ultri: str) -> Generator:
         """
-        Iterate over the a data store yielding the upper/lower/all values
+        Iterate over the data store yielding the upper/lower/all values
         """
         if self.data is None or self.ndim is None or self.dim is None or self.basis is None:
             raise TypeError("data store is not set")
