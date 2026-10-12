@@ -217,7 +217,7 @@ def prepare_one_body_squared_evolution(one_body_matrix, spin_basis=True):
 
     Returns:
         density_density_matrix(ndarray of floats) an N by N array storing
-            the diagonal two-body coefficeints $V_{pq}$ above.
+            the diagonal two-body coefficients $V_{pq}$ above.
         basis_transformation_matrix (ndarray of floats) an N by N array
             storing the values of the basis transformation.
 

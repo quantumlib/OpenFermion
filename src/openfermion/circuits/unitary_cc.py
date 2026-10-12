@@ -21,7 +21,7 @@ from openfermion.utils.indexing import down_index, up_index
 def uccsd_generator(single_amplitudes, double_amplitudes, anti_hermitian=True):
     r"""Create a fermionic operator that is the generator of uccsd.
 
-    This a the most straight-forward method to generate UCCSD operators,
+    This is the most straight-forward method to generate UCCSD operators,
     however it is slightly inefficient. In particular, it parameterizes
     all possible excitations, so it represents a generalized unitary coupled
     cluster ansatz, but also does not explicitly enforce the uniqueness

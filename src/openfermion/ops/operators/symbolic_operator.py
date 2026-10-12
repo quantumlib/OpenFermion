@@ -186,7 +186,7 @@ class SymbolicOperator(metaclass=abc.ABCMeta):
                     raise ValueError('Invalid coefficient {}.'.format(coef_string))
             coef *= coefficient
 
-            # Parse the term, simpify it and add to the dict
+            # Parse the term, simplify it and add to the dict
             term = self._parse_string(match[1])
             coef, term = self._simplify(term, coefficient=coef)
             if term not in self.terms:

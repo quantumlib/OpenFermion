@@ -31,9 +31,9 @@ def compute_cost(
     dE_for_qpe: float = 0.0016,
     chi: int = 10,
 ) -> ResourceEstimates:
-    """Determine fault-tolerant costs using sparse representaion of Hamiltonian.
+    """Determine fault-tolerant costs using sparse representation of Hamiltonian.
 
-    Light wrapper around _compute_cost to automate choice of stps paramter.
+    Light wrapper around _compute_cost to automate choice of stps parameter.
 
     Arguments:
         num_spin_orbs: the number of spin-orbitals
@@ -62,7 +62,7 @@ def compute_cost(
 def _compute_cost(
     n: int, lam: float, d: int, dE: float, chi: int, stps: int, Nkx: int, Nky: int, Nkz: int
 ) -> Tuple[int, int, int]:
-    """Determine fault-tolerant costs using sparse representaion of Hamiltonian.
+    """Determine fault-tolerant costs using sparse representation of Hamiltonian.
 
     Arguments:
         n: the number of spin-orbitals

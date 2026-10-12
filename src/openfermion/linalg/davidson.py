@@ -137,7 +137,7 @@ class Davidson:
         if initial_guess.shape[0] != len(self.linear_operator_diagonal):
             raise ValueError(
                 'Guess vectors have a different dimension with '
-                'linear opearator diagonal elements: {} != {}.'.format(
+                'linear operator diagonal elements: {} != {}.'.format(
                     initial_guess.shape[1], len(self.linear_operator_diagonal)
                 )
             )
