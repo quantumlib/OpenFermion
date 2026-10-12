@@ -206,7 +206,7 @@ def _coeff_monomial(split_bin_str, n, l):
 
 
 def _coeff_monomial_with_partition(split_bin_str, parition_lst):
-    "Given fixed parition numbers in blocks, return monomial coefficient"
+    "Given fixed partition numbers in blocks, return monomial coefficient"
     assert len(split_bin_str) == len(parition_lst)
     ret = 1
     for block, num_partition in zip(split_bin_str, parition_lst):

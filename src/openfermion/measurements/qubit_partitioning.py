@@ -94,7 +94,7 @@ def partition_iterator(qubit_list, partition_size, num_iterations=None):
         yield tuple([q] for q in qubit_list)
         return
     elif partition_size > num_qubits:
-        raise ValueError('I cant k-partition less than k qubits')
+        raise ValueError("I can't k-partition less than k qubits")
 
     if num_iterations is None:
         num_iterations = int(numpy.ceil(numpy.log2(num_qubits)))

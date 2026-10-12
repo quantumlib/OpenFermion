@@ -26,7 +26,7 @@ from pyscf.pbc import mp, scf, gto
 
 @dataclass
 class HamiltonianProperties:
-    """Lighweight descriptive data class to hold return values from
+    """Lightweight descriptive data class to hold return values from
     compute_lambda functions.
 
     Attributes:
@@ -158,7 +158,7 @@ def build_momentum_transfer_mapping(cell: gto.Cell, kpoints: np.ndarray) -> np.n
     delta_k1_k2_Q += kpoints[0][None, None, None, :]  # shift to center
     delta_dot_a = np.einsum("wx,kpQx->kpQw", a, delta_k1_k2_Q)
     int_delta_dot_a = np.rint(delta_dot_a)
-    # Should be zero if transfer is statisfied (2*pi*n)
+    # Should be zero if transfer is satisfied (2*pi*n)
     mapping = np.where(np.sum(np.abs(delta_dot_a - int_delta_dot_a), axis=3) < 1e-10)
     num_kpoints = len(kpoints)
     momentum_transfer_map = np.zeros((num_kpoints,) * 2, dtype=np.int32)

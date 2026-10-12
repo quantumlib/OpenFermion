@@ -97,8 +97,8 @@ class IntegralTransformsTest(unittest.TestCase):
         qubit_diagonal = doci_mat.diagonal()
         assert numpy.isclose(fermion_diagonal[0], qubit_diagonal[0]) and numpy.isclose(
             fermion_diagonal[-1], qubit_diagonal[-1]
-        ), "The first and last elements of hte qubit and fermionic diagonal of \
-        the Hamiltonian maxtrix should be the same as the vaccum should be \
+        ), "The first and last elements of the qubit and fermionic diagonal of \
+        the Hamiltonian matrix should be the same as the vacuum should be \
         mapped to the computational all zero state and the completely filled \
         state should be mapped to the all one state"
 

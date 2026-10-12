@@ -99,7 +99,7 @@ class BinaryPolynomial:
             self.terms.append(tuple(self._parse_string(term)))
 
         elif isinstance(term, (numpy.int32, numpy.int64, int)):
-            # its a constant summand
+            # it is a constant summand
             if term % 2:
                 self._add_one()
 
@@ -208,7 +208,7 @@ class BinaryPolynomial:
                 term_list.remove(_SYMBOLIC_ONE)  # if 1
                 add_one = False
 
-            if factor.isdigit():  # its a constant
+            if factor.isdigit():  # it is a constant
                 factor = int(factor) % 2
                 if factor == 1:
                     # if there are other terms, no need to add another 1

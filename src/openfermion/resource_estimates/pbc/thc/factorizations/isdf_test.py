@@ -425,7 +425,7 @@ def test_kpoint_isdf_symmetries():
     iGsr_comp = minus_Q_G_map_unique[minus_iq, ik_prime]
     # Check zeta symmetry: expect zeta[Q,G1,G2,m,n] =
     # zeta[-Q,G1_comp,G2_comp,m, n].conj()
-    # Build refernce point zeta[Q,G1,G2,m,n]
+    # Build reference point zeta[Q,G1,G2,m,n]
     zeta_ref = kpt_thc.zeta[iq][iGpq, iGsr]
     zeta_test = kpt_thc.zeta[minus_iq][iGpq_comp, iGsr_comp]
     # F31 (pk qk-Q | rk'-Q sk') = (rk'-Q s k'| pk qk-Q)

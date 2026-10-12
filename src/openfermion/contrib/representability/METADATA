@@ -1,7 +1,7 @@
 name: "Fixed Trace Positive Projection"
 description:
     "Allows for projecting symmetric matrices to the fixed trace"
-    "postitive semidefinite space of matrices."
+    "positive semidefinite space of matrices."
 
 third_party {
   url {

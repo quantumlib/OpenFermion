@@ -1,5 +1,5 @@
 # Hydrogen Fluoride (HF) diatomic calculations at different
-# bond distances are contrained in this file.
+# bond distances are contained in this file.
 # Calculations in these files contain FCI, MP2,
 # HF, CISD, CCSD and all integerals.
 H1-F1_sto-3g_singlet_0.2.hdf5

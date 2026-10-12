@@ -197,7 +197,7 @@ def test_compliment_g():
     for qidx in range(nkpts):
         for gvals, gidx in g_dict.items():
             q_idx_g_idx[(qidx, gidx)] = []
-            # print("Traget gval ", gvals)
+            # print("Target gval ", gvals)
             kidx_satisfying_q_g = []
             for kidx in range(nkpts):
                 kmq_idx = transfer_map[qidx, kidx]

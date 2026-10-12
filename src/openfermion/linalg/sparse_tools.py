@@ -1188,7 +1188,7 @@ def boson_operator_sparse(operator, trunc, hbar=1.0):
             when returning the matrix representing the ladder operator.
         hbar (float): the value of hbar to use in the definition of the
             canonical commutation relation [q_i, p_j] = \delta_{ij} i hbar.
-            This only applies if calcualating the sparse representation of
+            This only applies if calculating the sparse representation of
             a quadrature operator.
 
     Returns:

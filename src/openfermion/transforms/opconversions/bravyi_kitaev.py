@@ -360,13 +360,13 @@ def _hermitian_one_body_product(a, b, c, d, coef, n_qubits):
     return hermitian_sum
 
 
-def _qubit_operator_creation(operators, coefficents):
+def _qubit_operator_creation(operators, coefficients):
     """Takes a list of tuples for operators/indices, and another for
-    coefficents"""
+    coefficients"""
 
     qubit_operator = QubitOperator()
 
-    for index in zip(operators, coefficents):
+    for index in zip(operators, coefficients):
         qubit_operator += QubitOperator(index[0], index[1])
 
     return qubit_operator
@@ -375,7 +375,7 @@ def _qubit_operator_creation(operators, coefficents):
 def _seeley_richard_love(i, j, coef, n_qubits):
     """Algebraic expressions for general products of the form a_i^d a_j term in
     the Bravyi-Kitaev basis. These expressions vary in form depending on the
-    parity of the indices i and j, as well as onthe overlaps between the parity
+    parity of the indices i and j, as well as on the overlaps between the parity
     and update sets of the indices"""
 
     seeley_richard_love_op = []

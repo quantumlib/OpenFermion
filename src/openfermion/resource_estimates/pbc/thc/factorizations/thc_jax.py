@@ -186,7 +186,7 @@ def compute_objective_batched(
     Args:
         chis: THC leaf tensor.
         zetas: THC central tensor.
-        chols: Cholesky factors definining 'exact' eris.
+        chols: Cholesky factors defining 'exact' eris.
         norm_factors: THC normalization factors.
         num_kpts: Number of k-points.
         penalty_param: Penalty parameter.
@@ -260,7 +260,7 @@ def get_batched_data_1indx(array: jax.Array, indx: jax.Array) -> jax.Array:
         array: Array to index
         indx: Indexing array
 
-    Retuns:
+    Returns:
         indexed_array: i.e. array[indx]
     """
     return array[indx]
@@ -275,7 +275,7 @@ def get_batched_data_2indx(array: jax.Array, indxa: jax.Array, indxb: jax.Array)
         indxa: Indexing array
         indxb: Indexing array
 
-    Retuns:
+    Returns:
         indexed_array: i.e. array[indxa, indxb]
     """
     return array[indxa, indxb]
@@ -304,7 +304,7 @@ def thc_objective_regularized_batched(
             (kpts[ikp] - kpts[ikq])%G = kpts[iQ].
         gpq_map: Maps momentum conserving tuples of kpoints to reciprocal
             lattice vectors in THC central tensor.
-        chol: Cholesky factors definining 'exact' eris.
+        chol: Cholesky factors defining 'exact' eris.
         indx_arrays: Batched index arrays (see prepare_batched_data_indx_arrays)
         batch_size: Size of each batch of data. Should be in range
         [1, num_kpts**2]. penalty_param: Penalty param if computing regularized
@@ -369,7 +369,7 @@ def thc_objective_regularized(
             (kpts[ikp] - kpts[ikq])%G = kpts[iQ].
         gpq_map: Maps momentum conserving tuples of kpoints to reciprocal
             lattice vectors in THC central tensor.
-        chol: Cholesky factors definining 'exact' eris.
+        chol: Cholesky factors defining 'exact' eris.
         penalty_param: Penalty param if computing regularized cost function.
 
     Returns:
@@ -434,14 +434,14 @@ def lbfgsb_opt_kpthc_l2reg(
             (kpts[ikp] - kpts[ikq])%G = kpts[iQ].
         gpq_map: Maps momentum conserving tuples of kpoints to reciprocal
             lattice vectors in THC central tensor.
-        chol: Cholesky factors definining 'exact' eris.
+        chol: Cholesky factors defining 'exact' eris.
         batch_size: Size of each batch of data. Should be in range
             [1, num_kpts**2].
         penalty_param: Penalty param if computing regularized cost function.
         chkfile_name: Filename to store intermediate state of optimization to.
         maxiter: Max L-BFGS-B iteration.
         disp_freq: L-BFGS-B disp_freq.
-        penalty_param: Paramter to penalize optimization by one-norm of
+        penalty_param: Parameter to penalize optimization by one-norm of
             Hamiltonian. If None it is determined automatically through trying
             to balance the two terms in the objective function.
 
@@ -551,14 +551,14 @@ def lbfgsb_opt_kpthc_l2reg_batched(
             (kpts[ikp] - kpts[ikq])%G = kpts[iQ].
         gpq_map: Maps momentum conserving tuples of kpoints to reciprocal
             lattice vectors in THC central tensor.
-        chol: Cholesky factors definining 'exact' eris.
+        chol: Cholesky factors defining 'exact' eris.
         batch_size: Size of each batch of data. Should be in range
             [1, num_kpts**2].
         penalty_param: Penalty param if computing regularized cost function.
         chkfile_name: Filename to store intermediate state of optimization to.
         maxiter: Max L-BFGS-B iteration.
         disp_freq: L-BFGS-B disp_freq.
-        penalty_param: Paramter to penalize optimization by one-norm of
+        penalty_param: Parameter to penalize optimization by one-norm of
             Hamiltonian. If None it is determined automatically through trying
             to balance the two terms in the objective function.
         batch_size: Number of k-points-pairs to batch over. Default num_kpts**2.
@@ -696,13 +696,13 @@ def adagrad_opt_kpthc_batched(
             (kpts[ikp] - kpts[ikq])%G = kpts[iQ].
         gpq_map: Maps momentum conserving tuples of kpoints to reciprocal
             lattice vectors in THC central tensor.
-        chol: Cholesky factors definining 'exact' eris.
+        chol: Cholesky factors defining 'exact' eris.
         batch_size: Size of each batch of data. Should be in range
             [1, num_kpts**2].
         chkfile_name: Filename to store intermediate state of optimization to.
         maxiter: Max L-BFGS-B iteration.
         disp_freq: L-BFGS-B disp_freq.
-        penalty_param: Paramter to penalize optimization by one-norm of
+        penalty_param: Parameter to penalize optimization by one-norm of
             Hamiltonian. If None it is determined automatically through trying
             to balance the two terms in the objective function.
         batch_size: Number of k-points-pairs to batch over. Default num_kpts**2.
@@ -783,7 +783,7 @@ def make_contiguous_cholesky(cholesky: npt.NDArray) -> npt.NDArray:
         # Jax requires contiguous arrays so just truncate naux if it's not
         # uniform hopefully shouldn't affect results dramatically as from
         # experience the naux amount only varies by a few % per k-point
-        # Alternatively todo: padd with zeros
+        # Alternatively todo: pad with zeros
         min_naux = min([cholesky[k1, k1].shape[0] for k1 in range(num_kpts)])
         cholesky_contiguous = np.zeros(
             (num_kpts, num_kpts, min_naux, num_mo, num_mo), dtype=np.complex128
@@ -807,7 +807,7 @@ def compute_isdf_loss(chi, zeta, momentum_map, gpq_map, chol):
             (kpts[ikp] - kpts[ikq])%G = kpts[iQ].
         gpq_map: Maps momentum conserving tuples of kpoints to reciprocal
             lattice vectors in THC central tensor.
-        chol: Cholesky factors definining 'exact' eris.
+        chol: Cholesky factors defining 'exact' eris.
 
     Returns:
         loss: ISDF loss in ERIs.
