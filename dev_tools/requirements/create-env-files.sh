@@ -48,13 +48,13 @@ mkdir -p dev_tools/requirements/envs dev_tools/requirements/max_compat
 uv pip compile "$@" \
     -o dev_tools/requirements/envs/dev.env.txt \
     dev_tools/requirements/deps/format.txt \
-    dev_tools/requirements/deps/mypy.txt \
     dev_tools/requirements/deps/packaging.txt \
     dev_tools/requirements/deps/pylint.txt \
     dev_tools/requirements/deps/pytest.txt \
     dev_tools/requirements/deps/resource_estimates_runtime.txt \
     dev_tools/requirements/deps/runtime.txt \
-    dev_tools/requirements/deps/shellcheck.txt
+    dev_tools/requirements/deps/shellcheck.txt \
+    dev_tools/requirements/deps/typecheck.txt
 
 uv pip compile "$@" \
     -o dev_tools/requirements/envs/format.env.txt \
@@ -82,9 +82,9 @@ uv pip compile "$@" \
     dev_tools/requirements/deps/runtime.txt
 
 uv pip compile "$@" \
-    -o dev_tools/requirements/envs/mypy.env.txt \
+    -o dev_tools/requirements/envs/typecheck.env.txt \
     -c dev_tools/requirements/envs/dev.env.txt \
-    dev_tools/requirements/deps/mypy.txt \
+    dev_tools/requirements/deps/typecheck.txt \
     dev_tools/requirements/deps/runtime.txt
 
 uv pip compile "$@" \

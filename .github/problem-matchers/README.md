@@ -20,13 +20,12 @@ license. The version of the files at the time they were copied was 2025.1.2.
 -   [`pylint.json`](https://github.com/home-assistant/core/blob/dev/.github/workflows/matchers/pylint.json)
 -   [`yamllint.json`](https://github.com/home-assistant/core/blob/dev/.github/workflows/matchers/yamllint.json)
 
-The Mypy and Pytest problem matchers files originally came from the
+The Pytest problem matcher file originally came from the
 [gh-problem-matcher-wrap](https://github.com/liskin/gh-problem-matcher-wrap/tree/master/problem-matchers)
-repository (copied 2025-03-04, version 3.0.0), and were subsequently modified by
-Michael Hucka. The original JSON files are Copyright © 2020 Tomáš Janoušek and
+repository (copied 2025-03-04, version 3.0.0), and was subsequently modified by
+Michael Hucka. The original JSON file is Copyright © 2020 Tomáš Janoušek and
 made available under the terms of the MIT license.
 
--   [`mypy.json`](https://github.com/liskin/gh-problem-matcher-wrap/blob/master/problem-matchers/mypy.json)
 -   [`pytest.json`](https://github.com/liskin/gh-problem-matcher-wrap/blob/master/problem-matchers/pytest.json)
 
 The actionlint problem matcher JSON file came from the

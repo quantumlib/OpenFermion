@@ -11,6 +11,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import itertools
+from typing import Optional
+
 import numpy as np
 import numpy.typing as npt
 
@@ -21,7 +23,7 @@ from openfermion.resource_estimates.pbc.hamiltonian import build_momentum_transf
 
 # Single-Factorization
 class SingleFactorization:
-    def __init__(self, cholesky_factor: npt.NDArray, kmf: scf.HF, naux: int = None):
+    def __init__(self, cholesky_factor: npt.NDArray, kmf: scf.HF, naux: Optional[int] = None):
         """Class defining single-factorized ERIs.
 
         Args:

@@ -138,7 +138,7 @@ def plane_wave_kinetic(
 def plane_wave_potential(
     grid: Grid,
     spinless: bool = False,
-    e_cutoff: float = None,
+    e_cutoff: Optional[float] = None,
     non_periodic: bool = False,
     period_cutoff: Optional[float] = None,
 ) -> FermionOperator:
@@ -403,7 +403,7 @@ def jellium_model(
     spinless: bool = False,
     plane_wave: bool = True,
     include_constant: bool = False,
-    e_cutoff: float = None,
+    e_cutoff: Optional[float] = None,
     non_periodic: bool = False,
     period_cutoff: Optional[float] = None,
 ) -> FermionOperator:

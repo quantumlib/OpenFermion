@@ -1,6 +1,0 @@
-mypy
-
-pandas-stubs
-types-requests
-types-setuptools
-types-networkx

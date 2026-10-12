@@ -46,7 +46,7 @@ env:
   # This is used by setup-python to check whether its cache needs updating.
   python-dep-files: >-
     dev_tools/requirements/envs/format.env.txt
-    dev_tools/requirements/envs/mypy.env.txt
+    dev_tools/requirements/envs/typecheck.env.txt
     dev_tools/requirements/envs/pylint.env.txt
     dev_tools/requirements/envs/pytest-extra.env.txt
     dev_tools/requirements/envs/pytest.env.txt
@@ -56,7 +56,8 @@ concurrency:
   cancel-in-progress: true
   group: ${{github.workflow}}-${{github.event.pull_request.number||github.ref}}
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   python-checks:
@@ -83,7 +84,7 @@ jobs:
         run: |
           pip install -r dev_tools/requirements/envs/format.env.txt
           pip install -r dev_tools/requirements/envs/pylint.env.txt
-          pip install -r dev_tools/requirements/envs/mypy.env.txt
+          pip install -r dev_tools/requirements/envs/typecheck.env.txt
 
       - name: Check format
         run: |
@@ -96,9 +97,7 @@ jobs:
           check/pylint -j 0
 
       - name: Check type declarations
-        run: |
-          echo '::add-matcher::.github/problem-matchers/mypy.json'
-          check/mypy
+        run: check/typecheck --output-format github
 
   pytest:
     name: Unit tests

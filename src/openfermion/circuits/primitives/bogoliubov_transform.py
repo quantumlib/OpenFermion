@@ -170,7 +170,7 @@ def _is_spin_block_diagonal(matrix) -> bool:
         return False
     max_upper_right = numpy.max(numpy.abs(matrix[: n // 2, n // 2 :]))
     max_lower_left = numpy.max(numpy.abs(matrix[n // 2 :, : n // 2]))
-    return numpy.isclose(max_upper_right, 0.0) and numpy.isclose(max_lower_left, 0.0)
+    return bool(numpy.isclose(max_upper_right, 0.0) and numpy.isclose(max_lower_left, 0.0))
 
 
 def _preserves_parity(transformation_matrix: numpy.ndarray) -> bool:
@@ -194,7 +194,7 @@ def _preserves_parity(transformation_matrix: numpy.ndarray) -> bool:
     w1 = transformation_matrix[:, :n]
     w2 = transformation_matrix[:, n:]
     bogoliubov_de_gennes = numpy.block([[w1, w2], [numpy.conjugate(w2), numpy.conjugate(w1)]])
-    return numpy.isclose(numpy.linalg.det(bogoliubov_de_gennes), 1.0)
+    return bool(numpy.isclose(numpy.linalg.det(bogoliubov_de_gennes), 1.0))
 
 
 def _occupied_orbitals(computational_basis_state: int, n_qubits) -> List[int]:

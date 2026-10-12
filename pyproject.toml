@@ -181,44 +181,60 @@ filterwarnings = [
     "ignore:Skipped assert_qasm_is_consistent_with_unitary because qiskit.*:UserWarning",
 ]
 
-[tool.mypy]
-implicit_optional = true
-ignore_errors = false
-
-[[tool.mypy.overrides]]
-module = "__main__"
-follow_imports = "silent"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = [
+[tool.pyrefly]
+# Migrated from [tool.mypy] via `pyrefly init`. Preset "legacy" disables a few
+# Pyrefly-only checks so the first pass stays closer to mypy behavior.
+preset = "legacy"
+# Match mypy defaults: do not aggressively check unannotated defs / infer returns.
+check-unannotated-defs = false
+infer-return-types = "never"
+# Respect leftover `# type: ignore` / `# mypy: ignore` comments during migration.
+permissive-ignores = true
+project-includes = ["src"]
+project-excludes = [
+    "**/docs/**",
+    "**/*.ipynb",
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/venv/**",
+]
+search-path = ["src"]
+# Optional or test-only imports without stubs; mirrors the old [tool.mypy.overrides].
+ignore-missing-imports = [
+    "__main__",
     "_pytest.*",
     "absl",
     "apiclient.*",
     "ase.*",
     "h5py",
+    "jax",
+    "jax.*",
     "numpy.*",
+    "pandas",
+    "pandas.*",
     "pubchempy",
     "pybtas",
+    "pyscf",
     "pyscf.*",
     "pytest.*",
     "scipy.*",
+    "sympy.*",
     "tensorflow_docs",
+    "tensorflow_docs.*",
 ]
-follow_imports = "silent"
-ignore_missing_imports = true
+# pyscf (and similar) may be installed in CI via other env files; their
+# factory callables (e.g. scf.HF) are not valid annotation forms for Pyrefly.
+replace-imports-with-any = [
+    "pyscf",
+    "pyscf.*",
+]
 
-[[tool.mypy.overrides]]
-module = "sympy.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "tensorflow_docs.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "deprecation"
-follow_untyped_imports = true
+# Pyrefly-only checks that currently flag ~15 Cirq/sympy Expr and EigenGate override
+# issues mypy did not report on main; re-enable in a follow-up once those are fixed.
+[tool.pyrefly.errors]
+unsupported-operation = false
+invalid-inheritance = false
+bad-override = false
 
 [tool.uv.pip]
 universal = true

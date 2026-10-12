@@ -11,7 +11,7 @@
 #   limitations under the License.
 
 
-def geometry_from_pubchem(name: str, structure: str = None):
+def geometry_from_pubchem(name: str, structure: str | None = None):
     """Function to extract geometry using the molecule's name from the PubChem
     database. The 'structure' argument can be used to specify which structure
     info to use to extract the geometry. If structure=None, the geometry will
@@ -52,6 +52,7 @@ def geometry_from_pubchem(name: str, structure: str = None):
         )
         return None
 
+    # pyrefly: ignore[no-matching-overload]
     pubchempy_geometry = pubchempy_molecule[0].to_dict(properties=['atoms'])['atoms']
     geometry = [
         (atom['element'], (atom['x'], atom['y'], atom.get('z', 0))) for atom in pubchempy_geometry

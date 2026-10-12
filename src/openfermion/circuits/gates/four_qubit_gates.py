@@ -27,7 +27,7 @@ class DoubleExcitationGate(cirq.EigenGate):
     def __init__(
         self,
         *,  # Forces keyword args.
-        exponent: Optional[Union[sympy.Symbol, float]] = None,
+        exponent: Optional[Union[sympy.Expr, float]] = None,
         rads: Optional[float] = None,
         degs: Optional[float] = None,
         duration: Optional[float] = None,
@@ -86,7 +86,7 @@ class DoubleExcitationGate(cirq.EigenGate):
             args.target_tensor, inner_matrix, slices=[a, b], out=args.available_buffer
         )
 
-    def _with_exponent(self, exponent: Union[sympy.Symbol, float]) -> 'DoubleExcitationGate':
+    def _with_exponent(self, exponent: Union[sympy.Expr, float]) -> 'DoubleExcitationGate':
         return DoubleExcitationGate(exponent=exponent)
 
     def _decompose_(self, qubits):
