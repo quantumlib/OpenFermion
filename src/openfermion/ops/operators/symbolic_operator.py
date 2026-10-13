@@ -21,7 +21,7 @@ import sympy
 
 from openfermion.config import EQ_TOLERANCE
 
-COEFFICIENT_TYPES = (int, float, complex, numbers.Number, sympy.Expr)
+COEFFICIENT_TYPES = (int, float, complex, sympy.Expr, numbers.Number)
 
 
 class SymbolicOperator(metaclass=abc.ABCMeta):

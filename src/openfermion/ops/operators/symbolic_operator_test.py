@@ -436,11 +436,11 @@ class SymbolicOperatorTest1(unittest.TestCase):
 
     def test_init_bad_term(self):
         with self.assertRaises(TypeError):
-            _ = MockOperator2(2)
+            _ = MockOperator1(2)
 
     def test_init_bad_coefficient(self):
         with self.assertRaises(TypeError):
-            _ = MockOperator2('X0', "0.5")
+            _ = MockOperator1('0^', "0.5")
 
     def test_init_bad_action_str(self):
         with self.assertRaises(ValueError):
