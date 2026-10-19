@@ -97,7 +97,7 @@ jobs:
           check/pylint -j 0
 
       - name: Check type declarations
-        run: check/typecheck --output-format github
+        run: check/typecheck -j 0 --output-format github
 
   pytest:
     name: Unit tests
