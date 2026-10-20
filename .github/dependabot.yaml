@@ -22,6 +22,8 @@ updates:
       - "/dev_tools/requirements/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     labels:
       - "area/dependencies"
       - "area/docker"
@@ -32,6 +34,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     labels:
       - "area/dependencies"
       - "area/devops"
@@ -43,6 +47,8 @@ updates:
       - "/docs/tutorials/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     versioning-strategy: "increase-if-necessary"
     labels:
       - "area/dependencies"
