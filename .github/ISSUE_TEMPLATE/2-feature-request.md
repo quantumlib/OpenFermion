@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Request a feature or suggest an enhancement
-labels: kind/feature-request
+labels: "k: feature-request"
 ---
 
 <!--

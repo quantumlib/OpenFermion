@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Report a problem with this software or project
-labels: kind/bug-report
+labels: "k: bug-report"
 ---
 
 <!--
