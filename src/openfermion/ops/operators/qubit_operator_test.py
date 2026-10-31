@@ -13,6 +13,7 @@
 
 import numpy
 import pytest
+import sympy
 
 from openfermion.ops.operators.qubit_operator import _PAULI_OPERATOR_PRODUCTS, QubitOperator
 
@@ -279,3 +280,21 @@ def test_get_operator_groups_six():
 
     assert check_length(operator_groups, [4, 4, 3, 3, 3, 3])
     assert check_sum(operator_groups, operator)
+
+
+def test_qubit_operator_sympy_support():
+    """Test QubitOperator initialization and basic symbolic arithmetic as requested in issue #1053."""
+    x = sympy.Symbol('x')
+    hamiltonian = x * QubitOperator('X0 X5') + 0.3 * QubitOperator('Z0')
+    term_coeff = hamiltonian.terms[((0, 'X'), (5, 'X'))]
+    assert sympy.simplify(term_coeff - x) == 0
+    assert hamiltonian.terms[((0, 'Z'),)] == 0.3
+
+
+def test_qubit_operator_sympy_cancellation():
+    """Test that QubitOperator symbolic terms cancel out correctly upon compression."""
+    x = sympy.Symbol('x')
+    hamiltonian = x * QubitOperator('X0 X5') + 0.3 * QubitOperator('Z0')
+    cancelled = hamiltonian - x * QubitOperator('X0 X5')
+    cancelled.compress()
+    assert ((0, 'X'), (5, 'X')) not in cancelled.terms

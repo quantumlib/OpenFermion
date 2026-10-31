@@ -13,16 +13,16 @@
 """Tests  symbolic_operator.py."""
 
 import copy
-import numpy
-import sympy
 import unittest
 import warnings
 
-from openfermion.config import EQ_TOLERANCE
-from openfermion.testing.testing_utils import EqualsTester
+import numpy
+import sympy
 
+from openfermion.config import EQ_TOLERANCE
 from openfermion.ops.operators.fermion_operator import FermionOperator
 from openfermion.ops.operators.symbolic_operator import SymbolicOperator
+from openfermion.testing.testing_utils import EqualsTester
 
 
 class MockOperator1(SymbolicOperator):
@@ -176,9 +176,7 @@ class GeneralTest(unittest.TestCase):
         op1 = MockOperator1('0^ 3 5^ 6')
         op2 = MockOperator1('8^ 3')
         opsum = op1 + op2
-        op_list = []
-        for op_term in opsum:
-            op_list.append(op_term)
+        op_list = list(opsum)
 
         self.assertEqual(len(op_list), 2)
         self.assertEqual(op_list[0], op1)
@@ -437,12 +435,12 @@ class SymbolicOperatorTest1(unittest.TestCase):
         self.assertEqual(fermion_op.terms[((0, 1),)], sympy.Symbol('x'))
 
     def test_init_bad_term(self):
-        with self.assertRaises(ValueError):
-            MockOperator1(2)
+        with self.assertRaises(TypeError):
+            _ = MockOperator1(2)
 
     def test_init_bad_coefficient(self):
-        with self.assertRaises(ValueError):
-            MockOperator1('0^', "0.5")
+        with self.assertRaises(TypeError):
+            _ = MockOperator1('0^', "0.5")
 
     def test_init_bad_action_str(self):
         with self.assertRaises(ValueError):
@@ -985,9 +983,6 @@ class SymbolicOperatorTest1(unittest.TestCase):
             op1.isclose(op2, tol=0.01, atol=1e-5)
 
     def test_isclose_atol_rtol(self):
-        op1 = MockOperator1('0^ 1', 1.0)
-        op2 = MockOperator1('0^ 1', 1.001)
-
         op_a = MockOperator1('0^ 1', 1.0)
         op_b = MockOperator1('0^ 1', 1.001)
         self.assertTrue(op_a.isclose(op_b, atol=0.001))
@@ -1171,11 +1166,11 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertAlmostEqual(qubit_op.terms[()], 2.0)
 
     def test_init_bad_term(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             _ = MockOperator2(2)
 
     def test_init_bad_coefficient(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             _ = MockOperator2('X0', "0.5")
 
     def test_init_bad_action(self):
@@ -1281,8 +1276,8 @@ class SymbolicOperatorTest2(unittest.TestCase):
         self.assertTrue(op == correct)
         self.assertTrue(op2 == correct)
         # Test if done in-place
-        self.assertTrue(not op == original)
-        self.assertTrue(not op2 == original)
+        self.assertNotEqual(op, original)
+        self.assertNotEqual(op2, original)
 
     def test_itruediv_bad_divisor(self):
         op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
@@ -1411,10 +1406,8 @@ class SymbolicOperatorTest2(unittest.TestCase):
         op = MockOperator2(((1, 'X'), (3, 'Y'), (8, 'Z')), 0.5)
         op += MockOperator2(((1, 'Y'), (3, 'Y'), (8, 'Z')), 0.6)
         self.assertTrue(
-            (
-                str(op) == "0.5 [X1 Y3 Z8] +\n0.6 [Y1 Y3 Z8]"
-                or str(op) == "0.6 [Y1 Y3 Z8] +\n0.5 [X1 Y3 Z8]"
-            )
+            str(op) == "0.5 [X1 Y3 Z8] +\n0.6 [Y1 Y3 Z8]"
+            or str(op) == "0.6 [Y1 Y3 Z8] +\n0.5 [X1 Y3 Z8]"
         )
         op2 = MockOperator2((), 2)
         self.assertEqual(str(op2), "2 []")
@@ -1447,3 +1440,25 @@ class SymbolicOperatorTest2(unittest.TestCase):
     def test_tracenorm_zero(self):
         op = MockOperator2()
         self.assertFalse(op.induced_norm())
+
+    def test_compress_sympy_cancellation(self):
+        """Test that symbolic terms cancel out correctly (e.g. x - x)."""
+        x = sympy.Symbol('x')
+        op = MockOperator1(((0, 1), (1, 0)), x - x)
+        op.compress()
+        assert len(op.terms) == 0
+
+    def test_compress_sympy_imaginary_pruning(self):
+        """Test that small imaginary parts of SymPy expressions are pruned if symbol is real."""
+        x_real = sympy.Symbol('x', real=True)
+        op = MockOperator1(((0, 1), (1, 0)), x_real + 1e-15j)
+        op.compress()
+        assert op.terms[((0, 1), (1, 0))] == x_real
+
+    def test_compress_sympy_unsimplified(self):
+        """Test compress() on unsimplified SymPy expressions that evaluate to zero."""
+        x = sympy.Symbol('x')
+        unsimplified_zero = sympy.sin(x) ** 2 + sympy.cos(x) ** 2 - 1
+        op = MockOperator1(((0, 1), (1, 0)), unsimplified_zero)
+        op.compress()
+        assert len(op.terms) == 0
