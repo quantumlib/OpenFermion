@@ -37,13 +37,6 @@ def pytest_configure(config: Any) -> None:
     os.environ['CIRQ_TESTING'] = "true"
 
 
-@pytest.fixture(autouse=True)
-def set_random_seed() -> None:
-    """Set a fixed random seed when testing."""
-    random.seed(0)
-    np.random.seed(0)
-
-
 @pytest.fixture(autouse=True, scope="session")
 def set_threadpool_limits():
     """Limit number of threads to prevent oversubscription with pytest-xdist.
